@@ -2,22 +2,40 @@
 title: "Syllabus"
 ---
 
-### Week 1 - Programming, Python Fundamentals and an Introduction to Computational Social Science
+```{r include = FALSE}
+library(readxl)
+library(dplyr)
+library(lubridate)
+library(stringr)
+```
 
-### Week 2 - Code Reuse and Tuning
+```{r include = FALSE}
+# import excel table with topics
+rawdat <- read_excel(file.path("course_admin", "schedule.xlsx"))
 
-### Week 3 - Introduction to R/Data Analysis
+# clean up table and extract date info
+cdat <- rawdat %>%
+  mutate(wday = wday(date, label = TRUE),
+         month = month(date, label = TRUE),
+         day = day(date),
+         date = paste(wday, month, day),
+         link_it = as.logical(link_it),
+         notes = sprintf("%s: %s", cm, topic))
 
-### Week 4 - Visualization
+# identify links to course modules
+cmdat <- data_frame(html = list.files(pattern = '^cm.*html$'))
+cmdat <- cmdat %>% mutate(cm = str_extract(html, "cm[0-9]+"))
+cdat <- cdat %>% full_join(cmdat)
 
-### Week 5 - Data Munging/Tidy Data
+# add links to notes column
+cdat$notes[cdat$link_it] <-
+  str_replace(cdat$notes[cdat$link_it],
+              "(cm[0-9]{3})", '<a href="LINK">\\1</a>')
+cdat <- cdat %>% mutate(notes = str_replace(notes, "LINK", html))
+```
 
-### Week 6 - Web Scraping/Network Analysis
+```{r results = 'asis', echo = FALSE}
+knitr::kable(cdat %>% select(date, notes))
+```
 
-### Week 7 - Text/Machine Learning
 
-### Week 8 - Data Warehousing
-
-### Week 9 - Interactivity
-
-### Week 10 - High Performance Computing
