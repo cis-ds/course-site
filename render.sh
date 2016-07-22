@@ -6,4 +6,9 @@ for notebook in $( ls *.ipynb ); do
 done
 
 # render_site using rmarkdown
-Rscript -e 'rmarkdown::render_site()'
+## update footer
+Rscript -e 'rmarkdown::render("_footer.Rmd", "html_fragment")'
+
+## now render entire website
+# Rscript -e 'rmarkdown::render_site()'
+Rscript render.R FALSE
