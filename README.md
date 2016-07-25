@@ -1,4 +1,4 @@
-# cfss
+# uc-cfss.github.io
 
 This is the course site for MACS 30500 - Programming for the Social Sciences.
 
