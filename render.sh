@@ -6,5 +6,5 @@ for notebook in $( ls *.ipynb ); do
 done
 
 # render_site using rmarkdown
-# Rscript -e 'rmarkdown::render_site()'
-Rscript render.R FALSE
+Rscript -e 'rmarkdown::render_site()'
+# Rscript render.R FALSE
