@@ -15,12 +15,7 @@ rawdat <- read_excel(file.path("course_admin", "schedule.xlsx"))
 
 # clean up table and extract date info
 cdat <- rawdat %>%
-  mutate(wday = wday(date, label = TRUE),
-         month = month(date, label = TRUE),
-         day = day(date),
-         date = paste(wday, month, day),
-         date = ifelse(is.na(wday), NA, date),
-         link_it = as.logical(link_it),
+  mutate(link_it = as.logical(link_it),
          topic = ifelse(is.na(topic), "", topic),
          notes = sprintf("%s: %s", cm, topic))
 
@@ -38,20 +33,15 @@ cdat$notes[cdat$link_it] <-
 ```
 
 ```{r results = 'asis', echo = FALSE, message = FALSE}
-cdat_format <- cdat %>%
+cdat %>%
   select(cm, date, notes) %>%
-  separate(cm, into = c("type", "num"), sep = "(?<=[a-z]) ?(?=[0-9])")
-
-cm <- filter(cdat_format, type == "cm" | type == "setup") %>%
-  unite(cm, type, num, sep = "") %>%
-  rename(topic = notes)
-lab <- filter(cdat_format, type == "lab") %>%
-  select(date, notes) %>%
-  rename(lab = notes)
-
-full_join(cm, lab) %>%
-  mutate(lab = ifelse(is.na(lab), "", lab)) %>%
-  select(date:lab) %>%
+  mutate(cm = str_extract(cm, "[:alpha:]+")) %>%
+  spread(cm, notes) %>%
+  mutate(lab = ifelse(is.na(lab), "", lab),
+         date = sprintf("%s %s %s",
+                        wday(date, label = TRUE),
+                        month(date, label = TRUE),
+                        day(date))) %>%
   knitr::kable(col.names = c("Date", "Topic", "Lab"))
 ```
 
