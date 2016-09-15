@@ -3,8 +3,8 @@ title: "Syllabus"
 ---
 
 ```{r include = FALSE}
+library(tidyverse)
 library(readxl)
-library(dplyr)
 library(lubridate)
 library(stringr)
 ```
@@ -21,23 +21,38 @@ cdat <- rawdat %>%
          date = paste(wday, month, day),
          date = ifelse(is.na(wday), NA, date),
          link_it = as.logical(link_it),
+         topic = ifelse(is.na(topic), "", topic),
          notes = sprintf("%s: %s", cm, topic))
 
 # identify links to course modules
-cmdat <- data_frame(html = list.files(pattern = '^(cm|setup|git).*html$'))
-cmdat <- cmdat %>% mutate(cm = str_extract(html, "(cm|setup|git)[0-9]+"))
+cmdat <- data_frame(html = list.files(pattern = '^(cm|setup|git|lab).*html$'))
+cmdat <- cmdat %>% mutate(cm = str_extract(html, "(cm|setup|git|lab)[0-9]+"))
 cdat <- cdat %>% left_join(cmdat)
 
 # add links to notes column
 cdat$notes[cdat$link_it] <-
   str_replace(cdat$notes[cdat$link_it],
-              "((cm[0-9]{3})|((setup|git)[0-9]{2}))", '<a href="LINK">\\1</a>')
+              "((cm[0-9]{3})|((setup|git|lab)[0-9]{2}))", '<a href="LINK">\\1</a>')
 cdat$notes[cdat$link_it] <-
   str_replace(cdat$notes[cdat$link_it], "LINK", cdat$html[cdat$link_it])
 ```
 
-```{r results = 'asis', echo = FALSE}
-knitr::kable(cdat %>% select(date, notes))
+```{r results = 'asis', echo = FALSE, message = FALSE}
+cdat_format <- cdat %>%
+  select(cm, date, notes) %>%
+  separate(cm, into = c("type", "num"), sep = "(?<=[a-z]) ?(?=[0-9])")
+
+cm <- filter(cdat_format, type == "cm" | type == "setup") %>%
+  unite(cm, type, num, sep = "") %>%
+  rename(topic = notes)
+lab <- filter(cdat_format, type == "lab") %>%
+  select(date, notes) %>%
+  rename(lab = notes)
+
+full_join(cm, lab) %>%
+  mutate(lab = ifelse(is.na(lab), "", lab)) %>%
+  select(date:lab) %>%
+  knitr::kable(col.names = c("Date", "Topic", "Lab"))
 ```
 
 
