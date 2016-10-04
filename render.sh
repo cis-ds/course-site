@@ -10,9 +10,9 @@ for slides in $( find ../teach -name "*slides.html" ); do
   rsync --update $slides extras
 done
 
-# copy demonstration files to extras folder
-for demo in $( find ../teach -name "*demo.html" ); do
-  rsync --update $demo extras
+# copy tutorial files to extras folder
+for tutorial in $( find ../teach -name "*tutorial.html" ); do
+  rsync --update $tutorial extras
 done
 
 # render_site using rmarkdown
