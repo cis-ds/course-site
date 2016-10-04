@@ -1,23 +1,165 @@
 ---
-title: "RMarkdown (and other stuff)"
-output: html_document
+title: "R Markdown, git, and stuff"
+output:
+  html_document:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(cache=TRUE)
+library(tidyverse)
 ```
 
-# lab01 - October 5, 2016
+# lab02 - October 5, 2016
 
-# Introduction to RMarkdown
+# Introduction to R Markdown
+
+* See [R Markdown in R for Data Science](http://r4ds.had.co.nz/r-markdown.html)
+* [Great introduction from RStudio](http://rmarkdown.rstudio.com/lesson-1.html)
+
+## Console editor vs. scripts vs. R Markdown
+
+![From [R for Data Science](http://r4ds.had.co.nz/workflow-scripts.html)](http://r4ds.had.co.nz/diagrams/rstudio-editor.png)
+
+* Console editor
+    * Great for experimenting and interactive coding in R
+    * No record of past commands
+    * Must run one line at a time
+* Script editor
+    * Build code in chunks, then run all at once
+    * Save as a `.R` file (called an *R script*)
+    * Can run:
+        * One line at a time (Cmd/Ctrl + Enter)
+        * Several lines at once (highlight the code with the cursor, then Cmd/Ctrl + Enter)
+        * Run the entire script at once (Cmd/Ctrl + Shift + S)
+    * Output is printed in the console
+    * Plots are displayed in the bottom-right panel
+    * Can split a complicated program/workflow into multiple and distinct R scripts (easier to organize large chunks of code)
+* R Markdown
+    * Provides a unified authoring framework for data science
+    * Combines:
+        * Code
+        * Results
+        * Written commentary
+    * Displays output and plots within the document (can be changed)
+    * Good for a final report
+    * During class, usually better to work in an R script until you are comfortable using R Markdown for homework
 
 # Assorted things about Git and GitHub
 
 ## `.gitignore`
 
+By default, Git tracks all directories and files in your repository. Sometimes you may not want it to track everything. For instance, if you store a private [API key](https://en.wikipedia.org/wiki/Application_programming_interface_key) or personally-identifiable data, you won't want these files tracked by Git. If you did, when you push your repository to GitHub your private files will be shared with the world.
+
+You could just store all of these files outside your repository, but that's a pain and inconvenient. Instead, you can create a `.gitignore` file in your repository. This is a special file Git uses to determine what files it should ignore. Any file listed in `.gitignore` will not be tracked by Git.
+
+When you create a new repository in GitHub (as opposed to forking an existing one), you have the option to add a template `.gitignore` file depending on what programming language you will use. For example, the default `.gitignore` file for R is
+
+```{r, engine = 'bash', eval = FALSE}
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+/*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+.Rproj.user
+```
+
+Most of these files are not sensitive, but are merely temporary work files that you don't need to save and track using version control. You can specify files and directories by their full name, a partial name, or file extension. Starting with homework 2 I will always include a `.gitignore` in the repository, but for your own projects you will need to create these files as you find necessary.
+
 ## Clone from the fork, not the master
+
+Make sure whenever you clone a homework repository, use the url for the forked version, not the master repository. So for the first homework, I would use `https://github.com/bensoltoff/hw01` when I clone the repo, not `https://github.com/uc-cfss/hw01`. If you use the master repo url, you will get an error when you try to push your changes to GitHub.
+
+For an example, let's say I wanted to make a contribution to [`ggplot2`](https://github.com/hadley/ggplot2). I should fork the repo and clone the fork. Instead I goofed and cloned the original repo. When I try to push my change, I get an error message:
+
+```{bash, eval = FALSE}
+remote: Permission to hadley/ggplot2.git denied to bensoltoff.
+fatal: unable to access 'https://github.com/hadley/ggplot2.git/': The requested URL returned error: 403
+```
+
+I don't have permission to edit the master repo on Hadley Wickham's account.
+
+How do I fix this? I could go back and clone the correct fork, but if I've already made several commits then I'll lose all my work. Instead, I can change the `upstream` url: this changes the location Git tries to push my changes. To do this:
+
+1. Open up the [shell](shell.html)
+2. Change the current working directory to your local project (should use the `cd` command)
+3. List your existing remotes in order to get the name of the remote you want to change.
+```{bash, eval = FALSE}
+Benjamins-MacBook-Pro:ggplot2 soltoffbc$ git remote -v
+origin	https://github.com/hadley/ggplot2.git (fetch)
+origin	https://github.com/hadley/ggplot2.git (push)
+```
+4. Change your remote's URL from SSH to HTTPS with the `git remote set-url` command.
+```{bash, eval = FALSE}
+Benjamins-MacBook-Pro:ggplot2 soltoffbc$ git remote set-url origin https://github.com/bensoltoff/ggplot2
+```
+5. Verify that the remote URL has changed.
+```{r, engine = 'bash', eval = FALSE}
+Benjamins-MacBook-Pro:ggplot2 soltoffbc$ git remote -v
+origin	https://github.com/bensoltoff/ggplot2 (fetch)
+origin	https://github.com/bensoltoff/ggplot2 (push)
+```
+
+Now I can push successfully to my fork, then submit a pull request.
 
 ## Use the proper shell (GitBash for Windows)
 
+Make sure to use the proper program when entering the [shell](shell.html). For Mac users, that is [Terminal](http://www.macworld.co.uk/feature/mac-software/get-more-out-of-os-x-terminal-3608274/). For Windows users, that is [GitBash](https://git-for-windows.github.io/): if you followed the [setup](setup00.html) instructions properly, you should have this program on your computer. Look for it under the Start Menu > Git > GitBash. If you try to use the [Command Prompt](https://en.wikipedia.org/wiki/Cmd.exe), you will run into errors because it uses different commands than GitBash.
 
+# Variable assignment vs. piping
 
+Remember that with pipes, we don't have to save all of our intermediate steps. We only use one assignment, like this:
+
+```{r}
+(diamonds_summary <- diamonds %>%
+  filter(carat > .2, carat < 2) %>%
+  group_by(cut, color) %>%
+  summarize(price = mean(price, na.rm = TRUE),
+            depth = mean(depth, na.rm = TRUE))
+ )
+```
+
+Do not do this:
+
+```{r, error = TRUE}
+(diamonds_summary <- diamonds %>%
+  diamonds_filter <- filter(carat > .2, carat < 2) %>%
+  diamonds_group <- group_by(cut, color) %>%
+  diamonds_summary <- summarize(price = mean(price, na.rm = TRUE),
+            depth = mean(depth, na.rm = TRUE))
+ )
+```
+
+### Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
