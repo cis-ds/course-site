@@ -1,13 +1,13 @@
 Evaluation HW-xx for Jane Doe
 ----------------------------------------------------
-Topic | Excellent | Satisfactory | Needs Work |
---- | --- | --- | --- |
-**Coding style** | :heavy_check_mark: |  |  |
-**Coding strategy** |  | :heavy_check_mark: |  |
-**Presentation: graphs** |  |  | :heavy_check_mark: |
-**Presentation: tables** |  | :heavy_check_mark:  |  |
-**Achievement, creativity** | :heavy_check_mark: |  |  |
-**Ease of access**  | :heavy_check_mark: |  |  |
+| Topic                       | Excellent | Satisfactory | Needs Work |
+|-----------------------------|-----------|--------------|------------|
+| **Coding style**            |           |              |            |
+| **Coding strategy**         |           |              |            |
+| **Presentation: graphs**    |           |              |            |
+| **Presentation: tables**    |           |              |            |
+| **Achievement, creativity** |           |              |            |
+| **Ease of access**          |           |              |            |
 
 Remarks:
 
