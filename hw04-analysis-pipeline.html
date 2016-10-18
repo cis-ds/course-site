@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Homework 04: Building an analysis pipeline</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Homework 04: Building an analysis pipeline</h1>
+
+</div>
+
+
+<div id="overview" class="section level1">
+<h1>Overview</h1>
+<p>Due before class Wednesday October 26th.</p>
+<p>Basic goal of the assignment:</p>
+<ul>
+<li>Write three or more R scripts to carry out a small data analysis</li>
+<li>The output of the first script must be the input of the second, and so on</li>
+<li>Something like this:</li>
+<li>First script: download some data</li>
+<li>Second script: read the data, clean/tidy/transform the data, perform some exploratory analysis, and write numerical data to file in CSV or feather format</li>
+<li>Third script: an <code>.Rmd</code>, actually, that brings everything together. Present the original data, the statistical summaries, and/or the figures in a little report. Also build and interpret a statistical model.</li>
+<li>A fourth script to rule them all, i.e. to run the others in sequence.</li>
+</ul>
+</div>
+<div id="fork-the-hw04-repository" class="section level1">
+<h1>Fork the <code>hw04</code> repository</h1>
+<p>Go <a href="https://github.com/uc-cfss/hw04">here</a> to fork the repo for homework 04.</p>
+</div>
+<div id="how-do-i-do-this" class="section level1">
+<h1>How do I do this?</h1>
+<p>The easiest approach uses the <a href="https://github.com/uc-cfss/pipeline-example">example pipeline</a> as a template for your own assignment. You can get fancier if you want (e.g. create a Bash shell script that runs the pipeline, rather than another <code>.R</code> script), but you don’t have to go overboard with it.</p>
+</div>
+<div id="what-data-should-i-use" class="section level1">
+<h1>What data should I use?</h1>
+<p>Whatever you want! The important thing is that the entire analysis is <em>reproducible</em>. That is, I will clone your repository on my computer, I will run the script that “rules them all”, and it should reproduce your results and analysis without any errors.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+</div>
+<div id="im-not-creative-and-i-cant-think-of-anything-to-analyze" class="section level1">
+<h1>I’m not creative and I can’t think of anything to analyze!</h1>
+<p>Okay, then analyze one of the datasets we’ve used before.</p>
+<ul>
+<li><a href="https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv">Raw data for <code>gapminder</code></a></li>
+<li><a href="https://github.com/fivethirtyeight/guns-data">Raw data for <code>gun_deaths</code></a></li>
+<li>Use <a href="https://github.com/btskinner/rscorecard">rscorecard</a> to download your own subset of the Department of Education’s College Scorecard data.</li>
+</ul>
+<div id="download-the-data" class="section level2">
+<h2>Download the data</h2>
+<p>Download the raw data. For example, using <code>gapminder</code>:</p>
+<ul>
+<li><p>Option 1: via an R script using <a href="https://cran.r-project.org/web/packages/downloader/downloader.pdf">downloader::download</a> or <a href="http://www.omegahat.net/RCurl/installed/RCurl/html/getURL.html">RCurl::getURL</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">downloader::<span class="kw">download</span>(<span class="st">&quot;https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv&quot;</span>)
+<span class="kw">cat</span>(<span class="dt">file =</span> <span class="st">&quot;gapminder.tsv&quot;</span>,
+  RCurl::<span class="kw">getURL</span>(<span class="st">&quot;https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv&quot;</span>))</code></pre></div></li>
+<li><p>Option 2: in a <a href="shell.html">shell</a> script using <code>curl</code> or <code>wget</code>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">curl</span> -O https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv
+<span class="kw">wget</span> https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv</code></pre></div></li>
+</ul>
+</div>
+<div id="perform-exploratory-analysis" class="section level2">
+<h2>Perform exploratory analysis</h2>
+<ul>
+<li>Bring the data in as data frame.</li>
+<li>Save a couple descriptive plots to file with highly informative names.</li>
+<li>Reorder the continents based on life expectancy. You decide the details.</li>
+<li>Sort the actual data in a deliberate fashion. You decide the details, but this should <em>at least</em> implement your new continent ordering.</li>
+<li>Write the Gapminder data to file(s), for immediate and future reuse.</li>
+</ul>
+</div>
+<div id="perform-statistical-analysis" class="section level2">
+<h2>Perform statistical analysis</h2>
+<ul>
+<li>Import the data created in the first script.</li>
+<li>Make sure your new continent order is still in force. You decide the details.</li>
+<li>Fit a linear regression of life expectancy on year within each country. Write the estimated intercepts, slopes, and residual error variance (or sd) to file.</li>
+<li>Find the 3 or 4 “worst” and “best” countries for each continent. You decide the details.</li>
+<li>Write the linear regression info for just these countries to file.</li>
+</ul>
+</div>
+<div id="generate-figures" class="section level2">
+<h2>Generate figures</h2>
+<p>Create a figure for each continent, including data only for the 6-8 “extreme” countries, and write to file. One file per continent, with an informative name. The figure should give scatterplots of life expectancy vs. year, facetting on country, fitted line overlaid.</p>
+</div>
+<div id="automate-the-pipeline" class="section level2">
+<h2>Automate the pipeline</h2>
+<p>Identify and test a method of running your pipeline non-interactively.</p>
+<p>You could write a master R script that simply <code>source()</code>s the three scripts, one after the other. Tip: you will probably want a second “clean up / reset” script that deletes all the output your scripts leave behind, so you can easily test and refine your strategy, i.e. without repeatedly deleting stuff “by hand”. You can run the master script or the cleaning script from a <a href="shell.html">shell</a> with <code>Rscript</code>.</p>
+<p>Provide a link to a page (oh hey there <code>README.md</code>) that explains how your pipeline works and links to the remaining files. Your peers and myself should be able to go to this landing page and re-run your analysis quickly and easily.</p>
+</div>
+</div>
+<div id="aim-higher" class="section level1">
+<h1>Aim higher!</h1>
+<ul>
+<li>Use a completely unique dataset - preferably something related to your own research interests
+<ul>
+<li>You will probably need to spend time data cleaning and tidying. Probably would be good in a separate R script.</li>
+</ul></li>
+<li>Render an R Markdown document with your final analysis.
+<ul>
+<li>You do not need to stuff everything into the final document. Think of this like a traditional report. You might describe how you obtained and prepared the data, but you won’t include all the code and output from that process in the final document. But because it is stored in a separate R script and is part of the data pipeline, everything is still completely reproducible.</li>
+<li>To emulate RStudio’s “Knit” button from a <a href="shell.html">shell</a>: <code>Rscript -e &quot;rmarkdown::render('myAwesomeAnalysis.Rmd')&quot;</code></li>
+<li>To emulate RStudio’s “Knit” button within an R script: <code>rmarkdown::render('myAwesomeAnalysis.Rmd)</code></li>
+</ul></li>
+<li>Experiment with running R code saved in a script from within R Markdown. Here’s some official documentation on <a href="http://yihui.name/knitr/demo/externalization/">code externalization</a>.</li>
+<li>Embed pre-existing figures in and R Markdown document, i.e. an R script creates the figures, then the report incorporates them.</li>
+<li>Import pre-existing data in an R Markdown document, then format nicely as a table.</li>
+</ul>
+</div>
+<div id="submit-the-assignment" class="section level1">
+<h1>Submit the assignment</h1>
+<p>Your assignment should be submitted as a set of R scripts, R Markdown documents, data files, figures, etc. Follow instructions on <a href="hw00_homework_guidelines.html#homework_workflow">homework workflow</a>. As part of the pull request, you’re encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.</p>
+</div>
+<div id="rubric" class="section level1">
+<h1>Rubric</h1>
+<p>Check minus:</p>
+<p>Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.</p>
+<p>Check plus:</p>
+<div id="acknowledgments" class="section level3 toc-ignore">
+<h3>Acknowledgments</h3>
+<ul>
+<li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+</ul>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Okay, if I get an error because you used a package that I don’t already have, that’s my fault. But you know what I mean.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
