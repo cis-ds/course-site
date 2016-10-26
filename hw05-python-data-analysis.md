@@ -24,11 +24,11 @@ Your assignment should be submitted as a single Jupyter Notebook. Follow instruc
 
 # Rubric
 
-Check minus: Cannot run the pipeline. Scripts require interactive coding to fix. Markdown documents are not generated. Graphs and tables don't have appropriate labels or formatting.
+Check minus: Notebook cannot be run. Didn't answer all of the questions. Code is incomprehensible or difficult to follow.
 
 Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
-Check plus: Repository contains a detailed `README.md` explaining how the pipeline works. Displays innovative data analysis or coding skills. Graphs and tables are well labeled. Analysis is insightful. I walk away feeling I learned something.
+Check plus: Innovative use of coding elements to solve the problems (e.g. functions, conditional expressions, iterations). Adds labels to graphs. Uses techniques beyond those from the example notebooks. Successfully attempts the advanced challenge.
 
 ## Import packages and setup the notebook
 
