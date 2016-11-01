@@ -1,0 +1,342 @@
+---
+title: "Getting data from the web: API access"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, messages = FALSE}
+library(tidyverse)
+library(knitr)
+```
+
+# Objectives
+
+* Identify multiple methods for obtaining data from the internet
+* Define application program interface (API)
+* Explain authentication keys and demonstrate secure methods for storing these keys
+* Demonstrate how to use canned packages in R to access APIs
+* Practice gathering data from Twitter API using the `twitteR` package in R
+
+# Methods for obtaining data online
+
+There are many ways to obtain data from the Internet. Four major categories are:
+
+* *click-and-download* on the internet as a "flat" file, such as .csv, .xls
+* *install-and-play* an API for which someone has written a handy R package
+* *API-query* published with an unwrapped API
+* *Scraping* implicit in an html website
+
+## Click-and-Download
+
+In the simplest case, the data you need is already on the internet in a tabular format. There are a couple of strategies here:
+
+* Use `read.csv` or `readr::read_csv` to read the data straight into R
+* Use the `downloader` package or `curl` from the shell to download the file and store a local copy, then use `read_csv` or something similar to read the data into R
+    * Even if the file disappears from the internet, you have a local copy cached
+
+Even in this instance, files may need cleaning and transformation when you bring them into R.
+
+## Data supplied on the web
+
+Many times, the data that you want is not already organized into one or a few tables that you can read directly into R. More frequently, you find this data is given in the form of an API. **A**pplication **P**rogramming **I**nterfaces (APIs) are descriptions of the kind of requests that can be made of a certain piece of software, and descriptions of the kind of answers that are returned. Many sources of data - databases, websites, services - have made all (or part) of their data available via APIs over the internet. Computer programs ("clients") can make requests of the server, and the server will respond by sending data (or an error message). This client can be many kinds of other programs or websites, including R running from your laptop.
+
+## Install and play packages
+
+Many common web services and APIs have been "wrapped", i.e. R and Python functions have been written around them which send your query to the server and format the response.
+
+Why do we want this?
+
+* provenance
+* reproducible
+* updating
+* ease
+* scaling
+
+# Sightings of birds: `rebird`
+
+[`rebird`](https://github.com/ropensci/rebird) is an R interface for the [ebird](http://ebird.org/content/ebird/) database. e-Bird lets birders upload sightings of birds, and allows everyone access to those data.
+
+```{r eval=FALSE}
+install.packages("rebird")
+```
+
+```{r message=FALSE}
+library(rebird)
+```
+
+## Search birds by geography
+
+The ebird website categorizes some popular locations as "Hotspots". These are areas where there are both lots of birds and lots of birders. Once such location is at Lincoln Park Zoo in Chicago. You can see data for this site at [http://ebird.org/ebird/hotspot/L1573785](http://ebird.org/ebird/hotspot/L1573785)
+
+At that link, you can see a page like this:
+
+![Lincoln Park Zoo](images/lincoln_park_zoo.png)
+
+The data already look to be organized in a data frame! `rebird` allows us to read these data directly into R. (The ID code for Lincoln Park Zoo is **"L1573785**)
+
+```{r}
+ebirdhotspot(locID = "L1573785") %>%
+  tbl_df()
+```
+
+We can use the function `ebirdgeo` to get a list for an area. (Note that South and West are negative):
+
+```{r}
+chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298)
+chibirds %>%
+  tbl_df() %>%
+  head() %>%
+	kable()
+```
+
+**Note**: Check the defaults on this function. e.g. radius of circle, time of year.
+
+We can also search by "region", which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters **FR**
+
+```{r}
+frenchbirds <- ebirdregion("FR")
+
+frenchbirds %>%
+  tbl_df() %>%
+  head() %>%
+  kable()
+```
+
+Find out *WHEN* a bird has been seen in a certain place! Choosing a name from `chibirds` above (the Bald Eagle):
+
+```{r}
+warbler <- ebirdgeo(species = 'Setophaga coronata', lat = 41.8781, lng = -87.6298)
+
+warbler %>%
+  tbl_df() %>%
+  head() %>%
+  kable()
+```
+
+`rebird` **knows where you are**:
+
+```{r}
+ebirdgeo(species = 'Setophaga coronata') %>%
+  tbl_df() %>%
+  head() %>%
+  kable()
+```
+
+# Searching geographic info: `geonames`
+
+```{r message=FALSE}
+# install.packages(geonames)
+library(geonames)
+```
+
+## API authentication
+
+Many APIs require you to register for access. This allows them to track which users are submitting queries and manage demand - if you submit too many queries too quickly, you might be *rate-limited* and your requests de-prioritized or blocked. Always check the API access policy of the web site to determine what these limits are.
+
+There are a few things we need to do to be able to use this package to access the geonames API:
+
+1. go to [the geonames site](www.geonames.org/login/) and register an account. 
+2. click [here to enable the free web service](http://www.geonames.org/enablefreewebservice)
+3. Tell R your geonames username. You could run the line
+
+``` r 
+options(geonamesUsername = "my_user_name")
+``` 
+
+in R. However this is insecure. We don't want to risk committing this line and pushing it to our public GitHub page! Instead, you should create a file in the same place as your `.Rproj` file. Name this file `.Rprofile`, and add 
+
+``` r 
+options(geonamesUsername = "my_user_name")
+``` 
+
+to that file.
+
+### Important
+
+* Make sure your `.Rprofile` ends with a blank line
+* Make sure `.Rprofile` is included in your `.gitignore` file, otherwise it will be synced with Github
+* Restart RStudio after modifying `.Rprofile` in order to load any new keys into memory
+* Spelling is important when you set the option in your `.Rprofile`
+* You can do a similar process for an arbitrary package or key. For example:
+
+```{r eval = FALSE}
+# in .Rprofile
+options("this_is_my_key" = XXXX)
+
+# later, in the R script:
+key <- getOption("this_is_my_key")
+```
+
+This is a simple means to keep your keys private, especially if you are sharing the same authentication across several projects. Remember that using `.Rprofile` makes your code un-reproducible. In this case, that is exactly what we want!
+
+## Using Geonames
+
+What can we do? Get access to lots of geographical information via the various ["web services"](http://www.geonames.org/export/ws-overview.html)
+
+```{r}
+countryInfo <- GNcountryInfo()
+```
+
+```{r}
+countryInfo %>%
+  tbl_df() %>%
+  head() %>%
+  kable()
+```
+
+This country info dataset is very helpful for accessing the rest of the data, because it gives us the standardized codes for country and language.  
+
+# Searching the Public Library of Science: `rplos`
+
+PLOS ONE is an open-access journal. They allow access to an impressive range of search tools, and allow you to obtain the full text of their articles. Unlike `geonames`, `rplos` no longer requires an individual key to access the API.
+
+```{r eval=FALSE}
+install.packages("rplos")
+```
+
+```{r}
+library(rplos)
+```
+
+Let's do some searches:
+
+```{r}
+searchplos(q = "alcohol", fl = "id,title", limit = 10) %>%
+  kable()
+```
+
+## Relative frequency plot
+
+```{r}
+out <- plosword(list("alcohol", "heroin", "marijuana"),
+    vis = "TRUE")
+out$table
+out$plot
+```
+
+Here is a list of [options for the search](http://api.plos.org/solr/search-fields/).
+
+## Plots over time
+
+```{r}
+plot_throughtime(terms = c("alcohol", "heroin", "marijuana"), limit = 200)
+```
+
+# Scraping Twitter
+
+```{r eval=FALSE}
+install.packages("twitteR")
+```
+
+```{r}
+library(twitteR)
+```
+
+There are several packages for R (and Python) for accessing and searching Twitter. Twitter actually has two separate APIs:
+
+1. The *REST* API - this allows you programmatic access to read and write Twitter data. For research purposes, this allows you to search the recent history of tweets and look up specific users.
+1. The *Streaming* API - this allows you to access the public data flowing through Twitter in real-time. It requires your R or Python session to be running continuously, but allows you to capture a much larger sample of tweets while avoiding rate limits for the REST API.
+
+## Packages
+
+* [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html) is the most popular package for R, but it only allows you to access the REST API.
+* [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html) is more complicated, but allows you to query the Streaming API from R.
+* [`tweepy`](http://www.tweepy.org/) is a package for Python that allows you to access both the REST and Streaming APIs.
+
+Here, we are going to practice using the `twitteR` package to search Twitter.
+
+## OAuth authentication
+
+OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.
+
+1. The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (https://apps.twitter.com/app/new) and log in. After filling in the basic info (make sure to set the "Callback URL" to (http://127.0.0.1:1410)), go to the *Permissions* tab and select "Read, Write and Access direct messages". Make sure to click on the save button after doing this. In the *Details* tab, take note of your consumer key and consumer secret.
+1. Store your API key and token using the `.Rprofile` method. Edit `.Rprofile` and add
+
+    ```{r eval = FALSE}
+    options(twitter_api_key = "Your API key")
+    options(twitter_api_token = "Your API secret")
+    ```
+
+    Restart RStudio to get the keys loaded into your environment.
+1. Run from the console:
+
+    ```{r, eval = FALSE}
+    setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                        consumer_secret = getOption("twitter_api_token"))
+    ```
+    
+    This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.
+1. At this point you should get a message back in RStudio "Authentication complete." You're done setting up the authentication for `twitteR`.
+
+**You must do this in order to query Twitter from within a non-interactive session (i.e. an R Markdown document or using `source()` to run a script).** If you do not, you will get an error because R will not be able to finish the authentication process without your input.
+
+## Searching tweets
+
+```{r echo = FALSE}
+setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                    consumer_secret = getOption("twitter_api_token"))
+```
+
+```{r}
+tweets <- searchTwitter('#rstats', n = 5)
+tweets
+```
+
+## Searching users
+
+Use `getUser()` which returns a `user` object that you can perform additional functions on. This only works for users with public profiles or those that have authorized your app.
+
+```{r}
+clinton <- getUser("hillaryclinton")
+clinton$getDescription()
+clinton$getFriends(n = 5)
+```
+
+## Tidying tweets
+
+By default `twitteR` returns tweets in complex lists.
+
+```{r}
+str(tweets)
+```
+
+To get the data into a data frame, use
+
+```{r}
+df <- twListToDF(tweets) %>%
+  tbl_df()
+df
+```
+
+## Practice using `twitteR`
+
+1. Create a new R project on your computer. You can use Git for VCS or not - it is just for practice in class today
+1. Setup your API key with a Twitter app
+1. Authenticate using the `twitteR` package in R
+1. Find the 50 most recent tweets by Donald Trump and store them in a data frame
+    * `userTimeline()` can be used to retrieve tweets from individual users
+    * `searchTwitter()` finds tweets from any public account that references the username
+
+### Solution
+
+```{r}
+setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                    consumer_secret = getOption("twitter_api_token"))
+
+trump <- userTimeline("realDonaldTrump", n = 50)
+
+trump_df <- twListToDF(trump) %>%
+  tbl_df()
+trump_df
+```
+
+### Acknowledgments {.toc-ignore}
+
+```{r child='_ack_stat545.Rmd'}
+```
