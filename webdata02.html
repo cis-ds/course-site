@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Getting data from the web: scraping</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Getting data from the web: scraping</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(knitr)
+<span class="kw">library</span>(curl)
+<span class="kw">library</span>(jsonlite)
+<span class="kw">library</span>(XML)
+<span class="kw">library</span>(httr)
+<span class="kw">library</span>(rvest)
+<span class="kw">library</span>(ggmap)</code></pre></div>
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Identify methods for writing functions to interact with APIs</li>
+<li>Define JSON and XML data structure and how to convert them to data frames</li>
+<li>Define CSS selectors and practice writing selectors to extract information from web pages</li>
+<li>Write a script to extract data on wineries in Ithaca, NY using <code>rvest</code> and the Selector Gadget</li>
+</ul>
+</div>
+<div id="interacting-with-an-api" class="section level1">
+<h1>Interacting with an API</h1>
+<p>On Monday we experimented with several packages that “wrapped” APIs. That is, they handled the creation of the request and the formatting of the output. Today we’re going to look at (part of) what these functions were doing.</p>
+<p>First we’re going to examine the structure of API requests via the <a href="http://www.omdbapi.com/">Open Movie Database</a>. OMDb is very similar to IMDB, except it has a nice, simple API. We can go to the website, input some search parameters, and obtain both the XML query and the response from it.</p>
+<div id="exercise---determine-the-shape-of-an-api-request" class="section level2">
+<h2>Exercise - determine the shape of an API request</h2>
+<p>You can play around with the parameters on the OMDB website, and look at the resulting API call and the query you get back:</p>
+<div class="figure">
+<img src="images/ombd.png" />
+
+</div>
+<p>Let’s experiment with different values of the <code>title</code> and <code>year</code> fields. Notice the pattern in the request. For example for Title = Interstellar and Year = 2014, we get:</p>
+<pre class="http"><code>http://www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml</code></pre>
+<p>Try pasting this link into the browser. Also experiment with <code>json</code> and <code>xml</code></p>
+<p>How can we create this request in R?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="st">&quot;http://www.omdbapi.com/?t=&quot;</span>, <span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;y=&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;plot=&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;r=&quot;</span>, <span class="st">&quot;xml&quot;</span>)
+request</code></pre></div>
+<pre><code>## [1] &quot;http://www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml&quot;</code></pre>
+<p>It works, but it’s a bit ungainly. Lets try to abstract that into a function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">omdb &lt;-<span class="st"> </span>function(Title, Year, Plot, Format){
+  baseurl &lt;-<span class="st"> &quot;http://www.omdbapi.com/?&quot;</span>
+  params &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;t=&quot;</span>, <span class="st">&quot;y=&quot;</span>, <span class="st">&quot;plot=&quot;</span>, <span class="st">&quot;r=&quot;</span>)
+  values &lt;-<span class="st"> </span><span class="kw">c</span>(Title, Year, Plot, Format)
+  param_values &lt;-<span class="st"> </span><span class="kw">map2_chr</span>(params, values, str_c)
+  args &lt;-<span class="st"> </span><span class="kw">str_c</span>(param_values, <span class="dt">collapse =</span> <span class="st">&quot;&amp;&quot;</span>)
+  <span class="kw">str_c</span>(baseurl, args)
+}
+
+<span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)</code></pre></div>
+<pre><code>## [1] &quot;http://www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml&quot;</code></pre>
+<p>Now we have a handy function that returns the API query. We can paste in the link, but we can also obtain data from within R:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request_interstellar &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)
+con &lt;-<span class="st"> </span><span class="kw">curl</span>(request_interstellar)
+answer_xml &lt;-<span class="st"> </span><span class="kw">readLines</span>(con)</code></pre></div>
+<pre><code>## Warning in readLines(con): incomplete final line found on &#39;http://
+## www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml&#39;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">close</span>(con)
+answer_xml</code></pre></div>
+<pre><code>## [1] &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;&lt;root response=\&quot;True\&quot;&gt;&lt;movie title=\&quot;Interstellar\&quot; year=\&quot;2014\&quot; rated=\&quot;PG-13\&quot; released=\&quot;07 Nov 2014\&quot; runtime=\&quot;169 min\&quot; genre=\&quot;Adventure, Drama, Sci-Fi\&quot; director=\&quot;Christopher Nolan\&quot; writer=\&quot;Jonathan Nolan, Christopher Nolan\&quot; actors=\&quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow\&quot; plot=\&quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.\&quot; language=\&quot;English\&quot; country=\&quot;USA, UK\&quot; awards=\&quot;Won 1 Oscar. Another 39 wins &amp;amp; 134 nominations.\&quot; poster=\&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg\&quot; metascore=\&quot;74\&quot; imdbRating=\&quot;8.6\&quot; imdbVotes=\&quot;950,670\&quot; imdbID=\&quot;tt0816692\&quot; type=\&quot;movie\&quot;/&gt;&lt;/root&gt;&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request_interstellar &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;json&quot;</span>)
+con &lt;-<span class="st"> </span><span class="kw">curl</span>(request_interstellar)
+answer_json &lt;-<span class="st"> </span><span class="kw">readLines</span>(con)
+<span class="kw">close</span>(con)
+answer_json %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">prettify</span>()</code></pre></div>
+<pre><code>## {
+##     &quot;Title&quot;: &quot;Interstellar&quot;,
+##     &quot;Year&quot;: &quot;2014&quot;,
+##     &quot;Rated&quot;: &quot;PG-13&quot;,
+##     &quot;Released&quot;: &quot;07 Nov 2014&quot;,
+##     &quot;Runtime&quot;: &quot;169 min&quot;,
+##     &quot;Genre&quot;: &quot;Adventure, Drama, Sci-Fi&quot;,
+##     &quot;Director&quot;: &quot;Christopher Nolan&quot;,
+##     &quot;Writer&quot;: &quot;Jonathan Nolan, Christopher Nolan&quot;,
+##     &quot;Actors&quot;: &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot;,
+##     &quot;Plot&quot;: &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot;,
+##     &quot;Language&quot;: &quot;English&quot;,
+##     &quot;Country&quot;: &quot;USA, UK&quot;,
+##     &quot;Awards&quot;: &quot;Won 1 Oscar. Another 39 wins &amp; 134 nominations.&quot;,
+##     &quot;Poster&quot;: &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot;,
+##     &quot;Metascore&quot;: &quot;74&quot;,
+##     &quot;imdbRating&quot;: &quot;8.6&quot;,
+##     &quot;imdbVotes&quot;: &quot;950,670&quot;,
+##     &quot;imdbID&quot;: &quot;tt0816692&quot;,
+##     &quot;Type&quot;: &quot;movie&quot;,
+##     &quot;Response&quot;: &quot;True&quot;
+## }
+## </code></pre>
+<p>We have a form of data that is obviously structured. What is it?</p>
+</div>
+</div>
+<div id="intro-to-json-and-xml" class="section level1">
+<h1>Intro to JSON and XML</h1>
+<p>These are the two common languages of web services: <strong>J</strong>ava<strong>S</strong>cript <strong>O</strong>bject <strong>N</strong>otation and e<strong>X</strong>tensible <strong>M</strong>arkup <strong>L</strong>anguage.</p>
+<p>Here’s an example of JSON: from <a href="https://zapier.com/learn/apis/chapter-3-data-formats/">this wonderful site</a></p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript"><span class="op">{</span>
+  <span class="st">&quot;crust&quot;</span><span class="op">:</span> <span class="st">&quot;original&quot;</span><span class="op">,</span>
+  <span class="st">&quot;toppings&quot;</span><span class="op">:</span> [<span class="st">&quot;cheese&quot;</span><span class="op">,</span> <span class="st">&quot;pepperoni&quot;</span><span class="op">,</span> <span class="st">&quot;garlic&quot;</span>]<span class="op">,</span>
+  <span class="st">&quot;status&quot;</span><span class="op">:</span> <span class="st">&quot;cooking&quot;</span><span class="op">,</span>
+  <span class="st">&quot;customer&quot;</span><span class="op">:</span> <span class="op">{</span>
+    <span class="st">&quot;name&quot;</span><span class="op">:</span> <span class="st">&quot;Brian&quot;</span><span class="op">,</span>
+    <span class="st">&quot;phone&quot;</span><span class="op">:</span> <span class="st">&quot;573-111-1111&quot;</span>
+  <span class="op">}</span>
+<span class="op">}</span></code></pre></div>
+<p>And here is XML:</p>
+<div class="sourceCode"><pre class="sourceCode xml"><code class="sourceCode xml"><span class="kw">&lt;order&gt;</span>
+    <span class="kw">&lt;crust&gt;</span>original<span class="kw">&lt;/crust&gt;</span>
+    <span class="kw">&lt;toppings&gt;</span>
+        <span class="kw">&lt;topping&gt;</span>cheese<span class="kw">&lt;/topping&gt;</span>
+        <span class="kw">&lt;topping&gt;</span>pepperoni<span class="kw">&lt;/topping&gt;</span>
+        <span class="kw">&lt;topping&gt;</span>garlic<span class="kw">&lt;/topping&gt;</span>
+    <span class="kw">&lt;/toppings&gt;</span>
+    <span class="kw">&lt;status&gt;</span>cooking<span class="kw">&lt;/status&gt;</span>
+<span class="kw">&lt;/order&gt;</span></code></pre></div>
+<p>You can see that both of these data structures are quite easy to read. They are “self-describing”. In other words, they tell you how they are meant to be read.</p>
+<p>There are easy means of taking these data types and creating R objects. Our JSON response above can be parsed using <code>jsonlite::fromJSON()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">answer_json %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">fromJSON</span>()</code></pre></div>
+<pre><code>## $Title
+## [1] &quot;Interstellar&quot;
+## 
+## $Year
+## [1] &quot;2014&quot;
+## 
+## $Rated
+## [1] &quot;PG-13&quot;
+## 
+## $Released
+## [1] &quot;07 Nov 2014&quot;
+## 
+## $Runtime
+## [1] &quot;169 min&quot;
+## 
+## $Genre
+## [1] &quot;Adventure, Drama, Sci-Fi&quot;
+## 
+## $Director
+## [1] &quot;Christopher Nolan&quot;
+## 
+## $Writer
+## [1] &quot;Jonathan Nolan, Christopher Nolan&quot;
+## 
+## $Actors
+## [1] &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot;
+## 
+## $Plot
+## [1] &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot;
+## 
+## $Language
+## [1] &quot;English&quot;
+## 
+## $Country
+## [1] &quot;USA, UK&quot;
+## 
+## $Awards
+## [1] &quot;Won 1 Oscar. Another 39 wins &amp; 134 nominations.&quot;
+## 
+## $Poster
+## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot;
+## 
+## $Metascore
+## [1] &quot;74&quot;
+## 
+## $imdbRating
+## [1] &quot;8.6&quot;
+## 
+## $imdbVotes
+## [1] &quot;950,670&quot;
+## 
+## $imdbID
+## [1] &quot;tt0816692&quot;
+## 
+## $Type
+## [1] &quot;movie&quot;
+## 
+## $Response
+## [1] &quot;True&quot;</code></pre>
+<p>The output is a named list! A familiar and friendly R structure. Because data frames are lists, and because this list has no nested lists-within-lists, we can coerce it very simply:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">answer_json %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">fromJSON</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">kable</span>()</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Title</th>
+<th align="left">Year</th>
+<th align="left">Rated</th>
+<th align="left">Released</th>
+<th align="left">Runtime</th>
+<th align="left">Genre</th>
+<th align="left">Director</th>
+<th align="left">Writer</th>
+<th align="left">Actors</th>
+<th align="left">Plot</th>
+<th align="left">Language</th>
+<th align="left">Country</th>
+<th align="left">Awards</th>
+<th align="left">Poster</th>
+<th align="left">Metascore</th>
+<th align="left">imdbRating</th>
+<th align="left">imdbVotes</th>
+<th align="left">imdbID</th>
+<th align="left">Type</th>
+<th align="left">Response</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Interstellar</td>
+<td align="left">2014</td>
+<td align="left">PG-13</td>
+<td align="left">07 Nov 2014</td>
+<td align="left">169 min</td>
+<td align="left">Adventure, Drama, Sci-Fi</td>
+<td align="left">Christopher Nolan</td>
+<td align="left">Jonathan Nolan, Christopher Nolan</td>
+<td align="left">Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow</td>
+<td align="left">A team of explorers travel through a wormhole in space in an attempt to ensure humanity’s survival.</td>
+<td align="left">English</td>
+<td align="left">USA, UK</td>
+<td align="left">Won 1 Oscar. Another 39 wins &amp; 134 nominations.</td>
+<td align="left"><a href="https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg" class="uri">https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg</a></td>
+<td align="left">74</td>
+<td align="left">8.6</td>
+<td align="left">950,670</td>
+<td align="left">tt0816692</td>
+<td align="left">movie</td>
+<td align="left">True</td>
+</tr>
+</tbody>
+</table>
+<p>A similar process exists for XML formats:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_parsed &lt;-<span class="st"> </span><span class="kw">xmlParse</span>(answer_xml)
+ans_xml_parsed</code></pre></div>
+<pre><code>## &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+## &lt;root response=&quot;True&quot;&gt;
+##   &lt;movie title=&quot;Interstellar&quot; year=&quot;2014&quot; rated=&quot;PG-13&quot; released=&quot;07 Nov 2014&quot; runtime=&quot;169 min&quot; genre=&quot;Adventure, Drama, Sci-Fi&quot; director=&quot;Christopher Nolan&quot; writer=&quot;Jonathan Nolan, Christopher Nolan&quot; actors=&quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot; plot=&quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot; language=&quot;English&quot; country=&quot;USA, UK&quot; awards=&quot;Won 1 Oscar. Another 39 wins &amp;amp; 134 nominations.&quot; poster=&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot; metascore=&quot;74&quot; imdbRating=&quot;8.6&quot; imdbVotes=&quot;950,670&quot; imdbID=&quot;tt0816692&quot; type=&quot;movie&quot;/&gt;
+## &lt;/root&gt;
+## </code></pre>
+<p>Not exactly the response we were hoping for! This shows us some of the XML document’s structure:</p>
+<ul>
+<li>a <code>&lt;root&gt;</code> node with a single child, <code>&lt;movie&gt;</code>.</li>
+<li>the information we want is all stored as attributes</li>
+</ul>
+<p>From <a href="http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7900-0">Nolan and Lang 2014</a>:</p>
+<blockquote>
+<p>The <code>xmlRoot()</code> function returns an object of class <code>XMLInternalElementNode</code>. This is a regular XML node and not specific to the root node, i.e., all XML nodes will appear in R with this class or a more specific class. An object of class XMLInternalElementNode has four fields: name, attributes, children and value, which we access with the methods xmlName(), xmlAttrs(), xmlChildren(), and xmlValue()</p>
+</blockquote>
+<table>
+<thead>
+<tr class="header">
+<th align="center">field</th>
+<th align="center">method</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center">name</td>
+<td align="center"><code>xmlName()</code></td>
+</tr>
+<tr class="even">
+<td align="center">attributes</td>
+<td align="center"><code>xmlAttrs()</code></td>
+</tr>
+<tr class="odd">
+<td align="center">children</td>
+<td align="center"><code>xmlChildren()</code></td>
+</tr>
+<tr class="even">
+<td align="center">value</td>
+<td align="center"><code>xmlValue()</code></td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_parsed_root &lt;-<span class="st"> </span><span class="kw">xmlRoot</span>(ans_xml_parsed)[[<span class="st">&quot;movie&quot;</span>]]  <span class="co"># could also use [[1]]</span>
+ans_xml_parsed_root</code></pre></div>
+<pre><code>## &lt;movie title=&quot;Interstellar&quot; year=&quot;2014&quot; rated=&quot;PG-13&quot; released=&quot;07 Nov 2014&quot; runtime=&quot;169 min&quot; genre=&quot;Adventure, Drama, Sci-Fi&quot; director=&quot;Christopher Nolan&quot; writer=&quot;Jonathan Nolan, Christopher Nolan&quot; actors=&quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot; plot=&quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot; language=&quot;English&quot; country=&quot;USA, UK&quot; awards=&quot;Won 1 Oscar. Another 39 wins &amp;amp; 134 nominations.&quot; poster=&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot; metascore=&quot;74&quot; imdbRating=&quot;8.6&quot; imdbVotes=&quot;950,670&quot; imdbID=&quot;tt0816692&quot; type=&quot;movie&quot;/&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_attrs &lt;-<span class="st"> </span><span class="kw">xmlAttrs</span>(ans_xml_parsed_root)
+ans_xml_attrs</code></pre></div>
+<pre><code>##                                                                                                             title 
+##                                                                                                    &quot;Interstellar&quot; 
+##                                                                                                              year 
+##                                                                                                            &quot;2014&quot; 
+##                                                                                                             rated 
+##                                                                                                           &quot;PG-13&quot; 
+##                                                                                                          released 
+##                                                                                                     &quot;07 Nov 2014&quot; 
+##                                                                                                           runtime 
+##                                                                                                         &quot;169 min&quot; 
+##                                                                                                             genre 
+##                                                                                        &quot;Adventure, Drama, Sci-Fi&quot; 
+##                                                                                                          director 
+##                                                                                               &quot;Christopher Nolan&quot; 
+##                                                                                                            writer 
+##                                                                               &quot;Jonathan Nolan, Christopher Nolan&quot; 
+##                                                                                                            actors 
+##                                                 &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot; 
+##                                                                                                              plot 
+##             &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot; 
+##                                                                                                          language 
+##                                                                                                         &quot;English&quot; 
+##                                                                                                           country 
+##                                                                                                         &quot;USA, UK&quot; 
+##                                                                                                            awards 
+##                                                                 &quot;Won 1 Oscar. Another 39 wins &amp; 134 nominations.&quot; 
+##                                                                                                            poster 
+## &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot; 
+##                                                                                                         metascore 
+##                                                                                                              &quot;74&quot; 
+##                                                                                                        imdbRating 
+##                                                                                                             &quot;8.6&quot; 
+##                                                                                                         imdbVotes 
+##                                                                                                         &quot;950,670&quot; 
+##                                                                                                            imdbID 
+##                                                                                                       &quot;tt0816692&quot; 
+##                                                                                                              type 
+##                                                                                                           &quot;movie&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_attrs %&gt;%
+<span class="st">  </span><span class="kw">t</span>() %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%
+<span class="st">  </span><span class="kw">kable</span>()</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">title</th>
+<th align="left">year</th>
+<th align="left">rated</th>
+<th align="left">released</th>
+<th align="left">runtime</th>
+<th align="left">genre</th>
+<th align="left">director</th>
+<th align="left">writer</th>
+<th align="left">actors</th>
+<th align="left">plot</th>
+<th align="left">language</th>
+<th align="left">country</th>
+<th align="left">awards</th>
+<th align="left">poster</th>
+<th align="left">metascore</th>
+<th align="left">imdbRating</th>
+<th align="left">imdbVotes</th>
+<th align="left">imdbID</th>
+<th align="left">type</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Interstellar</td>
+<td align="left">2014</td>
+<td align="left">PG-13</td>
+<td align="left">07 Nov 2014</td>
+<td align="left">169 min</td>
+<td align="left">Adventure, Drama, Sci-Fi</td>
+<td align="left">Christopher Nolan</td>
+<td align="left">Jonathan Nolan, Christopher Nolan</td>
+<td align="left">Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow</td>
+<td align="left">A team of explorers travel through a wormhole in space in an attempt to ensure humanity’s survival.</td>
+<td align="left">English</td>
+<td align="left">USA, UK</td>
+<td align="left">Won 1 Oscar. Another 39 wins &amp; 134 nominations.</td>
+<td align="left"><a href="https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg" class="uri">https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg</a></td>
+<td align="left">74</td>
+<td align="left">8.6</td>
+<td align="left">950,670</td>
+<td align="left">tt0816692</td>
+<td align="left">movie</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="introducing-the-easy-way-httr" class="section level1">
+<h1>Introducing the easy way: <code>httr</code></h1>
+<p><code>httr</code> is yet another star in the hadleyverse, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, which are:<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<ul>
+<li><strong>GET</strong>: fetch an existing resource. The URL contains all the necessary information the server needs to locate and return the resource.</li>
+<li><strong>POST</strong>: create a new resource. POST requests usually carry a payload that specifies the data for the new resource.</li>
+<li><strong>PUT</strong>: update an existing resource. The payload may contain the updated data for the resource.</li>
+<li><strong>DELETE</strong>: delete an existing resource.</li>
+</ul>
+<p>HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there. An excellent beginning resource for APIs (including HTTP basics) is <a href="https://zapier.com/learn/apis/">this simple guide</a></p>
+<p><code>httr</code> also facilitates a variety of <strong>authentication</strong> protocols.</p>
+<p><code>httr</code> contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. <code>GET()</code>, <code>POST()</code>).They have more informative outputs than simply using <code>curl</code>, and come with some nice convenience functions for working with the output:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">interstellar_json &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;json&quot;</span>)
+response_json &lt;-<span class="st"> </span><span class="kw">GET</span>(interstellar_json)
+<span class="kw">content</span>(response_json, <span class="dt">as =</span> <span class="st">&quot;parsed&quot;</span>, <span class="dt">type =</span> <span class="st">&quot;application/json&quot;</span>)</code></pre></div>
+<pre><code>## $Title
+## [1] &quot;Interstellar&quot;
+## 
+## $Year
+## [1] &quot;2014&quot;
+## 
+## $Rated
+## [1] &quot;PG-13&quot;
+## 
+## $Released
+## [1] &quot;07 Nov 2014&quot;
+## 
+## $Runtime
+## [1] &quot;169 min&quot;
+## 
+## $Genre
+## [1] &quot;Adventure, Drama, Sci-Fi&quot;
+## 
+## $Director
+## [1] &quot;Christopher Nolan&quot;
+## 
+## $Writer
+## [1] &quot;Jonathan Nolan, Christopher Nolan&quot;
+## 
+## $Actors
+## [1] &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot;
+## 
+## $Plot
+## [1] &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot;
+## 
+## $Language
+## [1] &quot;English&quot;
+## 
+## $Country
+## [1] &quot;USA, UK&quot;
+## 
+## $Awards
+## [1] &quot;Won 1 Oscar. Another 39 wins &amp; 134 nominations.&quot;
+## 
+## $Poster
+## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot;
+## 
+## $Metascore
+## [1] &quot;74&quot;
+## 
+## $imdbRating
+## [1] &quot;8.6&quot;
+## 
+## $imdbVotes
+## [1] &quot;950,670&quot;
+## 
+## $imdbID
+## [1] &quot;tt0816692&quot;
+## 
+## $Type
+## [1] &quot;movie&quot;
+## 
+## $Response
+## [1] &quot;True&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">interstellar_xml &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)
+response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstellar_xml)
+<span class="kw">content</span>(response_xml, <span class="dt">as =</span> <span class="st">&quot;parsed&quot;</span>)</code></pre></div>
+<pre><code>## {xml_document}
+## &lt;root response=&quot;True&quot;&gt;
+## [1] &lt;movie title=&quot;Interstellar&quot; year=&quot;2014&quot; rated=&quot;PG-13&quot; released=&quot;07 N ...</code></pre>
+<p>In addition, <code>httr</code> gives us access to lots of useful information about the quality of our response. For example, the header:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">headers</span>(response_xml)</code></pre></div>
+<pre><code>## $date
+## [1] &quot;Wed, 02 Nov 2016 16:13:48 GMT&quot;
+## 
+## $`content-type`
+## [1] &quot;text/xml; charset=utf-8&quot;
+## 
+## $`transfer-encoding`
+## [1] &quot;chunked&quot;
+## 
+## $connection
+## [1] &quot;keep-alive&quot;
+## 
+## $`cache-control`
+## [1] &quot;public, max-age=86400&quot;
+## 
+## $expires
+## [1] &quot;Thu, 03 Nov 2016 16:13:48 GMT&quot;
+## 
+## $`last-modified`
+## [1] &quot;Tue, 01 Nov 2016 16:28:17 GMT&quot;
+## 
+## $vary
+## [1] &quot;Accept-Encoding&quot;
+## 
+## $`x-aspnet-version`
+## [1] &quot;4.0.30319&quot;
+## 
+## $`x-powered-by`
+## [1] &quot;ASP.NET&quot;
+## 
+## $`access-control-allow-origin`
+## [1] &quot;*&quot;
+## 
+## $`cf-cache-status`
+## [1] &quot;HIT&quot;
+## 
+## $server
+## [1] &quot;cloudflare-nginx&quot;
+## 
+## $`cf-ray`
+## [1] &quot;2fb8e037870f251f-ORD&quot;
+## 
+## $`content-encoding`
+## [1] &quot;gzip&quot;
+## 
+## attr(,&quot;class&quot;)
+## [1] &quot;insensitive&quot; &quot;list&quot;</code></pre>
+<p>And also a handy means to extract specifically the HTTP status code:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">status_code</span>(response_xml)</code></pre></div>
+<pre><code>## [1] 200</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th>Code<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1xx</td>
+<td>Informational</td>
+</tr>
+<tr class="even">
+<td>2xx</td>
+<td>Success</td>
+</tr>
+<tr class="odd">
+<td>3xx</td>
+<td>Redirection</td>
+</tr>
+<tr class="even">
+<td>4xx</td>
+<td>Client error (you did something wrong)</td>
+</tr>
+<tr class="odd">
+<td>5xx</td>
+<td>Server error (server did something wrong)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><a href="https://www.flickr.com/photos/girliemac/sets/72157628409467125">(Perhaps a more intuitive, cat-based explanation of error codes)</a></li>
+</ul>
+<p>In fact, we didn’t need to create <code>omdb()</code> at all! <code>httr</code> provides a straightforward means of making an http request:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">the_martian &lt;-<span class="st"> </span><span class="kw">GET</span>(<span class="st">&quot;http://www.omdbapi.com/?&quot;</span>, <span class="dt">query =</span> <span class="kw">list</span>(<span class="dt">t =</span> <span class="st">&quot;The Martian&quot;</span>, <span class="dt">y =</span> <span class="dv">2015</span>, <span class="dt">plot =</span> <span class="st">&quot;short&quot;</span>, <span class="dt">r =</span> <span class="st">&quot;json&quot;</span>))
+
+<span class="kw">content</span>(the_martian)</code></pre></div>
+<pre><code>## $Title
+## [1] &quot;The Martian&quot;
+## 
+## $Year
+## [1] &quot;2015&quot;
+## 
+## $Rated
+## [1] &quot;PG-13&quot;
+## 
+## $Released
+## [1] &quot;02 Oct 2015&quot;
+## 
+## $Runtime
+## [1] &quot;144 min&quot;
+## 
+## $Genre
+## [1] &quot;Adventure, Drama, Sci-Fi&quot;
+## 
+## $Director
+## [1] &quot;Ridley Scott&quot;
+## 
+## $Writer
+## [1] &quot;Drew Goddard (screenplay), Andy Weir (book)&quot;
+## 
+## $Actors
+## [1] &quot;Matt Damon, Jessica Chastain, Kristen Wiig, Jeff Daniels&quot;
+## 
+## $Plot
+## [1] &quot;An astronaut becomes stranded on Mars after his team assume him dead, and must rely on his ingenuity to find a way to signal to Earth that he is alive.&quot;
+## 
+## $Language
+## [1] &quot;English, Mandarin&quot;
+## 
+## $Country
+## [1] &quot;USA, UK&quot;
+## 
+## $Awards
+## [1] &quot;Nominated for 7 Oscars. Another 34 wins &amp; 171 nominations.&quot;
+## 
+## $Poster
+## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMTc2MTQ3MDA1Nl5BMl5BanBnXkFtZTgwODA3OTI4NjE@._V1_SX300.jpg&quot;
+## 
+## $Metascore
+## [1] &quot;80&quot;
+## 
+## $imdbRating
+## [1] &quot;8.0&quot;
+## 
+## $imdbVotes
+## [1] &quot;495,332&quot;
+## 
+## $imdbID
+## [1] &quot;tt3659388&quot;
+## 
+## $Type
+## [1] &quot;movie&quot;
+## 
+## $Response
+## [1] &quot;True&quot;</code></pre>
+<p>We get the same answer as before! With <code>httr</code>, we are able to pass in the named arguments to the API call as a named list. We are also able to use spaces in movie names - <code>httr</code> encodes these in the URL before making the GET request.</p>
+<p>The documentation for <code>httr</code> includes two useful vignettes:</p>
+<ul>
+<li><a href="https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html"><code>httr</code> quickstart guide</a> - summarizes all the basic <code>httr</code> functions like above</li>
+<li><a href="https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html">Best practices for writing an API package</a> - document outlining the key issues involved in writing API wrappers in R</li>
+</ul>
+</div>
+<div id="scraping" class="section level1">
+<h1>Scraping</h1>
+<p>What if data is present on a website, but isn’t provided in an API at all? It is possible to grab that information too. How easy that is to do depends a lot on the quality of the website that we are using.</p>
+<p>HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, <a href="http://www.w3.org/TR/html5/the-xhtml-syntax.html">which is also valid XML</a>)</p>
+<div class="figure">
+<img src="http://imgs.xkcd.com/comics/tags.png" alt="tags" />
+<p class="caption"><a href="https://xkcd.com/1144/">tags</a></p>
+</div>
+<div id="install-your-equipment" class="section level2">
+<h2>Install your equipment</h2>
+<ul>
+<li><code>rvest</code> - <code>devtools::install_github(&quot;hadley/rvest&quot;)</code></li>
+<li>SelectorGadget - <a href="http://selectorgadget.com/">Install in your browser</a></li>
+</ul>
+</div>
+<div id="practice-css-selectors" class="section level2">
+<h2>Practice CSS selectors</h2>
+<p>Before we go any further, <a href="http://flukeout.github.io">let’s play a game together!</a></p>
+</div>
+<div id="obtain-a-table" class="section level2">
+<h2>Obtain a table</h2>
+<p>Let’s make a simple HTML table and then parse it!</p>
+<ul>
+<li>make a new, empty project</li>
+<li>make a totally empty .Rmd file called <code>&quot;GapminderHead.Rmd&quot;</code></li>
+<li>copy this into the body:</li>
+</ul>
+<pre><code>---
+output: html_document
+---
+
+```{r echo=FALSE, results='asis'} #delete this comment
+library(gapminder)
+knitr::kable(head(gapminder))
+```</code></pre>
+<p><strong>remember to delete the comment</strong></p>
+<p>Then knit the document and click “View in Browser”. It should look like this:</p>
+<div class="figure">
+<img src="webdata-supp/gapminderhead.png" alt="gm" />
+<p class="caption">gm</p>
+</div>
+<p>We have created a simple html table with the head of gapminder in it! We can get our data back by parsing this table into a dataframe again. Extracting data from html is called “scraping”, and it is done with the R package <code>rvest</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">read_html</span>(<span class="st">&quot;GapminderHead.html&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">html_table</span>()</code></pre></div>
+<pre><code>## [[1]]
+##       country continent year lifeExp      pop gdpPercap
+## 1 Afghanistan      Asia 1952  28.801  8425333  779.4453
+## 2 Afghanistan      Asia 1957  30.332  9240934  820.8530
+## 3 Afghanistan      Asia 1962  31.997 10267083  853.1007
+## 4 Afghanistan      Asia 1967  34.020 11537966  836.1971
+## 5 Afghanistan      Asia 1972  36.088 13079460  739.9811
+## 6 Afghanistan      Asia 1977  38.438 14880372  786.1134</code></pre>
+</div>
+<div id="scraping-via-css-selectors" class="section level2">
+<h2>Scraping via CSS selectors</h2>
+<p>Let’s practice scraping websites using our newfound abilities! Here is a <a href="http://www.visitithaca.com/attractions/wineries.html">list of wineries in Ithaca, NY</a>.</p>
+<div id="extract-names" class="section level3">
+<h3>Extract names</h3>
+<p>First let’s download and store the HTML content.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wineries &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.visitithaca.com/attractions/wineries.html&quot;</span>)</code></pre></div>
+<p>Now let’s extract the names and store them. To pick out the names, scroll down to the list of wineries and use the Selector Gadget to click on one of the winery names on the main page. Once you only have the winer names selected, you should see that the names are embedded in hyperlink tags (<code>&lt;a href...</code>) and it has a class of <code>indSearchListingTitle</code>. We can use <code>html_nodes</code> to extract this information and <code>html_text</code> to remove the extraneous HTML tags.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fnames &lt;-<span class="st"> </span>wineries %&gt;%
+<span class="st">  </span><span class="kw">html_nodes</span>(<span class="st">&quot;.indSearchListingTitle a&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">html_text</span>()
+<span class="kw">head</span>(fnames)</code></pre></div>
+<pre><code>## [1] &quot;Treleaven by King Ferry Winery&quot;          
+## [2] &quot;Izzo White Barn Winery&quot;                  
+## [3] &quot;Knapp Winery &amp; Vineyard Restaurant&quot;      
+## [4] &quot;Dills Run Winery&quot;                        
+## [5] &quot;Long Point Winery&quot;                       
+## [6] &quot;Frontenac Point Vineyard &amp; Estate Winery&quot;</code></pre>
+</div>
+<div id="extract-addresses" class="section level3">
+<h3>Extract addresses</h3>
+<p>The address is trickier. Using the select tool you’ll see that the details are stored in the <code>indMetaInfoWrapper</code> class, but also includes things like phone numbers. We just want the addresses, so use the Selector Gadget to only include addresses.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">faddress &lt;-<span class="st"> </span>wineries %&gt;%
+<span class="st">  </span><span class="kw">html_nodes</span>(<span class="st">&quot;.indMetaWrapper:nth-child(1) .indMetaInfoWrapper&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">html_text</span>()
+<span class="kw">head</span>(faddress)</code></pre></div>
+<pre><code>## [1] &quot;\n              658 Lake Rd., King Ferry, NY 13081\n              \n            &quot;              
+## [2] &quot;\n              6634 Cayuga Rd., Cayuga, NY 13034\n              \n            &quot;               
+## [3] &quot;\n              on the Cayuga Lake Wine Trail, Romulus, NY 14541\n              \n            &quot;
+## [4] &quot;\n              3862 State Route 90, Aurora, NY 13026\n              \n            &quot;           
+## [5] &quot;\n              on the Cayuga Lake Wine Trail, Aurora, NY 13026\n              \n            &quot; 
+## [6] &quot;\n              9501 Rt. 89, Trumansburg, NY 14886\n              \n            &quot;</code></pre>
+<div id="clean-up-the-addresses" class="section level4">
+<h4>Clean up the addresses</h4>
+<p>The code on this website is a little inconsistent – sometimes the winery name is first and sometimes it’s preceded by something like “on the Cayuga Lake Wine Trail” so let’s do a little final cleanup.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">to_remove &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="kw">c</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>, <span class="st">&quot;^</span><span class="ch">\\</span><span class="st">s+|</span><span class="ch">\\</span><span class="st">s+$&quot;</span>, <span class="st">&quot;on the Cayuga Lake Wine Trail, &quot;</span>, <span class="st">&quot;Cayuga Lake Wine Trail, &quot;</span>, <span class="st">&quot;on the Cayuga Wine Trail, &quot;</span>,  <span class="st">&quot;on the Finger Lakes Beer Trail, &quot;</span>), <span class="dt">collapse=</span><span class="st">&quot;|&quot;</span>)
+
+faddress &lt;-<span class="st"> </span><span class="kw">str_replace_all</span>(faddress, to_remove, <span class="st">&quot;&quot;</span>)
+
+<span class="kw">head</span>(faddress)</code></pre></div>
+<pre><code>## [1] &quot;              658 Lake Rd., King Ferry, NY 13081&quot;   
+## [2] &quot;              6634 Cayuga Rd., Cayuga, NY 13034&quot;    
+## [3] &quot;              Romulus, NY 14541&quot;                    
+## [4] &quot;              3862 State Route 90, Aurora, NY 13026&quot;
+## [5] &quot;              Aurora, NY 13026&quot;                     
+## [6] &quot;              9501 Rt. 89, Trumansburg, NY 14886&quot;</code></pre>
+</div>
+</div>
+<div id="combine-with-an-api-to-geocode-the-addresses" class="section level3">
+<h3>Combine with an API to geocode the addresses</h3>
+<p>The package <code>ggmap</code> has a nice geocode function that we’ll use to extract coordinates.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">geocodes &lt;-<span class="st"> </span><span class="kw">geocode</span>(faddress, <span class="dt">output =</span> <span class="st">&quot;latlona&quot;</span>)
+
+<span class="kw">head</span>(geocodes)</code></pre></div>
+<pre><code>##         lon      lat                                address
+## 1 -76.63443 42.65034 658 lake rd, king ferry, ny 13081, usa
+## 2 -76.70580 42.94002  6634 cayuga rd, cayuga, ny 13034, usa
+## 3 -76.83404 42.75255                 romulus, ny 14541, usa
+## 4 -76.71379 42.78586      3862 ny-90, aurora, ny 13026, usa
+## 5 -76.70245 42.75396                  aurora, ny 13026, usa
+## 6 -76.64552 42.56580 9501 ny-89, trumansburg, ny 14886, usa</code></pre>
+</div>
+<div id="pull-it-all-together" class="section level3">
+<h3>Pull it all together</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">full &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">name =</span> fnames) %&gt;%
+<span class="st">  </span><span class="kw">bind_cols</span>(geocodes) %&gt;%
+<span class="st">  </span><span class="co"># is it a winery or cidery?</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">category =</span> <span class="kw">ifelse</span>(<span class="kw">str_detect</span>(name, <span class="st">&quot;Winery&quot;</span>), <span class="st">&quot;Winery&quot;</span>, <span class="st">&quot;Cidery&quot;</span>))
+
+<span class="kw">kable</span>(full)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="right">lon</th>
+<th align="right">lat</th>
+<th align="left">address</th>
+<th align="left">category</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Treleaven by King Ferry Winery</td>
+<td align="right">-76.63443</td>
+<td align="right">42.65034</td>
+<td align="left">658 lake rd, king ferry, ny 13081, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Izzo White Barn Winery</td>
+<td align="right">-76.70580</td>
+<td align="right">42.94002</td>
+<td align="left">6634 cayuga rd, cayuga, ny 13034, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="odd">
+<td align="left">Knapp Winery &amp; Vineyard Restaurant</td>
+<td align="right">-76.83404</td>
+<td align="right">42.75255</td>
+<td align="left">romulus, ny 14541, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Dills Run Winery</td>
+<td align="right">-76.71379</td>
+<td align="right">42.78586</td>
+<td align="left">3862 ny-90, aurora, ny 13026, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="odd">
+<td align="left">Long Point Winery</td>
+<td align="right">-76.70245</td>
+<td align="right">42.75396</td>
+<td align="left">aurora, ny 13026, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Frontenac Point Vineyard &amp; Estate Winery</td>
+<td align="right">-76.64552</td>
+<td align="right">42.56580</td>
+<td align="left">9501 ny-89, trumansburg, ny 14886, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="odd">
+<td align="left">Buttonwood Grove Winery</td>
+<td align="right">-76.83404</td>
+<td align="right">42.75255</td>
+<td align="left">romulus, ny 14541, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Hosmer Winery</td>
+<td align="right">-76.82301</td>
+<td align="right">42.67646</td>
+<td align="left">ovid, ny 14521, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="odd">
+<td align="left">Thirsty Owl Wine Company</td>
+<td align="right">-76.82301</td>
+<td align="right">42.67646</td>
+<td align="left">ovid, ny 14521, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="even">
+<td align="left">Montezuma Winery &amp; Hidden Marsh Distillery</td>
+<td align="right">-76.79662</td>
+<td align="right">42.91062</td>
+<td align="left">seneca falls, ny 13148, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="odd">
+<td align="left">Chateau Dusseau Winery</td>
+<td align="right">-76.46788</td>
+<td align="right">42.63096</td>
+<td align="left">locke, ny 13092, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Americana Vineyards &amp; Crystal Lake Cafe</td>
+<td align="right">-76.67485</td>
+<td align="right">42.57722</td>
+<td align="left">4367 e covert rd, interlaken, ny 14847, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="odd">
+<td align="left">Varick Winery &amp; Vineyard</td>
+<td align="right">-76.83404</td>
+<td align="right">42.75255</td>
+<td align="left">romulus, ny 14541, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Swedish Hill Vineyard</td>
+<td align="right">-76.83404</td>
+<td align="right">42.75255</td>
+<td align="left">romulus, ny 14541, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="odd">
+<td align="left">Heart and Hands Winery</td>
+<td align="right">-76.70822</td>
+<td align="right">42.79736</td>
+<td align="left">ny-90, new york, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Ports of New York</td>
+<td align="right">-76.51510</td>
+<td align="right">42.43866</td>
+<td align="left">815 taber st, ithaca, ny 14850, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="odd">
+<td align="left">Bellwether Hard Cider / Bellwether Wine Cellars</td>
+<td align="right">-76.66606</td>
+<td align="right">42.54229</td>
+<td align="left">trumansburg, ny 14886, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="even">
+<td align="left">Finger Lakes Cider House</td>
+<td align="right">-76.70140</td>
+<td align="right">42.60650</td>
+<td align="left">4017 hickok rd, interlaken, ny 14847, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="odd">
+<td align="left">Eleven Lakes Winery</td>
+<td align="right">-76.74878</td>
+<td align="right">42.85320</td>
+<td align="left">3550 ny-89, seneca falls, ny 13148, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Goose Watch Winery</td>
+<td align="right">-76.83404</td>
+<td align="right">42.75255</td>
+<td align="left">romulus, ny 14541, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="odd">
+<td align="left">Cayuga Lake Wine Trail</td>
+<td align="right">-83.30791</td>
+<td align="right">42.19938</td>
+<td align="left">13065 new york st, romulus, mi 48174, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="even">
+<td align="left">Sheldrake Point Vineyard</td>
+<td align="right">-76.82301</td>
+<td align="right">42.67646</td>
+<td align="left">ovid, ny 14521, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="odd">
+<td align="left">Cayuga Ridge Estates Winery</td>
+<td align="right">-76.82301</td>
+<td align="right">42.67646</td>
+<td align="left">ovid, ny 14521, usa</td>
+<td align="left">Winery</td>
+</tr>
+<tr class="even">
+<td align="left">Six Mile Creek Vineyards</td>
+<td align="right">-76.50188</td>
+<td align="right">42.44396</td>
+<td align="left">ithaca, ny, usa</td>
+<td align="left">Cidery</td>
+</tr>
+<tr class="odd">
+<td align="left">Lucas Vineyards</td>
+<td align="right">-76.71015</td>
+<td align="right">42.62787</td>
+<td align="left">3862 county rd 150, interlaken, ny 14847, usa</td>
+<td align="left">Cidery</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div id="random-observations-on-scraping" class="section level1">
+<h1>Random observations on scraping</h1>
+<ul>
+<li>Make sure you’ve obtained ONLY what you want! Scroll over the whole page to ensure that selectorgadget hasn’t found too many things</li>
+<li>If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking (i.e. being more precise)</li>
+<li><strong>MOST IMPORTANT</strong> - confirm that there is NO RopenSci package and NO API before you spend hours scraping when the API was right here</li>
+</ul>
+<div id="acknowledgments" class="section level3 toc-ignore">
+<h3>Acknowledgments</h3>
+<ul>
+<li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+<li>This page is derived in part from <a href="http://zevross.com/blog/2015/05/19/scrape-website-data-with-the-new-r-package-rvest/">“Scrape website data with the new R package <code>rvest</code> (+ a postscript on interacting with web pages with <code>RSelenium</code>)”</a>.</li>
+</ul>
+</div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="http://www.jmarshall.com/easy/http/">Source: HTTP made really easy</a><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://www.restapitutorial.com/httpstatuscodes.html">HTTP Status Codes</a><a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

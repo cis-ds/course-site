@@ -1,0 +1,371 @@
+---
+title: "Getting data from the web: scraping"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(stringr)
+library(knitr)
+library(curl)
+library(jsonlite)
+library(XML)
+library(httr)
+library(rvest)
+library(ggmap)
+```
+
+# Objectives
+
+* Identify methods for writing functions to interact with APIs
+* Define JSON and XML data structure and how to convert them to data frames
+* Define CSS selectors and practice writing selectors to extract information from web pages
+* Write a script to extract data on wineries in Ithaca, NY using `rvest` and the Selector Gadget
+
+# Interacting with an API
+
+On Monday we experimented with several packages that "wrapped" APIs. That is, they handled the creation of the request and the formatting of the output. Today we're going to look at (part of) what these functions were doing.
+
+First we're going to examine the structure of API requests via the [Open Movie Database](http://www.omdbapi.com/). OMDb is very similar to IMDB, except it has a nice, simple API. We can go to the website, input some search parameters, and obtain both the XML query and the response from it. 
+
+## Exercise - determine the shape of an API request
+
+You can play around with the parameters on the OMDB website, and look at the resulting API call and the query you get back:
+
+![](images/ombd.png)
+
+Let's experiment with different values of the `title` and `year` fields. Notice the pattern in the request. For example for Title = Interstellar and Year = 2014, we get:
+
+``` http
+http://www.omdbapi.com/?t=Interstellar&y=2014&plot=short&r=xml
+```
+
+Try pasting this link into the browser. Also experiment with `json` and `xml`
+
+How can we create this request in R?
+
+```{r}
+request <- str_c("http://www.omdbapi.com/?t=", "Interstellar", "&", "y=", "2014", "&", "plot=", "short", "&", "r=", "xml")
+request
+```
+
+It works, but it's a bit ungainly. Lets try to abstract that into a function:
+
+```{r}
+omdb <- function(Title, Year, Plot, Format){
+  baseurl <- "http://www.omdbapi.com/?"
+  params <- c("t=", "y=", "plot=", "r=")
+  values <- c(Title, Year, Plot, Format)
+  param_values <- map2_chr(params, values, str_c)
+  args <- str_c(param_values, collapse = "&")
+  str_c(baseurl, args)
+}
+
+omdb("Interstellar", "2014", "short", "xml")
+```
+
+Now we have a handy function that returns the API query. We can paste in the link, but we can also obtain data from within R:
+
+```{r}
+request_interstellar <- omdb("Interstellar", "2014", "short", "xml")
+con <- curl(request_interstellar)
+answer_xml <- readLines(con)
+close(con)
+answer_xml
+```
+
+```{r warning = FALSE}
+request_interstellar <- omdb("Interstellar", "2014", "short", "json")
+con <- curl(request_interstellar)
+answer_json <- readLines(con)
+close(con)
+answer_json %>% 
+  prettify()
+```
+
+We have a form of data that is obviously structured. What is it?
+
+# Intro to JSON and XML
+
+These are the two common languages of web services: **J**ava**S**cript **O**bject **N**otation and e**X**tensible **M**arkup **L**anguage. 
+
+Here's an example of JSON: from [this wonderful site](https://zapier.com/learn/apis/chapter-3-data-formats/)
+
+```javascript
+{
+  "crust": "original",
+  "toppings": ["cheese", "pepperoni", "garlic"],
+  "status": "cooking",
+  "customer": {
+    "name": "Brian",
+    "phone": "573-111-1111"
+  }
+}
+```
+And here is XML:
+
+```XML
+<order>
+    <crust>original</crust>
+    <toppings>
+        <topping>cheese</topping>
+        <topping>pepperoni</topping>
+        <topping>garlic</topping>
+    </toppings>
+    <status>cooking</status>
+</order>
+```
+
+You can see that both of these data structures are quite easy to read. They are "self-describing". In other words, they tell you how they are meant to be read.
+
+There are easy means of taking these data types and creating R objects. Our JSON response above can be parsed using `jsonlite::fromJSON()`:
+
+```{r}
+answer_json %>% 
+  fromJSON()
+```
+
+The output is a named list! A familiar and friendly R structure. Because data frames are lists, and because this list has no nested lists-within-lists, we can coerce it very simply:
+
+```{r results='asis'}
+answer_json %>% 
+  fromJSON() %>% 
+  tbl_df() %>% 
+  kable()
+```
+
+A similar process exists for XML formats:
+
+```{r}
+ans_xml_parsed <- xmlParse(answer_xml)
+ans_xml_parsed
+```
+Not exactly the response we were hoping for! This shows us some of the XML document's structure: 
+
+  * a `<root>` node with a single child, `<movie>`. 
+  * the information we want is all stored as attributes
+
+From [Nolan and Lang 2014](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7900-0):
+
+> The `xmlRoot()` function returns an object of class `XMLInternalElementNode`. This is a regular
+XML node and not specific to the root node, i.e., all XML nodes will appear in R with this class
+or a more specific class. An object of class XMLInternalElementNode has four fields: name,
+attributes, children and value, which we access with the methods xmlName(), xmlAttrs(), xmlChildren(), and xmlValue()
+
+| field | method |
+|:-----:|:------:|
+| name  | `xmlName()` |
+| attributes | `xmlAttrs()` |
+| children  | `xmlChildren()` |
+| value    | `xmlValue()`
+
+
+```{r}
+ans_xml_parsed_root <- xmlRoot(ans_xml_parsed)[["movie"]]  # could also use [[1]]
+ans_xml_parsed_root
+ans_xml_attrs <- xmlAttrs(ans_xml_parsed_root)
+ans_xml_attrs
+```
+
+```{r results='asis'}
+ans_xml_attrs %>%
+  t() %>%
+  tbl_df() %>%
+  kable()
+```
+
+# Introducing the easy way: `httr`
+
+`httr` is yet another star in the hadleyverse, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, which are:^[[Source: HTTP made really easy](http://www.jmarshall.com/easy/http/)]
+
+* **GET**: fetch an existing resource. The URL contains all the necessary information the server needs to locate and return the resource.
+* **POST**: create a new resource. POST requests usually carry a payload that specifies the data for the new resource.
+* **PUT**: update an existing resource. The payload may contain the updated data for the resource.
+* **DELETE**: delete an existing resource.
+
+HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there. An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/)
+
+`httr` also facilitates a variety of **authentication** protocols.
+
+`httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`).They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output:
+
+```{r}
+interstellar_json <- omdb("Interstellar", "2014", "short", "json")
+response_json <- GET(interstellar_json)
+content(response_json, as = "parsed", type = "application/json")
+```
+
+```{r}
+interstellar_xml <- omdb("Interstellar", "2014", "short", "xml")
+response_xml <- GET(interstellar_xml)
+content(response_xml, as = "parsed")
+```
+
+In addition, `httr` gives us access to lots of useful information about the quality of our response. For example, the header:
+
+```{r}
+headers(response_xml)
+```
+
+And also a handy means to extract specifically the HTTP status code:
+
+```{r}
+status_code(response_xml)
+```
+
+Code^[[HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html)] | Status
+-------|--------|
+1xx    | Informational
+2xx    | Success
+3xx    | Redirection
+4xx    | Client error (you did something wrong)
+5xx    | Server error (server did something wrong)
+
+* [(Perhaps a more intuitive, cat-based explanation of error codes)](https://www.flickr.com/photos/girliemac/sets/72157628409467125)
+
+In fact, we didn't need to create `omdb()` at all! `httr` provides a straightforward means of making an http request:
+
+```{r}
+the_martian <- GET("http://www.omdbapi.com/?", query = list(t = "The Martian", y = 2015, plot = "short", r = "json"))
+
+content(the_martian)
+```
+
+We get the same answer as before! With `httr`, we are able to pass in the named arguments to the API call as a named list. We are also able to use spaces in movie names - `httr` encodes these in the URL before making the GET request.
+
+The documentation for `httr` includes two useful vignettes:
+
+* [`httr` quickstart guide](https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html) - summarizes all the basic `httr` functions like above
+* [Best practices for writing an API package](https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html) - document outlining the key issues involved in writing API wrappers in R
+
+# Scraping
+
+What if data is present on a website, but isn't provided in an API at all? It is possible to grab that information too. How easy that is to do depends a lot on the quality of the website that we are using.
+
+HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, [which is also valid XML](http://www.w3.org/TR/html5/the-xhtml-syntax.html))
+
+![[tags](https://xkcd.com/1144/)](http://imgs.xkcd.com/comics/tags.png)
+
+## Install your equipment
+
+* `rvest` - `devtools::install_github("hadley/rvest")`
+* SelectorGadget - [Install in your browser](http://selectorgadget.com/)
+
+## Practice CSS selectors
+
+Before we go any further, [let's play a game together!](http://flukeout.github.io)
+
+## Obtain a table
+
+Let's make a simple HTML table and then parse it! 
+
+* make a new, empty project
+* make a totally empty .Rmd file called `"GapminderHead.Rmd"`
+* copy this into the body:
+
+<pre><code>---
+output: html_document
+---
+
+```{r echo=FALSE, results='asis'} #delete this comment
+library(gapminder)
+knitr::kable(head(gapminder))
+```</code></pre>
+
+**remember to delete the comment**
+
+Then knit the document and click "View in Browser". It should look like this:
+
+![gm](webdata-supp/gapminderhead.png)
+
+We have created a simple html table with the head of gapminder in it! We can get our data back by parsing this table into a dataframe again. Extracting data from html is called "scraping", and it is done with the R package `rvest`:
+
+```{r}
+read_html("GapminderHead.html") %>%
+  html_table()
+```
+
+## Scraping via CSS selectors
+
+Let's practice scraping websites using our newfound abilities! Here is a [list of wineries in Ithaca, NY](http://www.visitithaca.com/attractions/wineries.html).
+
+### Extract names
+
+First let's download and store the HTML content.
+
+```{r}
+wineries <- read_html("http://www.visitithaca.com/attractions/wineries.html")
+```
+
+Now let's extract the names and store them. To pick out the names, scroll down to the list of wineries and use the Selector Gadget to click on one of the winery names on the main page. Once you only have the winer names selected, you should see that the names are embedded in hyperlink tags (`<a href...`) and it has a class of `indSearchListingTitle`. We can use `html_nodes` to extract this information and `html_text` to remove the extraneous HTML tags.
+
+```{r}
+fnames <- wineries %>%
+  html_nodes(".indSearchListingTitle a") %>%
+  html_text()
+head(fnames)
+```
+
+### Extract addresses
+
+The address is trickier. Using the select tool you'll see that the details are stored in the `indMetaInfoWrapper` class, but also includes things like phone numbers. We just want the addresses, so use the Selector Gadget to only include addresses.
+
+```{r}
+faddress <- wineries %>%
+  html_nodes(".indMetaWrapper:nth-child(1) .indMetaInfoWrapper") %>%
+  html_text()
+head(faddress)
+```
+
+#### Clean up the addresses
+
+The code on this website is a little inconsistent – sometimes the winery name is first and sometimes it's preceded by something like “on the Cayuga Lake Wine Trail” so let's do a little final cleanup.
+
+```{r}
+to_remove <- str_c(c("\n", "^\\s+|\\s+$", "on the Cayuga Lake Wine Trail, ", "Cayuga Lake Wine Trail, ", "on the Cayuga Wine Trail, ",  "on the Finger Lakes Beer Trail, "), collapse="|")
+
+faddress <- str_replace_all(faddress, to_remove, "")
+
+head(faddress)
+```
+
+### Combine with an API to geocode the addresses
+
+The package `ggmap` has a nice geocode function that we'll use to extract coordinates.
+
+```{r, message = FALSE}
+geocodes <- geocode(faddress, output = "latlona")
+
+head(geocodes)
+```
+
+### Pull it all together
+
+```{r}
+full <- data_frame(name = fnames) %>%
+  bind_cols(geocodes) %>%
+  # is it a winery or cidery?
+  mutate(category = ifelse(str_detect(name, "Winery"), "Winery", "Cidery"))
+
+kable(full)
+```
+
+# Random observations on scraping
+
+* Make sure you've obtained ONLY what you want! Scroll over the whole page to ensure that selectorgadget hasn't found too many things
+* If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking (i.e. being more precise)
+* **MOST IMPORTANT** - confirm that there is NO RopenSci package and NO API before you spend hours scraping when the API was right here
+
+### Acknowledgments {.toc-ignore}
+
+```{r child='_ack_stat545.Rmd'}
+```
+* This page is derived in part from ["Scrape website data with the new R package `rvest` (+ a postscript on interacting with web pages with `RSelenium`)
+"](http://zevross.com/blog/2015/05/19/scrape-website-data-with-the-new-r-package-rvest/).
