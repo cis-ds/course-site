@@ -1,0 +1,194 @@
+---
+title: "Querying API's with Python"
+author: "Joshua G. Mausolf"
+date: "November 1, 2016"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+# Prerequisites:
+
+If you have not already done so, you will need to properly install an Anaconda distribution of Python, following the installation [instructions from the first week](https://uc-cfss.github.io/setup00.html).
+
+I would also recommend installing a friendly text editor for editing scripts such as [Atom](https://atom.io). Once installed, you can start a new script by simply typing in bash `atom name_of_your_new_script`. You can edit an existing script by using `atom name_of_script`. [SublimeText](https://www.sublimetext.com) also works similar to Atom. Alternatively, you may use a native text editor such as [Vim](https://www.linux.com/learn/vim-101-beginners-guide-vim), but this has a higher learning curve.
+
+### Installing New Python Packages
+
+One way to install new packages not already included in Anaconda is using `conda install <package>`. While packages in Anaconda are curated, they are not always the most up to date version. Furthermore, not all packages are available with `conda install`. 
+
+To resolve this issue, use the [Python package manager `pip`](https://packaging.python.org/installing/), which should be installed by default. To begin, **update pip**. 
+
+#### On Mac or Linux
+
+```bash
+pip install -U pip setuptools
+```
+
+#### On Windows
+
+```bash
+python -m pip install -U pip setuptools
+```
+---
+
+# Using Python to Work with API's
+
+API's or Application Program Interfaces are a problematically enabled method to interact with website content from tech providers like Facebook, Twitter, Google, Spotify, or governmental and non-profit institutions like the Securities Exchange Commission or the Sunlight Foundation.
+
+
+### Credentials and API Documentation
+
+Each API is site specific but fortunately often has extensive documentation and examples for developers. To begin working, you will typically have to register to get API credentials. Keep these credentials secret by putting them in a separate file e.g. `credentials.py` and excluding this file in a `.gitignore`. 
+
+
+### Python Requests
+
+Another key element common to many API's are the requests module. If not already installed, use
+`pip install requests`. The requests module is typically used to get the response from an API for a given URL.
+
+### JSON
+
+Another key element is JSON (JavaScript Object Notation), a relatively simply data storage format. Most responses to API queries are returned in JSON format, and you will need to extract particular elements for your script.
+
+Fully covering the nuts and bolts of Python Requests and JSON for using API's is beyond the current scope. However, **two good tutorials are linked below** for further exploration if desired:
+
+* ####[RealPython](https://realpython.com/blog/python/api-integration-in-python)
+* ####[DataQuest](https://www.dataquest.io/blog/python-api-tutorial/)
+
+Today, we will focus on using the Twitter API services in Python.
+
+---
+
+# Exploring the Twitter API with Python
+
+One of the many available API's available to researchers is the Twitter API. Specifically, Twitter has two discrete API's, the [REST API](https://dev.twitter.com/rest/public) and the [STREAMING API](https://dev.twitter.com/streaming/overview). The REST API can collect past data going back seven days. Conversely, the STREAMING API collects information moving forward. 
+
+Note, that in either case, the data returned by the API's are not complete data, but rather a small sub-sample of all available content. The [FIREHOSE API](https://dev.twitter.com/streaming/firehose) (a specialized version of the STREAMING API) and [GNIP API](http://support.gnip.com/apis/) have more data for commercial use, but are not covered here.
+
+To demonstrate exploration with the REST and STREAMING API's, I have written [code to interact with both the REST API and STREAMING API](https://github.com/jmausolf/Twitter_Tweet_Counter) using two popular Python packages:
+
+### Python Twitter API Packages (Required Dependencies):
+
+* [TwitterAPI](https://github.com/geduldig/TwitterAPI) : `pip install TwitterAPI` 
+* [Tweepy](http://tweepy.readthedocs.io/en/v3.5.0/): `pip install tweepy` 
+
+
+I illustrate using the TwitterAPI to interact with REST and Tweepy to interact with STREAMING API's, respectively. In both cases, my code will return a CSV of collected Tweets for given criteria. Once we have this data, we could conduct further analysis if desired.
+
+---
+
+# Running the Code
+
+* ####(1) Clone the Repository and Install Dependencies
+
+* ####(2) Input Your Twitter Authentication
+
+* ####(3) Run (A) REST API or (B) STREAMING API
+
+---
+
+## 1. Clone the Repo and Install Dependencies
+
+#### Clone Repository
+
+**Using the Shell: `git clone https://github.com/jmausolf/Twitter_Tweet_Counter`**
+
+#### Install TwitterAPI and Tweepy
+
+```bash
+    pip install TwitterAPI 
+    pip install tweepy
+```
+
+---
+
+## 2. Twitter Authentication Credentials
+
+If you have not previously done so, you will need to setup an "application" from [Twitter](https://apps.twitter.com) to generate your oAuth keys. Once you go through this process, you will end up with four key pieces of information:
+
+* consumer_key
+* consumer_secret
+* access_token_key
+* access_token_secret
+
+Create a "mycredentials.py" file following the format of example_credentials.py:
+
+```bash
+cp example_credentials.py mycredentials.py
+atom mycredentials.py
+```
+
+Edit the file by pasting in your credentials from Twitter. Only replace the quoted material with your actual keys. Save the file and close.
+
+```python
+consumer_key = "yoursecretconsumerkey"
+consumer_secret = "yoursupersecret_consumer_secret"
+access_token_key = "your_access_token_key"
+access_token_secret = "your_access_token_secret"
+```
+
+---
+
+## 3A. REST API using TwitterAPI
+### *Query for One or More Hashtags*
+
+To run the script, open terminal and type a query:
+
+### Example: No Limit (Can Take a Long Time)
+
+```Bash
+
+#One Hashtag
+python Twitter_Counter.py '#Obama'
+
+#Two or More Hashtags
+python Twitter_Counter.py '#Obama' '#Hilary'
+python Twitter_Counter.py '#OccupyWallStreet' '#OWS'
+
+```
+
+For each hashtag, the script will search Twitter using the RestAPI, and return a .CSV of the most recent tweets. The CSV will include the following information: DATE, TIME, COUNT, HASHTAG, and TWEET.
+
+**NOTE: The above examples will return all available tweets (going back a week)**
+
+*Some hashtags include hundreds of thousands of tweets, and this will take considerable time*
+
+### Example: Specified Limit (Faster)
+
+```Bash
+
+#One Hashtag
+python Twitter_Counter.py '#Obama' --limit 100
+
+#Two or More Hashtags
+python Twitter_Counter.py '#Obama' '#Hilary' --limit 100
+python Twitter_Counter.py '#OccupyWallStreet' '#OWS' --limit 100
+
+```
+---
+
+## 3B. STREAMING API using Tweepy
+### *Query for One or More Keywords*
+
+This script will initialize Twitter's STREAMING API using [Tweepy](http://tweepy.readthedocs.io/en/v3.5.0/).
+
+### Example: Streaming for Hillary Tweets
+
+```Bash
+#One Keyword
+python Streaming_Tweets.py "Hillary"
+
+#Two or More Keywords
+python Streaming_Tweets.py "#ImWithHer" "#Hillary"
+```
+
+Once executed, this script will run until the users halts the script. To exit the script use your keyboard to interrupt using `Control`+`C`.
+
+---
+
