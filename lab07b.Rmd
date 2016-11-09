@@ -1,0 +1,299 @@
+---
+title: "Topic Modeling for Text and Tweets in Python"
+author: "Joshua G. Mausolf"
+date: "November 8, 2016"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(cache=TRUE)
+```
+
+
+# Prerequisites:
+
+If you have not already done so, you will need to properly install an Anaconda distribution of Python, following the installation [instructions from the first week](https://uc-cfss.github.io/setup00.html).
+
+I would also recommend installing a friendly text editor for editing scripts such as [Atom](https://atom.io). Once installed, you can start a new script by simply typing in bash `atom name_of_your_new_script`. You can edit an existing script by using `atom name_of_script`. [SublimeText](https://www.sublimetext.com) also works similar to Atom. Alternatively, you may use a native text editor such as [Vim](https://www.linux.com/learn/vim-101-beginners-guide-vim), but this has a higher learning curve.
+
+[*Note: If `atom` does not automatically work, try these solutions*](http://stackoverflow.com/questions/22390709/open-atom-editor-from-command-line).
+
+### Installing New Python Packages
+
+If you do not have a package, you may use the [Python package manager `pip`](https://packaging.python.org/installing/) (a default python program) to install it. Note that pip is called directly from the Shell (not in a python interpreter).
+
+To begin, **update pip**. 
+
+#### On Mac or Linux
+
+```bash
+pip install -U pip setuptools
+```
+
+#### On Windows
+
+```bash
+python -m pip install -U pip setuptools
+```
+
+To see further prerequisites, please visit the [tutorial README](https://github.com/jmausolf/Python_Tutorials/tree/master/Topic_Models_for_Text).
+
+---
+
+# Using Python for Topic Modeling
+
+In short, topic models are a form of unsupervised algorithms that are used to discover hidden patterns or topic clusters in text data. Today, we will be exploring the application of topic modeling in Python on previously collected raw text data and Twitter data. 
+
+The primary package used for these topic modeling comes from the Sci-Kit Learn (Sklearn) a Python package frequently used for machine learning. In particular, we are using Sklearn's [Matrix Decomposition](http://scikit-learn.org/stable/modules/classes.html#module-sklearn.decomposition) and [Feature Extraction](http://scikit-learn.org/stable/modules/classes.html#module-sklearn.feature_extraction) modules.
+
+---
+
+# Quick Start Guide
+
+### Clone the Repository
+
+##### Begin by [Cloning the Tutorials Repository](https://github.com/jmausolf/Python_Tutorials) and Navigating to the Topic Model Tutorial
+
+```bash
+git clone https://github.com/jmausolf/Python_Tutorials
+cd Python_Tutorials/Topic_Models_for_Text/
+```
+
+### Run a Model (Examples)
+
+Some sample data has already been included in the repo. Try running the below example commands:
+
+##### Run a Non-Negative Matrix Factorization (NMF) topic model using a TFIDF vectorizer with custom tokenization
+
+```bash
+# Run the NMF Model on Presidential Speech
+python topic_modelr.py "text_tfidf_custom" "nmf" 15 10 2 4 "data/president"
+
+```
+
+#### *Partial Results*:
+
+```
+Topic 0: make sure, need help, pass jobs, fair share, tax breaks, congress pass, pay fair, pay fair share, higher tax, fair shake
+Topic 1: prime minister, welcome prime, welcome prime minister, september prime, september prime minister, looking forward, bilateral meeting, want welcome prime, want welcome prime minister, forward productive discussion
+Topic 2: make sure, making sure, health care, sure got, got lot, half years, going able, vision america, health insurance, tax code
+
+```
+
+##### Run a Latent Dirichlet Allocation (LDA) topic model using a TFIDF vectorizer with custom tokenization
+
+```bash
+# Run the LDA Model on Clinton Tweets
+python topic_modelr.py "tweet_tfidf_custom" "lda" 15 5 1 4 "data/twitter"
+
+```
+
+### What is going on here?
+
+First, understand what is going on here. You are calling a Python script that utilizes various Python libraries, particularly Sklearn, to analyze text data that is in your cloned repo. This script is an example of what you could write on your own using Python.
+
+To get a better idea of the script's parameters, query the help function from the command line.
+
+```bash
+python topic_modelr.py --help
+
+```
+
+##### This yields the following:
+
+```bash
+
+usage: topic_modelr.py [-h]
+                       vectorizer_type topic_clf n_topics n_top_terms
+                       req_ngram_range [req_ngram_range ...] file_path
+
+Prepare input file
+
+positional arguments:
+  vectorizer_type  Select the desired vectorizer for either text or tweet
+                   @ text_tfidf_std       | TFIDF Vectorizer (for text)
+                   @ text_tfidf_custom    | TFIDF Vectorizer with Custom Tokenizer (for text)
+                   @ text_count_std       | Count Vectorizer
+                   
+                   @ tweet_tfidf_std      | TFIDF Vectorizer (for tweets)
+                   @ tweet_tfidf_custom   | TFIDF Vectorizer with Custom Tokenizer (for tweets)
+                   
+  topic_clf        Select the desired topic model classifier (clf)
+                   @ lda     | Topic Model: LatentDirichletAllocation (LDA)
+                   @ nmf     | Topic Model: Non-Negative Matrix Factorization (NMF)
+                   @ pca     | Topic Model: Principal Components Analysis (PCA)
+                   
+  n_topics         Select the number of topics to return (as integer)
+                   Note: requires n >= number of text files or tweets
+                   
+                   Consider the following examples:
+                   
+                   @ 10     | Example: Returns 5 topics
+                   @ 15     | Example: Returns 10 topics
+                   
+  n_top_terms      Select the number of top terms to return for each topic (as integer)
+                   Consider the following examples:
+                   
+                   @ 10     | Example: Returns 10 terms for each topic
+                   @ 15     | Example: Returns 15 terms for each topic
+                   
+  req_ngram_range  Select the requested 'ngram' or number of words per term
+                   @ NG-1:  | ngram of length 1, e.g. "pay"
+                   @ NG-2:  | ngram of length 2, e.g. "fair share"
+                   @ NG-3:  | ngram of length 3, e.g. "pay fair share"
+                   
+                   Consider the following ngram range examples:
+                   
+                   @ [1, 2] | Return ngrams of lengths 1 and 2
+                   @ [2, 5] | Return ngrams of lengths 2 through 5
+                   
+  file_path        Select the desired file path for the data
+                   
+                   Consider the following ngram range examples:
+                   
+                   @ data/twitter      | Uses data in the data/twitter subdirectory
+                   @ data/president    | Uses data in the data/president subdirectory
+                   @ .                 | Uses data in the current directory
+                   
+
+optional arguments:
+  -h, --help       show this help message and exit
+
+```
+
+##### Returning to our past example:
+
+```bash
+python topic_modelr.py "text_tfidf_custom" "nmf" 15 10 2 4 "data/president"
+```
+
+##### Breaking this down:
+
+* `python topic_modelr.py`: We initialize the model with this statement.
+* `"text_tfidf_custom"`: The next statement selects the vectorizer, which follows the format `<doc_type>_<vectorizer_method>_<tokenizer>`, thus `text_tfidf_custom`. We are analyzing text files using the tfidf vectorizer and a custom tokenizer. The custom tokenizer can remove additional stop-words from your topic model. You can modify this list in the `custom_stopword_tokens.py` file.
+* `"nmf"`: This specifies the topic model, in this case a Non-Negative Matrix Factorization (NMF)
+* `15` : 15 topics
+* `10` : 10 terms (ngrams) per topic. An ngram is one or more words
+* `2 4`: The ngram range. Get all ngrams between 2 and 4 words in length (excludes single words). Thus, "fair share" and "pay fair share" are examples of 2grams and 3grams. 
+* `"data/president"`: The relative file path to the data.
+
+For example, you can list the above data files using the following command:
+
+```bash
+ls data/president
+
+```
+
+```bash
+2011-09-17_ID1.txt 2011-09-21_ID2.txt 2011-09-24_ID2.txt 2011-09-28_ID1.txt 2011-10-04_ID5.txt
+2011-09-19_ID1.txt 2011-09-21_ID3.txt 2011-09-25_ID1.txt 2011-09-28_ID2.txt 2011-10-04_ID6.txt
+2011-09-19_ID2.txt 2011-09-21_ID4.txt 2011-09-25_ID2.txt 2011-09-30_ID1.txt 2011-10-05_ID1.txt
+2011-09-19_ID3.txt 2011-09-21_ID5.txt 2011-09-25_ID3.txt 2011-09-30_ID2.txt 2011-10-05_ID2.txt
+2011-09-20_ID1.txt 2011-09-21_ID6.txt 2011-09-25_ID4.txt 2011-10-01_ID1.txt 2011-10-05_ID3.txt
+2011-09-20_ID2.txt 2011-09-21_ID7.txt 2011-09-26_ID1.txt 2011-10-01_ID2.txt 2011-10-06_ID1.txt
+2011-09-20_ID3.txt 2011-09-21_ID8.txt 2011-09-26_ID2.txt 2011-10-03_ID1.txt 2011-10-06_ID2.txt
+2011-09-20_ID4.txt 2011-09-21_ID9.txt 2011-09-26_ID3.txt 2011-10-03_ID2.txt 2011-10-07_ID1.txt
+2011-09-20_ID5.txt 2011-09-22_ID1.txt 2011-09-26_ID4.txt 2011-10-04_ID1.txt results
+2011-09-20_ID6.txt 2011-09-23_ID1.txt 2011-09-26_ID6.txt 2011-10-04_ID2.txt
+2011-09-21_ID0.txt 2011-09-23_ID2.txt 2011-09-27_ID1.txt 2011-10-04_ID3.txt
+2011-09-21_ID1.txt 2011-09-24_ID1.txt 2011-09-27_ID2.txt 2011-10-04_ID4.txt
+```
+
+---
+
+# What's Under the Hood? 
+
+Remember that this script is a simple Python script using Sklearn's models. At first glance, the code may appear complex given it's ability to handle various input sources (text or tweet), use different vectorizers, tokenizers, and models. The key components can be seen in the `topic_modeler` function:
+
+```python
+
+	# SPECIFY VECTORIZER ALGORITHM
+	vectorizer = select_vectorizer(vectorizer_type, ngram_lengths)
+
+
+	# Vectorizer Results
+	dtm = vectorizer.fit_transform(filenames).toarray()
+	vocab = np.array(vectorizer.get_feature_names())
+	print("Evaluating vocabulary...")
+	print("Found {} terms in {} files...".format(dtm.shape[1], dtm.shape[0]))
+
+
+	# DEFINE and BUILD MODEL
+	#---------------------------------#
+
+	if topic_clf == "lda":
+
+		#Define Topic Model: LatentDirichletAllocation (LDA)
+		clf = decomposition.LatentDirichletAllocation(n_topics=num_topics+1, random_state=3)
+
+  #Other model options ommitted from this snippet (see full code)
+
+	#Fit Topic Model
+	doctopic = clf.fit_transform(dtm)
+	topic_words = []
+	for topic in clf.components_:
+	    word_idx = np.argsort(topic)[::-1][0:num_top_words]
+	    topic_words.append([vocab[i] for i in word_idx])
+
+```
+
+You may notice that this code snippet calls a `select_vectorizer()` function. This function simply selects the appropriate vectorizer based on user input. An example includes:
+
+
+```python
+
+vectorizer = text.TfidfVectorizer(input='filename', analyzer='word', ngram_range=(ngram_lengths), stop_words='english', min_df=2)
+
+```
+Note that the structure is in place that this function could be easily modified is you would like to add additional models or classifiers by consulting the [SKlearn Documentation](http://scikit-learn.org/stable/modules/classes.html#module-sklearn.decomposition)
+
+##### [The full `topic_modelr.py` script is available on Github.](https://github.com/jmausolf/Python_Tutorials/blob/master/Topic_Models_for_Text/topic_modelr.py)
+
+
+---
+
+# Custom Stopwords
+
+In short, stop-words are routine words that we want to exclude from the analysis. They may include common articles like `the` or `a`. The Python script uses NLTK to exclude English stop-words and consider only alphabetical words versus numbers and punctuation. 
+
+##### This function is run when a vectorizer with the `custom` extension is implemented.
+
+```python
+
+# Import Custom User Stopwords (If Any)
+from custom_stopword_tokens import custom_stopwords
+
+def tokenize_nltk(text):
+	"""
+	Note: 	This function imports a list of custom stopwords from the user
+			If the user does not modify custom stopwords (default=[]),
+			there is no substantive update to the stopwords.
+	"""
+	tokens = word_tokenize(text)
+	text = nltk.Text(tokens)
+	stop_words = set(stopwords.words('english'))
+	stop_words.update(custom_stopwords)
+	words = [w.lower() for w in text if w.isalpha() and w.lower() not in stop_words]
+	return words
+	
+```
+
+### Modifying the Custom Stopwords
+
+To modify the custom stop-words, open the `custom_stopword_tokens.py` file with your favorite text editor, e.g. do one of the following:
+
+```bash
+#On Mac
+atom custom_stopword_tokens.py #Open with Atom
+open -a SublimeText2 custom_stopword_tokens.py #Open with SublimeText2
+vi custom_stopword_tokens.py #Open with vim
+
+```
+Once open, simply feel free to add or delete keywords from one of the example lists, or create your own custom keyword list following the template. Save the result, and when you run the script, your custom stop-words will be excluded.
+
+
+---
+
