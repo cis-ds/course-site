@@ -1,0 +1,612 @@
+---
+title: "Getting data from the web: scraping"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup2, include = FALSE}
+knitr::opts_chunk$set(cache = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
+library(tidyverse)
+library(gapminder)
+library(stringr)
+theme_set(theme_bw())
+```
+
+# Objectives
+
+* Illustrate the split-apply-combine analytical pattern
+* Define parallel processing
+* Introduce Hadoop and Spark as distributed computing platforms
+* Introduce the `sparklyr` package
+* Demonstrate how to use `sparklyr` for machine learning using the Titanic data set
+
+# Split-apply-combine
+
+A common analytical pattern is to
+
+* **split** data into pieces,
+* **apply** some function to each piece,
+* **combine** the results back together again.
+
+Examples of methods you have employed thus far using the `gapminder` dataset:
+
+### `dplyr::group_by()` {#group-by}
+
+```{r group_by}
+gapminder %>%
+  group_by(continent) %>%
+  summarize(n = n())
+
+gapminder %>%
+  group_by(continent) %>%
+  summarize(avg_lifeExp = mean(lifeExp))
+```
+
+### `for` loops {#for-loops}
+
+```{r for_loop}
+countries <- unique(gapminder$country)
+lifeExp_models <- vector("list", length(countries))
+names(lifeExp_models) <- countries
+
+for(i in seq_along(countries)){
+  lifeExp_models[[i]] <- lm(lifeExp ~ year, data = filter(gapminder,
+                                                          country == countries[[i]]))
+}
+head(lifeExp_models)
+```
+
+### `nest()` and `map()` {#nest-map}
+
+```{r nest}
+# function to estimate linear model for gapminder subsets
+le_vs_yr <- function(df) {
+  lm(lifeExp ~ year, data = df)
+}
+
+# split data into nests
+(gap_nested <- gapminder %>% 
+   group_by(continent, country) %>% 
+   nest())
+
+# apply a linear model to each nested data frame
+(gap_nested <- gap_nested %>% 
+   mutate(fit = map(data, le_vs_yr)))
+
+# combine the results back into a single data frame
+library(broom)
+(gap_nested <- gap_nested %>% 
+  mutate(tidy = map(fit, tidy)))
+
+(gap_coefs <- gap_nested %>% 
+   select(continent, country, tidy) %>% 
+   unnest(tidy))
+```
+
+# Parallel computing
+
+![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
+
+Parallel computing (or processing) is a type of computation whereby many calculations or processes are carried out simultaneously.^[["Parallel computing"](https://en.wikipedia.org/wiki/Parallel_computing)] Rather than processing problems in *serial* (or sequential) order, the computer splits the task up into smaller parts that can be processed simultaneously using multiple processors. This is also called *multithreading*. By spliting the job up into simultaneous operations running in *parallel*, you complete your operation quicker, making the code more efficient.
+
+## Why use parallel computing
+
+* Imitates real life
+    * In the real world, people use their brains to think in parallel - we multitask all the time without even thinking about it. Institutions are structured to process information in parallel, rather than in serial.
+* More efficient (sometimes)
+    * Throw more resources at a problem will shorten it time to completion
+* Tackle larger problems
+    * More resources helps solve a larger problem
+* Use distributed resources
+    * Why spend thousands of dollars beefing up your own computing equipment when you can instead rent computing resources from Google or Amazon for mere pennies?
+
+## Why not to use parallel computing
+
+* Limits to efficiency gains
+    * [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl's_law)
+    * There are theoretical limits to how much you can speed up computations via parallel computing
+    * Diminishing returns over time
+* Complexity
+    * Writing parallel code can be more complicated than serial code
+    * R does not natively implement parallel computing - you have to explicitly build it into your script
+* Dependencies
+    * Your computation may rely on the output from the first set of tasks to perform the second tasks
+    * If you compute the problem in parallel fashion, the individual chunks do not communicate with one another
+* Parallel slowdown
+    * Parallel computing speeds up computations at a price
+    * Once the problem is broken into separate threads, reading and writing data from the threads to memory or the hard drive takes time
+    * Some tasks are not improved by spliting the process into parallel operations
+
+# `multidplyr` {#multidplyr}
+
+[`multidplyr`](https://github.com/hadley/multidplyr) is a work-in-progress package that implements parallel computing locally using `dplyr`. Rather than performing computations using a single core or processor, it spreads the computation across multiple cores. The basic sequence of steps is:
+
+1. Call `partition()` to split the dataset across multiple cores. This makes a partitioned data frame, or a `party df` for short.
+1. Each dplyr verb applied to a `party df` performs the operation independently on each core. It leaves each result on each core, and returns another `party df`.
+1. When you're done with the expensive operations that need to be done on each core, you call `collect()` to retrieve the data and bring it back to you local computer.
+
+## `nycflights13::flights` {#flights}
+
+Install `multidplyr` if you don't have it already.
+
+```{r install_multidplyr, eval = FALSE}
+devtools::install_github("hadley/multidplyr")
+```
+
+```{r multidplyr}
+library(multidplyr)
+library(nycflights13)
+```
+
+Next, partition the flights data by flight number, compute the average delay per flight, and then collect the results:
+
+```{r flights_multi}
+flights1 <- partition(flights, flight)
+flights2 <- summarize(flights1, dep_delay = mean(dep_delay, na.rm = TRUE))
+flights3 <- collect(flights2)
+```
+
+The `dplyr` code looks the same as usual, but behind the scenes things are very different. `flights1` and `flights2` are `party df`s. These look like normal data frames, but have an additional attribute: the number of shards. In this example, it tells us that `flights2` is spread across three nodes, and the size on each node varies from 1275 to 1286 rows. `partition()` always makes sure a group is kept together on one node.
+
+```{r flights2}
+flights2
+```
+
+## Performance
+
+For this size of data, using a local cluster actually makes performance slower.
+
+```{r flights_performance}
+system.time({
+  flights %>% 
+    partition() %>%
+    summarise(mean(dep_delay, na.rm = TRUE)) %>% 
+    collect()
+})
+system.time({
+  flights %>% 
+    group_by() %>%
+    summarise(mean(dep_delay, na.rm = TRUE))
+})
+```
+
+That's because there's some overhead associated with sending the data to each node and retrieving the results at the end. For basic `dplyr` verbs, `multidplyr` is unlikely to give you significant speed ups unless you have 10s or 100s of millions of data points. It might however, if you're doing more complex things.
+
+### `gapminder` {#gapminder}
+
+Let's now return to `gapminder` and estimate separate linear regression models of life expectancy based on year for each country. We will use `multidplyr` to split the work across multiple cores. Note that we need to use `cluster_library()` to load the `purrr` package on every node.
+
+```{r multi_nest}
+# split data into nests
+gap_nested <- gapminder %>% 
+  group_by(continent, country) %>% 
+  nest()
+
+# partition gap_nested across the cores
+gap_nested_part <- gap_nested %>%
+  partition(country)
+
+# apply a linear model to each nested data frame
+cluster_library(gap_nested_part, "purrr")
+
+system.time({
+  gap_nested_part %>% 
+    mutate(fit = map(data, function(df) lm(lifeExp ~ year, data = df)))
+})
+```
+
+Compared to how long running it locally?
+
+```{r multi_nest_serial}
+system.time({
+  gap_nested %>% 
+    mutate(fit = map(data, function(df) lm(lifeExp ~ year, data = df)))
+})
+```
+
+So it's roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. This demonstrates it doesn't always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.
+
+# Hadoop and Spark
+
+* [Apache Hadoop](http://hadoop.apache.org/)
+* Open-source software library that enables distributed processing of large data sets across clusters of computers
+* Highly scalable (one server -> thousands of machines)
+* Several modules
+    * Hadoop Distributed File System (HDFS) - distributed file system
+    * Hadoop MapReduce - system for parallel processing of large data sets
+    * [Spark](http://spark.apache.org/) - general engine for large-scale data processing, including machine learning
+
+# `sparklyr` {#sparklyr}
+
+Learning to use Hadoop and Spark can be very complicated. They use their own programming language to specify functions and perform operations. In this class, we will interact with Spark through [`sparklyr`](http://spark.rstudio.com/), a package in R from the same authors of RStudio and the `tidyverse`. This allows us to:
+
+* Connect to Spark from R using the `dplyr` interface
+* Interact with SQL databases stored on a Spark cluster
+* Implement distributed [statistical](cm015.html) [learning](cm016.html) algorithms
+
+See [here](http://spark.rstudio.com/) for more detailed instructions for setting up and using `sparklyr`.
+
+## Installation
+
+You can install `sparklyr` from CRAN as follows:
+
+```{r install_sparklyr, eval = FALSE}
+install.packages("sparklyr")
+```
+
+You should also install a local version of Spark to run it on your computer:
+
+```{r install_spark, eval = FALSE}
+library(sparklyr)
+spark_install(version = "2.0.0")
+```
+
+```{r spark_lib, include = FALSE}
+library(sparklyr)
+```
+
+## Connecting to Spark
+
+You can connect to both local instances of Spark as well as remote Spark clusters. Let's use the `spark_connect` function to connect to a local cluster built on our computer:
+
+```{r connect_spark, cache = FALSE}
+library(sparklyr)
+sc <- spark_connect(master = "local", version = "2.0.0")
+```
+
+## Reading data
+
+You can copy R data frames into Spark using the `dplyr` `copy_to` function. Let's replicate some of our work with the `flights` database from last class. First let's load the data frames into Spark:
+
+```{r load_flights}
+flights_tbl <- copy_to(sc, nycflights13::flights, "flights", overwrite = TRUE)
+airlines_tbl <- copy_to(sc, nycflights13::airlines, "airlines", overwrite = TRUE)
+airports_tbl <- copy_to(sc, nycflights13::airports, "airports", overwrite = TRUE)
+planes_tbl <- copy_to(sc, nycflights13::planes, "planes", overwrite = TRUE)
+weather_tbl <- copy_to(sc, nycflights13::weather, "weather", overwrite = TRUE)
+```
+
+## Using `dplyr`
+
+Interacting with a Spark database uses the same `dplyr` functions as you would with a data frame or SQL database.
+
+```{r flights_filter}
+flights_tbl %>%
+  filter(dep_delay == 2)
+```
+
+We can string together operations using the pipe `%>%`. For instance, we can calculate the average delay for each plane using this code:
+
+```{r flights_delay}
+delay <- flights_tbl %>% 
+  group_by(tailnum) %>%
+  summarise(count = n(), dist = mean(distance), delay = mean(arr_delay)) %>%
+  filter(count > 20, dist < 2000, !is.na(delay)) %>%
+  collect()
+
+# plot delays
+ggplot(delay, aes(dist, delay)) +
+  geom_point(aes(size = count), alpha = 1/2) +
+  geom_smooth() +
+  scale_size_area(max_size = 2)
+```
+
+To join together two tables, use the standard set of `_join` functions:
+
+```{r flights_join}
+flights_tbl %>%
+  select(-time_hour) %>%
+  left_join(weather_tbl)
+```
+
+There really isn't much new here, so I'm not going to hammer this point home any further. Read [*Manipulating Data with dplyr*](http://spark.rstudio.com/dplyr.html) for more information on Spark-specific examples of `dplyr` code.
+
+# Machine learning with Spark
+
+You can use `sparklyr` to fit a wide range of machine learning algorithms in Apache Spark. Rather than using `caret::train()`, you use a set of `ml_` functions depending on which algorithm you want to employ.
+
+## Load the data
+
+Let's continue using the Titanic dataset. First, download and install the `titanic` package which contains the data files we have been using for past machine learning exercises:
+
+```{r titanic_install, eval = FALSE}
+install.package("titanic")
+```
+
+Next we need to load it into the local Spark cluster.
+
+```{r load_titanic, cache = FALSE}
+library(titanic)
+(titanic_tbl <- copy_to(sc, titanic::titanic_train, "titanic", overwrite = TRUE))
+```
+
+## Tidy the data
+
+You can use `dplyr` syntax to tidy and reshape data in Spark, as well as specialized functions from the [Spark machine learning library](http://spark.apache.org/docs/latest/ml-features.html).
+
+### Spark SQL transforms
+
+These are feature transforms (aka mutating or filtering the columns/rows) using Spark SQL. This allows you to create new features and modify existing features with `dplyr` syntax. Here let's modify 4 columns:
+
+1. Family_Size - create number of siblings and parents
+1. Pclass - format passenger class as character not numeric
+1. Embarked - remove a small number of missing records
+1. Age - impute missing age with average age
+
+We use `sdf_register` at the end of the operation to store the table in the Spark cluster.
+
+```{r titanic_tidy, cache = FALSE}
+titanic2_tbl <- titanic_tbl %>% 
+  mutate(Family_Size = SibSp + Parch + 1L) %>% 
+  mutate(Pclass = as.character(Pclass)) %>%
+  filter(!is.na(Embarked)) %>%
+  mutate(Age = if_else(is.na(Age), mean(Age), Age)) %>%
+  sdf_register("titanic2")
+```
+
+### Spark ML transforms
+
+Spark also includes several functions to transform features. We can access several of them [directly through `sparklyr`](http://spark.rstudio.com/reference/sparklyr/latest/index.html). For instance, to transform `Family_Sizes` into bins, use `ft_bucketizer`. Because this function comes from Spark, it is used within `sdf_mutate()`, not `mutate()`.
+
+```{r titanic_tidy_ml, cache = FALSE}
+titanic_final_tbl <- titanic2_tbl %>%
+  mutate(Family_Size = as.numeric(Family_size)) %>%
+  sdf_mutate(
+    Family_Sizes = ft_bucketizer(Family_Size, splits = c(1,2,5,12))
+    ) %>%
+  mutate(Family_Sizes = as.character(as.integer(Family_Sizes))) %>%
+  sdf_register("titanic_final")
+```
+
+> `ft_bucketizer` is equivalent to `cut` in R
+
+### Train-validation split
+
+Randomly partition the data into training/test sets.
+
+```{r titanic_partition}
+# Partition the data
+partition <- titanic_final_tbl %>% 
+  mutate(Survived = as.numeric(Survived), SibSp = as.numeric(SibSp), Parch = as.numeric(Parch)) %>%
+  select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked, Family_Sizes) %>%
+  sdf_partition(train = 0.75, test = 0.25, seed = 1234)
+
+# Create table references
+train_tbl <- partition$train
+test_tbl <- partition$test
+```
+
+## Train the models
+
+Spark ML includes several types of machine learning algorithms. We can use these algorithms to fit models using the training data, then evaluate model performance using the test data.
+
+### Logistic regression
+
+```{r titanic_logit}
+# Model survival as a function of several predictors
+ml_formula <- formula(Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Family_Sizes)
+
+# Train a logistic regression model
+(ml_log <- ml_logistic_regression(train_tbl, ml_formula))
+```
+
+### Other machine learning algorithms
+
+Run the same formula using the other machine learning algorithms. Notice that training times vary greatly between methods.
+
+```{r titanic_models}
+## Decision Tree
+ml_dt <- ml_decision_tree(train_tbl, ml_formula)
+
+## Random Forest
+ml_rf <- ml_random_forest(train_tbl, ml_formula)
+
+## Gradient Boosted Tree
+ml_gbt <- ml_gradient_boosted_trees(train_tbl, ml_formula)
+
+## Naive Bayes
+ml_nb <- ml_naive_bayes(train_tbl, ml_formula)
+
+## Neural Network
+ml_nn <- ml_multilayer_perceptron(train_tbl, ml_formula, layers = c(11,15,2))
+```
+
+### Validation data
+
+```{r titanic_validate}
+# Bundle the models into a single list object
+ml_models <- list(
+  "Logistic" = ml_log,
+  "Decision Tree" = ml_dt,
+  "Random Forest" = ml_rf,
+  "Gradient Boosted Trees" = ml_gbt,
+  "Naive Bayes" = ml_nb,
+  "Neural Net" = ml_nn
+)
+
+# Create a function for scoring
+score_test_data <- function(model, data=test_tbl){
+  pred <- sdf_predict(model, data)
+  select(pred, Survived, prediction)
+}
+
+# Score all the models
+ml_score <- map(ml_models, score_test_data)
+```
+
+## Compare results
+
+Compare the model results. Examine performance metrics: accuracy and [area under the curve (AUC)](https://en.wikipedia.org/wiki/Receiver_operating_characteristic). Also examine feature importance to see what features are most predictive of survival.
+
+### Accuracy and AUC
+
+Receiver operating characteristic (ROC) is a graphical plot that illustrates the performance of a binary classifier. It visualizes the relationship between the true positive rate (TPR) against the false positive rate (FPR).
+
+![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/3/36/ROC_space-2.png)
+
+![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/6/6b/Roccurves.png)
+
+The ideal model perfectly classifies are positive outcomes as true and all negative outcomes as false (i.e. TPR = 1 and FPR = 0). The line on the second graph is made by calculating predicted outcomes at different cutpoint thresholds (i.e. $.1, .2, .5, .8$) and connecting the dots. The diagonal line indicates expected true/false positive rates if you guessed at random. The area under the curve (AUC) summarizes how good the model is across these threshold points simultaneously. An area of 1 indicates that for any threshold value, the model always makes perfect preditions. This will almost never occur in real life. Good AUC values are between $.6$ and $.8$. While we cannot draw the ROC graph using Spark, we can extract the AUC values based on the predictions.
+
+```{r titanic_eval}
+# Function for calculating accuracy
+calc_accuracy <- function(data, cutpoint = 0.5){
+  data %>% 
+    mutate(prediction = if_else(prediction > cutpoint, 1.0, 0.0)) %>%
+    ml_classification_eval("prediction", "Survived", "accuracy")
+}
+
+# Calculate AUC and accuracy
+perf_metrics <- data_frame(
+  model = names(ml_score),
+  AUC = 100 * map_dbl(ml_score, ml_binary_classification_eval, "Survived", "prediction"),
+  Accuracy = 100 * map_dbl(ml_score, calc_accuracy)
+  )
+perf_metrics
+
+# Plot results
+gather(perf_metrics, metric, value, AUC, Accuracy) %>%
+  ggplot(aes(reorder(model, value), value, fill = metric)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  coord_flip() +
+  labs(title = "Performance metrics",
+       x = NULL,
+       y = "Percent")
+```
+
+Overall it appears the tree-based models performed the best - they had the highest accuracy rates and AUC values.
+
+### Feature importance
+
+It is also interesting to compare the features that were identified by each model as being important predictors for survival. The tree models implement feature importance metrics (a la `randomForest::varImpPlot()`. Sex, fare, and age are some of the most important features.
+
+```{r titanic_feature}
+# Initialize results
+feature_importance <- data_frame()
+
+# Calculate feature importance
+for(i in c("Decision Tree", "Random Forest", "Gradient Boosted Trees")){
+  feature_importance <- ml_tree_feature_importance(sc, ml_models[[i]]) %>%
+    mutate(Model = i) %>%
+    mutate(importance = as.numeric(levels(importance))[importance]) %>%
+    mutate(feature = as.character(feature)) %>%
+    rbind(feature_importance, .)
+}
+
+# Plot results
+feature_importance %>%
+  ggplot(aes(reorder(feature, importance), importance, fill = Model)) + 
+  facet_wrap(~Model) +
+  geom_bar(stat = "identity") + 
+  coord_flip() +
+  labs(title = "Feature importance",
+       x = NULL)
+```
+
+## Compare run times
+
+The time to train a model is important. Use the following code to evaluate each model `n` times and plot the results. Notice that gradient boosted trees and neural nets take considerably longer to train than the other methods.
+
+```{r titanic_compare_runtime}
+# Number of reps per model
+n <- 10
+
+# Format model formula as character
+format_as_character <- function(x){
+  x <- paste(deparse(x), collapse = "")
+  x <- gsub("\\s+", " ", paste(x, collapse = ""))
+  x
+}
+
+# Create model statements with timers
+format_statements <- function(y){
+  y <- format_as_character(y[[".call"]])
+  y <- gsub('ml_formula', ml_formula_char, y)
+  y <- paste0("system.time(", y, ")")
+  y
+}
+
+# Convert model formula to character
+ml_formula_char <- format_as_character(ml_formula)
+
+# Create n replicates of each model statements with timers
+all_statements <- map_chr(ml_models, format_statements) %>%
+  rep(., n) %>%
+  parse(text = .)
+
+# Evaluate all model statements
+res <- map(all_statements, eval)
+
+# Compile results
+result <- data_frame(model = rep(names(ml_models), n),
+                     time = map_dbl(res, function(x){as.numeric(x["elapsed"])})) 
+
+# Plot
+result %>%
+  ggplot(aes(time, reorder(model, time))) + 
+  geom_boxplot() + 
+  geom_jitter(width = 0.4, aes(color = model)) +
+  scale_color_discrete(guide = FALSE) +
+  labs(title = "Model training times",
+       x = "Seconds",
+       y = NULL)
+```
+
+### Run time for serial vs. parallel computing
+
+Let's look just at the random forest model. Is it beneficial to estimate this using Spark, or would `caret` and a serial method work just as well?
+
+```{r titanic_serial_parallel}
+# get formulas for glm and ml_logistic_regression
+logit_glm <- "glm(ml_formula, data = train_tbl, family = binomial)" %>%
+  str_c("system.time(", ., ")")
+logit_ml <- "ml_logistic_regression(train_tbl, ml_formula)" %>%
+  str_c("system.time(", ., ")")
+
+all_statements_serial <- c(logit_glm, logit_ml) %>%
+  rep(., n) %>%
+  parse(text = .)
+
+# Evaluate all model statements
+res_serial <- map(all_statements_serial, eval)
+
+# Compile results
+result_serial <- data_frame(model = rep(c("glm", "Spark"), n),
+                            time = map_dbl(res_serial, function(x){as.numeric(x["elapsed"])})) 
+
+# Plot
+result %>%
+  ggplot(aes(time, reorder(model, time))) + 
+  geom_boxplot() + 
+  geom_jitter(width = 0.4, aes(color = model)) +
+  scale_color_discrete(guide = FALSE) +
+  labs(title = "Model training times",
+       x = "Seconds",
+       y = NULL)
+```
+
+Alas, it is not in this instance. With a larger dataset it might become more apparent.
+
+### What about cross-validation?
+
+Where's the LOOCV? Where's the $k$-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. Spark contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196). A real drag.
+
+# Acknowledgments {.toc-ignore}
+
+```{r child='_ack_stat545.Rmd'}
+```
+* [Parallel Algorithms Advantages and Disadvantages](http://www.slideshare.net/lucky43/parallel-computing-advantages-and-disadvantages)
+
+# Session Info {.toc-ignore}
+
+```{r sessioninfo}
+devtools::session_info()
+```
+

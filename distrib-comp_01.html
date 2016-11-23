@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Getting data from the web: scraping</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.9em;
+  padding-left: 5px;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Getting data from the web: scraping</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(gapminder)
+<span class="kw">library</span>(stringr)
+<span class="kw">theme_set</span>(<span class="kw">theme_bw</span>())</code></pre></div>
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Illustrate the split-apply-combine analytical pattern</li>
+<li>Define parallel processing</li>
+<li>Introduce Hadoop and Spark as distributed computing platforms</li>
+<li>Introduce the <code>sparklyr</code> package</li>
+<li>Demonstrate how to use <code>sparklyr</code> for machine learning using the Titanic data set</li>
+</ul>
+</div>
+<div id="split-apply-combine" class="section level1">
+<h1>Split-apply-combine</h1>
+<p>A common analytical pattern is to</p>
+<ul>
+<li><strong>split</strong> data into pieces,</li>
+<li><strong>apply</strong> some function to each piece,</li>
+<li><strong>combine</strong> the results back together again.</li>
+</ul>
+<p>Examples of methods you have employed thus far using the <code>gapminder</code> dataset:</p>
+<div id="dplyrgroup_by" class="section level3">
+<h3><code id="group-by">dplyr::group_by()</code></h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(continent) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">n =</span> <span class="kw">n</span>())</code></pre></div>
+<pre><code>## # A tibble: 5 × 2
+##   continent     n
+##      &lt;fctr&gt; &lt;int&gt;
+## 1    Africa   624
+## 2  Americas   300
+## 3      Asia   396
+## 4    Europe   360
+## 5   Oceania    24</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(continent) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">avg_lifeExp =</span> <span class="kw">mean</span>(lifeExp))</code></pre></div>
+<pre><code>## # A tibble: 5 × 2
+##   continent avg_lifeExp
+##      &lt;fctr&gt;       &lt;dbl&gt;
+## 1    Africa    48.86533
+## 2  Americas    64.65874
+## 3      Asia    60.06490
+## 4    Europe    71.90369
+## 5   Oceania    74.32621</code></pre>
+</div>
+<div id="for-loops" class="section level3">
+<h3><code>for</code> loops</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">countries &lt;-<span class="st"> </span><span class="kw">unique</span>(gapminder$country)
+lifeExp_models &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;list&quot;</span>, <span class="kw">length</span>(countries))
+<span class="kw">names</span>(lifeExp_models) &lt;-<span class="st"> </span>countries
+
+for(i in <span class="kw">seq_along</span>(countries)){
+  lifeExp_models[[i]] &lt;-<span class="st"> </span><span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> <span class="kw">filter</span>(gapminder,
+                                                          country ==<span class="st"> </span>countries[[i]]))
+}
+<span class="kw">head</span>(lifeExp_models)</code></pre></div>
+<pre><code>## $Afghanistan
+## 
+## Call:
+## lm(formula = lifeExp ~ year, data = filter(gapminder, country == 
+##     countries[[i]]))
+## 
+## Coefficients:
+## (Intercept)         year  
+##   -507.5343       0.2753  
+## 
+## 
+## $Albania
+## 
+## Call:
+## lm(formula = lifeExp ~ year, data = filter(gapminder, country == 
+##     countries[[i]]))
+## 
+## Coefficients:
+## (Intercept)         year  
+##   -594.0725       0.3347  
+## 
+## 
+## $Algeria
+## 
+## Call:
+## lm(formula = lifeExp ~ year, data = filter(gapminder, country == 
+##     countries[[i]]))
+## 
+## Coefficients:
+## (Intercept)         year  
+##  -1067.8590       0.5693  
+## 
+## 
+## $Angola
+## 
+## Call:
+## lm(formula = lifeExp ~ year, data = filter(gapminder, country == 
+##     countries[[i]]))
+## 
+## Coefficients:
+## (Intercept)         year  
+##   -376.5048       0.2093  
+## 
+## 
+## $Argentina
+## 
+## Call:
+## lm(formula = lifeExp ~ year, data = filter(gapminder, country == 
+##     countries[[i]]))
+## 
+## Coefficients:
+## (Intercept)         year  
+##   -389.6063       0.2317  
+## 
+## 
+## $Australia
+## 
+## Call:
+## lm(formula = lifeExp ~ year, data = filter(gapminder, country == 
+##     countries[[i]]))
+## 
+## Coefficients:
+## (Intercept)         year  
+##   -376.1163       0.2277</code></pre>
+</div>
+<div id="nest-and-map" class="section level3">
+<h3><code>nest()</code> and <code id="nest-map">map()</code></h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># function to estimate linear model for gapminder subsets</span>
+le_vs_yr &lt;-<span class="st"> </span>function(df) {
+  <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)
+}
+
+<span class="co"># split data into nests</span>
+(gap_nested &lt;-<span class="st"> </span>gapminder %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">group_by</span>(continent, country) %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">nest</span>())</code></pre></div>
+<pre><code>## # A tibble: 142 × 3
+##    continent     country              data
+##       &lt;fctr&gt;      &lt;fctr&gt;            &lt;list&gt;
+## 1       Asia Afghanistan &lt;tibble [12 × 4]&gt;
+## 2     Europe     Albania &lt;tibble [12 × 4]&gt;
+## 3     Africa     Algeria &lt;tibble [12 × 4]&gt;
+## 4     Africa      Angola &lt;tibble [12 × 4]&gt;
+## 5   Americas   Argentina &lt;tibble [12 × 4]&gt;
+## 6    Oceania   Australia &lt;tibble [12 × 4]&gt;
+## 7     Europe     Austria &lt;tibble [12 × 4]&gt;
+## 8       Asia     Bahrain &lt;tibble [12 × 4]&gt;
+## 9       Asia  Bangladesh &lt;tibble [12 × 4]&gt;
+## 10    Europe     Belgium &lt;tibble [12 × 4]&gt;
+## # ... with 132 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># apply a linear model to each nested data frame</span>
+(gap_nested &lt;-<span class="st"> </span>gap_nested %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, le_vs_yr)))</code></pre></div>
+<pre><code>## # A tibble: 142 × 4
+##    continent     country              data      fit
+##       &lt;fctr&gt;      &lt;fctr&gt;            &lt;list&gt;   &lt;list&gt;
+## 1       Asia Afghanistan &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 2     Europe     Albania &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 3     Africa     Algeria &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 4     Africa      Angola &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 5   Americas   Argentina &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 6    Oceania   Australia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 7     Europe     Austria &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 8       Asia     Bahrain &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 9       Asia  Bangladesh &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 10    Europe     Belgium &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## # ... with 132 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># combine the results back into a single data frame</span>
+<span class="kw">library</span>(broom)
+(gap_nested &lt;-<span class="st"> </span>gap_nested %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tidy =</span> <span class="kw">map</span>(fit, tidy)))</code></pre></div>
+<pre><code>## # A tibble: 142 × 5
+##    continent     country              data      fit                 tidy
+##       &lt;fctr&gt;      &lt;fctr&gt;            &lt;list&gt;   &lt;list&gt;               &lt;list&gt;
+## 1       Asia Afghanistan &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 2     Europe     Albania &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 3     Africa     Algeria &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 4     Africa      Angola &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 5   Americas   Argentina &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 6    Oceania   Australia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 7     Europe     Austria &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 8       Asia     Bahrain &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 9       Asia  Bangladesh &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## 10    Europe     Belgium &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;data.frame [2 × 5]&gt;
+## # ... with 132 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(gap_coefs &lt;-<span class="st"> </span>gap_nested %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">select</span>(continent, country, tidy) %&gt;%<span class="st"> </span>
+<span class="st">   </span><span class="kw">unnest</span>(tidy))</code></pre></div>
+<pre><code>## # A tibble: 284 × 7
+##    continent     country        term      estimate    std.error  statistic
+##       &lt;fctr&gt;      &lt;fctr&gt;       &lt;chr&gt;         &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;
+## 1       Asia Afghanistan (Intercept)  -507.5342716 40.484161954 -12.536613
+## 2       Asia Afghanistan        year     0.2753287  0.020450934  13.462890
+## 3     Europe     Albania (Intercept)  -594.0725110 65.655359062  -9.048348
+## 4     Europe     Albania        year     0.3346832  0.033166387  10.091036
+## 5     Africa     Algeria (Intercept) -1067.8590396 43.802200843 -24.379118
+## 6     Africa     Algeria        year     0.5692797  0.022127070  25.727749
+## 7     Africa      Angola (Intercept)  -376.5047531 46.583370599  -8.082385
+## 8     Africa      Angola        year     0.2093399  0.023532003   8.895964
+## 9   Americas   Argentina (Intercept)  -389.6063445  9.677729641 -40.258031
+## 10  Americas   Argentina        year     0.2317084  0.004888791  47.395847
+## # ... with 274 more rows, and 1 more variables: p.value &lt;dbl&gt;</code></pre>
+</div>
+</div>
+<div id="parallel-computing" class="section level1">
+<h1>Parallel computing</h1>
+<div class="figure">
+<img src="http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png" alt="From An introduction to parallel programming using Python’s multiprocessing module" />
+<p class="caption">From <a href="http://sebastianraschka.com/Articles/2014_multiprocessing.html">An introduction to parallel programming using Python’s multiprocessing module</a></p>
+</div>
+<p>Parallel computing (or processing) is a type of computation whereby many calculations or processes are carried out simultaneously.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Rather than processing problems in <em>serial</em> (or sequential) order, the computer splits the task up into smaller parts that can be processed simultaneously using multiple processors. This is also called <em>multithreading</em>. By spliting the job up into simultaneous operations running in <em>parallel</em>, you complete your operation quicker, making the code more efficient.</p>
+<div id="why-use-parallel-computing" class="section level2">
+<h2>Why use parallel computing</h2>
+<ul>
+<li>Imitates real life
+<ul>
+<li>In the real world, people use their brains to think in parallel - we multitask all the time without even thinking about it. Institutions are structured to process information in parallel, rather than in serial.</li>
+</ul></li>
+<li>More efficient (sometimes)
+<ul>
+<li>Throw more resources at a problem will shorten it time to completion</li>
+</ul></li>
+<li>Tackle larger problems
+<ul>
+<li>More resources helps solve a larger problem</li>
+</ul></li>
+<li>Use distributed resources
+<ul>
+<li>Why spend thousands of dollars beefing up your own computing equipment when you can instead rent computing resources from Google or Amazon for mere pennies?</li>
+</ul></li>
+</ul>
+</div>
+<div id="why-not-to-use-parallel-computing" class="section level2">
+<h2>Why not to use parallel computing</h2>
+<ul>
+<li>Limits to efficiency gains
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Amdahl&#39;s_law">Amdahl’s law</a></li>
+<li>There are theoretical limits to how much you can speed up computations via parallel computing</li>
+<li>Diminishing returns over time</li>
+</ul></li>
+<li>Complexity
+<ul>
+<li>Writing parallel code can be more complicated than serial code</li>
+<li>R does not natively implement parallel computing - you have to explicitly build it into your script</li>
+</ul></li>
+<li>Dependencies
+<ul>
+<li>Your computation may rely on the output from the first set of tasks to perform the second tasks</li>
+<li>If you compute the problem in parallel fashion, the individual chunks do not communicate with one another</li>
+</ul></li>
+<li>Parallel slowdown
+<ul>
+<li>Parallel computing speeds up computations at a price</li>
+<li>Once the problem is broken into separate threads, reading and writing data from the threads to memory or the hard drive takes time</li>
+<li>Some tasks are not improved by spliting the process into parallel operations</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="multidplyr" class="section level1">
+<h1><code id="multidplyr">multidplyr</code></h1>
+<p><a href="https://github.com/hadley/multidplyr"><code>multidplyr</code></a> is a work-in-progress package that implements parallel computing locally using <code>dplyr</code>. Rather than performing computations using a single core or processor, it spreads the computation across multiple cores. The basic sequence of steps is:</p>
+<ol style="list-style-type: decimal">
+<li>Call <code>partition()</code> to split the dataset across multiple cores. This makes a partitioned data frame, or a <code>party df</code> for short.</li>
+<li>Each dplyr verb applied to a <code>party df</code> performs the operation independently on each core. It leaves each result on each core, and returns another <code>party df</code>.</li>
+<li>When you’re done with the expensive operations that need to be done on each core, you call <code>collect()</code> to retrieve the data and bring it back to you local computer.</li>
+</ol>
+<div id="nycflights13flights" class="section level2">
+<h2><code id="flights">nycflights13::flights</code></h2>
+<p>Install <code>multidplyr</code> if you don’t have it already.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;hadley/multidplyr&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(multidplyr)
+<span class="kw">library</span>(nycflights13)</code></pre></div>
+<p>Next, partition the flights data by flight number, compute the average delay per flight, and then collect the results:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights1 &lt;-<span class="st"> </span><span class="kw">partition</span>(flights, flight)
+flights2 &lt;-<span class="st"> </span><span class="kw">summarize</span>(flights1, <span class="dt">dep_delay =</span> <span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)</code></pre></div>
+<p>The <code>dplyr</code> code looks the same as usual, but behind the scenes things are very different. <code>flights1</code> and <code>flights2</code> are <code>party df</code>s. These look like normal data frames, but have an additional attribute: the number of shards. In this example, it tells us that <code>flights2</code> is spread across three nodes, and the size on each node varies from 1275 to 1286 rows. <code>partition()</code> always makes sure a group is kept together on one node.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights2</code></pre></div>
+<pre><code>## Source: party_df [3,844 x 2]
+## Shards: 3 [1,232--1,327 rows]
+## 
+## # S3: party_df
+##    flight dep_delay
+##     &lt;int&gt;     &lt;dbl&gt;
+## 1       4  7.516624
+## 2       5  4.425926
+## 3       6  8.502415
+## 4      12 28.283465
+## 5      16 -0.250000
+## 6      17 13.917431
+## 7      22 20.252874
+## 8      27 13.282658
+## 9      28 13.600000
+## 10     30 19.879518
+## # ... with 3,834 more rows</code></pre>
+</div>
+<div id="performance" class="section level2">
+<h2>Performance</h2>
+<p>For this size of data, using a local cluster actually makes performance slower.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  flights %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">partition</span>() %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">collect</span>()
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.422   0.071   0.831</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  flights %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">group_by</span>() %&gt;%
+<span class="st">    </span><span class="kw">summarise</span>(<span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.004   0.000   0.005</code></pre>
+<p>That’s because there’s some overhead associated with sending the data to each node and retrieving the results at the end. For basic <code>dplyr</code> verbs, <code>multidplyr</code> is unlikely to give you significant speed ups unless you have 10s or 100s of millions of data points. It might however, if you’re doing more complex things.</p>
+<div id="gapminder" class="section level3">
+<h3><code id="gapminder">gapminder</code></h3>
+<p>Let’s now return to <code>gapminder</code> and estimate separate linear regression models of life expectancy based on year for each country. We will use <code>multidplyr</code> to split the work across multiple cores. Note that we need to use <code>cluster_library()</code> to load the <code>purrr</code> package on every node.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># split data into nests</span>
+gap_nested &lt;-<span class="st"> </span>gapminder %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(continent, country) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>()
+
+<span class="co"># partition gap_nested across the cores</span>
+gap_nested_part &lt;-<span class="st"> </span>gap_nested %&gt;%
+<span class="st">  </span><span class="kw">partition</span>(country)
+
+<span class="co"># apply a linear model to each nested data frame</span>
+<span class="kw">cluster_library</span>(gap_nested_part, <span class="st">&quot;purrr&quot;</span>)
+
+<span class="kw">system.time</span>({
+  gap_nested_part %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.001   0.000   0.066</code></pre>
+<p>Compared to how long running it locally?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  gap_nested %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.113   0.006   0.120</code></pre>
+<p>So it’s roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. This demonstrates it doesn’t always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.</p>
+</div>
+</div>
+</div>
+<div id="hadoop-and-spark" class="section level1">
+<h1>Hadoop and Spark</h1>
+<ul>
+<li><a href="http://hadoop.apache.org/">Apache Hadoop</a></li>
+<li>Open-source software library that enables distributed processing of large data sets across clusters of computers</li>
+<li>Highly scalable (one server -&gt; thousands of machines)</li>
+<li>Several modules
+<ul>
+<li>Hadoop Distributed File System (HDFS) - distributed file system</li>
+<li>Hadoop MapReduce - system for parallel processing of large data sets</li>
+<li><a href="http://spark.apache.org/">Spark</a> - general engine for large-scale data processing, including machine learning</li>
+</ul></li>
+</ul>
+</div>
+<div id="sparklyr" class="section level1">
+<h1><code id="sparklyr">sparklyr</code></h1>
+<p>Learning to use Hadoop and Spark can be very complicated. They use their own programming language to specify functions and perform operations. In this class, we will interact with Spark through <a href="http://spark.rstudio.com/"><code>sparklyr</code></a>, a package in R from the same authors of RStudio and the <code>tidyverse</code>. This allows us to:</p>
+<ul>
+<li>Connect to Spark from R using the <code>dplyr</code> interface</li>
+<li>Interact with SQL databases stored on a Spark cluster</li>
+<li>Implement distributed <a href="cm015.html">statistical</a> <a href="cm016.html">learning</a> algorithms</li>
+</ul>
+<p>See <a href="http://spark.rstudio.com/">here</a> for more detailed instructions for setting up and using <code>sparklyr</code>.</p>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>You can install <code>sparklyr</code> from CRAN as follows:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;sparklyr&quot;</span>)</code></pre></div>
+<p>You should also install a local version of Spark to run it on your computer:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sparklyr)
+<span class="kw">spark_install</span>(<span class="dt">version =</span> <span class="st">&quot;2.0.0&quot;</span>)</code></pre></div>
+</div>
+<div id="connecting-to-spark" class="section level2">
+<h2>Connecting to Spark</h2>
+<p>You can connect to both local instances of Spark as well as remote Spark clusters. Let’s use the <code>spark_connect</code> function to connect to a local cluster built on our computer:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sparklyr)
+sc &lt;-<span class="st"> </span><span class="kw">spark_connect</span>(<span class="dt">master =</span> <span class="st">&quot;local&quot;</span>, <span class="dt">version =</span> <span class="st">&quot;2.0.0&quot;</span>)</code></pre></div>
+</div>
+<div id="reading-data" class="section level2">
+<h2>Reading data</h2>
+<p>You can copy R data frames into Spark using the <code>dplyr</code> <code>copy_to</code> function. Let’s replicate some of our work with the <code>flights</code> database from last class. First let’s load the data frames into Spark:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::flights, <span class="st">&quot;flights&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
+airlines_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::airlines, <span class="st">&quot;airlines&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
+airports_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::airports, <span class="st">&quot;airports&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
+planes_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::planes, <span class="st">&quot;planes&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
+weather_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::weather, <span class="st">&quot;weather&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)</code></pre></div>
+</div>
+<div id="using-dplyr" class="section level2">
+<h2>Using <code>dplyr</code></h2>
+<p>Interacting with a Spark database uses the same <code>dplyr</code> functions as you would with a data frame or SQL database.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights_tbl %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(dep_delay ==<span class="st"> </span><span class="dv">2</span>)</code></pre></div>
+<pre><code>## Source:   query [6,233 x 19]
+## Database: spark connection master=local[4] app=sparklyr local=TRUE
+## 
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
+## 1   2013     1     1      517            515         2      830
+## 2   2013     1     1      542            540         2      923
+## 3   2013     1     1      702            700         2     1058
+## 4   2013     1     1      715            713         2      911
+## 5   2013     1     1      752            750         2     1025
+## 6   2013     1     1      917            915         2     1206
+## 7   2013     1     1      932            930         2     1219
+## 8   2013     1     1     1028           1026         2     1350
+## 9   2013     1     1     1042           1040         2     1325
+## 10  2013     1     1     1231           1229         2     1523
+## # ... with 6,223 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
+## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
+## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
+## #   minute &lt;dbl&gt;, time_hour &lt;dbl&gt;</code></pre>
+<p>We can string together operations using the pipe <code>%&gt;%</code>. For instance, we can calculate the average delay for each plane using this code:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">delay &lt;-<span class="st"> </span>flights_tbl %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(tailnum) %&gt;%
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">count =</span> <span class="kw">n</span>(), <span class="dt">dist =</span> <span class="kw">mean</span>(distance), <span class="dt">delay =</span> <span class="kw">mean</span>(arr_delay)) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(count &gt;<span class="st"> </span><span class="dv">20</span>, dist &lt;<span class="st"> </span><span class="dv">2000</span>, !<span class="kw">is.na</span>(delay)) %&gt;%
+<span class="st">  </span><span class="kw">collect</span>()
+
+<span class="co"># plot delays</span>
+<span class="kw">ggplot</span>(delay, <span class="kw">aes</span>(dist, delay)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">size =</span> count), <span class="dt">alpha =</span> <span class="dv">1</span>/<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>() +
+<span class="st">  </span><span class="kw">scale_size_area</span>(<span class="dt">max_size =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="distrib-comp_01_files/figure-html/flights_delay-1.png" width="672" /></p>
+<p>To join together two tables, use the standard set of <code>_join</code> functions:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights_tbl %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-time_hour) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(weather_tbl)</code></pre></div>
+<pre><code>## Source:   query [3.368e+05 x 28]
+## Database: spark connection master=local[4] app=sparklyr local=TRUE
+## 
+##     year month   day origin  hour dep_time sched_dep_time dep_delay
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;  &lt;chr&gt; &lt;dbl&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;
+## 1   2013     1     1    EWR     5      517            515         2
+## 2   2013     1     1    LGA     5      533            529         4
+## 3   2013     1     1    JFK     5      542            540         2
+## 4   2013     1     1    JFK     5      544            545        -1
+## 5   2013     1     1    LGA     6      554            600        -6
+## 6   2013     1     1    EWR     5      554            558        -4
+## 7   2013     1     1    EWR     6      555            600        -5
+## 8   2013     1     1    LGA     6      557            600        -3
+## 9   2013     1     1    JFK     6      557            600        -3
+## 10  2013     1     1    LGA     6      558            600        -2
+## # ... with 3.368e+05 more rows, and 20 more variables: arr_time &lt;int&gt;,
+## #   sched_arr_time &lt;int&gt;, arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;,
+## #   tailnum &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;,
+## #   minute &lt;dbl&gt;, temp &lt;dbl&gt;, dewp &lt;dbl&gt;, humid &lt;dbl&gt;, wind_dir &lt;dbl&gt;,
+## #   wind_speed &lt;dbl&gt;, wind_gust &lt;dbl&gt;, precip &lt;dbl&gt;, pressure &lt;dbl&gt;,
+## #   visib &lt;dbl&gt;, time_hour &lt;dbl&gt;</code></pre>
+<p>There really isn’t much new here, so I’m not going to hammer this point home any further. Read <a href="http://spark.rstudio.com/dplyr.html"><em>Manipulating Data with dplyr</em></a> for more information on Spark-specific examples of <code>dplyr</code> code.</p>
+</div>
+</div>
+<div id="machine-learning-with-spark" class="section level1">
+<h1>Machine learning with Spark</h1>
+<p>You can use <code>sparklyr</code> to fit a wide range of machine learning algorithms in Apache Spark. Rather than using <code>caret::train()</code>, you use a set of <code>ml_</code> functions depending on which algorithm you want to employ.</p>
+<div id="load-the-data" class="section level2">
+<h2>Load the data</h2>
+<p>Let’s continue using the Titanic dataset. First, download and install the <code>titanic</code> package which contains the data files we have been using for past machine learning exercises:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.package</span>(<span class="st">&quot;titanic&quot;</span>)</code></pre></div>
+<p>Next we need to load it into the local Spark cluster.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
+(titanic_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, titanic::titanic_train, <span class="st">&quot;titanic&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>## Source:   query [891 x 12]
+## Database: spark connection master=local[4] app=sparklyr local=TRUE
+## 
+##    PassengerId Survived Pclass
+##          &lt;int&gt;    &lt;int&gt;  &lt;int&gt;
+## 1            1        0      3
+## 2            2        1      1
+## 3            3        1      3
+## 4            4        1      1
+## 5            5        0      3
+## 6            6        0      3
+## 7            7        0      1
+## 8            8        0      3
+## 9            9        1      3
+## 10          10        1      2
+## # ... with 881 more rows, and 9 more variables: Name &lt;chr&gt;, Sex &lt;chr&gt;,
+## #   Age &lt;dbl&gt;, SibSp &lt;int&gt;, Parch &lt;int&gt;, Ticket &lt;chr&gt;, Fare &lt;dbl&gt;,
+## #   Cabin &lt;chr&gt;, Embarked &lt;chr&gt;</code></pre>
+</div>
+<div id="tidy-the-data" class="section level2">
+<h2>Tidy the data</h2>
+<p>You can use <code>dplyr</code> syntax to tidy and reshape data in Spark, as well as specialized functions from the <a href="http://spark.apache.org/docs/latest/ml-features.html">Spark machine learning library</a>.</p>
+<div id="spark-sql-transforms" class="section level3">
+<h3>Spark SQL transforms</h3>
+<p>These are feature transforms (aka mutating or filtering the columns/rows) using Spark SQL. This allows you to create new features and modify existing features with <code>dplyr</code> syntax. Here let’s modify 4 columns:</p>
+<ol style="list-style-type: decimal">
+<li>Family_Size - create number of siblings and parents</li>
+<li>Pclass - format passenger class as character not numeric</li>
+<li>Embarked - remove a small number of missing records</li>
+<li>Age - impute missing age with average age</li>
+</ol>
+<p>We use <code>sdf_register</code> at the end of the operation to store the table in the Spark cluster.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic2_tbl &lt;-<span class="st"> </span>titanic_tbl %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Family_Size =</span> SibSp +<span class="st"> </span>Parch +<span class="st"> </span>1L) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Pclass =</span> <span class="kw">as.character</span>(Pclass)) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(Embarked)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Age =</span> <span class="kw">if_else</span>(<span class="kw">is.na</span>(Age), <span class="kw">mean</span>(Age), Age)) %&gt;%
+<span class="st">  </span><span class="kw">sdf_register</span>(<span class="st">&quot;titanic2&quot;</span>)</code></pre></div>
+</div>
+<div id="spark-ml-transforms" class="section level3">
+<h3>Spark ML transforms</h3>
+<p>Spark also includes several functions to transform features. We can access several of them <a href="http://spark.rstudio.com/reference/sparklyr/latest/index.html">directly through <code>sparklyr</code></a>. For instance, to transform <code>Family_Sizes</code> into bins, use <code>ft_bucketizer</code>. Because this function comes from Spark, it is used within <code>sdf_mutate()</code>, not <code>mutate()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_final_tbl &lt;-<span class="st"> </span>titanic2_tbl %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Family_Size =</span> <span class="kw">as.numeric</span>(Family_size)) %&gt;%
+<span class="st">  </span><span class="kw">sdf_mutate</span>(
+    <span class="dt">Family_Sizes =</span> <span class="kw">ft_bucketizer</span>(Family_Size, <span class="dt">splits =</span> <span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">12</span>))
+    ) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Family_Sizes =</span> <span class="kw">as.character</span>(<span class="kw">as.integer</span>(Family_Sizes))) %&gt;%
+<span class="st">  </span><span class="kw">sdf_register</span>(<span class="st">&quot;titanic_final&quot;</span>)</code></pre></div>
+<blockquote>
+<p><code>ft_bucketizer</code> is equivalent to <code>cut</code> in R</p>
+</blockquote>
+</div>
+<div id="train-validation-split" class="section level3">
+<h3>Train-validation split</h3>
+<p>Randomly partition the data into training/test sets.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Partition the data</span>
+partition &lt;-<span class="st"> </span>titanic_final_tbl %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">as.numeric</span>(Survived), <span class="dt">SibSp =</span> <span class="kw">as.numeric</span>(SibSp), <span class="dt">Parch =</span> <span class="kw">as.numeric</span>(Parch)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked, Family_Sizes) %&gt;%
+<span class="st">  </span><span class="kw">sdf_partition</span>(<span class="dt">train =</span> <span class="fl">0.75</span>, <span class="dt">test =</span> <span class="fl">0.25</span>, <span class="dt">seed =</span> <span class="dv">1234</span>)
+
+<span class="co"># Create table references</span>
+train_tbl &lt;-<span class="st"> </span>partition$train
+test_tbl &lt;-<span class="st"> </span>partition$test</code></pre></div>
+</div>
+</div>
+<div id="train-the-models" class="section level2">
+<h2>Train the models</h2>
+<p>Spark ML includes several types of machine learning algorithms. We can use these algorithms to fit models using the training data, then evaluate model performance using the test data.</p>
+<div id="logistic-regression" class="section level3">
+<h3>Logistic regression</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Model survival as a function of several predictors</span>
+ml_formula &lt;-<span class="st"> </span><span class="kw">formula</span>(Survived ~<span class="st"> </span>Pclass +<span class="st"> </span>Sex +<span class="st"> </span>Age +<span class="st"> </span>SibSp +<span class="st"> </span>Parch +<span class="st"> </span>Fare +<span class="st"> </span>Embarked +<span class="st"> </span>Family_Sizes)
+
+<span class="co"># Train a logistic regression model</span>
+(ml_log &lt;-<span class="st"> </span><span class="kw">ml_logistic_regression</span>(train_tbl, ml_formula))</code></pre></div>
+<pre><code>## Call: Survived ~ Pclass_2 + Pclass_3 + Sex_male + Age + SibSp + Parch + Fare + Embarked_Q + Embarked_S + Family_Sizes_1 + Family_Sizes_2
+## 
+## Coefficients:
+##    (Intercept)       Pclass_2       Pclass_3       Sex_male            Age 
+##    3.696494931   -1.102348732   -2.053780934   -2.786063292   -0.035430417 
+##          SibSp          Parch           Fare     Embarked_Q     Embarked_S 
+##    0.158161653    0.457382756    0.002038952    0.214553488   -0.159125872 
+## Family_Sizes_1 Family_Sizes_2 
+##   -0.306385664   -3.749885771</code></pre>
+</div>
+<div id="other-machine-learning-algorithms" class="section level3">
+<h3>Other machine learning algorithms</h3>
+<p>Run the same formula using the other machine learning algorithms. Notice that training times vary greatly between methods.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Decision Tree
+ml_dt &lt;-<span class="st"> </span><span class="kw">ml_decision_tree</span>(train_tbl, ml_formula)
+
+## Random Forest
+ml_rf &lt;-<span class="st"> </span><span class="kw">ml_random_forest</span>(train_tbl, ml_formula)
+
+## Gradient Boosted Tree
+ml_gbt &lt;-<span class="st"> </span><span class="kw">ml_gradient_boosted_trees</span>(train_tbl, ml_formula)
+
+## Naive Bayes
+ml_nb &lt;-<span class="st"> </span><span class="kw">ml_naive_bayes</span>(train_tbl, ml_formula)
+
+## Neural Network
+ml_nn &lt;-<span class="st"> </span><span class="kw">ml_multilayer_perceptron</span>(train_tbl, ml_formula, <span class="dt">layers =</span> <span class="kw">c</span>(<span class="dv">11</span>,<span class="dv">15</span>,<span class="dv">2</span>))</code></pre></div>
+</div>
+<div id="validation-data" class="section level3">
+<h3>Validation data</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Bundle the models into a single list object</span>
+ml_models &lt;-<span class="st"> </span><span class="kw">list</span>(
+  <span class="st">&quot;Logistic&quot;</span> =<span class="st"> </span>ml_log,
+  <span class="st">&quot;Decision Tree&quot;</span> =<span class="st"> </span>ml_dt,
+  <span class="st">&quot;Random Forest&quot;</span> =<span class="st"> </span>ml_rf,
+  <span class="st">&quot;Gradient Boosted Trees&quot;</span> =<span class="st"> </span>ml_gbt,
+  <span class="st">&quot;Naive Bayes&quot;</span> =<span class="st"> </span>ml_nb,
+  <span class="st">&quot;Neural Net&quot;</span> =<span class="st"> </span>ml_nn
+)
+
+<span class="co"># Create a function for scoring</span>
+score_test_data &lt;-<span class="st"> </span>function(model, <span class="dt">data=</span>test_tbl){
+  pred &lt;-<span class="st"> </span><span class="kw">sdf_predict</span>(model, data)
+  <span class="kw">select</span>(pred, Survived, prediction)
+}
+
+<span class="co"># Score all the models</span>
+ml_score &lt;-<span class="st"> </span><span class="kw">map</span>(ml_models, score_test_data)</code></pre></div>
+</div>
+</div>
+<div id="compare-results" class="section level2">
+<h2>Compare results</h2>
+<p>Compare the model results. Examine performance metrics: accuracy and <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">area under the curve (AUC)</a>. Also examine feature importance to see what features are most predictive of survival.</p>
+<div id="accuracy-and-auc" class="section level3">
+<h3>Accuracy and AUC</h3>
+<p>Receiver operating characteristic (ROC) is a graphical plot that illustrates the performance of a binary classifier. It visualizes the relationship between the true positive rate (TPR) against the false positive rate (FPR).</p>
+<div class="figure">
+<img src="https://upload.wikimedia.org/wikipedia/commons/3/36/ROC_space-2.png" alt="From Receiver operating characteristic" />
+<p class="caption">From <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">Receiver operating characteristic</a></p>
+</div>
+<div class="figure">
+<img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/Roccurves.png" alt="From Receiver operating characteristic" />
+<p class="caption">From <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">Receiver operating characteristic</a></p>
+</div>
+<p>The ideal model perfectly classifies are positive outcomes as true and all negative outcomes as false (i.e. TPR = 1 and FPR = 0). The line on the second graph is made by calculating predicted outcomes at different cutpoint thresholds (i.e. <span class="math inline">\(.1, .2, .5, .8\)</span>) and connecting the dots. The diagonal line indicates expected true/false positive rates if you guessed at random. The area under the curve (AUC) summarizes how good the model is across these threshold points simultaneously. An area of 1 indicates that for any threshold value, the model always makes perfect preditions. This will almost never occur in real life. Good AUC values are between <span class="math inline">\(.6\)</span> and <span class="math inline">\(.8\)</span>. While we cannot draw the ROC graph using Spark, we can extract the AUC values based on the predictions.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Function for calculating accuracy</span>
+calc_accuracy &lt;-<span class="st"> </span>function(data, <span class="dt">cutpoint =</span> <span class="fl">0.5</span>){
+  data %&gt;%<span class="st"> </span>
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">prediction =</span> <span class="kw">if_else</span>(prediction &gt;<span class="st"> </span>cutpoint, <span class="fl">1.0</span>, <span class="fl">0.0</span>)) %&gt;%
+<span class="st">    </span><span class="kw">ml_classification_eval</span>(<span class="st">&quot;prediction&quot;</span>, <span class="st">&quot;Survived&quot;</span>, <span class="st">&quot;accuracy&quot;</span>)
+}
+
+<span class="co"># Calculate AUC and accuracy</span>
+perf_metrics &lt;-<span class="st"> </span><span class="kw">data_frame</span>(
+  <span class="dt">model =</span> <span class="kw">names</span>(ml_score),
+  <span class="dt">AUC =</span> <span class="dv">100</span> *<span class="st"> </span><span class="kw">map_dbl</span>(ml_score, ml_binary_classification_eval, <span class="st">&quot;Survived&quot;</span>, <span class="st">&quot;prediction&quot;</span>),
+  <span class="dt">Accuracy =</span> <span class="dv">100</span> *<span class="st"> </span><span class="kw">map_dbl</span>(ml_score, calc_accuracy)
+  )
+perf_metrics</code></pre></div>
+<pre><code>## # A tibble: 6 × 3
+##                    model      AUC Accuracy
+##                    &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1               Logistic 81.00928 82.43902
+## 2          Decision Tree 87.78392 79.51220
+## 3          Random Forest 86.93462 82.92683
+## 4 Gradient Boosted Trees 85.89769 79.51220
+## 5            Naive Bayes 66.47738 69.26829
+## 6             Neural Net 80.14023 80.48780</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot results</span>
+<span class="kw">gather</span>(perf_metrics, metric, value, AUC, Accuracy) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">reorder</span>(model, value), value, <span class="dt">fill =</span> metric)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">position =</span> <span class="st">&quot;dodge&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">coord_flip</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Performance metrics&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Percent&quot;</span>)</code></pre></div>
+<p><img src="distrib-comp_01_files/figure-html/titanic_eval-1.png" width="672" /></p>
+<p>Overall it appears the tree-based models performed the best - they had the highest accuracy rates and AUC values.</p>
+</div>
+<div id="feature-importance" class="section level3">
+<h3>Feature importance</h3>
+<p>It is also interesting to compare the features that were identified by each model as being important predictors for survival. The tree models implement feature importance metrics (a la <code>randomForest::varImpPlot()</code>. Sex, fare, and age are some of the most important features.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Initialize results</span>
+feature_importance &lt;-<span class="st"> </span><span class="kw">data_frame</span>()
+
+<span class="co"># Calculate feature importance</span>
+for(i in <span class="kw">c</span>(<span class="st">&quot;Decision Tree&quot;</span>, <span class="st">&quot;Random Forest&quot;</span>, <span class="st">&quot;Gradient Boosted Trees&quot;</span>)){
+  feature_importance &lt;-<span class="st"> </span><span class="kw">ml_tree_feature_importance</span>(sc, ml_models[[i]]) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Model =</span> i) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">importance =</span> <span class="kw">as.numeric</span>(<span class="kw">levels</span>(importance))[importance]) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">feature =</span> <span class="kw">as.character</span>(feature)) %&gt;%
+<span class="st">    </span><span class="kw">rbind</span>(feature_importance, .)
+}
+
+<span class="co"># Plot results</span>
+feature_importance %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">reorder</span>(feature, importance), importance, <span class="dt">fill =</span> Model)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(~Model) +
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">coord_flip</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Feature importance&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="distrib-comp_01_files/figure-html/titanic_feature-1.png" width="672" /></p>
+</div>
+</div>
+<div id="compare-run-times" class="section level2">
+<h2>Compare run times</h2>
+<p>The time to train a model is important. Use the following code to evaluate each model <code>n</code> times and plot the results. Notice that gradient boosted trees and neural nets take considerably longer to train than the other methods.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Number of reps per model</span>
+n &lt;-<span class="st"> </span><span class="dv">10</span>
+
+<span class="co"># Format model formula as character</span>
+format_as_character &lt;-<span class="st"> </span>function(x){
+  x &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="kw">deparse</span>(x), <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>)
+  x &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">s+&quot;</span>, <span class="st">&quot; &quot;</span>, <span class="kw">paste</span>(x, <span class="dt">collapse =</span> <span class="st">&quot;&quot;</span>))
+  x
+}
+
+<span class="co"># Create model statements with timers</span>
+format_statements &lt;-<span class="st"> </span>function(y){
+  y &lt;-<span class="st"> </span><span class="kw">format_as_character</span>(y[[<span class="st">&quot;.call&quot;</span>]])
+  y &lt;-<span class="st"> </span><span class="kw">gsub</span>(<span class="st">&#39;ml_formula&#39;</span>, ml_formula_char, y)
+  y &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;system.time(&quot;</span>, y, <span class="st">&quot;)&quot;</span>)
+  y
+}
+
+<span class="co"># Convert model formula to character</span>
+ml_formula_char &lt;-<span class="st"> </span><span class="kw">format_as_character</span>(ml_formula)
+
+<span class="co"># Create n replicates of each model statements with timers</span>
+all_statements &lt;-<span class="st"> </span><span class="kw">map_chr</span>(ml_models, format_statements) %&gt;%
+<span class="st">  </span><span class="kw">rep</span>(., n) %&gt;%
+<span class="st">  </span><span class="kw">parse</span>(<span class="dt">text =</span> .)
+
+<span class="co"># Evaluate all model statements</span>
+res &lt;-<span class="st"> </span><span class="kw">map</span>(all_statements, eval)
+
+<span class="co"># Compile results</span>
+result &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">model =</span> <span class="kw">rep</span>(<span class="kw">names</span>(ml_models), n),
+                     <span class="dt">time =</span> <span class="kw">map_dbl</span>(res, function(x){<span class="kw">as.numeric</span>(x[<span class="st">&quot;elapsed&quot;</span>])})) 
+
+<span class="co"># Plot</span>
+result %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(time, <span class="kw">reorder</span>(model, time))) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_boxplot</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.4</span>, <span class="kw">aes</span>(<span class="dt">color =</span> model)) +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Model training times&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Seconds&quot;</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="distrib-comp_01_files/figure-html/titanic_compare_runtime-1.png" width="672" /></p>
+<div id="run-time-for-serial-vs.parallel-computing" class="section level3">
+<h3>Run time for serial vs. parallel computing</h3>
+<p>Let’s look just at the random forest model. Is it beneficial to estimate this using Spark, or would <code>caret</code> and a serial method work just as well?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get formulas for glm and ml_logistic_regression</span>
+logit_glm &lt;-<span class="st"> &quot;glm(ml_formula, data = train_tbl, family = binomial)&quot;</span> %&gt;%
+<span class="st">  </span><span class="kw">str_c</span>(<span class="st">&quot;system.time(&quot;</span>, ., <span class="st">&quot;)&quot;</span>)
+logit_ml &lt;-<span class="st"> &quot;ml_logistic_regression(train_tbl, ml_formula)&quot;</span> %&gt;%
+<span class="st">  </span><span class="kw">str_c</span>(<span class="st">&quot;system.time(&quot;</span>, ., <span class="st">&quot;)&quot;</span>)
+
+all_statements_serial &lt;-<span class="st"> </span><span class="kw">c</span>(logit_glm, logit_ml) %&gt;%
+<span class="st">  </span><span class="kw">rep</span>(., n) %&gt;%
+<span class="st">  </span><span class="kw">parse</span>(<span class="dt">text =</span> .)
+
+<span class="co"># Evaluate all model statements</span>
+res_serial &lt;-<span class="st"> </span><span class="kw">map</span>(all_statements_serial, eval)
+
+<span class="co"># Compile results</span>
+result_serial &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">model =</span> <span class="kw">rep</span>(<span class="kw">c</span>(<span class="st">&quot;glm&quot;</span>, <span class="st">&quot;Spark&quot;</span>), n),
+                            <span class="dt">time =</span> <span class="kw">map_dbl</span>(res_serial, function(x){<span class="kw">as.numeric</span>(x[<span class="st">&quot;elapsed&quot;</span>])})) 
+
+<span class="co"># Plot</span>
+result %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(time, <span class="kw">reorder</span>(model, time))) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_boxplot</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.4</span>, <span class="kw">aes</span>(<span class="dt">color =</span> model)) +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Model training times&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Seconds&quot;</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="distrib-comp_01_files/figure-html/titanic_serial_parallel-1.png" width="672" /></p>
+<p>Alas, it is not in this instance. With a larger dataset it might become more apparent.</p>
+</div>
+<div id="what-about-cross-validation" class="section level3">
+<h3>What about cross-validation?</h3>
+<p>Where’s the LOOCV? Where’s the <span class="math inline">\(k\)</span>-fold cross validation? Well, <code>sparklyr</code> is still under development. It doesn’t allow you to do every single thing Spark can do. Spark contains <a href="http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation">cross-validation functions</a> - there just isn’t an interface to them in <code>sparklyr</code> <a href="https://github.com/rstudio/sparklyr/issues/196">yet</a>. A real drag.</p>
+</div>
+</div>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+<li><a href="http://www.slideshare.net/lucky43/parallel-computing-advantages-and-disadvantages">Parallel Algorithms Advantages and Disadvantages</a></li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.1 (2016-06-21)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2016-11-23                  
+## 
+##  package      * version    date       source                            
+##  assertthat     0.1        2013-12-06 CRAN (R 3.3.0)                    
+##  backports      1.0.4      2016-10-24 CRAN (R 3.3.0)                    
+##  broom        * 0.4.1      2016-06-24 CRAN (R 3.3.0)                    
+##  colorspace     1.2-7      2016-10-11 CRAN (R 3.3.0)                    
+##  config         0.2        2016-08-02 CRAN (R 3.3.0)                    
+##  DBI            0.5-1      2016-09-10 CRAN (R 3.3.0)                    
+##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                    
+##  digest         0.6.10     2016-08-02 CRAN (R 3.3.0)                    
+##  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                    
+##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                    
+##  foreign        0.8-67     2016-09-13 CRAN (R 3.3.0)                    
+##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
+##  ggplot2      * 2.2.0      2016-11-10 Github (hadley/ggplot2@f442f32)   
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                    
+##  htmltools      0.3.5      2016-03-21 CRAN (R 3.3.0)                    
+##  knitr          1.15       2016-11-09 CRAN (R 3.3.1)                    
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                    
+##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.0)                    
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                    
+##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                    
+##  Matrix         1.2-7.1    2016-09-01 CRAN (R 3.3.0)                    
+##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                    
+##  mgcv           1.8-16     2016-11-07 CRAN (R 3.3.0)                    
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                    
+##  multidplyr   * 0.0.0.9000 2016-11-23 Github (hadley/multidplyr@f6bece5)
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                    
+##  nlme           3.1-128    2016-05-10 CRAN (R 3.3.1)                    
+##  nycflights13 * 0.2.0      2016-04-30 CRAN (R 3.3.0)                    
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                    
+##  psych          1.6.9      2016-09-17 cran (@1.6.9)                     
+##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                    
+##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                    
+##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.3.0)                    
+##  Rcpp           0.12.7     2016-09-05 cran (@0.12.7)                    
+##  readr        * 1.0.0      2016-08-03 CRAN (R 3.3.0)                    
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                    
+##  rmarkdown      1.1        2016-10-16 CRAN (R 3.3.1)                    
+##  rprojroot      1.1        2016-10-29 CRAN (R 3.3.0)                    
+##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                    
+##  sparklyr     * 0.4.31     2016-11-19 Github (rstudio/sparklyr@2662da5) 
+##  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                    
+##  stringr      * 1.1.0      2016-08-19 cran (@1.1.0)                     
+##  tibble       * 1.2        2016-08-26 cran (@1.2)                       
+##  tidyr        * 0.6.0      2016-08-12 CRAN (R 3.3.0)                    
+##  tidyverse    * 1.0.0      2016-09-09 CRAN (R 3.3.0)                    
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.3.0)                    
+##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                    
+##  yaml           2.1.13     2014-06-12 CRAN (R 3.3.0)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://en.wikipedia.org/wiki/Parallel_computing">“Parallel computing”</a><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
