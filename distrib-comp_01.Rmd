@@ -7,7 +7,7 @@ output:
 ---
 
 ```{r setup2, include = FALSE}
-knitr::opts_chunk$set(cache = FALSE,
+knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE)
 ```
@@ -265,7 +265,7 @@ sc <- spark_connect(master = "local", version = "2.0.0")
 
 You can copy R data frames into Spark using the `dplyr` `copy_to` function. Let's replicate some of our work with the `flights` database from last class. First let's load the data frames into Spark:
 
-```{r load_flights}
+```{r load_flights, cache = FALSE}
 flights_tbl <- copy_to(sc, nycflights13::flights, "flights", overwrite = TRUE)
 airlines_tbl <- copy_to(sc, nycflights13::airlines, "airlines", overwrite = TRUE)
 airports_tbl <- copy_to(sc, nycflights13::airports, "airports", overwrite = TRUE)
@@ -371,7 +371,7 @@ titanic_final_tbl <- titanic2_tbl %>%
 
 Randomly partition the data into training/test sets.
 
-```{r titanic_partition}
+```{r titanic_partition, cache = FALSE}
 # Partition the data
 partition <- titanic_final_tbl %>% 
   mutate(Survived = as.numeric(Survived), SibSp = as.numeric(SibSp), Parch = as.numeric(Parch)) %>%
@@ -561,7 +561,7 @@ result %>%
 
 ### Run time for serial vs. parallel computing
 
-Let's look just at the random forest model. Is it beneficial to estimate this using Spark, or would `caret` and a serial method work just as well?
+Let's look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would `glm` and a serial method work just as well?
 
 ```{r titanic_serial_parallel}
 # get formulas for glm and ml_logistic_regression
@@ -582,7 +582,7 @@ result_serial <- data_frame(model = rep(c("glm", "Spark"), n),
                             time = map_dbl(res_serial, function(x){as.numeric(x["elapsed"])})) 
 
 # Plot
-result %>%
+result_serial %>%
   ggplot(aes(time, reorder(model, time))) + 
   geom_boxplot() + 
   geom_jitter(width = 0.4, aes(color = model)) +
@@ -603,6 +603,7 @@ Where's the LOOCV? Where's the $k$-fold cross validation? Well, `sparklyr` is st
 ```{r child='_ack_stat545.Rmd'}
 ```
 * [Parallel Algorithms Advantages and Disadvantages](http://www.slideshare.net/lucky43/parallel-computing-advantages-and-disadvantages)
+* Titanic machine learning example drawn from [Comparison of ML Classifiers Using Sparklyr](https://beta.rstudioconnect.com/content/1518/notebook-classification.html)
 
 # Session Info {.toc-ignore}
 

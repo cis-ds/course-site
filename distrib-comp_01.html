@@ -616,21 +616,21 @@ flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)
 <p>The <code>dplyr</code> code looks the same as usual, but behind the scenes things are very different. <code>flights1</code> and <code>flights2</code> are <code>party df</code>s. These look like normal data frames, but have an additional attribute: the number of shards. In this example, it tells us that <code>flights2</code> is spread across three nodes, and the size on each node varies from 1275 to 1286 rows. <code>partition()</code> always makes sure a group is kept together on one node.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights2</code></pre></div>
 <pre><code>## Source: party_df [3,844 x 2]
-## Shards: 3 [1,232--1,327 rows]
+## Shards: 3 [1,251--1,316 rows]
 ## 
 ## # S3: party_df
 ##    flight dep_delay
 ##     &lt;int&gt;     &lt;dbl&gt;
-## 1       4  7.516624
-## 2       5  4.425926
-## 3       6  8.502415
-## 4      12 28.283465
-## 5      16 -0.250000
-## 6      17 13.917431
-## 7      22 20.252874
-## 8      27 13.282658
-## 9      28 13.600000
-## 10     30 19.879518
+## 1       3  3.665079
+## 2       4  7.516624
+## 3       5  4.425926
+## 4      16 -0.250000
+## 5      27 13.282658
+## 6      28 13.600000
+## 7      33  1.938235
+## 8      34  6.597403
+## 9      35 20.272727
+## 10     37 30.500000
 ## # ... with 3,834 more rows</code></pre>
 </div>
 <div id="performance" class="section level2">
@@ -643,14 +643,14 @@ flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)
 <span class="st">    </span><span class="kw">collect</span>()
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.422   0.071   0.831</code></pre>
+##   0.435   0.077   0.833</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   flights %&gt;%<span class="st"> </span>
 <span class="st">    </span><span class="kw">group_by</span>() %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.004   0.000   0.005</code></pre>
+##   0.006   0.001   0.006</code></pre>
 <p>That’s because there’s some overhead associated with sending the data to each node and retrieving the results at the end. For basic <code>dplyr</code> verbs, <code>multidplyr</code> is unlikely to give you significant speed ups unless you have 10s or 100s of millions of data points. It might however, if you’re doing more complex things.</p>
 <div id="gapminder" class="section level3">
 <h3><code id="gapminder">gapminder</code></h3>
@@ -672,14 +672,14 @@ gap_nested_part &lt;-<span class="st"> </span>gap_nested %&gt;%
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.001   0.000   0.066</code></pre>
+##   0.002   0.001   0.113</code></pre>
 <p>Compared to how long running it locally?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   gap_nested %&gt;%<span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.113   0.006   0.120</code></pre>
+##   0.236   0.015   0.269</code></pre>
 <p>So it’s roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. This demonstrates it doesn’t always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.</p>
 </div>
 </div>
@@ -969,7 +969,7 @@ perf_metrics</code></pre></div>
 ## 3          Random Forest 86.93462 82.92683
 ## 4 Gradient Boosted Trees 85.89769 79.51220
 ## 5            Naive Bayes 66.47738 69.26829
-## 6             Neural Net 80.14023 80.48780</code></pre>
+## 6             Neural Net 76.57515 78.53659</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot results</span>
 <span class="kw">gather</span>(perf_metrics, metric, value, AUC, Accuracy) %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">reorder</span>(model, value), value, <span class="dt">fill =</span> metric)) +<span class="st"> </span>
@@ -1055,7 +1055,7 @@ result %&gt;%
 <p><img src="distrib-comp_01_files/figure-html/titanic_compare_runtime-1.png" width="672" /></p>
 <div id="run-time-for-serial-vs.parallel-computing" class="section level3">
 <h3>Run time for serial vs. parallel computing</h3>
-<p>Let’s look just at the random forest model. Is it beneficial to estimate this using Spark, or would <code>caret</code> and a serial method work just as well?</p>
+<p>Let’s look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would <code>glm</code> and a serial method work just as well?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get formulas for glm and ml_logistic_regression</span>
 logit_glm &lt;-<span class="st"> &quot;glm(ml_formula, data = train_tbl, family = binomial)&quot;</span> %&gt;%
 <span class="st">  </span><span class="kw">str_c</span>(<span class="st">&quot;system.time(&quot;</span>, ., <span class="st">&quot;)&quot;</span>)
@@ -1074,7 +1074,7 @@ result_serial &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<
                             <span class="dt">time =</span> <span class="kw">map_dbl</span>(res_serial, function(x){<span class="kw">as.numeric</span>(x[<span class="st">&quot;elapsed&quot;</span>])})) 
 
 <span class="co"># Plot</span>
-result %&gt;%
+result_serial %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(time, <span class="kw">reorder</span>(model, time))) +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_boxplot</span>() +<span class="st"> </span>
 <span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">width =</span> <span class="fl">0.4</span>, <span class="kw">aes</span>(<span class="dt">color =</span> model)) +
@@ -1096,6 +1096,7 @@ result %&gt;%
 <ul>
 <li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
 <li><a href="http://www.slideshare.net/lucky43/parallel-computing-advantages-and-disadvantages">Parallel Algorithms Advantages and Disadvantages</a></li>
+<li>Titanic machine learning example drawn from <a href="https://beta.rstudioconnect.com/content/1518/notebook-classification.html">Comparison of ML Classifiers Using Sparklyr</a></li>
 </ul>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
@@ -1114,6 +1115,7 @@ result %&gt;%
 ##  assertthat     0.1        2013-12-06 CRAN (R 3.3.0)                    
 ##  backports      1.0.4      2016-10-24 CRAN (R 3.3.0)                    
 ##  broom        * 0.4.1      2016-06-24 CRAN (R 3.3.0)                    
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.0)                    
 ##  colorspace     1.2-7      2016-10-11 CRAN (R 3.3.0)                    
 ##  config         0.2        2016-08-02 CRAN (R 3.3.0)                    
 ##  DBI            0.5-1      2016-09-10 CRAN (R 3.3.0)                    
