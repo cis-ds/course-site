@@ -15,14 +15,17 @@ rawdat <- read_excel(file.path("course_admin", "schedule.xlsx"))
 
 # clean up table and extract date info
 cdat <- rawdat %>%
-  mutate(link_it = as.logical(link_it),
+  mutate(cm = str_replace_na(cm),
+         link_it = as.logical(link_it),
          topic = ifelse(is.na(topic), "", topic),
          notes = sprintf("%s: %s", cm, topic))
 
 # identify links to course modules
 cmdat <- data_frame(html = list.files(pattern = '^(cm|setup|git|lab).*html$'))
-cmdat <- cmdat %>% mutate(cm = str_extract(html, "(cm|setup|git|lab)[0-9]+"))
-cdat <- cdat %>% left_join(cmdat)
+cmdat <- cmdat %>%
+  mutate(cm = str_extract(html, "(cm|setup|git|lab)[0-9]+"))
+cdat <- cdat %>%
+  left_join(cmdat)
 
 # add links to notes column
 cdat$notes[cdat$link_it] <-
