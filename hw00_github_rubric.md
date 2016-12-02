@@ -4,8 +4,7 @@ Evaluation HW-xx for Jane Doe
 |-----------------------------|-----------|--------------|------------|
 | **Coding style**            |           |              |            |
 | **Coding strategy**         |           |              |            |
-| **Presentation: graphs**    |           |              |            |
-| **Presentation: tables**    |           |              |            |
+| **Presentation**    |           |              |            |
 | **Achievement, creativity** |           |              |            |
 | **Ease of access**          |           |              |            |
 
