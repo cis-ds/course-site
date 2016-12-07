@@ -1,19 +1,25 @@
 #!/bin/bash          
 
-# convert jupyter notebooks to markdown
-for notebook in $( ls *.ipynb ); do
-  /Users/$USER/anaconda/bin/jupyter nbconvert --to markdown $notebook
-done
-
-# copy slides to extras folder
-for slides in $( find ../teach -name "*slides.html" ); do
-  rsync --update $slides extras
-done
-
-# copy tutorial files to extras folder
-for tutorial in $( find ../teach -name "*tutorial.html" ); do
-  rsync --update $tutorial extras
+# move slides to protected folder
+for slides in $( find ./ -maxdepth 1 -name "*slides.Rmd" ); do
+  mv $slides extras/$slides
 done
 
 # render_site using rmarkdown
 Rscript -e 'rmarkdown::render_site()'
+
+# move slides back to main directory and render
+for slides in $( find extras/ -name "*slides.Rmd" ); do
+  # move slides back
+  filename=$(basename "$slides")
+  mv extras/$filename ./$filename
+  
+  # rename _site.yml temporarily to properly render slides
+  mv _site.yml site.yml
+  
+  # render slides
+  Rscript -e "rmarkdown::render('$filename')"
+  
+  # rename _site.yml back
+  mv site.yml _site.yml
+done
