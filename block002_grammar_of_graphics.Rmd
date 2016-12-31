@@ -1,0 +1,400 @@
+---
+title: "Visualizations and the grammar of graphics"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+bibliography: references.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Identify the importance of graphics in communicating information
+* Define the layered grammar of graphics
+* Practice generating layered graphics using [`ggplot2`](https://github.com/hadley/ggplot2)
+
+```{r packages, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+```
+
+# Identify the importance of graphics in communicating information
+
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE). While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations (see @tufte1983 for much more on this topic).
+
+Consider the following data sets:
+
+```{r misleading, echo = FALSE}
+# input data
+dat1 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68))
+dat2 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(9.14, 8.14, 8.74, 8.77, 9.26, 8.10, 6.13, 3.1, 9.13, 7.26, 4.74))
+dat3 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73))
+dat4 <- tibble(x = c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8),
+               y = c(6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89))
+
+# combine data
+dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
+```
+
+```{r misleading_print, dependson = 'misleading', echo = FALSE, results='asis'}
+dat %>%
+  group_by(id) %>%
+  nest(x, y) %>%
+  .$data %>%
+  map(knitr::kable)
+```
+
+```{r mislead_stats, dependson = 'misleading'}
+# get stats
+dat %>%
+  group_by(id) %>%
+  summarize(n = n(),
+           mean_x = mean(x),
+           mean_y = mean(y),
+           cor = cor(x, y))
+
+# estimate linear model
+dat %>%
+  split(.$id) %>%
+  map(~ lm(y ~ x, data = .x)) %>%
+  map(tidy)
+
+# now draw a graph
+ggplot(dat, aes(x, y)) +
+  facet_wrap(~id) +
+  geom_point()
+```
+
+A good picture tells the reader much more than any table or text can provide (though tables also have their purpose too).
+
+# Define the layered grammar of graphics
+
+For more detailed information, see [@wickham2010].
+
+* *Grammar* - the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics.^[[Google](https://www.google.com/search?q=grammar)]
+    * "The fundamental principles or rules of an art or science" [@wickham2010]
+* *Grammar of graphics* - a grammar used to describe and create a wide range of statistical graphics
+
+The *layered grammar of graphics* approach is implemented in [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/index.html), a widely used graphics library for R. All graphics in this library are built using a layered approach, building layers up to create the final graphic.
+
+## Components of the layered grammar of graphics
+
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system (coord)
+* Faceting (facet)
+* Defaults
+    * Data
+    * Mapping
+
+### Layer
+
+Layers are responsible for creating the objects that we perceive on the plot. Layers are defined by the data and aesthetic mapping, a statistical transformation, a geometric object, and a position adjustment. Usually all the layers have something in common. So for example, you might overlay a scatterplot with a smoothed regression line to summarize the relationship between the variables.
+
+#### Data and mapping
+
+*Data* defines the source of the information to be visualized, but is independent from the other elements. So a layered graphic can be built which can utilize different data sources while keeping the other components the same.
+
+```{r mpg}
+mpg
+```
+
+*Mapping* defines how the variables are applied to the graphic. So if we were graphing information about mpg, we might map a car's engine displacement to the $x$ position and highway mileage to the $y$ position.
+
+```{r mapping}
+mpg %>%
+  select(displ, hwy) %>%
+  rename(x = displ,
+         y = hwy)
+```
+
+#### Geometric objects
+
+*Geometric objects* control the type of plot you create. Geoms are classified by their dimensionality:
+
+* 0 dimensions - point, text
+* 1 dimension - path, line
+* 2 dimensions - polygon, interval
+
+Each geom can only display certain aesthetics. For example, a point geom has position, color, shape, and size aesthetics. A bar geom has position, height, width, and fill color.
+
+```{r geom_point}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+```
+
+```{r geom_bar}
+ggplot(mpg, aes(cyl)) +
+  geom_bar()
+```
+
+#### Statistical transformation
+
+A *statistical transformation* (stat) transforms the data, typically by summarizing the information. For instance, in a bar graph you typically are not trying to graph the raw data because this doesn't make any inherent sense. Instead, you might summarize the data by graphing the total number of observations within a set of categories. A stat takes a dataset as input and returns a dataset as output, and so a stat can add new variables to the original dataset. So instead of graphing this data in its raw form:
+
+```{r stat_raw}
+mpg %>%
+  select(cyl)
+```
+
+You would transform it to:
+
+```{r stat_transform}
+mpg %>%
+  count(cyl)
+
+ggplot(mpg, aes(cyl)) +
+  geom_bar()
+```
+
+Sometimes you don't need to make a statistical transformation. So going back to our engine displacement vs. highway mileage graph, here the statistical transformation is an *identity* transformation - the stat simply passes in the original dataset and exports the exact same dataset.
+
+#### Position adjustment
+
+Sometimes we need to tweak the position of the geometric elements on the plot, when otherwise they would obscure each other. This is most common in bar plots, where we stack or dodge (place side-by-side) the bars to avoid overlaps. In scatterplots with few unique $x$ and $y$ values, we sometimes randomly jitter the points to reduce overplotting.
+
+```{r position}
+ggplot(mpg, aes(cyl, hwy)) +
+  geom_point()
+
+ggplot(mpg, aes(cyl, hwy)) +
+  geom_jitter()
+```
+
+### Scale
+
+A *scale* controls the mapping from data to aesthetic attributes, and so we need one scale for each aesthetic property used in a layer. Scales are common across layers to ensure a consistent mapping from data to aesthetics.
+
+```{r scale_color}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point()
+```
+
+```{r scale_size}
+ggplot(mpg, aes(displ, hwy, size = cyl)) +
+  geom_point()
+```
+
+### Coordinate system
+
+A *coordinate system* (coord) maps the position of objects onto the plane of the plot. Position is often specified by two coordinates (x, y), but could be any number of coordinates. The Cartesian coordinate system is the most common coordinate system for two dimensions, whereas polar coordinates and various map projections are used less frequently.
+
+```{r coord}
+x1 <- c(1, 10)
+y1 <- c(1, 5)
+p <- qplot(x1, y1, geom = "blank", xlab = NULL, ylab = NULL) +
+  theme_bw()
+p 
+
+p + coord_trans(y = "log10")
+p + coord_polar()
+```
+
+### Faceting
+
+*Faceting* can be used to split the data up into subsets of the entire dataset. This is a powerful tool when investigating whether patterns are the same or different across conditions. The faceting specification describes which variables should be used to split up the data, and how they should be arranged.
+
+```{r facet}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~class)
+```
+
+### Defaults
+
+Rather than explicitly declaring each component of a layered graphic (which will use more code and introduces opportunities for errors), we can establish intelligent defaults for specific geoms and scales. For instance, whenever we want to use a bar geom, we can default to using a stat that counts the number of observations in each group of our variable in the $x$ position.
+
+```{r default, eval = FALSE}
+ggplot() +
+  layer(
+    data = mpg, mapping = aes(x = displ, y = hwy),
+    geom = "point", stat = "identity", position = "identity"
+  ) +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  coord_cartesian()
+```
+
+This code:
+
+* Creates a new plot object (`ggplot`)
+* Adds a layer (`layer`)
+    * Specifies the dataset (`mpg`)
+    * Maps engine displacement to the $x$ position and highway mileage to the $y$ position (`mapping`)
+    * Uses the point geometric transformation (`geom = "point"`)
+    * Implements an identity transformation and position (`stat = "identity"` and `position = "identity"`)
+* Establishes two continuous position scales (`scale_x_continuous` and `scale_y_continuous`)
+* Declares a cartesian coordinate system (`coord_cartesian`)
+
+How can we simplify this using intelligent defaults?
+
+1. We only need to specify a geom, since each geom has a default stat.
+2. Cartesian coordinate systems are most commonly used, so it is the default.
+3. Default scales can be added based on the aesthetic and type of variables.
+    * Continuous values are transformed with a linear scaling
+    * Discrete values are mapped to integers
+    * Scales for aesthetics such as color, fill, and size can also be intelligently defaulted
+
+```{r default2, eval = FALSE}
+ggplot() +
+  layer(
+    data = mpg, mapping = aes(x = displ, y = hwy),
+    geom = "point"
+  )
+```
+
+Because multiple layers can use the same components (data, mapping, etc.), we can specify that information in the `ggplot` function:
+
+```{r default3, eval = FALSE}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+And as we will learn, function arguments in R use specific ordering, so we can omit the explicit call to `data` and `mapping`:
+
+```{r default4}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+```
+
+With this specification, it is easy to build the graphic up with additional layers, without modifying the original code:
+
+```{r default5}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth()
+```
+
+## How to build a complicated, layered graphic
+
+### Charles Minard's map of Napoleon's disastrous Russian campaign of 1812
+
+![["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](https://en.wikipedia.org/wiki/Charles_Joseph_Minard)](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)
+
+The graphic is notable for its representation in two dimensions of six types of data: the number of Napoleon's troops; distance; temperature; the latitude and longitude; direction of travel; and location relative to specific dates.
+
+### Building Minard's map in R
+
+```{r minard_data}
+# get data on troop movements and city names
+troops <- read_table("data/minard-troops.txt")
+cities <- read_table("data/minard-cities.txt")
+troops
+cities
+```
+
+Let's sketch out what the grammar of graphics will look for this graph:
+
+* Layer
+    * Data - `troops`
+    * Mapping
+        * $x$ and $y$ - troop position (`lat` and `long`)
+        * Size - `survivors`
+        * Color - `direction`
+    * Statistical transformation (stat) - `identity`
+    * Geometric object (geom) - `path`
+    * Position adjustment (position) - none
+* Layer
+    * Data - `cities`
+    * Mapping
+        * $x$ and $y$ - city position (`lat` and `long`)
+        * Label - `city`
+    * Statistical transformation (stat) - `identity`
+    * Geometric object (geom) - `text`
+    * Position adjustment (position) - none
+* Scale
+    * Size - range of widths for troop `path`
+    * Color - colors to indicate advancing or retreating troops
+* Coordinate system - map projection (Mercator or something else)
+* Faceting - none
+
+```{r minard_plot}
+# build plot of troop movement
+plot_troops <- ggplot(troops, aes(long, lat)) +
+  geom_path(aes(size = survivors,
+                color = direction,
+                group = group))
+plot_troops
+
+# add city location
+plot_both <- plot_troops + 
+  geom_text(data = cities, aes(label = city), size = 4)
+plot_both
+
+# clean plot up
+plot_polished <- plot_both + 
+  scale_size(range = c(0, 12),
+             breaks = c(10000, 20000, 30000),
+             labels = c("10,000", "20,000", "30,000")) + 
+  scale_color_manual(values = c("tan", "grey50")) +
+  coord_map() +
+  labs(title = "Map of Napoleon's Russian campaign of 1812",
+       x = NULL,
+       y = NULL)
+plot_polished
+
+plot_polished +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+# Practice generating layered graphics using `ggplot2`
+
+## `gapminder`
+
+Load the `gapminder` dataset into your environment.
+
+```{r gapminder}
+library(ggplot2)
+library(tibble)
+# install.packages("gapminder")
+library(gapminder)
+
+data("gapminder")
+str(gapminder)
+gapminder
+```
+
+What is the average life expectancy, per continent?
+
+```{r lifeexp}
+ggplot(gapminder, aes(continent, lifeExp)) +
+  geom_boxplot()
+```
+
+What is the relationship between GDP and life expectancy?
+
+```{r gdp_lifeexp}
+ggplot(gapminder, aes(gdpPercap, lifeExp)) +
+  geom_point() +
+  geom_smooth()
+```
+
+Bonus: what is causing the outlier in `gdpPercap`?
+
+```{r lifeexp_outlier}
+ggplot(gapminder, aes(gdpPercap, lifeExp)) +
+  geom_point() +
+  geom_smooth() +
+  geom_text(aes(label = country))
+```
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+# References {.toc-ignore}
