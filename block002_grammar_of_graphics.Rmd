@@ -21,6 +21,7 @@ knitr::opts_chunk$set(cache = TRUE)
 library(tidyverse)
 library(knitr)
 library(broom)
+library(stringr)
 ```
 
 # Identify the importance of graphics in communicating information
@@ -45,35 +46,59 @@ dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
 ```
 
 ```{r misleading_print, dependson = 'misleading', echo = FALSE, results='asis'}
-dat %>%
+dat_print <- dat %>%
   group_by(id) %>%
-  nest(x, y) %>%
-  .$data %>%
-  map(knitr::kable)
+  nest(x, y)
+
+for(i in seq_len(nrow(dat_print))){
+  print(knitr::kable(dat_print[i,]$data,
+                     caption = str_c("Dataset", i, sep = " ")))
+}
 ```
 
-```{r mislead_stats, dependson = 'misleading'}
+What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
+
+```{r mislead_stats, dependson = 'misleading', echo = FALSE}
 # get stats
 dat %>%
   group_by(id) %>%
   summarize(n = n(),
            mean_x = mean(x),
            mean_y = mean(y),
-           cor = cor(x, y))
+           cor = cor(x, y)) %>%
+  knitr::kable(col.names = c("Dataset ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"))
+```
 
+If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
+
+```{r mislead_model, dependson = 'misleading', results = 'asis', echo = FALSE}
 # estimate linear model
-dat %>%
+dat_model <- dat %>%
   split(.$id) %>%
   map(~ lm(y ~ x, data = .x)) %>%
   map(tidy)
 
-# now draw a graph
-ggplot(dat, aes(x, y)) +
-  facet_wrap(~id) +
-  geom_point()
+for(i in seq_along(dat_model)){
+  print(knitr::kable(dat_model[i],
+                     caption = str_c("Dataset", i, sep = " "),
+                     col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic",
+                                   "p-value")))
+}
 ```
 
-A good picture tells the reader much more than any table or text can provide (though tables also have their purpose too).
+But what happens if we draw a picture?
+
+```{r mislead_plot, dependson = 'misleading', echo = FALSE}
+# now draw a graph
+dat %>%
+  mutate(id = str_c("Dataset", id, sep = " ")) %>%
+  ggplot(aes(x, y)) +
+  facet_wrap(~id) +
+  geom_point() +
+  theme_bw()
+```
+
+A good picture tells the reader much more than any table or text can provide.
 
 # Define the layered grammar of graphics
 

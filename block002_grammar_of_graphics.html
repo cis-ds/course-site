@@ -346,13 +346,20 @@ div.tocify {
 </ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
 <span class="kw">library</span>(knitr)
-<span class="kw">library</span>(broom)</code></pre></div>
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(stringr)</code></pre></div>
 </div>
 <div id="identify-the-importance-of-graphics-in-communicating-information" class="section level1">
 <h1>Identify the importance of graphics in communicating information</h1>
 <p>Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE). While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka <strong>visualization</strong>) can be more precise than conventional statistical computations (see <span class="citation">Tufte and Graves-Morris (1983)</span> for much more on this topic).</p>
 <p>Consider the following data sets:</p>
-<p>[[1]]</p>
+<table class="kable_wrapper">
+<caption>
+Dataset 1
+</caption>
+<tbody>
+<tr>
+<td>
 <table>
 <thead>
 <tr class="header">
@@ -407,7 +414,17 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-<p>[[2]]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="kable_wrapper">
+<caption>
+Dataset 2
+</caption>
+<tbody>
+<tr>
+<td>
 <table>
 <thead>
 <tr class="header">
@@ -462,7 +479,17 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-<p>[[3]]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="kable_wrapper">
+<caption>
+Dataset 3
+</caption>
+<tbody>
+<tr>
+<td>
 <table>
 <thead>
 <tr class="header">
@@ -517,7 +544,17 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-<p>[[4]]</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="kable_wrapper">
+<caption>
+Dataset 4
+</caption>
+<tbody>
+<tr>
+<td>
 <table>
 <thead>
 <tr class="header">
@@ -572,50 +609,208 @@ div.tocify {
 </tr>
 </tbody>
 </table>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get stats</span>
-dat %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(id) %&gt;%
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">n =</span> <span class="kw">n</span>(),
-           <span class="dt">mean_x =</span> <span class="kw">mean</span>(x),
-           <span class="dt">mean_y =</span> <span class="kw">mean</span>(y),
-           <span class="dt">cor =</span> <span class="kw">cor</span>(x, y))</code></pre></div>
-<pre><code>## # A tibble: 4 × 5
-##      id     n mean_x   mean_y       cor
-##   &lt;chr&gt; &lt;int&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;
-## 1     1    11      9 7.500909 0.8164205
-## 2     2    11      9 7.500909 0.8162365
-## 3     3    11      9 7.500000 0.8162867
-## 4     4    11      9 7.500909 0.8165214</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate linear model</span>
-dat %&gt;%
-<span class="st">  </span><span class="kw">split</span>(.$id) %&gt;%
-<span class="st">  </span><span class="kw">map</span>(~<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> .x)) %&gt;%
-<span class="st">  </span><span class="kw">map</span>(tidy)</code></pre></div>
-<pre><code>## $`1`
-##          term  estimate std.error statistic     p.value
-## 1 (Intercept) 3.0000909 1.1247468  2.667348 0.025734051
-## 2           x 0.5000909 0.1179055  4.241455 0.002169629
-## 
-## $`2`
-##          term estimate std.error statistic     p.value
-## 1 (Intercept) 3.000909 1.1253024  2.666758 0.025758941
-## 2           x 0.500000 0.1179637  4.238590 0.002178816
-## 
-## $`3`
-##          term  estimate std.error statistic     p.value
-## 1 (Intercept) 3.0024545 1.1244812  2.670080 0.025619109
-## 2           x 0.4997273 0.1178777  4.239372 0.002176305
-## 
-## $`4`
-##          term  estimate std.error statistic     p.value
-## 1 (Intercept) 3.0017273 1.1239211  2.670763 0.025590425
-## 2           x 0.4999091 0.1178189  4.243028 0.002164602</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># now draw a graph</span>
-<span class="kw">ggplot</span>(dat, <span class="kw">aes</span>(x, y)) +
-<span class="st">  </span><span class="kw">facet_wrap</span>(~id) +
-<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
-<p><img src="block002_grammar_of_graphics_files/figure-html/mislead_stats-1.png" width="672" /></p>
-<p>A good picture tells the reader much more than any table or text can provide (though tables also have their purpose too).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>What are the corresponding relationships between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>? Using traditional metrics, the relationships appear identical across the samples:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Dataset ID</th>
+<th align="right"><span class="math inline">\(N\)</span></th>
+<th align="right"><span class="math inline">\(\bar{X}\)</span></th>
+<th align="right"><span class="math inline">\(\bar{Y}\)</span></th>
+<th align="right"><span class="math inline">\(R^2\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">1</td>
+<td align="right">11</td>
+<td align="right">9</td>
+<td align="right">7.500909</td>
+<td align="right">0.8164205</td>
+</tr>
+<tr class="even">
+<td align="left">2</td>
+<td align="right">11</td>
+<td align="right">9</td>
+<td align="right">7.500909</td>
+<td align="right">0.8162365</td>
+</tr>
+<tr class="odd">
+<td align="left">3</td>
+<td align="right">11</td>
+<td align="right">9</td>
+<td align="right">7.500000</td>
+<td align="right">0.8162867</td>
+</tr>
+<tr class="even">
+<td align="left">4</td>
+<td align="right">11</td>
+<td align="right">9</td>
+<td align="right">7.500909</td>
+<td align="right">0.8165214</td>
+</tr>
+</tbody>
+</table>
+<p>If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):</p>
+<table class="kable_wrapper">
+<caption>
+Dataset 1
+</caption>
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="right">Estimate</th>
+<th align="right">Standard Error</th>
+<th align="right"><span class="math inline">\(T\)</span>-statistic</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">3.0000909</td>
+<td align="right">1.1247468</td>
+<td align="right">2.667348</td>
+<td align="right">0.0257341</td>
+</tr>
+<tr class="even">
+<td align="left">x</td>
+<td align="right">0.5000909</td>
+<td align="right">0.1179055</td>
+<td align="right">4.241455</td>
+<td align="right">0.0021696</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="kable_wrapper">
+<caption>
+Dataset 2
+</caption>
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="right">Estimate</th>
+<th align="right">Standard Error</th>
+<th align="right"><span class="math inline">\(T\)</span>-statistic</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">3.000909</td>
+<td align="right">1.1253024</td>
+<td align="right">2.666758</td>
+<td align="right">0.0257589</td>
+</tr>
+<tr class="even">
+<td align="left">x</td>
+<td align="right">0.500000</td>
+<td align="right">0.1179637</td>
+<td align="right">4.238590</td>
+<td align="right">0.0021788</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="kable_wrapper">
+<caption>
+Dataset 3
+</caption>
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="right">Estimate</th>
+<th align="right">Standard Error</th>
+<th align="right"><span class="math inline">\(T\)</span>-statistic</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">3.0024545</td>
+<td align="right">1.1244812</td>
+<td align="right">2.670080</td>
+<td align="right">0.0256191</td>
+</tr>
+<tr class="even">
+<td align="left">x</td>
+<td align="right">0.4997273</td>
+<td align="right">0.1178777</td>
+<td align="right">4.239372</td>
+<td align="right">0.0021763</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<table class="kable_wrapper">
+<caption>
+Dataset 4
+</caption>
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Term</th>
+<th align="right">Estimate</th>
+<th align="right">Standard Error</th>
+<th align="right"><span class="math inline">\(T\)</span>-statistic</th>
+<th align="right">p-value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">3.0017273</td>
+<td align="right">1.1239211</td>
+<td align="right">2.670763</td>
+<td align="right">0.0255904</td>
+</tr>
+<tr class="even">
+<td align="left">x</td>
+<td align="right">0.4999091</td>
+<td align="right">0.1178189</td>
+<td align="right">4.243028</td>
+<td align="right">0.0021646</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<p>But what happens if we draw a picture?</p>
+<p><img src="block002_grammar_of_graphics_files/figure-html/mislead_plot-1.png" width="672" /></p>
+<p>A good picture tells the reader much more than any table or text can provide.</p>
 </div>
 <div id="define-the-layered-grammar-of-graphics" class="section level1">
 <h1>Define the layered grammar of graphics</h1>
@@ -1022,50 +1217,24 @@ plot_polished</code></pre></div>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2016-12-30</code></pre>
+##  date     2016-12-31</code></pre>
 <pre><code>## Packages ------------------------------------------------------------------</code></pre>
-<pre><code>##  package    * version    date       source                         
-##  assertthat   0.1        2013-12-06 CRAN (R 3.3.0)                 
-##  backports    1.0.4      2016-10-24 CRAN (R 3.3.0)                 
-##  broom      * 0.4.1      2016-06-24 CRAN (R 3.3.0)                 
-##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.0)                 
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                 
-##  DBI          0.5-1      2016-09-10 CRAN (R 3.3.0)                 
-##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                 
-##  digest       0.6.10     2016-08-02 CRAN (R 3.3.0)                 
-##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                 
-##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                 
-##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.0)                 
-##  gapminder  * 0.2.0      2015-12-31 CRAN (R 3.3.0)                 
-##  ggplot2    * 2.2.0.9000 2016-12-02 Github (hadley/ggplot2@f6f9f9d)
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                 
-##  highr        0.6        2016-05-09 CRAN (R 3.3.0)                 
-##  htmltools    0.3.5      2016-03-21 CRAN (R 3.3.0)                 
-##  knitr      * 1.15.1     2016-11-22 cran (@1.15.1)                 
-##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.0)                 
-##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                 
-##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                 
-##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                 
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                 
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                 
-##  nlme         3.1-128    2016-05-10 CRAN (R 3.3.1)                 
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                 
-##  psych        1.6.9      2016-09-17 cran (@1.6.9)                  
-##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                 
-##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                 
-##  Rcpp         0.12.8     2016-11-17 CRAN (R 3.3.2)                 
-##  readr      * 1.0.0      2016-08-03 CRAN (R 3.3.0)                 
-##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                 
-##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                 
-##  rprojroot    1.1        2016-10-29 CRAN (R 3.3.0)                 
-##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                 
-##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                 
-##  stringr      1.1.0      2016-08-19 cran (@1.1.0)                  
-##  tibble     * 1.2        2016-08-26 cran (@1.2)                    
-##  tidyr      * 0.6.0      2016-08-12 CRAN (R 3.3.0)                 
-##  tidyverse  * 1.0.0      2016-09-09 CRAN (R 3.3.0)                 
-##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                 
-##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+<pre><code>##  package   * version date       source        
+##  backports   1.0.4   2016-10-24 CRAN (R 3.3.0)
+##  devtools    1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest      0.6.10  2016-08-02 CRAN (R 3.3.0)
+##  evaluate    0.10    2016-10-11 CRAN (R 3.3.0)
+##  htmltools   0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  knitr       1.15.1  2016-11-22 cran (@1.15.1)
+##  magrittr    1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise     1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  Rcpp        0.12.8  2016-11-17 CRAN (R 3.3.2)
+##  rmarkdown   1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot   1.1     2016-10-29 CRAN (R 3.3.0)
+##  stringi     1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr     1.1.0   2016-08-19 cran (@1.1.0) 
+##  withr       1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  yaml        2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div id="references" class="section level1 unnumbered toc-ignore">
 <h1>References</h1>
