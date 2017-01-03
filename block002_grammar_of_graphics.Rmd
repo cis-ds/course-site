@@ -26,7 +26,7 @@ library(stringr)
 
 # Identify the importance of graphics in communicating information
 
-Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations (see @tufte1983 for much more on this topic).
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.^[Example drawn from [*The Visual Display of Quantitative Information* by Edward Tufte](https://www.edwardtufte.com/tufte/books_vdqi)]
 
 Consider the following data sets:
 
@@ -353,15 +353,15 @@ ggplot(mpg, aes(displ, hwy)) +
 
 Because we called `aes(x = displ, y = hwy)` within the `ggplot` function, it is automatically passed along to both `geom_point()` and `geom_smooth()`.
 
-## How to build a complicated, layered graphic
+# How to build a complicated, layered graphic
 
-### Charles Minard's map of Napoleon's disastrous Russian campaign of 1812
+## Charles Minard's map of Napoleon's disastrous Russian campaign of 1812
 
 ![["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](https://en.wikipedia.org/wiki/Charles_Joseph_Minard)](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)
 
-The graphic is notable for its representation in two dimensions of six types of data: the number of Napoleon's troops; distance; temperature; the latitude and longitude; direction of travel; and location relative to specific dates.
+The graphic is notable for its representation in two dimensions of six types of data: the number of Napoleon's troops; distance; temperature; the latitude and longitude; direction of travel; and location relative to specific dates.^[This exercise is drawn from [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)]
 
-### Building Minard's map in R
+## Building Minard's map in R
 
 ```{r minard_data}
 # get data on troop movements and city names
@@ -371,8 +371,13 @@ troops
 cities
 ```
 
-Let's sketch out what the grammar of graphics will look for this graph:
+### Grammar of Minard's graphic
 
+**Exercise: Write out what the grammar of graphics will look for this graph.**
+
+<details> 
+  <summary>**Click here for solution**</summary>
+  <p>
 * Layer
     * Data - `troops`
     * Mapping
@@ -395,22 +400,38 @@ Let's sketch out what the grammar of graphics will look for this graph:
     * Color - colors to indicate advancing or retreating troops
 * Coordinate system - map projection (Mercator or something else)
 * Faceting - none
+  </p>
+</details>
 
-```{r minard_plot}
-# build plot of troop movement
+### Write the R code
+
+First we want to build the layer for the troop movement:
+
+```{r plot_troops}
 plot_troops <- ggplot(troops, aes(long, lat)) +
   geom_path(aes(size = survivors,
                 color = direction,
                 group = group))
 plot_troops
+```
 
-# add city location
+Next let's add the cities layer:
+
+```{r plot_cities, dependson = 'plot_troops'}
 plot_both <- plot_troops + 
   geom_text(data = cities, aes(label = city), size = 4)
 plot_both
+```
 
-# clean plot up
-plot_polished <- plot_both + 
+Now that the basic information is on there, we want to clean up the graph and polish the visualization by:
+
+* Adjusting the size scale aesthetics for troop movement to better highlight the loss of troops over the campaign.
+* Change the default colors to mimic Minard's original grey and tan palette.
+* Change the coordinate system to a map-based system that draws the $x$ and $y$ axes at equal intervals.
+* Give the map a title and remove the axis labels.
+
+```{r plot_clean, dependson = 'plot_cities'}
+plot_polished <- plot_both +
   scale_size(range = c(0, 12),
              breaks = c(10000, 20000, 30000),
              labels = c("10,000", "20,000", "30,000")) + 
@@ -420,7 +441,11 @@ plot_polished <- plot_both +
        x = NULL,
        y = NULL)
 plot_polished
+```
 
+Finally we can change the default `ggplot` theme to remove the background and grid lines, as well as the legend:
+
+```{r plot_final, dependson = 'plot_clean'}
 plot_polished +
   theme_void() +
   theme(legend.position = "none")
@@ -428,51 +453,83 @@ plot_polished +
 
 # Practice generating layered graphics using `ggplot2`
 
-## `gapminder`
+Now let's practice generating layered graphics in R using the data from [Gapminder World](https://www.gapminder.org/data/), which compiles country-level data on quality-of-life measures.
 
-Load the `gapminder` dataset into your environment.
+## Load the `gapminder` dataset
+
+If you have not already installed the `gapminder` package and you try to load it using the following code, you will get an error:
+
+```{r, eval = FALSE}
+library(gapminder)
+```
+
+```
+Error in library(gapminder) : there is no package called ‘gapminder’
+```
+
+If this happens, install the gapminder package by running `install.packages("gapminder")` in your console.
+
+Once you've done this, run the following code to load the gapminder dataset, the `ggplot2` library, and a helper library for printing the contents of `gapminder`:
 
 ```{r gapminder}
 library(ggplot2)
 library(tibble)
-# install.packages("gapminder")
 library(gapminder)
 
-data("gapminder")
 str(gapminder)
 gapminder
 ```
 
-What is the average life expectancy, per continent?
+> Run `?gapminder` in the console to open the help file for the data and definitions for each of the columns.
 
+Using the grammar of graphics and your knowledge of the `ggplot2` library, generate a series of graphs that explore the relationships between specific variables.
+
+## Exercises
+
+**What is the average life expectancy, per continent?**
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
 ```{r lifeexp}
 ggplot(gapminder, aes(continent, lifeExp)) +
   geom_boxplot()
 ```
+  </p>
+</details>
 
-What is the relationship between GDP and life expectancy?
+**What is the relationship between GDP and life expectancy?**
 
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
 ```{r gdp_lifeexp}
 ggplot(gapminder, aes(gdpPercap, lifeExp)) +
   geom_point() +
   geom_smooth()
 ```
+  </p>
+</details>
 
-Bonus: what is causing the outlier in `gdpPercap`?
+**What is causing the outlier in `gdpPercap`?**
 
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
 ```{r lifeexp_outlier}
 ggplot(gapminder, aes(gdpPercap, lifeExp)) +
   geom_point() +
   geom_smooth() +
   geom_text(aes(label = country))
 ```
+  </p>
+</details>
+
 
 # Session Info {.toc-ignore}
 
 ```{r child='_sessioninfo.Rmd'}
 ```
-
-# References {.toc-ignore}
 
 [^layer]: [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)
 
