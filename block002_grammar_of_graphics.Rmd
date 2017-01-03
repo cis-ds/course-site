@@ -26,7 +26,7 @@ library(stringr)
 
 # Identify the importance of graphics in communicating information
 
-Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE). While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations (see @tufte1983 for much more on this topic).
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations (see @tufte1983 for much more on this topic).
 
 Consider the following data sets:
 
@@ -51,8 +51,8 @@ dat_print <- dat %>%
   nest(x, y)
 
 for(i in seq_len(nrow(dat_print))){
-  print(knitr::kable(dat_print[i,]$data,
-                     caption = str_c("Dataset", i, sep = " ")))
+  print(kable(dat_print[i,]$data,
+              caption = str_c("Dataset", i, sep = " ")))
 }
 ```
 
@@ -66,7 +66,7 @@ dat %>%
            mean_x = mean(x),
            mean_y = mean(y),
            cor = cor(x, y)) %>%
-  knitr::kable(col.names = c("Dataset ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"))
+  kable(col.names = c("Dataset ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"))
 ```
 
 If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
@@ -79,10 +79,9 @@ dat_model <- dat %>%
   map(tidy)
 
 for(i in seq_along(dat_model)){
-  print(knitr::kable(dat_model[i],
-                     caption = str_c("Dataset", i, sep = " "),
-                     col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic",
-                                   "p-value")))
+  print(kable(dat_model[i],
+              caption = str_c("Dataset", i, sep = " "),
+              col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic", "p-value")))
 }
 ```
 
@@ -100,17 +99,13 @@ dat %>%
 
 A good picture tells the reader much more than any table or text can provide.
 
-# Define the layered grammar of graphics
+# The layered grammar of graphics
 
-For more detailed information, see [@wickham2010].
+Google defines a **grammar** as "the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics".^[[Google](https://www.google.com/search?q=grammar)] Others consider a grammar to be "the fundamental principles or rules of an art or science".[^layer] Applied to visualizations, a **grammar of graphics** is a grammar used to describe and create a wide range of statistical graphics.^[[Wilkinson, Leland. (2005). *The Grammar of Graphics*. (UChicago authentication required)](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F0-387-28695-0)]
 
-* *Grammar* - the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics.^[[Google](https://www.google.com/search?q=grammar)]
-    * "The fundamental principles or rules of an art or science" [@wickham2010]
-* *Grammar of graphics* - a grammar used to describe and create a wide range of statistical graphics
+The **layered grammar of graphics** approach is implemented in [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/index.html), a widely used graphics library for R. All graphics in this library are built using a layered approach, building layers up to create the final graphic.
 
-The *layered grammar of graphics* approach is implemented in [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/index.html), a widely used graphics library for R. All graphics in this library are built using a layered approach, building layers up to create the final graphic.
-
-## Components of the layered grammar of graphics
+# Components of the layered grammar of graphics
 
 * Layer
     * Data
@@ -125,19 +120,38 @@ The *layered grammar of graphics* approach is implemented in [`ggplot2`](https:/
     * Data
     * Mapping
 
-### Layer
+## Layer
 
-Layers are responsible for creating the objects that we perceive on the plot. Layers are defined by the data and aesthetic mapping, a statistical transformation, a geometric object, and a position adjustment. Usually all the layers have something in common. So for example, you might overlay a scatterplot with a smoothed regression line to summarize the relationship between the variables.
+**Layers** are used to create the objects on a plot. They are defined by five basic parts:
 
-#### Data and mapping
+1. Data
+1. Mapping
+1. Statistical transformation (stat)
+1. Geometric object (geom)
+1. Position adjustment (position)
 
-*Data* defines the source of the information to be visualized, but is independent from the other elements. So a layered graphic can be built which can utilize different data sources while keeping the other components the same.
+Layers are typically related to one another and share many common features. For instance, multiple layers can be built using the same underlying data. An example would be a scattterplot overlayed with a smoothed regression line to summarize the relationship between the variables:
 
-```{r mpg}
-mpg
+```{r layers, echo = FALSE}
+set.seed(1234)
+
+data_frame(x = runif(50),
+           y = x + rnorm(50, 0, .2)) %>%
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
 ```
 
-*Mapping* defines how the variables are applied to the graphic. So if we were graphing information about mpg, we might map a car's engine displacement to the $x$ position and highway mileage to the $y$ position.
+### Data and mapping
+
+**Data** defines the source of the information to be visualized, but is independent from the other elements. So a layered graphic can be built which can utilize different data sources while keeping the other components the same. Here is a portion of a dataset contained in the `ggplot2` package: `mpg`.
+
+```{r mpg}
+head(mpg) %>%
+  kable(caption = "Dataset of automobiles")
+```
+
+**Mapping** defines how the variables are applied to the graphic. So if we were graphing information from `mpg`, we might map a car's engine displacement to the $x$ position and highway mileage to the $y$ position.
 
 ```{r mapping}
 mpg %>%
@@ -146,29 +160,11 @@ mpg %>%
          y = hwy)
 ```
 
-#### Geometric objects
+### Statistical transformation
 
-*Geometric objects* control the type of plot you create. Geoms are classified by their dimensionality:
+A **statistical transformation** (*stat*) transforms the data, generally by summarizing the information. For instance, in a bar graph you typically are not trying to graph the raw data because this doesn't make any inherent sense. Instead, you might summarize the data by graphing the total number of observations within a set of categories. Or if you have a dataset with many observations, you might transform the data into a smoothing line which summarizes the overall pattern of the relationship between variables.
 
-* 0 dimensions - point, text
-* 1 dimension - path, line
-* 2 dimensions - polygon, interval
-
-Each geom can only display certain aesthetics. For example, a point geom has position, color, shape, and size aesthetics. A bar geom has position, height, width, and fill color.
-
-```{r geom_point}
-ggplot(mpg, aes(displ, hwy)) +
-  geom_point()
-```
-
-```{r geom_bar}
-ggplot(mpg, aes(cyl)) +
-  geom_bar()
-```
-
-#### Statistical transformation
-
-A *statistical transformation* (stat) transforms the data, typically by summarizing the information. For instance, in a bar graph you typically are not trying to graph the raw data because this doesn't make any inherent sense. Instead, you might summarize the data by graphing the total number of observations within a set of categories. A stat takes a dataset as input and returns a dataset as output, and so a stat can add new variables to the original dataset. So instead of graphing this data in its raw form:
+A stat takes a dataset as input and returns a dataset as output, and so a stat can add new variables to the original dataset. So instead of graphing this data in its raw form:
 
 ```{r stat_raw}
 mpg %>%
@@ -180,26 +176,63 @@ You would transform it to:
 ```{r stat_transform}
 mpg %>%
   count(cyl)
-
-ggplot(mpg, aes(cyl)) +
-  geom_bar()
 ```
 
-Sometimes you don't need to make a statistical transformation. So going back to our engine displacement vs. highway mileage graph, here the statistical transformation is an *identity* transformation - the stat simply passes in the original dataset and exports the exact same dataset.
+> Sometimes you don't need to make a statistical transformation. For example, in a scatterplot you use the raw values for the $x$ and $y$ variables to map onto the graph. In these situations, the statistical transformation is an *identity* transformation - the stat simply passes in the original dataset and exports the exact same dataset.
 
-#### Position adjustment
+### Geometric objects
 
-Sometimes we need to tweak the position of the geometric elements on the plot, when otherwise they would obscure each other. This is most common in bar plots, where we stack or dodge (place side-by-side) the bars to avoid overlaps. In scatterplots with few unique $x$ and $y$ values, we sometimes randomly jitter the points to reduce overplotting.
+**Geometric objects** (*geoms*) control the type of plot you create. Geoms are classified by their dimensionality:
+
+* 0 dimensions - point, text
+* 1 dimension - path, line
+* 2 dimensions - polygon, interval
+
+Each geom can only display certain aesthetics. For example, a point geom has position, color, shape, and size aesthetics.
+
+```{r geom_point}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  ggtitle("A point geom with position and color aesthetics")
+```
+
+A bar geom has position, height, width, and fill color.
+
+```{r geom_bar}
+ggplot(mpg, aes(cyl)) +
+  geom_bar() +
+  ggtitle("A bar geom with position and height aesthetics")
+```
+
+### Position adjustment
+
+Sometimes with dense data we need to adjust the position of elements on the plot, otherwise data points might obscure one another. Bar plots frequently stack or dodge the bars to avoid overlap:
+
+```{r position_dodge}
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_bar(stat = "identity") +
+  ggtitle("A stacked bar chart")
+
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("A dodged bar chart")
+```
+
+Sometimes scatterplots with few unique $x$ and $y$ values are **jittered** (random noise is added) to reduce overplotting.
 
 ```{r position}
 ggplot(mpg, aes(cyl, hwy)) +
-  geom_point()
+  geom_point() +
+  ggtitle("A point geom with obscured data points")
 
 ggplot(mpg, aes(cyl, hwy)) +
-  geom_jitter()
+  geom_jitter() +
+  ggtitle("A point geom with jittered data points")
 ```
 
-### Scale
+## Scale
 
 A *scale* controls the mapping from data to aesthetic attributes, and so we need one scale for each aesthetic property used in a layer. Scales are common across layers to ensure a consistent mapping from data to aesthetics.
 
@@ -423,3 +456,8 @@ ggplot(gapminder, aes(gdpPercap, lifeExp)) +
 ```
 
 # References {.toc-ignore}
+
+[^layer]: [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)
+
+
+
