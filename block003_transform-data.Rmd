@@ -1,0 +1,319 @@
+---
+title: "Data transformation"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+bibliography: references.bib
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Identify computer programming as a form of problem solving
+* Practice decomposing an analytical goal into a set of discrete, computational tasks
+* Identify the verbs for a language of data manipulation
+* Clarify confusing aspects of data transformation from [R for Data Science](http://r4ds.had.co.nz/transform.html)
+
+# Computer programming as a form of problem solving
+
+Computers are not mind-reading machines. They are very efficient at certain tasks, and can perform calculations thousands of times faster than any human. But they are also very dumb: they can only do what you tell them to do. If you are not explicit about what you want the computer to do, or you misspeak and tell the computer to do the wrong thing, it will not correct you.
+
+In order to translate your goal for the program into clear instructions for the computer, you need to break the problem down into a set of smaller, discrete chunks that can be followed by the computer (and also by yourself/other humans).
+
+## Decomposing problems using `diamonds`
+
+```{r}
+library(tidyverse)
+
+str(diamonds)
+```
+
+The `diamonds` dataset contains prices and other attributes of almost 54,000 diamonds. Let's answer the following questions by **decomposing** the problem into a series of discrete steps we can tell R to follow.
+
+## What is the average price of an ideal cut diamond?
+
+Let's think about what we need to have the computer do to answer this question:
+
+1. First we need to identify the **input**, or the data we're going to analyze.
+1. Next we need to select only the observations which are ideal cut diamonds.
+1. Finally we need to calculate the average value, or **mean**, of price.
+
+Here's how we tell the computer to do this:
+
+```{r}
+data("diamonds")
+diamonds_ideal <- filter(diamonds, cut == "Ideal")
+summarize(diamonds_ideal, avg_price = mean(price))
+```
+
+The first line of code copies the `diamonds` data frame from the hard drive into memory so we can actively work with it. The second line creates a new data frame called `diamonds_ideal` that only contains the observations in `diamonds` which are ideal cut diamonds. The third line summarizes the new data frame and calculates the mean value for the `price` variable.
+
+## What is the average price of a diamond for each cut?
+
+**Exercise: decompose the question into a discrete set of tasks to complete using R.**
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+1. First we need to identify the **input**, or the data we're going to analyze.
+1. Next we need to group the observations together by their value for `cut`, so we can make separate calculations for each category.
+1. Finally we need to calculate the average value, or **mean**, of price for each cut of diamond.
+
+Here's how we tell the computer to do this:
+
+```{r}
+data("diamonds")
+diamonds_cut <- group_by(diamonds, cut)
+summarize(diamonds_cut, avg_price = mean(price))
+```
+  </p>
+</details>
+
+## What is the average carat size and price for each cut of "I" colored diamonds?
+
+**Exercise: decompose the question into a discrete set of tasks to complete using R.**
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+1. Use `diamonds` as the input
+1. Filter `diamonds` to only keep observations where the color is rated as "I"
+1. Group the filtered `diamonds` data frame by cut
+1. Summarize the grouped and filtered `diamonds` data frame by calculating the average carat size and price
+
+```{r}
+data("diamonds")
+diamonds_i <- filter(diamonds, color == "I")
+diamonds_i_group <- group_by(diamonds_i, cut)
+summarize(
+  diamonds_i_group,
+  carat = mean(carat),
+  price = mean(price)
+)
+```
+  </p>
+</details>
+
+# Verbiage for data transformation
+
+![Data science workflow](images/data-science.png)
+
+Above we practiced decomposing problems that required data transformation steps. Rarely will your data arrive in exactly the form you require in order to analyze it appropriately. As part of the data science workflow you will need to **transform** your data in order to analyze it. Just as we established a syntax for generating graphics (the **layered grammar of graphics**), so to will we have a syntax for data transformation.
+
+From the same author of `ggplot2`, I give you `dplyr`! This package contains useful functions for transforming and manipulating data frames, the bread-and-butter format for data in R. These functions can be thought of as **verbs**. The noun is the data, and the verb is acting on the noun. All of the `dplyr` verbs (and in fact all the verbs in the wider `tidyverse`) work similarly:
+
+1. The first argument is a data frame
+1. Subsequent arguments describe what to do with the data frame
+1. The result is a new data frame
+
+# Key functions in `dplyr`
+
+`function()`  | Action performed
+--------------|--------------------------------------------------------
+`filter()`    | Subsets observations based on their values
+`arrange()`   | Changes the order of observations based on their values
+`select()`    | Selects a subset of columns from the data frame
+`rename()`    | Changes the name of columns in the data frame
+`mutate()`    | Creates new columns (or variables)
+`group_by()`  | Changes the unit of analysis from the complete dataset to individual groups
+`summarize()` | Collapses the data frame to a smaller number of rows which summarize the larger data
+
+These are the basic verbs you will use to transform your data. By combining them together, you can perform powerful data manipulation tasks.
+
+## American vs. British English
+
+Hadley Wickham is from New Zealand. As such he (and base R) favours British spellings.
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">The holy grail: &quot;For consistency, aim to use British (rather than American) spelling.&quot; <a href="https://twitter.com/hashtag/rstats?src=hash">#rstats</a> <a href="http://t.co/7qQSWIowcl">http://t.co/7qQSWIowcl</a>. Colour is right!</p>&mdash; Hadley Wickham (@hadleywickham) <a href="https://twitter.com/hadleywickham/status/405707093770244097">November 27, 2013</a></blockquote>
+<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+While British spelling is preferred, America seeks to be great again.
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">We have to make America great again!</p>&mdash; Donald J. Trump (@realDonaldTrump) <a href="https://twitter.com/realDonaldTrump/status/266254611919282177">November 7, 2012</a></blockquote>
+<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+Therefore many R functions can be written using American or British variants:
+
+* `summarize()` = `summarise()`
+* `color()` = `colour()`
+
+## Saving transformed data
+
+`dplyr` never overwrites existing data. If you want a copy of the transformed data for later use in the program, you need to explicitly save it. You can do this by using the assignment operator `<-`:
+
+```{r}
+filter(diamonds, cut == "Ideal")  # printed, but not saved
+diamonds_ideal <- filter(diamonds, cut == "Ideal")  # saved, but not printed
+(diamonds_ideal <- filter(diamonds, cut == "Ideal"))  # saved and printed
+```
+
+## Comparisons
+
+Symbol | Action
+-------|--------
+`>`  | greater than
+`>=` | greater than or equal to
+`<`  | less than
+`<=` | less than or equal to
+`!=` | not equal
+**`==`** | **equal**
+
+Don't confuse `=` and `==`. `=` is used within function calls, whereas `==` is used to compare two objects or values.
+
+## Logical operators
+
+Multiple arguments to `filter()` are combined with "and": the function checks for every condition to be true in order to be included in the output. For other types, we use Boolean notation.
+
+Symbol | Action
+-------|--------
+`&`    | and
+`|`    | or
+`!`    | not
+
+![Complete set of boolean operations [@hadley2016]](http://r4ds.had.co.nz/diagrams/transform-logical.png)
+
+For example, using the `flights` data demonstrated in [Chapter 5 of R for Data Science](http://r4ds.had.co.nz/transform.html), to find all flights that departed in January or February:
+
+```{r}
+library(nycflights13)
+filter(flights, month == 1 | month == 2)
+```
+
+Do not try:
+
+```{r, eval = FALSE}
+filter(flights, month == 1 | 2)
+```
+
+This will not work. See book for more details why.
+
+## Missing values
+
+`NA` represents an unknown value. Missing values are contagious, in that their properties will transfer to any operation performed on it.
+
+```{r}
+NA > 5
+10 == NA
+NA + 10
+```
+
+To determine if a value is missing, use the `is.na()` function.
+
+When filtering, you must explicitly call for missing values to be returned.
+
+```{r}
+df <- tibble(x = c(1, NA, 3))
+filter(df, x > 1)
+
+filter(df, is.na(x) | x > 1)
+```
+
+Or when calculating summary statistics, you need to explicitly ignore missing values.
+
+```{r}
+df <- tibble(
+  x = c(1, 2, 3, 5, NA)
+)
+
+summarize(df, meanx = mean(x))
+summarize(df, meanx = mean(x, na.rm = TRUE))
+```
+
+## Types of mutations
+
+* Arithmetic: `+`, `-`, `*`, `/`, `^`
+* Logrithmic transformations: `log()`, `log2()`, `log10()`
+* Others (see book)
+    * For time series data: leading and lagging values
+    * Rankings
+    * Cumulative and rolling aggregates (means, minimums, maximums, sums)
+
+## Grouped summaries
+
+`summarize()` collapses a data frame to a single row:
+
+```{r}
+summarize(flights, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+Alone, `summarize()` is not terribly useful unless we pair it with `group_by()`. This changes the unit of analysis from the complete dataset to individual groups. Then, when you use the dplyr verbs on a grouped data frame they’ll be automatically applied "by group". For example, if we applied exactly the same code to a data frame grouped by date, we get the average delay per date:
+
+```{r}
+by_day <- group_by(flights, year, month, day)
+summarize(by_day, delay = mean(dep_delay, na.rm = TRUE))
+```
+
+## Types of data summarizing functions
+
+* Measures of centrality
+    * `mean()`
+    * `median()`
+* Measures of spread
+    * `sd()`
+    * `IQR()`
+    * `mad()`
+* Measures of rank
+    * `min()`
+    * `max()`
+    * `quantile()`
+* `n()`
+
+## Piping
+
+As we discussed, frequently you need to perform a series of intermediate steps to transform data for analysis. If we write each step as a discrete command and store their contents as new objects, it can be convoluted.
+
+Imagine that we want to explore the relationship between the distance and average delay for each location. Using what you know about `dplyr`, you might write code like this:
+
+```{r}
+by_dest <- group_by(flights, dest)
+delay <- summarise(by_dest,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE)
+)
+delay <- filter(delay, count > 20, dest != "HNL")
+
+# It looks like delays increase with distance up to ~750 miles 
+# and then decrease. Maybe as flights get longer there's more 
+# ability to make up delays in the air?
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+```
+
+There are three steps to prepare this data:
+
+1. Group flights by destination.
+2. Summarise to compute distance, average delay, and number of flights.
+3. Filter to remove noisy points and Honolulu airport, which is almost twice as far away as the next closest airport.
+
+This code is a little frustrating to write because we have to give each intermediate data frame a name, even though we don’t care about it. Naming things is hard, so this slows down our analysis.
+
+Fortunately, because all `dplyr` verbs follow the same syntax (data first, then options for the function), we can use the pipe operator `%>%` to chain a series of functions together in one command:
+
+```{r}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+```
+
+Now, we don't have to name each intermediate step and store them as data frames. We only store a single data frame (`delays`) which contains the final version of the transformed data frame. We could read this code as use the `flights` data, then group by destination, then summarize for each destination the number of flights, the average disance, and the average delay, then subset only the destinations with at least 20 flights and exclude Honolulu.
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
