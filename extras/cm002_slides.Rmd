@@ -1,0 +1,423 @@
+---
+title: "Visualizations and the Grammar of Graphics"
+author: |
+  | MACS 30500
+  | University of Chicago
+date: "January 9, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE)
+
+set.seed(1234)
+
+library(tidyverse)
+library(knitr)
+library(stringr)
+library(broom)
+theme_set(theme_gray(base_size = 18))
+```
+
+----
+
+```{r}
+# input data
+dat1 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68))
+dat2 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(9.14, 8.14, 8.74, 8.77, 9.26, 8.10, 6.13, 3.1, 9.13, 7.26, 4.74))
+dat3 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
+               y = c(7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73))
+dat4 <- tibble(x = c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8),
+               y = c(6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89))
+
+# combine data
+dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
+
+# get stats
+dat %>%
+  group_by(id) %>%
+  summarize(n = n(),
+           mean_x = mean(x),
+           mean_y = mean(y),
+           cor = cor(x, y)) %>%
+  kable(col.names = c("id", "$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"))
+```
+
+----
+
+```{r, results = 'asis'}
+# estimate linear model
+dat_model <- dat %>%
+  split(.$id) %>%
+  map(~ lm(y ~ x, data = .x)) %>%
+  map(tidy)
+
+for(i in seq_along(dat_model)){
+  print(kable(dat_model[i],
+              caption = str_c("Dataset", i, sep = " "),
+              col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic", "p-value")))
+}
+```
+
+----
+
+```{r}
+# now draw a graph
+ggplot(dat, aes(x, y)) +
+  facet_wrap(~id) +
+  geom_point()
+```
+
+## Grammar
+
+> The whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics.
+
+## Grammar of graphics
+
+* "The fundamental principles or rules of an art or science"
+* **Grammar of graphics** - a grammar used to describe and create a wide range of statistical graphics
+* Layered grammar of graphics
+
+## Layered grammar of graphics
+
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system (coord)
+* Faceting (facet)
+* Defaults
+    * Data
+    * Mapping
+
+## Layer
+
+* Responsible for creating the objects that we perceive on the plot
+* Defined by its subcomponents
+
+## Data and mapping
+
+* *Data* defines the source of the information to be visualized
+* *Mapping* defines how the variables are applied to the graphic
+
+## Data: `mpg`
+
+```{r mpg}
+mpg
+```
+
+## Data: `mpg`
+
+```{r mapping_cols}
+mpg %>%
+  select(displ, hwy)
+```
+
+## Mapping: `mpg`
+
+```{r mapping}
+mpg %>%
+  select(displ, hwy) %>%
+  rename(x = displ,
+         y = hwy)
+```
+
+## Statistical transformation (stat)
+
+* Transforms the data (typically by summarizing the information)
+
+----
+
+#### Raw data
+
+```{r stat_raw}
+mpg %>%
+  select(cyl)
+```
+
+#### Transformed data
+
+```{r stat_transform}
+mpg %>%
+  count(cyl)
+```
+
+## Transformed data
+
+```{r plot_transform}
+ggplot(mpg, aes(cyl)) +
+  geom_bar()
+```
+
+## Geometric objects (geoms)
+
+* Control the type of plot you create
+    * 0 dimensions - point, text
+    * 1 dimension - path, line
+    * 2 dimensions - polygon, interval
+* Geoms have specific aesthetics
+    * Point geom - position, color, shape, and size
+    * Bar geom - position, height, width, and fill
+
+## Point geom
+
+```{r geom_point}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  ggtitle("A point geom with position and color aesthetics")
+```
+
+## Bar geom
+
+```{r geom_bar}
+ggplot(mpg, aes(cyl)) +
+  geom_bar() +
+  ggtitle("A bar geom with position and height aesthetics")
+```
+
+## Position adjustment
+
+```{r position_dodge}
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_bar(stat = "identity") +
+  ggtitle("A stacked bar chart")
+```
+
+## Position adjustment
+
+```{r position_stack}
+count(mpg, class, cyl) %>%
+  ggplot(aes(cyl, n, fill = class)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  ggtitle("A dodged bar chart")
+```
+
+## Position adjustment
+
+```{r position}
+ggplot(mpg, aes(cyl, hwy)) +
+  geom_point() +
+  ggtitle("A point geom with obscured data points")
+```
+
+## Position adjustment
+
+```{r jitter}
+ggplot(mpg, aes(cyl, hwy)) +
+  geom_jitter() +
+  ggtitle("A point geom with jittered data points")
+```
+
+## Scale
+
+* Controls the mapping from data to aesthetic attributes
+
+## Scale: color
+
+```{r scale_color}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  guides(color = guide_legend(override.aes = list(size = 4)))
+```
+
+## Scale: color
+
+```{r scale_color_palette}
+ggplot(mpg, aes(displ, hwy, color = class)) +
+  geom_point() +
+  scale_color_brewer(palette = "Dark2") +
+  guides(color = guide_legend(override.aes = list(size = 4)))
+```
+
+## Coordinate system (coord)
+
+* Maps the position of objects onto the plane of the plot
+
+## Cartesian coordinate system
+
+```{r coord}
+x1 <- c(1, 10)
+y1 <- c(1, 5)
+p <- qplot(x1, y1, geom = "blank", xlab = NULL, ylab = NULL) +
+  theme_bw(base_size = 24)
+p
+```
+
+## Semi-log
+
+```{r semi_log}
+p + coord_trans(y = "log10")
+```
+
+## Polar
+
+```{r polar}
+p + coord_polar()
+```
+
+## Faceting
+
+```{r facet}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~class)
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+ggplot() +
+  layer(
+    data = mpg, mapping = aes(x = displ, y = hwy),
+    geom = "point", stat = "identity", position = "identity"
+  ) +
+  scale_x_continuous() +
+  scale_y_continuous() +
+  coord_cartesian()
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+```
+
+```{r default2, eval = FALSE, echo = TRUE}
+ggplot() +
+  layer(
+    data = mpg, mapping = aes(x = displ, y = hwy),
+    geom = "point"
+  )
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+```
+
+```{r default2, eval = FALSE, echo = TRUE}
+```
+
+```{r default3, eval = FALSE, echo = TRUE}
+ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+  geom_point()
+```
+
+## Defaults
+
+```{r default, eval = FALSE, echo = TRUE}
+```
+
+```{r default2, eval = FALSE, echo = TRUE}
+```
+
+```{r default3, eval = FALSE, echo = TRUE}
+```
+
+```{r default4, eval = FALSE, echo = TRUE}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point()
+```
+
+## Defaults {.scrollable}
+
+```{r default4, echo = TRUE}
+```
+
+## Defaults {.scrollable}
+
+```{r default5, echo = TRUE}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  geom_smooth()
+```
+
+----
+
+[!["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)
+
+## Building Minard's map in R {.scrollable}
+
+```{r minard_data, include = FALSE}
+troops <- read_table("../data/minard-troops.txt")
+cities <- read_table("../data/minard-cities.txt")
+```
+
+```{r minard_print, echo = TRUE}
+troops
+cities
+```
+
+## Minard's grammar
+
+<div id="left">
+* Troops
+    * Latitude
+    * Longitude
+    * Survivors
+    * Advance/retreat
+* Cities
+    * Latitude
+    * Longitude
+    * City name
+</div>
+
+<div id="right">
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system
+* Faceting
+</div>
+
+## {.scrollable}
+
+```{r plot_troops, echo = TRUE}
+plot_troops <- ggplot(troops, aes(long, lat)) +
+  geom_path(aes(size = survivors,
+                color = direction,
+                group = group))
+plot_troops
+```
+
+## {.scrollable}
+
+```{r plot_both, echo = TRUE}
+plot_both <- plot_troops + 
+  geom_text(data = cities, aes(label = city), size = 4)
+plot_both
+```
+
+## {.scrollable}
+
+```{r plot_polished, echo = TRUE}
+plot_polished <- plot_both + 
+  scale_size(range = c(0, 12),
+             breaks = c(10000, 20000, 30000),
+             labels = c("10,000", "20,000", "30,000")) + 
+  scale_color_manual(values = c("tan", "grey50")) +
+  coord_map() +
+  labs(title = "Map of Napoleon's Russian campaign of 1812",
+       x = NULL,
+       y = NULL)
+plot_polished
+```
+
+## {.scrollable}
+
+```{r plot_final, echo = TRUE}
+plot_polished +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+
