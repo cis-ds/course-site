@@ -903,8 +903,8 @@ my_varıable
 <span class="co">#&gt; #   tailnum &lt;chr&gt;, origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;,</span>
 <span class="co">#&gt; #   distance &lt;dbl&gt;, hour &lt;dbl&gt;, minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</span></code></pre></div></li>
 <li><p>Sort <code>flights</code> to find the most delayed flights. Find the flights that left earliest.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># most delayed</span>
-<span class="kw">arrange</span>(flights, <span class="kw">desc</span>(dep_delay))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># most delayed (based on arrival)</span>
+<span class="kw">arrange</span>(flights, <span class="kw">desc</span>(arr_delay))
 <span class="co">#&gt; # A tibble: 336,776 × 19</span>
 <span class="co">#&gt;    year month   day dep_time sched_dep_time dep_delay arr_time</span>
 <span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;</span>
@@ -1098,7 +1098,7 @@ my_varıable
 <li><p>Compare <code>dep_time</code>, <code>sched_dep_time</code>, and <code>dep_delay</code>. How would you expect those three numbers to be related?</p>
 <p><code>dep_time</code> should equal <code>sched_dep_time</code> <span class="math inline">\(+\)</span> <code>dep_delay</code> (after accounting for the fact that they are not stored continuously).</p></li>
 <li><p>Find the 10 most delayed flights using a ranking function. How do you want to handle ties? Carefully read the documentation for <code>min_rank()</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">delayed &lt;-<span class="st"> </span><span class="kw">mutate</span>(flights, <span class="dt">most_delayed =</span> <span class="kw">min_rank</span>(<span class="kw">desc</span>(dep_delay)))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">delayed &lt;-<span class="st"> </span><span class="kw">mutate</span>(flights, <span class="dt">most_delayed =</span> <span class="kw">min_rank</span>(<span class="kw">desc</span>(arr_delay)))
 <span class="kw">arrange</span>(delayed, most_delayed)
 <span class="co">#&gt; # A tibble: 336,776 × 20</span>
 <span class="co">#&gt;    year month   day dep_time sched_dep_time dep_delay arr_time</span>
@@ -1323,18 +1323,18 @@ flights %&gt;%
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights %&gt;%
 <span class="st">  </span><span class="kw">group_by</span>(tailnum) %&gt;%
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">row_num =</span> <span class="kw">row_number</span>()) %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(dep_delay &gt;<span class="st"> </span><span class="dv">60</span>) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(arr_delay &gt;<span class="st"> </span><span class="dv">60</span>) %&gt;%
 <span class="st">  </span><span class="kw">summarize</span>(<span class="dt">first_hour_delay =</span> <span class="kw">first</span>(row_num) -<span class="st"> </span><span class="dv">1</span>)
-<span class="co">#&gt; # A tibble: 3,360 × 2</span>
+<span class="co">#&gt; # A tibble: 3,371 × 2</span>
 <span class="co">#&gt;   tailnum first_hour_delay</span>
 <span class="co">#&gt;     &lt;chr&gt;            &lt;dbl&gt;</span>
 <span class="co">#&gt; 1  D942DN                0</span>
-<span class="co">#&gt; 2  N0EGMQ               48</span>
+<span class="co">#&gt; 2  N0EGMQ                0</span>
 <span class="co">#&gt; 3  N10156                9</span>
 <span class="co">#&gt; 4  N102UW               33</span>
 <span class="co">#&gt; 5  N104UW                6</span>
 <span class="co">#&gt; 6  N10575                0</span>
-<span class="co">#&gt; # ... with 3,354 more rows</span></code></pre></div>
+<span class="co">#&gt; # ... with 3,365 more rows</span></code></pre></div>
 <p>This uses a grouped summary operation. First I group by plane (<code>tailnum</code>), then I create a variable that defines the row number within each plane. I then filter the data to only include flights with delays longer than an hour, and use <code>summarize()</code> in conjunction with <code>first()</code> to find for each plane the <code>row_num</code> of the first flight with an 1+ hour delay. I subtract 1 from that value to count the number of flights <em>before the first delay</em>, rather than including the first flight with the hour or more delay.</p></li>
 <li><p>What does the <code>sort</code> argument to <code>count()</code> do. When might you use it?</p>
 <p>The <code>sort</code> argument will sort the results of <code>count()</code> in descending order of <code>n</code>. You might use this if you plan to <code>arrange()</code> the results after completing the count. This saves you a line of code.</p></li>
@@ -1401,22 +1401,40 @@ flights %&gt;%
 <span class="co">#&gt;  tz       America/Chicago             </span>
 <span class="co">#&gt;  date     2017-01-05</span>
 <span class="co">#&gt; Packages ------------------------------------------------------------------</span>
-<span class="co">#&gt;  package   * version date       source        </span>
-<span class="co">#&gt;  backports   1.0.4   2016-10-24 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  devtools    1.12.0  2016-06-24 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  digest      0.6.10  2016-08-02 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  evaluate    0.10    2016-10-11 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  htmltools   0.3.5   2016-03-21 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  knitr       1.15.1  2016-11-22 cran (@1.15.1)</span>
-<span class="co">#&gt;  magrittr    1.5     2014-11-22 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  memoise     1.0.0   2016-01-29 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  Rcpp        0.12.8  2016-11-17 CRAN (R 3.3.2)</span>
-<span class="co">#&gt;  rmarkdown   1.3     2016-12-21 CRAN (R 3.3.2)</span>
-<span class="co">#&gt;  rprojroot   1.1     2016-10-29 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  stringi     1.1.2   2016-10-01 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  stringr     1.1.0   2016-08-19 cran (@1.1.0) </span>
-<span class="co">#&gt;  withr       1.0.2   2016-06-20 CRAN (R 3.3.0)</span>
-<span class="co">#&gt;  yaml        2.1.14  2016-11-12 cran (@2.1.14)</span></code></pre></div>
+<span class="co">#&gt;  package      * version    date       source                         </span>
+<span class="co">#&gt;  assertthat     0.1        2013-12-06 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  backports      1.0.4      2016-10-24 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  codetools      0.2-15     2016-10-05 CRAN (R 3.3.2)                 </span>
+<span class="co">#&gt;  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                 </span>
+<span class="co">#&gt;  DBI            0.5-1      2016-09-10 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  digest         0.6.10     2016-08-02 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  ggplot2      * 2.2.0.9000 2016-12-02 Github (hadley/ggplot2@f6f9f9d)</span>
+<span class="co">#&gt;  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  htmltools      0.3.5      2016-03-21 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  knitr          1.15.1     2016-11-22 cran (@1.15.1)                 </span>
+<span class="co">#&gt;  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  nycflights13 * 0.2.0      2016-04-30 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  Rcpp           0.12.8     2016-11-17 CRAN (R 3.3.2)                 </span>
+<span class="co">#&gt;  readr        * 1.0.0      2016-08-03 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  rmarkdown      1.3        2016-12-21 CRAN (R 3.3.2)                 </span>
+<span class="co">#&gt;  rprojroot      1.1        2016-10-29 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                 </span>
+<span class="co">#&gt;  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  stringr        1.1.0      2016-08-19 cran (@1.1.0)                  </span>
+<span class="co">#&gt;  tibble       * 1.2        2016-08-26 cran (@1.2)                    </span>
+<span class="co">#&gt;  tidyr        * 0.6.0      2016-08-12 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  tidyverse    * 1.0.0      2016-09-09 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                 </span>
+<span class="co">#&gt;  yaml           2.1.14     2016-11-12 cran (@2.1.14)</span></code></pre></div>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
