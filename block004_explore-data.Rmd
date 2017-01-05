@@ -1,0 +1,326 @@
+---
+title: "Exploratory data analysis"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Define **exploratory data analysis** (EDA) and types of pattern exploration
+* Demonstrate types of graphs useful for EDA and precautions when interpreting them
+* Practice transforming and exploring data using Department of Education College Scorecard data
+
+```{r}
+library(tidyverse)
+```
+
+# Exploratory data analysis (EDA) and types of pattern exploration
+
+## Exploratory data analysis process
+
+1. Generate questions about your data.
+1. Search for answers by visualising, transforming, and modeling your data.
+1. Use what you learn to refine your questions and or generate new questions.
+* Rinse and repeat until you publish a paper.
+
+EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. At the most basic level, it involves answering two questions
+
+1. What type of *variation* occurs *within* my variables?
+2. What type of *covariation* occurs *between* my variables?
+
+## Visualizing variation
+
+### Categorical variables
+
+Variables with a fixed, discrete set of potential values. Typically visualized using a bar graph.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+```
+
+`dplyr` and the `count()` function can be used to manually calculate each category's frequency.
+
+```{r}
+diamonds %>% 
+  count(cut)
+```
+
+### Continuous variables
+
+Continuous variables can take on any of an infinite set of ordered values. Histograms are used to visualize these distributions by "binning" the continuous values into discrete chunks, then drawing a bar chart for the corresponding chunks.
+
+By default, `geom_histogram` divides the data into 30 discrete bins of equal width.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = carat))
+```
+
+The `binwidth` determines how large each bin will be. Different bin sizes may reveal different characteristics about the variable and can be manually set.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = carat), binwidth = 0.5)
+
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = carat), binwidth = 0.1)
+```
+
+### Detecting outliers
+
+```{r}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
+```
+
+Why does this graph have such a long tail on the right? Nothing appears to be out there.
+
+```{r}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+```
+
+Oh, there actually is something out there.
+
+```{r}
+diamonds %>% 
+  filter(y < 3 | y > 20) %>% 
+  arrange(y)
+```
+
+What do we do with this knowledge? Do we exclude outliers because they are extremely different from the "normal" data? Do we concentrate on these outliers because they are the most interesting component? This is a judgment call on your part. Follow normal practices in your field, though I always am weary of throwing out data unless I have strong evidence it is simply miscoded.
+
+## Covariation
+
+### Categorical and continuous variable
+
+#### Frequency polygon (line chart version of a histrogram)
+
+With counts:
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+With density (standardized count so that the area under each frequency polygon is one):
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+#### Boxplot
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_boxplot()
+```
+
+### Two categorical variables
+
+`geom_count()`:
+
+```{r}
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+```
+
+`geom_tile()`:
+
+```{r}
+diamonds %>% 
+  count(color, cut) %>%  
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = n))
+```
+
+### Two continuous variables
+
+```{r}
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = carat, y = price))
+```
+
+#### Avoid overlap of points
+
+##### Use `alpha` aesthetic to change transparency
+
+```{r}
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = carat, y = price), alpha = .2)
+```
+
+##### Add a smoothing line
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
+  geom_point() +
+  geom_smooth()
+```
+
+##### Bin the data
+
+```{r}
+ggplot(data = diamonds) +
+  geom_bin2d(mapping = aes(x = carat, y = price))
+```
+
+# Resources for exploring and visualizing data
+
+[**Data Visualization with `ggplot2` Cheat Sheet**](https://www.rstudio.com/wp-content/uploads/2015/12/ggplot2-cheatsheet-2.0.pdf) - print this cheatsheet off! It is a great guide for implementing functions from `ggplot2`. I strongly encourage you to refer to the first page. If you ever wonder what type of graph is appropriate for the variables you wish to visualize, this chart will guide you a graph that makes sense given the number and type (continuous vs. discrete) of variables.
+
+# Exploring college education
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+> If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+```{r}
+library(rcfss)
+data("scorecard")
+scorecard
+```
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of `dplyr` and `ggplot2` functions to answer the following questions.
+
+### Which type of college has the highest average SAT score?
+
+**NOTE: This time, use a graph to visualize your answer, [not a table](block003_transform-data.html#which_type_of_college_has_the_highest_average_sat_score).**
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+We could use a **boxplot** to visualize the distribution of SAT scores.
+
+```{r}
+ggplot(scorecard, aes(type, satavg)) +
+  geom_boxplot()
+```
+
+According to this private, nonprofit schools have the highest average SAT score, followed by public and then private, for-profit schools. But this doesn't reveal the entire picture. What happens if we plot a **histogram** or **frequency polygon**?
+
+```{r}
+ggplot(scorecard, aes(satavg)) +
+  geom_histogram() +
+  facet_wrap(~ type)
+
+ggplot(scorecard, aes(satavg, color = type)) +
+  geom_freqpoly()
+```
+
+Now we can see the averages for each college type are based on widely varying sample sizes.
+
+```{r}
+ggplot(scorecard, aes(type)) +
+  geom_bar()
+```
+
+There are far fewer private, for-profit colleges than the other categories. A boxplot alone would not reveal this detail, which could be important in future analysis.
+  </p>
+</details>
+
+
+### What is the relationship between college attendance cost and faculty salaries? How does this relationship differ across types of colleges?
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r}
+# geom_point
+ggplot(scorecard, aes(cost, avgfacsal)) +
+  geom_point() +
+  geom_smooth()
+
+# geom_point with alpha transparency to reveal dense clusters
+ggplot(scorecard, aes(cost, avgfacsal)) +
+  geom_point(alpha = .2) +
+  geom_smooth()
+
+# geom_hex
+ggplot(scorecard, aes(cost, avgfacsal)) +
+  geom_hex() +
+  geom_smooth()
+
+# geom_point with smoothing lines for each type
+ggplot(scorecard, aes(cost, avgfacsal, color = type)) +
+  geom_point(alpha = .2) +
+  geom_smooth()
+
+# geom_point with facets for each type
+ggplot(scorecard, aes(cost, avgfacsal, color = type)) +
+  geom_point(alpha = .2) +
+  geom_smooth() +
+  facet_grid(. ~ type)
+```
+
+  </p>
+</details>
+
+
+
+### How are a college's Pell Grant recipients related to the average student's education debt?
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+Two continuous variables suggest a **scatterplot** would be appropriate.
+
+```{r}
+ggplot(scorecard, aes(pctpell, debt)) +
+  geom_point()
+```
+
+Hmm. There seem to be a lot of data points. It isn't really clear if there is a trend. What if we **jitter** the data points?
+
+```{r}
+ggplot(scorecard, aes(pctpell, debt)) +
+  geom_jitter()
+```
+
+Meh, didn't really do much. What if we make our data points semi-transparent using the `alpha` aesthetic?
+
+```{r}
+ggplot(scorecard, aes(pctpell, debt)) +
+  geom_point(alpha = .2)
+```
+
+Now we're getting somewhere. I'm beginning to see some dense clusters in the middle. Maybe a **hexagon binning** plot would help
+
+```{r}
+ggplot(scorecard, aes(pctpell, debt)) +
+  geom_hex()
+```
+
+This is getting better. It looks like there might be a downward trend; that is, as the percentage of Pell grant recipients increases, average student debt decreases. Let's confirm this by going back to the scatterplot and overlaying a **smoothing line**.
+
+```{r}
+ggplot(scorecard, aes(pctpell, debt)) +
+  geom_point(alpha = .2) +
+  geom_smooth()
+```
+
+This confirms our initial evidence - there is an apparent negative relationship. Notice how I iterated through several different plots before I created one that provided the most informative visualization. **You will not create the perfect graph on your first attempt.** Trial and error is necessary in this exploratory stage. Be prepared to revise your code again and again.
+
+  </p>
+</details>
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
