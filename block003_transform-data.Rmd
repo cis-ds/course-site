@@ -4,7 +4,6 @@ output:
   html_document:
     toc: true
     toc_float: true
-bibliography: references.bib
 ---
 
 ```{r setup, include = FALSE}
@@ -16,7 +15,8 @@ knitr::opts_chunk$set(cache = TRUE)
 * Identify computer programming as a form of problem solving
 * Practice decomposing an analytical goal into a set of discrete, computational tasks
 * Identify the verbs for a language of data manipulation
-* Clarify confusing aspects of data transformation from [R for Data Science](http://r4ds.had.co.nz/transform.html)
+* Clarify confusing aspects of data transformation from [*R for Data Science*](http://r4ds.had.co.nz/transform.html)
+* Practice implementing `dplyr` data transformation functions
 
 # Computer programming as a form of problem solving
 
@@ -131,7 +131,8 @@ Hadley Wickham is from New Zealand. As such he (and base R) favours British spel
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">The holy grail: &quot;For consistency, aim to use British (rather than American) spelling.&quot; <a href="https://twitter.com/hashtag/rstats?src=hash">#rstats</a> <a href="http://t.co/7qQSWIowcl">http://t.co/7qQSWIowcl</a>. Colour is right!</p>&mdash; Hadley Wickham (@hadleywickham) <a href="https://twitter.com/hadleywickham/status/405707093770244097">November 27, 2013</a></blockquote>
 <script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-While British spelling is preferred, America seeks to be great again.
+
+While British spelling is preferred, let us rally around our new leader:
 
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">We have to make America great again!</p>&mdash; Donald J. Trump (@realDonaldTrump) <a href="https://twitter.com/realDonaldTrump/status/266254611919282177">November 7, 2012</a></blockquote>
 <script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
@@ -150,6 +151,8 @@ filter(diamonds, cut == "Ideal")  # printed, but not saved
 diamonds_ideal <- filter(diamonds, cut == "Ideal")  # saved, but not printed
 (diamonds_ideal <- filter(diamonds, cut == "Ideal"))  # saved and printed
 ```
+
+> Do not use `=` to assign objects. [Read this for more information on the difference between `<-` and `=`.](http://stackoverflow.com/a/1742550)
 
 ## Comparisons
 
@@ -189,7 +192,7 @@ Do not try:
 filter(flights, month == 1 | 2)
 ```
 
-This will not work. See book for more details why.
+[This will not work.](http://r4ds.had.co.nz/transform.html#logical-operators)
 
 ## Missing values
 
@@ -223,50 +226,11 @@ summarize(df, meanx = mean(x))
 summarize(df, meanx = mean(x, na.rm = TRUE))
 ```
 
-## Types of mutations
-
-* Arithmetic: `+`, `-`, `*`, `/`, `^`
-* Logrithmic transformations: `log()`, `log2()`, `log10()`
-* Others (see book)
-    * For time series data: leading and lagging values
-    * Rankings
-    * Cumulative and rolling aggregates (means, minimums, maximums, sums)
-
-## Grouped summaries
-
-`summarize()` collapses a data frame to a single row:
-
-```{r}
-summarize(flights, delay = mean(dep_delay, na.rm = TRUE))
-```
-
-Alone, `summarize()` is not terribly useful unless we pair it with `group_by()`. This changes the unit of analysis from the complete dataset to individual groups. Then, when you use the dplyr verbs on a grouped data frame they’ll be automatically applied "by group". For example, if we applied exactly the same code to a data frame grouped by date, we get the average delay per date:
-
-```{r}
-by_day <- group_by(flights, year, month, day)
-summarize(by_day, delay = mean(dep_delay, na.rm = TRUE))
-```
-
-## Types of data summarizing functions
-
-* Measures of centrality
-    * `mean()`
-    * `median()`
-* Measures of spread
-    * `sd()`
-    * `IQR()`
-    * `mad()`
-* Measures of rank
-    * `min()`
-    * `max()`
-    * `quantile()`
-* `n()`
-
 ## Piping
 
 As we discussed, frequently you need to perform a series of intermediate steps to transform data for analysis. If we write each step as a discrete command and store their contents as new objects, it can be convoluted.
 
-Imagine that we want to explore the relationship between the distance and average delay for each location. Using what you know about `dplyr`, you might write code like this:
+Drawing on [this example from *R for Data Science*](http://r4ds.had.co.nz/transform.html#combining-multiple-operations-with-the-pipe), let's explore the relationship between the distance and average delay for each location. At this point, we would write it something like this:
 
 ```{r}
 by_dest <- group_by(flights, dest)
@@ -277,23 +241,20 @@ delay <- summarise(by_dest,
 )
 delay <- filter(delay, count > 20, dest != "HNL")
 
-# It looks like delays increase with distance up to ~750 miles 
-# and then decrease. Maybe as flights get longer there's more 
-# ability to make up delays in the air?
 ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
   geom_point(aes(size = count), alpha = 1/3) +
   geom_smooth(se = FALSE)
 ```
 
-There are three steps to prepare this data:
+Decomposing the problem, there are three basic steps:
 
-1. Group flights by destination.
-2. Summarise to compute distance, average delay, and number of flights.
-3. Filter to remove noisy points and Honolulu airport, which is almost twice as far away as the next closest airport.
+1. Group `flights` by destination.
+1. Summarize to compute distance, average delay, and number of flights.
+1. Filter to remove noisy points and the Honolulu airport, which is almost twice as far away as the next closest airport.
 
-This code is a little frustrating to write because we have to give each intermediate data frame a name, even though we don’t care about it. Naming things is hard, so this slows down our analysis.
+The code as written is inefficient because we have to name each intermediate data frame, even though we don't care about them. It also provides more opportunities for typos and errors.
 
-Fortunately, because all `dplyr` verbs follow the same syntax (data first, then options for the function), we can use the pipe operator `%>%` to chain a series of functions together in one command:
+Because all `dplyr` verbs follow the same syntax (data first, then options for the function), we can use the pipe operator `%>%` to chain a series of functions together in one command:
 
 ```{r}
 delays <- flights %>% 
@@ -307,6 +268,133 @@ delays <- flights %>%
 ```
 
 Now, we don't have to name each intermediate step and store them as data frames. We only store a single data frame (`delays`) which contains the final version of the transformed data frame. We could read this code as use the `flights` data, then group by destination, then summarize for each destination the number of flights, the average disance, and the average delay, then subset only the destinations with at least 20 flights and exclude Honolulu.
+
+### Things not to do with piping
+
+Remember that with pipes, we don't have to save all of our intermediate steps. We only use one assignment, like this:
+
+```{r}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+```
+
+Do not do this:
+
+```{r eval = FALSE}
+delays <- flights %>% 
+  by_dest <- group_by(dest) %>% 
+  delay <- summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  delay <- filter(count > 20, dest != "HNL")
+```
+
+```
+Error: bad assignment: 
+     summarize(count = n(), dist = mean(distance, na.rm = TRUE), delay = mean(arr_delay, 
+         na.rm = TRUE)) %>% delay <- filter(count > 20, dest != "HNL")
+```
+
+Or this:
+
+```{r error = TRUE}
+delays <- flights %>% 
+  group_by(flights, dest) %>% 
+  summarize(flights,
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(flights, count > 20, dest != "HNL")
+```
+
+If you use pipes, you don't have to reference the data frame with each function - just the first time at the beginning of the pipe sequence.
+
+# Resources for transforming data
+
+[**Data Wrangling with `dplyr` and `tidyr` Cheat Sheet**](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf) - print this cheatsheet off! It is a great guide for implementing functions from `dplyr` (and `tidyr`, to be introduced next week).
+
+# Transforming college education
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+> If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+```{r}
+library(rcfss)
+data("scorecard")
+scorecard
+```
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of the `dplyr` functions to answer the following questions.
+
+### Which schools have a greater than 40% share of first-generation students?
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r}
+filter(scorecard, firstgen > .40)
+```
+  </p>
+</details>
+
+### Which were the 10 most expensive colleges in 2013?
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r}
+arrange(scorecard, desc(cost))
+top_n(scorecard, 10, wt = cost)
+```
+  </p>
+</details>
+
+### Which type of college has the highest average SAT score?
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r}
+scorecard %>%
+  group_by(type) %>%
+  summarize(mean_sat = mean(satavg, na.rm = TRUE))
+```
+  </p>
+</details>
+
+
+### How many private, nonprofit schools are cheaper than the University of Chicago?
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r}
+# number of schools
+scorecard %>%
+  filter(type == "Private, nonprofit") %>%
+  arrange(cost) %>%
+  mutate(row = row_number()) %>%
+  filter(name == "University of Chicago")
+
+# percentage of schools
+scorecard %>%
+  filter(type == "Private, nonprofit") %>%
+  mutate(cost_rank = percent_rank(cost)) %>%
+  filter(name == "University of Chicago")
+```
+  </p>
+</details>
+
 
 
 # Session Info {.toc-ignore}
