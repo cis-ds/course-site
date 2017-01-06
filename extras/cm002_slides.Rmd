@@ -21,7 +21,7 @@ theme_set(theme_gray(base_size = 18))
 
 ----
 
-```{r}
+```{r, results = 'asis'}
 # input data
 dat1 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
                y = c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68))
@@ -35,14 +35,22 @@ dat4 <- tibble(x = c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8),
 # combine data
 dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
 
-# get stats
-dat %>%
+# format for printing
+dat_print <- dat %>%
   group_by(id) %>%
-  summarize(n = n(),
+  nest(x, y)
+
+# get stats
+for(i in seq_len(nrow(dat_print))){
+  dat_print$data[[i]] %>%
+    summarize(n = n(),
            mean_x = mean(x),
            mean_y = mean(y),
            cor = cor(x, y)) %>%
-  kable(col.names = c("id", "$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"))
+  kable(col.names = c("$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"),
+        caption = str_c("Dataset", i, sep = " ")) %>%
+  print
+}
 ```
 
 ----
@@ -164,7 +172,7 @@ ggplot(mpg, aes(cyl)) +
     * Point geom - position, color, shape, and size
     * Bar geom - position, height, width, and fill
 
-## Point geom
+----
 
 ```{r geom_point}
 ggplot(mpg, aes(displ, hwy, color = class)) +
@@ -172,7 +180,7 @@ ggplot(mpg, aes(displ, hwy, color = class)) +
   ggtitle("A point geom with position and color aesthetics")
 ```
 
-## Bar geom
+----
 
 ```{r geom_bar}
 ggplot(mpg, aes(cyl)) +
@@ -331,7 +339,7 @@ ggplot(mpg, aes(displ, hwy)) +
 
 ## Defaults {.scrollable}
 
-```{r default5, echo = TRUE}
+```{r default5, echo = TRUE, message = FALSE}
 ggplot(mpg, aes(displ, hwy)) +
   geom_point() +
   geom_smooth()
@@ -339,7 +347,7 @@ ggplot(mpg, aes(displ, hwy)) +
 
 ----
 
-[!["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)
+!["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](../images/minard.png)
 
 ## Building Minard's map in R {.scrollable}
 

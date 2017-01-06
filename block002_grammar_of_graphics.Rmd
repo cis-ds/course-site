@@ -9,6 +9,7 @@ bibliography: references.bib
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE)
+options(digits = 3)
 ```
 
 # Objectives
@@ -51,22 +52,25 @@ dat_print <- dat %>%
   nest(x, y)
 
 for(i in seq_len(nrow(dat_print))){
-  print(kable(dat_print[i,]$data,
-              caption = str_c("Dataset", i, sep = " ")))
+  dat_print$data[[i]] %>%
+    kable(caption = str_c("Dataset", i, sep = " ")) %>%
+    print
 }
 ```
 
 What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
 
-```{r mislead_stats, dependson = 'misleading', echo = FALSE}
-# get stats
-dat %>%
-  group_by(id) %>%
-  summarize(n = n(),
+```{r mislead_stats, dependson = 'misleading', echo = FALSE, results='asis'}
+for(i in seq_len(nrow(dat_print))){
+  dat_print$data[[i]] %>%
+    summarize(n = n(),
            mean_x = mean(x),
            mean_y = mean(y),
            cor = cor(x, y)) %>%
-  kable(col.names = c("Dataset ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"))
+  kable(col.names = c("$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"),
+        caption = str_c("Dataset", i, sep = " ")) %>%
+  print
+}
 ```
 
 If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
