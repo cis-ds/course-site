@@ -1,0 +1,116 @@
+---
+title: "Parsing vectors"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Define a vector
+* Identify different types of vectors
+* Demonstrate how vectors can be read and parsed
+
+```{r packages}
+library(tidyverse)
+```
+
+# Vectors
+
+There are lots of functions available to import rectangular data files into R (see the book for the appropriate function for each type of data file). However each function performs the same basic task: parse each column into the appropriate type of data **vector**.
+
+We will learn more about vectors soon in *functional programming*. Vectors are the basic unit of data storage in R. A data frame is simply a set of vectors combined together; each column is a separate vector.
+
+# Types of vectors
+
+## Logical vectors
+
+**Logical vectors** take on one of three possible values:
+
+* `TRUE`
+* `FALSE`
+* `NA` (missing value)
+
+```{r}
+parse_logical(c(TRUE, TRUE, FALSE, TRUE, NA))
+```
+
+> Whenever you filter a data frame, R is (in the background) creating a vector of `TRUE` and `FALSE` - whenever the condition is `TRUE`, keep the row, otherwise exclude it.
+
+## Numeric vectors
+
+**Numeric vectors** contain numbers (duh!). They can be stored as **integers** (whole numbers) or **doubles** (numbers with decimal points). In practice, you rarely need to concern yourself with this difference, but just know that they are different but related things.
+
+```{r}
+parse_integer(c(1, 5, 3, 4, 12423))
+parse_double(c(4.2, 4, 6, 53.2))
+```
+
+> Doubles can store both whole numbers and numbers with decimal points.
+
+## Character vectors
+
+**Character vectors** contain **strings**, which are typically text but could also be dates or any other combination of characters.
+
+```{r}
+parse_character(c("Goodnight Moon", "Runaway Bunny", "Big Red Barn"))
+```
+
+## Factors
+
+[**Factors** are an anachronism in the history of R](http://simplystatistics.org/2015/07/24/stringsasfactors-an-unauthorized-biography/). They are used to work with categorical variables, or variables that have a discrete and fixed set of potential values. Alas, increased computing power renders their usefulness obsolete, but many base R functions automatically convert characters to factors. Therefore you need to know how to deal with them. [R for Data Science](http://r4ds.had.co.nz/factors.html) has an excellent treatment on factors and the `forcats` library for working with factors. **Read it**.
+
+## Operating on vectors
+
+Certain operations can only be performed on certain types of vectors. For instance, arithmetic only works on numeric vectors.
+
+```{r, error = TRUE}
+c(1, 3, 5, 7) + 2
+c("a", "b", "c", "d") + 2
+```
+
+In addition, vectors can only be of one type. So a vector created in R like `c(1, 2, "abc", TRUE)` will automatically be converted to a character vector. If you try to parse it any other way, you'll get an error:
+
+```{r}
+x <- c(1, 2, "abc", TRUE)
+x
+parse_logical(x)
+parse_integer(x)
+parse_character(x)
+```
+
+# Parsing vectors
+
+When R reads in tabular data files, it needs to parse each column to store it using the correct type of vector. Unfortunately parsing is not perfect - unless the data file includes information describing its column types, the `read_` functions have to make educated guesses. Generally it makes pretty good guesses, but as you saw in [the reading](http://r4ds.had.co.nz/data-import.html) this will not always work. Be prepared to encounter errors related to incorrect parsing, and realize that you can override the default parsers either before or after the data has been read into R. Look at this [example from the reading](http://r4ds.had.co.nz/data-import.html#problems):
+
+```{r}
+challenge <- read_csv(readr_example("challenge.csv"))
+```
+
+To override the default parsers when the data file is being read into R, use the `col_` family of functions:
+
+```{r}
+challenge_parsed <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+tail(challenge_parsed)
+```
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
