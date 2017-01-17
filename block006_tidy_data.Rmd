@@ -158,7 +158,8 @@ race %>%
 <details> 
   <summary>Click for the solution</summary>
   <p>
-  
+
+This is essentially a gathering operation. Except for the `Name` column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns' values are another variable. We want to gather these columns. The `key` will tell us the original column name, and the `value` will give us the values in the cells. Because the column names are actually numeric values, we set `convert = TRUE` to coerce the new `Time` column into a numeric column (or vector). (The last line isn't necessary, but sorts the data frame in a consistent manner.)
 
 ```{r}
 race %>%
@@ -192,6 +193,8 @@ results %>%
 <details> 
   <summary>Click for the solution</summary>
   <p>
+
+This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
 
 ```{r}
 results %>%
@@ -233,14 +236,58 @@ grades %>%
   <summary>Click for the solution</summary>
   <p>
 
+In this example, the basic unit of observation is the test. Each individual takes two separate tests (labeled `1` and `2`) at multiple points in time: during each quarter (`Fall`, `Winter`, `Spring`) as well as in multiple years (`2008` and `2009`). So our final data frame should contain five columns: `ID` (identifying the student), `Year` (year the test was taken), `Quarter` (quarter in which the test was taken), `Test1` (score on the first test), and `Test2` (score on the second test).
+
+Let's start with the gathering operation: we want to gather `Fall`, `Winter`, and `Spring` into a single column (we can use the inclusive select function `:` to gather these three columns):
+
+```{r}
+grades %>%
+  gather(key = Quarter, value = Score, Fall:Winter)
+```
+
+Good, but now we spread observations across multiple rows. Remember that we want each test to be a separate variable. To do that, we can spread those values across two columns.
+
 ```{r}
 grades %>%
   gather(Quarter, Score, Fall:Winter) %>%
-  mutate(Test = paste0("Test", Test)) %>%
+  spread(Test, Score)
+```
+
+This is an acceptable solution, but look what happened to the column names for each test: they're labeled as numbers (`1` and `2`). We'd rather give columns text labels, since those are easier to reference in our code. We can use a function called `str_c()` from the `stringr` library to add text to the `Test` column before we spread it. `str_c()` combines two or more values together to create a single value:[^unite]
+
+```{r}
+library(stringr)
+
+grades %>%
+  gather(Quarter, Score, Fall:Winter) %>%
+  mutate(Test = str_c("Test", Test))
+
+grades %>%
+  gather(Quarter, Score, Fall:Winter) %>%
+  mutate(Test = str_c("Test", Test)) %>%
+  spread(Test, Score)
+```
+
+If we're cleaning up the data frame, let's also arrange it in a logical order:
+
+```{r}
+grades %>%
+  gather(Quarter, Score, Fall:Winter) %>%
+  mutate(Test = str_c("Test", Test)) %>%
   spread(Test, Score) %>%
   arrange(ID, Year, Quarter)
 ```
 
+[^unite]: You might think to use the `unite()` function here, but it won't work unless you first create a column which only contains the value `Test`, like so:
+
+    ```{r}
+    grades %>%
+      gather(Quarter, Score, Fall:Winter) %>%
+      mutate(test_label = "Test") %>%
+      unite(col = Test, test_label, Test)
+    ```
+    This works, but requires two lines of code instead of one.
+    
   </p>
 </details>
 

@@ -567,6 +567,7 @@ race</code></pre></div>
 <p></details></p>
 <details> <summary>Click for the solution</summary>
 <p>
+<p>This is essentially a gathering operation. Except for the <code>Name</code> column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns’ values are another variable. We want to gather these columns. The <code>key</code> will tell us the original column name, and the <code>value</code> will give us the values in the cells. Because the column names are actually numeric values, we set <code>convert = TRUE</code> to coerce the new <code>Time</code> column into a numeric column (or vector). (The last line isn’t necessary, but sorts the data frame in a consistent manner.)</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">race %&gt;%
 <span class="st">  </span><span class="kw">gather</span>(Time, Score, -Name, <span class="dt">convert =</span> <span class="ot">TRUE</span>) %&gt;%
 <span class="st">  </span><span class="kw">arrange</span>(Name, Time)</code></pre></div>
@@ -633,6 +634,7 @@ race</code></pre></div>
 <p></details></p>
 <details> <summary>Click for the solution</summary>
 <p>
+<p>This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then <code>Treat</code> and <code>Cont</code> can be stored in separate columns.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">results %&gt;%
 <span class="st">  </span><span class="kw">spread</span>(Treatment, value)</code></pre></div>
 <pre><code>## # A tibble: 10 × 3
@@ -702,9 +704,98 @@ race</code></pre></div>
 <p></details></p>
 <details> <summary>Click for the solution</summary>
 <p>
+<p>In this example, the basic unit of observation is the test. Each individual takes two separate tests (labeled <code>1</code> and <code>2</code>) at multiple points in time: during each quarter (<code>Fall</code>, <code>Winter</code>, <code>Spring</code>) as well as in multiple years (<code>2008</code> and <code>2009</code>). So our final data frame should contain five columns: <code>ID</code> (identifying the student), <code>Year</code> (year the test was taken), <code>Quarter</code> (quarter in which the test was taken), <code>Test1</code> (score on the first test), and <code>Test2</code> (score on the second test).</p>
+<p>Let’s start with the gathering operation: we want to gather <code>Fall</code>, <code>Winter</code>, and <code>Spring</code> into a single column (we can use the inclusive select function <code>:</code> to gather these three columns):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grades %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> Quarter, <span class="dt">value =</span> Score, Fall:Winter)</code></pre></div>
+<pre><code>## # A tibble: 36 × 5
+##       ID  Test  Year Quarter Score
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;chr&gt; &lt;int&gt;
+## 1      1     1  2008    Fall    15
+## 2      1     1  2009    Fall    12
+## 3      1     2  2008    Fall    22
+## 4      1     2  2009    Fall    10
+## 5      2     1  2008    Fall    12
+## 6      2     1  2009    Fall    16
+## 7      2     2  2008    Fall    13
+## 8      2     2  2009    Fall    23
+## 9      3     1  2008    Fall    11
+## 10     3     1  2009    Fall    13
+## # ... with 26 more rows</code></pre>
+<p>Good, but now we spread observations across multiple rows. Remember that we want each test to be a separate variable. To do that, we can spread those values across two columns.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grades %&gt;%
 <span class="st">  </span><span class="kw">gather</span>(Quarter, Score, Fall:Winter) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Test =</span> <span class="kw">paste0</span>(<span class="st">&quot;Test&quot;</span>, Test)) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(Test, Score)</code></pre></div>
+<pre><code>## # A tibble: 18 × 5
+##       ID  Year Quarter   `1`   `2`
+## *  &lt;int&gt; &lt;int&gt;   &lt;chr&gt; &lt;int&gt; &lt;int&gt;
+## 1      1  2008    Fall    15    22
+## 2      1  2008  Spring    16    22
+## 3      1  2008  Winter    19    24
+## 4      1  2009    Fall    12    10
+## 5      1  2009  Spring    13    14
+## 6      1  2009  Winter    27    20
+## 7      2  2008    Fall    12    13
+## 8      2  2008  Spring    13    11
+## 9      2  2008  Winter    25    29
+## 10     2  2009    Fall    16    23
+## 11     2  2009  Spring    14    20
+## 12     2  2009  Winter    21    26
+## 13     3  2008    Fall    11    17
+## 14     3  2008  Spring    12    12
+## 15     3  2008  Winter    22    23
+## 16     3  2009    Fall    13    14
+## 17     3  2009  Spring    11     9
+## 18     3  2009  Winter    27    31</code></pre>
+<p>This is an acceptable solution, but look what happened to the column names for each test: they’re labeled as numbers (<code>1</code> and <code>2</code>). We’d rather give columns text labels, since those are easier to reference in our code. We can use a function called <code>str_c()</code> from the <code>stringr</code> library to add text to the <code>Test</code> column before we spread it. <code>str_c()</code> combines two or more values together to create a single value:<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)
+
+grades %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(Quarter, Score, Fall:Winter) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Test =</span> <span class="kw">str_c</span>(<span class="st">&quot;Test&quot;</span>, Test))</code></pre></div>
+<pre><code>## # A tibble: 36 × 5
+##       ID  Test  Year Quarter Score
+##    &lt;int&gt; &lt;chr&gt; &lt;int&gt;   &lt;chr&gt; &lt;int&gt;
+## 1      1 Test1  2008    Fall    15
+## 2      1 Test1  2009    Fall    12
+## 3      1 Test2  2008    Fall    22
+## 4      1 Test2  2009    Fall    10
+## 5      2 Test1  2008    Fall    12
+## 6      2 Test1  2009    Fall    16
+## 7      2 Test2  2008    Fall    13
+## 8      2 Test2  2009    Fall    23
+## 9      3 Test1  2008    Fall    11
+## 10     3 Test1  2009    Fall    13
+## # ... with 26 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grades %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(Quarter, Score, Fall:Winter) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Test =</span> <span class="kw">str_c</span>(<span class="st">&quot;Test&quot;</span>, Test)) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(Test, Score)</code></pre></div>
+<pre><code>## # A tibble: 18 × 5
+##       ID  Year Quarter Test1 Test2
+## *  &lt;int&gt; &lt;int&gt;   &lt;chr&gt; &lt;int&gt; &lt;int&gt;
+## 1      1  2008    Fall    15    22
+## 2      1  2008  Spring    16    22
+## 3      1  2008  Winter    19    24
+## 4      1  2009    Fall    12    10
+## 5      1  2009  Spring    13    14
+## 6      1  2009  Winter    27    20
+## 7      2  2008    Fall    12    13
+## 8      2  2008  Spring    13    11
+## 9      2  2008  Winter    25    29
+## 10     2  2009    Fall    16    23
+## 11     2  2009  Spring    14    20
+## 12     2  2009  Winter    21    26
+## 13     3  2008    Fall    11    17
+## 14     3  2008  Spring    12    12
+## 15     3  2008  Winter    22    23
+## 16     3  2009    Fall    13    14
+## 17     3  2009  Spring    11     9
+## 18     3  2009  Winter    27    31</code></pre>
+<p>If we’re cleaning up the data frame, let’s also arrange it in a logical order:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grades %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(Quarter, Score, Fall:Winter) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Test =</span> <span class="kw">str_c</span>(<span class="st">&quot;Test&quot;</span>, Test)) %&gt;%
 <span class="st">  </span><span class="kw">spread</span>(Test, Score) %&gt;%
 <span class="st">  </span><span class="kw">arrange</span>(ID, Year, Quarter)</code></pre></div>
 <pre><code>## # A tibble: 18 × 5
@@ -745,22 +836,65 @@ race</code></pre></div>
 ##  tz       America/Chicago             
 ##  date     2017-01-17</code></pre>
 <pre><code>## Packages ------------------------------------------------------------------</code></pre>
-<pre><code>##  package   * version date       source        
-##  backports   1.0.4   2016-10-24 CRAN (R 3.3.0)
-##  devtools    1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest      0.6.11  2017-01-03 CRAN (R 3.3.2)
-##  evaluate    0.10    2016-10-11 CRAN (R 3.3.0)
-##  htmltools   0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  knitr       1.15.1  2016-11-22 cran (@1.15.1)
-##  magrittr    1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise     1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  Rcpp        0.12.8  2016-11-17 CRAN (R 3.3.2)
-##  rmarkdown   1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot   1.1     2016-10-29 CRAN (R 3.3.0)
-##  stringi     1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr     1.1.0   2016-08-19 cran (@1.1.0) 
-##  withr       1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  yaml        2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+<pre><code>##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.4   2016-10-24 CRAN (R 3.3.0)
+##  codetools    0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.11  2017-01-03 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  knitr        1.15.1  2016-11-22 cran (@1.15.1)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss      * 0.1.0   2017-01-17 local         
+##  Rcpp         0.12.8  2016-11-17 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.1     2016-10-29 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr    * 1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.0   2016-08-12 CRAN (R 3.3.0)
+##  tidyverse  * 1.0.0   2016-09-09 CRAN (R 3.3.0)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>You might think to use the <code>unite()</code> function here, but it won’t work unless you first create a column which only contains the value <code>Test</code>, like so:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grades %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(Quarter, Score, Fall:Winter) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">test_label =</span> <span class="st">&quot;Test&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">unite</span>(<span class="dt">col =</span> Test, test_label, Test)</code></pre></div>
+<pre><code>## # A tibble: 36 × 5
+##       ID   Test  Year Quarter Score
+## *  &lt;int&gt;  &lt;chr&gt; &lt;int&gt;   &lt;chr&gt; &lt;int&gt;
+## 1      1 Test_1  2008    Fall    15
+## 2      1 Test_1  2009    Fall    12
+## 3      1 Test_2  2008    Fall    22
+## 4      1 Test_2  2009    Fall    10
+## 5      2 Test_1  2008    Fall    12
+## 6      2 Test_1  2009    Fall    16
+## 7      2 Test_2  2008    Fall    13
+## 8      2 Test_2  2009    Fall    23
+## 9      3 Test_1  2008    Fall    11
+## 10     3 Test_1  2009    Fall    13
+## # ... with 26 more rows</code></pre>
+<p>This works, but requires two lines of code instead of one.<a href="#fnref1">↩</a></p></li>
+</ol>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
