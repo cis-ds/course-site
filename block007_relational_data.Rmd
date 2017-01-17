@@ -1,0 +1,214 @@
+---
+title: "Relational data: a fly by the seat of your pants introduction"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+# Objectives
+
+* Introduce relational data
+* Demonstrate how tables are linked to one another
+* Demonstrate methods in `dplyr` for linking and merging related tables
+
+# Working with relational data
+
+I leave much of the introductory material for this module to [R for Data Science](http://r4ds.had.co.nz/relational-data.html).^[I was traveling, then I was sick, so I could not finish this section in time. Sometimes life happens :(] Here I want to demonstrate in practical terms how relational joins work.
+
+## `superheroes` and `publishers`
+
+Load the `rcfss` library^[Run `devtools::install_github("uc-cfss/rcfss")` if you cannot load the data frames as you might have an older version of the package which doesn't include the data frames.] There are two data frames which contain data on comic books.
+
+```{r}
+library(tidyverse)
+library(rcfss)
+
+superheroes
+publishers
+```
+
+Would it make sense to store these two data frames in the same tibble? **No!** This is because each data frame contains substantively different information:
+
+* `superheroes` contains data on superheroes
+* `publishers` contains data on publishers
+
+The units of analysis are completely different. Just as it made sense to split [Minard's data into two separate data frames](block002_grammar_of_graphics.html#building_minard’s_map_in_r), it also makes sense to store them separately here. That said, depending on the type of analysis you seek to perform, it makes sense to join the data frames together temporarily. How should we join them? Well it depends on how you plan to ask your question. Let's look at the result of several different join operations.
+
+```{r, echo = FALSE}
+superheroes_kable <- knitr::kable(superheroes)
+publishers_kable <- knitr::kable(publishers)
+```
+
+# Inner join
+
+> `inner_join(x, y)`: Return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+(ijsp <- inner_join(superheroes, publishers))
+```
+
+We lose Hellboy in the join because, although he appears in `x = superheroes`, his publisher Dark Horse Comics does not appear in `y = publishers`. The join result has all variables from `x = superheroes` plus `yr_founded`, from `y`.
+
+```{r include = FALSE}
+ijsp_kable <- knitr::kable(ijsp)
+```
+
+<table border = 1>
+<tr>
+<td valign="top">
+  `superheroes`
+  `r superheroes_kable`
+</td>
+<td valign="top">
+  `publishers`
+  `r publishers_kable`
+</td>
+<td valign="top">
+  `inner_join(x = superheroes, y = publishers)`
+  `r ijsp_kable`
+</td>
+</tr>
+</table>
+  
+# Semi join
+
+> `semi_join(x, y)`: Return all rows from x where there are matching values in y, keeping just columns from x. A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x. This is a filtering join.
+
+```{r}
+(sjsp <- semi_join(superheroes, publishers))
+```
+
+We get a similar result as with `inner_join()` but the join result contains only the variables originally found in `x = superheroes`. But note the row order has changed.
+
+```{r include = FALSE}
+sjsp_kable <- knitr::kable(sjsp)
+```
+
+<table border = 1>
+  <tr>
+  <td valign="top">
+  `superheroes`
+  `r superheroes_kable`
+</td>
+  <td valign="top">
+  `publishers`
+  `r publishers_kable`
+</td>
+  <td valign="top">
+  `semi-join(x = superheroes, y = publishers)`
+  `r sjsp_kable`
+</td>
+</tr>
+</table>
+
+# Left join
+
+> `left_join(x, y)`: Return all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.
+
+```{r}
+(ljsp <- left_join(superheroes, publishers))
+```
+
+We basically get `x = superheroes` back, but with the addition of variable `yr_founded`, which is unique to `y = publishers`. Hellboy, whose publisher does not appear in `y = publishers`, has an `NA` for `yr_founded`.
+
+```{r include = FALSE}
+ljsp_kable <- knitr::kable(ljsp)
+```
+
+<table border = 1>
+  <tr>
+  <td valign="top">
+  `superheroes`
+  `r superheroes_kable`
+</td>
+  <td valign="top">
+  `publishers`
+  `r publishers_kable`
+</td>
+  <td valign="top">
+  `left_join(x = superheroes, y = publishers)`
+  `r ljsp_kable`
+</td>
+</tr>
+</table>
+
+# Anti join
+
+> anti_join(x, y): Return all rows from x where there are not matching values in y, keeping just columns from x. This is a filtering join.
+
+```{r}
+(ajsp <- anti_join(superheroes, publishers))
+```
+
+We keep __only__ Hellboy now (and do not get `yr_founded`).
+
+```{r include = FALSE}
+ajsp_kable <- knitr::kable(ajsp)
+```
+
+<table border = 1>
+  <tr>
+  <td valign="top">
+  `superheroes`
+  `r superheroes_kable`
+</td>
+  <td valign="top">
+  `publishers`
+  `r publishers_kable`
+</td>
+  <td valign="top">
+  `anti_join(x = superheroes, y = publishers)`
+  `r ajsp_kable`
+</td>
+</tr>
+</table>
+
+# Full join
+
+> `full_join(x, y)`: Return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing. This is a mutating join.
+
+```{r}
+(fjsp <- full_join(superheroes, publishers))
+```
+
+We get all rows of `x = superheroes` plus a new row from `y = publishers`, containing the publisher "Image". We get all variables from `x = superheroes` AND all variables from `y = publishers`. Any row that derives solely from one table or the other carries `NA`s in the variables found only in the other table.
+
+```{r include = FALSE}
+fjsp_kable <- knitr::kable(fjsp)
+```
+
+<table border = 1>
+<tr>
+<td valign="top">
+  `superheroes`
+  `r superheroes_kable`
+</td>
+<td valign="top">
+  `publishers`
+  `r publishers_kable`
+</td>
+<td valign="top">
+  `full_join(x = superheroes, y = publishers)`
+  `r fjsp_kable`
+</td>
+</tr>
+</table>
+
+# Acknowledgments {.toc-ignore}
+
+```{r child='_ack_stat545.Rmd'}
+```
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
