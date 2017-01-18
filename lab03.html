@@ -9,11 +9,10 @@
 <meta name="generator" content="pandoc" />
 
 
-<meta name="author" content="Joshua G. Mausolf" />
 
-<meta name="date" content="2016-10-12" />
+<meta name="date" content="2017-01-18" />
 
-<title>lab03 - Using Git in Bash</title>
+<title>Graphing tips for ggplot2 (and life)</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -334,161 +333,563 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">lab03 - Using Git in Bash</h1>
-<h4 class="author"><em>Joshua G. Mausolf</em></h4>
-<h4 class="date"><em>October 12, 2016</em></h4>
+<h1 class="title toc-ignore">Graphing tips for <code>ggplot2</code> (and life)</h1>
+<h4 class="date"><em>January 18, 2017</em></h4>
 
 </div>
 
 
-<div id="the-overall-benefits-of-using-git-for-version-control" class="section level1">
-<h1>The Overall Benefits of Using Git for Version Control</h1>
-<p>There are many benefits to using Git for version control, amoung them, having a record of your work, especially your code, at different points of time. This is particularly important as your code grows more complex. This allows the freedom to experiment and attempt to improve (and likely break) your code, while knowing you have a version of working code you can return to if you get stuck.</p>
-<p>Beyond the freedom to experiment, version control has the added benefit of having a backup of your code from which you can access from any computer. If you somehow delete, corrupt, or simply cannot find where you stored your code on the computer, you can quickly reclone the entire repository with a few clicks and single command. If you are working on a different computer, you can access your code and easily share it with colleagues and other collaborators.</p>
-<p>Storing your code online has other benefits, such as building a code portfolio. If you apply to tech related jobs or fellowships, they will often ask and otherwise search for your github profile to see examples of your code.</p>
-<p>Github also has the benefits of collaboration and being able to work on teams both locally and remotely. Members of a team can each work on various parts of the code in tandem without fear of destroying the codebase, particularly if using the benefits of “branching” on Github.</p>
+<div id="customizing-the-look-and-feel" class="section level1">
+<h1>Customizing the look and feel</h1>
+<p><code>ggplot2</code> includes many default settings that allow you to quickly begin graphing and visualizing data. For rough cuts and quick examinations of your data, these defaults are adequate. For final presentation, you may wish to customize the visual aesthetics of the graph. Here are some important components that are worth learning how to tweak and adjust.</p>
+<p>Let’s begin with a scatterplot of Population against Area from the <code>midwest</code> dataset.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> The point’s color and size vary based on <code>state</code> (categorical) and <code>popdensity</code> (continuous) columns respectively.</p>
+<p>The below plot has the essential components such as the title, axis labels, and legend setup nicely. But we can go further in modifying these components to establish a different “look”.</p>
+<p>Most of the requirements related to look and feel can be achieved using the <code>theme()</code> function. It accepts a large number of arguments. Type <code>?theme</code> in the R console and see for yourself, or check out the <a href="http://docs.ggplot2.org/dev/vignettes/themes.html">vignette on <code>ggplot2</code> themes written by the package author</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Setup</span>
+<span class="kw">library</span>(tidyverse)
+<span class="kw">data</span>(<span class="st">&quot;midwest&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;ggplot2&quot;</span>)
+
+<span class="co"># set our base theme to black and white</span>
+<span class="kw">theme_set</span>(<span class="kw">theme_bw</span>())
+
+<span class="co"># Add plot components</span>
+gg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(midwest, <span class="kw">aes</span>(<span class="dt">x =</span> area, <span class="dt">y =</span> poptotal,
+                          <span class="dt">color =</span> state, <span class="dt">size =</span> popdensity)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">xlim</span>(<span class="dv">0</span>, <span class="fl">0.1</span>) +
+<span class="st">  </span><span class="kw">ylim</span>(<span class="dv">0</span>, <span class="dv">500000</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Area vs. Population&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Area&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Population&quot;</span>,
+       <span class="dt">caption =</span> <span class="st">&quot;Source: midwest&quot;</span>)
+
+<span class="co"># Call plot</span>
+gg</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/base-1.png" width="672" /></p>
+<p>The arguments passed to <code>theme()</code> components must be set using special <code>element_type()</code> functions. There are 4 major types.</p>
+<ol style="list-style-type: decimal">
+<li><code>element_text()</code> - since the title, subtitle and captions are textual items, <code>element_text()</code> function is used to set it.</li>
+<li><code>element_line()</code> - likewise <code>element_line()</code> is used to modify line based components such as the axis lines, major and minor grid lines, etc.</li>
+<li><code>element_rect()</code> - modifies rectangle components such as plot and panel background.</li>
+<li><code>element_blank()</code> - turns off displaying the theme item.</li>
+</ol>
+<p>Let’s examine a number of tasks related to changing the plot output, starting with modifying the title and axis texts.</p>
+<div id="adding-plot-and-axis-titles" class="section level2">
+<h2>Adding plot and axis titles</h2>
+<p>Plot and axis titles and the axis text are part of the plot’s theme. Therefore, it can be modified using the <code>theme()</code> function. The <code>theme()</code> function accepts one of the four <code>element_type()</code> functions mentioned above as arguments. Since the plot and axis titles are textual components, <code>element_text()</code> is used to modify them.</p>
+<p>Below, I have changed the size, color, face, and line-height. The axis text can be rotated by changing the <code>angle</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Modify theme components</span>
+gg +
+<span class="st">  </span><span class="kw">theme</span>(
+    <span class="co"># title</span>
+    <span class="dt">plot.title =</span> <span class="kw">element_text</span>(
+      <span class="dt">size =</span> <span class="dv">20</span>,
+      <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>,
+      <span class="dt">family =</span> <span class="st">&quot;American Typewriter&quot;</span>,
+      <span class="dt">color =</span> <span class="st">&quot;tomato&quot;</span>,
+      <span class="dt">hjust =</span> <span class="fl">0.5</span>,
+      <span class="dt">lineheight =</span> <span class="fl">1.2</span>
+    ),
+    <span class="co"># subtitle</span>
+    <span class="dt">plot.subtitle =</span> <span class="kw">element_text</span>(
+      <span class="dt">size =</span> <span class="dv">15</span>,
+      <span class="dt">family =</span> <span class="st">&quot;American Typewriter&quot;</span>,
+      <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>,
+      <span class="dt">hjust =</span> <span class="fl">0.5</span>
+    ),
+    <span class="co"># caption</span>
+    <span class="dt">plot.caption =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">15</span>),
+    <span class="co"># X axis title</span>
+    <span class="dt">axis.title.x =</span> <span class="kw">element_text</span>(<span class="dt">vjust =</span> <span class="dv">10</span>,
+                                <span class="dt">size =</span> <span class="dv">15</span>),
+    <span class="co"># Y axis title</span>
+    <span class="dt">axis.title.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">15</span>),
+    <span class="co"># X axis text</span>
+    <span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(
+      <span class="dt">size =</span> <span class="dv">10</span>,
+      <span class="dt">angle =</span> <span class="dv">30</span>,
+      <span class="dt">vjust =</span> .<span class="dv">5</span>
+    ),
+    <span class="co"># Y axis text</span>
+    <span class="dt">axis.text.y =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>)
+  )</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<ul>
+<li><code>vjust</code>, controls the vertical spacing between title (or label) and plot.</li>
+<li><code>hjust</code>, controls the horizontal spacing. Setting it to 0.5 centers the title.</li>
+<li><code>family</code>, is used to set a new font</li>
+<li><code>face</code>, sets the font face (“plain”, “italic”, “bold”, “bold.italic”)</li>
+</ul>
+<p>This example covers just some of the potential modifications. Use <code>?theme</code> to look at the full list of components you can modify.</p>
+</div>
+<div id="modifying-the-legend" class="section level2">
+<h2>Modifying the legend</h2>
+<p>Whenever your plot’s <code>geom_</code> (like points, lines, bars, etc) is set to change the aesthetics (<code>fill</code>, <code>size</code>, <code>col</code>, <code>shape</code>, or <code>stroke</code>) based on another column, as in <code>geom_point(aes(color = state, size = popdensity))</code>, a legend is automatically drawn.</p>
+<blockquote>
+<p>If you are creating a geom where the aesthetics are static, a legend is <strong>not</strong> drawn by default. The below examples are for cases where you have the legend created automatically.</p>
+</blockquote>
+<div id="how-to-change-a-legend-title" class="section level3">
+<h3>How to change a legend title</h3>
+<p>We have two legends, one each for color and size. The size is based on a continuous variable while the color is based on a categorical (discrete) variable.</p>
+<p>There are 3 ways to change the legend title.</p>
+<div id="method-1-using-labs" class="section level4">
+<h4>Method 1: Using <code>labs()</code></h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">color =</span> <span class="st">&quot;State&quot;</span>,
+       <span class="dt">size =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="method-2-using-guides" class="section level4">
+<h4>Method 2: Using <code>guides()</code></h4>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">guides</span>(<span class="dt">color =</span> <span class="kw">guide_legend</span>(<span class="st">&quot;State&quot;</span>),
+         <span class="dt">size =</span> <span class="kw">guide_legend</span>(<span class="st">&quot;Density&quot;</span>))</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+</div>
+<div id="method-3-using-scale_aesthetic_vartype-format" class="section level4">
+<h4>Method 3: Using <code>scale_aesthetic_vartype()</code> format</h4>
+<p>The format of <code>scale_aesthetic_vartype()</code> allows you to turn off the legend for one particular aesthetic, leaving the rest in place. This can be done just by setting <code>guide = FALSE</code>. For example, if the legend is for size of points based on a continuous variable, then <code>scale_size_continuous()</code> would be the right function to use.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">name =</span> <span class="st">&quot;State&quot;</span>) +
+<span class="st">  </span><span class="co"># turn off legend for size</span>
+<span class="st">  </span><span class="kw">scale_size_continuous</span>(<span class="dt">name =</span> <span class="st">&quot;Density&quot;</span>, <span class="dt">guide =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+</div>
+</div>
+<div id="how-to-change-legend-labels-and-point-colors-for-categories" class="section level3">
+<h3>How to change legend labels and point colors for categories</h3>
+<p>This can be done using the respective <code>scale_aesthetic_manual()</code> function. The new legend labels are supplied as a character vector to the <code>labels</code> argument. If you want to change the color of the categories, it can be assigned to the <code>values</code> argument as shown in below example.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">name =</span> <span class="st">&quot;State&quot;</span>, 
+                     <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Illinois&quot;</span>, 
+                                <span class="st">&quot;Indiana&quot;</span>, 
+                                <span class="st">&quot;Michigan&quot;</span>, 
+                                <span class="st">&quot;Ohio&quot;</span>, 
+                                <span class="st">&quot;Wisconsin&quot;</span>), 
+                     <span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;IL&quot;</span> =<span class="st"> &quot;blue&quot;</span>, 
+                                <span class="st">&quot;IN&quot;</span> =<span class="st"> &quot;red&quot;</span>, 
+                                <span class="st">&quot;MI&quot;</span> =<span class="st"> &quot;green&quot;</span>, 
+                                <span class="st">&quot;OH&quot;</span> =<span class="st"> &quot;brown&quot;</span>, 
+                                <span class="st">&quot;WI&quot;</span> =<span class="st"> &quot;orange&quot;</span>))</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+</div>
+<div id="change-the-order-of-the-legend" class="section level3">
+<h3>Change the order of the legend</h3>
+<p>In case you want to show the legend for color (<code>State</code>) before size (<code>Density</code>), it can be done with the <code>guides()</code> function. The <code>order</code> of the legend has to be set as desired.</p>
+<p>If you want to change the position of the labels inside the legend, set it in the required order as seen in previous example.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">guides</span>(<span class="dt">color =</span> <span class="kw">guide_legend</span>(<span class="dt">order =</span> <span class="dv">2</span>),
+         <span class="dt">size =</span> <span class="kw">guide_legend</span>(<span class="dt">order =</span> <span class="dv">1</span>))</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+</div>
+<div id="how-to-style-the-legend-title-text-and-key" class="section level3">
+<h3>How to style the legend title, text, and key</h3>
+<p>The styling of legend title, text, key and the guide can also be adjusted. The legend’s key is a figure-like element, so it has to be set using <code>element_rect()</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">theme</span>(
+    <span class="dt">legend.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">12</span>, <span class="dt">color =</span> <span class="st">&quot;firebrick&quot;</span>),
+    <span class="dt">legend.text =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">10</span>),
+    <span class="dt">legend.key =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&#39;springgreen&#39;</span>)
+  ) +
+<span class="st">  </span><span class="kw">guides</span>(<span class="dt">color =</span> <span class="kw">guide_legend</span>(<span class="dt">override.aes =</span> <span class="kw">list</span>(<span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">stroke =</span> <span class="fl">1.5</span>))) </code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+</div>
+<div id="how-to-remove-the-legend-and-change-the-legend-position" class="section level3">
+<h3>How to remove the legend and change the legend position</h3>
+<p>The legend’s position inside the plot is an aspect of the theme, so it can be modified using the <code>theme()</code> function. If you want to place the legend inside the plot, you can additionally control the hinge point of the legend using <code>legend.justification</code>.</p>
+<p>The <code>legend.position</code> is the x and y axis position in the chart area, where <code>(0,0)</code> is bottom left of the chart and <code>(1,1)</code> is top right. Likewise, <code>legend.justification</code> refers to the hinge point inside the legend.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># No legend</span>
+gg +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;None&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;No Legend&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Legend to the left</span>
+gg +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;left&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;Legend on the Left&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).
+
+## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-8-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># legend at the bottom and horizontal</span>
+gg +<span class="st"> </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>, <span class="dt">legend.box =</span> <span class="st">&quot;horizontal&quot;</span>) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;Legend at Bottom&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).
+
+## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-8-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># legend at bottom-right, inside the plot</span>
+gg +<span class="st"> </span><span class="kw">theme</span>(
+  <span class="dt">legend.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">12</span>, <span class="dt">color =</span> <span class="st">&quot;salmon&quot;</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>),
+  <span class="dt">legend.justification =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">0</span>),
+  <span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.95</span>, <span class="fl">0.05</span>),
+  <span class="dt">legend.background =</span> <span class="kw">element_blank</span>(),
+  <span class="dt">legend.key =</span> <span class="kw">element_blank</span>()
+) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;Legend: Bottom-Right Inside the Plot&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).
+
+## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-8-4.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># legend at top-left, inside the plot</span>
+gg +<span class="st"> </span><span class="kw">theme</span>(
+  <span class="dt">legend.title =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">12</span>, <span class="dt">color =</span> <span class="st">&quot;salmon&quot;</span>, <span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>),
+  <span class="dt">legend.justification =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),
+  <span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.05</span>, <span class="fl">0.95</span>),
+  <span class="dt">legend.background =</span> <span class="kw">element_blank</span>(),
+  <span class="dt">legend.key =</span> <span class="kw">element_blank</span>()
+) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;Legend: Top-Left Inside the Plot&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).
+
+## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-8-5.png" width="672" /></p>
+</div>
+</div>
+<div id="adding-text-label-and-annotation" class="section level2">
+<h2>Adding text, label, and annotation</h2>
+<div id="how-to-add-text-and-labels-around-the-points" class="section level3">
+<h3>How to add text and labels around the points</h3>
+<p>Let’s try adding some text. We will add text to only those counties that have population greater than 400K. In order to achieve this, I create a subsetted dataframe (<code>midwest_sub</code>) that contains only the counties that meet the condition above. Then, we draw the <code>geom_text</code> and <code>geom_label</code> with this new dataframe as the <code>data</code> source. This will ensure that labels (<code>geom_label</code>) are added only for the points contained in the new dataframe.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Filter required rows.</span>
+midwest_sub &lt;-<span class="st"> </span>midwest %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(poptotal &gt;<span class="st"> </span><span class="dv">400000</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">large_county =</span> <span class="kw">ifelse</span>(poptotal &gt;<span class="st"> </span><span class="dv">300000</span>, county, <span class="st">&quot;&quot;</span>))
+
+<span class="co"># Plot text and label</span>
+## Text
+gg +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(<span class="dt">label =</span> large_county), <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">data =</span> midwest_sub) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;With ggplot2::geom_text&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;None&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 14 rows containing missing values (geom_text).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Label
+gg +
+<span class="st">  </span><span class="kw">geom_label</span>(
+    <span class="kw">aes</span>(<span class="dt">label =</span> large_county),
+    <span class="dt">size =</span> <span class="dv">2</span>,
+    <span class="dt">data =</span> midwest_sub,
+    <span class="dt">alpha =</span> <span class="fl">0.25</span>
+  ) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;With ggplot2::geom_label&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;None&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 14 rows containing missing values (geom_label).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-9-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot text and label that REPELS each other</span>
+<span class="kw">library</span>(ggrepel)
+
+## Text
+gg +
+<span class="st">  </span><span class="kw">geom_text_repel</span>(<span class="kw">aes</span>(<span class="dt">label =</span> large_county), <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">data =</span> midwest_sub) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;With ggrepel::geom_text_repel&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;None&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 14 rows containing missing values (geom_text_repel).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-9-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## Repel
+gg +
+<span class="st">  </span><span class="kw">geom_label_repel</span>(<span class="kw">aes</span>(<span class="dt">label =</span> large_county), <span class="dt">size =</span> <span class="dv">2</span>, <span class="dt">data =</span> midwest_sub) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;With ggrepel::geom_label_repel&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;None&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 14 rows containing missing values (geom_label_repel).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-9-4.png" width="672" /></p>
+<p>Since the label is looked up from a different data frame, we need to set the data argument in the new <code>geom_</code> calls.</p>
+</div>
+<div id="how-to-add-annotations-anywhere-inside-the-plot" class="section level3">
+<h3>How to add annotations anywhere inside the plot</h3>
+<p>Let’s see how to add annotation to any specific point of the chart. It can be done with the <code>annotate()</code> function. For instance, to add text to the graph we use a “text” geom and give it a <code>label</code> containing the text we want to print on the graph. All we need to do then is specify the x and y coordinates on the graph where it should go.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">annotate</span>(<span class="st">&quot;text&quot;</span>, <span class="dt">x =</span> <span class="fl">0.075</span>, <span class="dt">y =</span> <span class="dv">300000</span>, <span class="dt">label =</span> <span class="st">&quot;This text is amazing!&quot;</span>)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+</div>
+</div>
+<div id="flipping-and-reversing-the-x-and-y-axis" class="section level2">
+<h2>Flipping and reversing the X and Y axis</h2>
+<div id="how-to-flip-the-x-and-y-axis" class="section level3">
+<h3>How to flip the X and Y axis</h3>
+<p>Just add <code>coord_flip()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<pre><code>## Warning: Removed 15 rows containing non-finite values (stat_smooth).</code></pre>
+<pre><code>## Warning: Removed 15 rows containing missing values (geom_point).</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
+<div id="how-to-reverse-the-scale-of-an-axis" class="section level3">
+<h3>How to reverse the scale of an axis</h3>
+<p>Use <code>scale_x_reverse()</code> for X axis and <code>scale_y_reverse()</code> for Y axis.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gg +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_x_reverse</span>() +<span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_y_reverse</span>()</code></pre></div>
+<pre><code>## Scale for &#39;x&#39; is already present. Adding another scale for &#39;x&#39;, which
+## will replace the existing scale.</code></pre>
+<pre><code>## Scale for &#39;y&#39; is already present. Adding another scale for &#39;y&#39;, which
+## will replace the existing scale.</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39;</code></pre>
+<p><img src="lab03_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+</div>
+<div id="faceting-draw-multiple-plots-within-one-figure" class="section level2">
+<h2>Faceting: draw multiple plots within one figure</h2>
+<p>Let’s use the <code>mpg</code> dataset for this one. It is available in the <code>ggplot2</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(mpg, <span class="dt">package =</span> <span class="st">&quot;ggplot2&quot;</span>)  <span class="co"># load data</span>
+
+g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(mpg, <span class="kw">aes</span>(<span class="dt">x =</span> displ, <span class="dt">y =</span> hwy)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;hwy vs displ&quot;</span>, <span class="dt">caption =</span> <span class="st">&quot;Source: mpg&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme_bw</span>()  <span class="co"># apply bw theme</span>
+g</code></pre></div>
+<p><img src="lab03_files/figure-html/mpg-1.png" width="672" /></p>
+<p>We have a simple chart of highway mileage <code>(hwy)</code> against the engine displacement <code>(displ)</code> for the whole dataset. But what if you want to study how this relationship varies for different classes of vehicles?</p>
+<div id="facet-wrap" class="section level3">
+<h3>Facet wrap</h3>
+<p><code>facet_wrap()</code> is used to break down a large plot into multiple small plots for individual categories. It takes a formula as the main argument. The items to the left of <code>~</code> forms the rows while those to the right form the columns.</p>
+<blockquote>
+<p>By default, all the plots share the same scale in both X and Y axis. You can set them free by setting <code>scales = 'free'</code> but this way it could be harder to compare between groups.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Facet wrap with common scales</span>
+g +
+<span class="st">  </span><span class="kw">facet_wrap</span>( ~<span class="st"> </span>class, <span class="dt">nrow =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;hwy vs displ&quot;</span>,
+       <span class="dt">caption =</span> <span class="st">&quot;Source: mpg&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Ggplot2 - Faceting - Multiple plots in one figure&quot;</span>)</code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Facet wrap with free scales</span>
+g +
+<span class="st">  </span><span class="kw">facet_wrap</span>( ~<span class="st"> </span>class, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;hwy vs displ&quot;</span>,
+       <span class="dt">caption =</span> <span class="st">&quot;Source: mpg&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Ggplot2 - Faceting - Multiple plots in one figure with free scales&quot;</span>)</code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-13-2.png" width="672" /></p>
+</div>
+<div id="facet-grid" class="section level3">
+<h3>Facet grid</h3>
+<p>The headings of the middle and bottom rows take up significant space. The <code>facet_grid()</code> would get rid of it and give more area to the charts. The main difference with <code>facet_grid</code> is that it is not possible to choose the number of rows and columns in the grid.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g1 &lt;-<span class="st"> </span>g +
+<span class="st">  </span><span class="kw">facet_grid</span>(manufacturer ~<span class="st"> </span>class)
+g1</code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Let’s make one more to vary by cylinder.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g2 &lt;-<span class="st"> </span>g +
+<span class="st">  </span><span class="kw">facet_grid</span>(cyl ~<span class="st"> </span>class)
+g2</code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
+<div id="combining-multiple-plots-into-a-single-graph" class="section level3">
+<h3>Combining multiple plots into a single graph</h3>
+<p>It is possible to layout both these charts in the same graph using the <code>gridExtra</code> package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gridExtra)
+<span class="kw">grid.arrange</span>(g1, g2, <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+</div>
+<div id="modifying-plot-background-major-and-minor-axis" class="section level2">
+<h2>Modifying plot background, major and minor axis</h2>
+<div id="how-to-change-the-plot-background" class="section level3">
+<h3>How to change the plot background</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># change plot background elements</span>
+g +
+<span class="st">  </span><span class="kw">theme</span>(
+    <span class="dt">panel.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&#39;khaki&#39;</span>),
+    <span class="dt">panel.grid.major =</span> <span class="kw">element_line</span>(<span class="dt">color =</span> <span class="st">&quot;burlywood&quot;</span>, <span class="dt">size =</span> <span class="fl">1.5</span>),
+    <span class="dt">panel.grid.minor =</span> <span class="kw">element_line</span>(
+      <span class="dt">colour =</span> <span class="st">&quot;tomato&quot;</span>,
+      <span class="dt">size =</span> .<span class="dv">25</span>,
+      <span class="dt">linetype =</span> <span class="st">&quot;dashed&quot;</span>
+    ),
+    <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">axis.line.x =</span> <span class="kw">element_line</span>(
+      <span class="dt">colour =</span> <span class="st">&quot;darkorange&quot;</span>,
+      <span class="dt">size =</span> <span class="fl">1.5</span>,
+      <span class="dt">lineend =</span> <span class="st">&quot;butt&quot;</span>
+    ),
+    <span class="dt">axis.line.y =</span> <span class="kw">element_line</span>(<span class="dt">color =</span> <span class="st">&quot;darkorange&quot;</span>,
+                               <span class="dt">size =</span> <span class="fl">1.5</span>)
+  ) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Modified Background&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;How to Change Major and Minor grid, Axis Lines, No Border&quot;</span>)</code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># change plot margins</span>
+g +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;salmon&quot;</span>),
+        <span class="dt">plot.margin =</span> <span class="kw">unit</span>(<span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">1</span>), <span class="st">&quot;cm&quot;</span>)) +<span class="st">  </span><span class="co"># top, right, bottom, left</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Modified Background&quot;</span>, 
+       <span class="dt">subtitle =</span> <span class="st">&quot;How to Change Plot Margin&quot;</span>)  </code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-17-2.png" width="672" /></p>
+</div>
+<div id="remove-major-and-minor-grid-change-border-axis-title-text-and-ticks" class="section level3">
+<h3>Remove major and minor grid, change border, axis title, text, and ticks</h3>
+<p>By using the <code>element_blank()</code> type, we can turn off any or all of these components.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">g +
+<span class="st">  </span><span class="kw">theme</span>(
+    <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">panel.grid.minor =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">axis.title =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">axis.text =</span> <span class="kw">element_blank</span>(),
+    <span class="dt">axis.ticks =</span> <span class="kw">element_blank</span>()
+  ) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Modified Background&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;How to remove major and minor axis grid, border, axis title, text and ticks&quot;</span>) </code></pre></div>
+<p><img src="lab03_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="acknowledgements" class="section level1 toc-ignore">
+<h1>Acknowledgements</h1>
+<ul>
+<li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+<li>“Customizing the look and feel” modified from Selva Prabhakaran’s <a href="http://r-statistics.co/Complete-Ggplot2-Tutorial-Part2-Customizing-Theme-With-R-Code.html"><em>The Complete ggplot2 Tutorial - Part 2 | How To Customize ggplot2 (Full R code)</em></a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## Session info --------------------------------------------------------------</code></pre>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       RStudio (1.0.44)            
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-01-18</code></pre>
+<pre><code>## Packages ------------------------------------------------------------------</code></pre>
+<pre><code>##  package      * version    date       source                        
+##  assertthat     0.1        2013-12-06 CRAN (R 3.3.0)                
+##  backports      1.0.4      2016-10-24 CRAN (R 3.3.0)                
+##  base64enc      0.1-3      2015-07-28 CRAN (R 3.3.0)                
+##  broom        * 0.4.1      2016-06-24 CRAN (R 3.3.0)                
+##  car            2.1-4      2016-12-02 CRAN (R 3.3.2)                
+##  caret          6.0-73     2016-11-10 CRAN (R 3.3.2)                
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.2)                
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                
+##  config         0.2        2016-08-02 CRAN (R 3.3.0)                
+##  DBI            0.5-1      2016-09-10 CRAN (R 3.3.0)                
+##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                
+##  digest         0.6.11     2017-01-03 CRAN (R 3.3.2)                
+##  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                
+##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                
+##  foreach        1.4.3      2015-10-13 CRAN (R 3.3.0)                
+##  foreign        0.8-67     2016-09-13 CRAN (R 3.3.2)                
+##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.3.0)                
+##  ggplot2      * 2.2.1      2016-12-30 CRAN (R 3.3.2)                
+##  ggrepel      * 0.6.5      2016-11-24 CRAN (R 3.3.2)                
+##  ggstance     * 0.3        2016-11-16 CRAN (R 3.3.2)                
+##  gridExtra      2.2.1      2016-02-29 cran (@2.2.1)                 
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                
+##  hexbin       * 1.27.1     2015-08-19 CRAN (R 3.3.0)                
+##  highr          0.6        2016-05-09 CRAN (R 3.3.0)                
+##  htmltools      0.3.5      2016-03-21 CRAN (R 3.3.0)                
+##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                
+##  iterators      1.0.8      2015-10-13 CRAN (R 3.3.0)                
+##  jsonlite       1.2        2016-12-31 CRAN (R 3.3.2)                
+##  knitr        * 1.15.1     2016-11-22 cran (@1.15.1)                
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                
+##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.2)                
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                
+##  lme4           1.1-12     2016-04-16 cran (@1.1-12)                
+##  lubridate    * 1.6.0      2016-09-13 CRAN (R 3.3.0)                
+##  lvplot       * 0.2.0.9000 2017-01-06 Github (hadley/lvplot@8ce61c7)
+##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                
+##  MASS           7.3-45     2016-04-21 CRAN (R 3.3.2)                
+##  Matrix         1.2-7.1    2016-09-01 CRAN (R 3.3.2)                
+##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.3.0)                
+##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                
+##  mgcv           1.8-16     2016-11-07 CRAN (R 3.3.0)                
+##  minqa          1.2.4      2014-10-09 cran (@1.2.4)                 
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                
+##  ModelMetrics   1.1.0      2016-08-26 CRAN (R 3.3.0)                
+##  modeltools     0.2-21     2013-09-02 CRAN (R 3.3.0)                
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                
+##  nlme           3.1-128    2016-05-10 CRAN (R 3.3.2)                
+##  nloptr         1.0.4      2014-08-04 cran (@1.0.4)                 
+##  NLP            0.1-9      2016-02-18 CRAN (R 3.3.0)                
+##  nnet           7.3-12     2016-02-02 CRAN (R 3.3.2)                
+##  nycflights13 * 0.2.1      2016-12-30 CRAN (R 3.3.2)                
+##  pbkrtest       0.4-6      2016-01-27 CRAN (R 3.3.0)                
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                
+##  png            0.1-7      2013-12-03 cran (@0.1-7)                 
+##  psych          1.6.9      2016-09-17 cran (@1.6.9)                 
+##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                
+##  quantreg       5.29       2016-09-04 CRAN (R 3.3.0)                
+##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                
+##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.3.0)                
+##  rcfss        * 0.1.0      2017-01-17 local                         
+##  Rcpp           0.12.8     2016-11-17 CRAN (R 3.3.2)                
+##  readr        * 1.0.0      2016-08-03 CRAN (R 3.3.0)                
+##  readxl       * 0.1.1      2016-03-28 CRAN (R 3.3.0)                
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                
+##  rmarkdown      1.3        2016-12-21 CRAN (R 3.3.2)                
+##  rprojroot      1.1        2016-10-29 CRAN (R 3.3.0)                
+##  rsconnect      0.7        2016-12-21 CRAN (R 3.3.2)                
+##  rstudioapi     0.6        2016-06-27 CRAN (R 3.3.0)                
+##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                
+##  slam           0.1-40     2016-12-01 CRAN (R 3.3.2)                
+##  sparklyr     * 0.5.1      2016-12-19 CRAN (R 3.3.2)                
+##  SparseM        1.74       2016-11-10 CRAN (R 3.3.2)                
+##  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                
+##  stringr      * 1.1.0      2016-08-19 cran (@1.1.0)                 
+##  tibble       * 1.2        2016-08-26 cran (@1.2)                   
+##  tidyr        * 0.6.0      2016-08-12 CRAN (R 3.3.0)                
+##  tidyverse    * 1.0.0      2016-09-09 CRAN (R 3.3.0)                
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.3.0)                
+##  tm             0.6-2      2015-07-03 CRAN (R 3.3.0)                
+##  topicmodels  * 0.2-4      2016-05-23 CRAN (R 3.3.0)                
+##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                
+##  yaml           2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
 <hr />
-</div>
-<div id="ways-to-interact-with-git-the-gui-vs.shell" class="section level1">
-<h1>Ways to Interact with Git: The GUI vs. Shell</h1>
-<p>It should be noted that we have thus far only scratched the service in using Git. There are two primary ways to interact with Git, using a GUI (Graphical User Interface) versus the Shell. One possible GUI approach is operating Git using the point and click options in R. Conversely, one can use the Shell (on Linux/Mac OSX the Unix Shell/Terminal, on Windows PC Powershell, <a href="https://git-scm.com/downloads">GitBash</a> or <a href="https://www.cygwin.com">Cygwin</a> ). Below, I discuss some benefits and limitations of the approaches.</p>
-<div id="the-r-gui-for-git" class="section level2">
-<h2>The R-GUI for Git</h2>
-<div id="benefits-of-the-gui" class="section level3">
-<h3>Benefits of the GUI</h3>
-<ul>
-<li>Simple to use and operate</li>
-<li>If using only RStudio, code and git can be easily written, run, and committed in the same environment</li>
-</ul>
-</div>
-<div id="limits-of-the-gui" class="section level3">
-<h3>Limits of the GUI</h3>
-<ul>
-<li>Process does not translate well to multi-language (Python, Bash, SQL, HTML, CSS) repositories</li>
-<li>Less help for resolving issues on a language-specific GUI for Git</li>
-<li>Arguably more time consuming once you know Git using the Shell</li>
-</ul>
-</div>
-<div id="shell-for-git" class="section level3">
-<h3>Shell for Git</h3>
-<div id="benefits-of-the-shell" class="section level4">
-<h4>Benefits of the Shell</h4>
-<ul>
-<li><strong>1. Same exact process for adding and updating files in any language</strong>
-<ul>
-<li>e.g. R, Python, Bash, SQL, HTML, CSS, Java, C++, LaTex, Markdown, etc</li>
-<li>Adding/Removing, Committing Changes, Pushing/Pulling, Branching is the same</li>
-</ul></li>
-<li><strong>2. Commands are explicit and may be difficult to replicate in a GUI, particularly for advanced commands, e.g.</strong>
-<ul>
-<li>Checking out a specific branch</li>
-<li>Pulling updates from another branch into a working branch</li>
-<li>Pushing changes of a particular brach</li>
-</ul></li>
-</ul>
-<p>Some of these advanced steps are particularly important when collaborating on a team. Because collaborative work often involves one or more languages, Git from the shell is even more advantageous.</p>
-</div>
-<div id="limits-of-the-shell" class="section level4">
-<h4>Limits of the Shell</h4>
-<ul>
-<li>Potentially higher learning curve</li>
-<li>More challenging if you have not used the Shell before</li>
-</ul>
-<hr />
-</div>
-</div>
-</div>
-<div id="basics-of-using-git-with-the-shell" class="section level2">
-<h2>Basics of Using Git with the Shell</h2>
-<div id="overview-of-basic-git-steps" class="section level3">
-<h3>Overview of Basic Git Steps</h3>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> clone LINK_TO_REPOSITORY
-<span class="kw">git</span> add NAME_OF_FILE
-<span class="kw">git</span> commit -m <span class="st">&quot;Comment describing what file does or what change you made&quot;</span>
-<span class="kw">git</span> push</code></pre></div>
-</div>
-<div id="in-detail-with-other-helpful-commands" class="section level3">
-<h3>In Detail with Other Helpful Commands</h3>
-<p>Before cloning the repository, you will want to navigate to your desired location on the computer. This is most likely whichever folder you store your code and notes for the class.</p>
-<p><em>This can be achieved with the command prompt (these commands work on Linux/Mac OSX). To use the same commands on Windows, Cygwin can be used.</em></p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#Display current working directory</span>
-<span class="kw">pwd</span> 
-
-<span class="co">#List files commands</span>
-<span class="kw">ls</span> <span class="co">#List files in folder</span>
-<span class="kw">ls</span> -a <span class="co">#List all files/folders including hidden ones</span>
-<span class="kw">ls</span> FOLDER_NAME/ <span class="co">#List files inside FOLDER_NAME</span>
-
-<span class="co">#Change Directory</span>
-<span class="kw">cd</span> <span class="kw">&lt;</span>NAME_OF_FOLDER_IN_PWD/FOLDER/FOLDER/ETC <span class="co">#Go to subfolder</span>
-<span class="kw">cd</span> .. <span class="co">#Go one folder up</span>
-<span class="kw">cd</span> ~/NAME_OF_FOLDER/FOLDER/ETC/ETC <span class="co">#Go back to home directory and go to folder from there</span>
-
-<span class="co">#Clear shell screen</span>
-<span class="kw">clear</span></code></pre></div>
-<p>The above commands are some of the most basic and should help you navigate to the desired folder. Once there, clone your repository.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co">#CLONE YOUR REPOSITORY</span>
-<span class="kw">git</span> clone LINK_TO_REPOSITORY</code></pre></div>
-<p>This command will make a clone of the repository in the current working directory. Specifically, it will make a folder (using the name of your repository). This folder will contain all code and documents as seen in the repo online.</p>
-<p>NOTE: If you clone the repository and try to reclone it in the same directory, you will get an error. Why? A folder already exists with that name. Solution, delete the folder or rename it.</p>
-<ul>
-<li>To rename <code>mv NAME_OF_REPO NAME_OF_REPO__OLD</code></li>
-</ul>
-<p><strong>CAUTION THE BELOW COMMAND PERMANTLY ERASES THE FOLDER</strong></p>
-<p><strong>(DO NOT ENTER THE WRONG FOLDER NAME AS YOU WILL PERMANTLY ERASE IT)</strong></p>
-<ul>
-<li>To permantly remove: <code>rm -rf NAME_OF_REPO</code></li>
-</ul>
-<p>Once you have cloned your repo, you have to <code>cd</code> inside the repository folder to use Git. For example:</p>
-<p>To get the current status of your repo, use the <code>git status</code> command. If you run this command before using <code>cd</code> to enter the folder, you will get this error: <code>fatal: Not a git repository (or any of the parent directories): .git</code></p>
-<p>Instead, do the following:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">cd</span> NAME_OF_REPO
-<span class="kw">git</span> status</code></pre></div>
-<p>Which provides the output:</p>
-<pre><code>On branch master
-Your branch is up-to-date with &#39;origin/master&#39;.
-nothing to commit, working directory clean</code></pre>
-<p>Once inside the repository, you are free to make changes as you see fit. This might include making documentation, creating R or Rmd scripts, Python scripts, Shell scripts, making folders for results, or anything else imaginable.</p>
-<p>Once you make changes, you will want to add the files or folders, commit them, and push the results.</p>
-<p>NOTE: If you are working on a team, another person’s code, or multiple computers, first attempt to <code>pull</code> to make sure you are on the most up to date version of the repo (and thereby avoid merge conflicts).</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> pull</code></pre></div>
-<p>Now, add any changes. There are several ways to do this depending on how many changes you make.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> add SINGLE_FILE_NAME <span class="co">#Adds a single file</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> add SINGLE_FOLDER_NAME <span class="co">#Adds folder, all subfolders, and files</span></code></pre></div>
-<p>Note, that you will want to check to see if you are adding the files you expect when you do this.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> status</code></pre></div>
-<p>Will show the names of all files staged to be commited. Review these closely. Do you really want to add 100 images from ggplot2 graphs in the output folder? Are you accidentally adding your API credentials? Double check your files. If you made a mistake, don’t commit. Use <code>git reset HEAD</code> and then redo the <code>git add FILE</code> to add the correct files and folders only.</p>
-<p>Once satisfied, commit the results:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> commit -m <span class="st">&quot;Added initial script to do XYZ&quot;</span></code></pre></div>
-<p>You may want to consider seperate commit messages when uploading multiple files rather than use the same commit for all files.</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> add FILE1.R
-<span class="kw">git</span> add FILE2.R
-<span class="kw">git</span> commit -m <span class="st">&quot;Added R scripts that call Twitter API and download tweets&quot;</span>
-<span class="kw">git</span> add FILE3.R 
-<span class="kw">git</span> commit -m <span class="st">&quot;Added R script to clean and graph tweet results&quot;</span>
-<span class="kw">git</span> add FILE4.R
-<span class="kw">git</span> commit -m <span class="st">&quot;Built outline Shiny app of results&quot;</span>
-<span class="kw">git</span> push</code></pre></div>
-<p>In most cases, however, you will want to not only commit, but also push the changes once you get something working. If you already have a working version of all these scripts and want to make minor dependent changes in each one, it may be appropriate to make the changes and commits before pushing. This said, test your code before committing and pushing it. In this way you can note if the code is working or not in your message, i.e. <code>git commit -m &quot;Updating code, currently not working&quot;</code></p>
-<p>Once you have committed and pushed the changes, ensure you are up to date:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> status</code></pre></div>
-<p>Double check by visiting the URL for your repo. Is your latest change online?</p>
-<p>If not, consider the following. Did you save your latest code? Was that code saved to your repo or elsewhere? If saved and in your git repo, make a minor change to the code (like a #comment). Make sure you see changes to the file when you do <code>git status</code>. Then repeat:</p>
-<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">git</span> add FILE
-<span class="kw">git</span> commit -m <span class="st">&quot;Trying again&quot;</span>
-<span class="kw">git</span> push origin master <span class="co">#Assuming you are working on the master branch</span></code></pre></div>
-<p>If you get an error, Google search for the error. Someone probably has had it before and has answered it on StackOverflow. A benefit of using Git in Shell is that if you have a problem, dozens before you have had the same issue, asked about it, and received an answer from someone else.</p>
-<hr />
-</div>
-</div>
-</div>
-<div id="editing-code-outside-of-r" class="section level1">
-<h1>Editing Code Outside of R</h1>
-<p>If you would like to work on other types of code, such as Python, Bash, PostgreSQL, or even the .gitignore, you may want to use a text editor other than RStudio.</p>
-<p>For text editing, most Mac or Linux machines will have a program Vim installed. Since Vim is already often installed, you may want to consider learning it. However, for ease of use, I would recommend installing the text editor <a href="https://atom.io">Atom</a> which will work on Mac, Linux, and PC.</p>
-<p>Once installed, you can start a new script by simply typing in bash <code>atom name_of_your_new_script</code>. You can edit an existing script by using <code>atom name_of_script</code>.</p>
-<p>Changes to scripts can be commited as before using Git.</p>
-<hr />
+<ol>
+<li id="fn1"><p>This is included as an example dataset in the <code>ggplot2</code> package. Type <code>?midwest</code> in your console for more information.<a href="#fnref1">↩</a></p></li>
+</ol>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
