@@ -8,8 +8,16 @@ output:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 ```
+
+# lab03 - January 18, 2017
+
+## Overview
+
+* Introduce `theme()` and customizing graphs using `ggplot2`
+* Demonstrate alternative base themes
+* Demonstrate how to customize specific elements of `ggplot2` graphs
 
 # Customizing the look and feel
 
@@ -25,9 +33,6 @@ Most of the requirements related to look and feel can be achieved using the `the
 # Setup
 library(tidyverse)
 data("midwest", package = "ggplot2")
-
-# set our base theme to black and white
-theme_set(theme_bw())
 
 # Add plot components
 gg <- ggplot(midwest, aes(x = area, y = poptotal,
@@ -45,6 +50,32 @@ gg <- ggplot(midwest, aes(x = area, y = poptotal,
 gg
 ```
 
+## Default themes
+
+The default theme in `ggplot2` is `theme_gray`. There are a set of pre-made themes you can use which are cohesive themes that don't require modifying individual elements.
+
+```{r, dependson='base'}
+gg + theme_gray()
+gg + theme_bw()
+gg + theme_linedraw()
+gg + theme_light()
+gg + theme_dark()
+gg + theme_minimal()
+gg + theme_classic()
+gg + theme_void()
+```
+
+I personally prefer to use `theme_bw()` as it provides excellent contrast when viewed using a projector or large LCD screen, so let's set that as the default theme and change `gg` to use `theme_bw()`.
+
+```{r}
+theme_set(theme_bw())
+
+gg <- gg +
+  theme_bw()
+```
+
+## Modifying specific elements
+
 The arguments passed to `theme()` components must be set using special `element_type()` functions. There are 4 major types.
 
 1. `element_text()` - since the title, subtitle and captions are textual items, `element_text()` function is used to set it.
@@ -54,7 +85,7 @@ The arguments passed to `theme()` components must be set using special `element_
 
 Let's examine a number of tasks related to changing the plot output, starting with modifying the title and axis texts.
 
-## Adding plot and axis titles
+# Adding plot and axis titles
 
 Plot and axis titles and the axis text are part of the plot's theme. Therefore, it can be modified using the `theme()` function. The `theme()` function accepts one of the four `element_type()` functions mentioned above as arguments. Since the plot and axis titles are textual components, `element_text()` is used to modify them.
 
@@ -105,19 +136,19 @@ gg +
 
 This example covers just some of the potential modifications. Use `?theme` to look at the full list of components you can modify.
 
-## Modifying the legend
+# Modifying the legend
 
 Whenever your plot's `geom_` (like points, lines, bars, etc) is set to change the aesthetics (`fill`, `size`, `col`, `shape`, or `stroke`) based on another column, as in `geom_point(aes(color = state, size = popdensity))`, a legend is automatically drawn.
 
 > If you are creating a geom where the aesthetics are static, a legend is **not** drawn by default. The below examples are for cases where you have the legend created automatically.
 
-### How to change a legend title
+## How to change a legend title
 
 We have two legends, one each for color and size. The size is based on a continuous variable while the color is based on a categorical (discrete) variable. 
 
 There are 3 ways to change the legend title.
 
-#### Method 1: Using `labs()`
+### Method 1: Using `labs()`
 
 ```{r, dependson='base'}
 gg +
@@ -125,7 +156,7 @@ gg +
        size = "Density")
 ```
 
-#### Method 2: Using `guides()`
+### Method 2: Using `guides()`
 
 ```{r, dependson='base'}
 gg +
@@ -133,7 +164,7 @@ gg +
          size = guide_legend("Density"))
 ```
 
-#### Method 3: Using `scale_aesthetic_vartype()` format
+### Method 3: Using `scale_aesthetic_vartype()` format
 
 The format of `scale_aesthetic_vartype()` allows you to turn off the legend for one particular aesthetic, leaving the rest in place. This can be done just by setting `guide = FALSE`. For example, if the legend is for size of points based on a continuous variable, then `scale_size_continuous()` would be the right function to use. 
 
@@ -144,7 +175,7 @@ gg +
   scale_size_continuous(name = "Density", guide = FALSE)
 ```
 
-### How to change legend labels and point colors for categories
+## How to change legend labels and point colors for categories
 
 This can be done using the respective `scale_aesthetic_manual()` function. The new legend labels are supplied as a character vector to the `labels` argument. If you want to change the color of the categories, it can be assigned to the `values` argument as shown in below example.
 
@@ -163,7 +194,7 @@ gg +
                                 "WI" = "orange"))
 ```
 
-### Change the order of the legend
+## Change the order of the legend
 
 In case you want to show the legend for color (`State`) before size (`Density`), it can be done with the `guides()` function. The `order` of the legend has to be set as desired. 
 
@@ -175,7 +206,7 @@ gg +
          size = guide_legend(order = 1))
 ```
 
-### How to style the legend title, text, and key
+## How to style the legend title, text, and key
 
 The styling of legend title, text, key and the guide can also be adjusted. The legend's key is a figure-like element, so it has to be set using `element_rect()` function.
 
@@ -189,7 +220,7 @@ gg +
   guides(color = guide_legend(override.aes = list(size = 2, stroke = 1.5))) 
 ```
 
-### How to remove the legend and change the legend position
+## How to remove the legend and change the legend position
 
 The legend's position inside the plot is an aspect of the theme, so it can be modified using the `theme()` function. If you want to place the legend inside the plot, you can additionally control the hinge point of the legend using `legend.justification`.
 
@@ -229,9 +260,9 @@ gg + theme(
   labs(subtitle = "Legend: Top-Left Inside the Plot")
 ```
 
-## Adding text, label, and annotation
+# Adding text, label, and annotation
 
-### How to add text and labels around the points
+## How to add text and labels around the points
 
 Let's try adding some text. We will add text to only those counties that have population greater than 400K. In order to achieve this, I create a subsetted dataframe (`midwest_sub`) that contains only the counties that meet the condition above. Then, we draw the `geom_text` and `geom_label` with this new dataframe as the `data` source. This will ensure that labels (`geom_label`) are added only for the points contained in the new dataframe.  
 
@@ -277,7 +308,7 @@ gg +
 
 Since the label is looked up from a different data frame, we need to set the data argument in the new `geom_` calls.
 
-### How to add annotations anywhere inside the plot
+## How to add annotations anywhere inside the plot
 
 Let's see how to add annotation to any specific point of the chart. It can be done with the `annotate()` function. For instance, to add text to the graph we use a "text" geom and give it a `label` containing the text we want to print on the graph. All we need to do then is specify the x and y coordinates on the graph where it should go.
 
@@ -286,9 +317,9 @@ gg +
   annotate("text", x = 0.075, y = 300000, label = "This text is amazing!")
 ```
 
-## Flipping and reversing the X and Y axis
+# Flipping and reversing the X and Y axis
 
-### How to flip the X and Y axis
+## How to flip the X and Y axis
 
 Just add `coord_flip()`:
 
@@ -297,7 +328,7 @@ gg +
   coord_flip()
 ```
 
-### How to reverse the scale of an axis
+## How to reverse the scale of an axis
 
 Use `scale_x_reverse()` for X axis and `scale_y_reverse()` for Y axis.
 
@@ -307,7 +338,7 @@ gg +
   scale_y_reverse()
 ```
 
-## Faceting: draw multiple plots within one figure
+# Faceting: draw multiple plots within one figure
 
 Let's use the `mpg` dataset for this one. It is available in the `ggplot2` package.
 
@@ -317,14 +348,13 @@ data(mpg, package = "ggplot2")  # load data
 g <- ggplot(mpg, aes(x = displ, y = hwy)) +
   geom_point() +
   labs(title = "hwy vs displ", caption = "Source: mpg") +
-  geom_smooth(method = "lm", se = FALSE) +
-  theme_bw()  # apply bw theme
+  geom_smooth(method = "lm", se = FALSE)
 g
 ```
 
 We have a simple chart of highway mileage `(hwy)` against the engine displacement `(displ)` for the whole dataset. But what if you want to study how this relationship varies for different classes of vehicles?
 
-### Facet wrap
+## Facet wrap
 
 `facet_wrap()` is used to break down a large plot into multiple small plots for individual categories. It takes a formula as the main argument. The items to the left of `~` forms the rows while those to the right form the columns.
 
@@ -346,7 +376,7 @@ g +
        subtitle = "Ggplot2 - Faceting - Multiple plots in one figure with free scales")
 ```
 
-### Facet grid
+## Facet grid
 
 The headings of the middle and bottom rows take up significant space. The `facet_grid()` would get rid of it and give more area to the charts. The main difference with `facet_grid` is that it is not possible to choose the number of rows and columns in the grid.
 
@@ -364,7 +394,7 @@ g2 <- g +
 g2
 ```
 
-### Combining multiple plots into a single graph
+## Combining multiple plots into a single graph
 
 It is possible to layout both these charts in the same graph using the `gridExtra` package.
 
@@ -373,9 +403,9 @@ library(gridExtra)
 grid.arrange(g1, g2, ncol = 2)
 ```
 
-## Modifying plot background, major and minor axis
+# Modifying plot background, major and minor axis
 
-### How to change the plot background
+## How to change the plot background
 
 ```{r, dependson='mpg'}
 # change plot background elements
@@ -408,7 +438,7 @@ g +
        subtitle = "How to Change Plot Margin")  
 ```
 
-### Remove major and minor grid, change border, axis title, text, and ticks
+## Remove major and minor grid, change border, axis title, text, and ticks
 
 By using the `element_blank()` type, we can turn off any or all of these components.
 
