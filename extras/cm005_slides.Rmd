@@ -1,0 +1,202 @@
+---
+title: "Pipes and functions in R"
+author: |
+  | MACS 30500
+  | University of Chicago
+date: "January 23, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+
+set.seed(1234)
+
+library(tidyverse)
+```
+
+----
+
+> Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
+
+1. Filter `diamonds` to only keep observations where the color is rated as "I"
+1. Group the filtered `diamonds` data frame by cut
+1. Summarize the grouped and filtered `diamonds` data frame by calculating the average carat size and price
+
+## Intermediate steps
+
+```{r intermediate}
+diamonds_1 <- filter(diamonds, color == "I")
+diamonds_2 <- group_by(diamonds_1, cut)
+(diamonds_3 <- summarize(diamonds_2, price = mean(price)))
+```
+
+## Overwrite the original
+
+```{r overwrite}
+diamonds_t <- diamonds    # copy diamonds to diamonds_t just for demonstration purposes
+diamonds_t <- filter(diamonds_t, color == "I")
+diamonds_t <- group_by(diamonds_t, cut)
+(diamonds_t <- summarize(diamonds_t, price = mean(price)))
+```
+
+## Function composition
+
+```{r function_comp}
+summarize(
+  group_by(
+    filter(diamonds, color == "I"),
+    cut
+  ),
+  price = mean(price)
+)
+```
+
+## Piping
+
+```{r pipe}
+diamonds %>%
+  filter(color == "I") %>%
+  group_by(cut) %>%
+  summarize(price = mean(price))
+```
+
+## Exercise on piping
+
+Complete [this exercise](http://cfss.uchicago.edu/block008_pipes.html#practice_piping_alternatives)
+
+## Functions
+
+* Easy to reuse
+* Self-documenting
+* Easy-ier to debug
+* [If you have copied and pasted a block of code more than twice, convert it to a function.](http://r4ds.had.co.nz/functions.html#when-should-you-write-a-function)
+
+## Function components
+
+* Name
+* Arguments
+* Body
+
+## Rescale function
+
+```{r, collapse = TRUE}
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+rescale01(c(0, 5, 10))
+rescale01(c(-10, 0, 10))
+rescale01(c(1, 2, 3, NA, 5))
+```
+
+* Name
+* Arguments
+* Body
+
+## What is that?
+
+```{r}
+pythagorean <- function(a, b){
+  hypotenuse <- sqrt(a^2 + b^2)
+  return(hypotenuse)
+}
+```
+
+* Name
+* Arguments
+* Body
+
+## How to use a function {.scrollable}
+
+```{r, error = TRUE}
+# print the output of the function
+pythagorean(a = 3, b = 4)
+
+# save the output as a new object
+(tri_c <- pythagorean(a = 3, b = 4))
+
+# what happens to the hypotenuse from inside the function?
+pythagorean(a = 3, b = 4)
+hypotenuse
+```
+
+## Exercise
+
+Stop and go [write a function](http://cfss.uchicago.edu/block009_functions.html#exercise:_calculate_the_sum_of_squares_of_two_variables)
+
+## Conditional execution
+
+```{r eval = FALSE}
+if (condition) {
+  # code executed when condition is TRUE
+} else {
+  # code executed when condition is FALSE
+}
+```
+
+## Conditional execution
+
+```{r eval = FALSE}
+if (this) {
+  # do that
+} else if (that) {
+  # do something else
+} else {
+  # do something completely different
+}
+```
+
+## Conditional execution and `cut()`
+
+```{r}
+diamonds %>%
+  select(carat) %>%
+  mutate(carat_autobin = cut(carat, breaks = 5),
+         carat_manbin = cut(carat,
+                            breaks = c(0, 1, 2, 3, 6),
+                            labels = c("Small", "Medium",
+                                       "Large", "Huge")))
+```
+
+## `if()` versus `ifelse()`
+
+```{r}
+library(rcfss)
+data("gun_deaths")
+
+(educ <- select(gun_deaths, education))
+```
+
+## `if()` versus `ifelse()`
+
+```{r, error = TRUE, collapse = TRUE}
+(educ_if <- educ %>%
+  mutate(hsPlus = if(education == "Less than HS"){
+    "Less than HS"
+  } else{
+    "HS+"
+  }))
+
+count(educ_if, hsPlus)
+```
+
+## `if()` versus `ifelse()`
+
+```{r, collapse = TRUE}
+(educ_ifelse <- educ %>%
+  mutate(hsPlus = ifelse(education == "Less than HS", "Less than HS", "HS+")))
+
+count(educ_ifelse, hsPlus)
+```
+
+## Exercise
+
+Go write a [fizzbuzz function](http://cfss.uchicago.edu/block009_functions.html#exercise:_write_a_fizzbuzz_function)
+
+
+
+
