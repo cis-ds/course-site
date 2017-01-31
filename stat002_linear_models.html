@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Statistical learning: linear regression</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Statistical learning: linear regression</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(rcfss)
+<span class="kw">options</span>(<span class="dt">na.action =</span> na.warn)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+
+<span class="kw">theme_set</span>(<span class="kw">theme_bw</span>())</code></pre></div>
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Demonstrate how to estimate linear models in R</li>
+<li>Demonstrate how to extract model statistics using <a href="https://cran.r-project.org/web/packages/broom/index.html"><code>broom</code></a> and <a href="https://github.com/hadley/modelr"><code>modelr</code></a></li>
+</ul>
+</div>
+<div id="linear-models-using-ggplot" class="section level1">
+<h1>Linear models using <code>ggplot</code></h1>
+<p>Linear models are the simplest to understand. They adopt a generic form</p>
+<p><span class="math display">\[y = \beta_0 + \beta_1 * x\]</span></p>
+<p>where <span class="math inline">\(y\)</span> is the <strong>outcome of interest</strong>, <span class="math inline">\(x\)</span> is the <strong>explanatory</strong> or <strong>predictor</strong> variable, and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are <strong>parameters</strong> that vary to capture different patterns. Given the empirical values you have for <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>, you generate a <strong>fitted model</strong> that finds the values for the parameters that best fit the data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/sim-plot-1.png" width="672" /></p>
+<p>This looks like a linear relationship. We could randomly generate parameters for the formula <span class="math inline">\(y = \beta_0 + \beta_1 * x\)</span> to try and explain or predict the relationship between <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">models &lt;-<span class="st"> </span><span class="kw">tibble</span>(
+  <span class="dt">a1 =</span> <span class="kw">runif</span>(<span class="dv">250</span>, -<span class="dv">20</span>, <span class="dv">40</span>),
+  <span class="dt">a2 =</span> <span class="kw">runif</span>(<span class="dv">250</span>, -<span class="dv">5</span>, <span class="dv">5</span>)
+)
+
+<span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> a1, <span class="dt">slope =</span> a2), <span class="dt">data =</span> models, <span class="dt">alpha =</span> <span class="dv">1</span>/<span class="dv">4</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/sim-random-fit-1.png" width="672" /></p>
+<p>But obviously some parameters are better than others. We need a definition that can be used to differentiate good parameters from bad parameters. One approach widely used is called <strong>least squares</strong> - it means that the overall solution minimizes the sum of the squares of the errors made in the results of every single equation. The errors are simply the vertical difference between the actual values for <span class="math inline">\(y\)</span> and the predicted values for <span class="math inline">\(y\)</span>.</p>
+<p><img src="stat002_linear_models_files/figure-html/sim-error-1.png" width="672" /></p>
+<p><a href="http://r4ds.had.co.nz/model-basics.html">R for Data Science</a> walks you through the steps to perform all these calculations manually by writing your own functions. I encourage you to read through and practice some of this code, especially if you have no experience with linear models.</p>
+<p>However for our purposes here I will assume you at least get the basics of this process. You can use <code>ggplot2</code> to draw the best-fit line:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/sim-plot-lm-1.png" width="672" /></p>
+<p>The line in blue is the best-fit line, with 95% confidence intervals in grey indicating a range of values so defined that there is a 95% probability that the true value of a parameter lies within it. If you want to learn more about the precise definition of confidence intervals and the debate over how useful they actually are, you should take a statistics class.</p>
+</div>
+<div id="estimating-a-linear-model-using-lm" class="section level1">
+<h1>Estimating a linear model using <code>lm()</code></h1>
+<p>But drawing a picture is not always good enough. What if you want to know the actual values of the estimated parameters? To do that, we use the <code>lm()</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim1_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim1)
+<span class="kw">coef</span>(sim1_mod)</code></pre></div>
+<pre><code>## (Intercept)           x 
+##    4.220822    2.051533</code></pre>
+<p>The <code>lm()</code> function takes two parameters. The first is a <em>formula</em> specifying the equation to be estimated (<code>lm()</code> translates <code>y ~ x</code> into <span class="math inline">\(y = \beta_0 + \beta_1 * x\)</span>). The second is of course the data frame containing the variables.</p>
+<p>Note that we have now begun to leave the <code>tidyverse</code> universe. <code>lm()</code> is part of the base R program, and the result of <code>lm()</code> is decidedly <strong>not tidy</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(sim1_mod)</code></pre></div>
+<pre><code>## List of 12
+##  $ coefficients : Named num [1:2] 4.22 2.05
+##   ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;(Intercept)&quot; &quot;x&quot;
+##  $ residuals    : Named num [1:30] -2.072 1.238 -4.147 0.665 1.919 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:30] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ effects      : Named num [1:30] -84.92 32.275 -4.13 0.761 2.015 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:30] &quot;(Intercept)&quot; &quot;x&quot; &quot;&quot; &quot;&quot; ...
+##  $ rank         : int 2
+##  $ fitted.values: Named num [1:30] 6.27 6.27 6.27 8.32 8.32 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:30] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ assign       : int [1:2] 0 1
+##  $ qr           :List of 5
+##   ..$ qr   : num [1:30, 1:2] -5.477 0.183 0.183 0.183 0.183 ...
+##   .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. ..$ : chr [1:30] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   .. .. ..$ : chr [1:2] &quot;(Intercept)&quot; &quot;x&quot;
+##   .. ..- attr(*, &quot;assign&quot;)= int [1:2] 0 1
+##   ..$ qraux: num [1:2] 1.18 1.24
+##   ..$ pivot: int [1:2] 1 2
+##   ..$ tol  : num 1e-07
+##   ..$ rank : int 2
+##   ..- attr(*, &quot;class&quot;)= chr &quot;qr&quot;
+##  $ df.residual  : int 28
+##  $ xlevels      : Named list()
+##  $ call         : language lm(formula = y ~ x, data = sim1)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language y ~ x
+##   .. ..- attr(*, &quot;variables&quot;)= language list(y, x)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:2, 1] 0 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. ..$ : chr [1:2] &quot;y&quot; &quot;x&quot;
+##   .. .. .. ..$ : chr &quot;x&quot;
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr &quot;x&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int 1
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(y, x)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:2] &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;y&quot; &quot;x&quot;
+##  $ model        :&#39;data.frame&#39;:   30 obs. of  2 variables:
+##   ..$ y: num [1:30] 4.2 7.51 2.13 8.99 10.24 ...
+##   ..$ x: int [1:30] 1 1 1 2 2 2 3 3 3 4 ...
+##   ..- attr(*, &quot;terms&quot;)=Classes &#39;terms&#39;, &#39;formula&#39;  language y ~ x
+##   .. .. ..- attr(*, &quot;variables&quot;)= language list(y, x)
+##   .. .. ..- attr(*, &quot;factors&quot;)= int [1:2, 1] 0 1
+##   .. .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. .. ..$ : chr [1:2] &quot;y&quot; &quot;x&quot;
+##   .. .. .. .. ..$ : chr &quot;x&quot;
+##   .. .. ..- attr(*, &quot;term.labels&quot;)= chr &quot;x&quot;
+##   .. .. ..- attr(*, &quot;order&quot;)= int 1
+##   .. .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. .. ..- attr(*, &quot;predvars&quot;)= language list(y, x)
+##   .. .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:2] &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;y&quot; &quot;x&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;lm&quot;</code></pre>
+<p>The result is stored in a complex list that contains a lot of important information, some of which you may recognize but most of it you do not. Here I will show you tools for extracting useful information from <code>lm()</code>.</p>
+<div id="generating-predicted-values" class="section level2">
+<h2>Generating predicted values</h2>
+<p>We can use <code>sim1_mod</code> to generate <strong>predicted values</strong>, or the expected value for <span class="math inline">\(Y\)</span> given our knowledge of hypothetical observations with values for <span class="math inline">\(X\)</span>, based on the estimated parameters using the <code>data_grid()</code> and <code>add_predictions()</code> functions from the <code>modelr</code> package. <code>data_grid()</code> generates an evenly spaced grid of data points covering the region where observed data lies. The first argument is a data frame, and subsequent arguments identify unique columns and generates all possible combinations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>sim1 %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">data_grid</span>(x) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 10 × 1
+##        x
+##    &lt;int&gt;
+## 1      1
+## 2      2
+## 3      3
+## 4      4
+## 5      5
+## 6      6
+## 7      7
+## 8      8
+## 9      9
+## 10    10</code></pre>
+<p><code>add_predictions()</code> takes a data frame and a model, and uses the model to generate predictions for each observation in the data frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>grid %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_predictions</span>(sim1_mod) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 10 × 2
+##        x      pred
+##    &lt;int&gt;     &lt;dbl&gt;
+## 1      1  6.272355
+## 2      2  8.323888
+## 3      3 10.375421
+## 4      4 12.426954
+## 5      5 14.478487
+## 6      6 16.530020
+## 7      7 18.581553
+## 8      8 20.633087
+## 9      9 22.684620
+## 10    10 24.736153</code></pre>
+<p>Using this information, we can draw the best-fit line without using <code>geom_smooth()</code>, and instead build it directly from the predicted values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">data =</span> grid, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/plot-lm-predict-1.png" width="672" /></p>
+<p>This looks like the line from before, but without the confidence interval. This is a bit more involved of a process, but it can work with any type of model you create - not just very basic, linear models.</p>
+</div>
+<div id="residuals" class="section level2">
+<h2>Residuals</h2>
+<p>We can also calculate the <strong>residuals</strong>, or that distance between the actual and predicted values of <span class="math inline">\(y\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim1 &lt;-<span class="st"> </span>sim1 %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_residuals</span>(sim1_mod)
+sim1</code></pre></div>
+<pre><code>## # A tibble: 30 × 3
+##        x         y        resid
+##    &lt;int&gt;     &lt;dbl&gt;        &lt;dbl&gt;
+## 1      1  4.199913 -2.072442018
+## 2      1  7.510634  1.238279125
+## 3      1  2.125473 -4.146882207
+## 4      2  8.988857  0.664969362
+## 5      2 10.243105  1.919217378
+## 6      2 11.296823  2.972935148
+## 7      3  7.356365 -3.019056466
+## 8      3 10.505349  0.129928252
+## 9      3 10.511601  0.136179642
+## 10     4 12.434589  0.007634878
+## # ... with 20 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(resid)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_freqpoly</span>(<span class="dt">binwidth =</span> <span class="fl">0.5</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/resids-1.png" width="672" /></p>
+<p>Reviewing your residuals can be helpful. Sometimes your model is better at predicting some types of observations better than others. This could help you isolate further patterns and improve the predictive accuracy of your model.</p>
+</div>
+</div>
+<div id="estimating-a-linear-models-using-gapminder" class="section level1">
+<h1>Estimating a linear model(s) using <code>gapminder</code></h1>
+<div id="overall-model" class="section level2">
+<h2>Overall model</h2>
+<p>Recall the <code>gapminder</code> dataset, which includes measures of life expectancy over time for all countries in the world.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gapminder)
+gapminder</code></pre></div>
+<pre><code>## # A tibble: 1,704 × 6
+##        country continent  year lifeExp      pop gdpPercap
+##         &lt;fctr&gt;    &lt;fctr&gt; &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
+## 1  Afghanistan      Asia  1952  28.801  8425333  779.4453
+## 2  Afghanistan      Asia  1957  30.332  9240934  820.8530
+## 3  Afghanistan      Asia  1962  31.997 10267083  853.1007
+## 4  Afghanistan      Asia  1967  34.020 11537966  836.1971
+## 5  Afghanistan      Asia  1972  36.088 13079460  739.9811
+## 6  Afghanistan      Asia  1977  38.438 14880372  786.1134
+## 7  Afghanistan      Asia  1982  39.854 12881816  978.0114
+## 8  Afghanistan      Asia  1987  40.822 13867957  852.3959
+## 9  Afghanistan      Asia  1992  41.674 16317921  649.3414
+## 10 Afghanistan      Asia  1997  41.763 22227415  635.3414
+## # ... with 1,694 more rows</code></pre>
+<p>Let’s say we want to try and understand how life expectancy changes over time. We could visualize the data using a line graph:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(year, lifeExp, <span class="dt">group =</span> country)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> <span class="dv">1</span>/<span class="dv">3</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/lifeExp-by-country-1.png" width="672" /></p>
+<p>But this is incredibly noise. Why not estimate a simple linear model that summarizes this trend?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> gapminder)
+<span class="kw">summary</span>(gapminder_mod)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = lifeExp ~ year, data = gapminder)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -39.949  -9.651   1.697  10.335  22.158 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -585.65219   32.31396  -18.12   &lt;2e-16 ***
+## year           0.32590    0.01632   19.96   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 11.63 on 1702 degrees of freedom
+## Multiple R-squared:  0.1898, Adjusted R-squared:  0.1893 
+## F-statistic: 398.6 on 1 and 1702 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>gapminder %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">data_grid</span>(year, country) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 1,704 × 2
+##     year     country
+##    &lt;int&gt;      &lt;fctr&gt;
+## 1   1952 Afghanistan
+## 2   1952     Albania
+## 3   1952     Algeria
+## 4   1952      Angola
+## 5   1952   Argentina
+## 6   1952   Australia
+## 7   1952     Austria
+## 8   1952     Bahrain
+## 9   1952  Bangladesh
+## 10  1952     Belgium
+## # ... with 1,694 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>grid %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_predictions</span>(gapminder_mod) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 1,704 × 3
+##     year     country     pred
+##    &lt;int&gt;      &lt;fctr&gt;    &lt;dbl&gt;
+## 1   1952 Afghanistan 50.51208
+## 2   1952     Albania 50.51208
+## 3   1952     Algeria 50.51208
+## 4   1952      Angola 50.51208
+## 5   1952   Argentina 50.51208
+## 6   1952   Australia 50.51208
+## 7   1952     Austria 50.51208
+## 8   1952     Bahrain 50.51208
+## 9   1952  Bangladesh 50.51208
+## 10  1952     Belgium 50.51208
+## # ... with 1,694 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(year, <span class="dt">group =</span> country)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> lifeExp), <span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">data =</span> grid, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/lifeExp-mod-1.png" width="672" /></p>
+<p>So it appears that there is a positive trend - that is, over time life expectancy is rising. But we can also see a lot of variation in that trend - some countries are doing much better than others. We’ll come back to that in a bit.</p>
+</div>
+<div id="extracting-model-statistics" class="section level2">
+<h2>Extracting model statistics</h2>
+<p>Model objects are not very pretty in R. Recall the complicated data structure I mentioned above:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(gapminder_mod)</code></pre></div>
+<pre><code>## List of 12
+##  $ coefficients : Named num [1:2] -585.652 0.326
+##   ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;(Intercept)&quot; &quot;year&quot;
+##  $ residuals    : Named num [1:1704] -21.7 -21.8 -21.8 -21.4 -20.9 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:1704] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ effects      : Named num [1:1704] -2455.1 232.2 -20.8 -20.5 -20.2 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:1704] &quot;(Intercept)&quot; &quot;year&quot; &quot;&quot; &quot;&quot; ...
+##  $ rank         : int 2
+##  $ fitted.values: Named num [1:1704] 50.5 52.1 53.8 55.4 57 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:1704] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ assign       : int [1:2] 0 1
+##  $ qr           :List of 5
+##   ..$ qr   : num [1:1704, 1:2] -41.2795 0.0242 0.0242 0.0242 0.0242 ...
+##   .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. ..$ : chr [1:1704] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   .. .. ..$ : chr [1:2] &quot;(Intercept)&quot; &quot;year&quot;
+##   .. ..- attr(*, &quot;assign&quot;)= int [1:2] 0 1
+##   ..$ qraux: num [1:2] 1.02 1.03
+##   ..$ pivot: int [1:2] 1 2
+##   ..$ tol  : num 1e-07
+##   ..$ rank : int 2
+##   ..- attr(*, &quot;class&quot;)= chr &quot;qr&quot;
+##  $ df.residual  : int 1702
+##  $ xlevels      : Named list()
+##  $ call         : language lm(formula = lifeExp ~ year, data = gapminder)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language lifeExp ~ year
+##   .. ..- attr(*, &quot;variables&quot;)= language list(lifeExp, year)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:2, 1] 0 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. ..$ : chr [1:2] &quot;lifeExp&quot; &quot;year&quot;
+##   .. .. .. ..$ : chr &quot;year&quot;
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr &quot;year&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int 1
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(lifeExp, year)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:2] &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;lifeExp&quot; &quot;year&quot;
+##  $ model        :&#39;data.frame&#39;:   1704 obs. of  2 variables:
+##   ..$ lifeExp: num [1:1704] 28.8 30.3 32 34 36.1 ...
+##   ..$ year   : int [1:1704] 1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
+##   ..- attr(*, &quot;terms&quot;)=Classes &#39;terms&#39;, &#39;formula&#39;  language lifeExp ~ year
+##   .. .. ..- attr(*, &quot;variables&quot;)= language list(lifeExp, year)
+##   .. .. ..- attr(*, &quot;factors&quot;)= int [1:2, 1] 0 1
+##   .. .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. .. ..$ : chr [1:2] &quot;lifeExp&quot; &quot;year&quot;
+##   .. .. .. .. ..$ : chr &quot;year&quot;
+##   .. .. ..- attr(*, &quot;term.labels&quot;)= chr &quot;year&quot;
+##   .. .. ..- attr(*, &quot;order&quot;)= int 1
+##   .. .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. .. ..- attr(*, &quot;predvars&quot;)= language list(lifeExp, year)
+##   .. .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:2] &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;lifeExp&quot; &quot;year&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;lm&quot;</code></pre>
+<p>In order to extract model statistics and use them in a <strong>tidy</strong> manner, we can use a set of functions from the <code>broom</code> package. For these functions, the input is always the model object itself, not the original data frame.</p>
+<div id="tidy" class="section level3">
+<h3><code>tidy()</code></h3>
+<p><code>tidy()</code> constructs a data frame that summarizes the model’s statistical findings. This includes <strong>coefficients</strong> and <strong>p-values</strong> for each parameter in a model. Different models will report different elements.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(gapminder_mod)</code></pre></div>
+<pre><code>##          term     estimate   std.error statistic      p.value
+## 1 (Intercept) -585.6521874 32.31396452 -18.12381 2.897807e-67
+## 2        year    0.3259038  0.01632369  19.96509 7.546795e-80</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(gapminder_mod) %&gt;%
+<span class="st">  </span><span class="kw">str</span>()</code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    2 obs. of  5 variables:
+##  $ term     : chr  &quot;(Intercept)&quot; &quot;year&quot;
+##  $ estimate : num  -585.652 0.326
+##  $ std.error: num  32.314 0.0163
+##  $ statistic: num  -18.1 20
+##  $ p.value  : num  2.90e-67 7.55e-80</code></pre>
+<p>Notice that the structure of the resulting object is a tidy data frame. Every row contains a single parameter, every column contains a single statistic, and every cell contains exactly one value.</p>
+</div>
+<div id="augment" class="section level3">
+<h3><code>augment()</code></h3>
+<p><code>augment()</code> adds columns to the original data that was modeled. This could include predictions, residuals, and other observation-level statistics.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">augment</span>(gapminder_mod) %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>()</code></pre></div>
+<pre><code>## # A tibble: 1,704 × 9
+##    lifeExp  year  .fitted   .se.fit    .resid         .hat   .sigma
+##      &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;
+## 1   28.801  1952 50.51208 0.5299963 -21.71108 0.0020765619 11.62203
+## 2   30.332  1957 52.14160 0.4629044 -21.80960 0.0015840967 11.62193
+## 3   31.997  1962 53.77112 0.4012330 -21.77412 0.0011901244 11.62197
+## 4   34.020  1967 55.40064 0.3478771 -21.38064 0.0008946453 11.62241
+## 5   36.088  1972 57.03016 0.3072006 -20.94216 0.0006976591 11.62288
+## 6   38.438  1977 58.65968 0.2846912 -20.22168 0.0005991661 11.62363
+## 7   39.854  1982 60.28920 0.2846912 -20.43520 0.0005991661 11.62341
+## 8   40.822  1987 61.91872 0.3072006 -21.09672 0.0006976591 11.62271
+## 9   41.674  1992 63.54824 0.3478771 -21.87424 0.0008946453 11.62187
+## 10  41.763  1997 65.17776 0.4012330 -23.41476 0.0011901244 11.62010
+## # ... with 1,694 more rows, and 2 more variables: .cooksd &lt;dbl&gt;,
+## #   .std.resid &lt;dbl&gt;</code></pre>
+<p><code>augment()</code> will only return statistics to the original data used to estimate the model, so it cannot be used like <code>add_predictions()</code> to generate predictions for new data.</p>
+</div>
+<div id="glance" class="section level3">
+<h3><code>glance()</code></h3>
+<p><code>glance()</code> constructs a concise one-row summary of the model. This typically contains values such as <span class="math inline">\(R^2\)</span>, adjusted <span class="math inline">\(R^2\)</span>, and residual standard error that are computed once for the entire model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(gapminder_mod)</code></pre></div>
+<pre><code>##   r.squared adj.r.squared    sigma statistic      p.value df    logLik
+## 1 0.1897571     0.1892811 11.63055  398.6047 7.546795e-80  2 -6597.866
+##        AIC      BIC deviance df.residual
+## 1 13201.73 13218.05 230229.2        1702</code></pre>
+<p>While <code>broom</code> may not work with every model in R, it is compatible with a wide range of common statistical models. A full list of models with which <code>broom</code> is compatible can be found on the <a href="https://github.com/dgrtwo/broom">GitHub page for the package</a>.</p>
+</div>
+</div>
+<div id="separate-model-for-usa" class="section level2">
+<h2>Separate model for USA</h2>
+<p>What if instead we wanted to fit a separate model for the United States? We can filter <code>gapminder</code> for that country and perform the analysis only on U.S. observations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(country ==<span class="st"> &quot;United States&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(year, lifeExp)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;United States&quot;</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/gapminder-us-1.png" width="672" /></p>
+</div>
+<div id="separate-models-for-each-country-using-map-and-nested-data-frames" class="section level2">
+<h2>Separate models for each country using <code>map()</code> and nested data frames</h2>
+<p>What if we want to estimate separate models for <strong>every country</strong>? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned last week how to <a href="block011_iteration.html#writing_for_loops">iterate using <code>for</code> loops</a>. We could do this using a <code>for</code> loop, but this will take a bunch of code. Instead, let’s use the <a href="block011_iteration.html#map_functions"><code>map()</code> functions we already learned</a>, but add an additional component on top of that.</p>
+<p>Instead of repeating an action for each <strong>column</strong> (variable), we want to repeat an action for each <strong>country</strong>, a subset of rows. To do that, we need a new data structure: the <strong>nested data frame</strong>. To create a nested data frame we start with a grouped data frame, and “nest” it:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country &lt;-<span class="st"> </span>gapminder %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">group_by</span>(country, continent) %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">nest</span>()
+
+by_country</code></pre></div>
+<pre><code>## # A tibble: 142 × 3
+##        country continent              data
+##         &lt;fctr&gt;    &lt;fctr&gt;            &lt;list&gt;
+## 1  Afghanistan      Asia &lt;tibble [12 × 4]&gt;
+## 2      Albania    Europe &lt;tibble [12 × 4]&gt;
+## 3      Algeria    Africa &lt;tibble [12 × 4]&gt;
+## 4       Angola    Africa &lt;tibble [12 × 4]&gt;
+## 5    Argentina  Americas &lt;tibble [12 × 4]&gt;
+## 6    Australia   Oceania &lt;tibble [12 × 4]&gt;
+## 7      Austria    Europe &lt;tibble [12 × 4]&gt;
+## 8      Bahrain      Asia &lt;tibble [12 × 4]&gt;
+## 9   Bangladesh      Asia &lt;tibble [12 × 4]&gt;
+## 10     Belgium    Europe &lt;tibble [12 × 4]&gt;
+## # ... with 132 more rows</code></pre>
+<p>This looks very different from what you’ve seen in data frames before. Typically every cell in a data frame is a single value. But here, each element in the <code>data</code> column is actually <strong>another data frame</strong>. This demonstrates the benefits of lists - they can be used recursively to store other lists, which is exactly what data frames are.</p>
+<p>Now we have one row per country, with the variables associated with each country stored in their own column. All the original data is still in this nested data frame, just stored in a different way. Note that to see the values of the variables in <code>data</code>, we use the special notation we learned last week:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country$data[[<span class="dv">1</span>]]</code></pre></div>
+<pre><code>## # A tibble: 12 × 4
+##     year lifeExp      pop gdpPercap
+##    &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
+## 1   1952  28.801  8425333  779.4453
+## 2   1957  30.332  9240934  820.8530
+## 3   1962  31.997 10267083  853.1007
+## 4   1967  34.020 11537966  836.1971
+## 5   1972  36.088 13079460  739.9811
+## 6   1977  38.438 14880372  786.1134
+## 7   1982  39.854 12881816  978.0114
+## 8   1987  40.822 13867957  852.3959
+## 9   1992  41.674 16317921  649.3414
+## 10  1997  41.763 22227415  635.3414
+## 11  2002  42.129 25268405  726.7341
+## 12  2007  43.828 31889923  974.5803</code></pre>
+<p>It’s hard to see the overall structure, but it’s easy to use the <code>map()</code> functions to access this data and analyze it. We have a model fitting function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">country_model &lt;-<span class="st"> </span>function(df) {
+  <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)
+}</code></pre></div>
+<p>And we want to apply it to each country. That is exactly what <code>map()</code> is designed for.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">models &lt;-<span class="st"> </span><span class="kw">map</span>(by_country$data, country_model)</code></pre></div>
+<p>And as we’ve already learned, we could store the models as a new column in <code>by_country</code> to keep all the data and analysis stored together.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country &lt;-<span class="st"> </span>by_country %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, country_model))
+by_country</code></pre></div>
+<pre><code>## # A tibble: 142 × 4
+##        country continent              data    model
+##         &lt;fctr&gt;    &lt;fctr&gt;            &lt;list&gt;   &lt;list&gt;
+## 1  Afghanistan      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 2      Albania    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 3      Algeria    Africa &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 4       Angola    Africa &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 5    Argentina  Americas &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 6    Australia   Oceania &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 7      Austria    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 8      Bahrain      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 9   Bangladesh      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 10     Belgium    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## # ... with 132 more rows</code></pre>
+<p>Now if we filter or change the order of the observations, <code>models</code> also changes order.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">filter</span>(continent ==<span class="st"> &quot;Europe&quot;</span>)</code></pre></div>
+<pre><code>## # A tibble: 30 × 4
+##                   country continent              data    model
+##                    &lt;fctr&gt;    &lt;fctr&gt;            &lt;list&gt;   &lt;list&gt;
+## 1                 Albania    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 2                 Austria    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 3                 Belgium    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 4  Bosnia and Herzegovina    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 5                Bulgaria    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 6                 Croatia    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 7          Czech Republic    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 8                 Denmark    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 9                 Finland    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## 10                 France    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt;
+## # ... with 20 more rows</code></pre>
+<div id="unnesting" class="section level3">
+<h3>Unnesting</h3>
+<p>What if we want to compute residuals for 142 countries and 142 models? We still use the <code>add_residuals()</code> function, but we have to combine it with a <code>map()</code> function call. Because <code>add_residuals()</code> requires two arguments (<code>data</code> and <code>model</code>), we use the <code>map2()</code> function. <code>map2()</code> allows us to <code>map()</code> over two sets of inputs rather than the normal one:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country &lt;-<span class="st"> </span>by_country %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">resids =</span> <span class="kw">map2</span>(data, model, add_residuals)
+  )
+by_country</code></pre></div>
+<pre><code>## # A tibble: 142 × 5
+##        country continent              data    model            resids
+##         &lt;fctr&gt;    &lt;fctr&gt;            &lt;list&gt;   &lt;list&gt;            &lt;list&gt;
+## 1  Afghanistan      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 2      Albania    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 3      Algeria    Africa &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 4       Angola    Africa &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 5    Argentina  Americas &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 6    Australia   Oceania &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 7      Austria    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 8      Bahrain      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 9   Bangladesh      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## 10     Belgium    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
+## # ... with 132 more rows</code></pre>
+<p>What if you want to plot the residuals? We need to unnest the residuals:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_country, resids)
+resids</code></pre></div>
+<pre><code>## # A tibble: 1,704 × 7
+##        country continent  year lifeExp      pop gdpPercap       resid
+##         &lt;fctr&gt;    &lt;fctr&gt; &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+## 1  Afghanistan      Asia  1952  28.801  8425333  779.4453 -1.10629487
+## 2  Afghanistan      Asia  1957  30.332  9240934  820.8530 -0.95193823
+## 3  Afghanistan      Asia  1962  31.997 10267083  853.1007 -0.66358159
+## 4  Afghanistan      Asia  1967  34.020 11537966  836.1971 -0.01722494
+## 5  Afghanistan      Asia  1972  36.088 13079460  739.9811  0.67413170
+## 6  Afghanistan      Asia  1977  38.438 14880372  786.1134  1.64748834
+## 7  Afghanistan      Asia  1982  39.854 12881816  978.0114  1.68684499
+## 8  Afghanistan      Asia  1987  40.822 13867957  852.3959  1.27820163
+## 9  Afghanistan      Asia  1992  41.674 16317921  649.3414  0.75355828
+## 10 Afghanistan      Asia  1997  41.763 22227415  635.3414 -0.53408508
+## # ... with 1,694 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">resids %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(year, resid)) +
+<span class="st">    </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">group =</span> country), <span class="dt">alpha =</span> <span class="dv">1</span> /<span class="st"> </span><span class="dv">3</span>) +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/unnest-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="exercise-modeling-with-scorecard" class="section level1">
+<h1>Exercise: modeling with <code>scorecard</code></h1>
+<p>Recall the <code>scorecard</code> data set which contains information on U.S. institutions of higher learning.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rcfss)
+scorecard</code></pre></div>
+<pre><code>## # A tibble: 1,849 × 12
+##    unitid                                 name state                type
+##     &lt;int&gt;                                &lt;chr&gt; &lt;chr&gt;               &lt;chr&gt;
+## 1  450234      ITT Technical Institute-Wichita    KS Private, for-profit
+## 2  448479 ITT Technical Institute-Swartz Creek    MI Private, for-profit
+## 3  456427      ITT Technical Institute-Concord    CA Private, for-profit
+## 4  459596  ITT Technical Institute-Tallahassee    FL Private, for-profit
+## 5  459851        Herzing University-Brookfield    WI Private, for-profit
+## 6  482477            DeVry University-Illinois    IL Private, for-profit
+## 7  482547              DeVry University-Nevada    NV Private, for-profit
+## 8  482592              DeVry University-Oregon    OR Private, for-profit
+## 9  482617           DeVry University-Tennessee    TN Private, for-profit
+## 10 482662          DeVry University-Washington    WA Private, for-profit
+## # ... with 1,839 more rows, and 8 more variables: cost &lt;int&gt;,
+## #   admrate &lt;dbl&gt;, satavg &lt;dbl&gt;, avgfacsal &lt;dbl&gt;, pctpell &lt;dbl&gt;,
+## #   comprate &lt;dbl&gt;, firstgen &lt;dbl&gt;, debt &lt;dbl&gt;</code></pre>
+<p>Answer the following questions using the statistical modeling tools you have learned.</p>
+<ol style="list-style-type: decimal">
+<li><p>What is the relationship between admission rate and cost? Report this relationship using a scatterplot.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(scorecard, <span class="kw">aes</span>(admrate, cost)) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<img src="stat002_linear_models_files/figure-html/scorecard-point-1.png" width="672" />
+</p>
+<p></details></p></li>
+<li><p>Summarize the relationship between admission rate and cost by adding a best-fit line to your scatterplot.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(scorecard, <span class="kw">aes</span>(admrate, cost)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/scorecard-point-fit-1.png" width="672" /></p>
+</p>
+<p></details></p></li>
+<li><p>Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">scorecard_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(cost ~<span class="st"> </span>admrate, <span class="dt">data =</span> scorecard)
+<span class="kw">tidy</span>(scorecard_mod)</code></pre></div>
+<pre><code>##          term  estimate std.error statistic       p.value
+## 1 (Intercept)  43607.18  1001.390  43.54666 1.036472e-284
+## 2     admrate -18169.23  1438.405 -12.63151  3.980318e-35</code></pre>
+</p>
+<p></details></p></li>
+<li><p>Is the relationship between admission rate and cost different based on the type of college? Visualize the distribution of residuals for each type of college.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">scorecard_resid &lt;-<span class="st"> </span>scorecard %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_residuals</span>(scorecard_mod)
+scorecard_resid</code></pre></div>
+<pre><code>## # A tibble: 1,849 × 13
+##    unitid                                 name state                type
+##     &lt;int&gt;                                &lt;chr&gt; &lt;chr&gt;               &lt;chr&gt;
+## 1  450234      ITT Technical Institute-Wichita    KS Private, for-profit
+## 2  448479 ITT Technical Institute-Swartz Creek    MI Private, for-profit
+## 3  456427      ITT Technical Institute-Concord    CA Private, for-profit
+## 4  459596  ITT Technical Institute-Tallahassee    FL Private, for-profit
+## 5  459851        Herzing University-Brookfield    WI Private, for-profit
+## 6  482477            DeVry University-Illinois    IL Private, for-profit
+## 7  482547              DeVry University-Nevada    NV Private, for-profit
+## 8  482592              DeVry University-Oregon    OR Private, for-profit
+## 9  482617           DeVry University-Tennessee    TN Private, for-profit
+## 10 482662          DeVry University-Washington    WA Private, for-profit
+## # ... with 1,839 more rows, and 9 more variables: cost &lt;int&gt;,
+## #   admrate &lt;dbl&gt;, satavg &lt;dbl&gt;, avgfacsal &lt;dbl&gt;, pctpell &lt;dbl&gt;,
+## #   comprate &lt;dbl&gt;, firstgen &lt;dbl&gt;, debt &lt;dbl&gt;, resid &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(scorecard_resid, <span class="kw">aes</span>(resid)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_freqpoly</span>(<span class="kw">aes</span>(<span class="dt">color =</span> type))</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/scorecard-resid-1.png" width="672" /></p>
+<p>It would appear the relationship between admission rate and cost is different for each college type. The distributions for private schools (for or non-profit) are not centered around 0.</p>
+</p>
+<p></details></p></li>
+<li><p>Estimate separate linear regression models of the relationship between admission rate and cost for each type of college.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">type_model &lt;-<span class="st"> </span>function(df) {
+  <span class="kw">lm</span>(cost ~<span class="st"> </span>admrate, <span class="dt">data =</span> df)
+}
+
+by_type &lt;-<span class="st"> </span>scorecard %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(type) %&gt;%
+<span class="st">  </span><span class="kw">nest</span>()
+by_type</code></pre></div>
+<pre><code>## # A tibble: 3 × 2
+##                  type                  data
+##                 &lt;chr&gt;                &lt;list&gt;
+## 1 Private, for-profit   &lt;tibble [216 × 11]&gt;
+## 2  Private, nonprofit &lt;tibble [1,092 × 11]&gt;
+## 3              Public   &lt;tibble [541 × 11]&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_type &lt;-<span class="st"> </span>by_type %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, type_model),
+         <span class="dt">resids =</span> <span class="kw">map2</span>(data, model, add_residuals))
+by_type</code></pre></div>
+<pre><code>## # A tibble: 3 × 4
+##                  type                  data    model                resids
+##                 &lt;chr&gt;                &lt;list&gt;   &lt;list&gt;                &lt;list&gt;
+## 1 Private, for-profit   &lt;tibble [216 × 11]&gt; &lt;S3: lm&gt;   &lt;tibble [216 × 12]&gt;
+## 2  Private, nonprofit &lt;tibble [1,092 × 11]&gt; &lt;S3: lm&gt; &lt;tibble [1,092 × 12]&gt;
+## 3              Public   &lt;tibble [541 × 11]&gt; &lt;S3: lm&gt;   &lt;tibble [541 × 12]&gt;</code></pre>
+<p><strong>Use an anonymous function with the <a href="http://r4ds.had.co.nz/iteration.html#shortcuts">one-sided formula format</a>:</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_type %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, ~<span class="kw">lm</span>(cost ~<span class="st"> </span>admrate, <span class="dt">data =</span> .)),
+         <span class="dt">resids =</span> <span class="kw">map2</span>(data, model, add_residuals))</code></pre></div>
+</p>
+<p></details></p></li>
+<li><p>Compare the results of the new series of models to the old one by graphing the new residuals. Is it better to use a single model or three sets of models to explain this relationship?</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># results of original model</span>
+<span class="kw">glance</span>(scorecard_mod)</code></pre></div>
+<pre><code>##    r.squared adj.r.squared    sigma statistic      p.value df    logLik
+## 1 0.08035796    0.07985432 12146.48  159.5552 3.980318e-35  2 -19784.78
+##        AIC     BIC     deviance df.residual
+## 1 39575.57 39592.1 269402514670        1826</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># results of new models</span>
+by_type %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">glance =</span> <span class="kw">map</span>(model, glance)) %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(glance, <span class="dt">.drop =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## # A tibble: 3 × 12
+##                  type    r.squared adj.r.squared     sigma   statistic
+##                 &lt;chr&gt;        &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
+## 1 Private, for-profit 0.0488797330  0.0442626443  5189.999  10.5867001
+## 2  Private, nonprofit 0.1181801128  0.1173620981 11200.479 144.4718626
+## 3              Public 0.0009124439 -0.0009445961  4123.599   0.4913432
+## # ... with 7 more variables: p.value &lt;dbl&gt;, df &lt;int&gt;, logLik &lt;dbl&gt;,
+## #   AIC &lt;dbl&gt;, BIC &lt;dbl&gt;, deviance &lt;dbl&gt;, df.residual &lt;int&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># what about the new residuals?</span>
+resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_type, resids)
+
+<span class="kw">ggplot</span>(resids, <span class="kw">aes</span>(resid)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_freqpoly</span>(<span class="kw">aes</span>(<span class="dt">color =</span> type))</code></pre></div>
+<p><img src="stat002_linear_models_files/figure-html/scorecard-compare-1.png" width="672" /></p>
+<p>Our residuals are now centered around 0 for each type of college. Obviously we could go much deeper here, but this is a good starting point.</p>
+</p>
+<p></details></p></li>
+</ol>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>For more information on statistical learning and the math behind these methods, see the awesome book <a href="http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7"><em>An Introduction to Statistical Learning</em></a></li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-01-31                  
+## 
+##  package   * version date       source        
+##  backports   1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  devtools    1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest      0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  evaluate    0.10    2016-10-11 CRAN (R 3.3.0)
+##  htmltools   0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  knitr       1.15.1  2016-11-22 cran (@1.15.1)
+##  magrittr    1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise     1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  Rcpp        0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  rmarkdown   1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot   1.2     2017-01-16 CRAN (R 3.3.2)
+##  stringi     1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr     1.1.0   2016-08-19 cran (@1.1.0) 
+##  withr       1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  yaml        2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
