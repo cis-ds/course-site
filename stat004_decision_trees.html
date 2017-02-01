@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Statistical learning: decision trees and random forests</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Statistical learning: decision trees and random forests</h1>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Define a decision tree</li>
+<li>Demonstrate how to estimate a decision tree</li>
+<li>Define and estimate a random forest</li>
+<li>Introduce the <code>caret</code> package for statistical learning in R</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(broom)
+<span class="kw">options</span>(<span class="dt">na.action =</span> na.warn)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+
+<span class="kw">theme_set</span>(<span class="kw">theme_bw</span>())</code></pre></div>
+</div>
+<div id="decision-trees" class="section level1">
+<h1>Decision trees</h1>
+<div class="figure">
+<img src="https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700" />
+
+</div>
+<div class="figure">
+<img src="https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg" />
+
+</div>
+<div class="figure">
+<img src="http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif" alt="Should I Have a Cookie?" />
+<p class="caption"><a href="http://iwastesomuchtime.com/58217">Should I Have a Cookie?</a></p>
+</div>
+<p><strong>Decision trees</strong> are intuitive concepts for making decisions. They are also useful methods for regression and classification. They work by splitting the observations into a number of regions, and predictions are made based on the mean or mode of the training observations in that region.</p>
+<div id="interpreting-a-decision-tree" class="section level2">
+<h2>Interpreting a decision tree</h2>
+<p>Let’s start with the Titanic data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
+titanic &lt;-<span class="st"> </span>titanic_train %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>()
+
+titanic %&gt;%
+<span class="st">  </span><span class="kw">head</span>() %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>()</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">PassengerId</th>
+<th align="right">Survived</th>
+<th align="right">Pclass</th>
+<th align="left">Name</th>
+<th align="left">Sex</th>
+<th align="right">Age</th>
+<th align="right">SibSp</th>
+<th align="right">Parch</th>
+<th align="left">Ticket</th>
+<th align="right">Fare</th>
+<th align="left">Cabin</th>
+<th align="left">Embarked</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Braund, Mr. Owen Harris</td>
+<td align="left">male</td>
+<td align="right">22</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">A/5 21171</td>
+<td align="right">7.2500</td>
+<td align="left"></td>
+<td align="left">S</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Cumings, Mrs. John Bradley (Florence Briggs Thayer)</td>
+<td align="left">female</td>
+<td align="right">38</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">PC 17599</td>
+<td align="right">71.2833</td>
+<td align="left">C85</td>
+<td align="left">C</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="left">Heikkinen, Miss. Laina</td>
+<td align="left">female</td>
+<td align="right">26</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">STON/O2. 3101282</td>
+<td align="right">7.9250</td>
+<td align="left"></td>
+<td align="left">S</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>
+<td align="left">female</td>
+<td align="right">35</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">113803</td>
+<td align="right">53.1000</td>
+<td align="left">C123</td>
+<td align="left">S</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Allen, Mr. William Henry</td>
+<td align="left">male</td>
+<td align="right">35</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">373450</td>
+<td align="right">8.0500</td>
+<td align="left"></td>
+<td align="left">S</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Moran, Mr. James</td>
+<td align="left">male</td>
+<td align="right">NA</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">330877</td>
+<td align="right">8.4583</td>
+<td align="left"></td>
+<td align="left">Q</td>
+</tr>
+</tbody>
+</table>
+<p>I want to predict who lives and who dies during this event. Instead of using <a href="stat003_logistic_regression.html">logistic regression</a>, I’m going to calculate a decision tree based on a passenger’s age and gender. Here’s what that decision tree looks like:</p>
+<p><img src="stat004_decision_trees_files/figure-html/titanic_tree-1.png" width="672" /></p>
+<p>Some key terminology:</p>
+<ul>
+<li>Each outcome (survived or died) is a <strong>terminal node</strong> or a <strong>leaf</strong></li>
+<li>Splits occur at <strong>internal nodes</strong></li>
+<li>The segments connecting each node are called <strong>branches</strong></li>
+</ul>
+<p>To make a prediction for a specific passenger, we start the decision tree from the top node and follow the appropriate branches down until we reach a terminal node. At each internal node, if our observation matches the condition, then travel down the left branch. If our observation does not match the condition, then travel down the right branch.</p>
+<p>So for a 50 year old female passenger:</p>
+<ul>
+<li>Start at the first internal node. The passenger in question is a female, so take the branch to the left.</li>
+<li>We reach a terminal node (“Survived”). We would predict the passenger in question survived the sinking of the Titanic.</li>
+</ul>
+<p>For a 20 year old male passenger:</p>
+<ul>
+<li>Start at the first internal node - the passenger in question is a male, so take the branch to the right.</li>
+<li>The passenger in question is not less than 13 years old (R would say the condition is <code>FALSE</code>), so take the branch to the right.</li>
+<li>We reach a terminal node (“Died”). We would predict the passenger in question died in the sinking of the Titanic.</li>
+</ul>
+</div>
+<div id="estimating-a-decision-tree" class="section level2">
+<h2>Estimating a decision tree</h2>
+<p>First we need to load the <code>tree</code> library and prepare the data. <code>tree</code> is somewhat finicky about how data must be formatted in order to estimate the tree. For the Titanic data, we need to convert all qualitiative variables to <a href="http://r4ds.had.co.nz/factors.html"><strong>factors</strong></a> using the <code>as.factor()</code> function. To make interpretation easier, I also recoded <code>Survived</code> from its <code>0/1</code> coding to explicitly identify which passengers survived and which died.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tree)
+
+titanic_tree_data &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">ifelse</span>(Survived ==<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Survived&quot;</span>,
+                           <span class="kw">ifelse</span>(Survived ==<span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Died&quot;</span>, <span class="ot">NA</span>)),
+         <span class="dt">Survived =</span> <span class="kw">as.factor</span>(Survived),
+         <span class="dt">Sex =</span> <span class="kw">as.factor</span>(Sex))
+titanic_tree_data</code></pre></div>
+<pre><code>## # A tibble: 891 × 12
+##    PassengerId Survived Pclass
+##          &lt;int&gt;   &lt;fctr&gt;  &lt;int&gt;
+## 1            1     Died      3
+## 2            2 Survived      1
+## 3            3 Survived      3
+## 4            4 Survived      1
+## 5            5     Died      3
+## 6            6     Died      3
+## 7            7     Died      1
+## 8            8     Died      3
+## 9            9 Survived      3
+## 10          10 Survived      2
+## # ... with 881 more rows, and 9 more variables: Name &lt;chr&gt;, Sex &lt;fctr&gt;,
+## #   Age &lt;dbl&gt;, SibSp &lt;int&gt;, Parch &lt;int&gt;, Ticket &lt;chr&gt;, Fare &lt;dbl&gt;,
+## #   Cabin &lt;chr&gt;, Embarked &lt;chr&gt;</code></pre>
+<p>Now we can use the <code>tree()</code> function to estimate the model. The format looks exactly like <code>lm()</code> or <code>glm()</code> - first we specify the formula that defines the model, then we specify where the data is stored:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_tree &lt;-<span class="st"> </span><span class="kw">tree</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Sex, <span class="dt">data =</span> titanic_tree_data)
+<span class="kw">summary</span>(titanic_tree)</code></pre></div>
+<pre><code>## 
+## Classification tree:
+## tree(formula = Survived ~ Age + Sex, data = titanic_tree_data)
+## Number of terminal nodes:  3 
+## Residual mean deviance:  1.019 = 724.7 / 711 
+## Misclassification error rate: 0.2129 = 152 / 714</code></pre>
+<p>The <code>summary()</code> function provides several important statistics:</p>
+<ul>
+<li>There are three terminal nodes in the tree</li>
+<li><strong>Residual mean deviance</strong> is an estimate of model fit. It is usually helpful in comparing the effectiveness of different models.</li>
+<li>This decision tree misclassifies <span class="math inline">\(21.3\%\)</span> of the training set observations (note that we did not create a validation set - this model is based on all the original data)</li>
+</ul>
+<p>That’s all well in good, but decision trees are meant to be viewed. Let’s plot it!</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(titanic_tree)
+<span class="kw">text</span>(titanic_tree, <span class="dt">pretty =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="stat004_decision_trees_files/figure-html/titanic_tree_plot-1.png" width="672" /></p>
+<p><code>tree</code> does not use <code>ggplot2</code> to graph the results; instead it relies on the base <code>graphics</code> package. <code>plot(titanic_tree)</code> draws the branches and <code>text(titanic_tree, pretty = 0)</code> adds the text labeling each node.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<div id="build-a-more-complex-tree" class="section level3">
+<h3>Build a more complex tree</h3>
+<p>Since we have a lot of other variables in our Titanic data set, let’s estimate a more complex model that accounts for all the information we have.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> We’ll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use <code>mutate_each()</code> to apply <code>as.factor()</code> to all of these variables in one line of code (another type of iterative operation):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_tree_full_data &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">ifelse</span>(Survived ==<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Survived&quot;</span>,
+                           <span class="kw">ifelse</span>(Survived ==<span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Died&quot;</span>, <span class="ot">NA</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(as.factor), Survived, Pclass, Sex, Embarked)
+
+titanic_tree_full &lt;-<span class="st"> </span><span class="kw">tree</span>(Survived ~<span class="st"> </span>Pclass +<span class="st"> </span>Sex +<span class="st"> </span>Age +<span class="st"> </span>SibSp +
+<span class="st">                       </span>Parch +<span class="st"> </span>Fare +<span class="st"> </span>Embarked, <span class="dt">data =</span> titanic_tree_full_data)
+<span class="kw">summary</span>(titanic_tree_full)</code></pre></div>
+<pre><code>## 
+## Classification tree:
+## tree(formula = Survived ~ Pclass + Sex + Age + SibSp + Parch + 
+##     Fare + Embarked, data = titanic_tree_full_data)
+## Variables actually used in tree construction:
+## [1] &quot;Sex&quot;    &quot;Pclass&quot; &quot;Fare&quot;   &quot;Age&quot;    &quot;SibSp&quot; 
+## Number of terminal nodes:  7 
+## Residual mean deviance:  0.7975 = 563.9 / 707 
+## Misclassification error rate: 0.1737 = 124 / 714</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(titanic_tree_full)
+<span class="kw">text</span>(titanic_tree_full, <span class="dt">pretty =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="stat004_decision_trees_files/figure-html/titanic_tree_full-1.png" width="672" /></p>
+<p>Now we’ve built a more complicated decision tree. Fortunately it is still pretty interpretable. Notice that some of the variables we included in the model (<code>Parch</code> and <code>Embarked</code>) ended up being dropped from the final model. This is because to build the tree and ensure it is not overly complicated, the algorithm goes through a process of iteration and <strong>pruning</strong> to remove twigs or branches that result in a complicated model that does not provide significant improvement in overall model accuracy. You can tweak these parameters to ensure the model keeps all the variables, but could result in a nasty looking picture:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_tree_messy &lt;-<span class="st"> </span><span class="kw">tree</span>(Survived ~<span class="st"> </span>Pclass +<span class="st"> </span>Sex +<span class="st"> </span>Age +<span class="st"> </span>SibSp +
+<span class="st">                       </span>Parch +<span class="st"> </span>Fare +<span class="st"> </span>Embarked,
+                       <span class="dt">data =</span> titanic_tree_full_data,
+                       <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(titanic_tree_full_data),
+                                              <span class="dt">mindev =</span> <span class="dv">0</span>, <span class="dt">minsize =</span> <span class="dv">10</span>))
+<span class="kw">summary</span>(titanic_tree_messy)</code></pre></div>
+<pre><code>## 
+## Classification tree:
+## tree(formula = Survived ~ Pclass + Sex + Age + SibSp + Parch + 
+##     Fare + Embarked, data = titanic_tree_full_data, control = tree.control(nobs = nrow(titanic_tree_full_data), 
+##     mindev = 0, minsize = 10))
+## Number of terminal nodes:  76 
+## Residual mean deviance:  0.5148 = 328.4 / 638 
+## Misclassification error rate: 0.112 = 80 / 714</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(titanic_tree_messy)
+<span class="kw">text</span>(titanic_tree_messy, <span class="dt">pretty =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="stat004_decision_trees_files/figure-html/titanic_tree_complicated-1.png" width="672" /></p>
+<p>The misclassification error rate for this model is much lower than the previous versions, but it is also much less interpretable. Depending on your audience and how you want to present the results of your statistical model, you need to determine the optimal trade-off between accuracy and interpretability.</p>
+</div>
+</div>
+<div id="benefitsdrawbacks-to-decision-trees" class="section level2">
+<h2>Benefits/drawbacks to decision trees</h2>
+<p>Decision trees are an entirely different method of estimating functional forms as compared to linear regression. There are some benefits to trees:</p>
+<ul>
+<li>They are easy to explain. Most people, even if they lack statistical training, can understand decision trees.</li>
+<li>They are easily presented as visualizations, and pretty interpretable.</li>
+<li>Qualitative predictors are easily handled without the need to create a long series of dummy variables.</li>
+</ul>
+<p>However there are also drawbacks to trees:</p>
+<ul>
+<li>Their accuracy rates are generally lower than other regression and classification approaches.</li>
+<li>Trees can be non-robust. That is, a small change in the data or inclusion/exclusion of a handful of observations can dramatically alter the final estimated tree.</li>
+</ul>
+<p>Fortuntately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.</p>
+</div>
+</div>
+<div id="random-forests" class="section level1">
+<h1>Random forests</h1>
+<p>One method of aggregating trees is the <strong>random forest</strong> approach. This uses the concept of <strong>bootstrapping</strong> to build a forest of trees using the same underlying data set. Bootstrapping is standard resampling process whereby you repeatedly <strong>sample with replacement</strong> from a data set. So if you have a dataset of 500 observations, you might draw a sample of 500 observations from the data. But by sampling with replacement, some observations may be sampled multiple times and some observations may never be sampled. This essentially treats your data as a population of interest. You repeat this process many times (say <span class="math inline">\(k = 1000\)</span>), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.</p>
+<p>As with other resampling methods, each individual sample will have some degree of bias to it. However by averaging across all the bootstrapped samples you cancel out much of this bias. Most importantly, averaging a set of observations reduces <strong>variance</strong> - you achieve stable estimates of the prediction accuracy or overall model error.</p>
+<p>In the context of decision trees, this means we draw repeated samples from the original dataset and estimate a decision tree model on each sample. To make predictions, we estimate the outcome using each tree and average across all of them to obtain the final prediction. Rather than being a binary outcome (<span class="math inline">\([0,1]\)</span>, survived/died), the average prediction will be a probability of the given outcome (i.e. the probability of survival). This process is called <strong>bagging</strong>. Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. <strong>Random forests specifically exclude a portion of the predictor variables when building individual trees</strong>. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say gender in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more <strong>reliable</strong>.</p>
+</div>
+<div id="estimating-statistical-models-using-caret" class="section level1">
+<h1>Estimating statistical models using <code>caret</code></h1>
+<p>To estimate a random forest, we move outside the world of <code>tree</code> and into a new package in R: <a href="https://cran.r-project.org/web/packages/caret/index.html"><code>caret</code></a>. <code>caret</code> is a package in R for training and plotting a wide variety of statistical learning models. It is outside of the <code>tidyverse</code> so can be a bit more difficult to master. <code>caret</code> does not contain the estimation algorithms itself; instead it creates a unified interface to approximately <a href="https://topepo.github.io/caret/available-models.html">233 different models</a> from various packages in R. To install <code>caret</code> and make sure you install all the related packages it relies on, run the following code:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;caret&quot;</span>, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>The basic function to train models is <code>train()</code>. We can train regression and classification models using one of <a href="https://topepo.github.io/caret/available-models.html">these models</a>. For instance, rather than using <code>glm()</code> to estimate a logistic regression model, we could use <code>caret</code> and the <code>&quot;glm&quot;</code> method. Note that <code>caret</code> is extremely picky about preparing data for analysis. For instance, we have to remove all missing values before training a model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(caret)
+
+titanic_clean &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!<span class="kw">is.na</span>(Survived), !<span class="kw">is.na</span>(Age))
+
+caret_glm &lt;-<span class="st"> </span><span class="kw">train</span>(Survived ~<span class="st"> </span>Age, <span class="dt">data =</span> titanic_clean,
+                   <span class="dt">method =</span> <span class="st">&quot;glm&quot;</span>,
+                   <span class="dt">family =</span> binomial,
+                   <span class="dt">trControl =</span> <span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;none&quot;</span>))
+<span class="kw">summary</span>(caret_glm)</code></pre></div>
+<pre><code>## 
+## Call:
+## NULL
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1488  -1.0361  -0.9544   1.3159   1.5908  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept) -0.05672    0.17358  -0.327   0.7438  
+## Age         -0.01096    0.00533  -2.057   0.0397 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 964.52  on 713  degrees of freedom
+## Residual deviance: 960.23  on 712  degrees of freedom
+## AIC: 964.23
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<ul>
+<li><code>trControl = trainControl(method = &quot;none&quot;)</code> - by default <code>caret</code> implements a bootstrap resampling procedure to validate the results of the model. For our purposes here I want to turn that off by setting the resampling method to <code>&quot;none&quot;</code>.</li>
+</ul>
+<p>The results are identical to those obtained by the <code>glm()</code> function:<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_glm &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age, <span class="dt">data =</span> titanic_clean, <span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>)
+<span class="kw">summary</span>(glm_glm)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = Survived ~ Age, family = &quot;binomial&quot;, data = titanic_clean)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1488  -1.0361  -0.9544   1.3159   1.5908  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept) -0.05672    0.17358  -0.327   0.7438  
+## Age         -0.01096    0.00533  -2.057   0.0397 *
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 964.52  on 713  degrees of freedom
+## Residual deviance: 960.23  on 712  degrees of freedom
+## AIC: 964.23
+## 
+## Number of Fisher Scoring iterations: 4</code></pre>
+<div id="estimating-a-random-forest" class="section level2">
+<h2>Estimating a random forest</h2>
+<p>We will reuse <code>titanic_tree_full_data</code> with the adjustment that we need to remove observations with missing values. In the process, let’s pare the data frame down to only columns that will be used the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_rf_data &lt;-<span class="st"> </span>titanic_tree_full_data %&gt;%
+<span class="st">  </span><span class="kw">select</span>(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked) %&gt;%
+<span class="st">  </span><span class="kw">na.omit</span>()
+titanic_rf_data</code></pre></div>
+<pre><code>## # A tibble: 714 × 8
+##    Survived Pclass    Sex   Age SibSp Parch    Fare Embarked
+##      &lt;fctr&gt; &lt;fctr&gt; &lt;fctr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;fctr&gt;
+## 1      Died      3   male    22     1     0  7.2500        S
+## 2  Survived      1 female    38     1     0 71.2833        C
+## 3  Survived      3 female    26     0     0  7.9250        S
+## 4  Survived      1 female    35     1     0 53.1000        S
+## 5      Died      3   male    35     0     0  8.0500        S
+## 6      Died      1   male    54     0     0 51.8625        S
+## 7      Died      3   male     2     3     1 21.0750        S
+## 8  Survived      3 female    27     0     2 11.1333        S
+## 9  Survived      2 female    14     1     0 30.0708        C
+## 10 Survived      3 female     4     1     1 16.7000        S
+## # ... with 704 more rows</code></pre>
+<p>Now that the data is prepped, let’s estimate the model. To start, we’ll estimate a simple model that only uses age and gender. Again we use the <code>train()</code> function but this time we will use the <code>rf</code> method.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> To start with, I will estimate a forest with 200 trees (the default is 500 trees) and set the <code>trainControl</code> method to <code>&quot;oob&quot;</code> (I will explain this shortly):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_sex_rf &lt;-<span class="st"> </span><span class="kw">train</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Sex, <span class="dt">data =</span> titanic_rf_data,
+                   <span class="dt">method =</span> <span class="st">&quot;rf&quot;</span>,
+                   <span class="dt">ntree =</span> <span class="dv">200</span>,
+                   <span class="dt">trControl =</span> <span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;oob&quot;</span>))</code></pre></div>
+<pre><code>## note: only 1 unique complexity parameters in default grid. Truncating the grid to 1 .</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_sex_rf</code></pre></div>
+<pre><code>## Random Forest 
+## 
+## 714 samples
+##   2 predictor
+##   2 classes: &#39;Died&#39;, &#39;Survived&#39; 
+## 
+## No pre-processing
+## Resampling results:
+## 
+##   Accuracy   Kappa   
+##   0.7521008  0.479004
+## 
+## Tuning parameter &#39;mtry&#39; was held constant at a value of 2
+## </code></pre>
+<p>Hmm. What have we generated here? How can we analyze the results?</p>
+<div id="structure-of-train-object" class="section level3">
+<h3>Structure of <code>train</code> object</h3>
+<p>The object generated by <code>train</code> is a named list:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(age_sex_rf, <span class="dt">max.level =</span> <span class="dv">1</span>)</code></pre></div>
+<pre><code>## List of 24
+##  $ method      : chr &quot;rf&quot;
+##  $ modelInfo   :List of 15
+##  $ modelType   : chr &quot;Classification&quot;
+##  $ results     :&#39;data.frame&#39;:    1 obs. of  3 variables:
+##  $ pred        : NULL
+##  $ bestTune    :&#39;data.frame&#39;:    1 obs. of  1 variable:
+##  $ call        : language train.formula(form = Survived ~ Age + Sex, data = titanic_rf_data,      method = &quot;rf&quot;, ntree = 200, trControl = trainControl(method = &quot;oob&quot;))
+##  $ dots        :List of 1
+##  $ metric      : chr &quot;Accuracy&quot;
+##  $ control     :List of 26
+##  $ finalModel  :List of 22
+##   ..- attr(*, &quot;class&quot;)= chr &quot;randomForest&quot;
+##  $ preProcess  : NULL
+##  $ trainingData:Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    714 obs. of  3 variables:
+##  $ resample    : NULL
+##  $ resampledCM : NULL
+##  $ perfNames   : chr [1:2] &quot;Accuracy&quot; &quot;Kappa&quot;
+##  $ maximize    : logi TRUE
+##  $ yLimits     : NULL
+##  $ times       :List of 3
+##  $ levels      : atomic [1:2] Died Survived
+##   ..- attr(*, &quot;ordered&quot;)= logi FALSE
+##  $ terms       :Classes &#39;terms&#39;, &#39;formula&#39;  language Survived ~ Age + Sex
+##   .. ..- attr(*, &quot;variables&quot;)= language list(Survived, Age, Sex)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:3, 1:2] 0 1 0 0 0 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr [1:2] &quot;Age&quot; &quot;Sex&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int [1:2] 1 1
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(Survived, Age, Sex)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:3] &quot;factor&quot; &quot;numeric&quot; &quot;factor&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:3] &quot;Survived&quot; &quot;Age&quot; &quot;Sex&quot;
+##  $ coefnames   : chr [1:2] &quot;Age&quot; &quot;Sexmale&quot;
+##  $ contrasts   :List of 1
+##  $ xlevels     :List of 1
+##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;train&quot; &quot;train.formula&quot;</code></pre>
+<p>The model itself is always stored in the <code>finalModel</code> element. So to use the model in other functions, we would refer to it as <code>age_sex_rf$finalModel</code>.</p>
+</div>
+<div id="model-statistics" class="section level3">
+<h3>Model statistics</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_sex_rf$finalModel</code></pre></div>
+<pre><code>## 
+## Call:
+##  randomForest(x = x, y = y, ntree = 200, mtry = param$mtry) 
+##                Type of random forest: classification
+##                      Number of trees: 200
+## No. of variables tried at each split: 2
+## 
+##         OOB estimate of  error rate: 24.37%
+## Confusion matrix:
+##          Died Survived class.error
+## Died      347       77   0.1816038
+## Survived   97      193   0.3344828</code></pre>
+<p>This tells us some important things:</p>
+<ul>
+<li>We used 200 trees</li>
+<li>At every potential branch, the model randomly used one of 2 variables to define the split</li>
+<li><p>The <strong>out-of-bag</strong> (OOB) error rate</p>
+<p>This requires further explanation. Because each tree is built from a bootstrapped sample, for any given tree approximately one-third of the observations are not used to build the tree. In essence, we have a natural validation set for each tree. For each observation, we predict the outcome of interest using all trees where the observation was not used to build the tree, then average across these predictions. For any observation, we should have <span class="math inline">\(K/3\)</span> validation predictions where <span class="math inline">\(K\)</span> is the total number of trees in the forest. Averaging across these predictions gives us an out-of-bag error rate for every observation (even if they are derived from different combinations of trees). Because the OOB estimate is built only using trees that were not fit to the observation, this is a valid estimate of the test error for the random forest.</p>
+Here we get an OOB estimate of the error rate of 24%. This means for test observations, the model misclassifies the individual’s survival 24% of the time.</li>
+<li><p>The <strong>confusion matrix</strong> - this compares the predictions to the actual known outcomes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr::<span class="kw">kable</span>(age_sex_rf$finalModel$confusion)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Died</th>
+<th align="right">Survived</th>
+<th align="right">class.error</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Died</td>
+<td align="right">347</td>
+<td align="right">77</td>
+<td align="right">0.1816038</td>
+</tr>
+<tr class="even">
+<td>Survived</td>
+<td align="right">97</td>
+<td align="right">193</td>
+<td align="right">0.3344828</td>
+</tr>
+</tbody>
+</table>
+<p>The rows indicate the actual known outcomes, and the columns indicate the predictions. A perfect model would have 0s on the off-diagonal cells because every prediction is perfect. Clearly that is not the case. Not only is there substantial error, most it comes from misclassifying survivors. The error rate for those who actually died is much smaller than for those who actually survived.</p></li>
+</ul>
+</div>
+<div id="look-at-an-individual-tree" class="section level3">
+<h3>Look at an individual tree</h3>
+<p>We could look at one tree generated by the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">randomForest::<span class="kw">getTree</span>(age_sex_rf$finalModel, <span class="dt">labelVar =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>##     left daughter right daughter split var split point status prediction
+## 1               2              3   Sexmale        0.50      1       &lt;NA&gt;
+## 2               4              5       Age       23.50      1       &lt;NA&gt;
+## 3               6              7       Age        5.50      1       &lt;NA&gt;
+## 4               8              9       Age        1.50      1       &lt;NA&gt;
+## 5              10             11       Age       51.00      1       &lt;NA&gt;
+## 6              12             13       Age        0.96      1       &lt;NA&gt;
+## 7              14             15       Age       24.50      1       &lt;NA&gt;
+## 8               0              0      &lt;NA&gt;        0.00     -1   Survived
+## 9              16             17       Age        3.50      1       &lt;NA&gt;
+## 10             18             19       Age       37.00      1       &lt;NA&gt;
+## 11              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 12              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 13             20             21       Age        2.50      1       &lt;NA&gt;
+## 14             22             23       Age       21.50      1       &lt;NA&gt;
+## 15             24             25       Age       27.50      1       &lt;NA&gt;
+## 16             26             27       Age        2.50      1       &lt;NA&gt;
+## 17             28             29       Age        5.50      1       &lt;NA&gt;
+## 18             30             31       Age       32.25      1       &lt;NA&gt;
+## 19             32             33       Age       38.50      1       &lt;NA&gt;
+## 20             34             35       Age        1.50      1       &lt;NA&gt;
+## 21             36             37       Age        3.50      1       &lt;NA&gt;
+## 22             38             39       Age       19.50      1       &lt;NA&gt;
+## 23             40             41       Age       22.50      1       &lt;NA&gt;
+## 24             42             43       Age       26.50      1       &lt;NA&gt;
+## 25             44             45       Age       63.00      1       &lt;NA&gt;
+## 26              0              0      &lt;NA&gt;        0.00     -1       Died
+## 27              0              0      &lt;NA&gt;        0.00     -1       Died
+## 28              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 29             46             47       Age       12.00      1       &lt;NA&gt;
+## 30             48             49       Age       24.50      1       &lt;NA&gt;
+## 31              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 32              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 33             50             51       Age       43.50      1       &lt;NA&gt;
+## 34              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 35              0              0      &lt;NA&gt;        0.00     -1       Died
+## 36              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 37              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 38             52             53       Age       16.50      1       &lt;NA&gt;
+## 39             54             55       Age       20.25      1       &lt;NA&gt;
+## 40              0              0      &lt;NA&gt;        0.00     -1       Died
+## 41             56             57       Age       23.50      1       &lt;NA&gt;
+## 42             58             59       Age       25.50      1       &lt;NA&gt;
+## 43              0              0      &lt;NA&gt;        0.00     -1       Died
+## 44             60             61       Age       59.50      1       &lt;NA&gt;
+## 45              0              0      &lt;NA&gt;        0.00     -1       Died
+## 46             62             63       Age        8.50      1       &lt;NA&gt;
+## 47             64             65       Age       19.50      1       &lt;NA&gt;
+## 48              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 49             66             67       Age       25.50      1       &lt;NA&gt;
+## 50             68             69       Age       41.50      1       &lt;NA&gt;
+## 51             70             71       Age       47.50      1       &lt;NA&gt;
+## 52             72             73       Age        8.50      1       &lt;NA&gt;
+## 53             74             75       Age       17.50      1       &lt;NA&gt;
+## 54              0              0      &lt;NA&gt;        0.00     -1       Died
+## 55             76             77       Age       20.75      1       &lt;NA&gt;
+## 56              0              0      &lt;NA&gt;        0.00     -1       Died
+## 57              0              0      &lt;NA&gt;        0.00     -1       Died
+## 58              0              0      &lt;NA&gt;        0.00     -1       Died
+## 59              0              0      &lt;NA&gt;        0.00     -1       Died
+## 60             78             79       Age       56.50      1       &lt;NA&gt;
+## 61             80             81       Age       60.50      1       &lt;NA&gt;
+## 62             82             83       Age        6.50      1       &lt;NA&gt;
+## 63              0              0      &lt;NA&gt;        0.00     -1       Died
+## 64             84             85       Age       18.50      1       &lt;NA&gt;
+## 65             86             87       Age       20.50      1       &lt;NA&gt;
+## 66              0              0      &lt;NA&gt;        0.00     -1       Died
+## 67             88             89       Age       27.50      1       &lt;NA&gt;
+## 68             90             91       Age       40.50      1       &lt;NA&gt;
+## 69              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 70             92             93       Age       46.00      1       &lt;NA&gt;
+## 71             94             95       Age       49.50      1       &lt;NA&gt;
+## 72              0              0      &lt;NA&gt;        0.00     -1       Died
+## 73             96             97       Age        9.50      1       &lt;NA&gt;
+## 74              0              0      &lt;NA&gt;        0.00     -1       Died
+## 75             98             99       Age       18.50      1       &lt;NA&gt;
+## 76              0              0      &lt;NA&gt;        0.00     -1       Died
+## 77              0              0      &lt;NA&gt;        0.00     -1       Died
+## 78            100            101       Age       55.75      1       &lt;NA&gt;
+## 79              0              0      &lt;NA&gt;        0.00     -1       Died
+## 80              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 81            102            103       Age       61.50      1       &lt;NA&gt;
+## 82              0              0      &lt;NA&gt;        0.00     -1       Died
+## 83              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 84            104            105       Age       15.50      1       &lt;NA&gt;
+## 85              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 86              0              0      &lt;NA&gt;        0.00     -1       Died
+## 87            106            107       Age       22.50      1       &lt;NA&gt;
+## 88              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 89            108            109       Age       29.50      1       &lt;NA&gt;
+## 90            110            111       Age       39.50      1       &lt;NA&gt;
+## 91              0              0      &lt;NA&gt;        0.00     -1   Survived
+## 92            112            113       Age       44.50      1       &lt;NA&gt;
+## 93              0              0      &lt;NA&gt;        0.00     -1       Died
+## 94            114            115       Age       48.50      1       &lt;NA&gt;
+## 95              0              0      &lt;NA&gt;        0.00     -1       Died
+## 96              0              0      &lt;NA&gt;        0.00     -1       Died
+## 97            116            117       Age       11.50      1       &lt;NA&gt;
+## 98              0              0      &lt;NA&gt;        0.00     -1       Died
+## 99              0              0      &lt;NA&gt;        0.00     -1       Died
+## 100           118            119       Age       49.50      1       &lt;NA&gt;
+## 101             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 102             0              0      &lt;NA&gt;        0.00     -1       Died
+## 103             0              0      &lt;NA&gt;        0.00     -1       Died
+## 104           120            121       Age       14.25      1       &lt;NA&gt;
+## 105           122            123       Age       17.50      1       &lt;NA&gt;
+## 106           124            125       Age       21.50      1       &lt;NA&gt;
+## 107             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 108           126            127       Age       28.50      1       &lt;NA&gt;
+## 109           128            129       Age       30.50      1       &lt;NA&gt;
+## 110             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 111             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 112             0              0      &lt;NA&gt;        0.00     -1       Died
+## 113             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 114             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 115             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 116             0              0      &lt;NA&gt;        0.00     -1       Died
+## 117           130            131       Age       13.00      1       &lt;NA&gt;
+## 118           132            133       Age       47.50      1       &lt;NA&gt;
+## 119           134            135       Age       51.50      1       &lt;NA&gt;
+## 120             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 121           136            137       Age       14.75      1       &lt;NA&gt;
+## 122           138            139       Age       16.50      1       &lt;NA&gt;
+## 123             0              0      &lt;NA&gt;        0.00     -1       Died
+## 124             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 125             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 126             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 127             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 128             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 129           140            141       Age       31.50      1       &lt;NA&gt;
+## 130             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 131           142            143       Age       15.00      1       &lt;NA&gt;
+## 132           144            145       Age       39.50      1       &lt;NA&gt;
+## 133           146            147       Age       48.50      1       &lt;NA&gt;
+## 134             0              0      &lt;NA&gt;        0.00     -1       Died
+## 135           148            149       Age       53.00      1       &lt;NA&gt;
+## 136             0              0      &lt;NA&gt;        0.00     -1       Died
+## 137             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 138             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 139             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 140             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 141             0              0      &lt;NA&gt;        0.00     -1       Died
+## 142             0              0      &lt;NA&gt;        0.00     -1       Died
+## 143             0              0      &lt;NA&gt;        0.00     -1       Died
+## 144           150            151       Age       35.50      1       &lt;NA&gt;
+## 145           152            153       Age       41.50      1       &lt;NA&gt;
+## 146             0              0      &lt;NA&gt;        0.00     -1   Survived
+## 147             0              0      &lt;NA&gt;        0.00     -1       Died
+## 148             0              0      &lt;NA&gt;        0.00     -1       Died
+## 149             0              0      &lt;NA&gt;        0.00     -1       Died
+## 150           154            155       Age       34.25      1       &lt;NA&gt;
+## 151           156            157       Age       38.50      1       &lt;NA&gt;
+## 152             0              0      &lt;NA&gt;        0.00     -1       Died
+## 153           158            159       Age       45.50      1       &lt;NA&gt;
+## 154           160            161       Age       30.75      1       &lt;NA&gt;
+## 155             0              0      &lt;NA&gt;        0.00     -1       Died
+## 156           162            163       Age       36.50      1       &lt;NA&gt;
+## 157             0              0      &lt;NA&gt;        0.00     -1       Died
+## 158           164            165       Age       44.50      1       &lt;NA&gt;
+## 159             0              0      &lt;NA&gt;        0.00     -1       Died
+## 160           166            167       Age       29.50      1       &lt;NA&gt;
+## 161           168            169       Age       31.50      1       &lt;NA&gt;
+## 162             0              0      &lt;NA&gt;        0.00     -1       Died
+## 163           170            171       Age       37.50      1       &lt;NA&gt;
+## 164           172            173       Age       42.50      1       &lt;NA&gt;
+## 165             0              0      &lt;NA&gt;        0.00     -1       Died
+## 166           174            175       Age       28.75      1       &lt;NA&gt;
+## 167           176            177       Age       30.25      1       &lt;NA&gt;
+## 168             0              0      &lt;NA&gt;        0.00     -1       Died
+## 169           178            179       Age       33.50      1       &lt;NA&gt;
+## 170             0              0      &lt;NA&gt;        0.00     -1       Died
+## 171             0              0      &lt;NA&gt;        0.00     -1       Died
+## 172             0              0      &lt;NA&gt;        0.00     -1       Died
+## 173           180            181       Age       43.50      1       &lt;NA&gt;
+## 174           182            183       Age       28.25      1       &lt;NA&gt;
+## 175             0              0      &lt;NA&gt;        0.00     -1       Died
+## 176             0              0      &lt;NA&gt;        0.00     -1       Died
+## 177             0              0      &lt;NA&gt;        0.00     -1       Died
+## 178           184            185       Age       32.25      1       &lt;NA&gt;
+## 179             0              0      &lt;NA&gt;        0.00     -1       Died
+## 180             0              0      &lt;NA&gt;        0.00     -1       Died
+## 181             0              0      &lt;NA&gt;        0.00     -1       Died
+## 182             0              0      &lt;NA&gt;        0.00     -1       Died
+## 183             0              0      &lt;NA&gt;        0.00     -1       Died
+## 184             0              0      &lt;NA&gt;        0.00     -1       Died
+## 185             0              0      &lt;NA&gt;        0.00     -1       Died</code></pre>
+<p>Unfortunately there is no easy plotting mechanism for the result of <code>getTree()</code>.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<p>Yikes. Clearly this tree is pretty complicated. Not something we want to examine directly.</p>
+</div>
+<div id="variable-importance" class="section level3">
+<h3>Variable importance</h3>
+<p>Another method of interpreting random forests looks at the importance of individual variables in the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">varImpPlot</span>(age_sex_rf$finalModel)</code></pre></div>
+<p><img src="stat004_decision_trees_files/figure-html/rf_import-1.png" width="672" /></p>
+<p>This tells us how much each variable decreases the average <strong>Gini index</strong>, a measure of how important the variable is to the model. Essentially, it estimates the impact a variable has on the model by comparing prediction accuracy rates for models with and without the variable. Larger values indicate higher importance of the variable. Here we see that the gender variable <code>Sexmale</code> is most important.</p>
+</div>
+<div id="prediction" class="section level3">
+<h3>Prediction</h3>
+<p>We can also use random forests to make predictions on an explicit validation set, rather than relying on OOB estimates. Let’s split our Titanic data into training and test sets, train the full random forest model on the training set, then use that model to predict outcomes in the test set. Instead of using a bootstrapped resampling method, again let’s use <code>&quot;oob&quot;</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(titanic_rf_data,
+                                    <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))
+titanic_train &lt;-<span class="st"> </span>titanic_split$train %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>()
+titanic_test &lt;-<span class="st"> </span>titanic_split$test %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>()
+
+rf_full &lt;-<span class="st"> </span><span class="kw">train</span>(Survived ~<span class="st"> </span>Pclass +<span class="st"> </span>Sex +<span class="st"> </span>Age +<span class="st"> </span>SibSp +
+<span class="st">                   </span>Parch +<span class="st"> </span>Fare +<span class="st"> </span>Embarked,
+                 <span class="dt">data =</span> titanic_train,
+                 <span class="dt">method =</span> <span class="st">&quot;rf&quot;</span>,
+                 <span class="dt">ntree =</span> <span class="dv">500</span>,
+                 <span class="dt">trControl =</span> <span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;oob&quot;</span>))
+rf_full$finalModel</code></pre></div>
+<pre><code>## 
+## Call:
+##  randomForest(x = x, y = y, ntree = 500, mtry = param$mtry) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 6
+## 
+##         OOB estimate of  error rate: 20.6%
+## Confusion matrix:
+##          Died Survived class.error
+## Died      257       47   0.1546053
+## Survived   56      140   0.2857143</code></pre>
+<ul>
+<li>We used 500 trees</li>
+<li>At every potential branch, the model randomly used one of 6 variables to define the split</li>
+<li>For OOB test observations, the model misclassifies the individual’s survival 21% of the time.</li>
+<li>This model is somewhat better at predicting survivors compared to the age + gender model, but is still worse at predicting survivors from the deceased. This is not terribly surprising since our classes are <strong>unbalanced</strong>. That is, there were a lot fewer survivors (342) than deceased (549). Because of this, the model has more information on those that died than those that lived, so it is natural to have better predictions for those that died.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">varImpPlot</span>(rf_full$finalModel)</code></pre></div>
+<p><img src="stat004_decision_trees_files/figure-html/rf_validate_imp-1.png" width="672" /></p>
+<p>Note that gender and age are important predictors in the random forest, but so too is the fare an individual paided. This is a proxy for socioeconomic status; recall that <a href="https://www.youtube.com/watch?v=NfDZO9QAiEM">the wealthy had better access to lifeboats</a>.</p>
+<p>To make predictions for the validation set, we use the <code>predict()</code> function. By setting <code>type = &quot;prob&quot;</code> we will get predicted probabilities for each possible outcome, rather than just a raw prediction of “Survived” or “Died”:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_pred &lt;-<span class="st"> </span>titanic_test %&gt;%
+<span class="st">  </span><span class="kw">bind_cols</span>(<span class="kw">predict</span>(rf_full, <span class="dt">newdata =</span> titanic_test, <span class="dt">type =</span> <span class="st">&quot;prob&quot;</span>) %&gt;%
+<span class="st">              </span><span class="kw">rename</span>(<span class="dt">prob_dead =</span> Died,
+                     <span class="dt">prob_survive =</span> Survived))
+titanic_pred</code></pre></div>
+<pre><code>## # A tibble: 214 × 10
+##    Survived Pclass    Sex   Age SibSp Parch    Fare Embarked prob_dead
+##      &lt;fctr&gt; &lt;fctr&gt; &lt;fctr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;fctr&gt;     &lt;dbl&gt;
+## 1      Died      3   male    35     0     0  8.0500        S     0.998
+## 2  Survived      3 female    27     0     2 11.1333        S     0.372
+## 3  Survived      2 female    14     1     0 30.0708        C     0.018
+## 4      Died      3 female    14     0     0  7.8542        S     0.320
+## 5      Died      3   male     2     4     1 29.1250        Q     0.954
+## 6  Survived      2   male    34     0     0 13.0000        S     0.998
+## 7  Survived      3 female    15     0     0  8.0292        Q     0.322
+## 8      Died      1   male    40     0     0 27.7208        C     0.478
+## 9      Died      3 female    18     2     0 18.0000        S     0.724
+## 10 Survived      3 female    14     1     0 11.2417        C     0.218
+## # ... with 204 more rows, and 1 more variables: prob_survive &lt;dbl&gt;</code></pre>
+</div>
+</div>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-02-01                  
+## 
+##  package      * version date       source        
+##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  car            2.1-4   2016-12-02 CRAN (R 3.3.2)
+##  caret          6.0-73  2016-11-10 CRAN (R 3.3.2)
+##  codetools      0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr          0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
+##  foreach        1.4.3   2015-10-13 CRAN (R 3.3.0)
+##  ggplot2        2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  iterators      1.0.8   2015-10-13 CRAN (R 3.3.0)
+##  knitr          1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice        0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lme4           1.1-12  2016-04-16 cran (@1.1-12)
+##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)
+##  MASS           7.3-45  2016-04-21 CRAN (R 3.3.2)
+##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)
+##  MatrixModels   0.4-1   2015-08-22 CRAN (R 3.3.0)
+##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mgcv           1.8-16  2016-11-07 CRAN (R 3.3.0)
+##  minqa          1.2.4   2014-10-09 cran (@1.2.4) 
+##  ModelMetrics   1.1.0   2016-08-26 CRAN (R 3.3.0)
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme           3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  nloptr         1.0.4   2014-08-04 cran (@1.0.4) 
+##  nnet           7.3-12  2016-02-02 CRAN (R 3.3.2)
+##  pbkrtest       0.4-6   2016-01-27 CRAN (R 3.3.0)
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  quantreg       5.29    2016-09-04 CRAN (R 3.3.0)
+##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)
+##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  SparseM        1.74    2016-11-10 CRAN (R 3.3.2)
+##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr        1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble         1.2     2016-08-26 cran (@1.2)   
+##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><code>pretty = 0</code> cleans up the formatting of the text some.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Specifically passenger class, gender, age, number of sibling/spouses aboard, number of parents/children aboard, fare, and port of embarkation.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Because behind the scenes, <code>caret</code> is simply using the <code>glm()</code> function to train the model.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p><a href="https://topepo.github.io/caret/train-models-by-tag.html#random-forest">There are many packages that use algorithms to estimate random forests.</a> They all do the same basic thing, though with some notable differences. The <code>rf</code> method is generally popular, so I use it here.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Remember that it was not generated by the <code>tree</code> library, but instead by a function in <code>randomForest</code>. Because of that we cannot just call <code>plot(age_sex_rf$finalModel)</code>.<a href="#fnref5">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
