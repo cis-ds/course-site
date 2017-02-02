@@ -276,19 +276,22 @@ A less computationally-intensive approach to cross validation is $k$-fold cross-
 
 $$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{RMSE_i}$$
 
-LOOCV is the special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
+As you probably figured out by now, LOOCV is the special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
 
 ### k-fold CV in linear regression
 
 Let's go back to the `Auto` data set. Instead of LOOCV, let's use 10-fold CV to compare the different polynomial models.
 
 ```{r 10_fold_auto}
+cv10_data <- crossv_kfold(Auto, k = 10)
+
 cv_error_fold10 <- vector("numeric", 5)
 terms <- 1:5
 
 for(i in terms){
-  glm_fit <- glm(mpg ~ poly(horsepower, i), data = Auto)
-  cv_error_fold10[[i]] <- cv.glm(Auto, glm_fit, K = 10)$delta[[1]]
+  cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+  cv10_rmse <- map2_dbl(cv10_models, cv10_data$test, rmse)
+  cv_error_fold10[[i]] <- mean(cv10_rmse)
 }
 
 cv_error_fold10
@@ -320,9 +323,10 @@ profvis({
   cv_error <- vector("numeric", 5)
   terms <- 1:5
   
-  for (i in terms) {
-    glm_fit <- glm(mpg ~ poly(horsepower, i), data = Auto)
-    cv_error[[i]] <- cv.glm(Auto, glm_fit)$delta[[1]]
+  for(i in terms){
+    loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+    loocv_rmse <- map2_dbl(loocv_models, loocv_data$test, rmse)
+    cv_error[[i]] <- mean(loocv_rmse)
   }
 })
 ```
@@ -336,9 +340,10 @@ profvis({
   cv_error_fold10 <- vector("numeric", 5)
   terms <- 1:5
   
-  for (i in terms) {
-    glm_fit <- glm(mpg ~ poly(horsepower, i), data = Auto)
-    cv_error_fold10[[i]] <- cv.glm(Auto, glm_fit, K = 10)$delta[[1]]
+  for(i in terms){
+    cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+    cv10_rmse <- map2_dbl(cv10_models, cv10_data$test, rmse)
+    cv_error_fold10[[i]] <- mean(cv10_rmse)
   }
 })
 ```
@@ -350,10 +355,11 @@ On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimatin
 You've gotten the idea by now, but let's do it one more time on our interactive Titanic model.
 
 ```{r titanic_kfold}
-titanic_kfold <- titanic %>%
-  filter(!is.na(Survived), !is.na(Age), !is.na(Sex)) %>%
-  cv.glm(titanic_model, K = 10)
-titanic_kfold$delta[[1]]
+titanic_kfold <- crossv_kfold(titanic, k = 10)
+titanic_models <- map(titanic_kfold$train, ~ glm(Survived ~ Age * Sex, data = .,
+                                               family = binomial))
+titanic_rmse <- map2_dbl(titanic_models, titanic_kfold$test, rmse.glm)
+mean(titanic_rmse, na.rm = TRUE)
 ```
 
 Not a large difference from the LOOCV approach, but it take much less time to compute.
