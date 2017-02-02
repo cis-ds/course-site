@@ -107,7 +107,7 @@ ggplot(Auto, aes(horsepower, mpg)) +
   geom_smooth(method = "lm", se = FALSE)
 ```
 
-Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. Rather than relying on the raw error rate (which makes sense in a classification model), we will instead use **Root Root Mean Squared Error** ($RMSE$), defined as
+Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. Rather than relying on the raw error rate (which makes sense in a classification model), we will instead use **Root Mean Squared Error** ($RMSE$), defined as
 
 $$RMSE = \sqrt{\frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}}$$
 
@@ -139,7 +139,7 @@ auto_lm <- glm(mpg ~ horsepower, data = auto_train)
 summary(auto_lm)
 ```
 
-To estimate the $RMSE$, we can use `modelr::rmse()`
+To estimate the $RMSE$ for a single partition (i.e. for a training or test set), we can use `modelr::rmse()`
 
 ```{r rmse, dependson="auto_split"}
 rmse(auto_lm, auto_test)
@@ -210,11 +210,23 @@ Of course the downside is that this method is computationally difficult. You hav
 
 We can use the `crossv_kfold()` function in the `modelr` library to compute the LOOCV of any linear or logistic regression model. It takes two arguments: the data frame and the number of $k$-folds (which we will define shortly). For our purposes, all you need to know is that `k` should equal the number of observations in the data frame which we can retrieve using the `nrow()` function. For the `Auto` dataset, this looks like:
 
-```{r loocv, dependson="Auto"}
+```{r loocv-data, dependson="Auto"}
 loocv_data <- crossv_kfold(Auto, k = nrow(Auto))
+```
+
+Now we estimate the linear model $k$ times, excluding the holdout test observation, then calculate the **mean squared error**, not the **root** mean squared error. Why do it this way? Remember the formula for 
+
+```{r mse-function}
+mse <- function(model, data) {
+  x <- modelr:::residuals(model, data)
+  mean(x ^ 2, na.rm = TRUE)
+}
+```
+
+```{r loocv, dependson="Auto"}
 loocv_models <- map(loocv_data$train, ~ lm(mpg ~ horsepower, data = .))
-loocv_rmse <- map2_dbl(loocv_models, loocv_data$test, rmse)
-mean(loocv_rmse)
+loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
+sqrt(mean(loocv_mse))
 ```
 
 The results of the mapped `rmse()` function is the $RMSE$ for each iteration through the data, so there is one $RMSE$ for each observation. Calculating the `mean()` of that vector gives us the LOOCV RMSE.
@@ -227,8 +239,8 @@ terms <- 1:5
 
 for(i in terms){
   loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
-  loocv_rmse <- map2_dbl(loocv_models, loocv_data$test, rmse)
-  cv_error[[i]] <- mean(loocv_rmse)
+  loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
+  cv_error[[i]] <- sqrt(mean(loocv_mse))
 }
 
 cv_rmse <- data_frame(terms = terms,
@@ -249,14 +261,14 @@ And arrive at a similar conclusion. There may be a very marginal advantage to ad
 
 Let's use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom `rmse.glm()` function to properly calculate the RMSE for binary response variables:
 
-```{r rmse-glm}
-rmse.glm <- function (model, data){
+```{r mse-glm}
+mse.glm <- function (model, data){
   residuals.glm <- function(model, data) {
     modelr:::response(model, data) - stats::predict(model, data, type = "response")
   }
   
   x <- residuals(model, data)
-  sqrt(mean(x^2, na.rm = TRUE))
+  mean(x^2, na.rm = TRUE)
 }
 ```
 
@@ -264,8 +276,8 @@ rmse.glm <- function (model, data){
 titanic_loocv <- crossv_kfold(titanic, k = nrow(titanic))
 titanic_models <- map(titanic_loocv$train, ~ glm(Survived ~ Age * Sex, data = .,
                                                family = binomial))
-titanic_rmse <- map2_dbl(titanic_models, titanic_loocv$test, rmse.glm)
-mean(titanic_rmse, na.rm = TRUE)
+titanic_mse <- map2_dbl(titanic_models, titanic_loocv$test, mse.glm)
+sqrt(mean(titanic_mse, na.rm = TRUE))
 ```
 
 In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(titanic_loocv$delta[[1]] * 100, digits = 3) `% error rate. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
@@ -290,8 +302,8 @@ terms <- 1:5
 
 for(i in terms){
   cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
-  cv10_rmse <- map2_dbl(cv10_models, cv10_data$test, rmse)
-  cv_error_fold10[[i]] <- mean(cv10_rmse)
+  cv10_mse <- map2_dbl(cv10_models, cv10_data$test, mse)
+  cv_error_fold10[[i]] <- sqrt(mean(cv10_mse))
 }
 
 cv_error_fold10
@@ -312,7 +324,7 @@ data_frame(terms = terms,
        color = "CV Method")
 ```
 
-Pretty much the same results. But computationally, how long does it take to estimate the 10-fold CV versus LOOCV? We can use the `profvis` package to profile our code and determine how long it takes to run.
+Pretty much the same results.
 
 #### LOOCV
 
@@ -325,8 +337,8 @@ profvis({
   
   for(i in terms){
     loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
-    loocv_rmse <- map2_dbl(loocv_models, loocv_data$test, rmse)
-    cv_error[[i]] <- mean(loocv_rmse)
+    loocv_rmse <- map2_dbl(loocv_models, loocv_data$test, mse)
+    cv_error[[i]] <- sqrt(mean(loocv_mse))
   }
 })
 ```
