@@ -928,35 +928,141 @@ titanic_age_sex_x</code></pre></div>
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -1.8839  -0.7102  -0.5592   0.7408   2.1685  
+## -1.8765  -0.7044  -0.6275   0.7196   2.0578  
 ## 
 ## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)   
-## (Intercept)  0.68045    0.38278   1.778  0.07546 . 
-## Age          0.01817    0.01308   1.389  0.16492   
-## Sexmale     -1.29635    0.50497  -2.567  0.01025 * 
-## Age:Sexmale -0.04454    0.01688  -2.639  0.00831 **
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  0.86628    0.38916   2.226 0.026010 *  
+## Age          0.01470    0.01335   1.101 0.270977    
+## Sexmale     -1.82445    0.49785  -3.665 0.000248 ***
+## Age:Sexmale -0.02759    0.01647  -1.675 0.094019 .  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
-##     Null deviance: 664.23  on 492  degrees of freedom
-## Residual deviance: 501.16  on 489  degrees of freedom
-##   (131 observations deleted due to missingness)
-## AIC: 509.16
+##     Null deviance: 669.07  on 493  degrees of freedom
+## Residual deviance: 507.90  on 490  degrees of freedom
+##   (130 observations deleted due to missingness)
+## AIC: 515.9
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_test_accuracy &lt;-<span class="st"> </span>titanic_split$test %&gt;%
-<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
 <span class="st">  </span><span class="kw">add_predictions</span>(train_model) %&gt;%
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
 
 <span class="kw">mean</span>(x_test_accuracy$Survived ==<span class="st"> </span>x_test_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## [1] 0.7647059</code></pre>
-<p>This is reassuring. <span class="math inline">\(76.5\%\)</span> of the test set observations were accurately predicted. Remember, we explicitly set this up so that the model never saw the test observations, and they never factored into our decisionmaking process when we generated the model. This tells us that we did a pretty good job estimating the functional form <span class="math inline">\(f\)</span> for the entire dataset, not just the training set.</p>
+<pre><code>## [1] 0.7636364</code></pre>
+<p>This is reassuring. <span class="math inline">\(76.4\%\)</span> of the test set observations were accurately predicted. Remember, we explicitly set this up so that the model never saw the test observations, and they never factored into our decisionmaking process when we generated the model. This tells us that we did a pretty good job estimating the functional form <span class="math inline">\(f\)</span> for the entire dataset, not just the training set.</p>
 </div>
+</div>
+<div id="exercise-logistic-regression-with-mental_health" class="section level1">
+<h1>Exercise: logistic regression with <code>mental_health</code></h1>
+<p>Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation – individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual’s mental health and its effect on political participation.<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a> Depression increases individuals’ feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual’s energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.</p>
+<p>Use the <code>mental_health</code> data set in <code>library(rcfss)</code> and logistic regression to predict whether or not an individual voted in the 1996 presidental election.<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rcfss)
+mental_health</code></pre></div>
+<pre><code>## # A tibble: 1,317 × 5
+##    vote96   age  educ female mhealth
+##     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1       1    60    12      0       0
+## 2       1    36    12      0       1
+## 3       0    21    13      0       7
+## 4       0    29    13      0       6
+## 5       1    39    18      1       2
+## 6       1    41    15      1       1
+## 7       1    48    20      0       2
+## 8       0    20    12      1       9
+## 9       0    27    11      1       9
+## 10      0    34     7      1       2
+## # ... with 1,307 more rows</code></pre>
+<ol style="list-style-type: decimal">
+<li><p>Split the data into a training and test set (70/30%).</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mh_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(mental_health, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))</code></pre></div>
+</p>
+<p></details></p></li>
+<li><p>Estimate a logistic regression model of voter turnout using the training set and only <code>mhealth</code> as the predictor. Estimate predicted probabilities and plot the logistic regression line using <code>ggplot</code>.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
+mh_model &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 ~<span class="st"> </span>mhealth, <span class="dt">data =</span> mh_split$train,
+                <span class="dt">family =</span> binomial)
+<span class="kw">tidy</span>(mh_model)</code></pre></div>
+<pre><code>##          term   estimate  std.error statistic      p.value
+## 1 (Intercept)  1.2397632 0.10644410 11.647082 2.374509e-31
+## 2     mhealth -0.1881686 0.02657547 -7.080538 1.435963e-12</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate predicted probabilities</span>
+mh_health &lt;-<span class="st"> </span>mh_split$train %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(mhealth) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(mh_model) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred))
+mh_health</code></pre></div>
+<pre><code>## # A tibble: 10 × 2
+##    mhealth      pred
+##      &lt;dbl&gt;     &lt;dbl&gt;
+## 1        0 0.7755228
+## 2        1 0.7410810
+## 3        2 0.7033759
+## 4        3 0.6626794
+## 5        4 0.6194204
+## 6        5 0.5741785
+## 7        6 0.5276596
+## 8        7 0.4806554
+## 9        8 0.4339911
+## 10       9 0.3884685</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># graph the line</span>
+<span class="kw">ggplot</span>(mh_health, <span class="kw">aes</span>(mhealth, pred)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Relationship Between Mental Health and Voter Turnout&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted Probability of Voting&quot;</span>) +
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>))</code></pre></div>
+<img src="stat003_logistic_regression_files/figure-html/mh-model-1.png" width="672" />
+</p>
+<p></details></p></li>
+<li><p>Calculate the accuracy rate of the model using the test set.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mh_model_accuracy &lt;-<span class="st"> </span>mh_split$test %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(mh_model) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
+         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
+
+(mh_model_err &lt;-<span class="st"> </span><span class="kw">mean</span>(mh_model_accuracy$vote96 ==<span class="st"> </span>mh_model_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>## [1] 0.6708861</code></pre>
+</p>
+<p></details></p></li>
+<li><p>Estimate a second logistic regression model of voter turnout using the training set and all the predictors. Calculate it’s accuracy rate using the test set, and compare it to the original model. Which is better?</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
+mh_model_all &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 ~<span class="st"> </span>., <span class="dt">data =</span> mh_split$train,
+                <span class="dt">family =</span> binomial)
+<span class="kw">tidy</span>(mh_model_all)</code></pre></div>
+<pre><code>##          term    estimate   std.error  statistic      p.value
+## 1 (Intercept) -4.44016721 0.576674635 -7.6996055 1.364869e-14
+## 2         age  0.04403047 0.005408861  8.1404333 3.938659e-16
+## 3        educ  0.27216937 0.032938863  8.2628646 1.422176e-16
+## 4      female  0.02640803 0.155390678  0.1699461 8.650526e-01
+## 5     mhealth -0.12308493 0.028897636 -4.2593424 2.050292e-05</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate accuracy rate on test set</span>
+mh_model_all_accuracy &lt;-<span class="st"> </span>mh_split$test %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(mh_model_all) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
+         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
+
+(mh_model_all_err &lt;-<span class="st"> </span><span class="kw">mean</span>(mh_model_all_accuracy$vote96 ==<span class="st"> </span>mh_model_all_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>## [1] 0.6987342</code></pre>
+The model with all predictors has a 2.78% higher accuracy rate than predictions based only on mental health.
+</p>
+<p></details></p></li>
+</ol>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
@@ -968,7 +1074,7 @@ titanic_age_sex_x</code></pre></div>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-01                  
+##  date     2017-02-03                  
 ## 
 ##  package   * version date       source        
 ##  backports   1.0.5   2017-01-18 CRAN (R 3.3.2)
@@ -996,7 +1102,7 @@ titanic_age_sex_x</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(broom)
 
 <span class="kw">augment</span>(survive_age, <span class="dt">newdata =</span> titanic_age, <span class="dt">type.predict =</span> <span class="st">&quot;response&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">tbl_df</span>()</code></pre></div>
+<span class="st">  </span><span class="kw">as_tibble</span>()</code></pre></div>
 <pre><code>## # A tibble: 88 × 4
 ##      Age      pred   .fitted    .se.fit
 ##    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
@@ -1018,6 +1124,8 @@ titanic_age_sex_x</code></pre></div>
 <a href="#fnref3">↩</a></li>
 <li id="fn4"><p>In mathematical truth, it looks more like: <span class="math display">\[P(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}\]</span><a href="#fnref4">↩</a></p></li>
 <li id="fn5"><p>R automatically includes constituent terms, so this turns into <code>Age + Sex + Age * Sex</code>. <a href="https://pan-oxfordjournals-org.proxy.uchicago.edu/content/14/1/63.full.pdf+html">Generally you always want to include constituent terms in a regression model with an interaction.</a><a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p><a href="http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract">Ojeda, C. (2015). Depression and political participation. <em>Social Science Quarterly</em>, 96(5), 1226-1243.</a><a href="#fnref6">↩</a></p></li>
+<li id="fn7"><p>Update <code>rcfss</code> using <code>devtools::install_github(&quot;uc-cfss/rcfss&quot;)</code> if you cannot access the data set.<a href="#fnref7">↩</a></p></li>
 </ol>
 </div>
 

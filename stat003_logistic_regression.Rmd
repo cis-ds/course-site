@@ -388,7 +388,7 @@ train_model <- glm(Survived ~ Age * Sex, data = titanic_split$train,
 summary(train_model)
 
 x_test_accuracy <- titanic_split$test %>%
-  tbl_df() %>%
+  as_tibble() %>%
   add_predictions(train_model) %>%
   mutate(pred = logit2prob(pred),
          pred = as.numeric(pred > .5))
@@ -397,6 +397,104 @@ mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE)
 ```
 
 This is reassuring. $`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the test set observations were accurately predicted. Remember, we explicitly set this up so that the model never saw the test observations, and they never factored into our decisionmaking process when we generated the model. This tells us that we did a pretty good job estimating the functional form $f$ for the entire dataset, not just the training set.
+
+# Exercise: logistic regression with `mental_health`
+
+Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
+
+Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidental election.^[Update `rcfss` using `devtools::install_github("uc-cfss/rcfss")` if you cannot access the data set.]
+
+```{r mental-health}
+library(rcfss)
+mental_health
+```
+
+1. Split the data into a training and test set (70/30%).
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-partition, dependson="mental-health"}
+    mh_split <- resample_partition(mental_health, c(test = 0.3, train = 0.7))
+    ```    
+      </p>
+    </details>
+
+1. Estimate a logistic regression model of voter turnout using the training set and only `mhealth` as the predictor. Estimate predicted probabilities and plot the logistic regression line using `ggplot`.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-model, dependson="mental-health"}
+    # estimate model
+    mh_model <- glm(vote96 ~ mhealth, data = mh_split$train,
+                    family = binomial)
+    tidy(mh_model)
+    
+    # estimate predicted probabilities
+    mh_health <- mh_split$train %>%
+      as_tibble() %>%
+      data_grid(mhealth) %>%
+      add_predictions(mh_model) %>%
+      mutate(pred = logit2prob(pred))
+    mh_health
+    
+    # graph the line
+    ggplot(mh_health, aes(mhealth, pred)) +
+      geom_line() +
+      labs(title = "Relationship Between Mental Health and Voter Turnout",
+           y = "Predicted Probability of Voting") +
+      scale_y_continuous(limits = c(0, 1))
+    ```    
+      </p>
+    </details>
+
+1. Calculate the accuracy rate of the model using the test set.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-model-error, dependson="mental-health"}
+    mh_model_accuracy <- mh_split$test %>%
+      as_tibble() %>%
+      add_predictions(mh_model) %>%
+      mutate(pred = logit2prob(pred),
+             pred = as.numeric(pred > .5))
+    
+    (mh_model_err <- mean(mh_model_accuracy$vote96 == mh_model_accuracy$pred, na.rm = TRUE))
+    ```    
+      </p>
+    </details>
+
+1. Estimate a second logistic regression model of voter turnout using the training set and all the predictors. Calculate it's accuracy rate using the test set, and compare it to the original model. Which is better?
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-model-all, dependson="mental-health"}
+    # estimate model
+    mh_model_all <- glm(vote96 ~ ., data = mh_split$train,
+                    family = binomial)
+    tidy(mh_model_all)
+    
+    # calculate accuracy rate on test set
+    mh_model_all_accuracy <- mh_split$test %>%
+      as_tibble() %>%
+      add_predictions(mh_model_all) %>%
+      mutate(pred = logit2prob(pred),
+             pred = as.numeric(pred > .5))
+    
+    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 == mh_model_all_accuracy$pred, na.rm = TRUE))
+    ```
+    
+    The model with all predictors has a `r formatC((mh_model_all_err - mh_model_err) * 100, digits = 3)`% higher accuracy rate than predictions based only on mental health.
+      </p>
+    </details>
+
 
 # Session Info {.toc-ignore}
 
@@ -409,7 +507,7 @@ This is reassuring. $`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy
     library(broom)
 
     augment(survive_age, newdata = titanic_age, type.predict = "response") %>%
-      tbl_df()
+      as_tibble()
     ```
 
     * `newdata = titanic` - produces a data frame containing all the original variables + the predicted probability for the observation
