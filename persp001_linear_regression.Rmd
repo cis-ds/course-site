@@ -1,0 +1,163 @@
+---
+title: "Statistical learning: linear regression"
+author: "MACS 30100 - Perspectives on Computational Modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Introduce the functional form of linear regression
+* Demonstrate how to estimate linear models using `lm()`
+* Explain how to extract model statistics using [`broom`](https://cran.r-project.org/web/packages/broom/index.html)
+* Use the [`modelr`](https://github.com/hadley/modelr) package to estimate predicted values and residuals
+
+```{r packages, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(modelr)
+library(broom)
+library(rcfss)
+
+options(na.action = na.warn)
+set.seed(1234)
+
+theme_set(theme_bw())
+```
+
+# Linear models
+
+Linear models are the simplest functional form to understand. They adopt a generic form
+
+$$Y = \beta_0 + \beta_{1}X$$
+
+where $y$ is the **outcome of interest**, $x$ is the **explanatory** or **predictor** variable, and $\beta_0$ and $\beta_1$ are **parameters** that vary to capture different patterns. In algebraic terms, $\beta_0$ is the **intercept** and $\beta_1$ the **slope** for the linear equation. Given the empirical values you have for $x$ and $y$, you generate a **fitted model** that finds the values for the parameters that best fit the data.
+
+```{r sim-plot}
+ggplot(sim1, aes(x, y)) + 
+  geom_point()
+```
+
+This looks like a linear relationship. We could randomly generate parameters for the formula $y = \beta_0 + \beta_1 * x$ to try and explain or predict the relationship between $x$ and $y$:
+
+```{r sim-random-fit}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
+
+ggplot(sim1, aes(x, y)) + 
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
+  geom_point()
+```
+
+But obviously some parameters are better than others. We need a definition that can be used to differentiate good parameters from bad parameters.
+
+# Least squares regression
+
+One approach widely used is called **least squares** - it means that the overall solution minimizes the sum of the squares of the errors made in the results of every single equation. The errors are simply the difference between the actual values for $y$ and the predicted values for $\hat{y}$ (also known as the **residuals**).
+
+```{r sim-error}
+dist1 <- sim1 %>% 
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge,
+    pred = 7 + x1 * 1.5
+  )
+
+ggplot(dist1, aes(x1, y)) + 
+  geom_abline(intercept = 7, slope = 1.5, color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+To estimate a linear regression model in R, we use the `lm()` function. The `lm()` function takes two parameters. The first is a **formula** specifying the equation to be estimated (`lm()` translates `y ~ x` into $y = \beta_0 + \beta_1 * x$). The second is the data frame containing the variables:
+
+```{r sim-lm}
+sim1_mod <- lm(y ~ x, data = sim1)
+```
+
+We can use the `summary()` function to examine key model components, including parameter estimates, standard errors, and model goodness-of-fit statistics.
+
+```{r sim-lm-summary}
+summary(sim1_mod)
+```
+
+The resulting line from this regression model looks like:
+
+```{r sim-lm-plot}
+dist2 <- sim1 %>%
+  add_predictions(sim1_mod) %>%
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge
+  )
+
+ggplot(dist2, aes(x1, y)) + 
+  geom_smooth(method = "lm", color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+# Generating predicted values
+
+We can use `sim1_mod` to generate **predicted values**, or the expected value for $Y$ given our knowledge of hypothetical observations with values for $X$, based on the estimated parameters using the `data_grid()` and `add_predictions()` functions from the `modelr` package. `data_grid()` generates an evenly spaced grid of data points covering the region where observed data lies. The first argument is a data frame, and subsequent arguments identify unique columns and generates all possible combinations.
+
+```{r add-predict-data}
+grid <- sim1 %>% 
+  data_grid(x) 
+grid
+```
+
+`add_predictions()` takes a data frame and a model, and uses the model to generate predictions for each observation in the data frame.
+
+```{r add-predict}
+grid <- grid %>% 
+  add_predictions(sim1_mod) 
+grid
+```
+
+Using this information, we can draw the best-fit line without using `geom_smooth()`, and instead build it directly from the predicted values.
+
+```{r plot-lm-predict}
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pred), data = grid, color = "red", size = 1)
+```
+
+This looks like the line from before, but without the confidence interval. This is a bit more involved of a process, but it can work with any type of model you create - not just very basic, linear models.
+
+# Generating residuals
+
+We can also calculate the **residuals**, or the distance between the actual and predicted values of $Y$, using `add_residuals()`:
+
+```{r resids}
+sim1 <- sim1 %>% 
+  add_residuals(sim1_mod)
+sim1
+
+ggplot(sim1, aes(resid)) + 
+  geom_freqpoly(binwidth = 0.5)
+```
+
+Reviewing your residuals can be helpful. Sometimes your model is better at predicting some types of observations better than others. This could help you isolate further patterns and improve the predictive accuracy of your model.
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
+
+
