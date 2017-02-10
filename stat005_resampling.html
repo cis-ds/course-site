@@ -587,7 +587,7 @@ Auto</code></pre></div>
 <span class="st">  </span><span class="kw">geom_point</span>() +
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
 <p><img src="stat005_resampling_files/figure-html/auto_plot_lm-1.png" width="672" /></p>
-<p>Perhaps by adding <a href="stat003_logistic_regression.html#quadratic_terms">quadratic terms</a> to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated <code>mpg</code>. Rather than relying on the raw error rate (which makes sense in a classification model), we will instead use <strong>Mean Squared Error</strong> (<span class="math inline">\(MSE\)</span>), defined as</p>
+<p>Perhaps by adding <a href="stat003_logistic_regression.html#quadratic_terms">quadratic terms</a> to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated <code>mpg</code>. Rather than relying on the raw error rate (which makes sense in a classification model), we will instead use <strong>Mean Squared Error</strong> (MSE), defined as</p>
 <p><span class="math display">\[MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}\]</span></p>
 <p>where:</p>
 <ul>
@@ -595,7 +595,7 @@ Auto</code></pre></div>
 <li><span class="math inline">\(\hat{f}(x_i) =\)</span> the predicted response value for the <span class="math inline">\(i\)</span>th observation given by <span class="math inline">\(\hat{f}\)</span></li>
 <li><span class="math inline">\(n =\)</span> the total number of observations</li>
 </ul>
-<p>Boo math! Actually this is pretty intuitive. All we’re doing is for each observation, calculating the difference between the actual and predicted values for <span class="math inline">\(y\)</span>, squaring that difference, then calculating the average across all observations. An <span class="math inline">\(MSE\)</span> of 0 indicates the model perfectly predicted each observation. The larger the <span class="math inline">\(MSE\)</span>, the more error in the model.</p>
+<p>Boo math! Actually this is pretty intuitive. All we’re doing is for each observation, calculating the difference between the actual and predicted values for <span class="math inline">\(y\)</span>, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.</p>
 <p>For this task, first we can use <code>modelr::resample_partition()</code> to create training and test sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.</p>
 <ul>
 <li>I use <code>set.seed()</code> in the beginning - whenever you are writing a script that involves randomization (here, random subsetting of the data), always set the seed at the beginning of the script. This ensures the results can be reproduced precisely.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
@@ -632,14 +632,14 @@ auto_test &lt;-<span class="st"> </span>auto_split$test %&gt;%
 ## AIC: 1157.9
 ## 
 ## Number of Fisher Scoring iterations: 2</code></pre>
-<p>To estimate the <span class="math inline">\(MSE\)</span> for a single partition (i.e. for a training or test set), I wrote a special function <code>mse()</code>:<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<p>To estimate the MSE for a single partition (i.e. for a training or test set), I wrote a special function <code>mse()</code>:<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mse &lt;-<span class="st"> </span>function(model, data) {
   x &lt;-<span class="st"> </span>modelr:::<span class="kw">residuals</span>(model, data)
   <span class="kw">mean</span>(x ^<span class="st"> </span><span class="dv">2</span>, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
 }</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mse</span>(auto_lm, auto_test)</code></pre></div>
 <pre><code>## [1] 28.57255</code></pre>
-<p>For a strictly linear model, the <span class="math inline">\(MSE\)</span> for the test set is 28.57. How does this compare to a quadratic model? We can use the <code>poly()</code> function in conjunction with a <code>map()</code> iteration to estimate the <span class="math inline">\(MSE\)</span> for a series of models with higher-order polynomial terms:</p>
+<p>For a strictly linear model, the MSE for the test set is 28.57. How does this compare to a quadratic model? We can use the <code>poly()</code> function in conjunction with a <code>map()</code> iteration to estimate the MSE for a series of models with higher-order polynomial terms:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_poly_results &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="dv">1</span>:<span class="dv">5</span>,
            <span class="dt">model =</span> <span class="kw">map</span>(terms, ~<span class="st"> </span><span class="kw">glm</span>(mpg ~<span class="st"> </span><span class="kw">poly</span>(horsepower, .), <span class="dt">data =</span> auto_train)),
            <span class="dt">MSE =</span> <span class="kw">map_dbl</span>(model, mse, <span class="dt">data =</span> auto_test))
@@ -651,7 +651,7 @@ auto_test &lt;-<span class="st"> </span>auto_split$test %&gt;%
        <span class="dt">x =</span> <span class="st">&quot;Highest-order polynomial&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Mean Squared Error&quot;</span>)</code></pre></div>
 <p><img src="stat005_resampling_files/figure-html/mse_poly-1.png" width="672" /></p>
-<p>Based on the <span class="math inline">\(MSE\)</span> for the validation (test) set, a polynomial model with a quadratic term (<span class="math inline">\(\text{horsepower}^2\)</span>) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.</p>
+<p>Based on the MSE for the validation (test) set, a polynomial model with a quadratic term (<span class="math inline">\(\text{horsepower}^2\)</span>) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.</p>
 </div>
 <div id="drawbacks-to-validation-sets" class="section level2">
 <h2>Drawbacks to validation sets</h2>
@@ -661,13 +661,15 @@ auto_test &lt;-<span class="st"> </span>auto_split$test %&gt;%
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mse_variable &lt;-<span class="st"> </span>function(Auto){
   auto_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(Auto, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.5</span>, <span class="dt">train =</span> <span class="fl">0.5</span>))
   auto_train &lt;-<span class="st"> </span>auto_split$train %&gt;%
-<span class="kw">tbl_df</span>()
+<span class="st">    </span><span class="kw">tbl_df</span>()
   auto_test &lt;-<span class="st"> </span>auto_split$test %&gt;%
-<span class="kw">tbl_df</span>()
+<span class="st">    </span><span class="kw">tbl_df</span>()
 
   results &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="dv">1</span>:<span class="dv">5</span>,
-                    <span class="dt">model =</span> <span class="kw">map</span>(terms, ~<span class="st"> </span><span class="kw">glm</span>(mpg ~<span class="st"> </span><span class="kw">poly</span>(horsepower, .), <span class="dt">data =</span> auto_train)),
-                    <span class="dt">MSE =</span> <span class="kw">map_dbl</span>(model, mse, <span class="dt">data =</span> auto_test))
+                        <span class="dt">model =</span> <span class="kw">map</span>(terms,
+                                    ~<span class="st"> </span><span class="kw">glm</span>(mpg ~<span class="st"> </span><span class="kw">poly</span>(horsepower, .),
+                                          <span class="dt">data =</span> auto_train)),
+                        <span class="dt">MSE =</span> <span class="kw">map_dbl</span>(model, mse, <span class="dt">data =</span> auto_test))
 
   <span class="kw">return</span>(results)
 }
@@ -677,31 +679,32 @@ auto_test &lt;-<span class="st"> </span>auto_split$test %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(terms, MSE, <span class="dt">color =</span> id)) +
 <span class="st">  </span><span class="kw">geom_line</span>() +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Variability of MSE estimates&quot;</span>,
-   <span class="dt">subtitle =</span> <span class="st">&quot;Using the validation set approach&quot;</span>,
-   <span class="dt">x =</span> <span class="st">&quot;Degree of Polynomial&quot;</span>,
-   <span class="dt">y =</span> <span class="st">&quot;Mean Squared Error&quot;</span>) +
+       <span class="dt">subtitle =</span> <span class="st">&quot;Using the validation set approach&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Degree of Polynomial&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Mean Squared Error&quot;</span>) +
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/auto_variable_mse-1.png" width="672" /></p></li>
+<p><img src="stat005_resampling_files/figure-html/auto_variable_mse-1.png" width="672" /></p>
+<p>Depending on the specific training/test split, our MSE varies by up to 5.</p></li>
 <li><p>If you don’t have a large data set, you’ll have to dramatically shrink the size of your training set. Most statistical learning methods perform better with more observations - if you don’t have enough data in the training set, you might overestimate the error rate in the test set.</p></li>
 </ol>
 </div>
 </div>
 <div id="leave-one-out-cross-validation" class="section level1">
 <h1>Leave-one-out cross-validation</h1>
-<p>An alternative method is <strong>leave-one-out cross validation</strong> (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the test set, and keep all remaining observations in the training set. The statistical learning method is fit on the <span class="math inline">\(n-1\)</span> training set. You then use the held-out observation to calculate the <span class="math inline">\(MSE = (y_1 - \hat{y}_1)^2\)</span> which should be an unbiased estimator of the test error. Because this <span class="math inline">\(MSE\)</span> is highly dependent on which observation is held out, <strong>we repeat this process for every single observation in the data set</strong>. Mathematically, this looks like:</p>
+<p>An alternative method is <strong>leave-one-out cross validation</strong> (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the test set, and keep all remaining observations in the training set. The statistical learning method is fit on the <span class="math inline">\(n-1\)</span> training set. You then use the held-out observation to calculate the <span class="math inline">\(MSE = (y_1 - \hat{y}_1)^2\)</span> which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, <strong>we repeat this process for every single observation in the data set</strong>. Mathematically, this looks like:</p>
 <p><span class="math display">\[CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}\]</span></p>
-<p>This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the <span class="math inline">\(MSE\)</span> estimate is highly dependent on the sampling process for training/test sets. LOOCV is also highly flexible and works with any kind of predictive modeling.</p>
+<p>This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the MSE estimate is highly dependent on the sampling process for training/test sets. LOOCV is also highly flexible and works with any kind of predictive modeling.</p>
 <p>Of course the downside is that this method is computationally difficult. You have to estimate <span class="math inline">\(n\)</span> different models - if you have a large <span class="math inline">\(n\)</span> or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.</p>
 <div id="loocv-in-linear-regression" class="section level2">
 <h2>LOOCV in linear regression</h2>
-<p>We can use the <code>crossv_kfold()</code> function in the <code>modelr</code> library to compute the LOOCV of any linear or logistic regression model. It takes two arguments: the data frame and the number of <span class="math inline">\(k\)</span>-folds (which we will define shortly). For our purposes, all you need to know is that <code>k</code> should equal the number of observations in the data frame which we can retrieve using the <code>nrow()</code> function. For the <code>Auto</code> dataset, this looks like:</p>
+<p>We can use the <code>crossv_kfold()</code> function in the <code>modelr</code> library to compute the LOOCV of any linear or logistic regression model. It takes two arguments: the data frame and the number of <span class="math inline">\(k\)</span>-folds (which we will define shortly). For our purposes now, all you need to know is that <code>k</code> should equal the number of observations in the data frame which we can retrieve using the <code>nrow()</code> function. For the <code>Auto</code> dataset, this looks like:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">loocv_data &lt;-<span class="st"> </span><span class="kw">crossv_kfold</span>(Auto, <span class="dt">k =</span> <span class="kw">nrow</span>(Auto))</code></pre></div>
-<p>Now we estimate the linear model <span class="math inline">\(k\)</span> times, excluding the holdout test observation, then calculate the <span class="math inline">\(MSE\)</span>:</p>
+<p>Now we estimate the linear model <span class="math inline">\(k\)</span> times, excluding the holdout test observation, then calculate the MSE:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">loocv_models &lt;-<span class="st"> </span><span class="kw">map</span>(loocv_data$train, ~<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower, <span class="dt">data =</span> .))
 loocv_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(loocv_models, loocv_data$test, mse)
 <span class="kw">mean</span>(loocv_mse)</code></pre></div>
 <pre><code>## [1] 24.23151</code></pre>
-<p>The results of the mapped <code>mse()</code> function is the <span class="math inline">\(MSE\)</span> for each iteration through the data, so there is one <span class="math inline">\(MSE\)</span> for each observation. Calculating the <code>mean()</code> of that vector gives us the LOOCV <span class="math inline">\(MSE\)</span>.</p>
+<p>The results of the mapped <code>mse()</code> function is the MSE for each iteration through the data, so there is one MSE for each observation. Calculating the <code>mean()</code> of that vector gives us the LOOCV MSE.</p>
 <p>We can also use this method to compare the optimal number of polynomial terms as before.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cv_error &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;numeric&quot;</span>, <span class="dv">5</span>)
 terms &lt;-<span class="st"> </span><span class="dv">1</span>:<span class="dv">5</span>
@@ -734,7 +737,7 @@ cv_mse</code></pre></div>
 </div>
 <div id="loocv-in-classification" class="section level2">
 <h2>LOOCV in classification</h2>
-<p>Let’s use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom <code>mse.glm()</code> function to properly calculate the <span class="math inline">\(MSE\)</span> for binary response variables:<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<p>Let’s use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom <code>mse.glm()</code> function to properly calculate the MSE for binary response variables:<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mse.glm &lt;-<span class="st"> </span>function (model, data){
   residuals.glm &lt;-<span class="st"> </span>function(model, data) {
     modelr:::<span class="kw">response</span>(model, data) -<span class="st"> </span>stats::<span class="kw">predict</span>(model, data, <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>)
@@ -749,12 +752,12 @@ titanic_models &lt;-<span class="st"> </span><span class="kw">map</span>(titanic
 titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titanic_models, titanic_loocv$test, mse.glm)
 <span class="kw">mean</span>(titanic_mse, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## [1] 0.1703518</code></pre>
-<p>In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive <code>Age * Sex</code> model has a % error rate. This is similar to the validation set result (<span class="math inline">\(75.1\%\)</span>)</p>
+<p>In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive <code>Age * Sex</code> model has a 17% error rate, or 83%. This is similar to the validation set result (<span class="math inline">\(75.1\%\)</span>)</p>
 </div>
 </div>
 <div id="k-fold-cross-validation" class="section level1">
 <h1>k-fold cross-validation</h1>
-<p>A less computationally-intensive approach to cross validation is <span class="math inline">\(k\)</span>-fold cross-validation. Rather than dividing the data into <span class="math inline">\(n\)</span> groups, one divides the observations into <span class="math inline">\(k\)</span> groups, or <strong>folds</strong>, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining <span class="math inline">\(k-1\)</span> folds. This process is repeated <span class="math inline">\(k\)</span> times, with each fold serving as the validation set precisely once. The <span class="math inline">\(k\)</span>-fold CV estimate is calculated by averaging the <span class="math inline">\(MSE\)</span> values for each fold:</p>
+<p>A less computationally-intensive approach to cross validation is <strong><span class="math inline">\(k\)</span>-fold cross-validation</strong>. Rather than dividing the data into <span class="math inline">\(n\)</span> groups, one divides the observations into <span class="math inline">\(k\)</span> groups, or <strong>folds</strong>, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining <span class="math inline">\(k-1\)</span> folds. This process is repeated <span class="math inline">\(k\)</span> times, with each fold serving as the validation set precisely once. The <span class="math inline">\(k\)</span>-fold CV estimate is calculated by averaging the MSE values for each fold:</p>
 <p><span class="math display">\[CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}\]</span></p>
 <p>As you probably figured out by now, LOOCV is the special case of <span class="math inline">\(k\)</span>-fold cross-validation where <span class="math inline">\(k = n\)</span>. More typically researchers will use <span class="math inline">\(k=5\)</span> or <span class="math inline">\(k=10\)</span> depending on the size of the data set and the complexity of the statistical model.</p>
 <div id="k-fold-cv-in-linear-regression" class="section level2">
@@ -847,100 +850,133 @@ titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titan
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-08                  
+##  date     2017-02-10                  
 ## 
-##  package        * version    date       source                        
-##  assertthat       0.1        2013-12-06 CRAN (R 3.3.0)                
-##  backports        1.0.5      2017-01-18 CRAN (R 3.3.2)                
-##  base64enc        0.1-3      2015-07-28 CRAN (R 3.3.0)                
-##  boot           * 1.3-18     2016-02-23 CRAN (R 3.3.2)                
-##  broom          * 0.4.1      2016-06-24 CRAN (R 3.3.0)                
-##  car              2.1-4      2016-12-02 CRAN (R 3.3.2)                
-##  caret          * 6.0-73     2016-11-10 CRAN (R 3.3.2)                
-##  codetools        0.2-15     2016-10-05 CRAN (R 3.3.2)                
-##  colorspace       1.3-2      2016-12-14 CRAN (R 3.3.2)                
-##  config           0.2        2016-08-02 CRAN (R 3.3.0)                
-##  DBI              0.5-1      2016-09-10 CRAN (R 3.3.0)                
-##  devtools         1.12.0     2016-06-24 CRAN (R 3.3.0)                
-##  digest           0.6.12     2017-01-27 CRAN (R 3.3.2)                
-##  dplyr          * 0.5.0      2016-06-24 CRAN (R 3.3.0)                
-##  evaluate         0.10       2016-10-11 CRAN (R 3.3.0)                
-##  forcats          0.2.0      2017-01-23 CRAN (R 3.3.2)                
-##  foreach          1.4.3      2015-10-13 CRAN (R 3.3.0)                
-##  foreign          0.8-67     2016-09-13 CRAN (R 3.3.2)                
-##  gapminder      * 0.2.0      2015-12-31 CRAN (R 3.3.0)                
-##  ggplot2        * 2.2.1      2016-12-30 CRAN (R 3.3.2)                
-##  ggrepel        * 0.6.5      2016-11-24 CRAN (R 3.3.2)                
-##  ggstance       * 0.3        2016-11-16 CRAN (R 3.3.2)                
-##  gtable           0.2.0      2016-02-26 CRAN (R 3.3.0)                
-##  haven            1.0.0      2016-09-23 cran (@1.0.0)                 
-##  here           * 0.0-6      2017-02-04 Github (krlmlr/here@007bfd9)  
-##  hexbin         * 1.27.1     2015-08-19 CRAN (R 3.3.0)                
-##  highr            0.6        2016-05-09 CRAN (R 3.3.0)                
-##  hms              0.3        2016-11-22 CRAN (R 3.3.2)                
-##  htmltools        0.3.5      2016-03-21 CRAN (R 3.3.0)                
-##  httr             1.2.1      2016-07-03 CRAN (R 3.3.0)                
-##  iterators        1.0.8      2015-10-13 CRAN (R 3.3.0)                
-##  jsonlite         1.2        2016-12-31 CRAN (R 3.3.2)                
-##  knitr          * 1.15.1     2016-11-22 cran (@1.15.1)                
-##  labeling         0.3        2014-08-23 CRAN (R 3.3.0)                
-##  lattice        * 0.20-34    2016-09-06 CRAN (R 3.3.2)                
-##  lazyeval         0.2.0      2016-06-12 CRAN (R 3.3.0)                
-##  lme4             1.1-12     2016-04-16 cran (@1.1-12)                
-##  lubridate      * 1.6.0      2016-09-13 CRAN (R 3.3.0)                
-##  lvplot         * 0.2.0.9000 2017-01-06 Github (hadley/lvplot@8ce61c7)
-##  magrittr         1.5        2014-11-22 CRAN (R 3.3.0)                
-##  maps           * 3.1.1      2016-07-27 cran (@3.1.1)                 
-##  MASS             7.3-45     2016-04-21 CRAN (R 3.3.2)                
-##  Matrix           1.2-8      2017-01-20 CRAN (R 3.3.2)                
-##  MatrixModels     0.4-1      2015-08-22 CRAN (R 3.3.0)                
-##  memoise          1.0.0      2016-01-29 CRAN (R 3.3.0)                
-##  mgcv             1.8-16     2016-11-07 CRAN (R 3.3.0)                
-##  microbenchmark * 1.4-2.1    2015-11-25 CRAN (R 3.3.0)                
-##  minqa            1.2.4      2014-10-09 cran (@1.2.4)                 
-##  mnormt           1.5-5      2016-10-15 CRAN (R 3.3.0)                
-##  ModelMetrics     1.1.0      2016-08-26 CRAN (R 3.3.0)                
-##  modelr         * 0.1.0      2016-08-31 CRAN (R 3.3.0)                
-##  modeltools       0.2-21     2013-09-02 CRAN (R 3.3.0)                
-##  munsell          0.4.3      2016-02-13 CRAN (R 3.3.0)                
-##  nlme             3.1-130    2017-01-24 CRAN (R 3.3.2)                
-##  nloptr           1.0.4      2014-08-04 cran (@1.0.4)                 
-##  NLP              0.1-9      2016-02-18 CRAN (R 3.3.0)                
-##  nnet             7.3-12     2016-02-02 CRAN (R 3.3.2)                
-##  nycflights13   * 0.2.2      2017-01-27 CRAN (R 3.3.2)                
-##  pbkrtest         0.4-6      2016-01-27 CRAN (R 3.3.0)                
-##  plyr             1.8.4      2016-06-08 CRAN (R 3.3.0)                
-##  psych            1.6.12     2017-01-08 CRAN (R 3.3.2)                
-##  purrr          * 0.2.2      2016-06-18 CRAN (R 3.3.0)                
-##  quantreg         5.29       2016-09-04 CRAN (R 3.3.0)                
-##  R6               2.2.0      2016-10-05 CRAN (R 3.3.0)                
-##  randomForest   * 4.6-12     2015-10-07 CRAN (R 3.3.0)                
-##  rappdirs         0.3.1      2016-03-28 CRAN (R 3.3.0)                
-##  rcfss          * 0.1.3      2017-02-07 local                         
-##  Rcpp             0.12.9     2017-01-14 CRAN (R 3.3.2)                
-##  readr          * 1.0.0      2016-08-03 CRAN (R 3.3.0)                
-##  readxl         * 0.1.1      2016-03-28 CRAN (R 3.3.0)                
-##  reshape2         1.4.2      2016-10-22 CRAN (R 3.3.0)                
-##  rmarkdown        1.3        2016-12-21 CRAN (R 3.3.2)                
-##  rprojroot        1.2        2017-01-16 CRAN (R 3.3.2)                
-##  rsconnect        0.7        2016-12-21 CRAN (R 3.3.2)                
-##  rstudioapi       0.6        2016-06-27 CRAN (R 3.3.0)                
-##  rvest            0.3.2      2016-06-17 CRAN (R 3.3.0)                
-##  scales           0.4.1      2016-11-09 CRAN (R 3.3.1)                
-##  slam             0.1-40     2016-12-01 CRAN (R 3.3.2)                
-##  sparklyr       * 0.5.1      2016-12-19 CRAN (R 3.3.2)                
-##  SparseM          1.74       2016-11-10 CRAN (R 3.3.2)                
-##  stringi          1.1.2      2016-10-01 CRAN (R 3.3.0)                
-##  stringr        * 1.1.0      2016-08-19 cran (@1.1.0)                 
-##  tibble         * 1.2        2016-08-26 cran (@1.2)                   
-##  tidyr          * 0.6.1      2017-01-10 CRAN (R 3.3.2)                
-##  tidyverse      * 1.1.1      2017-01-27 CRAN (R 3.3.2)                
-##  titanic        * 0.1.0      2015-08-31 CRAN (R 3.3.0)                
-##  tm               0.6-2      2015-07-03 CRAN (R 3.3.0)                
-##  topicmodels    * 0.2-4      2016-05-23 CRAN (R 3.3.0)                
-##  tree           * 1.0-37     2016-01-21 CRAN (R 3.3.0)                
-##  withr            1.0.2      2016-06-20 CRAN (R 3.3.0)                
-##  xml2             1.1.1      2017-01-24 CRAN (R 3.3.2)                
+##  package        * version    date       source                            
+##  assertthat       0.1        2013-12-06 CRAN (R 3.3.0)                    
+##  backports        1.0.5      2017-01-18 CRAN (R 3.3.2)                    
+##  base64enc        0.1-3      2015-07-28 CRAN (R 3.3.0)                    
+##  bit              1.1-12     2014-04-09 CRAN (R 3.3.0)                    
+##  bit64            0.9-5      2015-07-05 CRAN (R 3.3.0)                    
+##  bitops           1.0-6      2013-08-17 CRAN (R 3.3.0)                    
+##  boot           * 1.3-18     2016-02-23 CRAN (R 3.3.2)                    
+##  broom          * 0.4.1      2016-06-24 CRAN (R 3.3.0)                    
+##  car              2.1-4      2016-12-02 CRAN (R 3.3.2)                    
+##  caret          * 6.0-73     2016-11-10 CRAN (R 3.3.2)                    
+##  class            7.3-14     2015-08-30 CRAN (R 3.3.2)                    
+##  codetools        0.2-15     2016-10-05 CRAN (R 3.3.2)                    
+##  colorspace       1.3-2      2016-12-14 CRAN (R 3.3.2)                    
+##  config           0.2        2016-08-02 CRAN (R 3.3.0)                    
+##  curl           * 2.3        2016-11-24 CRAN (R 3.3.2)                    
+##  DBI              0.5-1      2016-09-10 CRAN (R 3.3.0)                    
+##  devtools         1.12.0     2016-06-24 CRAN (R 3.3.0)                    
+##  digest           0.6.12     2017-01-27 CRAN (R 3.3.2)                    
+##  dplyr          * 0.5.0      2016-06-24 CRAN (R 3.3.0)                    
+##  e1071            1.6-7      2015-08-05 CRAN (R 3.3.0)                    
+##  evaluate         0.10       2016-10-11 CRAN (R 3.3.0)                    
+##  forcats          0.2.0      2017-01-23 CRAN (R 3.3.2)                    
+##  foreach          1.4.3      2015-10-13 CRAN (R 3.3.0)                    
+##  foreign          0.8-67     2016-09-13 CRAN (R 3.3.2)                    
+##  gapminder      * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
+##  geosphere        1.5-5      2016-06-15 CRAN (R 3.3.0)                    
+##  ggmap          * 2.7        2016-12-07 Github (dkahle/ggmap@c6b7579)     
+##  ggplot2        * 2.2.1      2016-12-30 CRAN (R 3.3.2)                    
+##  ggrepel        * 0.6.5      2016-11-24 CRAN (R 3.3.2)                    
+##  ggstance       * 0.3        2016-11-16 CRAN (R 3.3.2)                    
+##  gtable           0.2.0      2016-02-26 CRAN (R 3.3.0)                    
+##  haven            1.0.0      2016-09-23 cran (@1.0.0)                     
+##  here           * 0.0-6      2017-02-04 Github (krlmlr/here@007bfd9)      
+##  hexbin         * 1.27.1     2015-08-19 CRAN (R 3.3.0)                    
+##  highr            0.6        2016-05-09 CRAN (R 3.3.0)                    
+##  hms              0.3        2016-11-22 CRAN (R 3.3.2)                    
+##  htmltools        0.3.5      2016-03-21 CRAN (R 3.3.0)                    
+##  htmlwidgets      0.8        2016-11-09 CRAN (R 3.3.1)                    
+##  httpuv           1.3.3      2015-08-04 CRAN (R 3.3.0)                    
+##  httr           * 1.2.1      2016-07-03 CRAN (R 3.3.0)                    
+##  ISLR           * 1.0        2013-06-11 CRAN (R 3.3.0)                    
+##  iterators        1.0.8      2015-10-13 CRAN (R 3.3.0)                    
+##  janeaustenr      0.1.4      2016-10-26 CRAN (R 3.3.0)                    
+##  jpeg             0.1-8      2014-01-23 cran (@0.1-8)                     
+##  jsonlite       * 1.2        2016-12-31 CRAN (R 3.3.2)                    
+##  knitr          * 1.15.1     2016-11-22 cran (@1.15.1)                    
+##  labeling         0.3        2014-08-23 CRAN (R 3.3.0)                    
+##  lattice        * 0.20-34    2016-09-06 CRAN (R 3.3.2)                    
+##  lazyeval         0.2.0      2016-06-12 CRAN (R 3.3.0)                    
+##  lme4             1.1-12     2016-04-16 cran (@1.1-12)                    
+##  lubridate      * 1.6.0      2016-09-13 CRAN (R 3.3.0)                    
+##  lvplot         * 0.2.0.9000 2017-01-06 Github (hadley/lvplot@8ce61c7)    
+##  magrittr         1.5        2014-11-22 CRAN (R 3.3.0)                    
+##  mapproj          1.2-4      2015-08-03 CRAN (R 3.3.0)                    
+##  maps           * 3.1.1      2016-07-27 cran (@3.1.1)                     
+##  MASS             7.3-45     2016-04-21 CRAN (R 3.3.2)                    
+##  Matrix           1.2-8      2017-01-20 CRAN (R 3.3.2)                    
+##  MatrixModels     0.4-1      2015-08-22 CRAN (R 3.3.0)                    
+##  memoise          1.0.0      2016-01-29 CRAN (R 3.3.0)                    
+##  mgcv             1.8-16     2016-11-07 CRAN (R 3.3.0)                    
+##  microbenchmark * 1.4-2.1    2015-11-25 CRAN (R 3.3.0)                    
+##  mime             0.5        2016-07-07 CRAN (R 3.3.0)                    
+##  minqa            1.2.4      2014-10-09 cran (@1.2.4)                     
+##  mnormt           1.5-5      2016-10-15 CRAN (R 3.3.0)                    
+##  ModelMetrics     1.1.0      2016-08-26 CRAN (R 3.3.0)                    
+##  modelr         * 0.1.0      2016-08-31 CRAN (R 3.3.0)                    
+##  modeltools       0.2-21     2013-09-02 CRAN (R 3.3.0)                    
+##  multidplyr       0.0.0.9000 2016-11-23 Github (hadley/multidplyr@f6bece5)
+##  munsell          0.4.3      2016-02-13 CRAN (R 3.3.0)                    
+##  nlme             3.1-130    2017-01-24 CRAN (R 3.3.2)                    
+##  nloptr           1.0.4      2014-08-04 cran (@1.0.4)                     
+##  NLP              0.1-9      2016-02-18 CRAN (R 3.3.0)                    
+##  nnet             7.3-12     2016-02-02 CRAN (R 3.3.2)                    
+##  nycflights13   * 0.2.2      2017-01-27 CRAN (R 3.3.2)                    
+##  pbkrtest         0.4-6      2016-01-27 CRAN (R 3.3.0)                    
+##  plyr             1.8.4      2016-06-08 CRAN (R 3.3.0)                    
+##  png              0.1-7      2013-12-03 cran (@0.1-7)                     
+##  pROC           * 1.8        2015-05-05 CRAN (R 3.3.0)                    
+##  profvis        * 0.3.3      2017-01-14 CRAN (R 3.3.2)                    
+##  proto            1.0.0      2016-10-29 CRAN (R 3.3.0)                    
+##  psych            1.6.12     2017-01-08 CRAN (R 3.3.2)                    
+##  purrr          * 0.2.2      2016-06-18 CRAN (R 3.3.0)                    
+##  quantreg         5.29       2016-09-04 CRAN (R 3.3.0)                    
+##  R6               2.2.0      2016-10-05 CRAN (R 3.3.0)                    
+##  randomForest   * 4.6-12     2015-10-07 CRAN (R 3.3.0)                    
+##  rappdirs         0.3.1      2016-03-28 CRAN (R 3.3.0)                    
+##  rcfss          * 0.1.3      2017-02-07 local                             
+##  Rcpp             0.12.9     2017-01-14 CRAN (R 3.3.2)                    
+##  readr          * 1.0.0      2016-08-03 CRAN (R 3.3.0)                    
+##  readxl         * 0.1.1      2016-03-28 CRAN (R 3.3.0)                    
+##  reshape2         1.4.2      2016-10-22 CRAN (R 3.3.0)                    
+##  RgoogleMaps      1.4.1      2016-09-18 cran (@1.4.1)                     
+##  rjson            0.2.15     2014-11-03 cran (@0.2.15)                    
+##  rmarkdown        1.3        2016-12-21 CRAN (R 3.3.2)                    
+##  rplos            0.6.4      2016-11-24 CRAN (R 3.3.2)                    
+##  rprojroot        1.2        2017-01-16 CRAN (R 3.3.2)                    
+##  rsconnect        0.7        2016-12-21 CRAN (R 3.3.2)                    
+##  rstudioapi       0.6        2016-06-27 CRAN (R 3.3.0)                    
+##  rvest          * 0.3.2      2016-06-17 CRAN (R 3.3.0)                    
+##  scales         * 0.4.1      2016-11-09 CRAN (R 3.3.1)                    
+##  shiny          * 1.0.0      2017-01-12 CRAN (R 3.3.2)                    
+##  slam             0.1-40     2016-12-01 CRAN (R 3.3.2)                    
+##  SnowballC        0.5.1      2014-08-09 cran (@0.5.1)                     
+##  solr             0.1.6      2015-09-17 CRAN (R 3.3.0)                    
+##  sp               1.2-4      2016-12-22 CRAN (R 3.3.2)                    
+##  sparklyr       * 0.5.1      2016-12-19 CRAN (R 3.3.2)                    
+##  SparseM          1.74       2016-11-10 CRAN (R 3.3.2)                    
+##  stringi          1.1.2      2016-10-01 CRAN (R 3.3.0)                    
+##  stringr        * 1.1.0      2016-08-19 cran (@1.1.0)                     
+##  tibble         * 1.2        2016-08-26 cran (@1.2)                       
+##  tidyr          * 0.6.1      2017-01-10 CRAN (R 3.3.2)                    
+##  tidytext       * 0.1.2      2016-10-28 CRAN (R 3.3.0)                    
+##  tidyverse      * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
+##  titanic        * 0.1.0      2015-08-31 CRAN (R 3.3.0)                    
+##  tm               0.6-2      2015-07-03 CRAN (R 3.3.0)                    
+##  tokenizers       0.1.4      2016-08-29 CRAN (R 3.3.0)                    
+##  topicmodels    * 0.2-4      2016-05-23 CRAN (R 3.3.0)                    
+##  tree           * 1.0-37     2016-01-21 CRAN (R 3.3.0)                    
+##  twitteR          1.1.9      2015-07-29 CRAN (R 3.3.0)                    
+##  whisker          0.3-2      2013-04-28 CRAN (R 3.3.0)                    
+##  withr            1.0.2      2016-06-20 CRAN (R 3.3.0)                    
+##  XML            * 3.98-1.5   2016-11-10 CRAN (R 3.3.2)                    
+##  xml2           * 1.1.1      2017-01-24 CRAN (R 3.3.2)                    
+##  xtable           1.8-2      2016-02-05 CRAN (R 3.3.0)                    
 ##  yaml             2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
