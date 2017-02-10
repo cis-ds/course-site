@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: linear regression</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: linear regression</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Introduce the functional form of linear regression</li>
+<li>Demonstrate how to estimate linear models using <code>lm()</code>
+<ul>
+<li>Single variable linear regression</li>
+<li>Multiple linear regression</li>
+<li>Qualitative predictors</li>
+<li>Relaxing linear model assumptions</li>
+</ul></li>
+<li>Explain how to extract model statistics using <a href="https://cran.r-project.org/web/packages/broom/index.html"><code>broom</code></a></li>
+<li>Use the <a href="https://github.com/hadley/modelr"><code>modelr</code></a> package to estimate predicted values and residuals</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(broom)
+
+<span class="kw">options</span>(<span class="dt">na.action =</span> na.warn)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="linear-models" class="section level1">
+<h1>Linear models</h1>
+<p>Linear models are the simplest functional form to understand. They adopt a generic form</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_{1}X\]</span></p>
+<p>where <span class="math inline">\(y\)</span> is the <strong>outcome of interest</strong>, <span class="math inline">\(x\)</span> is the <strong>explanatory</strong> or <strong>predictor</strong> variable, and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are <strong>parameters</strong> that vary to capture different patterns. In algebraic terms, <span class="math inline">\(\beta_0\)</span> is the <strong>intercept</strong> and <span class="math inline">\(\beta_1\)</span> the <strong>slope</strong> for the linear equation. Given the empirical values you have for <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>, you generate a <strong>fitted model</strong> that finds the values for the parameters that best fit the data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/sim-plot-1.png" width="672" /></p>
+<p>This looks like a linear relationship. We could randomly generate parameters for the formula <span class="math inline">\(y = \beta_0 + \beta_1 * x\)</span> to try and explain or predict the relationship between <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">models &lt;-<span class="st"> </span><span class="kw">tibble</span>(
+  <span class="dt">a1 =</span> <span class="kw">runif</span>(<span class="dv">250</span>, -<span class="dv">20</span>, <span class="dv">40</span>),
+  <span class="dt">a2 =</span> <span class="kw">runif</span>(<span class="dv">250</span>, -<span class="dv">5</span>, <span class="dv">5</span>)
+)
+
+<span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">intercept =</span> a1, <span class="dt">slope =</span> a2), <span class="dt">data =</span> models, <span class="dt">alpha =</span> <span class="dv">1</span>/<span class="dv">4</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/sim-random-fit-1.png" width="672" /></p>
+<p>But obviously some parameters are better than others. We need a definition that can be used to differentiate good parameters from bad parameters.</p>
+</div>
+<div id="least-squares-regression" class="section level1">
+<h1>Least squares regression</h1>
+<p>One approach widely used is called <strong>least squares</strong> - it means that the overall solution minimizes the sum of the squares of the errors made in the results of every single equation. The errors are simply the difference between the actual values for <span class="math inline">\(y\)</span> and the predicted values for <span class="math inline">\(y\)</span> (also known as the <strong>residuals</strong>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dist1 &lt;-<span class="st"> </span>sim1 %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">dodge =</span> <span class="kw">rep</span>(<span class="kw">c</span>(-<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>) /<span class="st"> </span><span class="dv">20</span>, <span class="dv">10</span>),
+    <span class="dt">x1 =</span> x +<span class="st"> </span>dodge,
+    <span class="dt">pred =</span> <span class="dv">7</span> +<span class="st"> </span>x1 *<span class="st"> </span><span class="fl">1.5</span>
+  )
+
+<span class="kw">ggplot</span>(dist1, <span class="kw">aes</span>(x1, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">7</span>, <span class="dt">slope =</span> <span class="fl">1.5</span>, <span class="dt">color =</span> <span class="st">&quot;grey40&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">color =</span> <span class="st">&quot;grey40&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_linerange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> y, <span class="dt">ymax =</span> pred), <span class="dt">color =</span> <span class="st">&quot;#3366FF&quot;</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/sim-error-1.png" width="672" /></p>
+<p>To estimate a linear regression model in R, we use the <code>lm()</code> function. The <code>lm()</code> function takes two parameters. The first is a <strong>formula</strong> specifying the equation to be estimated (<code>lm()</code> translates <code>y ~ x</code> into <span class="math inline">\(y = \beta_0 + \beta_1 * x\)</span>). The second is the data frame containing the variables:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim1_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim1)</code></pre></div>
+<p>We can use the <code>summary()</code> function to examine key model components, including parameter estimates, standard errors, and model goodness-of-fit statistics.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(sim1_mod)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = y ~ x, data = sim1)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -4.1469 -1.5197  0.1331  1.4670  4.6516 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   4.2208     0.8688   4.858 4.09e-05 ***
+## x             2.0515     0.1400  14.651 1.17e-14 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.203 on 28 degrees of freedom
+## Multiple R-squared:  0.8846, Adjusted R-squared:  0.8805 
+## F-statistic: 214.7 on 1 and 28 DF,  p-value: 1.173e-14</code></pre>
+<p>The resulting line from this regression model looks like:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dist2 &lt;-<span class="st"> </span>sim1 %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(sim1_mod) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">dodge =</span> <span class="kw">rep</span>(<span class="kw">c</span>(-<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>) /<span class="st"> </span><span class="dv">20</span>, <span class="dv">10</span>),
+    <span class="dt">x1 =</span> x +<span class="st"> </span>dodge
+  )
+
+<span class="kw">ggplot</span>(dist2, <span class="kw">aes</span>(x1, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;grey40&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">color =</span> <span class="st">&quot;grey40&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_linerange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> y, <span class="dt">ymax =</span> pred), <span class="dt">color =</span> <span class="st">&quot;#3366FF&quot;</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/sim-lm-plot-1.png" width="672" /></p>
+</div>
+<div id="generating-predicted-values" class="section level1">
+<h1>Generating predicted values</h1>
+<p>We can use <code>sim1_mod</code> to generate <strong>predicted values</strong>, or the expected value for <span class="math inline">\(Y\)</span> given our knowledge of hypothetical observations with values for <span class="math inline">\(X\)</span>, based on the estimated parameters using the <code>data_grid()</code> and <code>add_predictions()</code> functions from the <code>modelr</code> package. <code>data_grid()</code> generates an evenly spaced grid of data points covering the region where observed data lies. The first argument is a data frame, and subsequent arguments identify unique columns and generates all possible combinations.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>sim1 %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">data_grid</span>(x) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 10 × 1
+##        x
+##    &lt;int&gt;
+## 1      1
+## 2      2
+## 3      3
+## 4      4
+## 5      5
+## 6      6
+## 7      7
+## 8      8
+## 9      9
+## 10    10</code></pre>
+<p><code>add_predictions()</code> takes a data frame and a model, and uses the model to generate predictions for each observation in the data frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>grid %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_predictions</span>(sim1_mod) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 10 × 2
+##        x      pred
+##    &lt;int&gt;     &lt;dbl&gt;
+## 1      1  6.272355
+## 2      2  8.323888
+## 3      3 10.375421
+## 4      4 12.426954
+## 5      5 14.478487
+## 6      6 16.530020
+## 7      7 18.581553
+## 8      8 20.633087
+## 9      9 22.684620
+## 10    10 24.736153</code></pre>
+<p>Using this information, we can draw the best-fit line without using <code>geom_smooth()</code>, and instead build it directly from the predicted values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(x)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">data =</span> grid, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/plot-lm-predict-1.png" width="672" /></p>
+<p>This looks like the line from before, but without the confidence interval. This is a bit more involved of a process, but it can work with any type of model you create - not just very basic, linear models.</p>
+</div>
+<div id="generating-residuals" class="section level1">
+<h1>Generating residuals</h1>
+<p>We can also calculate the <strong>residuals</strong>, or the distance between the actual and predicted values of <span class="math inline">\(Y\)</span>, using <code>add_residuals()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim1 &lt;-<span class="st"> </span>sim1 %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_residuals</span>(sim1_mod)
+sim1</code></pre></div>
+<pre><code>## # A tibble: 30 × 3
+##        x         y        resid
+##    &lt;int&gt;     &lt;dbl&gt;        &lt;dbl&gt;
+## 1      1  4.199913 -2.072442018
+## 2      1  7.510634  1.238279125
+## 3      1  2.125473 -4.146882207
+## 4      2  8.988857  0.664969362
+## 5      2 10.243105  1.919217378
+## 6      2 11.296823  2.972935148
+## 7      3  7.356365 -3.019056466
+## 8      3 10.505349  0.129928252
+## 9      3 10.511601  0.136179642
+## 10     4 12.434589  0.007634878
+## # ... with 20 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(sim1, <span class="kw">aes</span>(resid)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_freqpoly</span>(<span class="dt">binwidth =</span> <span class="fl">0.5</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/resids-1.png" width="672" /></p>
+<p>Reviewing your residuals can be helpful. Sometimes your model is better at predicting some types of observations better than others. This could help you isolate further patterns and improve the predictive accuracy of your model.</p>
+</div>
+<div id="exploring-the-credit-dataset" class="section level1">
+<h1>Exploring the <code>credit</code> dataset</h1>
+<p>Let’s practice exploring data and estimating linear regression models using the <code>Credit</code> data set from <a href="http://www-bcf.usc.edu/~gareth/ISL/">ISLR</a>.</p>
+<div id="import-data" class="section level2">
+<h2>Import data</h2>
+<p>The first thing we want to do is load the libraries that contain the functions we will use for our analysis. Here we want to load the following libraries:</p>
+<ul>
+<li><code>dplyr</code> - functions for transforming data</li>
+<li><code>ggplot2</code> - graphing functions</li>
+<li><code>readr</code> - import data files</li>
+<li><code>modelr</code> - helper functions for statistical modeling</li>
+<li><code>broom</code> - functions for tidying the results of model objects</li>
+</ul>
+<blockquote>
+<p>Alternatively you can run <code>library(tidyverse)</code> which will automatically load the <code>ggplot2</code>, <code>tibble</code>, <code>tidyr</code>, <code>readr</code>, <code>purrr</code>, and <code>dplyr</code> libraries. Also by installing <code>tidyverse</code>, you will automatically install additional libraries used for important tasks such as handling dates and strings, importing SPSS/Stata files, and scraping web data. More information on <code>tidyverse</code> <a href="https://github.com/tidyverse/tidyverse">here</a>.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(dplyr)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(readr)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(broom)</code></pre></div>
+<p>We can import the <code>.csv</code> file using the <code>read_csv()</code> function from <a href="https://github.com/tidyverse/readr"><code>readr</code></a>. We also need to remove the ID column and convert the column names to lowercase for consistency and style.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Credit.csv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="co"># remove first ID column</span>
+<span class="st">  </span><span class="kw">select</span>(-X1)
+<span class="kw">names</span>(credit) &lt;-<span class="st"> </span>stringr::<span class="kw">str_to_lower</span>(<span class="kw">names</span>(credit))   <span class="co"># convert column names to lowercase</span>
+<span class="kw">str</span>(credit)</code></pre></div>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    400 obs. of  11 variables:
+##  $ income   : num  14.9 106 104.6 148.9 55.9 ...
+##  $ limit    : int  3606 6645 7075 9504 4897 8047 3388 7114 3300 6819 ...
+##  $ rating   : int  283 483 514 681 357 569 259 512 266 491 ...
+##  $ cards    : int  2 3 4 3 2 4 2 2 5 3 ...
+##  $ age      : int  34 82 71 36 68 77 37 87 66 41 ...
+##  $ education: int  11 15 11 11 16 10 12 9 13 19 ...
+##  $ gender   : chr  &quot;Male&quot; &quot;Female&quot; &quot;Male&quot; &quot;Female&quot; ...
+##  $ student  : chr  &quot;No&quot; &quot;Yes&quot; &quot;No&quot; &quot;No&quot; ...
+##  $ married  : chr  &quot;Yes&quot; &quot;Yes&quot; &quot;No&quot; &quot;No&quot; ...
+##  $ ethnicity: chr  &quot;Caucasian&quot; &quot;Asian&quot; &quot;Asian&quot; &quot;Asian&quot; ...
+##  $ balance  : int  333 903 580 964 331 1151 203 872 279 1350 ...
+##  - attr(*, &quot;spec&quot;)=List of 2
+##   ..$ cols   :List of 12
+##   .. ..$ X1       : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   .. ..$ Income   : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_double&quot; &quot;collector&quot;
+##   .. ..$ Limit    : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   .. ..$ Rating   : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   .. ..$ Cards    : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   .. ..$ Age      : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   .. ..$ Education: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   .. ..$ Gender   : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_character&quot; &quot;collector&quot;
+##   .. ..$ Student  : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_character&quot; &quot;collector&quot;
+##   .. ..$ Married  : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_character&quot; &quot;collector&quot;
+##   .. ..$ Ethnicity: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_character&quot; &quot;collector&quot;
+##   .. ..$ Balance  : list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_integer&quot; &quot;collector&quot;
+##   ..$ default: list()
+##   .. ..- attr(*, &quot;class&quot;)= chr  &quot;collector_guess&quot; &quot;collector&quot;
+##   ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;</code></pre>
+</div>
+<div id="distribution-of-credit-variable" class="section level2">
+<h2>Distribution of credit variable</h2>
+<p>Initially, we may just want to evaluate the distribution of <code>balance</code>. We can use the <code>ggplot2</code> library and <code>geom_histogram()</code> to generate a histogram plot:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(credit, <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> balance)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Distribution of credit card balances&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Credit card balance&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency count of individuals&quot;</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/credit-hist-1.png" width="672" /></p>
+<blockquote>
+<p>Confused by all the <code>ggplot</code> functions? Use <a href="https://www.rstudio.com/wp-content/uploads/2016/11/ggplot2-cheatsheet-2.1.pdf">this cheatsheet</a> to master the syntax and functions.</p>
+</blockquote>
+</div>
+<div id="estimate-single-variable-linear-regression-model" class="section level2">
+<h2>Estimate single variable linear regression model</h2>
+<p>Suppose we want to understand the relationship between an individual’s credit limit and their current balance on the credit card. We could visualize the data using a scatterplot:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> limit, <span class="dt">y =</span> balance)) +
+<span class="st">    </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/lifeExp-by-country-1.png" width="672" /></p>
+<p>Not too bad. It seems like there is a clear positive trend. Why not estimate a simple linear model that summarizes this trend?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit_limit &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>limit, <span class="dt">data =</span> credit)
+<span class="kw">summary</span>(credit_limit)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = balance ~ limit, data = credit)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -676.95 -141.87  -11.55  134.11  776.44 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -2.928e+02  2.668e+01  -10.97   &lt;2e-16 ***
+## limit        1.716e-01  5.066e-03   33.88   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 233.6 on 398 degrees of freedom
+## Multiple R-squared:  0.7425, Adjusted R-squared:  0.7419 
+## F-statistic:  1148 on 1 and 398 DF,  p-value: &lt; 2.2e-16</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>credit %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">data_grid</span>(limit) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 387 × 1
+##    limit
+##    &lt;int&gt;
+## 1    855
+## 2    886
+## 3    905
+## 4    906
+## 5   1134
+## 6   1160
+## 7   1233
+## 8   1300
+## 9   1311
+## 10  1335
+## # ... with 377 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">grid &lt;-<span class="st"> </span>grid %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">add_predictions</span>(credit_limit) 
+grid</code></pre></div>
+<pre><code>## # A tibble: 387 × 2
+##    limit       pred
+##    &lt;int&gt;      &lt;dbl&gt;
+## 1    855 -146.04062
+## 2    886 -140.71987
+## 3    905 -137.45876
+## 4    906 -137.28712
+## 5   1134  -98.15382
+## 6   1160  -93.69125
+## 7   1233  -81.16173
+## 8   1300  -69.66203
+## 9   1311  -67.77402
+## 10  1335  -63.65473
+## # ... with 377 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(credit, <span class="kw">aes</span>(<span class="dt">x =</span> limit)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> balance)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">data =</span> grid, <span class="dt">color =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/credit-limit-1.png" width="672" /></p>
+<p>This is not too bad of a first model. Clearly it is not perfect as it suggests that individuals with a limit below approximately $1,000 have a negative balance, but it is a good first cut.</p>
+</div>
+<div id="extracting-model-statistics" class="section level2">
+<h2>Extracting model statistics</h2>
+<p>Model objects are not very pretty in R. <code>lm()</code> objects are stored in <a href="http://r4ds.had.co.nz/vectors.html#lists"><strong>lists</strong></a>. One important feature of lists is that they are <strong>recursive</strong> - lists can store other lists. We use the <code>str()</code> to print the structure of an object in R:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(credit_limit)</code></pre></div>
+<pre><code>## List of 12
+##  $ coefficients : Named num [1:2] -292.79 0.172
+##   ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;(Intercept)&quot; &quot;limit&quot;
+##  $ residuals    : Named num [1:400] 6.87 55.26 -341.54 -374.45 -216.72 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:400] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ effects      : Named num [1:400] -10400 -7914 -345 -380 -217 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:400] &quot;(Intercept)&quot; &quot;limit&quot; &quot;&quot; &quot;&quot; ...
+##  $ rank         : int 2
+##  $ fitted.values: Named num [1:400] 326 848 922 1338 548 ...
+##   ..- attr(*, &quot;names&quot;)= chr [1:400] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##  $ assign       : int [1:2] 0 1
+##  $ qr           :List of 5
+##   ..$ qr   : num [1:400, 1:2] -20 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 0.05 ...
+##   .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. ..$ : chr [1:400] &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; ...
+##   .. .. ..$ : chr [1:2] &quot;(Intercept)&quot; &quot;limit&quot;
+##   .. ..- attr(*, &quot;assign&quot;)= int [1:2] 0 1
+##   ..$ qraux: num [1:2] 1.05 1.04
+##   ..$ pivot: int [1:2] 1 2
+##   ..$ tol  : num 1e-07
+##   ..$ rank : int 2
+##   ..- attr(*, &quot;class&quot;)= chr &quot;qr&quot;
+##  $ df.residual  : int 398
+##  $ xlevels      : Named list()
+##  $ call         : language lm(formula = balance ~ limit, data = credit)
+##  $ terms        :Classes &#39;terms&#39;, &#39;formula&#39;  language balance ~ limit
+##   .. ..- attr(*, &quot;variables&quot;)= language list(balance, limit)
+##   .. ..- attr(*, &quot;factors&quot;)= int [1:2, 1] 0 1
+##   .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. ..$ : chr [1:2] &quot;balance&quot; &quot;limit&quot;
+##   .. .. .. ..$ : chr &quot;limit&quot;
+##   .. ..- attr(*, &quot;term.labels&quot;)= chr &quot;limit&quot;
+##   .. ..- attr(*, &quot;order&quot;)= int 1
+##   .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, &quot;predvars&quot;)= language list(balance, limit)
+##   .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:2] &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;balance&quot; &quot;limit&quot;
+##  $ model        :&#39;data.frame&#39;:   400 obs. of  2 variables:
+##   ..$ balance: int [1:400] 333 903 580 964 331 1151 203 872 279 1350 ...
+##   ..$ limit  : int [1:400] 3606 6645 7075 9504 4897 8047 3388 7114 3300 6819 ...
+##   ..- attr(*, &quot;terms&quot;)=Classes &#39;terms&#39;, &#39;formula&#39;  language balance ~ limit
+##   .. .. ..- attr(*, &quot;variables&quot;)= language list(balance, limit)
+##   .. .. ..- attr(*, &quot;factors&quot;)= int [1:2, 1] 0 1
+##   .. .. .. ..- attr(*, &quot;dimnames&quot;)=List of 2
+##   .. .. .. .. ..$ : chr [1:2] &quot;balance&quot; &quot;limit&quot;
+##   .. .. .. .. ..$ : chr &quot;limit&quot;
+##   .. .. ..- attr(*, &quot;term.labels&quot;)= chr &quot;limit&quot;
+##   .. .. ..- attr(*, &quot;order&quot;)= int 1
+##   .. .. ..- attr(*, &quot;intercept&quot;)= int 1
+##   .. .. ..- attr(*, &quot;response&quot;)= int 1
+##   .. .. ..- attr(*, &quot;.Environment&quot;)=&lt;environment: R_GlobalEnv&gt; 
+##   .. .. ..- attr(*, &quot;predvars&quot;)= language list(balance, limit)
+##   .. .. ..- attr(*, &quot;dataClasses&quot;)= Named chr [1:2] &quot;numeric&quot; &quot;numeric&quot;
+##   .. .. .. ..- attr(*, &quot;names&quot;)= chr [1:2] &quot;balance&quot; &quot;limit&quot;
+##  - attr(*, &quot;class&quot;)= chr &quot;lm&quot;</code></pre>
+<p>While there are lots of important statistics and information stored inside the <code>credit_limit</code> object, it is very difficult to access them. Instead, we might prefer this information could be retrieved in a <a href="http://r4ds.had.co.nz/tidy-data.html"><strong>tidy</strong> data frame</a>. <a href="http://r4ds.had.co.nz/tibbles.html"><strong>Data frames</strong> (and their variants <strong>tibles</strong>)</a> are one of the most common data objects in R. There are three rules which make a data frame tidy:</p>
+<ol style="list-style-type: decimal">
+<li>Each variable must have its own column.</li>
+<li>Each observation must have its own row.</li>
+<li>Each value must have its own cell.</li>
+</ol>
+<p>In order to extract model statistics and use them in a tidy manner, we can use a set of functions from the <a href="https://github.com/tidyverse/broom"><code>broom</code></a> package. For these functions, the input is always the model object generated by <code>lm()</code>, not the original data frame.</p>
+<div id="tidy" class="section level3">
+<h3><code>tidy()</code></h3>
+<p><code>tidy()</code> constructs a data frame that summarizes the model’s statistical findings. This includes <strong>coefficients</strong> and <strong>p-values</strong> for each parameter in a model. Different models will report different elements.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(broom)
+
+<span class="kw">tidy</span>(credit_limit)</code></pre></div>
+<pre><code>##          term     estimate    std.error statistic       p.value
+## 1 (Intercept) -292.7904955 26.683414516 -10.97275  1.184152e-24
+## 2       limit    0.1716373  0.005066234  33.87867 2.530581e-119</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(credit_limit) %&gt;%
+<span class="st">  </span><span class="kw">str</span>()</code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    2 obs. of  5 variables:
+##  $ term     : chr  &quot;(Intercept)&quot; &quot;limit&quot;
+##  $ estimate : num  -292.79 0.172
+##  $ std.error: num  26.68341 0.00507
+##  $ statistic: num  -11 33.9
+##  $ p.value  : num  1.18e-24 2.53e-119</code></pre>
+<p>Notice that the structure of the resulting object is a tidy data frame. Every row contains a single parameter, every column contains a single statistic, and every cell contains exactly one value.</p>
+</div>
+<div id="augment" class="section level3">
+<h3><code>augment()</code></h3>
+<p><code>augment()</code> adds columns to the original data that was modeled. This could include predictions, residuals, and other observation-level statistics.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">augment</span>(credit_limit) %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>()</code></pre></div>
+<pre><code>## # A tibble: 400 × 9
+##    balance limit   .fitted  .se.fit      .resid        .hat   .sigma
+##      &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;       &lt;dbl&gt;    &lt;dbl&gt;
+## 1      333  3606  326.1335 13.00598    6.866470 0.003100247 233.8787
+## 2      903  6645  847.7392 15.16512   55.260781 0.004215041 233.8625
+## 3      580  7075  921.5432 16.63952 -341.543249 0.005074481 233.2468
+## 4      964  9504 1338.4502 26.83292 -374.450198 0.013196114 233.1126
+## 5      331  4897  547.7173 11.70784 -216.717257 0.002512254 233.6253
+## 6     1151  8047 1088.3747 20.44138   62.625316 0.007658269 233.8577
+## 7      203  3388  288.7166 13.52835  -85.716604 0.003354285 233.8393
+## 8      872  7114  928.2371 16.78083  -56.237103 0.005161034 233.8619
+## 9      279  3300  273.6125 13.75873    5.387477 0.003469499 233.8788
+## 10    1350  6819  877.6041 15.74207  472.395894 0.004541860 232.6687
+## # ... with 390 more rows, and 2 more variables: .cooksd &lt;dbl&gt;,
+## #   .std.resid &lt;dbl&gt;</code></pre>
+<p>By default, <code>augment()</code> will only return statistics to the original data used to estimate the model, whereas <code>add_predictions()</code> is used to generate predictions for new data. For linear models, <code>augment()</code> generates columns for:</p>
+<ul>
+<li><code>.fitted</code> - fitted (or predicted) values based on the model</li>
+<li><code>se.fit</code> - standard errors of the fitted values</li>
+<li><code>.resid</code> - residuals (same as generated by <code>add_residuals()</code>)</li>
+<li><code>.hat</code> - diagonal of the hat matrix</li>
+<li><code>.sigma</code> - estimate of the residual standard deviation when the corresponding observation is dropped from the model</li>
+<li><code>.cooksd</code> - Cook’s distance, useful for identifying <strong>high leverage points</strong></li>
+<li><code>.std.resid</code> - standardized residuals (similar in concept to <strong>studentized residuals</strong>)</li>
+</ul>
+</div>
+<div id="glance" class="section level3">
+<h3><code>glance()</code></h3>
+<p><code>glance()</code> constructs a concise one-row summary of the model. This typically contains values such as <span class="math inline">\(R^2\)</span>, adjusted <span class="math inline">\(R^2\)</span>, and residual standard error that are computed once for the entire model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(credit_limit)</code></pre></div>
+<pre><code>##   r.squared adj.r.squared   sigma statistic       p.value df    logLik
+## 1 0.7425222     0.7418753 233.585  1147.764 2.530581e-119  2 -2747.991
+##        AIC      BIC deviance df.residual
+## 1 5501.983 5513.957 21715657         398</code></pre>
+<p>For linear models, <code>glance()</code> generates several useful model metrics:</p>
+<ul>
+<li><code>r.squared</code> - the percent of variance explained by the model
+<ul>
+<li>This is one of the metrics identified in ISL for evaluating model fit. It is relatively basic and we will soon consider more robust measures of fit, but it is a quick and dirty metric to compare the effectiveness of competing models of the same response variable.</li>
+</ul></li>
+<li><code>adj.r.squared</code> - <span class="math inline">\(R^2\)</span> adjusted based on the degrees of freedom of the model</li>
+<li><code>sigma</code> - the square root of the estimated residual variance</li>
+<li><code>statistic</code> - <span class="math inline">\(F\)</span>-statistic testing the hypothesis that all parameters are equal to 0</li>
+<li><code>p.value</code> - the <span class="math inline">\(p\)</span>-value from the F test</li>
+<li><code>df</code> - degrees of freedom used by the coefficients</li>
+<li><code>logLik</code> - the data’s log-likelihood under the model</li>
+<li><code>AIC</code> - the Akaike Information Criterion, used to compare models</li>
+<li><code>BIC</code> - the Bayesian Information Criterion, also used to compare models</li>
+<li><code>deviance</code> - deviance of the model</li>
+<li><code>df.residual</code> - residual degrees of freedom</li>
+</ul>
+<p>While <code>broom</code> may not work with every model in R, it is compatible with a wide range of common statistical models. A full list of models with which <code>broom</code> is compatible can be found on the <a href="https://github.com/tidyverse/broom">GitHub page for the package</a>.</p>
+</div>
+</div>
+<div id="generating-predicted-values-with-confidence-intervals" class="section level2">
+<h2>Generating predicted values with confidence intervals</h2>
+<p><code>add_predictions()</code> generates predicted values for a dataset given a specified model, however it does not report the standard error of those predictions. To generate confidence intervals, we first use the <code>augment()</code> to generate predicted values for new data by using the <code>newdata</code> argument, then calculate the 95% confidence intervals manually. For example, what is the predicted credit card balance and 95% confidence interval for an individual with a credit limit of $2,000, $5,000, and $10,000?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create data frame with new values</span>
+(pred_data &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">limit =</span> <span class="kw">c</span>(<span class="dv">2000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>)))</code></pre></div>
+<pre><code>## # A tibble: 3 × 1
+##   limit
+##   &lt;dbl&gt;
+## 1  2000
+## 2  5000
+## 3 10000</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># use augment to generate predictions</span>
+(pred_aug &lt;-<span class="st"> </span><span class="kw">augment</span>(credit_limit, <span class="dt">newdata =</span> pred_data))</code></pre></div>
+<pre><code>##   limit    .fitted  .se.fit
+## 1  2000   50.48406 18.12407
+## 2  5000  565.39590 11.75581
+## 3 10000 1423.58229 29.11581</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Calculate 95% confidence intervals</span>
+(pred_ci &lt;-<span class="st"> </span><span class="kw">mutate</span>(pred_aug,
+                   <span class="dt">ymin =</span> .fitted -<span class="st"> </span>.se.fit *<span class="st"> </span><span class="fl">1.96</span>,
+                   <span class="dt">ymax =</span> .fitted +<span class="st"> </span>.se.fit *<span class="st"> </span><span class="fl">1.96</span>))</code></pre></div>
+<pre><code>##   limit    .fitted  .se.fit       ymin       ymax
+## 1  2000   50.48406 18.12407   14.96088   86.00725
+## 2  5000  565.39590 11.75581  542.35450  588.43729
+## 3 10000 1423.58229 29.11581 1366.51530 1480.64927</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># do it in one piped operation</span>
+(pred_ci &lt;-<span class="st"> </span><span class="kw">augment</span>(credit_limit, <span class="dt">newdata =</span> <span class="kw">data_frame</span>(<span class="dt">limit =</span> <span class="kw">c</span>(<span class="dv">2000</span>, <span class="dv">5000</span>, <span class="dv">10000</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ymin =</span> .fitted -<span class="st"> </span>.se.fit *<span class="st"> </span><span class="fl">1.96</span>,
+         <span class="dt">ymax =</span> .fitted +<span class="st"> </span>.se.fit *<span class="st"> </span><span class="fl">1.96</span>))</code></pre></div>
+<pre><code>##   limit    .fitted  .se.fit       ymin       ymax
+## 1  2000   50.48406 18.12407   14.96088   86.00725
+## 2  5000  565.39590 11.75581  542.35450  588.43729
+## 3 10000 1423.58229 29.11581 1366.51530 1480.64927</code></pre>
+</div>
+<div id="estimating-multiple-linear-regression-model" class="section level2">
+<h2>Estimating multiple linear regression model</h2>
+<p><code>lm()</code> allows you to estimate linear regression models with multiple variables. For instance, say we want to evaluate an individual’s credit balance using both their credit limit and income.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit_limit_income &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>limit +<span class="st"> </span>income, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(credit_limit_income)</code></pre></div>
+<pre><code>##          term     estimate    std.error statistic       p.value
+## 1 (Intercept) -385.1792604 19.464801525 -19.78850  3.878764e-61
+## 2       limit    0.2643216  0.005879729  44.95471 7.717386e-158
+## 3      income   -7.6633230  0.385072058 -19.90101  1.260933e-61</code></pre>
+<p>Now that we have two predictor variables in our model, remember how to accurately interpret these results. <span class="math inline">\(\beta_{j}\)</span> is interpreted as the <strong>average</strong> effect of <span class="math inline">\(Y\)</span> of a one unit increase in <span class="math inline">\(X_{j}\)</span>, <strong>holding all other predictors constant</strong>. So the parameter for credit limit tells us the estimated effect on credit card balance of a $1 increase in the individual’s credit limit, after controlling for the effects of income.</p>
+</div>
+<div id="qualitative-predictors" class="section level2">
+<h2>Qualitative predictors</h2>
+<p>Predictor variables are frequently <strong>quantitative</strong>, but this is not a guarantee. In many datasets you will have <strong>qualitiative</strong> predictors, or variables that have discrete values. In the <code>credit</code> dataset, we have four such columns:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">select</span>(credit, gender, student, married, ethnicity)</code></pre></div>
+<pre><code>## # A tibble: 400 × 4
+##    gender student married        ethnicity
+##     &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;            &lt;chr&gt;
+## 1    Male      No     Yes        Caucasian
+## 2  Female     Yes     Yes            Asian
+## 3    Male      No      No            Asian
+## 4  Female      No      No            Asian
+## 5    Male      No     Yes        Caucasian
+## 6    Male      No      No        Caucasian
+## 7  Female      No      No African American
+## 8    Male      No      No            Asian
+## 9  Female      No      No        Caucasian
+## 10 Female     Yes     Yes African American
+## # ... with 390 more rows</code></pre>
+<p>We can include these variables in a linear regression model and they will act as an <strong>indicator</strong> or <strong>dummy</strong> variable that takes on a value of 0 or 1.</p>
+<div id="qualitative-predictors-with-2-levels" class="section level3">
+<h3>Qualitative predictors with 2 levels</h3>
+<p>For instance, let’s use gender to explain an individual’s credit card balance.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gender &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>gender, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(gender)</code></pre></div>
+<pre><code>##          term  estimate std.error  statistic      p.value
+## 1 (Intercept) 529.53623  31.98819 16.5541153 3.312981e-47
+## 2  genderMale -19.73312  46.05121 -0.4285039 6.685161e-01</code></pre>
+<p>In the background, R converts the column into a series of 0s and 1s. For this column, it automatically converted <code>Female</code> to 0 and <code>Male</code> to 1 (it transform the columns alphabetically). If we wish to override this order, we can assign an ordering using the <code>factor()</code> function:<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gender =</span> <span class="kw">factor</span>(gender, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">lm</span>(balance ~<span class="st"> </span>gender, <span class="dt">data =</span> .) %&gt;%
+<span class="st">  </span><span class="kw">tidy</span>()</code></pre></div>
+<pre><code>##           term  estimate std.error  statistic      p.value
+## 1  (Intercept) 509.80311  33.12808 15.3888531 2.908941e-42
+## 2 genderFemale  19.73312  46.05121  0.4285039 6.685161e-01</code></pre>
+<p>Note that the only difference is the directionality of the <code>genderFemale</code> parameter is reversed from the previous model.</p>
+<p>Or we could convert the column directly to 0s and 1s:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">female =</span> <span class="kw">ifelse</span>(gender ==<span class="st"> &quot;Female&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>)) %&gt;%
+<span class="st">  </span><span class="kw">lm</span>(balance ~<span class="st"> </span>female, <span class="dt">data =</span> .) %&gt;%
+<span class="st">  </span><span class="kw">tidy</span>()</code></pre></div>
+<pre><code>##          term  estimate std.error  statistic      p.value
+## 1 (Intercept) 509.80311  33.12808 15.3888531 2.908941e-42
+## 2      female  19.73312  46.05121  0.4285039 6.685161e-01</code></pre>
+<p>Frequently your data will originally be coded using this 0/1 scheme. If you don’t like this, you can always convert it back using the <code>factor()</code> approach outlined above:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">select</span>(gender) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">gender_f =</span> <span class="kw">factor</span>(gender, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)),
+         <span class="dt">female =</span> <span class="kw">ifelse</span>(gender ==<span class="st"> &quot;Female&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>),
+         <span class="dt">female_f =</span> <span class="kw">factor</span>(female, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)))</code></pre></div>
+<pre><code>## # A tibble: 400 × 4
+##    gender gender_f female female_f
+##     &lt;chr&gt;   &lt;fctr&gt;  &lt;dbl&gt;   &lt;fctr&gt;
+## 1    Male     Male      0     Male
+## 2  Female   Female      1   Female
+## 3    Male     Male      0     Male
+## 4  Female   Female      1   Female
+## 5    Male     Male      0     Male
+## 6    Male     Male      0     Male
+## 7  Female   Female      1   Female
+## 8    Male     Male      0     Male
+## 9  Female   Female      1   Female
+## 10 Female   Female      1   Female
+## # ... with 390 more rows</code></pre>
+</div>
+<div id="qualitative-predictors-with-more-than-2-levels" class="section level3">
+<h3>Qualitative predictors with more than 2 levels</h3>
+<p>If your qualitative predictor uses more than two levels (for instance, <code>ethnicity</code>), you will include the column in your linear regression model and R will automatically convert it into a series of dummy variables, using 0/1 switches for each dummy variable. R will always omit one of the levels and leave it out as the <strong>baseline</strong>.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ethnicity &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>ethnicity, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(ethnicity)</code></pre></div>
+<pre><code>##                 term  estimate std.error  statistic      p.value
+## 1        (Intercept) 531.00000  46.31868 11.4640565 1.774117e-26
+## 2     ethnicityAsian -18.68627  65.02107 -0.2873880 7.739652e-01
+## 3 ethnicityCaucasian -12.50251  56.68104 -0.2205766 8.255355e-01</code></pre>
+<p>Here R created dummy variables for “Asian” and “Caucasian”, leaving out “African American” as the baseline category.</p>
+</div>
+</div>
+<div id="extending-the-linear-model" class="section level2">
+<h2>Extending the linear model</h2>
+<p>Remember that because it is a basic functional form, the linear model is very unforgiving in a key assumption: it assumes an <strong>additive</strong> and <strong>linear</strong> shape. The additive assumption requires the effect of changes in any of the predictor variables <span class="math inline">\(X_j\)</span> on the response variable <span class="math inline">\(Y\)</span> to be independent of all other predictors. The linear assumption presumes that the change in <span class="math inline">\(Y\)</span> associated with a one-unit change in <span class="math inline">\(X_j\)</span> is constant regardless of the value of <span class="math inline">\(X_j\)</span>. While other, more complicated functional forms can be used to relax this assumption, we can also directly alter these assumptions based on how we specify our model</p>
+<div id="removing-the-additive-assumption-interaction-terms" class="section level3">
+<h3>Removing the additive assumption: interaction terms</h3>
+<div id="two-quantitative-variables" class="section level4">
+<h4>Two quantitative variables</h4>
+<p>Let’s evaluate the effect of income and age on an individual’s credit card balance.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">income_age &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>income +<span class="st"> </span>age, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(income_age)</code></pre></div>
+<pre><code>##          term   estimate  std.error statistic      p.value
+## 1 (Intercept) 359.672743 70.3582998  5.112016 4.966220e-07
+## 2      income   6.235879  0.5867574 10.627696 2.197302e-23
+## 3         age  -2.185067  1.1988446 -1.822644 6.910931e-02</code></pre>
+<p>Both are statistically significant with sizeable effects on the response variable. However the effects are completely independent from one another. By this I mean, if I plot the relationship between income and predicted balance, the value for limit does not alter this relationship other than to adjust the intercept.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(income, age) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(income_age) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(income, pred, <span class="dt">group =</span> age)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> .<span class="dv">5</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/inc-age-plot-1.png" width="672" /></p>
+<p>But is this really a safe assumption? After all, an individual’s income is based (in part) on their age. The older your are and longer you have worked, the higher your expected income. So wouldn’t we expect the relationship between income and credit balance to vary based on an individual’s age? That is, <strong>we expect the underlying relationship to directly violate the additive assumption</strong>.</p>
+<p>We should therefore relax this assumption by <strong>interacting</strong> income and age. The new linear regression model looks like</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_{1}X_1 + \beta_{2}X_2 + \beta_{3}X_{1}X_{2}\]</span></p>
+<p>where <span class="math inline">\(X_1\)</span> is income and <span class="math inline">\(X_2\)</span> is age. To specify this model in R, we write the following code:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">inc_age_x &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>income *<span class="st"> </span>age, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(inc_age_x)</code></pre></div>
+<pre><code>##          term     estimate    std.error  statistic     p.value
+## 1 (Intercept) 429.66553527 112.85270937  3.8073125 0.000162744
+## 2      income   4.69805044   2.02501466  2.3200081 0.020848070
+## 3         age  -3.39437360   1.93939704 -1.7502211 0.080854625
+## 4  income:age   0.02548648   0.03211953  0.7934884 0.427968484</code></pre>
+<p>Now what happens if we graph the relationship between income and predicted credit card balance, controlling for the credit limit?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(income, age) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(inc_age_x) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(income, pred, <span class="dt">group =</span> age)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> .<span class="dv">5</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/inc-age-x-plot-1.png" width="672" /></p>
+<p>Not only have the intercepts changed, but so too have the slopes.</p>
+</div>
+<div id="quantitative-and-qualitative-variable" class="section level4">
+<h4>Quantitative and qualitative variable</h4>
+<p>We can also use interaction terms with a qualitative variable, such as <code>student</code>. Consider the regression model without an interaction</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">inc_student &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>income +<span class="st"> </span>student, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(inc_student)</code></pre></div>
+<pre><code>##          term   estimate  std.error statistic      p.value
+## 1 (Intercept) 211.142964 32.4572113  6.505271 2.338288e-10
+## 2      income   5.984336  0.5566232 10.751143 7.817642e-24
+## 3  studentYes 382.670539 65.3108082  5.859222 9.775720e-09</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(income, student) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(inc_student) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(income, pred, <span class="dt">color =</span> student)) +
+<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/inc-student-1.png" width="672" /></p>
+<p>As before with the quantitative variables, the parameter for income does not change based on the value for student, only the intercept for the model shifts. However for an interactive model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">inc_student_x &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>income *<span class="st"> </span>student, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(inc_student_x)</code></pre></div>
+<pre><code>##                term   estimate   std.error statistic      p.value
+## 1       (Intercept) 200.623153  33.6983706  5.953497 5.789658e-09
+## 2            income   6.218169   0.5920936 10.502003 6.340684e-23
+## 3        studentYes 476.675843 104.3512235  4.567995 6.586095e-06
+## 4 income:studentYes  -1.999151   1.7312511 -1.154743 2.488919e-01</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(income, student) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(inc_student_x) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(income, pred, <span class="dt">color =</span> student)) +
+<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/inc-student-x-1.png" width="672" /></p>
+<p>This suggests that changes in income may affect the credit card balance of students and non-students differently.</p>
+</div>
+</div>
+<div id="non-linear-relationships" class="section level3">
+<h3>Non-linear relationships</h3>
+<p>One way to relax the linearity assumption is to use <strong>polynomials</strong> in your regression model. For instance, take the <code>Auto</code> data set.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Auto.csv&quot;</span>,
+                 <span class="co"># make sure horsepower is parsed as numeric</span>
+                 <span class="dt">col_types =</span> <span class="kw">cols</span>(<span class="dt">horsepower =</span> <span class="kw">col_number</span>())) %&gt;%
+<span class="st">  </span><span class="co"># remove missing data</span>
+<span class="st">  </span><span class="kw">na.omit</span>(horsepower)
+
+<span class="co"># estimate linear model of horsepower and mpg</span>
+horse &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower, <span class="dt">data =</span> auto)
+<span class="kw">tidy</span>(horse)</code></pre></div>
+<pre><code>##          term   estimate   std.error statistic       p.value
+## 1 (Intercept) 39.9358610 0.717498656  55.65984 1.220362e-187
+## 2  horsepower -0.1578447 0.006445501 -24.48914  7.031989e-81</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate predicted values</span>
+horse_pred &lt;-<span class="st"> </span>auto %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(horse)
+
+<span class="co"># draw the graph</span>
+<span class="kw">ggplot</span>(horse_pred, <span class="kw">aes</span>(horsepower)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mpg), <span class="dt">alpha =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">color =</span> <span class="st">&quot;orange&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/auto-1.png" width="672" /></p>
+<p>Is a linear regression line of the form <span class="math inline">\(\text{mpg} = \beta_0 + \beta_{1}\text{horsepower}\)</span> really the best fit here? The relationship appears to have a curvilinear shape to it. Instead, we can estimate a model of the form</p>
+<p><span class="math display">\[\text{mpg} = \beta_0 + \beta_{1}\text{horsepower} + \beta_{2}\text{horsepower}^2\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate polynomial squared model of horsepower and mpg</span>
+horse2 &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span><span class="kw">I</span>(horsepower^<span class="dv">2</span>), <span class="dt">data =</span> auto)
+<span class="kw">tidy</span>(horse2)</code></pre></div>
+<pre><code>##              term     estimate    std.error statistic       p.value
+## 1     (Intercept) 56.900099702 1.8004268063  31.60367 1.740911e-109
+## 2      horsepower -0.466189630 0.0311246171 -14.97816  2.289429e-40
+## 3 I(horsepower^2)  0.001230536 0.0001220759  10.08009  2.196340e-21</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate predicted values</span>
+horse2_pred &lt;-<span class="st"> </span>auto %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(horse2)
+
+<span class="co"># draw the graph</span>
+<span class="kw">ggplot</span>(horse2_pred, <span class="kw">aes</span>(horsepower)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mpg), <span class="dt">alpha =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> horse_pred, <span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">color =</span> <span class="st">&quot;orange&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/auto2-1.png" width="672" /></p>
+<p>Or even a polynomial to the fifth power</p>
+<p><span class="math display">\[\text{mpg} = \beta_0 + \beta_{1}\text{horsepower} + \beta_{2}\text{horsepower}^2 + \beta_{3}\text{horsepower}^3 + \beta_{4}\text{horsepower}^4 + \beta_{5}\text{horsepower}^5\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate polynomial fifth-order model of horsepower and mpg</span>
+<span class="co"># use the poly() function to generate the powers</span>
+horse5 &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span><span class="kw">poly</span>(horsepower, <span class="dt">degrees =</span> <span class="dv">5</span>), <span class="dt">data =</span> auto)
+<span class="kw">tidy</span>(horse5)</code></pre></div>
+<pre><code>##                             term   estimate   std.error   statistic
+## 1                    (Intercept) 39.9358610 0.632690619  63.1206783
+## 2                     horsepower -0.1578447 0.005683645 -27.7717434
+## 3 poly(horsepower, degrees = 5)2 44.0895278 4.325898537  10.1919930
+## 4 poly(horsepower, degrees = 5)3 -3.9488485 4.325898537  -0.9128389
+## 5 poly(horsepower, degrees = 5)4 -5.1878103 4.325898537  -1.1992446
+## 6 poly(horsepower, degrees = 5)5 13.2721869 4.325898537   3.0680763
+##         p.value
+## 1 1.669357e-205
+## 2  4.617361e-94
+## 3  9.240203e-22
+## 4  3.618971e-01
+## 5  2.311685e-01
+## 6  2.306428e-03</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate predicted values</span>
+horse5_pred &lt;-<span class="st"> </span>auto %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(horse5)
+
+<span class="co"># draw the graph</span>
+<span class="kw">ggplot</span>(horse5_pred, <span class="kw">aes</span>(horsepower)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> mpg), <span class="dt">alpha =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> horse_pred, <span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">color =</span> <span class="st">&quot;orange&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> horse2_pred, <span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">color =</span> <span class="st">&quot;green&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="persp003_linear_regression_files/figure-html/auto5-1.png" width="672" /></p>
+<p>How do we know which model is most appropriate? One thing we could do is compare model fit statistics:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># combine models into a list and use a map() function to apply</span>
+<span class="co"># glance() to each model and store the result in a tidy data frame</span>
+<span class="kw">list</span>(<span class="st">&quot;degree_1&quot;</span> =<span class="st"> </span>horse,
+     <span class="st">&quot;degree_2&quot;</span> =<span class="st"> </span>horse2,
+     <span class="st">&quot;degree_5&quot;</span> =<span class="st"> </span>horse5) %&gt;%
+<span class="st">  </span><span class="kw">map_df</span>(glance, <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>)</code></pre></div>
+<pre><code>##         id r.squared adj.r.squared    sigma statistic      p.value df
+## 1 degree_1 0.6059483     0.6049379 4.905757  599.7177 7.031989e-81  2
+## 2 degree_2 0.6875590     0.6859527 4.373921  428.0176 5.399723e-99  3
+## 3 degree_5 0.6967390     0.6928108 4.325899  177.3662 1.162963e-97  6
+##      logLik      AIC      BIC deviance df.residual
+## 1 -1178.662 2363.324 2375.237 9385.916         390
+## 2 -1133.177 2274.354 2290.239 7442.029         389
+## 3 -1127.332 2268.663 2296.462 7223.372         386</code></pre>
+<p>Based on the <span class="math inline">\(R^2\)</span> values, the fifth-order polynomial explains the most variation in <code>mpg</code>. But the fifth-order polynomial is also more complicated and throws extra bends and curves into the predicted values for <code>mpg</code>. Ultimately whatever form we specify for the model, we are still making an <strong>assumption</strong> that the true relationship between horsepower and mileage takes on this form - ultimately it is untestable.</p>
+</div>
+</div>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-02-10                  
+## 
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom      * 0.4.1   2016-06-24 CRAN (R 3.3.0)
+##  codetools    0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr        1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>See <a href="http://r4ds.had.co.nz/factors.html">R for Data Science</a> for more on working with factor variables.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>If you do not omit a category, your model will be perfectly multicollinear and you will not be able to estimate it. Alternatively, you can omit the intercept and keep all the original levels.<a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

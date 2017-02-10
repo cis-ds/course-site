@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: the basics</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: the basics</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Define statistical learning</li>
+<li>Review the major goals of statistical learning</li>
+<li>Explain the difference between parametric and non-parametric methods</li>
+<li>Identify the difference between statistical learning and machine learning</li>
+<li>Distinguish regression from classification</li>
+<li>Connect model estimation to statistical learning</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">theme_set</span>(<span class="kw">theme_bw</span>())</code></pre></div>
+</div>
+<div id="statistical-learning" class="section level1">
+<h1>Statistical learning</h1>
+<div id="what-is-statistical-learning" class="section level2">
+<h2>What is statistical learning?</h2>
+<p><strong>Statistical models</strong> attempt to summarize relationships between variables by reducing the dimensionality of the data. For example, here we have some simulated data on sales of <a href="https://www.shamwow.com/">Shamwow</a> in 200 different markets.</p>
+<div class="figure">
+<img src="images/shamwow.jpg" />
+
+</div>
+<p>Our goal is to improve sales of the Shamwow. Since we cannot directly increase sales of the product (unless we go out and buy it ourselves), our only option is to increase advertising across three potential mediums: newspaper, radio, and TV.</p>
+<p>In this example, the advertising budgets are our <strong>input variables</strong>, also called <strong>independent variables</strong>, <strong>features</strong>, or <strong>predictors</strong>. The sales of Shamwows is the <strong>output</strong>, also called the <strong>dependent variable</strong> or <strong>response</strong>.</p>
+<p>By plotting the variables against one another using a scatterplot, we can see there is some sort of relationship between each medium’s advertising spending and Shamwow sales:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get advertising data</span>
+(advertising &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Advertising.csv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%
+<span class="st">  </span><span class="co"># remove id column</span>
+<span class="st">  </span><span class="kw">select</span>(-X1))</code></pre></div>
+<pre><code>## # A tibble: 200 × 4
+##       TV Radio Newspaper Sales
+##    &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;
+## 1  230.1  37.8      69.2  22.1
+## 2   44.5  39.3      45.1  10.4
+## 3   17.2  45.9      69.3   9.3
+## 4  151.5  41.3      58.5  18.5
+## 5  180.8  10.8      58.4  12.9
+## 6    8.7  48.9      75.0   7.2
+## 7   57.5  32.8      23.5  11.8
+## 8  120.2  19.6      11.6  13.2
+## 9    8.6   2.1       1.0   4.8
+## 10 199.8   2.6      21.2  10.6
+## # ... with 190 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot separate facets for relationship between ad spending and sales</span>
+plot_ad &lt;-<span class="st"> </span>advertising %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(method, spend, -Sales) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(spend, Sales)) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>method, <span class="dt">scales =</span> <span class="st">&quot;free_x&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Spending (in thousands of dollars)&quot;</span>)
+plot_ad</code></pre></div>
+<p><img src="persp001_stat_learn_files/figure-html/plot_ad-1.png" width="672" /></p>
+<p>But there seems to be a lot of noise in the data. How can we summarize this? We can do so by estimating a mathematical equation following the general form:</p>
+<p><span class="math display">\[Y = f(X) + \epsilon\]</span></p>
+<p>where <span class="math inline">\(f\)</span> is some fixed, unknown function of the relationship between the independent variable(s) <span class="math inline">\(X\)</span> and the dependent variable <span class="math inline">\(Y\)</span>, with some random error <span class="math inline">\(\epsilon\)</span>.</p>
+<p>Statistical learning refers to the set of approaches for estimating <span class="math inline">\(f\)</span>. There are many potential approaches to defining the functional form of <span class="math inline">\(f\)</span>. One approach widely used is called <strong>least squares</strong> - it means that the overall solution minimizes the sum of the squares of the errors made in the results of the equation. The errors are simply the vertical difference between the actual values for <span class="math inline">\(y\)</span> and the predicted values for <span class="math inline">\(y\)</span>. Applied here, the results would look like:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plot_ad +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="persp001_stat_learn_files/figure-html/plot_ad_fit-1.png" width="672" /></p>
+<p>However statistical learning (and machine learning) allows us to use a wide range of functional forms beyond a simple linear model.</p>
+</div>
+<div id="why-estimate-f" class="section level2">
+<h2>Why estimate <span class="math inline">\(f\)</span>?</h2>
+<p>There are two major goals of statistical modeling: prediction and inference.</p>
+<div id="prediction" class="section level3">
+<h3>Prediction</h3>
+<p>Under a system of <strong>prediction</strong>, we use our knowledge of the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> to predict <span class="math inline">\(Y\)</span> for given values of <span class="math inline">\(X\)</span>. Often the function <span class="math inline">\(f\)</span> is treated as a <strong>black box</strong> - we don’t care what the function is, as long as it makes accurate predictions. If we are trying to boost sales of Shamwow, we may not care why specific factors drive an increase in sales - we just want to know how to adjust our advertising budgets to maximize sales.</p>
+</div>
+<div id="inference" class="section level3">
+<h3>Inference</h3>
+<p>Under a system of <strong>inference</strong>, we use our knowledge of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> to understand the relationship between the variables. Here we are most interested in the explanation, not the prediction. So in the Shamwow example, we may not care about actual sales of the product - instead, we may be economists who wish to understand how advertising spending influences product sales. We don’t care about the actual product, we simply want to learn more about the process and <strong>generalize</strong> it to a wider range of settings.</p>
+</div>
+</div>
+<div id="how-do-we-estimate-f" class="section level2">
+<h2>How do we estimate <span class="math inline">\(f\)</span>?</h2>
+<p>There are two major approaches to estimating <span class="math inline">\(f\)</span>: parametric and non-parametric methods.</p>
+<div id="parametric-methods" class="section level3">
+<h3>Parametric methods</h3>
+<p>Parametric methods involve a two-stage process:</p>
+<ol style="list-style-type: decimal">
+<li>First make an assumption about the functional form of <span class="math inline">\(f\)</span>. For instance, OLS assumes that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is <strong>linear</strong>. This greatly simplifies the problem of estimating the model because we know a great deal about the properties of linear models.</li>
+<li>After a model has been selected, we need to <strong>fit</strong> or <strong>train</strong> the model using the actual data. We demonstrated this previously with ordinary least squares. The estimation procedure minimizes the sum of the squares of the differences between the observed responses <span class="math inline">\(Y\)</span> and those predicted by a linear function <span class="math inline">\(\hat{Y}\)</span>.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">method_model &lt;-<span class="st"> </span>function(df) {
+  <span class="kw">lm</span>(Sales ~<span class="st"> </span>spend, <span class="dt">data =</span> df)
+}
+
+ad_pred &lt;-<span class="st"> </span>advertising %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(method, spend, -Sales) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(method) %&gt;%
+<span class="st">  </span><span class="kw">nest</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, method_model),
+         <span class="dt">pred =</span> <span class="kw">map</span>(model, broom::augment)) %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(pred)
+
+plot_ad +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_linerange</span>(<span class="dt">data =</span> ad_pred,
+                 <span class="kw">aes</span>(<span class="dt">ymin =</span> Sales, <span class="dt">ymax =</span> .fitted),
+                 <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>,
+                 <span class="dt">alpha =</span> .<span class="dv">5</span>) </code></pre></div>
+<p><img src="persp001_stat_learn_files/figure-html/plot_parametric-1.png" width="672" /></p>
+<p>This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as <strong>parametric</strong>, because it simplifies the problem of estimating <span class="math inline">\(f\)</span> to estimating a set of parameters in the function:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_{1}X_1\]</span></p>
+<p>where <span class="math inline">\(Y\)</span> is the sales, <span class="math inline">\(X_1\)</span> is the advertising spending in a given medium (newspaper, radio, or TV), and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are parameters defining the intercept and slope of the line.</p>
+<p>The downside to parametric methods is that they assume a specific functional form of the relationship between the variables. Sometimes relationships really are linear - often however they are not. They could be curvilinear, parbolic, interactive, etc. Unless we know this <em>a priori</em> or test for all of these potential functional forms, it is possible our parametric method will not accurately summarize the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</p>
+</div>
+<div id="non-parametric-methods" class="section level3">
+<h3>Non-parametric methods</h3>
+<p>Non-parametric methods do not make any assumptions about the functional form of <span class="math inline">\(f\)</span>. Instead, they use the data itself to estimate <span class="math inline">\(f\)</span> so that it gets as close as possible to the data points without becoming overly complex. By avoiding any assumptions about the functional form, non-parametric methods avoid the issues caused by parametic models. However, by doing so non-parametric methods require a large set of observations to avoid <strong>overfitting</strong> the data and obtain an accurate estimate of <span class="math inline">\(f\)</span>.</p>
+<p>One non-parametric method is <strong>locally weighted scatterplot smoothing</strong> (LOWESS or LOESS). This method estimates a regression line based on localized subsets of the data, building up the global function <span class="math inline">\(f\)</span> point-by-point. Here is an example of a LOESS on the <code>ethanol</code> dataset in the <code>lattice</code> package:</p>
+<p><img src="persp001_stat_learn_files/figure-html/loess-1.png" width="672" /></p>
+<p>The LOESS is built up point-by-point:</p>
+<video width="672"  controls loop>
+<source src="persp001_stat_learn_files/figure-html/loess_buildup-.webm" />
+<p>
+video of chunk loess_buildup
+</p>
+</video>
+<p>One important argument you can control with LOESS is the <strong>span</strong>, or how smooth the LOESS function will become. A larger span will result in a smoother curve, but may not be as accurate.</p>
+<video width="672"  controls loop>
+<source src="persp001_stat_learn_files/figure-html/loess_span-.webm" />
+<p>
+video of chunk loess_span
+</p>
+</video>
+</div>
+</div>
+<div id="supervised-vs.unsupervised-learning" class="section level2">
+<h2>Supervised vs. unsupervised learning</h2>
+<p>All the examples above implement <strong>supervised</strong> learning. That is, for each observation we have both the predictor measurements and the response measurements (i.e. an <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>). We seek to fit a model that summarizes the relationship between the predictors and response.</p>
+<p>In <strong>unsupervised</strong> learning, all we have is a set of measurements <span class="math inline">\(X\)</span> for a series of observations, but no corresponding response <span class="math inline">\(Y\)</span>. Without an outcome measure, we cannot fit a linear regression model or employ a similar method. That does not mean we cannot use statistical learning to understand the data better. One example of unsupervised learning is <strong>cluster analysis</strong>. The goal is to determine whether the observations fall into distinct categories. <a href="https://en.wikipedia.org/wiki/Latent_Dirichlet_allocation">Latent Direchlet allocation (LDA)</a> is an example of cluster analysis applied to text data. In LDA, the individual words are the features or measurements we use to determine the best fitting clusters.</p>
+</div>
+</div>
+<div id="statistical-learning-vs.machine-learning" class="section level1">
+<h1>Statistical learning vs. machine learning</h1>
+<p>I prefer to use the term <strong>statistical learning</strong>, but the field of statistical learning is strongly related to that of <strong>machine learning</strong>. Statistical learning is a subfield of statistics that focuses predominantly on <strong>inference</strong>. It is ues to identify underlying relationships between variables and emphasizes models and their interpretability. People employing statistical learning methods are usually concerned with uncertainty and precision of their estimates.</p>
+<p>Machine learning is a subfield of computer science and focuses more strongly on <strong>prediction</strong>. It typically employs larger scale applications (think of predictive analytics at Google or Netflix) and emphasizes prediction accuracy. Machine learning is happy to sacrifice model interpretability in exchange for more accurate predictions.</p>
+<p>In truth, both are quite similar approaches to inference and prediction. Both use the same major methods of modeling (parametric and non-parametric). I think of them as different languages, speaking the same thing.</p>
+</div>
+<div id="classification-vs.regression" class="section level1">
+<h1>Classification vs. regression</h1>
+<p>Variables can be classified as <strong>quantitative</strong> or <strong>qualitative</strong>. Quantitative variables take on numeric values. In contrast, qualitative variables take on different <strong>classes</strong>, or discrete categories. Qualitative variables can have any number of classes, though binary categories are frequent:</p>
+<ul>
+<li>Yes/no</li>
+<li>Male/female</li>
+</ul>
+<p>Problems with a quantitative dependent variable are typically called <strong>regression</strong> problems, whereas qualitative dependent variables are called <strong>classification</strong> problems. Part of this distinction is merely semantic, but different methods may be employed depending on the type of response variable. For instance, you would not use linear regression on a qualitative response variable. Conceptually, how would you define a linear function for a response variable that takes on the values “male” or “female”? It doesn’t make any conceptual sense. Instead, you can employ classification methods such as <strong>logistic regression</strong> to estimate the probability that based on a set of predictors a specific observation is part of a response class.</p>
+<p>That said, whether <em>predictors</em> are qualitative or quantitative is not important in determining whether the problem is one of regression or classification. As long as qualitative predictors are properly coded before the analysis is conducted, they can be used for either type of problem.</p>
+</div>
+<div id="model-estimation-vs.statistical-learning" class="section level1">
+<h1>Model estimation vs. statistical learning</h1>
+<p>How exactly does statistical learning complement what you learned in the first half of the course? Model estimation procedures such as <a href="https://github.com/UC-MACSS/persp-model/blob/master/demos/MLE/MLest.ipynb"><strong>maximum likelihood</strong></a> or <a href="https://github.com/UC-MACSS/persp-model/blob/master/demos/GMM/GMMest.ipynb"><strong>generalized method of moments</strong></a> are general procedures that can be applied to any <strong>data generating process</strong> (DGP). The functional form of that DGP was agnostic - you could apply it to a normal distribution, log-normal distribution, etc. In the second half of this course we will focus instead on the functional form of the DGP, how to specify it, and how to estimate it.</p>
+<div id="using-canned-packages" class="section level2">
+<h2>Using canned packages</h2>
+<p>At this point we also shift away from writing our own functions to perform all the necessary calculations to relying on packages written to perform specific methods of analysis. In R that means relying on base functions such as <code>lm()</code> or <code>glm()</code> or the <a href="http://caret.r-forge.r-project.org/"><code>caret</code></a> package. In Python that typically means <a href="http://scikit-learn.org/"><code>scikit-learn</code></a>. Could I require you to estimate a linear regression model using matrix algebra, or a logistic regression model by writing your own optimization function? I could, and in fact you already have <a href="https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS2/PS2.pdf">done</a> <a href="https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS3/PS3.pdf">this</a> <a href="https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS4/PS4.pdf">extensively</a>. It is great to know how to do this, but in most applied research, either in academia, industry, or government, you will rely on existing packages to estimate your models. Now we will start to develop that part of your toolkit and focus on how the methods work and how to use these methods to estimate models, interpret them, and generate predictions.</p>
+</div>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>For more information on statistical learning and the math behind these methods, see the awesome book <a href="http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7"><em>An Introduction to Statistical Learning</em></a></li>
+<li>This page is derived in part from <a href="http://varianceexplained.org/files/loess.html">“Creating a LOESS animation with <code>gganimate</code>”</a> by David Robinson.</li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-02-10                  
+## 
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom        0.4.1   2016-06-24 CRAN (R 3.3.0)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr        1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr       0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
