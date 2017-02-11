@@ -388,16 +388,56 @@ The **bootstrap** is a different resampling-based method for quantifying uncerta
 
 ## Why use the bootstrap?
 
-Suppose you want to know the American population's attitudes [rocky road ice cream](https://en.wikipedia.org/wiki/Rocky_road_(ice_cream)).
+Suppose you want to know how often Americans eat ice cream in a given month.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Rockyroadicecream.jpg/800px-Rockyroadicecream.jpg)
 
-Americans rate their favorability towards rocky road ice cream using a [feeling thermometer](http://link.springer.com/referenceworkentry/10.1007%2F978-94-007-0753-5_1028) with a range of 0-100. Favorability rating is defined as $X$. Furthermore suppose the population mean $\mu$ is in truth 45 and the standard deviation $s.d.(X)$ is 4. But in the real world we do not know the population mean and standard deviation. We instead generate estimates for the mean $\hat{\mu}$ and standard deviation $\widehat{s.d.(X)}$ by surveying a sample of the population. Let's simulate a survey of 1000 individuals using the `rnorm()` function:
+We decide to estimate this by tracking a sample of 1000 Americans and counting how many times they eat ice cream over the course of a month.
 
 ```{r ice-sim}
-(rocky_road <- round(rnorm(1000, mean = 45, sd = 15)))
+# simulate the sample
+ice <- data_frame(sim = rpois(1000, lambda = 5))
+
+ggplot(ice, aes(sim)) +
+  geom_histogram(binwidth = 1)
 ```
 
+The mean of this sample is `r mean(ice$sim)`, which we will treat as the population mean $\mu$. Remember that in the real world, we do not know $\mu$ because we have not observed all members of the population. Instead, we use the sample to estimate $\hat{\mu}$ on the assumption that the sample mean approximates the true mean.
+
+The [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) is the most likely population distribution as it describes the count of event over time. The probability mass function of the Poisson distribution is
+
+$$P(k) = \frac{\lambda^{k} e^{-k}}{k!}$$
+
+where $\lambda$ is the event rate (average number of events per interval), $e$ is Euler's number, $k$ is an integer with range $[0, \infty]$, and $k!$ is the factorial of $k$. The mean $\mu$ and variance $\sigma$ of a Poisson distribution is defined as $\lambda$.
+
+Because we are estimating $\mu$ from a sample, we should also estimate the **standard error** of the sample mean. This is necessary because any random sample drawn from a population will not exactly reproduce the population. We need to account for sampling error by estimating how much our sample mean $\hat{\mu}$ might differ from the true mean $\mu$.
+
+The distribution of the mean of a set of samples is approximately [normally distributed](https://en.wikipedia.org/wiki/Normal_distribution).^[As defined by the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).] Therefore the standard error of the sample mean from a Poisson distribution is
+
+$$\sqrt{\frac{\lambda}{n}}$$
+
+```{r ice-samp-mean}
+lambda <- mean(ice$sim)
+n <- 1000
+
+(sem <- sqrt(lambda / n))
+```
+
+The standard error of the sample mean is $`r sem`$. This is a good estimate **as long as the data generating process actually followed a Poisson distribution**. The Poisson distribution requires [several assumptions](https://en.wikipedia.org/wiki/Poisson_distribution#Assumptions:_When_is_the_Poisson_distribution_an_appropriate_model.3F). If any of these assumptions are violated, then the formula for estimating the standard error of the sample mean $\lambda$ will not be accurate.
+
+In that situation, we can use the bootstrap to estimate the standard error without making any distributional assumptions. In this approach, we draw $B$ **samples with replacement** from the original sample. To estimate the population mean $\mu$ we calculate the mean of the sample means $\hat{\mu}_1, \hat{\mu}_2, \dots, \hat{\mu}_B$. To estimate the standard error of the sampling mean $\hat{\mu}$ we use the formula
+
+$$SE_{B}(\hat{\mu}) = \sqrt{\frac{1}{B-1} \sum_{r = 1}^{B} \left( \hat{\mu}_r - \frac{1}{B} \sum_{r' = 1}^{B} \hat{\mu}_{r'} \right)^2}$$
+
+Sampling with replacement allows us to potentially draw the same observation multiple times, and ignore other observations entirely.
+
+```{r sim-sample-replace}
+rerun(10, sample.int(10, replace = TRUE)) %>%
+  unlist %>%
+  matrix(ncol = 10, byrow = TRUE)
+```
+
+Here I've drawn 10 random samples with replacement from the vector $`r 1:10`$. Each row contains a different sample. Notice how some rows contain multiples of the same values and exclude others entirely. 
 
 
 # Session Info {.toc-ignore}
