@@ -840,144 +840,219 @@ titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titan
 <p>Not a large difference from the LOOCV approach, but it take much less time to compute.</p>
 </div>
 </div>
+<div id="the-bootstrap" class="section level1">
+<h1>The bootstrap</h1>
+<p>The <strong>bootstrap</strong> is a different resampling-based method for quantifying uncertainty associated with a given estimator or statistical method. It is extremely flexible and can be applied to virtually any statistical method.</p>
+<div id="what-is-sampling-with-replacement" class="section level2">
+<h2>What is sampling with replacement?</h2>
+<p>Sampling with replacement allows us to potentially draw the same observation multiple times, and ignore other observations entirely.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rerun</span>(<span class="dv">10</span>, <span class="kw">sample.int</span>(<span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)) %&gt;%
+<span class="st">  </span>unlist %&gt;%
+<span class="st">  </span><span class="kw">matrix</span>(<span class="dt">ncol =</span> <span class="dv">10</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]    6    2    6   10    3    8    2    7    3     2
+##  [2,]    4    6    5    4    3    7    3    1    8     1
+##  [3,]    2    5    9    8    8    8    3    9    9     2
+##  [4,]    5    5    4   10    4    6    6   10    3     2
+##  [5,]    1    6    2    9    6    7   10   10    8     3
+##  [6,]    9    9    7    3    9    3   10    9    2     1
+##  [7,]    1    7    5    9    2    6    1    1    7     7
+##  [8,]    1    3   10    2    6   10    8    7    8     4
+##  [9,]    2    5    5    2    2   10    7    1    8     6
+## [10,]    5    8    1    9    9    8    3    6   10     7</code></pre>
+<p>Here I’ve drawn 10 random samples with replacement from the vector <span class="math inline">\(1, 2, 3, 4, 5, 6, 7, 8, 9, 10\)</span>. Each row contains a different sample. Notice how some rows contain multiples of the same values and exclude others entirely. Compare this to <strong>sampling without replacement</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rerun</span>(<span class="dv">10</span>, <span class="kw">sample.int</span>(<span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">FALSE</span>)) %&gt;%
+<span class="st">  </span>unlist %&gt;%
+<span class="st">  </span><span class="kw">matrix</span>(<span class="dt">ncol =</span> <span class="dv">10</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+##  [1,]    7    2    3    4    9    5    8    1   10     6
+##  [2,]    8    7    6    4    9    2   10    1    3     5
+##  [3,]    2    5   10    4    8    7    6    3    9     1
+##  [4,]    8    3    7    9   10    6    1    2    5     4
+##  [5,]    5    4   10    1    8    9    6    2    7     3
+##  [6,]    1   10    8    6    9    7    5    3    4     2
+##  [7,]    3    1   10    2    7    6    9    5    8     4
+##  [8,]    9    3    6    4    2    8    5    1   10     7
+##  [9,]    5    1    3    2    6   10    9    7    8     4
+## [10,]    8    7    5    2    6    1    9    3   10     4</code></pre>
+<p>Sampling without replacement doesn’t allow you to draw an observation more than once and would produce the exact same sample every time, just in a different order.</p>
+</div>
+<div id="why-use-the-bootstrap" class="section level2">
+<h2>Why use the bootstrap?</h2>
+<p>Suppose you want to know how often Americans eat ice cream in a given month.</p>
+<div class="figure">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Rockyroadicecream.jpg/800px-Rockyroadicecream.jpg" />
+
+</div>
+<p>We decide to estimate this by tracking a sample of 1000 Americans and counting how many times they eat ice cream over the course of a month.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate the sample</span>
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+lambda &lt;-<span class="st"> </span><span class="dv">5</span>
+n_obs &lt;-<span class="st"> </span><span class="dv">1000</span>
+ice &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">sim =</span> <span class="kw">rpois</span>(n_obs, <span class="dt">lambda =</span> lambda))
+
+<span class="kw">ggplot</span>(ice, <span class="kw">aes</span>(sim)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/ice-sim-1.png" width="672" /></p>
+<p>The mean of this sample is 5.062, which we will treat as the population mean <span class="math inline">\(\mu\)</span>. Remember that in the real world, we do not know <span class="math inline">\(\mu\)</span> because we have not observed all members of the population. Instead, we use the sample to estimate <span class="math inline">\(\hat{\mu}\)</span> on the assumption that the sample mean approximates the true mean.</p>
+<p>The <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> is the most likely population distribution as it describes the count of event over time. The probability mass function of the Poisson distribution is</p>
+<p><span class="math display">\[P(k) = \frac{\lambda^{k} e^{-k}}{k!}\]</span></p>
+<p>where <span class="math inline">\(\lambda\)</span> is the event rate (average number of events per interval), <span class="math inline">\(e\)</span> is Euler’s number, <span class="math inline">\(k\)</span> is an integer with range <span class="math inline">\([0, \infty]\)</span>, and <span class="math inline">\(k!\)</span> is the factorial of <span class="math inline">\(k\)</span>. The mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma\)</span> of a Poisson distribution is defined as <span class="math inline">\(\lambda\)</span>.</p>
+<p>Because we are estimating <span class="math inline">\(\mu\)</span> from a sample, we should also estimate the <strong>standard error</strong> of the sample mean. This is necessary because any random sample drawn from a population will not exactly reproduce the population. We need to account for sampling error by estimating how much our sample mean <span class="math inline">\(\hat{\mu}\)</span> might differ from the true mean <span class="math inline">\(\mu\)</span>.</p>
+<p>The distribution of the mean of a set of samples is approximately <a href="https://en.wikipedia.org/wiki/Normal_distribution">normally distributed</a>.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a> Therefore the standard error of the sample mean from a Poisson distribution is</p>
+<p><span class="math display">\[\sqrt{\frac{\lambda}{n}}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lambda_samp &lt;-<span class="st"> </span><span class="kw">mean</span>(ice$sim)
+
+(sem &lt;-<span class="st"> </span><span class="kw">sqrt</span>(lambda_samp /<span class="st"> </span>n_obs))</code></pre></div>
+<pre><code>## [1] 0.07114773</code></pre>
+<p>The standard error of the sample mean is <span class="math inline">\(0.0711477\)</span>. This is a good estimate <strong>as long as the data generating process actually followed a Poisson distribution</strong>. The Poisson distribution requires <a href="https://en.wikipedia.org/wiki/Poisson_distribution#Assumptions:_When_is_the_Poisson_distribution_an_appropriate_model.3F">several assumptions</a>. If any of these assumptions are violated, then the formula for estimating the standard error of the sample mean <span class="math inline">\(\lambda\)</span> will not be accurate.</p>
+<p>In that situation, we can use the bootstrap to estimate the standard error without making any distributional assumptions. In this approach, we draw <span class="math inline">\(B\)</span> samples with replacement from the original sample. To estimate the population mean <span class="math inline">\(\mu\)</span> we calculate the mean of the bootstrapped sample means <span class="math inline">\(\hat{\mu}_1, \hat{\mu}_2, \dots, \hat{\mu}_B\)</span>. To estimate the standard error of the sampling mean <span class="math inline">\(\hat{\mu}\)</span> we use the formula</p>
+<p><span class="math display">\[SE_{B}(\hat{\mu}) = \sqrt{\frac{1}{B-1} \sum_{r = 1}^{B} \left( \hat{\mu}_r - \frac{1}{B} \sum_{r&#39; = 1}^{B} \hat{\mu}_{r&#39;} \right)^2}\]</span></p>
+<p>What this boils down to is calculating the <strong>standard deviation</strong> of all the bootstrapped sample means. That gives us our standard error.</p>
+<p>Let’s bootstrap our standard error of the mean for our simulated ice cream data. We’ll use <span class="math inline">\(B = 1000\)</span> to produce 1000 bootstrapped estimates of the mean, then calculate the standard deviation of them:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ice_boot &lt;-<span class="st"> </span>ice %&gt;%
+<span class="st">  </span>modelr::<span class="kw">bootstrap</span>(<span class="dv">1000</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mean =</span> <span class="kw">map_dbl</span>(strap, ~<span class="st"> </span><span class="kw">mean</span>(<span class="kw">as_tibble</span>(.)$sim, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)))
+boot_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice_boot$mean)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ice_boot, <span class="kw">aes</span>(mean)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> .<span class="dv">01</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda, <span class="dt">color =</span> <span class="st">&quot;Population mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda_samp, <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice_boot$mean),
+                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice_boot$mean) +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>boot_sem,
+                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice_boot$mean) -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>boot_sem,
+                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda_samp +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>sem, <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
+             <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda_samp -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>sem, <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
+             <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">name =</span> <span class="ot">NULL</span>, <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;Population mean&quot;</span>, <span class="st">&quot;Sample mean&quot;</span>,
+                                             <span class="st">&quot;Bootstrapped mean&quot;</span>),
+                     <span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;green&quot;</span>, <span class="st">&quot;orange&quot;</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Bootstrapped sample mean&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Count&quot;</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/ice-boot-plot-1.png" width="672" /></p>
+<p>The bootstrap estimate of the standard error of the sample mean is 0.0741523. Compared to the original estimate of 0.0711477, this is slightly closer to the defined population mean, but not by much. Why bother using the bootstrap? Because the bootstrap estimator will be more accurate <strong>when the distributional assumptions are not met</strong>.</p>
+<p>Let’s simulate the results once again, but draw the observations from a combination of the Poisson distribution and <a href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">uniform distribution</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate the sample</span>
+<span class="kw">set.seed</span>(<span class="dv">113</span>)
+ice2 &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">sim =</span> <span class="kw">c</span>(<span class="kw">rpois</span>(n_obs /<span class="st"> </span><span class="dv">2</span>, <span class="dt">lambda =</span> lambda),
+                           <span class="kw">round</span>(<span class="kw">runif</span>(n_obs /<span class="st"> </span><span class="dv">2</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="dv">10</span>))))
+
+<span class="co"># plot the sample distribution</span>
+<span class="kw">ggplot</span>(ice2, <span class="kw">aes</span>(sim)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/ice-sim2-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate sample mean and standard error</span>
+lambda2_samp &lt;-<span class="st"> </span><span class="kw">mean</span>(ice2$sim)
+sem2 &lt;-<span class="st"> </span><span class="kw">sqrt</span>(lambda2_samp /<span class="st"> </span>n_obs)
+
+<span class="co"># calculate the bootstrap</span>
+ice2_boot &lt;-<span class="st"> </span>ice2 %&gt;%
+<span class="st">  </span>modelr::<span class="kw">bootstrap</span>(<span class="dv">1000</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mean =</span> <span class="kw">map_dbl</span>(strap, ~<span class="st"> </span><span class="kw">mean</span>(<span class="kw">as_tibble</span>(.)$sim, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)))
+boot2_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice2_boot$mean)
+
+<span class="co"># plot the bootstrapped distribution</span>
+<span class="kw">ggplot</span>(ice2_boot, <span class="kw">aes</span>(mean)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> .<span class="dv">01</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda, <span class="dt">color =</span> <span class="st">&quot;Population mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda2_samp, <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice2_boot$mean),
+                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice2_boot$mean) +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>boot2_sem,
+                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice2_boot$mean) -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>boot2_sem,
+                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda2_samp +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>sem2, <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
+             <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda2_samp -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>sem2, <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
+             <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">name =</span> <span class="ot">NULL</span>, <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;Population mean&quot;</span>, <span class="st">&quot;Sample mean&quot;</span>,
+                                             <span class="st">&quot;Bootstrapped mean&quot;</span>),
+                     <span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;green&quot;</span>, <span class="st">&quot;orange&quot;</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Bootstrapped sample mean&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Count&quot;</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/ice-sim2-2.png" width="672" /></p>
+<p>The population mean <span class="math inline">\(\mu\)</span> is still defined as 5, but now look what happens to the standard errors of the estimates. The estimated means are identical under the formula-based or bootstrapped approaches (5.147), however the standard error for the sample-based approach is <span class="math inline">\(0.0717426\)</span>, compared to 0.0835042. Because the bootstrap approach generates its estimate of the standard error directly from the data, the bootstrapped 95% confidence interval includes the population mean. However the 95% confidence interval under the formula-based method does not include the population mean. In this case we are better off using the bootstrapped standard error rather than using the formula for the Poisson distribution.</p>
+</div>
+</div>
+<div id="acknowledgements" class="section level1 toc-ignore">
+<h1>Acknowledgements</h1>
+<ul>
+<li>Bootstrap standard error of the mean example derived from <a href="http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html">A gentle introduction to bootstrapping</a>.</li>
+</ul>
+</div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
 <pre><code>##  setting  value                       
 ##  version  R version 3.3.2 (2016-10-31)
 ##  system   x86_64, darwin13.4.0        
-##  ui       RStudio (1.0.136)           
+##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-10                  
+##  date     2017-02-11                  
 ## 
-##  package        * version    date       source                            
-##  assertthat       0.1        2013-12-06 CRAN (R 3.3.0)                    
-##  backports        1.0.5      2017-01-18 CRAN (R 3.3.2)                    
-##  base64enc        0.1-3      2015-07-28 CRAN (R 3.3.0)                    
-##  bit              1.1-12     2014-04-09 CRAN (R 3.3.0)                    
-##  bit64            0.9-5      2015-07-05 CRAN (R 3.3.0)                    
-##  bitops           1.0-6      2013-08-17 CRAN (R 3.3.0)                    
-##  boot           * 1.3-18     2016-02-23 CRAN (R 3.3.2)                    
-##  broom          * 0.4.1      2016-06-24 CRAN (R 3.3.0)                    
-##  car              2.1-4      2016-12-02 CRAN (R 3.3.2)                    
-##  caret          * 6.0-73     2016-11-10 CRAN (R 3.3.2)                    
-##  class            7.3-14     2015-08-30 CRAN (R 3.3.2)                    
-##  codetools        0.2-15     2016-10-05 CRAN (R 3.3.2)                    
-##  colorspace       1.3-2      2016-12-14 CRAN (R 3.3.2)                    
-##  config           0.2        2016-08-02 CRAN (R 3.3.0)                    
-##  curl           * 2.3        2016-11-24 CRAN (R 3.3.2)                    
-##  DBI              0.5-1      2016-09-10 CRAN (R 3.3.0)                    
-##  devtools         1.12.0     2016-06-24 CRAN (R 3.3.0)                    
-##  digest           0.6.12     2017-01-27 CRAN (R 3.3.2)                    
-##  dplyr          * 0.5.0      2016-06-24 CRAN (R 3.3.0)                    
-##  e1071            1.6-7      2015-08-05 CRAN (R 3.3.0)                    
-##  evaluate         0.10       2016-10-11 CRAN (R 3.3.0)                    
-##  forcats          0.2.0      2017-01-23 CRAN (R 3.3.2)                    
-##  foreach          1.4.3      2015-10-13 CRAN (R 3.3.0)                    
-##  foreign          0.8-67     2016-09-13 CRAN (R 3.3.2)                    
-##  gapminder      * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
-##  geosphere        1.5-5      2016-06-15 CRAN (R 3.3.0)                    
-##  ggmap          * 2.7        2016-12-07 Github (dkahle/ggmap@c6b7579)     
-##  ggplot2        * 2.2.1      2016-12-30 CRAN (R 3.3.2)                    
-##  ggrepel        * 0.6.5      2016-11-24 CRAN (R 3.3.2)                    
-##  ggstance       * 0.3        2016-11-16 CRAN (R 3.3.2)                    
-##  gtable           0.2.0      2016-02-26 CRAN (R 3.3.0)                    
-##  haven            1.0.0      2016-09-23 cran (@1.0.0)                     
-##  here           * 0.0-6      2017-02-04 Github (krlmlr/here@007bfd9)      
-##  hexbin         * 1.27.1     2015-08-19 CRAN (R 3.3.0)                    
-##  highr            0.6        2016-05-09 CRAN (R 3.3.0)                    
-##  hms              0.3        2016-11-22 CRAN (R 3.3.2)                    
-##  htmltools        0.3.5      2016-03-21 CRAN (R 3.3.0)                    
-##  htmlwidgets      0.8        2016-11-09 CRAN (R 3.3.1)                    
-##  httpuv           1.3.3      2015-08-04 CRAN (R 3.3.0)                    
-##  httr           * 1.2.1      2016-07-03 CRAN (R 3.3.0)                    
-##  ISLR           * 1.0        2013-06-11 CRAN (R 3.3.0)                    
-##  iterators        1.0.8      2015-10-13 CRAN (R 3.3.0)                    
-##  janeaustenr      0.1.4      2016-10-26 CRAN (R 3.3.0)                    
-##  jpeg             0.1-8      2014-01-23 cran (@0.1-8)                     
-##  jsonlite       * 1.2        2016-12-31 CRAN (R 3.3.2)                    
-##  knitr          * 1.15.1     2016-11-22 cran (@1.15.1)                    
-##  labeling         0.3        2014-08-23 CRAN (R 3.3.0)                    
-##  lattice        * 0.20-34    2016-09-06 CRAN (R 3.3.2)                    
-##  lazyeval         0.2.0      2016-06-12 CRAN (R 3.3.0)                    
-##  lme4             1.1-12     2016-04-16 cran (@1.1-12)                    
-##  lubridate      * 1.6.0      2016-09-13 CRAN (R 3.3.0)                    
-##  lvplot         * 0.2.0.9000 2017-01-06 Github (hadley/lvplot@8ce61c7)    
-##  magrittr         1.5        2014-11-22 CRAN (R 3.3.0)                    
-##  mapproj          1.2-4      2015-08-03 CRAN (R 3.3.0)                    
-##  maps           * 3.1.1      2016-07-27 cran (@3.1.1)                     
-##  MASS             7.3-45     2016-04-21 CRAN (R 3.3.2)                    
-##  Matrix           1.2-8      2017-01-20 CRAN (R 3.3.2)                    
-##  MatrixModels     0.4-1      2015-08-22 CRAN (R 3.3.0)                    
-##  memoise          1.0.0      2016-01-29 CRAN (R 3.3.0)                    
-##  mgcv             1.8-16     2016-11-07 CRAN (R 3.3.0)                    
-##  microbenchmark * 1.4-2.1    2015-11-25 CRAN (R 3.3.0)                    
-##  mime             0.5        2016-07-07 CRAN (R 3.3.0)                    
-##  minqa            1.2.4      2014-10-09 cran (@1.2.4)                     
-##  mnormt           1.5-5      2016-10-15 CRAN (R 3.3.0)                    
-##  ModelMetrics     1.1.0      2016-08-26 CRAN (R 3.3.0)                    
-##  modelr         * 0.1.0      2016-08-31 CRAN (R 3.3.0)                    
-##  modeltools       0.2-21     2013-09-02 CRAN (R 3.3.0)                    
-##  multidplyr       0.0.0.9000 2016-11-23 Github (hadley/multidplyr@f6bece5)
-##  munsell          0.4.3      2016-02-13 CRAN (R 3.3.0)                    
-##  nlme             3.1-130    2017-01-24 CRAN (R 3.3.2)                    
-##  nloptr           1.0.4      2014-08-04 cran (@1.0.4)                     
-##  NLP              0.1-9      2016-02-18 CRAN (R 3.3.0)                    
-##  nnet             7.3-12     2016-02-02 CRAN (R 3.3.2)                    
-##  nycflights13   * 0.2.2      2017-01-27 CRAN (R 3.3.2)                    
-##  pbkrtest         0.4-6      2016-01-27 CRAN (R 3.3.0)                    
-##  plyr             1.8.4      2016-06-08 CRAN (R 3.3.0)                    
-##  png              0.1-7      2013-12-03 cran (@0.1-7)                     
-##  pROC           * 1.8        2015-05-05 CRAN (R 3.3.0)                    
-##  profvis        * 0.3.3      2017-01-14 CRAN (R 3.3.2)                    
-##  proto            1.0.0      2016-10-29 CRAN (R 3.3.0)                    
-##  psych            1.6.12     2017-01-08 CRAN (R 3.3.2)                    
-##  purrr          * 0.2.2      2016-06-18 CRAN (R 3.3.0)                    
-##  quantreg         5.29       2016-09-04 CRAN (R 3.3.0)                    
-##  R6               2.2.0      2016-10-05 CRAN (R 3.3.0)                    
-##  randomForest   * 4.6-12     2015-10-07 CRAN (R 3.3.0)                    
-##  rappdirs         0.3.1      2016-03-28 CRAN (R 3.3.0)                    
-##  rcfss          * 0.1.3      2017-02-07 local                             
-##  Rcpp             0.12.9     2017-01-14 CRAN (R 3.3.2)                    
-##  readr          * 1.0.0      2016-08-03 CRAN (R 3.3.0)                    
-##  readxl         * 0.1.1      2016-03-28 CRAN (R 3.3.0)                    
-##  reshape2         1.4.2      2016-10-22 CRAN (R 3.3.0)                    
-##  RgoogleMaps      1.4.1      2016-09-18 cran (@1.4.1)                     
-##  rjson            0.2.15     2014-11-03 cran (@0.2.15)                    
-##  rmarkdown        1.3        2016-12-21 CRAN (R 3.3.2)                    
-##  rplos            0.6.4      2016-11-24 CRAN (R 3.3.2)                    
-##  rprojroot        1.2        2017-01-16 CRAN (R 3.3.2)                    
-##  rsconnect        0.7        2016-12-21 CRAN (R 3.3.2)                    
-##  rstudioapi       0.6        2016-06-27 CRAN (R 3.3.0)                    
-##  rvest          * 0.3.2      2016-06-17 CRAN (R 3.3.0)                    
-##  scales         * 0.4.1      2016-11-09 CRAN (R 3.3.1)                    
-##  shiny          * 1.0.0      2017-01-12 CRAN (R 3.3.2)                    
-##  slam             0.1-40     2016-12-01 CRAN (R 3.3.2)                    
-##  SnowballC        0.5.1      2014-08-09 cran (@0.5.1)                     
-##  solr             0.1.6      2015-09-17 CRAN (R 3.3.0)                    
-##  sp               1.2-4      2016-12-22 CRAN (R 3.3.2)                    
-##  sparklyr       * 0.5.1      2016-12-19 CRAN (R 3.3.2)                    
-##  SparseM          1.74       2016-11-10 CRAN (R 3.3.2)                    
-##  stringi          1.1.2      2016-10-01 CRAN (R 3.3.0)                    
-##  stringr        * 1.1.0      2016-08-19 cran (@1.1.0)                     
-##  tibble         * 1.2        2016-08-26 cran (@1.2)                       
-##  tidyr          * 0.6.1      2017-01-10 CRAN (R 3.3.2)                    
-##  tidytext       * 0.1.2      2016-10-28 CRAN (R 3.3.0)                    
-##  tidyverse      * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
-##  titanic        * 0.1.0      2015-08-31 CRAN (R 3.3.0)                    
-##  tm               0.6-2      2015-07-03 CRAN (R 3.3.0)                    
-##  tokenizers       0.1.4      2016-08-29 CRAN (R 3.3.0)                    
-##  topicmodels    * 0.2-4      2016-05-23 CRAN (R 3.3.0)                    
-##  tree           * 1.0-37     2016-01-21 CRAN (R 3.3.0)                    
-##  twitteR          1.1.9      2015-07-29 CRAN (R 3.3.0)                    
-##  whisker          0.3-2      2013-04-28 CRAN (R 3.3.0)                    
-##  withr            1.0.2      2016-06-20 CRAN (R 3.3.0)                    
-##  XML            * 3.98-1.5   2016-11-10 CRAN (R 3.3.2)                    
-##  xml2           * 1.1.1      2017-01-24 CRAN (R 3.3.2)                    
-##  xtable           1.8-2      2016-02-05 CRAN (R 3.3.0)                    
-##  yaml             2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+##  package     * version date       source        
+##  assertthat    0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports     1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  boot        * 1.3-18  2016-02-23 CRAN (R 3.3.2)
+##  broom       * 0.4.1   2016-06-24 CRAN (R 3.3.0)
+##  codetools     0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace    1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI           0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools      1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest        0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr       * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate      0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats       0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign       0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2     * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable        0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven         1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms           0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools     0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  htmlwidgets   0.8     2016-11-09 CRAN (R 3.3.1)
+##  httr          1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  ISLR        * 1.0     2013-06-11 CRAN (R 3.3.0)
+##  jsonlite      1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr         1.15.1  2016-11-22 cran (@1.15.1)
+##  labeling      0.3     2014-08-23 CRAN (R 3.3.0)
+##  lattice       0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval      0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate     1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr      1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise       1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt        1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr      * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell       0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme          3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  plyr          1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  profvis     * 0.3.3   2017-01-14 CRAN (R 3.3.2)
+##  psych         1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr       * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6            2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  Rcpp          0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr       * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl        0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2      1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown     1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot     1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest         0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales        0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi       1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr       1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble      * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr       * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse   * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic     * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr         1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2          1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml          2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
@@ -986,6 +1061,7 @@ titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titan
 <li id="fn2"><p>The default <code>family</code> for <code>glm()</code> is <code>gaussian()</code>, or the <strong>Gaussian</strong> distribution. You probably know it by its other name, the <a href="https://en.wikipedia.org/wiki/Normal_distribution"><strong>Normal</strong> distribution</a>.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>This function can also be loaded via the <a href="https://github.com/uc-cfss/rcfss"><code>rcfss</code></a> library. Be sure to update your package to the latest version to make sure the function is available.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>This function can also be loaded via the <a href="https://github.com/uc-cfss/rcfss"><code>rcfss</code></a> library. Be sure to update your package to the latest version to make sure the function is available.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>As defined by the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>.<a href="#fnref5">↩</a></p></li>
 </ol>
 </div>
 

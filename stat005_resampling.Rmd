@@ -467,12 +467,19 @@ ggplot(ice_boot, aes(mean)) +
   geom_histogram(binwidth = .01) +
   geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
   geom_vline(aes(xintercept = lambda_samp, color = "Sample mean"), size = 1) +
-  geom_vline(aes(xintercept = mean(ice_boot$mean), color = "Bootstrapped mean"), size = 1) +
-  geom_vline(aes(xintercept = mean(ice_boot$mean) + 1.96 * boot_sem, color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = mean(ice_boot$mean) - 1.96 * boot_sem, color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = lambda_samp + 1.96 * sem, color = "Sample mean"), linetype = 2) +
-  geom_vline(aes(xintercept = lambda_samp - 1.96 * sem, color = "Sample mean"), linetype = 2) +
-  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean", "Bootstrapped mean"), values = c("blue", "green", "orange")) +
+  geom_vline(aes(xintercept = mean(ice_boot$mean),
+                 color = "Bootstrapped mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice_boot$mean) + 1.96 * boot_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = mean(ice_boot$mean) - 1.96 * boot_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = lambda_samp + 1.96 * sem, color = "Sample mean"),
+             linetype = 2) +
+  geom_vline(aes(xintercept = lambda_samp - 1.96 * sem, color = "Sample mean"),
+             linetype = 2) +
+  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean",
+                                             "Bootstrapped mean"),
+                     values = c("blue", "green", "orange")) +
   labs(x = "Bootstrapped sample mean",
        y = "Count")
 ```
@@ -482,53 +489,53 @@ The bootstrap estimate of the standard error of the sample mean is `r boot_sem`.
 Let's simulate the results once again, but draw the observations from a combination of the Poisson distribution and [uniform distribution](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)).
 
 ```{r ice-sim2}
-done <- TRUE
-i <- 78
+# simulate the sample
+set.seed(113)
+ice2 <- data_frame(sim = c(rpois(n_obs / 2, lambda = lambda),
+                           round(runif(n_obs / 2, min = 0, max = 10))))
 
-while(done){
-  # simulate the sample
-  set.seed(i)
-  ice2 <- data_frame(sim = c(rpois(n_obs / 2, lambda = lambda), round(runif(n_obs / 2, min = 0, max = 10))))
-  
-  # plot the sample distribution
-  ggplot(ice2, aes(sim)) +
-    geom_histogram(binwidth = 1)
-  
-  # calculate sample mean and standard error
-  lambda2_samp <- mean(ice2$sim)
-  (sem2 <- sqrt(lambda2_samp / n_obs))
-  
-  # calculate the bootstrap
-  ice2_boot <- ice2 %>%
-    modelr::bootstrap(1000) %>%
-    mutate(mean = map_dbl(strap, ~ mean(as_tibble(.)$sim, na.rm = TRUE)))
-  boot2_sem <- sd(ice2_boot$mean)
-  
-  if(!between(lambda, lambda2_samp - 1.96 * sem2, lambda2_samp + 1.96 * sem2) &
-     between(lambda, mean(ice2_boot$mean) - 1.96 * boot2_sem, mean(ice2_boot$mean) + 1.96 * boot2_sem)){
-    done <- FALSE
-  } else {
-    i <- i + 1
-  }
-  
-  # plot the bootstrapped distribution
-  ggplot(ice2_boot, aes(mean)) +
-    geom_histogram(binwidth = .01) +
-    geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
-    geom_vline(aes(xintercept = lambda2_samp, color = "Sample mean"), size = 1) +
-    geom_vline(aes(xintercept = mean(ice2_boot$mean), color = "Bootstrapped mean"), size = 1) +
-    geom_vline(aes(xintercept = mean(ice2_boot$mean) + 1.96 * boot2_sem, color = "Bootstrapped mean"), linetype = 2) +
-    geom_vline(aes(xintercept = mean(ice2_boot$mean) - 1.96 * boot2_sem, color = "Bootstrapped mean"), linetype = 2) +
-    geom_vline(aes(xintercept = lambda2_samp + 1.96 * sem2, color = "Sample mean"), linetype = 2) +
-    geom_vline(aes(xintercept = lambda2_samp - 1.96 * sem2, color = "Sample mean"), linetype = 2) +
-    scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean", "Bootstrapped mean"), values = c("blue", "green", "orange")) +
-    labs(x = "Bootstrapped sample mean",
-         y = "Count")
-}
+# plot the sample distribution
+ggplot(ice2, aes(sim)) +
+  geom_histogram(binwidth = 1)
 
+# calculate sample mean and standard error
+lambda2_samp <- mean(ice2$sim)
+sem2 <- sqrt(lambda2_samp / n_obs)
+
+# calculate the bootstrap
+ice2_boot <- ice2 %>%
+  modelr::bootstrap(1000) %>%
+  mutate(mean = map_dbl(strap, ~ mean(as_tibble(.)$sim, na.rm = TRUE)))
+boot2_sem <- sd(ice2_boot$mean)
+
+# plot the bootstrapped distribution
+ggplot(ice2_boot, aes(mean)) +
+  geom_histogram(binwidth = .01) +
+  geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda2_samp, color = "Sample mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice2_boot$mean),
+                 color = "Bootstrapped mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice2_boot$mean) + 1.96 * boot2_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = mean(ice2_boot$mean) - 1.96 * boot2_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = lambda2_samp + 1.96 * sem2, color = "Sample mean"),
+             linetype = 2) +
+  geom_vline(aes(xintercept = lambda2_samp - 1.96 * sem2, color = "Sample mean"),
+             linetype = 2) +
+  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean",
+                                             "Bootstrapped mean"),
+                     values = c("blue", "green", "orange")) +
+  labs(x = "Bootstrapped sample mean",
+       y = "Count")
 ```
 
+The population mean $\mu$ is still defined as 5, but now look what happens to the standard errors of the estimates. The estimated means are identical under the formula-based or bootstrapped approaches (`r lambda2_samp`), however the standard error for the sample-based approach is $`r sem2`$, compared to `r boot2_sem`. Because the bootstrap approach generates its estimate of the standard error directly from the data, the bootstrapped 95% confidence interval includes the population mean. However the 95% confidence interval under the formula-based method does not include the population mean. In this case we are better off using the bootstrapped standard error rather than using the formula for the Poisson distribution.
 
+# Acknowledgements {.toc-ignore}
+
+* Bootstrap standard error of the mean example derived from [A gentle introduction to bootstrapping
+](http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html).
 
 # Session Info {.toc-ignore}
 
