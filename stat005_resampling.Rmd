@@ -386,7 +386,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
 
 The **bootstrap** is a different resampling-based method for quantifying uncertainty associated with a given estimator or statistical method. It is extremely flexible and can be applied to virtually any statistical method.
 
-## What is sampling with replacement?
+## Sampling with replacement
 
 Sampling with replacement allows us to potentially draw the same observation multiple times, and ignore other observations entirely.
 
@@ -407,6 +407,19 @@ rerun(10, sample.int(10, replace = FALSE)) %>%
 Sampling without replacement doesn't allow you to draw an observation more than once and would produce the exact same sample every time, just in a different order.
 
 ## Why use the bootstrap?
+
+Statistical learning methods are frequently used to draw inferences about a population. Since you cannot directly measure the entire population^[Exception - [the Census](http://www.census.gov/2010census/).], you take a sample and ask a question of it instead. But how do you know your sample answer is close to the population answer? There are two approaches you can take:
+
+1. Make **assumptions** about the shape of the population.
+1. Use the **information in the sample** to learn about it.
+
+Suppose you decide to make assumptions, e.g. that the sample is distributed normally or [Bernoulli](https://en.wikipedia.org/wiki/Bernoulli_distribution) or some other probability distribution. You could learn about how much the answer to your question varies based on the specific sample drawn by repeatedly generating samples of the same size and asking them the same question. If you have a computaionally convenient assumption (such as the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)), you may even be able to bypass the resampling step and use a known formula to estimate your confidence in the original answer.
+
+Provided you are happy to make the assumptions, this seems like a good idea. If you are not willing to make the assumption, you could instead take the sample you have and sample from it. You can do this because the sample you have **is also a population**, just a very small and discrete one. It is identical to the histogram of your data. Sampling with replacement merely allows you to treat the sample like it's a population and sample from it in a way that reflects its shape.
+
+This is a reasonable thing to do for a couple reasons. First, it's the only information you have about the population. Second, randomly chosen samples should look quite similar to the population from which they came, so as long as you drew a random sample it is likely that your's is also similar.
+
+### Estimating the accuracy of a statistic of interest
 
 Suppose you want to know how often Americans eat ice cream in a given month.
 
@@ -532,10 +545,66 @@ ggplot(ice2_boot, aes(mean)) +
 
 The population mean $\mu$ is still defined as 5, but now look what happens to the standard errors of the estimates. The estimated means are identical under the formula-based or bootstrapped approaches (`r lambda2_samp`), however the standard error for the sample-based approach is $`r sem2`$, compared to `r boot2_sem`. Because the bootstrap approach generates its estimate of the standard error directly from the data, the bootstrapped 95% confidence interval includes the population mean. However the 95% confidence interval under the formula-based method does not include the population mean. In this case we are better off using the bootstrapped standard error rather than using the formula for the Poisson distribution.
 
+### Estimating the accuracy of a linear regression model
+
+In a linear regression model, the standard errors are statistical estimates of the average amount that the estimated parameters $\hat{\beta}$ differ from the true population parameters $\beta$. The formula for estimating standard errors for a linear regression model is:
+
+$$\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\sigma^{2} (X^{T}X)^{-1}_{jj}}$$
+
+More simply this is the square root of the diagonal of the [variance-covariance matrix](https://en.wikipedia.org/wiki/Ordinary_least_squares#Finite_sample_properties). For the formula to hold, we make certain assumptions, including that our estimate of $\sigma^2$ is accurate and that any variability in the model after we account for $X$ is the result of the errors $\epsilon$. If these assumptions are wrong, then our estimates of the standard errors will also be wrong.
+
+Let's revisit our horsepower and highway mileage linear model.
+
+```{r auto-boot}
+# plot the data and model
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+# traditional parameter estimates and standard errors
+auto_lm <- lm(mpg ~ horsepower, data = Auto)
+tidy(auto_lm)
+
+# bootstrapped estimates of the parameter estimates and standard errors
+auto_boot <- Auto %>%
+  modelr::bootstrap(1000) %>%
+  mutate(model = map(strap, ~ lm(mpg ~ horsepower, data = .)),
+         coef = map(model, tidy))
+
+auto_boot %>%
+  unnest(coef) %>%
+  group_by(term) %>%
+  summarize(est.boot = mean(estimate),
+            se.boot = sd(estimate, na.rm = TRUE))
+```
+
+The bootstrapped estimates of parameters are virtually identical, however the standard errors on the bootstrap estimates are slightly larger. This is because they do not rely on any distributional assumptions, whereas the traditional estimates do. Recall from the [demonstration above](#regression) that the relationship between horsepower and mpg is non-linear, so the residuals from a linear model will be inflated, and the residuals are used to estimate $\sigma^2$. The bootstrap method is not biased by these assumptions and gives us a more robust estimate.
+
+If we compare the traditional and bootstrap estimates for the polynomial regression model, we find more similarity in our results:
+
+```{r auto-boot-sq}
+# traditional parameter estimates and standard errors
+auto2_lm <- lm(mpg ~ horsepower + I(horsepower^2), data = Auto)
+tidy(auto2_lm)
+
+# bootstrapped estimates of the parameter estimates and standard errors
+auto2_boot <- Auto %>%
+  modelr::bootstrap(1000) %>%
+  mutate(model = map(strap, ~ lm(mpg ~ horsepower + I(horsepower^2), data = .)),
+         coef = map(model, tidy))
+
+auto2_boot %>%
+  unnest(coef) %>%
+  group_by(term) %>%
+  summarize(est.boot = mean(estimate),
+            se.boot = sd(estimate, na.rm = TRUE))
+```
+
 # Acknowledgements {.toc-ignore}
 
 * Bootstrap standard error of the mean example derived from [A gentle introduction to bootstrapping
 ](http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html).
+* "Why use the bootstrap?" reproduced from [Explaining to laypeople why bootstrapping works - Stack Overflow](http://stats.stackexchange.com/a/26093), licensed under the [CC BY-SA 3.0 Creative Commons License](https://creativecommons.org/licenses/by-sa/3.0/).
 
 # Session Info {.toc-ignore}
 

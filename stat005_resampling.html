@@ -843,8 +843,8 @@ titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titan
 <div id="the-bootstrap" class="section level1">
 <h1>The bootstrap</h1>
 <p>The <strong>bootstrap</strong> is a different resampling-based method for quantifying uncertainty associated with a given estimator or statistical method. It is extremely flexible and can be applied to virtually any statistical method.</p>
-<div id="what-is-sampling-with-replacement" class="section level2">
-<h2>What is sampling with replacement?</h2>
+<div id="sampling-with-replacement" class="section level2">
+<h2>Sampling with replacement</h2>
 <p>Sampling with replacement allows us to potentially draw the same observation multiple times, and ignore other observations entirely.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rerun</span>(<span class="dv">10</span>, <span class="kw">sample.int</span>(<span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)) %&gt;%
 <span class="st">  </span>unlist %&gt;%
@@ -879,6 +879,16 @@ titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titan
 </div>
 <div id="why-use-the-bootstrap" class="section level2">
 <h2>Why use the bootstrap?</h2>
+<p>Statistical learning methods are frequently used to draw inferences about a population. Since you cannot directly measure the entire population<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>, you take a sample and ask a question of it instead. But how do you know your sample answer is close to the population answer? There are two approaches you can take:</p>
+<ol style="list-style-type: decimal">
+<li>Make <strong>assumptions</strong> about the shape of the population.</li>
+<li>Use the <strong>information in the sample</strong> to learn about it.</li>
+</ol>
+<p>Suppose you decide to make assumptions, e.g. that the sample is distributed normally or <a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Bernoulli</a> or some other probability distribution. You could learn about how much the answer to your question varies based on the specific sample drawn by repeatedly generating samples of the same size and asking them the same question. If you have a computaionally convenient assumption (such as the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>), you may even be able to bypass the resampling step and use a known formula to estimate your confidence in the original answer.</p>
+<p>Provided you are happy to make the assumptions, this seems like a good idea. If you are not willing to make the assumption, you could instead take the sample you have and sample from it. You can do this because the sample you have <strong>is also a population</strong>, just a very small and discrete one. It is identical to the histogram of your data. Sampling with replacement merely allows you to treat the sample like it’s a population and sample from it in a way that reflects its shape.</p>
+<p>This is a reasonable thing to do for a couple reasons. First, it’s the only information you have about the population. Second, randomly chosen samples should look quite similar to the population from which they came, so as long as you drew a random sample it is likely that your’s is also similar.</p>
+<div id="estimating-the-accuracy-of-a-statistic-of-interest" class="section level3">
+<h3>Estimating the accuracy of a statistic of interest</h3>
 <p>Suppose you want to know how often Americans eat ice cream in a given month.</p>
 <div class="figure">
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Rockyroadicecream.jpg/800px-Rockyroadicecream.jpg" />
@@ -899,7 +909,7 @@ ice &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class
 <p><span class="math display">\[P(k) = \frac{\lambda^{k} e^{-k}}{k!}\]</span></p>
 <p>where <span class="math inline">\(\lambda\)</span> is the event rate (average number of events per interval), <span class="math inline">\(e\)</span> is Euler’s number, <span class="math inline">\(k\)</span> is an integer with range <span class="math inline">\([0, \infty]\)</span>, and <span class="math inline">\(k!\)</span> is the factorial of <span class="math inline">\(k\)</span>. The mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma\)</span> of a Poisson distribution is defined as <span class="math inline">\(\lambda\)</span>.</p>
 <p>Because we are estimating <span class="math inline">\(\mu\)</span> from a sample, we should also estimate the <strong>standard error</strong> of the sample mean. This is necessary because any random sample drawn from a population will not exactly reproduce the population. We need to account for sampling error by estimating how much our sample mean <span class="math inline">\(\hat{\mu}\)</span> might differ from the true mean <span class="math inline">\(\mu\)</span>.</p>
-<p>The distribution of the mean of a set of samples is approximately <a href="https://en.wikipedia.org/wiki/Normal_distribution">normally distributed</a>.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a> Therefore the standard error of the sample mean from a Poisson distribution is</p>
+<p>The distribution of the mean of a set of samples is approximately <a href="https://en.wikipedia.org/wiki/Normal_distribution">normally distributed</a>.<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a> Therefore the standard error of the sample mean from a Poisson distribution is</p>
 <p><span class="math display">\[\sqrt{\frac{\lambda}{n}}\]</span></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lambda_samp &lt;-<span class="st"> </span><span class="kw">mean</span>(ice$sim)
 
@@ -978,11 +988,73 @@ boot2_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice2_boot$mea
 <p><img src="stat005_resampling_files/figure-html/ice-sim2-2.png" width="672" /></p>
 <p>The population mean <span class="math inline">\(\mu\)</span> is still defined as 5, but now look what happens to the standard errors of the estimates. The estimated means are identical under the formula-based or bootstrapped approaches (5.147), however the standard error for the sample-based approach is <span class="math inline">\(0.0717426\)</span>, compared to 0.0835042. Because the bootstrap approach generates its estimate of the standard error directly from the data, the bootstrapped 95% confidence interval includes the population mean. However the 95% confidence interval under the formula-based method does not include the population mean. In this case we are better off using the bootstrapped standard error rather than using the formula for the Poisson distribution.</p>
 </div>
+<div id="estimating-the-accuracy-of-a-linear-regression-model" class="section level3">
+<h3>Estimating the accuracy of a linear regression model</h3>
+<p>In a linear regression model, the standard errors are statistical estimates of the average amount that the estimated parameters <span class="math inline">\(\hat{\beta}\)</span> differ from the true population parameters <span class="math inline">\(\beta\)</span>. The formula for estimating standard errors for a linear regression model is:</p>
+<p><span class="math display">\[\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\sigma^{2} (X^{T}X)^{-1}_{jj}}\]</span></p>
+<p>More simply this is the square root of the diagonal of the <a href="https://en.wikipedia.org/wiki/Ordinary_least_squares#Finite_sample_properties">variance-covariance matrix</a>. For the formula to hold, we make certain assumptions, including that our estimate of <span class="math inline">\(\sigma^2\)</span> is accurate and that any variability in the model after we account for <span class="math inline">\(X\)</span> is the result of the errors <span class="math inline">\(\epsilon\)</span>. If these assumptions are wrong, then our estimates of the standard errors will also be wrong.</p>
+<p>Let’s revisit our horsepower and highway mileage linear model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the data and model</span>
+<span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/auto-boot-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># traditional parameter estimates and standard errors</span>
+auto_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower, <span class="dt">data =</span> Auto)
+<span class="kw">tidy</span>(auto_lm)</code></pre></div>
+<pre><code>##          term   estimate   std.error statistic       p.value
+## 1 (Intercept) 39.9358610 0.717498656  55.65984 1.220362e-187
+## 2  horsepower -0.1578447 0.006445501 -24.48914  7.031989e-81</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bootstrapped estimates of the parameter estimates and standard errors</span>
+auto_boot &lt;-<span class="st"> </span>Auto %&gt;%
+<span class="st">  </span>modelr::<span class="kw">bootstrap</span>(<span class="dv">1000</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(strap, ~<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower, <span class="dt">data =</span> .)),
+         <span class="dt">coef =</span> <span class="kw">map</span>(model, tidy))
+
+auto_boot %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(coef) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(term) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">est.boot =</span> <span class="kw">mean</span>(estimate),
+            <span class="dt">se.boot =</span> <span class="kw">sd</span>(estimate, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>## # A tibble: 2 × 3
+##          term   est.boot     se.boot
+##         &lt;chr&gt;      &lt;dbl&gt;       &lt;dbl&gt;
+## 1 (Intercept) 39.9759145 0.850939151
+## 2  horsepower -0.1583452 0.007316326</code></pre>
+<p>The bootstrapped estimates of parameters are virtually identical, however the standard errors on the bootstrap estimates are slightly larger. This is because they do not rely on any distributional assumptions, whereas the traditional estimates do. Recall from the <a href="#regression">demonstration above</a> that the relationship between horsepower and mpg is non-linear, so the residuals from a linear model will be inflated, and the residuals are used to estimate <span class="math inline">\(\sigma^2\)</span>. The bootstrap method is not biased by these assumptions and gives us a more robust estimate.</p>
+<p>If we compare the traditional and bootstrap estimates for the polynomial regression model, we find more similarity in our results:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># traditional parameter estimates and standard errors</span>
+auto2_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span><span class="kw">I</span>(horsepower^<span class="dv">2</span>), <span class="dt">data =</span> Auto)
+<span class="kw">tidy</span>(auto2_lm)</code></pre></div>
+<pre><code>##              term     estimate    std.error statistic       p.value
+## 1     (Intercept) 56.900099702 1.8004268063  31.60367 1.740911e-109
+## 2      horsepower -0.466189630 0.0311246171 -14.97816  2.289429e-40
+## 3 I(horsepower^2)  0.001230536 0.0001220759  10.08009  2.196340e-21</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bootstrapped estimates of the parameter estimates and standard errors</span>
+auto2_boot &lt;-<span class="st"> </span>Auto %&gt;%
+<span class="st">  </span>modelr::<span class="kw">bootstrap</span>(<span class="dv">1000</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(strap, ~<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span><span class="kw">I</span>(horsepower^<span class="dv">2</span>), <span class="dt">data =</span> .)),
+         <span class="dt">coef =</span> <span class="kw">map</span>(model, tidy))
+
+auto2_boot %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(coef) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(term) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">est.boot =</span> <span class="kw">mean</span>(estimate),
+            <span class="dt">se.boot =</span> <span class="kw">sd</span>(estimate, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>## # A tibble: 3 × 3
+##              term     est.boot      se.boot
+##             &lt;chr&gt;        &lt;dbl&gt;        &lt;dbl&gt;
+## 1     (Intercept) 56.915517472 2.1459109695
+## 2      horsepower -0.466390996 0.0343177764
+## 3 I(horsepower^2)  0.001231462 0.0001237015</code></pre>
+</div>
+</div>
 </div>
 <div id="acknowledgements" class="section level1 toc-ignore">
 <h1>Acknowledgements</h1>
 <ul>
 <li>Bootstrap standard error of the mean example derived from <a href="http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html">A gentle introduction to bootstrapping</a>.</li>
+<li>“Why use the bootstrap?” reproduced from <a href="http://stats.stackexchange.com/a/26093">Explaining to laypeople why bootstrapping works - Stack Overflow</a>, licensed under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0 Creative Commons License</a>.</li>
 </ul>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
@@ -995,7 +1067,7 @@ boot2_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice2_boot$mea
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-11                  
+##  date     2017-02-12                  
 ## 
 ##  package     * version date       source        
 ##  assertthat    0.1     2013-12-06 CRAN (R 3.3.0)
@@ -1061,7 +1133,8 @@ boot2_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice2_boot$mea
 <li id="fn2"><p>The default <code>family</code> for <code>glm()</code> is <code>gaussian()</code>, or the <strong>Gaussian</strong> distribution. You probably know it by its other name, the <a href="https://en.wikipedia.org/wiki/Normal_distribution"><strong>Normal</strong> distribution</a>.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>This function can also be loaded via the <a href="https://github.com/uc-cfss/rcfss"><code>rcfss</code></a> library. Be sure to update your package to the latest version to make sure the function is available.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>This function can also be loaded via the <a href="https://github.com/uc-cfss/rcfss"><code>rcfss</code></a> library. Be sure to update your package to the latest version to make sure the function is available.<a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p>As defined by the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>.<a href="#fnref5">↩</a></p></li>
+<li id="fn5"><p>Exception - <a href="http://www.census.gov/2010census/">the Census</a>.<a href="#fnref5">↩</a></p></li>
+<li id="fn6"><p>As defined by the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>.<a href="#fnref6">↩</a></p></li>
 </ol>
 </div>
 
