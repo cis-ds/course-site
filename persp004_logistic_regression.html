@@ -373,6 +373,7 @@ div.tocify {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
 <span class="kw">library</span>(modelr)
 <span class="kw">library</span>(broom)
+<span class="kw">library</span>(forcats)
 
 <span class="kw">options</span>(<span class="dt">na.action =</span> na.warn)
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
@@ -648,15 +649,24 @@ the definitions do not support such relations.</code></pre>
 <p><span class="math display">\[p(X) = p(\text{survival} = \text{yes} | \text{age})\]</span></p>
 <p>The linear regression model above attempted to predict or explain <span class="math inline">\(p(X)\)</span> using the functional form</p>
 <p><span class="math display">\[p(X) = \beta_0 + \beta_{1}X\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate fake binary data</span>
+sim_logit &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">1000</span>, -<span class="dv">5</span>, <span class="dv">5</span>),
+                        <span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">1</span> *<span class="st"> </span>x)
+
+<span class="co"># graph it</span>
+<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;The linear function&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;p(X)&quot;</span>)</code></pre></div>
+<p><img src="persp004_logistic_regression_files/figure-html/linear-demo-1.png" width="672" /></p>
 <p>But we now know that by using this functional form, we will always have for at least some subset of <span class="math inline">\(\text{age}\)</span> predicted values outside the <span class="math inline">\([0,1]\)</span> range. Instead, we need to model the functional form to prevent values from exceeding this range. One such function is the <strong>logistic function</strong>:<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <p><span class="math display">\[p(X) = \frac{e^{\beta_0 + \beta_{1}X}}{1 + e^{\beta_0 + \beta_{1}X}}\]</span></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2prob &lt;-<span class="st"> </span>function(x){
   <span class="kw">exp</span>(x) /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span><span class="kw">exp</span>(x))
 }</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate fake binary data</span>
-sim_logit &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">1000</span>, -<span class="dv">5</span>, <span class="dv">5</span>),
-                        <span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">1</span> *<span class="st"> </span>x,
-                        <span class="dt">prob =</span> <span class="kw">logit2prob</span>(y))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">logit2prob</span>(y))
 
 <span class="co"># graph it</span>
 <span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, prob)) +
@@ -936,8 +946,53 @@ titanic_age_sex</code></pre></div>
        <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
        <span class="dt">color =</span> <span class="st">&quot;Sex&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/survive_age_woman_plot-1.png" width="672" /></p>
-<p>The result is two lines that are parallel to each other. The addition of the gender parameter acts like an second intercept when we compare age to probability of survival. All that happens is the line shifts up or down based on the estimated gender parameter.</p>
 <p>Substantively, this graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one’s gender was much more important. Females survived at much higher rates than males, regardless of age.</p>
+</div>
+<div id="predicted-probabilities-and-first-differences-in-multiple-variable-models" class="section level2">
+<h2>Predicted probabilities and first differences in multiple variable models</h2>
+<p>Mathematically, the result is two lines that are parallel to each other <strong>in the log-odds functional form</strong>. The addition of the gender parameter acts like an second intercept when we compare age to probability of survival. All that happens is the line shifts up or down based on the estimated gender parameter.</p>
+<p>In terms of predicted probabilities and first differences, <strong>this is not true</strong>. Remember the logistic function:</p>
+<p><span class="math display">\[p(X) = \frac{e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}{1 + e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}\]</span></p>
+<p>Because of the exponential transformation, <span class="math inline">\(\beta_2\)</span> now has a non-linear impact on the predicted probabilities. For clarity, let’s estimate a logistic regression model of the effect of age and fare on survival:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate logistic regression model of age and fare</span>
+age_fare &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Fare, <span class="dt">data =</span> titanic, <span class="dt">family =</span> binomial)
+<span class="kw">tidy</span>(age_fare)</code></pre></div>
+<pre><code>##          term    estimate   std.error statistic      p.value
+## 1 (Intercept) -0.41705506 0.185975550 -2.242526 2.492738e-02
+## 2         Age -0.01757841 0.005665823 -3.102534 1.918715e-03
+## 3        Fare  0.01725837 0.002616589  6.595751 4.231096e-11</code></pre>
+<p>And generate predicted log-odds and probabilities of survival for a series of hypothetical passengers, varying the fare amount paid.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate predicted values</span>
+age_fare_pred &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(Age, <span class="dt">Fare =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">max</span>(Fare), <span class="dt">by =</span> <span class="dv">100</span>)) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(age_fare) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">logit2prob</span>(pred),
+         <span class="dt">Fare =</span> <span class="kw">factor</span>(Fare, <span class="dt">levels =</span> <span class="kw">rev</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">max</span>(Fare), <span class="dt">by =</span> <span class="dv">100</span>))))</code></pre></div>
+<p>Below is the plot of the log-odds for this regression model. To draw the line, all we did was draw the line for the relationship between age and expected log-odds of survival, holding fare constant at different levels.</p>
+<p><span class="math display">\[\log\left(\frac{p(\text{Survival})}{1 - p(\text{Survival})}\right) = \beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Fare}\]</span></p>
+<p><span class="math display">\[\log\left(\frac{p(\text{Survival})}{1 - p(\text{Survival})}\right) = (\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}\]</span></p>
+<p>Notice that each line is parallel to each other, because all that <span class="math inline">\(\hat{\beta}_{2}\)</span> did was change the intercept for the controlled relationship between age and log-odds of survival.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the new log-odds lines</span>
+<span class="kw">ggplot</span>(age_fare_pred, <span class="kw">aes</span>(Age, pred, <span class="dt">group =</span> Fare, <span class="dt">color =</span> Fare)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Log-odds of survival&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age + Fare model&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Log-odds of survival&quot;</span>)</code></pre></div>
+<p><img src="persp004_logistic_regression_files/figure-html/fd-non-parallel-logodds-1.png" width="672" /></p>
+<p>Now see what happens when we do the same thing but using predicted probabilities instead.</p>
+<p><span class="math display">\[p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Fare}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Fare}}}\]</span></p>
+<p><span class="math display">\[p(\text{Survival}) = \frac{e^{(\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}}}{1 + e^{(\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}}}\]</span></p>
+<p>Because of the exponential transformation, even if we hold fare constant, <strong>the resulting probability curve will non-linearly change for different fare values</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the new probability lines</span>
+<span class="kw">ggplot</span>(age_fare_pred, <span class="kw">aes</span>(Age, prob, <span class="dt">group =</span> Fare, <span class="dt">color =</span> Fare)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age + Fare model&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>)</code></pre></div>
+<p><img src="persp004_logistic_regression_files/figure-html/fd-non-parallel-prob-1.png" width="672" /></p>
+<p>So when calculating first differences and predicted probabilities for a single variable in a multiple variable logistic regression models, <strong>the values at which you hold the other variables constant will directly influence your results</strong>. The general rule of thumb is to hold the other variables constant at their <strong>median</strong> (if continuous) or <strong>modal</strong> (if discrete) values.</p>
 </div>
 <div id="interactive-terms" class="section level2">
 <h2>Interactive terms</h2>
@@ -1249,7 +1304,7 @@ threshold_x %&gt;%
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-12                  
+##  date     2017-02-13                  
 ## 
 ##  package      * version date       source        
 ##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
@@ -1266,7 +1321,7 @@ threshold_x %&gt;%
 ##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)
 ##  e1071          1.6-7   2015-08-05 CRAN (R 3.3.0)
 ##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  forcats      * 0.2.0   2017-01-23 CRAN (R 3.3.2)
 ##  foreach        1.4.3   2015-10-13 CRAN (R 3.3.0)
 ##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)
 ##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)

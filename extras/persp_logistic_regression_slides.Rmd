@@ -103,7 +103,18 @@ Numeric value | Port
 
 ## Linear function
 
-$$p(X) = \beta_0 + \beta_{1}X$$
+```{r linear-demo}
+# simulate fake binary data
+sim_logit <- data_frame(x = runif(1000, -5, 5),
+                        y = 0 + 1 * x)
+
+# graph it
+ggplot(sim_logit, aes(x, y)) +
+  geom_line() +
+  labs(title = expression(p(plain(X)) == beta[0] + beta[1] * plain(X)),
+       x = "X",
+       y = "p(X)")
+```
 
 ## Logistic function
 
@@ -133,7 +144,6 @@ $$p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age}}}{1 + e^{\beta_0 +
 
 ```{r titanic_age_glm}
 survive_age <- glm(Survived ~ Age, data = titanic, family = binomial)
-tidy(survive_age)
 ```
 
 ## Probability of surviving the Titanic
@@ -329,6 +339,56 @@ ggplot(titanic_age_sex, aes(Age, pred, color = Sex)) +
        y = "Predicted probability of survival",
        color = "Sex")
 ```
+
+## Predicted probabilities and first differences in multiple variable models
+
+$$p(X) = \frac{e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}{1 + e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}$$
+
+* Change in log-odds
+* Change in predicted probabilities
+
+## Age plus fare model
+
+```{r fd-non-parallel}
+# estimate logistic regression model of age and fare
+age_fare <- glm(Survived ~ Age + Fare, data = titanic, family = binomial)
+```
+
+```{r fd-non-parallel-pred}
+# generate predicted values
+age_fare_pred <- titanic %>%
+  data_grid(Age, Fare = seq(0, max(Fare), by = 100)) %>%
+  add_predictions(age_fare) %>%
+  mutate(prob = logit2prob(pred),
+         Fare = factor(Fare, levels = rev(seq(0, max(Fare), by = 100))))
+```
+
+```{r fd-non-parallel-logodds}
+# plot the new log-odds lines
+ggplot(age_fare_pred, aes(Age, pred, group = Fare, color = Fare)) +
+  geom_line() +
+  labs(title = expression(log(frac(p(plain(Survival)), 1 - p(plain(Survival)))) == (beta[0] + beta[2] * plain(Fare)) + beta[1] * plain(Age)),
+       subtitle = "Age + Fare model",
+       x = "Age",
+       y = "Log-odds of survival")
+```
+
+## Age plus fare model
+
+```{r fd-non-parallel-prob}
+# plot the new probability lines
+ggplot(age_fare_pred, aes(Age, prob, group = Fare, color = Fare)) +
+  geom_line() +
+  labs(title = expression(p(plain(Survival)) == frac(e ^ (beta[0] + beta[2] * plain(Fare) + beta[1] * plain(Age)), 1 + e ^ ((beta[0] + beta[2] * plain(Fare)) + beta[1] * plain(Age)))),
+       subtitle = "Age + Fare model",
+       x = "Age",
+       y = "Predicted probability of survival")
+```
+
+## Calculating FDs for multiple variable models
+
+* If continuous, median value
+* If discrete, modal value
 
 ## Interactive terms
 

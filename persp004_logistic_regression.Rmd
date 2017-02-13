@@ -28,6 +28,7 @@ knitr::opts_chunk$set(cache = TRUE,
 library(tidyverse)
 library(modelr)
 library(broom)
+library(forcats)
 
 options(na.action = na.warn)
 set.seed(1234)
@@ -177,6 +178,19 @@ The linear regression model above attempted to predict or explain $p(X)$ using t
 
 $$p(X) = \beta_0 + \beta_{1}X$$
 
+```{r linear-demo}
+# simulate fake binary data
+sim_logit <- data_frame(x = runif(1000, -5, 5),
+                        y = 0 + 1 * x)
+
+# graph it
+ggplot(sim_logit, aes(x, y)) +
+  geom_line() +
+  labs(title = "The linear function",
+       x = "X",
+       y = "p(X)")
+```
+
 But we now know that by using this functional form, we will always have for at least some subset of $\text{age}$ predicted values outside the $[0,1]$ range. Instead, we need to model the functional form to prevent values from exceeding this range. One such function is the **logistic function**:[^logit]
 
 $$p(X) = \frac{e^{\beta_0 + \beta_{1}X}}{1 + e^{\beta_0 + \beta_{1}X}}$$
@@ -188,10 +202,8 @@ logit2prob <- function(x){
 ```
 
 ```{r logit-demo}
-# simulate fake binary data
-sim_logit <- data_frame(x = runif(1000, -5, 5),
-                        y = 0 + 1 * x,
-                        prob = logit2prob(y))
+sim_logit <- sim_logit %>%
+  mutate(prob = logit2prob(y))
 
 # graph it
 ggplot(sim_logit, aes(x, prob)) +
@@ -260,7 +272,6 @@ prob30 <- predict(survive_age, newdata = data_frame(Age = 30), type = "response"
 ```
 
 $$p(\text{Survival}) = `r formatC(prob30[[1]], digits = 3)`$$
-
 
 ## Odds
 
@@ -482,9 +493,72 @@ ggplot(titanic_age_sex, aes(Age, pred, color = Sex)) +
        color = "Sex")
 ```
 
-The result is two lines that are parallel to each other. The addition of the gender parameter acts like an second intercept when we compare age to probability of survival. All that happens is the line shifts up or down based on the estimated gender parameter.
-
 Substantively, this graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's gender was much more important. Females survived at much higher rates than males, regardless of age.
+
+## Predicted probabilities and first differences in multiple variable models
+
+Mathematically, the result is two lines that are parallel to each other **in the log-odds functional form**. The addition of the gender parameter acts like an second intercept when we compare age to probability of survival. All that happens is the line shifts up or down based on the estimated gender parameter.
+
+In terms of predicted probabilities and first differences, **this is not true**. Remember the logistic function:
+
+$$p(X) = \frac{e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}{1 + e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}$$
+
+Because of the exponential transformation, $\beta_2$ now has a non-linear impact on the predicted probabilities. For clarity, let's estimate a logistic regression model of the effect of age and fare on survival:
+
+```{r fd-non-parallel}
+# estimate logistic regression model of age and fare
+age_fare <- glm(Survived ~ Age + Fare, data = titanic, family = binomial)
+tidy(age_fare)
+```
+
+And generate predicted log-odds and probabilities of survival for a series of hypothetical passengers, varying the fare amount paid.
+
+```{r fd-non-parallel-pred}
+# generate predicted values
+age_fare_pred <- titanic %>%
+  data_grid(Age, Fare = seq(0, max(Fare), by = 100)) %>%
+  add_predictions(age_fare) %>%
+  mutate(prob = logit2prob(pred),
+         Fare = factor(Fare, levels = rev(seq(0, max(Fare), by = 100))))
+```
+
+Below is the plot of the log-odds for this regression model. To draw the line, all we did was draw the line for the relationship between age and expected log-odds of survival, holding fare constant at different levels.
+
+$$\log\left(\frac{p(\text{Survival})}{1 - p(\text{Survival})}\right) = \beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Fare}$$
+
+$$\log\left(\frac{p(\text{Survival})}{1 - p(\text{Survival})}\right) = (\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}$$
+
+Notice that each line is parallel to each other, because all that $\hat{\beta}_{2}$ did was change the intercept for the controlled relationship between age and log-odds of survival.
+
+```{r fd-non-parallel-logodds}
+# plot the new log-odds lines
+ggplot(age_fare_pred, aes(Age, pred, group = Fare, color = Fare)) +
+  geom_line() +
+  labs(title = "Log-odds of survival",
+       subtitle = "Age + Fare model",
+       x = "Age",
+       y = "Log-odds of survival")
+```
+
+Now see what happens when we do the same thing but using predicted probabilities instead.
+
+$$p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Fare}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Fare}}}$$
+
+$$p(\text{Survival}) = \frac{e^{(\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}}}{1 + e^{(\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}}}$$
+
+Because of the exponential transformation, even if we hold fare constant, **the resulting probability curve will non-linearly change for different fare values**.
+
+```{r fd-non-parallel-prob}
+# plot the new probability lines
+ggplot(age_fare_pred, aes(Age, prob, group = Fare, color = Fare)) +
+  geom_line() +
+  labs(title = "Predicted probability of survival",
+       subtitle = "Age + Fare model",
+       x = "Age",
+       y = "Predicted probability of survival")
+```
+
+So when calculating first differences and predicted probabilities for a single variable in a multiple variable logistic regression models, **the values at which you hold the other variables constant will directly influence your results**. The general rule of thumb is to hold the other variables constant at their **median** (if continuous) or **modal** (if discrete) values.
 
 ## Interactive terms
 
