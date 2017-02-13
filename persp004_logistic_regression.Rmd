@@ -114,6 +114,8 @@ So if this is our data, `Survived` is our **response variable**, and the remaini
 
 Let's concentrate first on the relationship between age and survival. Using the methods we previously learned, we could estimate a linear regression model:
 
+$$Y = \beta_0 + \beta_{1}X$$
+
 ```{r titanic_ols}
 ggplot(titanic, aes(Age, Survived)) +
   geom_point() +
@@ -493,6 +495,7 @@ $$p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{S
 However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? That is, the parameter for age is different for men and women? This possibility would take the functional form:
 
 $$p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_{3} \times \text{Age} \times \text{Sex}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_{3} \times \text{Age} \times \text{Sex}}}$$
+
 This is considered an **interaction** between age and gender. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://pan-oxfordjournals-org.proxy.uchicago.edu/content/14/1/63.full.pdf+html)]
 
 ```{r age_woman_cross}
@@ -511,13 +514,13 @@ $$p(\text{Survival}_{female}) = \frac{e^{\beta_0 + \beta_{1}\text{Age}}}{1 + e^{
 
 However for men, the resulting equation looks different:
 
-$$p(\text{Survival}_{female}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age} \times 1}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age} \times 1}}$$
+$$p(\text{Survival}_{male}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age} \times 1}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age} \times 1}}$$
 
 which reduces to
 
-$$p(\text{Survival}_{female}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age}}}$$
+$$p(\text{Survival}_{male}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age}}}$$
 
-$$p(\text{Survival}_{female}) = \frac{e^{\beta_0 + (\beta_{1} + \beta_{3})\text{Age}}}{1 + e^{\beta_0 + (\beta_{1} + \beta_{3})\text{Age}}}$$
+$$p(\text{Survival}_{male}) = \frac{e^{\beta_0 + (\beta_{1} + \beta_{3})\text{Age}}}{1 + e^{\beta_0 + (\beta_{1} + \beta_{3})\text{Age}}}$$
 
 Let's plot the interactive effects of age and gender by estimating the log-odds and predicted probability of survival.
 
@@ -646,11 +649,11 @@ $$PRE_{\text{Age}} = `r (sum(survive_age$y != median(survive_age$y)) - sum(survi
 
 For the interactive age and gender model, the PRE is
 
-$$PRE_{\text{Age}} = \frac{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y))` - `r sum(survive_age_woman_x$y != round(survive_age_woman_x$fitted.values))`}{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y))`}$$
+$$PRE_{\text{Age x Gender}} = \frac{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y))` - `r sum(survive_age_woman_x$y != round(survive_age_woman_x$fitted.values))`}{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y))`}$$
 
-$$PRE_{\text{Age}} = \frac{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y)) - sum(survive_age_woman_x$y != round(survive_age_woman_x$fitted.values))`}{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y))`}$$
+$$PRE_{\text{Age x Gender}} = \frac{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y)) - sum(survive_age_woman_x$y != round(survive_age_woman_x$fitted.values))`}{`r sum(survive_age_woman_x$y != median(survive_age_woman_x$y))`}$$
 
-$$PRE_{\text{Age}} = `r formatC((sum(survive_age_woman_x$y != median(survive_age_woman_x$y)) - sum(survive_age_woman_x$y != round(survive_age_woman_x$fitted.values))) / sum(survive_age_woman_x$y != median(survive_age_woman_x$y)) * 100, digits = 3)`\%$$
+$$PRE_{\text{Age x Gender}} = `r formatC((sum(survive_age_woman_x$y != median(survive_age_woman_x$y)) - sum(survive_age_woman_x$y != round(survive_age_woman_x$fitted.values))) / sum(survive_age_woman_x$y != median(survive_age_woman_x$y)) * 100, digits = 3)`\%$$
 
 We've reduced the error from the useless classifier by $`r formatC(PRE(survive_age_woman_x) * 100, digits = 3)`\%$
 
