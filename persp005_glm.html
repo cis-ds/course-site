@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: generalized linear models</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: generalized linear models</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Define the generalized linear model (GLM)</li>
+<li>Identify the three elements of a GLM
+<ul>
+<li>Probability distribution</li>
+<li>Linear predictor</li>
+<li>Link function</li>
+</ul></li>
+<li>Explain ordinary least squares regression as a GLM</li>
+<li>Explain logistic regression as a GLM</li>
+<li>Introduce ordinal and multinomial logistic regression for discrete variables with more than two classes</li>
+<li>Introduce poisson regression for count data</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(haven)
+<span class="kw">library</span>(MASS)
+
+<span class="kw">options</span>(<span class="dt">na.action =</span> na.warn)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="generalized-linear-models" class="section level1">
+<h1>Generalized linear models</h1>
+<p><strong>Generalized linear models</strong> are a flexible class of models that allow us to estimate linear regression for response variables that have error distribution models other than the normal distribution. GLMs are typically estimated via maximum likelihood estimation, though can also be estimated via generalized method of moments as well as Bayesian procedures.</p>
+</div>
+<div id="elements-of-a-glm" class="section level1">
+<h1>Elements of a GLM</h1>
+<p>A GLM consists of three components</p>
+<ol style="list-style-type: decimal">
+<li>A <strong>random component</strong> specifying the conditional distribution of the response variable, <span class="math inline">\(Y_i\)</span>, given the values of the predictor variables in the model. Typically these distributions are a member of the <a href="https://en.wikipedia.org/wiki/Exponential_family"><strong>exponential family</strong></a>, a set of related probability distributions.</li>
+<li><p>A <strong>linear predictor</strong> that is a linear function of regressors:</p>
+<p><span class="math display">\[\eta_i = \alpha + \beta_{1}X_{i1} + \beta_{2}X_{i2} + \dots + \beta_{k}X_{ik}\]</span></p>
+The regressors are prespecified functions of the explanatory variables. This is exactly like the form you’ve seen for <a href="persp003_linear_regression.html">linear</a> and <a href="persp004_logistic_regression.html">logistic</a> regression, because in fact linear and logistic regression are types of GLMs.</li>
+<li><p>A <strong>link function</strong> <span class="math inline">\(g(\cdot)\)</span> which transforms the expectation of the response variable, <span class="math inline">\(\mu_i \equiv E(Y_i)\)</span> to the linear predictor:</p>
+<p><span class="math display">\[g(\mu_i) = \eta_i = \alpha + \beta_{1}X_{i1} + \beta_{2}X_{i2} + \dots + \beta_{k}X_{ik}\]</span></p>
+<p>Because the link function must also be <strong>invertible</strong>, we can also write it as:</p>
+<p><span class="math display">\[\mu_i = g^{-1}(\eta_i) = g^{-1}(\alpha + \beta_{1}X_{i1} + \beta_{2}X_{i2} + \dots + \beta_{k}X_{ik})\]</span></p>
+<p>The inverted link function is also known as the <strong>mean function</strong>. The purpose of the link function is to relate the linear predictor to the mean of the distribution function.</p></li>
+</ol>
+<p>For any given probability distribution, there are common link functions called <strong>canonical link functions</strong> that are typically used in conjunction with the probability distribution in GLMs.</p>
+</div>
+<div id="glms-and-ordinary-least-squares-regression" class="section level1">
+<h1>GLMs and ordinary least squares regression</h1>
+<p>Previously we have discussed ordinary least squares regression in the context of <strong>minimizing the sum of the squared errors</strong>. This approach has a closed-form solution in the form of linear algebra:</p>
+<p><span class="math display">\[\beta = (X^{&#39;}X)^{-1}X^{&#39;}Y\]</span></p>
+<p>However we can also treat OLS as a special case of a generalized linear model.</p>
+<p>We presume the response variable <span class="math inline">\(Y\)</span> is drawn from a Gaussian (normal) distribution with mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma^2\)</span>:</p>
+<p><span class="math display">\[Pr(Y_i = y_i) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\]</span></p>
+<p>This is the density, or probability density function (PDF) of the variable <span class="math inline">\(Y\)</span>.</p>
+<ul>
+<li>The probability that, for any one observation <span class="math inline">\(i\)</span>, <span class="math inline">\(Y\)</span> will take on the particular value <span class="math inline">\(y\)</span>.</li>
+<li>This is a function of <span class="math inline">\(\mu\)</span>, the expected value of the distribution, and <span class="math inline">\(\sigma^2\)</span>, the variability of the distribution around the mean.</li>
+</ul>
+<p>We want to generate estimates of the parameters <span class="math inline">\(\hat{\mu}\)</span> and <span class="math inline">\(\hat{\sigma^2}\)</span> based on the data. How do we do this? Maximum likelihood estimation of course. We need to find the parameter values that maximize the <strong>log-likelihood function</strong>. For the normal distribution, the log-likelihood function is:</p>
+<p><span class="math display">\[\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \ln \prod_{i = 1}^{N}{\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]}\]</span></p>
+<p>Which can also be written as:</p>
+<p><span class="math display">\[\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \sum_{i=1}^{N}{\ln\left(\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\right)}\]</span> <span class="math display">\[\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \mu)^2 \right]\]</span></p>
+<p>Now right now the mean of the distribution <span class="math inline">\(\mu\)</span> is a constant. We are testing different values for <span class="math inline">\(\mu\)</span> to see what optimizes the function. But more typically we want <span class="math inline">\(\mu\)</span> to be a function of some other variable <span class="math inline">\(X\)</span>. We can write this as:</p>
+<p><span class="math display">\[E(Y) \equiv \mu = \beta_0 + \beta_{1}X_{i}\]</span> <span class="math display">\[\mathrm{Var}(Y) = \sigma^2\]</span></p>
+<p>Now we just substitute this equation for the systematic mean part (<span class="math inline">\(\mu\)</span>) in the previous equations:</p>
+<p><span class="math display">\[\ln L(\beta_0, \beta_1, \sigma^2 | Y) = \ln \prod_{i = 1}^{N}{\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \beta_0 - \beta_{1}X_{i})^2}{2\sigma^2}\right]}\]</span> <span class="math display">\[\ln L(\beta_0, \beta_1, \sigma^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \beta_0 - \beta_{1}X_{i})^2 \right]\]</span></p>
+<div id="connecting-mle-estimator-to-ols" class="section level2">
+<h2>Connecting MLE estimator to OLS</h2>
+<p>With respect to the parameters <span class="math inline">\(\{\beta_0, \beta_1, \sigma^2\}\)</span>, only the last term is important. The first one (<span class="math inline">\(-\frac{N}{2} \ln(2\pi)\)</span>) is invariant with respect to the parameters of interest, and so it can be dropped using the <em>Fisher-Neyman Factorization Lemma</em>. Thus the <strong>kernal</strong> of the log-likelihood is:</p>
+<p><span class="math display">\[-\sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \beta_0 - \beta_{1}X_{i})^2\]</span></p>
+<p>Which is eeriely familiar to the sum-of-squared-errors term, merely scaled by the variance parameter <span class="math inline">\(\sigma^2\)</span>:</p>
+<p><span class="math display">\[RSS = \sum_{i = 1}^{N} (Y_i - \beta_0 - \beta_{1}X_{i})^2\]</span></p>
+<p>This proves the least-squares estimator of OLS <span class="math inline">\(\beta\)</span>s <strong>is the maximum likelihood estimator as well</strong>.</p>
+</div>
+<div id="completing-the-elements" class="section level2">
+<h2>Completing the elements</h2>
+<p>So far we have the random component (a normal distribution) and a linear predictor (<span class="math inline">\(\beta_0 + \beta_{1}X_{i}\)</span>). Where is the link function? We actually have it already too. Because the normal distribution already supports an infinite range of real numbers <span class="math inline">\((-, +\infty)\)</span>, the data naturally scaled to the linear predictor. What we use here is an <strong>identity link function</strong> that returns its argument unaltered:</p>
+<p><span class="math display">\[\eta_i = g(\mu_i) = \mu_i\]</span> <span class="math display">\[\mu_i = g^{-1}(\eta_i) = \eta_i\]</span></p>
+<p>Therefore with ordinary least squares linear regression, we have now demonstrated that it is merely one type of generalized linear model.</p>
+</div>
+</div>
+<div id="glms-and-logistic-regression" class="section level1">
+<h1>GLMs and logistic regression</h1>
+<p>The normal distribution does not properly describe binary outcome variables which take on values of <span class="math inline">\([0,1]\)</span>, because the normal distribution allows for values along the entire real number line. This was the problem last class in trying to apply OLS to the Titanic dataset.</p>
+<p>Instead, we assume our outcome variable <span class="math inline">\(Y\)</span> is drawn from the <strong>binomial distribution</strong> with probability <span class="math inline">\(\pi\)</span>:</p>
+<p><span class="math display">\[Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}\]</span></p>
+<p>This is a probability mass function (PMF):</p>
+<ul>
+<li>The probability that, for any one observation <span class="math inline">\(i\)</span>, <span class="math inline">\(Y\)</span> will take on the particular value <span class="math inline">\(y\)</span>.</li>
+<li>This is a function of <span class="math inline">\(\mu\)</span>, the expected value of <span class="math inline">\(Y_i\)</span> that takes on the value 1 across repeated experiments. So <span class="math inline">\(Y_i\)</span> takes on the expected value of 1 with probability <span class="math inline">\(\pi\)</span> and 0 with probability <span class="math inline">\(1 - \pi\)</span>.</li>
+</ul>
+<p>Of course, the probability of the outcome <span class="math inline">\(Y\)</span> may vary systematically given known predictors. To incorporate that into the model, we need to choose a linear predictor:</p>
+<p><span class="math display">\[\pi \equiv \eta = g(\mu)\]</span></p>
+<p>Now in the linear context we would write something like this:</p>
+<p><span class="math display">\[g(\mu_i) = \beta_0 + \beta_{1}X_i\]</span></p>
+<p>However remember the problem with that approach using the Titanic data. We need to constrain the linear predictor to the probability range <span class="math inline">\([0,1]\)</span>. So in logistic regression, we cannot use the identity link function. Instead, we use the <strong>logit link function</strong>:</p>
+<p><span class="math display">\[g(\mu_i) = \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}}\]</span></p>
+<p>So to recap, for logistic regression:</p>
+<ul>
+<li><p>The random component is the Bernoulli distribution</p>
+<p><span class="math display">\[Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}\]</span></p></li>
+<li><p>The linear predictor is:</p>
+<p><span class="math display">\[\eta_i = \beta_0 + \beta_{1}X_i\]</span></p></li>
+<li><p>The link function is the logit function:</p>
+<p><span class="math display">\[\mu_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}}\]</span></p></li>
+</ul>
+<p>So the likelihood for a given observation <span class="math inline">\(i\)</span> is:</p>
+<p><span class="math display">\[L_i = \left( \frac{e^{\eta_i}}{1 + e^{\eta_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\eta_i}}{1 + e^{\eta_i}} \right) \right]^{1 - Y_i}\]</span></p>
+<p><span class="math display">\[L_i = \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]^{1 - Y_i}\]</span></p>
+<p>The product of which yields the likelihood function:</p>
+<p><span class="math display">\[L = \prod_{i = 1}^{N} \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]^{1 - Y_i}\]</span></p>
+<p>And therefore the log-likelihood function:</p>
+<p><span class="math display">\[\ln L = \sum_{i = 1}^{N} Y_i \ln \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) + (1 - Y_i) \ln \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]\]</span></p>
+<p>Which we maximize with respect to the <span class="math inline">\(\beta\)</span>s to obtain our estimated parameters, just as we would linear regression.</p>
+</div>
+<div id="poisson-regression" class="section level1">
+<h1>Poisson regression</h1>
+<p>The <strong>Poisson distribution</strong> is a discrete probability function defined by:</p>
+<p><span class="math display">\[P(Y_i = y_i | \mu) = \frac{\mu^{k} e^{-y_i}}{y_i!}\]</span></p>
+<p>where <span class="math inline">\(\mu\)</span> is the event rate (average number of events per interval), <span class="math inline">\(e\)</span> is Euler’s number, <span class="math inline">\(y_i\)</span> is an integer with range <span class="math inline">\([0, \infty]\)</span>, and <span class="math inline">\(y_i!\)</span> is the factorial of <span class="math inline">\(y_i\)</span>. The mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma\)</span> of a Poisson distribution are the same parameterm and hence are both defined by <span class="math inline">\(\mu\)</span>.</p>
+<p>The Poisson distribution is ideal for explaining <strong>count variables</strong>, where the variable contains frequency counts of events occurring. This could include things such as:</p>
+<ul>
+<li>Number of persons killed by mule or horse kicks in the Prussian army per year (this was one of the first applications of the Poisson distribution)</li>
+<li>Number of terrorist attacks in a country per year</li>
+<li>Number of times an individual consumes ice cream per month</li>
+</ul>
+<p>Count variables can take on non-negative integer values <span class="math inline">\(\{ 0,1,2,3,\dots \}\)</span>. To estimate a poisson regression model, we need the following elements:</p>
+<ul>
+<li><p>The random component is the Poisson distribution:</p>
+<p><span class="math display">\[P(Y_i = y_i | \mu) = \frac{\mu^{k} e^{-y_i}}{y_i!}\]</span></p></li>
+<li><p>The linear predictor is</p>
+<p><span class="math display">\[\eta_i = \beta_0 + \beta_{1}X_i\]</span></p></li>
+<li><p>The canonical link function for the Poisson distribution is the <strong>log function</strong></p>
+<p><span class="math display">\[\mu_i = \ln(\eta_i)\]</span></p></li>
+</ul>
+<p>So after substituting terms, we need to estimate the parameters that maximize the log-likelihood of:</p>
+<p><span class="math display">\[P(Y_i = y_i | \beta_0, \beta_1) = \frac{\ln(\beta_0 + \beta_{1}X_i)^{k} e^{-y_i}}{y_i!}\]</span></p>
+<p>Let’s test this method using some real-world data.</p>
+<div id="internal-armed-conflict-in-africa" class="section level2">
+<h2>Internal armed conflict in Africa</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa &lt;-<span class="st"> </span><span class="kw">read_dta</span>(<span class="st">&quot;data/internal-conflict.dta&quot;</span>)
+africa</code></pre></div>
+<pre><code>## # A tibble: 650 × 12
+##    ccode  year cabbr INTERNAL latitude longitude literacy refugees
+##    &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1    404  1995              0 12.07582 -14.64071     44.0    15400
+## 2    404  1996              0 12.07582 -14.64071     42.5    15400
+## 3    404  1997   GNB        0 12.07582 -14.64071     41.0    16000
+## 4    404  1998              0 12.07582 -14.64071     39.5     6600
+## 5    404  1999   GNB        0 12.07582 -14.64071     38.0     7100
+## 6    404  2000              0 12.07582 -14.64071     40.0     7600
+## 7    404  2001   GNB        0 12.07582 -14.64071     42.0     7300
+## 8    404  2002              0 12.07582 -14.64071     44.0     7600
+## 9    404  2003              0 12.07582 -14.64071     46.0     7600
+## 10   404  2004              0 12.07582 -14.64071     48.0     7536
+## # ... with 640 more rows, and 4 more variables: lnRefs &lt;dbl&gt;, lnGDP &lt;dbl&gt;,
+## #   lnTrade &lt;dbl&gt;, PolityLag &lt;dbl&gt;</code></pre>
+<p><code>africa</code> contains annual measures for 50 African countries from 1995-2007. The response variable <code>INTERNAL</code> contains a count of internal armed conflicts (aka civil wars and insurgencies) for each country in each year. Additional covariates include:</p>
+<ul>
+<li>Measures of latitude and longitude</li>
+<li>Adult literacy rate</li>
+<li>Number of refugees living in the country</li>
+<li>Lagged natural log of GDP and trade (in constant dollars)</li>
+<li>Lagged polity score (ranging from -10 to +10, with 10 = democracy)</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(africa, <span class="kw">aes</span>(INTERNAL)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/africa-hist-1.png" width="672" /></p>
+<p>To estimate a Poisson regression model, we use the <code>glm()</code> function with <code>family = &quot;poisson&quot;</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(INTERNAL ~<span class="st"> </span>literacy, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>, <span class="dt">data =</span> africa)
+<span class="kw">summary</span>(africa_mod)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = INTERNAL ~ literacy, family = &quot;poisson&quot;, data = africa)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1706  -0.6836  -0.5112  -0.4111   2.8078  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept) -0.0002775  0.2706730  -0.001    0.999    
+## literacy    -0.0290697  0.0050831  -5.719 1.07e-08 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 405.45  on 563  degrees of freedom
+## Residual deviance: 372.10  on 562  degrees of freedom
+##   (86 observations deleted due to missingness)
+## AIC: 584.23
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<div id="interpreting-estimated-parameters" class="section level3">
+<h3>Interpreting estimated parameters</h3>
+<p>In linear regression, the parameters tell us the estimated linear relationship between the predictor and the response variable. In logistic regression, the parameters tell us the estimated linear relationship between the predictor and the log-odds of the response variable. In Poisson regression, the parameters tell us the estimated linear relationship between the predictor and the log-count of the response variable. So the parameter for <code>literacy</code> suggests that for every one-unit increase in adult literacy, we expect the log of the number of internal armed conflicts to decrease by 0.0290697.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(literacy) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(africa_mod) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(literacy, pred)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Literacy&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted log-count of internal armed conflicts&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/africa-mod-plot-1.png" width="672" /></p>
+<p>If we want to discuss the results in terms of the predicted count of the response variable, we need to <strong>exponentiate</strong> the parameters and predicted values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(<span class="kw">coef</span>(africa_mod))</code></pre></div>
+<pre><code>## (Intercept)    literacy 
+##   0.9997225   0.9713488</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(literacy) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(africa_mod) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">exp</span>(pred)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(literacy, pred)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Literacy&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted count of internal armed conflicts&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/africa-exp-1.png" width="672" /></p>
+<p>And so like with logistic regression, the relationship between predictors and the predicted log-count is linear, whereas the relationship between predictors and the predicted count is non-linear.</p>
+</div>
+<div id="multiple-predictors" class="section level3">
+<h3>Multiple predictors</h3>
+<p>Like with other GLMs, we can add multiple predictors to the model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa_big &lt;-<span class="st"> </span><span class="kw">glm</span>(INTERNAL ~<span class="st"> </span>literacy +<span class="st"> </span>PolityLag,
+                  <span class="dt">data =</span> africa, <span class="dt">family =</span> <span class="st">&quot;poisson&quot;</span>)
+<span class="kw">summary</span>(africa_big)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = INTERNAL ~ literacy + PolityLag, family = &quot;poisson&quot;, 
+##     data = africa)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.3804  -0.6773  -0.5169  -0.3424   2.8026  
+## 
+## Coefficients:
+##              Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  0.111814   0.286781   0.390    0.697    
+## literacy    -0.030630   0.005394  -5.679 1.36e-08 ***
+## PolityLag   -0.047329   0.019465  -2.432    0.015 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for poisson family taken to be 1)
+## 
+##     Null deviance: 380.81  on 520  degrees of freedom
+## Residual deviance: 341.96  on 518  degrees of freedom
+##   (129 observations deleted due to missingness)
+## AIC: 544.08
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(literacy, <span class="dt">PolityLag =</span> <span class="kw">seq</span>(-<span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">4</span>)) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(africa_big) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">exp</span>(pred),
+         <span class="dt">PolityLag =</span> <span class="kw">factor</span>(PolityLag)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(literacy, pred, <span class="dt">color =</span> PolityLag)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Literacy&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted count of internal armed conflicts&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/africa-mod-big-1.png" width="672" /></p>
+</div>
+</div>
+<div id="over-or-underdispersion" class="section level2">
+<h2>Over or underdispersion</h2>
+<p>Recall that the Poisson distribution assumes that the mean and variance are identical. What happens if this assumption is violated? Sometimes this is the result of omitted variable bias, and we are just not accounting for all the variables that are included in the underlying data generating process. However if the variable truly has a conditional variance different from the conditional mean, then the Poisson distribution is not the most appropriate random component for the data.</p>
+<p>There are a couple ways to test for overdispersion (variance larger than the mean) or underdispersion (variance smaller than the mean). One method is to estimate a <strong>quasi-poisson model</strong>. It still relies on the Poisson distribution, but introduces a dispersion parameter:</p>
+<p><span class="math display">\[V(Y_i | \eta_i) = \phi \mu_i\]</span></p>
+<p>If <span class="math inline">\(\phi &gt; 1\)</span>, then the conditional variance of <span class="math inline">\(Y\)</span> increases more rapidly than its mean (overdispersion). Estimating this dispersion parameter requires <strong>quasi-likelihood</strong> estimation which combines aspects of maximum-likelihood and method-of-moments and is beyond the scope of this class. However it yields virtually identical estimates of the parameters, and in the case of overdispersion will also yield larger (and more realistic) standard errors.</p>
+<p>Let’s estimate the original African regression model using the quasi-poisson method:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa_quasimod &lt;-<span class="st"> </span><span class="kw">glm</span>(INTERNAL ~<span class="st"> </span>literacy, <span class="dt">family =</span> <span class="st">&quot;quasipoisson&quot;</span>, <span class="dt">data =</span> africa)
+<span class="kw">summary</span>(africa_quasimod)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = INTERNAL ~ literacy, family = &quot;quasipoisson&quot;, data = africa)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1706  -0.6836  -0.5112  -0.4111   2.8078  
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) -0.0002775  0.2630325  -0.001    0.999    
+## literacy    -0.0290697  0.0049396  -5.885 6.84e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for quasipoisson family taken to be 0.9443412)
+## 
+##     Null deviance: 405.45  on 563  degrees of freedom
+## Residual deviance: 372.10  on 562  degrees of freedom
+##   (86 observations deleted due to missingness)
+## AIC: NA
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>Here the disperson parameter is actually quite close to 1, so underdispersion doesn’t appear to be a significant problem. What about for the full model?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">africa_quasibig &lt;-<span class="st"> </span><span class="kw">glm</span>(INTERNAL ~<span class="st"> </span>literacy +<span class="st"> </span>PolityLag,
+                  <span class="dt">data =</span> africa, <span class="dt">family =</span> <span class="st">&quot;quasipoisson&quot;</span>)
+<span class="kw">summary</span>(africa_quasibig)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = INTERNAL ~ literacy + PolityLag, family = &quot;quasipoisson&quot;, 
+##     data = africa)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.3804  -0.6773  -0.5169  -0.3424   2.8026  
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  0.111814   0.278662   0.401   0.6884    
+## literacy    -0.030630   0.005241  -5.844 9.01e-09 ***
+## PolityLag   -0.047329   0.018914  -2.502   0.0126 *  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for quasipoisson family taken to be 0.944181)
+## 
+##     Null deviance: 380.81  on 520  degrees of freedom
+## Residual deviance: 341.96  on 518  degrees of freedom
+##   (129 observations deleted due to missingness)
+## AIC: NA
+## 
+## Number of Fisher Scoring iterations: 6</code></pre>
+<p>Still quite similar to 1.</p>
+</div>
+</div>
+<div id="ordinal-logistic-regression" class="section level1">
+<h1>Ordinal logistic regression</h1>
+<p>Consider the case where your response variable contains more than 2 possible values and they are inherently ordered. Survey research typically contains answers measured using a Likert scale (strongly agree, agree, neither agree nor disagree, disagree, strongly disagree). What method should you use? Linear regression is not appropriate because the variable is discrete. Depending on the number of levels, some researchers may attempt to treat it as a continuous variable but when you only have 3-5 values this doesn’t work very well. Logistic regression sounds like it would work but so far we have only used it in situations where there are two possible outcomes. Can we generalize it to a larger number of response values?</p>
+<p>Yes we can. This is called <strong>ordinal logistic regression</strong>. It works in situations where you have more than two possible outcomes and they contain an inherent ordering. Let’s see how this works using a simulated dataset of individuals applying to graduate school.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;http://www.ats.ucla.edu/stat/data/ologit.csv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">apply =</span> <span class="kw">factor</span>(apply, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">2</span>,
+                        <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat unlikely&quot;</span>, <span class="st">&quot;Very likely&quot;</span>)))
+dat</code></pre></div>
+<pre><code>## # A tibble: 400 × 4
+##                apply pared public   gpa
+##               &lt;fctr&gt; &lt;int&gt;  &lt;int&gt; &lt;dbl&gt;
+## 1        Very likely     0      0  3.26
+## 2  Somewhat unlikely     1      0  3.21
+## 3           Unlikely     1      1  3.94
+## 4  Somewhat unlikely     0      0  2.81
+## 5  Somewhat unlikely     0      0  2.53
+## 6           Unlikely     0      1  2.59
+## 7  Somewhat unlikely     0      0  2.56
+## 8  Somewhat unlikely     0      0  2.73
+## 9           Unlikely     0      0  3.00
+## 10 Somewhat unlikely     1      0  3.50
+## # ... with 390 more rows</code></pre>
+<p>Each observation is an individual asked if they are going to apply to graduate school. The variables are:</p>
+<ul>
+<li><code>apply</code> - whether or not the student intends to apply. Possible levels are “Unlikely”, “Somewhat unlikely”, and “Very likely”, coded as 0, 1, 2 respectively.</li>
+<li><code>pared</code> - binary indicator of whether at least one parent has a graduate degree.</li>
+<li><code>public</code> - binary indicator of whether their undergraduate institution is a public university.</li>
+<li><code>gpa</code> - student’s grade point average.</li>
+</ul>
+<p>We can use the <code>polr</code> function from the <code>MASS</code> library to estimate the ordered logistic regression model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m &lt;-<span class="st"> </span><span class="kw">polr</span>(apply ~<span class="st"> </span>pared +<span class="st"> </span>public +<span class="st"> </span>gpa, <span class="dt">data =</span> dat, <span class="dt">Hess=</span><span class="ot">TRUE</span>)
+<span class="kw">summary</span>(m)</code></pre></div>
+<pre><code>## Call:
+## polr(formula = apply ~ pared + public + gpa, data = dat, Hess = TRUE)
+## 
+## Coefficients:
+##           Value Std. Error t value
+## pared   1.04769     0.2658  3.9418
+## public -0.05879     0.2979 -0.1974
+## gpa     0.61594     0.2606  2.3632
+## 
+## Intercepts:
+##                               Value   Std. Error t value
+## Unlikely|Somewhat unlikely     2.2039  0.7795     2.8272
+## Somewhat unlikely|Very likely  4.2994  0.8043     5.3453
+## 
+## Residual Deviance: 717.0249 
+## AIC: 727.0249</code></pre>
+<p>The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the cut points used to determine</p>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-02-14                  
+## 
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom      * 0.4.1   2016-06-24 CRAN (R 3.3.0)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven      * 1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr        1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  MASS       * 7.3-45  2016-04-21 CRAN (R 3.3.2)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -289,8 +289,32 @@ africa %>%
        y = "Predicted count of internal armed conflicts")
 ```
 
-### Overdispersion
-    
+## Over or underdispersion
+
+Recall that the Poisson distribution assumes that the mean and variance are identical. What happens if this assumption is violated? Sometimes this is the result of omitted variable bias, and we are just not accounting for all the variables that are included in the underlying data generating process. However if the variable truly has a conditional variance different from the conditional mean, then the Poisson distribution is not the most appropriate random component for the data.
+
+There are a couple ways to test for overdispersion (variance larger than the mean) or underdispersion (variance smaller than the mean). One method is to estimate a **quasi-poisson model**. It still relies on the Poisson distribution, but introduces a dispersion parameter:
+
+$$V(Y_i | \eta_i) = \phi \mu_i$$
+
+If $\phi > 1$, then the conditional variance of $Y$ increases more rapidly than its mean (overdispersion). Estimating this dispersion parameter requires **quasi-likelihood** estimation which combines aspects of maximum-likelihood and method-of-moments and is beyond the scope of this class. However it yields virtually identical estimates of the parameters, and in the case of overdispersion will also yield larger (and more realistic) standard errors.
+
+Let's estimate the original African regression model using the quasi-poisson method:
+
+```{r africa-quasi}
+africa_quasimod <- glm(INTERNAL ~ literacy, family = "quasipoisson", data = africa)
+summary(africa_quasimod)
+```
+
+Here the disperson parameter is actually quite close to 1, so underdispersion doesn't appear to be a significant problem. What about for the full model?
+
+```{r africa-quasi-big}
+africa_quasibig <- glm(INTERNAL ~ literacy + PolityLag,
+                  data = africa, family = "quasipoisson")
+summary(africa_quasibig)
+```
+
+Still quite similar to 1.
 
 # Ordinal logistic regression
 
