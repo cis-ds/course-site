@@ -23,7 +23,6 @@ knitr::opts_chunk$set(cache = TRUE,
     * Link function
 * Explain ordinary least squares regression as a GLM
 * Explain logistic regression as a GLM
-* Introduce the binomial distribution for GLMs
 * Introduce ordinal and multinomial logistic regression for discrete variables with more than two classes
 * Introduce poisson regression for count data
 
@@ -31,7 +30,8 @@ knitr::opts_chunk$set(cache = TRUE,
 library(tidyverse)
 library(modelr)
 library(broom)
-library(forcats)
+library(haven)
+library(MASS)
 
 options(na.action = na.warn)
 set.seed(1234)
@@ -120,8 +120,209 @@ So far we have the random component (a normal distribution) and a linear predict
 $$\eta_i = g(\mu_i) = \mu_i$$
 $$\mu_i = g^{-1}(\eta_i) = \eta_i$$
 
+Therefore with ordinary least squares linear regression, we have now demonstrated that it is merely one type of generalized linear model.
 
-   
+# GLMs and logistic regression
+
+The normal distribution does not properly describe  binary outcome variables which take on values of $[0,1]$, because the normal distribution allows for values along the entire real number line. This was the problem last class in trying to apply OLS to the Titanic dataset.
+
+Instead, we assume our outcome variable $Y$ is drawn from the **binomial distribution** with probability $\pi$:
+
+$$Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}$$
+
+This is a probability mass function (PMF):
+
+* The probability that, for any one observation $i$, $Y$ will take on the particular value $y$.
+* This is a function of $\mu$, the expected value of $Y_i$ that takes on the value 1 across repeated experiments. So $Y_i$ takes on the expected value of 1 with probability $\pi$ and 0 with probability $1 - \pi$.
+
+Of course, the probability of the outcome $Y$ may vary systematically given known predictors. To incorporate that into the model, we need to choose a linear predictor:
+
+$$\pi \equiv \eta = g(\mu)$$
+
+Now in the linear context we would write something like this:
+
+$$g(\mu_i) = \beta_0 + \beta_{1}X_i$$
+
+However remember the problem with that approach using the Titanic data. We need to constrain the linear predictor to the probability range $[0,1]$. So in logistic regression, we cannot use the identity link function. Instead, we use the **logit link function**:
+
+$$g(\mu_i) = \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}}$$
+
+So to recap, for logistic regression:
+
+* The random component is the Bernoulli distribution
+
+    $$Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}$$
+
+* The linear predictor is:
+
+    $$\eta_i = \beta_0 + \beta_{1}X_i$$
+
+* The link function is the logit function:
+
+    $$\mu_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}}$$
+
+So the likelihood for a given observation $i$ is:
+
+$$L_i = \left( \frac{e^{\eta_i}}{1 + e^{\eta_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\eta_i}}{1 + e^{\eta_i}} \right) \right]^{1 - Y_i}$$
+
+$$L_i = \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]^{1 - Y_i}$$
+
+The product of which yields the likelihood function:
+
+$$L = \prod_{i = 1}^{N} \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]^{1 - Y_i}$$
+
+And therefore the log-likelihood function:
+
+$$\ln L = \sum_{i = 1}^{N} Y_i \ln \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) + (1 - Y_i) \ln \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]$$
+
+Which we maximize with respect to the $\beta$s to obtain our estimated parameters, just as we would linear regression.
+
+# Poisson regression
+
+The **Poisson distribution** is a discrete probability function defined by:
+
+$$P(Y_i = y_i | \mu) = \frac{\mu^{k} e^{-y_i}}{y_i!}$$
+
+where $\mu$ is the event rate (average number of events per interval), $e$ is Euler's number, $y_i$ is an integer with range $[0, \infty]$, and $y_i!$ is the factorial of $y_i$. The mean $\mu$ and variance $\sigma$ of a Poisson distribution are the same parameterm and hence are both defined by $\mu$.
+
+The Poisson distribution is ideal for explaining **count variables**, where the variable contains frequency counts of events occurring. This could include things such as:
+
+* Number of persons killed by mule or horse kicks in the Prussian army per year (this was one of the first applications of the Poisson distribution)
+* Number of terrorist attacks in a country per year
+* Number of times an individual consumes ice cream per month
+
+Count variables can take on non-negative integer values $\{ 0,1,2,3,\dots \}$. To estimate a poisson regression model, we need the following elements:
+
+* The random component is the Poisson distribution:
+
+    $$P(Y_i = y_i | \mu) = \frac{\mu^{k} e^{-y_i}}{y_i!}$$
+
+* The linear predictor is
+
+    $$\eta_i = \beta_0 + \beta_{1}X_i$$
+
+* The canonical link function for the Poisson distribution is the **log function**
+
+    $$\mu_i = \ln(\eta_i)$$
+
+So after substituting terms, we need to estimate the parameters that maximize the log-likelihood of:
+
+$$P(Y_i = y_i | \beta_0, \beta_1) = \frac{\ln(\beta_0 + \beta_{1}X_i)^{k} e^{-y_i}}{y_i!}$$
+
+Let's test this method using some real-world data.
+
+## Internal armed conflict in Africa
+
+```{r africa-data}
+africa <- read_dta("data/internal-conflict.dta")
+africa
+```
+
+`africa` contains annual measures for 50 African countries from 1995-2007. The response variable `INTERNAL` contains a count of internal armed conflicts (aka civil wars and insurgencies) for each country in each year. Additional covariates include:
+
+* Measures of latitude and longitude
+* Adult literacy rate
+* Number of refugees living in the country
+* Lagged natural log of GDP and trade (in constant dollars)
+* Lagged polity score (ranging from -10 to +10, with 10 = democracy)
+
+```{r africa-hist}
+ggplot(africa, aes(INTERNAL)) +
+  geom_histogram(binwidth = 1)
+```
+
+To estimate a Poisson regression model, we use the `glm()` function with `family = "poisson"`.
+
+```{r africa-model}
+africa_mod <- glm(INTERNAL ~ literacy, family = "poisson", data = africa)
+summary(africa_mod)
+```
+
+### Interpreting estimated parameters
+
+In linear regression, the parameters tell us the estimated linear relationship between the predictor and the response variable. In logistic regression, the parameters tell us the estimated linear relationship between the predictor and the log-odds of the response variable. In Poisson regression, the parameters tell us the estimated linear relationship between the predictor and the log-count of the response variable. So the parameter for `literacy` suggests that for every one-unit increase in adult literacy, we expect the log of the number of internal armed conflicts to decrease by `r abs(coef(africa_mod)[[2]])`.
+
+```{r africa-mod-plot}
+africa %>%
+  data_grid(literacy) %>%
+  add_predictions(africa_mod) %>%
+  ggplot(aes(literacy, pred)) +
+  geom_line() +
+  labs(x = "Literacy",
+       y = "Predicted log-count of internal armed conflicts")
+```
+
+If we want to discuss the results in terms of the predicted count of the response variable, we need to **exponentiate** the parameters and predicted values.
+
+```{r africa-exp}
+exp(coef(africa_mod))
+
+africa %>%
+  data_grid(literacy) %>%
+  add_predictions(africa_mod) %>%
+  mutate(pred = exp(pred)) %>%
+  ggplot(aes(literacy, pred)) +
+  geom_line() +
+  labs(x = "Literacy",
+       y = "Predicted count of internal armed conflicts")
+```
+
+And so like with logistic regression, the relationship between predictors and the predicted log-count is linear, whereas the relationship between predictors and the predicted count is non-linear.
+
+### Multiple predictors
+
+Like with other GLMs, we can add multiple predictors to the model.
+
+```{r africa-mod-big}
+africa_big <- glm(INTERNAL ~ literacy + PolityLag,
+                  data = africa, family = "poisson")
+summary(africa_big)
+
+africa %>%
+  data_grid(literacy, PolityLag = seq(-10, 10, 4)) %>%
+  add_predictions(africa_big) %>%
+  mutate(pred = exp(pred),
+         PolityLag = factor(PolityLag)) %>%
+  ggplot(aes(literacy, pred, color = PolityLag)) +
+  geom_line() +
+  labs(x = "Literacy",
+       y = "Predicted count of internal armed conflicts")
+```
+
+### Overdispersion
+    
+
+# Ordinal logistic regression
+
+Consider the case where your response variable contains more than 2 possible values and they are inherently ordered. Survey research typically contains answers measured using a Likert scale (strongly agree, agree, neither agree nor disagree, disagree, strongly disagree). What method should you use? Linear regression is not appropriate because the variable is discrete. Depending on the number of levels, some researchers may attempt to treat it as a continuous variable but when you only have 3-5 values this doesn't work very well. Logistic regression sounds like it would work but so far we have only used it in situations where there are two possible outcomes. Can we generalize it to a larger number of response values?
+
+Yes we can. This is called **ordinal logistic regression**. It works in situations where you have more than two possible outcomes and they contain an inherent ordering. Let's see how this works using a simulated dataset of individuals applying to graduate school.
+
+```{r grad-data}
+dat <- read_csv("http://www.ats.ucla.edu/stat/data/ologit.csv") %>%
+  mutate(apply = factor(apply, levels = 0:2,
+                        labels = c("Unlikely", "Somewhat unlikely", "Very likely")))
+dat
+```
+
+Each observation is an individual asked if they are going to apply to graduate school. The variables are:
+
+* `apply` - whether or not the student intends to apply. Possible levels are "Unlikely", "Somewhat unlikely", and "Very likely", coded as 0, 1, 2 respectively.
+* `pared` - binary indicator of whether at least one parent has a graduate degree.
+* `public` - binary indicator of whether their undergraduate institution is a public university.
+* `gpa` - student's grade point average.
+
+We can use the `polr` function from the `MASS` library to estimate the ordered logistic regression model:
+
+```{r grad-model}
+m <- polr(apply ~ pared + public + gpa, data = dat, Hess=TRUE)
+summary(m)
+```
+
+The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the cut points used to determine 
+
+
+
 
 # Session Info {.toc-ignore}
 
