@@ -1,5 +1,5 @@
 ---
-title: "Getting data from the web: scraping"
+title: "Distributed learning"
 output:
   html_document:
     toc: true
@@ -16,16 +16,217 @@ knitr::opts_chunk$set(cache = TRUE,
 library(tidyverse)
 library(gapminder)
 library(stringr)
-theme_set(theme_bw())
+
+set.seed(1234)
+
+theme_set(theme_minimal())
 ```
 
 # Objectives
 
+* Discuss the need for distributed computing
+* Define SQL
+* Demonstrate how to access local and remote SQL databases
 * Illustrate the split-apply-combine analytical pattern
 * Define parallel processing
 * Introduce Hadoop and Spark as distributed computing platforms
 * Introduce the `sparklyr` package
 * Demonstrate how to use `sparklyr` for machine learning using the Titanic data set
+
+# Distributed computing
+
+Sometimes you will work on projects that require a large amount of data. In the digital age, it is quickly possible to have so much data that it overwhelms a traditional desktop machine. In these situations, it is nice to be able to store your data remotely in a database system optimized to handle and process a large amount of data, unrestricted by CPU or memory limitations.
+
+## SQL
+
+* *Structured Query Language* (SQL)
+* Means of communicating with a relational database management system
+* Different flavors of SQL
+    * SQLite - database in-memory
+    * MySQL
+    * Microsoft SQL
+    * PostgreSQL
+    * BigQuery
+* Hosting platforms
+    * [UChicago Research Computing Center](https://rcc.uchicago.edu/)
+    * [Amazon Web Services](https://aws.amazon.com/)
+    * [Google Cloud Platform](https://cloud.google.com/)
+* Hosting platforms not typically free (though you can request an account with RCC as a student)
+
+## SQL locally - the syntax
+
+Let's create a local SQLite database using the `flights` data.
+
+```{r, cache = FALSE}
+library(RSQLite)
+my_db <- src_sqlite("data/my_db.sqlite3", create = T)
+```
+
+`src_` enables you to connect to specific types of databases supported by `dplyr`.
+
+To add data to the database, use `copy_to()`:
+
+```{r copy-to, eval = FALSE}
+library(nycflights13)
+flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+  c("year", "month", "day"), "carrier", "tailnum"))
+```
+
+```{r copy-to-robust, include = FALSE}
+library(nycflights13)
+
+if(file.exists("data/my_db.sqlite3")){
+  flights_sqlite <- tbl(my_db, "flights")
+} else{
+  flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+  c("year", "month", "day"), "carrier", "tailnum"))
+}
+```
+
+```{r copy-to-result}
+flights_sqlite
+```
+
+## Basic verbs
+
+```{r}
+select(flights_sqlite, year:day, dep_delay, arr_delay)
+filter(flights_sqlite, dep_delay > 240)
+arrange(flights_sqlite, year, month, day)
+mutate(flights_sqlite, speed = air_time / distance)
+summarise(flights_sqlite, delay = mean(dep_time))
+```
+
+The commands are generally the same as you would use in `dplyr`. The only difference is that `dplyr` converts your R commands into SQL syntax:
+
+```{r}
+select(flights_sqlite, year:day, dep_delay, arr_delay) %>%
+  explain()
+```
+
+`dplyr` is also lazy:
+
+* It never pulls data into R unless you explicitly ask for it
+* It delays doing any work until the last possible moment: it collects together everything you want to do and then sends it to the database in one step.
+
+```{r}
+c1 <- filter(flights_sqlite, year == 2013, month == 1, day == 1)
+c2 <- select(c1, year, month, day, carrier, dep_delay, air_time, distance)
+c3 <- mutate(c2, speed = distance / air_time * 60)
+c4 <- arrange(c3, year, month, day, carrier)
+```
+
+Nothing has actually gone do the database yet.
+
+```{r}
+c4
+```
+
+Now we finally communicate with the database, but only retrieved the first 10 rows (notice the `??` in `query [?? x 8]`). This is a built-in feature to avoid downloading an extremely large data frame our machine cannot handle. To obtain the full results, use `collect()`:
+
+```{r}
+collect(c4)
+```
+
+## Google Bigquery
+
+[**Google Bigquery**](https://cloud.google.com/bigquery/) is a distributed cloud platform for data warehousing and analytics. It can scan terabytes of data in seconds and petabytes in minutes. It has flexible pricing that scales depending on your demand on their resources, and could cost as little as pennies, though depending on your computation may cost more.
+
+### Interacting with Google Bigquery via `dplyr`
+
+Google Bigquery hosts several public (and free) datasets. One is the [NYC Taxi and Limousine Trips](https://cloud.google.com/bigquery/public-data/nyc-tlc-trips) dataset, which contains trip records from all trips completed in yellow and green taxis in NYC from 2009 to 2015. Records include fields capturing pick-up and drop-off dates/times, pick-up and drop-off locations, trip distances, itemized fares, rate types, payment types, and driver-reported passenger counts. The dataset itself is hundreds of gigabytes and could never be loaded on a desktop machine. But fortunately we can harness the power of the cloud.
+
+To connect to the database, we use the `bigrquery` library and `src_bigquery()`:
+
+```{r}
+library(bigrquery)
+
+taxi <- src_bigquery(project = "nyc-tlc",
+                     dataset = "yellow",
+                     billing = getOption("bigquery_id"))
+taxi
+```
+
+* `project` - the project that is hosting the data
+* `dataset` - the specific database to be accessed
+* `billing` - your unique id to access the data (and be charged if you run too many queries or use to much computing power). You need to [create an account](https://cloud.google.com/bigquery/quickstart-web-ui#before-you-begin) in order to use BigQuery, even if you want to access the free datasets. I stored mine in `.Rprofile` using `options()`.^[This may not make sense to you. You will learn more about storing credentials next week in our unit on accessing data from the web.]
+
+First lets determine in 2014, how many trips per taken each month in yellow cabs? The SQL syntax is:
+
+```sql
+SELECT
+  LEFT(STRING(pickup_datetime), 7) month,
+  COUNT(*) trips
+FROM
+  [nyc-tlc:yellow.trips]
+WHERE
+  YEAR(pickup_datetime) = 2014
+GROUP BY
+  1
+ORDER BY
+  1
+```
+
+In `dplyr`, we use:
+
+```{r}
+system.time({
+  trips_by_month <- taxi %>%
+    tbl("trips") %>%
+    filter(year(pickup_datetime) == 2014) %>%
+    mutate(month = month(pickup_datetime)) %>%
+    count(month) %>%
+    arrange(month) %>%
+    collect()
+})
+trips_by_month
+```
+
+What about the average speed per hour of day in yellow cabs?
+
+```{r}
+system.time({
+  speed_per_hour <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10) %>%
+    group_by(hour) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(hour) %>%
+    collect()
+})
+
+ggplot(speed_per_hour, aes(hour, speed)) +
+  geom_line() +
+  labs(title = "Average Speed of NYC Yellow Taxis",
+       x = "Hour of day",
+       y = "Average speed, in MPH")
+```
+
+Finally, what is the average speed by day of the week?
+
+```{r}
+system.time({
+  speed_per_day <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           day = dayofweek(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10,
+           hour >= 8,
+           hour <= 18) %>%
+    group_by(day) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(day) %>%
+    collect()
+})
+speed_per_day
+```
 
 # Split-apply-combine
 
@@ -94,42 +295,31 @@ library(broom)
 
 ![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
 
-Parallel computing (or processing) is a type of computation whereby many calculations or processes are carried out simultaneously.^[["Parallel computing"](https://en.wikipedia.org/wiki/Parallel_computing)] Rather than processing problems in *serial* (or sequential) order, the computer splits the task up into smaller parts that can be processed simultaneously using multiple processors. This is also called *multithreading*. By spliting the job up into simultaneous operations running in *parallel*, you complete your operation quicker, making the code more efficient.
+Parallel computing (or processing) is a type of computation whereby many calculations or processes are carried out simultaneously.^[["Parallel computing"](https://en.wikipedia.org/wiki/Parallel_computing)] Rather than processing problems in **serial** (or sequential) order, the computer splits the task up into smaller parts that can be processed simultaneously using multiple processors. This is also called **multithreading**. By spliting the job up into simultaneous operations running in **parallel**, you complete your operation quicker, making the code more efficient.
 
 ## Why use parallel computing
 
-* Imitates real life
-    * In the real world, people use their brains to think in parallel - we multitask all the time without even thinking about it. Institutions are structured to process information in parallel, rather than in serial.
-* More efficient (sometimes)
-    * Throw more resources at a problem will shorten it time to completion
-* Tackle larger problems
-    * More resources helps solve a larger problem
-* Use distributed resources
-    * Why spend thousands of dollars beefing up your own computing equipment when you can instead rent computing resources from Google or Amazon for mere pennies?
+* Parallel computing **imitates real life** - in the real world, people use their brains to think in parallel - we multitask all the time without even thinking about it. Institutions are structured to process information in parallel, rather than in serial.
+* It can be **more efficient** - by throwing more resources at a problem you can shorten the time to completion.
+* You can **tackle larger problems** - more resources enables you to scale up the amount of data you process and potentially solve a larger problem.
+* **Distributed resources** are cheaper than upgrading your own equipment. Why spend thousands of dollars beefing up your own laptop when you can instead rent computing resources from Google or Amazon for mere pennies?
 
 ## Why not to use parallel computing
 
-* Limits to efficiency gains
-    * [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl's_law)
-    * There are theoretical limits to how much you can speed up computations via parallel computing
-    * Diminishing returns over time
-* Complexity
-    * Writing parallel code can be more complicated than serial code
-    * R does not natively implement parallel computing - you have to explicitly build it into your script
-* Dependencies
-    * Your computation may rely on the output from the first set of tasks to perform the second tasks
-    * If you compute the problem in parallel fashion, the individual chunks do not communicate with one another
-* Parallel slowdown
-    * Parallel computing speeds up computations at a price
-    * Once the problem is broken into separate threads, reading and writing data from the threads to memory or the hard drive takes time
-    * Some tasks are not improved by spliting the process into parallel operations
+* **Limits to efficiency gains** - [Amdahl's law](https://en.wikipedia.org/wiki/Amdahl's_law) defines theoretical limits to how much you can speed up computations via parallel computing. Because of this, you achieve diminishing returns over time.
+
+    ![Amdahl's Law from [Wikipedia](https://en.wikipedia.org/wiki/Amdahl's_law)](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png)
+    
+* **Complexity** - writing parallel code can be more complicated than writing serial code, especially in R because it does not natively implement parallel computing - you have to explicitly build it into your script.
+* **Dependencies** - your computation may rely on the output from the first set of tasks to perform the second tasks. If you compute the problem in parallel fashion, the individual chunks do not communicate with one another.
+* **Parallel slowdown** - parallel computing speeds up computations at a price. Once the problem is broken into separate threads, reading and writing data from the threads to memory or the hard drive takes time. Some tasks are not improved by spliting the process into parallel operations.
 
 # `multidplyr` {#multidplyr}
 
 [`multidplyr`](https://github.com/hadley/multidplyr) is a work-in-progress package that implements parallel computing locally using `dplyr`. Rather than performing computations using a single core or processor, it spreads the computation across multiple cores. The basic sequence of steps is:
 
 1. Call `partition()` to split the dataset across multiple cores. This makes a partitioned data frame, or a `party df` for short.
-1. Each dplyr verb applied to a `party df` performs the operation independently on each core. It leaves each result on each core, and returns another `party df`.
+1. Each `dplyr` verb applied to a `party df` performs the operation independently on each core. It leaves each result on each core, and returns another `party df`.
 1. When you're done with the expensive operations that need to be done on each core, you call `collect()` to retrieve the data and bring it back to you local computer.
 
 ## `nycflights13::flights` {#flights}
@@ -211,17 +401,11 @@ system.time({
 })
 ```
 
-So it's roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. This demonstrates it doesn't always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.
+So it's roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. In relative terms this is great, but in absolute terms it doesn't mean much. This demonstrates it doesn't always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.
 
 # Hadoop and Spark
 
-* [Apache Hadoop](http://hadoop.apache.org/)
-* Open-source software library that enables distributed processing of large data sets across clusters of computers
-* Highly scalable (one server -> thousands of machines)
-* Several modules
-    * Hadoop Distributed File System (HDFS) - distributed file system
-    * Hadoop MapReduce - system for parallel processing of large data sets
-    * [Spark](http://spark.apache.org/) - general engine for large-scale data processing, including machine learning
+[Apache Hadoop](http://hadoop.apache.org/) is an open-source software library that enables distributed processing of large data sets across clusters of computers. It is highly **scalable**, in that can be loaded on a single server or spread across thousands of separate machines. It includes several modules including the Hadoop Distributed File System (HDFS) for distributed file storage, Hadoop MapReduce for parallel processing of large data sets, and [Spark](http://spark.apache.org/), a general engine for large-scale data processing, including statistical learning.
 
 # `sparklyr` {#sparklyr}
 
@@ -229,7 +413,7 @@ Learning to use Hadoop and Spark can be very complicated. They use their own pro
 
 * Connect to Spark from R using the `dplyr` interface
 * Interact with SQL databases stored on a Spark cluster
-* Implement distributed [statistical](cm015.html) [learning](cm016.html) algorithms
+* Implement distributed [statistical](cm009.html) [learning](cm010.html) algorithms
 
 See [here](http://spark.rstudio.com/) for more detailed instructions for setting up and using `sparklyr`.
 
@@ -241,7 +425,7 @@ You can install `sparklyr` from CRAN as follows:
 install.packages("sparklyr")
 ```
 
-You should also install a local version of Spark to run it on your computer:
+You should need to install a local version of Spark to run it on your computer:
 
 ```{r install_spark, eval = FALSE}
 library(sparklyr)
@@ -263,7 +447,7 @@ sc <- spark_connect(master = "local")
 
 ## Reading data
 
-You can copy R data frames into Spark using the `dplyr` `copy_to` function. Let's replicate some of our work with the `flights` database from last class. First let's load the data frames into Spark:
+You can copy R data frames into Spark using the `dplyr::copy_to()` function. Let's replicate some of the work with the `flights` database from the [relational data chapter in *R for Data Science*](http://r4ds.had.co.nz/relational-data.html). First let's load the data frames into Spark:
 
 ```{r load_flights, cache = FALSE}
 flights_tbl <- copy_to(sc, nycflights13::flights, "flights", overwrite = TRUE)
@@ -314,13 +498,7 @@ You can use `sparklyr` to fit a wide range of machine learning algorithms in Apa
 
 ## Load the data
 
-Let's continue using the Titanic dataset. First, download and install the `titanic` package which contains the data files we have been using for past machine learning exercises:
-
-```{r titanic_install, eval = FALSE}
-install.package("titanic")
-```
-
-Next we need to load it into the local Spark cluster.
+Let's continue using the Titanic dataset. First, load the `titanic` package, which contains the data files we have been using for past statistical learning exercises, into the local Spark cluster:
 
 ```{r load_titanic, cache = FALSE}
 library(titanic)
@@ -333,12 +511,12 @@ You can use `dplyr` syntax to tidy and reshape data in Spark, as well as special
 
 ### Spark SQL transforms
 
-These are feature transforms (aka mutating or filtering the columns/rows) using Spark SQL. This allows you to create new features and modify existing features with `dplyr` syntax. Here let's modify 4 columns:
+These are **feature transforms** (aka mutating or filtering the columns/rows) using Spark SQL. This allows you to create new columns and modify existing columns while still employing the `dplyr` syntax. Here let's modify 4 columns:
 
-1. Family_Size - create number of siblings and parents
-1. Pclass - format passenger class as character not numeric
-1. Embarked - remove a small number of missing records
-1. Age - impute missing age with average age
+1. `Family_Size` - create number of siblings and parents
+1. `Pclass` - format passenger class as character not numeric
+1. `Embarked` - remove a small number of missing records
+1. `Age` - impute missing age with average age
 
 We use `sdf_register` at the end of the operation to store the table in the Spark cluster.
 
@@ -365,7 +543,7 @@ titanic_final_tbl <- titanic2_tbl %>%
   sdf_register("titanic_final")
 ```
 
-> `ft_bucketizer` is equivalent to `cut` in R
+> `ft_bucketizer()` is equivalent to `cut()` in R.
 
 ### Train-validation split
 
@@ -443,11 +621,11 @@ ml_score <- map(ml_models, score_test_data)
 
 ## Compare results
 
-Compare the model results. Examine performance metrics: accuracy and [area under the curve (AUC)](https://en.wikipedia.org/wiki/Receiver_operating_characteristic). Also examine feature importance to see what features are most predictive of survival.
+Compare the model results by examining performance metrics: accuracy and [area under the curve (AUC)](https://en.wikipedia.org/wiki/Receiver_operating_characteristic). Also examine feature importance to see what variables are most predictive of survival.
 
 ### Accuracy and AUC
 
-Receiver operating characteristic (ROC) is a graphical plot that illustrates the performance of a binary classifier. It visualizes the relationship between the true positive rate (TPR) against the false positive rate (FPR).
+**Receiver operating characteristic (ROC) curves** are graphical plots that illustrate the performance of a binary classifier. They visualize the relationship between the true positive rate (TPR) against the false positive rate (FPR).
 
 ![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/3/36/ROC_space-2.png)
 
@@ -561,7 +739,7 @@ result %>%
 
 ### Run time for serial vs. parallel computing
 
-Let's look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would `glm` and a serial method work just as well?
+Let's look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would `glm()` and a serial method work just as well?
 
 ```{r titanic_serial_parallel}
 # get formulas for glm and ml_logistic_regression

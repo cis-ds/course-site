@@ -11,7 +11,7 @@
 
 
 
-<title>Getting data from the web: scraping</title>
+<title>Distributed learning</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -332,7 +332,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Getting data from the web: scraping</h1>
+<h1 class="title toc-ignore">Distributed learning</h1>
 
 </div>
 
@@ -344,12 +344,338 @@ div.tocify {
 <div id="objectives" class="section level1">
 <h1>Objectives</h1>
 <ul>
+<li>Discuss the need for distributed computing</li>
+<li>Define SQL</li>
+<li>Demonstrate how to access local and remote SQL databases</li>
 <li>Illustrate the split-apply-combine analytical pattern</li>
 <li>Define parallel processing</li>
 <li>Introduce Hadoop and Spark as distributed computing platforms</li>
 <li>Introduce the <code>sparklyr</code> package</li>
 <li>Demonstrate how to use <code>sparklyr</code> for machine learning using the Titanic data set</li>
 </ul>
+</div>
+<div id="distributed-computing" class="section level1">
+<h1>Distributed computing</h1>
+<p>Sometimes you will work on projects that require a large amount of data. In the digital age, it is quickly possible to have so much data that it overwhelms a traditional desktop machine. In these situations, it is nice to be able to store your data remotely in a database system optimized to handle and process a large amount of data, unrestricted by CPU or memory limitations.</p>
+<div id="sql" class="section level2">
+<h2>SQL</h2>
+<ul>
+<li><em>Structured Query Language</em> (SQL)</li>
+<li>Means of communicating with a relational database management system</li>
+<li>Different flavors of SQL
+<ul>
+<li>SQLite - database in-memory</li>
+<li>MySQL</li>
+<li>Microsoft SQL</li>
+<li>PostgreSQL</li>
+<li>BigQuery</li>
+</ul></li>
+<li>Hosting platforms
+<ul>
+<li><a href="https://rcc.uchicago.edu/">UChicago Research Computing Center</a></li>
+<li><a href="https://aws.amazon.com/">Amazon Web Services</a></li>
+<li><a href="https://cloud.google.com/">Google Cloud Platform</a></li>
+</ul></li>
+<li>Hosting platforms not typically free (though you can request an account with RCC as a student)</li>
+</ul>
+</div>
+<div id="sql-locally---the-syntax" class="section level2">
+<h2>SQL locally - the syntax</h2>
+<p>Let’s create a local SQLite database using the <code>flights</code> data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(RSQLite)
+my_db &lt;-<span class="st"> </span><span class="kw">src_sqlite</span>(<span class="st">&quot;data/my_db.sqlite3&quot;</span>, <span class="dt">create =</span> T)</code></pre></div>
+<p><code>src_</code> enables you to connect to specific types of databases supported by <code>dplyr</code>.</p>
+<p>To add data to the database, use <code>copy_to()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nycflights13)
+flights_sqlite &lt;-<span class="st"> </span><span class="kw">copy_to</span>(my_db, flights, <span class="dt">temporary =</span> <span class="ot">FALSE</span>, <span class="dt">indexes =</span> <span class="kw">list</span>(
+  <span class="kw">c</span>(<span class="st">&quot;year&quot;</span>, <span class="st">&quot;month&quot;</span>, <span class="st">&quot;day&quot;</span>), <span class="st">&quot;carrier&quot;</span>, <span class="st">&quot;tailnum&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nycflights13)
+
+if(<span class="kw">file.exists</span>(<span class="st">&quot;data/my_db.sqlite3&quot;</span>)){
+  flights_sqlite &lt;-<span class="st"> </span><span class="kw">tbl</span>(my_db, <span class="st">&quot;flights&quot;</span>)
+} else{
+  flights_sqlite &lt;-<span class="st"> </span><span class="kw">copy_to</span>(my_db, flights, <span class="dt">temporary =</span> <span class="ot">FALSE</span>, <span class="dt">indexes =</span> <span class="kw">list</span>(
+  <span class="kw">c</span>(<span class="st">&quot;year&quot;</span>, <span class="st">&quot;month&quot;</span>, <span class="st">&quot;day&quot;</span>), <span class="st">&quot;carrier&quot;</span>, <span class="st">&quot;tailnum&quot;</span>))
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights_sqlite</code></pre></div>
+<pre><code>## Source:   query [?? x 19]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
+## 1   2013     1     1      517            515         2      830
+## 2   2013     1     1      533            529         4      850
+## 3   2013     1     1      542            540         2      923
+## 4   2013     1     1      544            545        -1     1004
+## 5   2013     1     1      554            600        -6      812
+## 6   2013     1     1      554            558        -4      740
+## 7   2013     1     1      555            600        -5      913
+## 8   2013     1     1      557            600        -3      709
+## 9   2013     1     1      557            600        -3      838
+## 10  2013     1     1      558            600        -2      753
+## # ... with more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
+## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
+## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
+## #   minute &lt;dbl&gt;, time_hour &lt;dbl&gt;</code></pre>
+</div>
+<div id="basic-verbs" class="section level2">
+<h2>Basic verbs</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">select</span>(flights_sqlite, year:day, dep_delay, arr_delay)</code></pre></div>
+<pre><code>## Source:   query [?? x 5]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     year month   day dep_delay arr_delay
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;     &lt;dbl&gt;     &lt;dbl&gt;
+## 1   2013     1     1         2        11
+## 2   2013     1     1         4        20
+## 3   2013     1     1         2        33
+## 4   2013     1     1        -1       -18
+## 5   2013     1     1        -6       -25
+## 6   2013     1     1        -4        12
+## 7   2013     1     1        -5        19
+## 8   2013     1     1        -3       -14
+## 9   2013     1     1        -3        -8
+## 10  2013     1     1        -2         8
+## # ... with more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">filter</span>(flights_sqlite, dep_delay &gt;<span class="st"> </span><span class="dv">240</span>)</code></pre></div>
+<pre><code>## Source:   query [?? x 19]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
+## 1   2013     1     1      848           1835       853     1001
+## 2   2013     1     1     1815           1325       290     2120
+## 3   2013     1     1     1842           1422       260     1958
+## 4   2013     1     1     2115           1700       255     2330
+## 5   2013     1     1     2205           1720       285       46
+## 6   2013     1     1     2343           1724       379      314
+## 7   2013     1     2     1332            904       268     1616
+## 8   2013     1     2     1412            838       334     1710
+## 9   2013     1     2     1607           1030       337     2003
+## 10  2013     1     2     2131           1512       379     2340
+## # ... with more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
+## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
+## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
+## #   minute &lt;dbl&gt;, time_hour &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">arrange</span>(flights_sqlite, year, month, day)</code></pre></div>
+<pre><code>## Source:   query [?? x 19]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
+## 1   2013     1     1      517            515         2      830
+## 2   2013     1     1      533            529         4      850
+## 3   2013     1     1      542            540         2      923
+## 4   2013     1     1      544            545        -1     1004
+## 5   2013     1     1      554            600        -6      812
+## 6   2013     1     1      554            558        -4      740
+## 7   2013     1     1      555            600        -5      913
+## 8   2013     1     1      557            600        -3      709
+## 9   2013     1     1      557            600        -3      838
+## 10  2013     1     1      558            600        -2      753
+## # ... with more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
+## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
+## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
+## #   minute &lt;dbl&gt;, time_hour &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mutate</span>(flights_sqlite, <span class="dt">speed =</span> air_time /<span class="st"> </span>distance)</code></pre></div>
+<pre><code>## Source:   query [?? x 20]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     year month   day dep_time sched_dep_time dep_delay arr_time
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
+## 1   2013     1     1      517            515         2      830
+## 2   2013     1     1      533            529         4      850
+## 3   2013     1     1      542            540         2      923
+## 4   2013     1     1      544            545        -1     1004
+## 5   2013     1     1      554            600        -6      812
+## 6   2013     1     1      554            558        -4      740
+## 7   2013     1     1      555            600        -5      913
+## 8   2013     1     1      557            600        -3      709
+## 9   2013     1     1      557            600        -3      838
+## 10  2013     1     1      558            600        -2      753
+## # ... with more rows, and 13 more variables: sched_arr_time &lt;int&gt;,
+## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
+## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
+## #   minute &lt;dbl&gt;, time_hour &lt;dbl&gt;, speed &lt;dbl&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarise</span>(flights_sqlite, <span class="dt">delay =</span> <span class="kw">mean</span>(dep_time))</code></pre></div>
+<pre><code>## Source:   query [?? x 1]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     delay
+##     &lt;dbl&gt;
+## 1 1349.11</code></pre>
+<p>The commands are generally the same as you would use in <code>dplyr</code>. The only difference is that <code>dplyr</code> converts your R commands into SQL syntax:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">select</span>(flights_sqlite, year:day, dep_delay, arr_delay) %&gt;%
+<span class="st">  </span><span class="kw">explain</span>()</code></pre></div>
+<p><code>dplyr</code> is also lazy:</p>
+<ul>
+<li>It never pulls data into R unless you explicitly ask for it</li>
+<li>It delays doing any work until the last possible moment: it collects together everything you want to do and then sends it to the database in one step.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c1 &lt;-<span class="st"> </span><span class="kw">filter</span>(flights_sqlite, year ==<span class="st"> </span><span class="dv">2013</span>, month ==<span class="st"> </span><span class="dv">1</span>, day ==<span class="st"> </span><span class="dv">1</span>)
+c2 &lt;-<span class="st"> </span><span class="kw">select</span>(c1, year, month, day, carrier, dep_delay, air_time, distance)
+c3 &lt;-<span class="st"> </span><span class="kw">mutate</span>(c2, <span class="dt">speed =</span> distance /<span class="st"> </span>air_time *<span class="st"> </span><span class="dv">60</span>)
+c4 &lt;-<span class="st"> </span><span class="kw">arrange</span>(c3, year, month, day, carrier)</code></pre></div>
+<p>Nothing has actually gone do the database yet.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">c4</code></pre></div>
+<pre><code>## Source:   query [?? x 8]
+## Database: sqlite 3.11.1 [data/my_db.sqlite3]
+## 
+##     year month   day carrier dep_delay air_time distance    speed
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1   2013     1     1      9E         0      189     1029 326.6667
+## 2   2013     1     1      9E        -9       57      228 240.0000
+## 3   2013     1     1      9E        -3       68      301 265.5882
+## 4   2013     1     1      9E        -6       57      209 220.0000
+## 5   2013     1     1      9E        -8       66      264 240.0000
+## 6   2013     1     1      9E         0       40      184 276.0000
+## 7   2013     1     1      9E         6      146      740 304.1096
+## 8   2013     1     1      9E         0      139      665 287.0504
+## 9   2013     1     1      9E        -8      150      765 306.0000
+## 10  2013     1     1      9E        -6       41      187 273.6585
+## # ... with more rows</code></pre>
+<p>Now we finally communicate with the database, but only retrieved the first 10 rows (notice the <code>??</code> in <code>query [?? x 8]</code>). This is a built-in feature to avoid downloading an extremely large data frame our machine cannot handle. To obtain the full results, use <code>collect()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">collect</span>(c4)</code></pre></div>
+<pre><code>## # A tibble: 842 × 8
+##     year month   day carrier dep_delay air_time distance    speed
+##    &lt;int&gt; &lt;int&gt; &lt;int&gt;   &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;
+## 1   2013     1     1      9E         0      189     1029 326.6667
+## 2   2013     1     1      9E        -9       57      228 240.0000
+## 3   2013     1     1      9E        -3       68      301 265.5882
+## 4   2013     1     1      9E        -6       57      209 220.0000
+## 5   2013     1     1      9E        -8       66      264 240.0000
+## 6   2013     1     1      9E         0       40      184 276.0000
+## 7   2013     1     1      9E         6      146      740 304.1096
+## 8   2013     1     1      9E         0      139      665 287.0504
+## 9   2013     1     1      9E        -8      150      765 306.0000
+## 10  2013     1     1      9E        -6       41      187 273.6585
+## # ... with 832 more rows</code></pre>
+</div>
+<div id="google-bigquery" class="section level2">
+<h2>Google Bigquery</h2>
+<ul>
+<li>Can scan TB in seconds and PB in minutes</li>
+<li>Flexible pricing depending on needs</li>
+<li>Could be as little a pennies, though depending on your computation may cost more</li>
+</ul>
+<div id="interacting-with-google-bigquery-via-dplyr" class="section level3">
+<h3>Interacting with Google Bigquery via <code>dplyr</code></h3>
+<p>Google Bigquery hosts several public (and free) datasets. One is the <a href="https://cloud.google.com/bigquery/public-data/nyc-tlc-trips">NYC Taxi and Limousine Trips</a> dataset, which contains trip records from all trips completed in yellow and green taxis in NYC from 2009 to 2015. Records include fields capturing pick-up and drop-off dates/times, pick-up and drop-off locations, trip distances, itemized fares, rate types, payment types, and driver-reported passenger counts. The dataset itself is hundreds of gigabytes and could never be loaded on a desktop machine. But fortunately we can harness the power of the cloud.</p>
+<p>To connect to the database, we use the <code>bigrquery</code> library and <code>src_bigquery()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(bigrquery)
+
+taxi &lt;-<span class="st"> </span><span class="kw">src_bigquery</span>(<span class="dt">project =</span> <span class="st">&quot;nyc-tlc&quot;</span>,
+                     <span class="dt">dataset =</span> <span class="st">&quot;yellow&quot;</span>,
+                     <span class="dt">billing =</span> <span class="kw">getOption</span>(<span class="st">&quot;bigquery_id&quot;</span>))
+taxi</code></pre></div>
+<pre><code>## src:  bigquery [nyc-tlc:yellow]
+## tbls: trips</code></pre>
+<ul>
+<li><code>project</code> - the project that is hosting the data</li>
+<li><code>dataset</code> - the specific database to be accessed</li>
+<li><code>billing</code> - your unique id to access the data (and be charged if you run too many queries or use to much computing power). I stored mine in <code>.Rprofile</code> using <code>options()</code>.</li>
+</ul>
+<p>First lets determine in 2014, how many trips per taken each month in yellow cabs? The SQL syntax is:</p>
+<div class="sourceCode"><pre class="sourceCode sql"><code class="sourceCode sql"><span class="kw">SELECT</span>
+  <span class="kw">LEFT</span>(STRING(pickup_datetime), <span class="dv">7</span>) <span class="dt">month</span>,
+  <span class="fu">COUNT</span>(*) trips
+<span class="kw">FROM</span>
+  [nyc-tlc<span class="ch">:yellow</span>.trips]
+<span class="kw">WHERE</span>
+  <span class="dt">YEAR</span>(pickup_datetime) = <span class="dv">2014</span>
+<span class="kw">GROUP</span> <span class="kw">BY</span>
+  <span class="dv">1</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span>
+  <span class="dv">1</span></code></pre></div>
+<p>In <code>dplyr</code>, we use:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  trips_by_month &lt;-<span class="st"> </span>taxi %&gt;%
+<span class="st">    </span><span class="kw">tbl</span>(<span class="st">&quot;trips&quot;</span>) %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(<span class="kw">year</span>(pickup_datetime) ==<span class="st"> </span><span class="dv">2014</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">month =</span> <span class="kw">month</span>(pickup_datetime)) %&gt;%
+<span class="st">    </span><span class="kw">count</span>(month) %&gt;%
+<span class="st">    </span><span class="kw">arrange</span>(month) %&gt;%
+<span class="st">    </span><span class="kw">collect</span>()
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.070   0.003   3.227</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trips_by_month</code></pre></div>
+<pre><code>## # A tibble: 12 × 2
+##    month        n
+## *  &lt;int&gt;    &lt;int&gt;
+## 1      1 13782492
+## 2      2 13063791
+## 3      3 15428127
+## 4      4 14618759
+## 5      5 14774041
+## 6      6 13813029
+## 7      7 13106365
+## 8      8 12688877
+## 9      9 13374016
+## 10    10 14232487
+## 11    11 13218216
+## 12    12 13014161</code></pre>
+<p>What about the average speed per hour of day in yellow cabs?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  speed_per_hour &lt;-<span class="st"> </span>taxi %&gt;%
+<span class="st">    </span><span class="kw">tbl</span>(<span class="st">&quot;trips&quot;</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">hour =</span> <span class="kw">hour</span>(pickup_datetime),
+           <span class="dt">trip_duration =</span> (dropoff_datetime -<span class="st"> </span>pickup_datetime) /<span class="st"> </span><span class="dv">3600000000</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">speed =</span> trip_distance /<span class="st"> </span>trip_duration) %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(fare_amount /<span class="st"> </span>trip_distance &gt;=<span class="st"> </span><span class="dv">2</span>,
+           fare_amount /<span class="st"> </span>trip_distance &lt;=<span class="st"> </span><span class="dv">10</span>) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(hour) %&gt;%
+<span class="st">    </span><span class="kw">summarize</span>(<span class="dt">speed =</span> <span class="kw">mean</span>(speed)) %&gt;%
+<span class="st">    </span><span class="kw">arrange</span>(hour) %&gt;%
+<span class="st">    </span><span class="kw">collect</span>()
+})</code></pre></div>
+<pre><code>## 
+Running query:   RUNNING  2.5s
+Running query:   RUNNING  3.1s</code></pre>
+<pre><code>##    user  system elapsed 
+##   0.096   0.003   5.477</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(speed_per_hour, <span class="kw">aes</span>(hour, speed)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Average Speed of NYC Yellow Taxis&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Hour of day&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Average speed, in MPH&quot;</span>)</code></pre></div>
+<p><img src="distrib-comp_01_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Finally, what is the average speed by day of the week?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  speed_per_day &lt;-<span class="st"> </span>taxi %&gt;%
+<span class="st">    </span><span class="kw">tbl</span>(<span class="st">&quot;trips&quot;</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">hour =</span> <span class="kw">hour</span>(pickup_datetime),
+           <span class="dt">day =</span> <span class="kw">dayofweek</span>(pickup_datetime),
+           <span class="dt">trip_duration =</span> (dropoff_datetime -<span class="st"> </span>pickup_datetime) /<span class="st"> </span><span class="dv">3600000000</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">speed =</span> trip_distance /<span class="st"> </span>trip_duration) %&gt;%
+<span class="st">    </span><span class="kw">filter</span>(fare_amount /<span class="st"> </span>trip_distance &gt;=<span class="st"> </span><span class="dv">2</span>,
+           fare_amount /<span class="st"> </span>trip_distance &lt;=<span class="st"> </span><span class="dv">10</span>,
+           hour &gt;=<span class="st"> </span><span class="dv">8</span>,
+           hour &lt;=<span class="st"> </span><span class="dv">18</span>) %&gt;%
+<span class="st">    </span><span class="kw">group_by</span>(day) %&gt;%
+<span class="st">    </span><span class="kw">summarize</span>(<span class="dt">speed =</span> <span class="kw">mean</span>(speed)) %&gt;%
+<span class="st">    </span><span class="kw">arrange</span>(day) %&gt;%
+<span class="st">    </span><span class="kw">collect</span>()
+})</code></pre></div>
+<pre><code>## 
+Running query:   RUNNING  2.4s
+Running query:   RUNNING  3.0s
+Running query:   RUNNING  3.6s</code></pre>
+<pre><code>##    user  system elapsed 
+##   0.109   0.004   5.958</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">speed_per_day</code></pre></div>
+<pre><code>## # A tibble: 7 × 2
+##     day    speed
+## * &lt;int&gt;    &lt;dbl&gt;
+## 1     1 14.29703
+## 2     2 12.21557
+## 3     3 11.11933
+## 4     4 10.93281
+## 5     5 10.97011
+## 6     6 11.24917
+## 7     7 13.09473</code></pre>
+</div>
+</div>
 </div>
 <div id="split-apply-combine" class="section level1">
 <h1>Split-apply-combine</h1>
@@ -546,53 +872,27 @@ le_vs_yr &lt;-<span class="st"> </span>function(df) {
 <img src="http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png" alt="From An introduction to parallel programming using Python’s multiprocessing module" />
 <p class="caption">From <a href="http://sebastianraschka.com/Articles/2014_multiprocessing.html">An introduction to parallel programming using Python’s multiprocessing module</a></p>
 </div>
-<p>Parallel computing (or processing) is a type of computation whereby many calculations or processes are carried out simultaneously.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Rather than processing problems in <em>serial</em> (or sequential) order, the computer splits the task up into smaller parts that can be processed simultaneously using multiple processors. This is also called <em>multithreading</em>. By spliting the job up into simultaneous operations running in <em>parallel</em>, you complete your operation quicker, making the code more efficient.</p>
+<p>Parallel computing (or processing) is a type of computation whereby many calculations or processes are carried out simultaneously.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Rather than processing problems in <strong>serial</strong> (or sequential) order, the computer splits the task up into smaller parts that can be processed simultaneously using multiple processors. This is also called <strong>multithreading</strong>. By spliting the job up into simultaneous operations running in <strong>parallel</strong>, you complete your operation quicker, making the code more efficient.</p>
 <div id="why-use-parallel-computing" class="section level2">
 <h2>Why use parallel computing</h2>
 <ul>
-<li>Imitates real life
-<ul>
-<li>In the real world, people use their brains to think in parallel - we multitask all the time without even thinking about it. Institutions are structured to process information in parallel, rather than in serial.</li>
-</ul></li>
-<li>More efficient (sometimes)
-<ul>
-<li>Throw more resources at a problem will shorten it time to completion</li>
-</ul></li>
-<li>Tackle larger problems
-<ul>
-<li>More resources helps solve a larger problem</li>
-</ul></li>
-<li>Use distributed resources
-<ul>
-<li>Why spend thousands of dollars beefing up your own computing equipment when you can instead rent computing resources from Google or Amazon for mere pennies?</li>
-</ul></li>
+<li>Parallel computing <strong>imitates real life</strong> - in the real world, people use their brains to think in parallel - we multitask all the time without even thinking about it. Institutions are structured to process information in parallel, rather than in serial.</li>
+<li>It can be <strong>more efficient</strong> - by throwing more resources at a problem you can shorten the time to completion.</li>
+<li>You can <strong>tackle larger problems</strong> - more resources enables you to scale up the amount of data you process and potentially solve a larger problem.</li>
+<li><strong>Distributed resources</strong> are cheaper than upgrading your own equipment. Why spend thousands of dollars beefing up your own laptop when you can instead rent computing resources from Google or Amazon for mere pennies?</li>
 </ul>
 </div>
 <div id="why-not-to-use-parallel-computing" class="section level2">
 <h2>Why not to use parallel computing</h2>
 <ul>
-<li>Limits to efficiency gains
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/Amdahl&#39;s_law">Amdahl’s law</a></li>
-<li>There are theoretical limits to how much you can speed up computations via parallel computing</li>
-<li>Diminishing returns over time</li>
-</ul></li>
-<li>Complexity
-<ul>
-<li>Writing parallel code can be more complicated than serial code</li>
-<li>R does not natively implement parallel computing - you have to explicitly build it into your script</li>
-</ul></li>
-<li>Dependencies
-<ul>
-<li>Your computation may rely on the output from the first set of tasks to perform the second tasks</li>
-<li>If you compute the problem in parallel fashion, the individual chunks do not communicate with one another</li>
-</ul></li>
-<li>Parallel slowdown
-<ul>
-<li>Parallel computing speeds up computations at a price</li>
-<li>Once the problem is broken into separate threads, reading and writing data from the threads to memory or the hard drive takes time</li>
-<li>Some tasks are not improved by spliting the process into parallel operations</li>
-</ul></li>
+<li><p><strong>Limits to efficiency gains</strong> - <a href="https://en.wikipedia.org/wiki/Amdahl&#39;s_law">Amdahl’s law</a> defines theoretical limits to how much you can speed up computations via parallel computing. Because of this, you achieve diminishing returns over time.</p>
+<div class="figure">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png" alt="Amdahl’s Law from Wikipedia" />
+<p class="caption">Amdahl’s Law from <a href="https://en.wikipedia.org/wiki/Amdahl&#39;s_law">Wikipedia</a></p>
+</div></li>
+<li><strong>Complexity</strong> - writing parallel code can be more complicated than writing serial code, especially in R because it does not natively implement parallel computing - you have to explicitly build it into your script.</li>
+<li><strong>Dependencies</strong> - your computation may rely on the output from the first set of tasks to perform the second tasks. If you compute the problem in parallel fashion, the individual chunks do not communicate with one another.</li>
+<li><p><strong>Parallel slowdown</strong> - parallel computing speeds up computations at a price. Once the problem is broken into separate threads, reading and writing data from the threads to memory or the hard drive takes time. Some tasks are not improved by spliting the process into parallel operations.</p></li>
 </ul>
 </div>
 </div>
@@ -601,7 +901,7 @@ le_vs_yr &lt;-<span class="st"> </span>function(df) {
 <p><a href="https://github.com/hadley/multidplyr"><code>multidplyr</code></a> is a work-in-progress package that implements parallel computing locally using <code>dplyr</code>. Rather than performing computations using a single core or processor, it spreads the computation across multiple cores. The basic sequence of steps is:</p>
 <ol style="list-style-type: decimal">
 <li>Call <code>partition()</code> to split the dataset across multiple cores. This makes a partitioned data frame, or a <code>party df</code> for short.</li>
-<li>Each dplyr verb applied to a <code>party df</code> performs the operation independently on each core. It leaves each result on each core, and returns another <code>party df</code>.</li>
+<li>Each <code>dplyr</code> verb applied to a <code>party df</code> performs the operation independently on each core. It leaves each result on each core, and returns another <code>party df</code>.</li>
 <li>When you’re done with the expensive operations that need to be done on each core, you call <code>collect()</code> to retrieve the data and bring it back to you local computer.</li>
 </ol>
 <div id="nycflights13flights" class="section level2">
@@ -617,21 +917,21 @@ flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)
 <p>The <code>dplyr</code> code looks the same as usual, but behind the scenes things are very different. <code>flights1</code> and <code>flights2</code> are <code>party df</code>s. These look like normal data frames, but have an additional attribute: the number of shards. In this example, it tells us that <code>flights2</code> is spread across three nodes, and the size on each node varies from 1275 to 1286 rows. <code>partition()</code> always makes sure a group is kept together on one node.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights2</code></pre></div>
 <pre><code>## Source: party_df [3,844 x 2]
-## Shards: 3 [1,251--1,316 rows]
+## Shards: 3 [1,250--1,321 rows]
 ## 
 ## # S3: party_df
 ##    flight dep_delay
 ##     &lt;int&gt;     &lt;dbl&gt;
-## 1       3  3.665079
-## 2       4  7.516624
-## 3       5  4.425926
-## 4      16 -0.250000
-## 5      27 13.282658
-## 6      28 13.600000
-## 7      33  1.938235
-## 8      34  6.597403
+## 1       4  7.516624
+## 2       8  6.935897
+## 3      17 13.917431
+## 4      18 12.750000
+## 5      19 10.050000
+## 6      27 13.282658
+## 7      29 27.710046
+## 8      31 11.908517
 ## 9      35 20.272727
-## 10     37 30.500000
+## 10     36 15.974359
 ## # ... with 3,834 more rows</code></pre>
 </div>
 <div id="performance" class="section level2">
@@ -644,14 +944,14 @@ flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)
 <span class="st">    </span><span class="kw">collect</span>()
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.435   0.077   0.833</code></pre>
+##   0.440   0.068   0.866</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   flights %&gt;%<span class="st"> </span>
 <span class="st">    </span><span class="kw">group_by</span>() %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.006   0.001   0.006</code></pre>
+##   0.006   0.001   0.007</code></pre>
 <p>That’s because there’s some overhead associated with sending the data to each node and retrieving the results at the end. For basic <code>dplyr</code> verbs, <code>multidplyr</code> is unlikely to give you significant speed ups unless you have 10s or 100s of millions of data points. It might however, if you’re doing more complex things.</p>
 <div id="gapminder" class="section level3">
 <h3><code id="gapminder">gapminder</code></h3>
@@ -673,31 +973,21 @@ gap_nested_part &lt;-<span class="st"> </span>gap_nested %&gt;%
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.002   0.001   0.113</code></pre>
+##   0.001   0.001   0.066</code></pre>
 <p>Compared to how long running it locally?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   gap_nested %&gt;%<span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.236   0.015   0.269</code></pre>
-<p>So it’s roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. This demonstrates it doesn’t always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.</p>
+##   0.124   0.005   0.133</code></pre>
+<p>So it’s roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. In relative terms this is great, but in absolute terms it doesn’t mean much. This demonstrates it doesn’t always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.</p>
 </div>
 </div>
 </div>
 <div id="hadoop-and-spark" class="section level1">
 <h1>Hadoop and Spark</h1>
-<ul>
-<li><a href="http://hadoop.apache.org/">Apache Hadoop</a></li>
-<li>Open-source software library that enables distributed processing of large data sets across clusters of computers</li>
-<li>Highly scalable (one server -&gt; thousands of machines)</li>
-<li>Several modules
-<ul>
-<li>Hadoop Distributed File System (HDFS) - distributed file system</li>
-<li>Hadoop MapReduce - system for parallel processing of large data sets</li>
-<li><a href="http://spark.apache.org/">Spark</a> - general engine for large-scale data processing, including machine learning</li>
-</ul></li>
-</ul>
+<p><a href="http://hadoop.apache.org/">Apache Hadoop</a> is an open-source software library that enables distributed processing of large data sets across clusters of computers. It is highly <strong>scalable</strong>, in that can be loaded on a single server or spread across thousands of separate machines. It includes several modules including the Hadoop Distributed File System (HDFS) for distributed file storage, Hadoop MapReduce for parallel processing of large data sets, and <a href="http://spark.apache.org/">Spark</a>, a general engine for large-scale data processing, including statistical learning.</p>
 </div>
 <div id="sparklyr" class="section level1">
 <h1><code id="sparklyr">sparklyr</code></h1>
@@ -705,14 +995,14 @@ gap_nested_part &lt;-<span class="st"> </span>gap_nested %&gt;%
 <ul>
 <li>Connect to Spark from R using the <code>dplyr</code> interface</li>
 <li>Interact with SQL databases stored on a Spark cluster</li>
-<li>Implement distributed <a href="cm015.html">statistical</a> <a href="cm016.html">learning</a> algorithms</li>
+<li>Implement distributed <a href="cm009.html">statistical</a> <a href="cm010.html">learning</a> algorithms</li>
 </ul>
 <p>See <a href="http://spark.rstudio.com/">here</a> for more detailed instructions for setting up and using <code>sparklyr</code>.</p>
 <div id="installation" class="section level2">
 <h2>Installation</h2>
 <p>You can install <code>sparklyr</code> from CRAN as follows:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;sparklyr&quot;</span>)</code></pre></div>
-<p>You should also install a local version of Spark to run it on your computer:</p>
+<p>You should need to install a local version of Spark to run it on your computer:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sparklyr)
 <span class="kw">spark_install</span>(<span class="dt">version =</span> <span class="st">&quot;2.0.0&quot;</span>)</code></pre></div>
 </div>
@@ -724,7 +1014,7 @@ sc &lt;-<span class="st"> </span><span class="kw">spark_connect</span>(<span cla
 </div>
 <div id="reading-data" class="section level2">
 <h2>Reading data</h2>
-<p>You can copy R data frames into Spark using the <code>dplyr</code> <code>copy_to</code> function. Let’s replicate some of our work with the <code>flights</code> database from last class. First let’s load the data frames into Spark:</p>
+<p>You can copy R data frames into Spark using the <code>dplyr::copy_to()</code> function. Let’s replicate some of the work with the <code>flights</code> database from the <a href="http://r4ds.had.co.nz/relational-data.html">relational data chapter in <em>R for Data Science</em></a>. First let’s load the data frames into Spark:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::flights, <span class="st">&quot;flights&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
 airlines_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::airlines, <span class="st">&quot;airlines&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
 airports_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, nycflights13::airports, <span class="st">&quot;airports&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
@@ -801,9 +1091,7 @@ weather_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, ny
 <p>You can use <code>sparklyr</code> to fit a wide range of machine learning algorithms in Apache Spark. Rather than using <code>caret::train()</code>, you use a set of <code>ml_</code> functions depending on which algorithm you want to employ.</p>
 <div id="load-the-data" class="section level2">
 <h2>Load the data</h2>
-<p>Let’s continue using the Titanic dataset. First, download and install the <code>titanic</code> package which contains the data files we have been using for past machine learning exercises:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.package</span>(<span class="st">&quot;titanic&quot;</span>)</code></pre></div>
-<p>Next we need to load it into the local Spark cluster.</p>
+<p>Let’s continue using the Titanic dataset. First, load the <code>titanic</code> package, which contains the data files we have been using for past statistical learning exercises, into the local Spark cluster:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
 (titanic_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, titanic::titanic_train, <span class="st">&quot;titanic&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>))</code></pre></div>
 <pre><code>## Source:   query [891 x 12]
@@ -830,12 +1118,12 @@ weather_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, ny
 <p>You can use <code>dplyr</code> syntax to tidy and reshape data in Spark, as well as specialized functions from the <a href="http://spark.apache.org/docs/latest/ml-features.html">Spark machine learning library</a>.</p>
 <div id="spark-sql-transforms" class="section level3">
 <h3>Spark SQL transforms</h3>
-<p>These are feature transforms (aka mutating or filtering the columns/rows) using Spark SQL. This allows you to create new features and modify existing features with <code>dplyr</code> syntax. Here let’s modify 4 columns:</p>
+<p>These are <strong>feature transforms</strong> (aka mutating or filtering the columns/rows) using Spark SQL. This allows you to create new columns and modify existing columns while still employing the <code>dplyr</code> syntax. Here let’s modify 4 columns:</p>
 <ol style="list-style-type: decimal">
-<li>Family_Size - create number of siblings and parents</li>
-<li>Pclass - format passenger class as character not numeric</li>
-<li>Embarked - remove a small number of missing records</li>
-<li>Age - impute missing age with average age</li>
+<li><code>Family_Size</code> - create number of siblings and parents</li>
+<li><code>Pclass</code> - format passenger class as character not numeric</li>
+<li><code>Embarked</code> - remove a small number of missing records</li>
+<li><code>Age</code> - impute missing age with average age</li>
 </ol>
 <p>We use <code>sdf_register</code> at the end of the operation to store the table in the Spark cluster.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic2_tbl &lt;-<span class="st"> </span>titanic_tbl %&gt;%<span class="st"> </span>
@@ -856,7 +1144,7 @@ weather_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, ny
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Family_Sizes =</span> <span class="kw">as.character</span>(<span class="kw">as.integer</span>(Family_Sizes))) %&gt;%
 <span class="st">  </span><span class="kw">sdf_register</span>(<span class="st">&quot;titanic_final&quot;</span>)</code></pre></div>
 <blockquote>
-<p><code>ft_bucketizer</code> is equivalent to <code>cut</code> in R</p>
+<p><code>ft_bucketizer()</code> is equivalent to <code>cut()</code> in R.</p>
 </blockquote>
 </div>
 <div id="train-validation-split" class="section level3">
@@ -935,10 +1223,10 @@ ml_score &lt;-<span class="st"> </span><span class="kw">map</span>(ml_models, sc
 </div>
 <div id="compare-results" class="section level2">
 <h2>Compare results</h2>
-<p>Compare the model results. Examine performance metrics: accuracy and <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">area under the curve (AUC)</a>. Also examine feature importance to see what features are most predictive of survival.</p>
+<p>Compare the model results by examining performance metrics: accuracy and <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">area under the curve (AUC)</a>. Also examine feature importance to see what variables are most predictive of survival.</p>
 <div id="accuracy-and-auc" class="section level3">
 <h3>Accuracy and AUC</h3>
-<p>Receiver operating characteristic (ROC) is a graphical plot that illustrates the performance of a binary classifier. It visualizes the relationship between the true positive rate (TPR) against the false positive rate (FPR).</p>
+<p><strong>Receiver operating characteristic (ROC) curves</strong> are graphical plots that illustrate the performance of a binary classifier. They visualize the relationship between the true positive rate (TPR) against the false positive rate (FPR).</p>
 <div class="figure">
 <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/ROC_space-2.png" alt="From Receiver operating characteristic" />
 <p class="caption">From <a href="https://en.wikipedia.org/wiki/Receiver_operating_characteristic">Receiver operating characteristic</a></p>
@@ -970,7 +1258,7 @@ perf_metrics</code></pre></div>
 ## 3          Random Forest 86.93462 82.92683
 ## 4 Gradient Boosted Trees 85.89769 79.51220
 ## 5            Naive Bayes 66.47738 69.26829
-## 6             Neural Net 76.57515 78.53659</code></pre>
+## 6             Neural Net 82.79182 83.41463</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot results</span>
 <span class="kw">gather</span>(perf_metrics, metric, value, AUC, Accuracy) %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">reorder</span>(model, value), value, <span class="dt">fill =</span> metric)) +<span class="st"> </span>
@@ -1056,7 +1344,7 @@ result %&gt;%
 <p><img src="distrib-comp_01_files/figure-html/titanic_compare_runtime-1.png" width="672" /></p>
 <div id="run-time-for-serial-vs.parallel-computing" class="section level3">
 <h3>Run time for serial vs. parallel computing</h3>
-<p>Let’s look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would <code>glm</code> and a serial method work just as well?</p>
+<p>Let’s look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would <code>glm()</code> and a serial method work just as well?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get formulas for glm and ml_logistic_regression</span>
 logit_glm &lt;-<span class="st"> &quot;glm(ml_formula, data = train_tbl, family = binomial)&quot;</span> %&gt;%
 <span class="st">  </span><span class="kw">str_c</span>(<span class="st">&quot;system.time(&quot;</span>, ., <span class="st">&quot;)&quot;</span>)
@@ -1106,70 +1394,77 @@ result_serial %&gt;%
 <pre><code>##  setting  value                       
 ##  version  R version 3.3.2 (2016-10-31)
 ##  system   x86_64, darwin13.4.0        
-##  ui       RStudio (1.0.136)           
+##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-13                  
+##  date     2017-02-14                  
 ## 
-##  package      * version date       source        
-##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
-##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  base64enc      0.1-3   2015-07-28 CRAN (R 3.3.0)
-##  broom        * 0.4.1   2016-06-24 CRAN (R 3.3.0)
-##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)
-##  config         0.2     2016-08-02 CRAN (R 3.3.0)
-##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)
-##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)
-##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)
-##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)
-##  gapminder    * 0.2.0   2015-12-31 CRAN (R 3.3.0)
-##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)
-##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)
-##  haven          1.0.0   2016-09-23 cran (@1.0.0) 
-##  hms            0.3     2016-11-22 CRAN (R 3.3.2)
-##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)
-##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)
-##  knitr        * 1.15.1  2016-11-22 cran (@1.15.1)
-##  lattice        0.20-34 2016-09-06 CRAN (R 3.3.2)
-##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)
-##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)
-##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)
-##  modelr         0.1.0   2016-08-31 CRAN (R 3.3.0)
-##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme           3.1-130 2017-01-24 CRAN (R 3.3.2)
-##  nycflights13   0.2.2   2017-01-27 CRAN (R 3.3.2)
-##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)
-##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)
-##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)
-##  rappdirs       0.3.1   2016-03-28 CRAN (R 3.3.0)
-##  rcfss        * 0.1.3   2017-02-07 local         
-##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)
-##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)
-##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)
-##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)
-##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)
-##  rstudioapi     0.6     2016-06-27 CRAN (R 3.3.0)
-##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)
-##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)
-##  sparklyr     * 0.5.1   2016-12-19 CRAN (R 3.3.2)
-##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr      * 1.1.0   2016-08-19 cran (@1.1.0) 
-##  tibble       * 1.2     2016-08-26 cran (@1.2)   
-##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)
-##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)
-##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)
-##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)
-##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version    date       source                            
+##  assertthat     0.1        2013-12-06 CRAN (R 3.3.0)                    
+##  backports      1.0.5      2017-01-18 CRAN (R 3.3.2)                    
+##  base64enc      0.1-3      2015-07-28 CRAN (R 3.3.0)                    
+##  bigrquery    * 0.3.0      2016-06-28 CRAN (R 3.3.0)                    
+##  broom        * 0.4.1      2016-06-24 CRAN (R 3.3.0)                    
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.2)                    
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                    
+##  config         0.2        2016-08-02 CRAN (R 3.3.0)                    
+##  curl           2.3        2016-11-24 CRAN (R 3.3.2)                    
+##  DBI            0.5-1      2016-09-10 CRAN (R 3.3.0)                    
+##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                    
+##  digest         0.6.12     2017-01-27 CRAN (R 3.3.2)                    
+##  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                    
+##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                    
+##  forcats        0.2.0      2017-01-23 CRAN (R 3.3.2)                    
+##  foreign        0.8-67     2016-09-13 CRAN (R 3.3.2)                    
+##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
+##  ggplot2      * 2.2.1      2016-12-30 CRAN (R 3.3.2)                    
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                    
+##  haven          1.0.0      2016-09-23 cran (@1.0.0)                     
+##  hms            0.3        2016-11-22 CRAN (R 3.3.2)                    
+##  htmltools      0.3.5      2016-03-21 CRAN (R 3.3.0)                    
+##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                    
+##  jsonlite       1.2        2016-12-31 CRAN (R 3.3.2)                    
+##  knitr          1.15.1     2016-11-22 cran (@1.15.1)                    
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                    
+##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.2)                    
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                    
+##  lubridate      1.6.0      2016-09-13 CRAN (R 3.3.0)                    
+##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                    
+##  Matrix         1.2-8      2017-01-20 CRAN (R 3.3.2)                    
+##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                    
+##  mgcv           1.8-16     2016-11-07 CRAN (R 3.3.0)                    
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                    
+##  modelr         0.1.0      2016-08-31 CRAN (R 3.3.0)                    
+##  multidplyr   * 0.0.0.9000 2016-11-23 Github (hadley/multidplyr@f6bece5)
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                    
+##  nlme           3.1-130    2017-01-24 CRAN (R 3.3.2)                    
+##  nycflights13 * 0.2.2      2017-01-27 CRAN (R 3.3.2)                    
+##  openssl        0.9.6      2016-12-31 CRAN (R 3.3.2)                    
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                    
+##  psych          1.6.12     2017-01-08 CRAN (R 3.3.2)                    
+##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                    
+##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                    
+##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.3.0)                    
+##  Rcpp           0.12.9     2017-01-14 CRAN (R 3.3.2)                    
+##  readr        * 1.0.0      2016-08-03 CRAN (R 3.3.0)                    
+##  readxl         0.1.1      2016-03-28 CRAN (R 3.3.0)                    
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                    
+##  rmarkdown      1.3        2016-12-21 CRAN (R 3.3.2)                    
+##  rprojroot      1.2        2017-01-16 CRAN (R 3.3.2)                    
+##  RSQLite      * 1.1-2      2017-01-08 CRAN (R 3.3.2)                    
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.3.0)                    
+##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                    
+##  sparklyr     * 0.5.1      2016-12-19 CRAN (R 3.3.2)                    
+##  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                    
+##  stringr      * 1.1.0      2016-08-19 cran (@1.1.0)                     
+##  tibble       * 1.2        2016-08-26 cran (@1.2)                       
+##  tidyr        * 0.6.1      2017-01-10 CRAN (R 3.3.2)                    
+##  tidyverse    * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.3.0)                    
+##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                    
+##  xml2           1.1.1      2017-01-24 CRAN (R 3.3.2)                    
+##  yaml           2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
