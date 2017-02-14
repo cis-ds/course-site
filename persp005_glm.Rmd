@@ -1,0 +1,130 @@
+---
+title: "Statistical learning: generalized linear models"
+author: "MACS 30100 - Perspectives on Computational Modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define the generalized linear model (GLM)
+* Identify the three elements of a GLM
+    * Probability distribution
+    * Linear predictor
+    * Link function
+* Explain ordinary least squares regression as a GLM
+* Explain logistic regression as a GLM
+* Introduce the binomial distribution for GLMs
+* Introduce ordinal and multinomial logistic regression for discrete variables with more than two classes
+* Introduce poisson regression for count data
+
+```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
+library(tidyverse)
+library(modelr)
+library(broom)
+library(forcats)
+
+options(na.action = na.warn)
+set.seed(1234)
+
+theme_set(theme_minimal())
+```
+
+# Generalized linear models
+
+**Generalized linear models** are a flexible class of models that allow us to estimate linear regression for response variables that have error distribution models other than the normal distribution. GLMs are typically estimated via maximum likelihood estimation, though can also be estimated via generalized method of moments as well as Bayesian procedures.
+
+# Elements of a GLM
+
+A GLM consists of three components
+
+1. A **random component** specifying the conditional distribution of the response variable, $Y_i$, given the values of the predictor variables in the model. Typically these distributions are a member of the [**exponential family**](https://en.wikipedia.org/wiki/Exponential_family), a set of related probability distributions.
+1. A **linear predictor** that is a linear function of regressors:
+
+    $$\eta_i = \alpha + \beta_{1}X_{i1} + \beta_{2}X_{i2} + \dots + \beta_{k}X_{ik}$$
+    
+    The regressors are prespecified functions of the explanatory variables. This is exactly like the form you've seen for [linear](persp003_linear_regression.html) and [logistic](persp004_logistic_regression.html) regression, because in fact linear and logistic regression are types of GLMs.
+1. A **link function** $g(\cdot)$ which transforms the expectation of the response variable, $\mu_i \equiv E(Y_i)$ to the linear predictor:
+
+    $$g(\mu_i) = \eta_i = \alpha + \beta_{1}X_{i1} + \beta_{2}X_{i2} + \dots + \beta_{k}X_{ik}$$
+    
+    Because the link function must also be **invertible**, we can also write it as:
+    
+    $$\mu_i = g^{-1}(\eta_i) = g^{-1}(\alpha + \beta_{1}X_{i1} + \beta_{2}X_{i2} + \dots + \beta_{k}X_{ik})$$
+
+    The inverted link function is also known as the **mean function**. The purpose of the link function is to relate the linear predictor to the mean of the distribution function.
+    
+For any given probability distribution, there are common link functions called **canonical link functions** that are typically used in conjunction with the probability distribution in GLMs.
+
+# GLMs and ordinary least squares regression
+
+Previously we have discussed ordinary least squares regression in the context of **minimizing the sum of the squared errors**. This approach has a closed-form solution in the form of linear algebra:
+
+$$\beta = (X^{'}X)^{-1}X^{'}Y$$
+
+However we can also treat OLS as a special case of a generalized linear model.
+
+We presume the response variable $Y$ is drawn from a Gaussian (normal) distribution with mean $\mu$ and variance $\sigma^2$:
+
+$$Pr(Y_i = y_i) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]$$
+
+This is the density, or probability density function (PDF) of the variable $Y$.
+
+* The probability that, for any one observation $i$, $Y$ will take on the particular value $y$.
+* This is a function of $\mu$, the expected value of the distribution, and $\sigma^2$, the variability of the distribution around the mean.
+
+We want to generate estimates of the parameters $\hat{\mu}$ and $\hat{\sigma^2}$ based on the data. How do we do this? Maximum likelihood estimation of course. We need to find the parameter values that maximize the **log-likelihood function**. For the normal distribution, the log-likelihood function is:
+
+$$\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \ln \prod_{i = 1}^{N}{\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]}$$
+
+Which can also be written as:
+
+$$\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \sum_{i=1}^{N}{\ln\left(\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\right)}$$
+$$\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \mu)^2 \right]$$
+
+Now right now the mean of the distribution $\mu$ is a constant. We are testing different values for $\mu$ to see what optimizes the function. But more typically we want $\mu$ to be a function of some other variable $X$. We can write this as:
+
+$$E(Y) \equiv \mu = \beta_0 + \beta_{1}X_{i}$$
+$$\mathrm{Var}(Y) = \sigma^2$$
+
+Now we just substitute this equation for the systematic mean part ($\mu$) in the previous equations:
+
+$$\ln L(\beta_0, \beta_1, \sigma^2 | Y) = \ln \prod_{i = 1}^{N}{\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \beta_0 - \beta_{1}X_{i})^2}{2\sigma^2}\right]}$$
+$$\ln L(\beta_0, \beta_1, \sigma^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \beta_0 - \beta_{1}X_{i})^2 \right]$$
+
+## Connecting MLE estimator to OLS
+
+With respect to the parameters $\{\beta_0, \beta_1, \sigma^2\}$, only the last term is important. The first one ($-\frac{N}{2} \ln(2\pi)$) is invariant with respect to the parameters of interest, and so it can be dropped using the *Fisher-Neyman Factorization Lemma*. Thus the **kernal** of the log-likelihood is:
+
+$$-\sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \beta_0 - \beta_{1}X_{i})^2$$
+
+Which is eeriely familiar to the sum-of-squared-errors term, merely scaled by the variance parameter $\sigma^2$:
+
+$$RSS = \sum_{i = 1}^{N} (Y_i - \beta_0 - \beta_{1}X_{i})^2$$
+
+This proves the least-squares estimator of OLS $\beta$s **is the maximum likelihood estimator as well**.
+
+## Completing the elements
+
+So far we have the random component (a normal distribution) and a linear predictor ($\beta_0 + \beta_{1}X_{i}$). Where is the link function? We actually have it already too. Because the normal distribution already supports an infinite range of real numbers $(-, +\infty)$, the data naturally scaled to the linear predictor. What we use here is an **identity link function** that returns its argument unaltered:
+
+$$\eta_i = g(\mu_i) = \mu_i$$
+$$\mu_i = g^{-1}(\eta_i) = \eta_i$$
+
+
+   
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
