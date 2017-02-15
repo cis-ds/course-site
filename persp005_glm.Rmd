@@ -77,6 +77,15 @@ We presume the response variable $Y$ is drawn from a Gaussian (normal) distribut
 
 $$Pr(Y_i = y_i) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]$$
 
+```{r plot-normal}
+data_frame(x = rnorm(1000, 0, 1)) %>%
+  ggplot(aes(x)) +
+  # geom_histogram() +
+  stat_function(fun = dnorm, args = list(mean = 0, sd = 1)) +
+  labs(title = "Normal distribution",
+       subtitle = expression(paste(mu == 0, " , ", sigma^{2} == 1)))
+```
+
 This is the density, or probability density function (PDF) of the variable $Y$.
 
 * The probability that, for any one observation $i$, $Y$ will take on the particular value $y$.
@@ -96,14 +105,36 @@ Suppose we had a sample of assistant professor salaries:
 ```{r prof, echo = FALSE}
 prof <- data_frame(id = 1:5,
                    years = c(3,2,4,1,5),
-                   salary = 45000 + 5000 * years)
+                   salary = 45 + 5 * years)
 
 prof %>%
   select(-years) %>%
   knitr::kable(caption = "Salaries of assistant professors")
 ```
 
-If we want to explain the distribution of possible assistant professor salaries given these data points, we could use maximum-likelihood estimation to find the $\hat{\mu}$ that maximizes the likelihood of the data. Now right now the mean of the distribution $\mu$ is a constant. We are testing different values for $\mu$ to see what optimizes the function. If we have no regressors or predictors, our 
+If we want to explain the distribution of possible assistant professor salaries given these data points, we could use maximum-likelihood estimation to find the $\hat{\mu}$ that maximizes the likelihood of the data. We are testing different values for $\mu$ to see what optimizes the function. If we have no regressors or predictors, $\hat{\mu}$ is a constant. The log-likelihood curve would look like this:
+
+```{r}
+likelihood.normal.mu = function(mu, sig2 = 1, x) {
+  # mu      mean of normal distribution for given sig
+  # x       vector of data
+  n = length(x)
+  a1 = (2*pi*sig2)^-(n/2)
+  a2 = -1/(2*sig2)
+  y = (x-mu)^2
+  ans = a1*exp(a2*sum(y))
+  return(log(ans))
+}
+
+data_frame(mu_hat = seq(57, 63, by = .05),
+           logLik = map_dbl(mu_hat, likelihood.normal.mu, x = prof$salary)) %>%
+  ggplot(aes(mu_hat, logLik)) +
+  geom_line() +
+  labs(x = expression(hat(mu)),
+       y = "Log-likelihood")
+```
+
+And the maximum is `r mean(prof$salary)`, which is the mean of the 5 sample observations.
 
 But more typically we want $\mu$ to be a function of some other variable $X$. We can write this as:
 
@@ -134,6 +165,20 @@ So far we have the random component (a normal distribution) and a linear predict
 
 $$\eta_i = g(\mu_i) = \mu_i$$
 $$\mu_i = g^{-1}(\eta_i) = \eta_i$$
+
+So to recap, in linear regression:
+
+1. The random component is the normal distribution:
+
+    $$Pr(Y_i = y_i) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]$$
+
+1. The linear predictor is:
+
+    $$\eta_{i} = \beta_0 + \beta_{1}X_{i}$$
+
+1. The link function is the identity function:
+
+    $$\eta_i = \mu_i$$
 
 Therefore with ordinary least squares linear regression, we have now demonstrated that it is merely one type of generalized linear model.
 
@@ -376,17 +421,7 @@ $$Y_i = \begin{cases}
       m & \text{if } \alpha_{m - 1} \lt \zeta_{i} \\
    \end{cases}$$
 
-We can determine the cumulative probability distribution of $Y$:
-
-$$\Pr(Y_i \leq j) = \Pr(\zeta_i \leq \alpha_j)$$
-
-$$\Pr(Y_i \leq j) = \Pr(\alpha + \beta_{1}X_{i1} + \dots + \beta_{k}X_{ik} \leq \alpha_j)$$
-
-$$\Pr(Y_i \leq j) = \Pr(\epsilon_i \lt \alpha + \beta_{1}X_{i1} + \dots + \beta_{k}X_{ik})$$
-
-If the errors follow a logistic distribution, then we have an ordered logistic regression model:
-
-$$$$
+Skipping some of the math, the result is an ordered logistic regression model. The parameters estimate for every one-unit increase in $X$ the log-odds of $Y_i$ increasing to the next level. If we exponentiate the parameters, we get the **odds ratio**. The important thing is that the change in log-odds between any given levels is **constant** - that is, a one-unit change in $X$ equates to the same magnitude of change between outcomes $0$ and $1$, $1$ and $2$, etc. The only difference is the intercept for each value.
 
 Let's see how this works by predicting passenger class on the Titanic. We can use the `polr` function from the `MASS` library to estimate the ordered logistic regression model:^[Note that the response variable must be coded as a factor, not a numeric, column.]
 
@@ -398,23 +433,37 @@ m <- MASS::polr(Pclass ~ Fare, data = titanic_ord, Hess=TRUE)
 summary(m)
 ```
 
-The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the **cut points** used to determine 
+The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the **cut points** used to determine the estimated thresholds $\hat{\alpha_{k}}$ for the underlying latent variable. They are typically of little direct concern in our analysis. Instead, we care about the coefficients.
+
+* For every one-pound increase in fare, the log-odds of a passenger's berthing class change by `r coef(m)`. That is, the log-odds of berthing in second class are `r abs(coef(m))` lower than berthing in first class. The same for berthing in third class compared to second class.
+
+We can convert the log-odds to an odds ratio by exponentiating the estimated parameter.
+
+```{r titanic-ord-odds}
+exp(coef(m))
+```
+
+That is, the odds of berthing in second class are `r exp(coef(m))` the size of berthing in first class.
+
+We can predict log-odds, odds, and predicted probabilities of each outcome.
 
 ```{r}
-dat_grid <- dat %>%
-  data_grid(pared, public, gpa)
+dat_grid <- titanic_ord %>%
+  data_grid(Fare)
 
 dat_pred <- bind_cols(dat_grid,
                       predict(m, dat_grid, type = "probs") %>%
                         as_tibble()) %>%
-  gather(outcome, prob, Unlikely:`Very likely`)
+  gather(outcome, prob, `1`:`3`)
 
-ggplot(dat_pred, aes(gpa, prob, color = outcome)) +
+ggplot(dat_pred, aes(Fare, prob, color = outcome)) +
   geom_line() +
-  facet_grid(pared ~ public, labeller = "label_both")
+  labs(x = "Fare amount",
+       y = "Predicted probability of passenger class",
+       color = "Passenger class")
 ```
 
-
+Unsurprisingly, cheap fares have a high probability of 3rd class berthing, whereas expensive fairs are almost exclusively 1st class cabins.
 
 # Poisson regression
 

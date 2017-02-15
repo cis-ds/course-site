@@ -378,7 +378,7 @@ div.tocify {
 <span class="kw">library</span>(modelr)
 <span class="kw">library</span>(broom)
 <span class="kw">library</span>(haven)
-<span class="kw">library</span>(MASS)
+<span class="kw">library</span>(nnet)
 
 <span class="kw">options</span>(<span class="dt">na.action =</span> na.warn)
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
@@ -412,6 +412,13 @@ The regressors are prespecified functions of the explanatory variables. This is 
 <p>However we can also treat OLS as a special case of a generalized linear model.</p>
 <p>We presume the response variable <span class="math inline">\(Y\)</span> is drawn from a Gaussian (normal) distribution with mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma^2\)</span>:</p>
 <p><span class="math display">\[Pr(Y_i = y_i) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">rnorm</span>(<span class="dv">1000</span>, <span class="dv">0</span>, <span class="dv">1</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x)) +
+<span class="st">  </span><span class="co"># geom_histogram() +</span>
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> dnorm, <span class="dt">args =</span> <span class="kw">list</span>(<span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> <span class="dv">1</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Normal distribution&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="kw">expression</span>(<span class="kw">paste</span>(mu ==<span class="st"> </span><span class="dv">0</span>, <span class="st">&quot; , &quot;</span>, sigma^{<span class="dv">2</span>} ==<span class="st"> </span><span class="dv">1</span>)))</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/plot-normal-1.png" width="672" /></p>
 <p>This is the density, or probability density function (PDF) of the variable <span class="math inline">\(Y\)</span>.</p>
 <ul>
 <li>The probability that, for any one observation <span class="math inline">\(i\)</span>, <span class="math inline">\(Y\)</span> will take on the particular value <span class="math inline">\(y\)</span>.</li>
@@ -421,8 +428,61 @@ The regressors are prespecified functions of the explanatory variables. This is 
 <p><span class="math display">\[\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \ln \prod_{i = 1}^{N}{\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]}\]</span></p>
 <p>Which can also be written as:</p>
 <p><span class="math display">\[\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \sum_{i=1}^{N}{\ln\left(\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\right)}\]</span> <span class="math display">\[\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \mu)^2 \right]\]</span></p>
-<p>Now right now the mean of the distribution <span class="math inline">\(\mu\)</span> is a constant. We are testing different values for <span class="math inline">\(\mu\)</span> to see what optimizes the function. But more typically we want <span class="math inline">\(\mu\)</span> to be a function of some other variable <span class="math inline">\(X\)</span>. We can write this as:</p>
-<p><span class="math display">\[E(Y) \equiv \mu = \beta_0 + \beta_{1}X_{i}\]</span> <span class="math display">\[\mathrm{Var}(Y) = \sigma^2\]</span></p>
+<p>Suppose we had a sample of assistant professor salaries:</p>
+<table>
+<caption>Salaries of assistant professors</caption>
+<thead>
+<tr class="header">
+<th align="right">id</th>
+<th align="right">salary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">60</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">55</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">65</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">50</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">70</td>
+</tr>
+</tbody>
+</table>
+<p>If we want to explain the distribution of possible assistant professor salaries given these data points, we could use maximum-likelihood estimation to find the <span class="math inline">\(\hat{\mu}\)</span> that maximizes the likelihood of the data. We are testing different values for <span class="math inline">\(\mu\)</span> to see what optimizes the function. If we have no regressors or predictors, <span class="math inline">\(\hat{\mu}\)</span> is a constant. The log-likelihood curve would look like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">likelihood.normal.mu =<span class="st"> </span>function(mu, <span class="dt">sig2 =</span> <span class="dv">1</span>, x) {
+  <span class="co"># mu      mean of normal distribution for given sig</span>
+  <span class="co"># x       vector of data</span>
+  n =<span class="st"> </span><span class="kw">length</span>(x)
+  a1 =<span class="st"> </span>(<span class="dv">2</span>*pi*sig2)^-(n/<span class="dv">2</span>)
+  a2 =<span class="st"> </span>-<span class="dv">1</span>/(<span class="dv">2</span>*sig2)
+  y =<span class="st"> </span>(x-mu)^<span class="dv">2</span>
+  ans =<span class="st"> </span>a1*<span class="kw">exp</span>(a2*<span class="kw">sum</span>(y))
+  <span class="kw">return</span>(<span class="kw">log</span>(ans))
+}
+
+<span class="kw">data_frame</span>(<span class="dt">mu_hat =</span> <span class="kw">seq</span>(<span class="dv">57</span>, <span class="dv">63</span>, <span class="dt">by =</span> .<span class="dv">05</span>),
+           <span class="dt">logLik =</span> <span class="kw">map_dbl</span>(mu_hat, likelihood.normal.mu, <span class="dt">x =</span> prof$salary)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(mu_hat, logLik)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="kw">expression</span>(<span class="kw">hat</span>(mu)),
+       <span class="dt">y =</span> <span class="st">&quot;Log-likelihood&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>And the maximum is 60, which is the mean of the 5 sample observations.</p>
+<p>But more typically we want <span class="math inline">\(\mu\)</span> to be a function of some other variable <span class="math inline">\(X\)</span>. We can write this as:</p>
+<p><span class="math display">\[E(Y) \equiv \mu = \beta_0 + \beta_{1}X_{i}\]</span></p>
+<p><span class="math display">\[\mathrm{Var}(Y) = \sigma^2\]</span></p>
 <p>Now we just substitute this equation for the systematic mean part (<span class="math inline">\(\mu\)</span>) in the previous equations:</p>
 <p><span class="math display">\[\ln L(\beta_0, \beta_1, \sigma^2 | Y) = \ln \prod_{i = 1}^{N}{\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \beta_0 - \beta_{1}X_{i})^2}{2\sigma^2}\right]}\]</span> <span class="math display">\[\ln L(\beta_0, \beta_1, \sigma^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \beta_0 - \beta_{1}X_{i})^2 \right]\]</span></p>
 <div id="connecting-mle-estimator-to-ols" class="section level2">
@@ -437,6 +497,15 @@ The regressors are prespecified functions of the explanatory variables. This is 
 <h2>Completing the elements</h2>
 <p>So far we have the random component (a normal distribution) and a linear predictor (<span class="math inline">\(\beta_0 + \beta_{1}X_{i}\)</span>). Where is the link function? We actually have it already too. Because the normal distribution already supports an infinite range of real numbers <span class="math inline">\((-, +\infty)\)</span>, the data naturally scaled to the linear predictor. What we use here is an <strong>identity link function</strong> that returns its argument unaltered:</p>
 <p><span class="math display">\[\eta_i = g(\mu_i) = \mu_i\]</span> <span class="math display">\[\mu_i = g^{-1}(\eta_i) = \eta_i\]</span></p>
+<p>So to recap, in linear regression:</p>
+<ol style="list-style-type: decimal">
+<li><p>The random component is the normal distribution:</p>
+<p><span class="math display">\[Pr(Y_i = y_i) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\]</span></p></li>
+<li><p>The linear predictor is:</p>
+<p><span class="math display">\[\eta_{i} = \beta_0 + \beta_{1}X_{i}\]</span></p></li>
+<li><p>The link function is the identity function:</p>
+<p><span class="math display">\[\eta_i = \mu_i\]</span></p></li>
+</ol>
 <p>Therefore with ordinary least squares linear regression, we have now demonstrated that it is merely one type of generalized linear model.</p>
 </div>
 </div>
@@ -444,26 +513,26 @@ The regressors are prespecified functions of the explanatory variables. This is 
 <h1>GLMs and logistic regression</h1>
 <p>The normal distribution does not properly describe binary outcome variables which take on values of <span class="math inline">\([0,1]\)</span>, because the normal distribution allows for values along the entire real number line. This was the problem last class in trying to apply OLS to the Titanic dataset.</p>
 <p>Instead, we assume our outcome variable <span class="math inline">\(Y\)</span> is drawn from the <strong>binomial distribution</strong> with probability <span class="math inline">\(\pi\)</span>:</p>
-<p><span class="math display">\[Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}\]</span></p>
+<p><span class="math display">\[Pr(Y_i = y_i | \pi_i) = \pi_i^{y_i} (1 - \pi_i)^{(1 - y_i)}\]</span></p>
 <p>This is a probability mass function (PMF):</p>
 <ul>
 <li>The probability that, for any one observation <span class="math inline">\(i\)</span>, <span class="math inline">\(Y\)</span> will take on the particular value <span class="math inline">\(y\)</span>.</li>
-<li>This is a function of <span class="math inline">\(\mu\)</span>, the expected value of <span class="math inline">\(Y_i\)</span> that takes on the value 1 across repeated experiments. So <span class="math inline">\(Y_i\)</span> takes on the expected value of 1 with probability <span class="math inline">\(\pi\)</span> and 0 with probability <span class="math inline">\(1 - \pi\)</span>.</li>
+<li><span class="math inline">\(Y_i\)</span> takes on the expected value of 1 with probability <span class="math inline">\(\pi\)</span> and 0 with probability <span class="math inline">\(1 - \pi\)</span>., so <span class="math inline">\(\pi_i\)</span> is the conditional probability of sampling a 1 in this group.</li>
 </ul>
 <p>Of course, the probability of the outcome <span class="math inline">\(Y\)</span> may vary systematically given known predictors. To incorporate that into the model, we need to choose a linear predictor:</p>
-<p><span class="math display">\[\pi \equiv \eta = g(\mu)\]</span></p>
+<p><span class="math display">\[\pi_i = \eta_i\]</span></p>
 <p>Now in the linear context we would write something like this:</p>
-<p><span class="math display">\[g(\mu_i) = \beta_0 + \beta_{1}X_i\]</span></p>
-<p>However remember the problem with that approach using the Titanic data. We need to constrain the linear predictor to the probability range <span class="math inline">\([0,1]\)</span>. So in logistic regression, we cannot use the identity link function. Instead, we use the <strong>logit link function</strong>:</p>
-<p><span class="math display">\[g(\mu_i) = \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}}\]</span></p>
+<p><span class="math display">\[g(\pi_i) \equiv \eta_i = \beta_0 + \beta_{1}X_i\]</span></p>
+<p>However remember the problem with that approach using the Titanic data. We need to constrain the linear predictor to the probability range <span class="math inline">\([0,1]\)</span>. So in logistic regression, we cannot use the identity link function. Instead, we use the <strong>logit link function</strong> to constrain the linear predictor onto the <span class="math inline">\([0,1]\)</span> range:</p>
+<p><span class="math display">\[g(\pi_i) = \frac{e^{\eta_i}}{1 + e^{\eta_i}}\]</span></p>
 <p>So to recap, for logistic regression:</p>
 <ul>
 <li><p>The random component is the Bernoulli distribution</p>
-<p><span class="math display">\[Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}\]</span></p></li>
+<p><span class="math display">\[Pr(Y_i = y_i | \pi) = \pi_i^{y_i} (1 - \pi_i)^{(1 - y_i)}\]</span></p></li>
 <li><p>The linear predictor is:</p>
 <p><span class="math display">\[\eta_i = \beta_0 + \beta_{1}X_i\]</span></p></li>
 <li><p>The link function is the logit function:</p>
-<p><span class="math display">\[\mu_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}}\]</span></p></li>
+<p><span class="math display">\[\pi_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}}\]</span></p></li>
 </ul>
 <p>So the likelihood for a given observation <span class="math inline">\(i\)</span> is:</p>
 <p><span class="math display">\[L_i = \left( \frac{e^{\eta_i}}{1 + e^{\eta_i}} \right) ^ {Y_i} \left[ 1 - \left( \frac{e^{\eta_i}}{1 + e^{\eta_i}} \right) \right]^{1 - Y_i}\]</span></p>
@@ -473,6 +542,329 @@ The regressors are prespecified functions of the explanatory variables. This is 
 <p>And therefore the log-likelihood function:</p>
 <p><span class="math display">\[\ln L = \sum_{i = 1}^{N} Y_i \ln \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) + (1 - Y_i) \ln \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]\]</span></p>
 <p>Which we maximize with respect to the <span class="math inline">\(\beta\)</span>s to obtain our estimated parameters, just as we would linear regression.</p>
+</div>
+<div id="logistic-regression-for-more-than-two-response-classes" class="section level1">
+<h1>Logistic regression for more than two response classes</h1>
+<p>A downside to logistic regression as presented above is that it only works for response variables with two potential values. However it is common to encounter discrete variables with more than two possible values. Consider voting in a legislature. Roll-call votes are typically recorded as:</p>
+<ol style="list-style-type: decimal">
+<li>Yay</li>
+<li>Nay</li>
+</ol>
+<p>However there are other potential outcomes for legislators. We could instead code their votes as:</p>
+<ol style="list-style-type: decimal">
+<li>Yay</li>
+<li>Nay</li>
+<li>Abstain</li>
+<li>Not present</li>
+</ol>
+<p>If a large number of legislators abstain or are missing from a vote, we may not want to throw that information away by arbitrarily restricting the outcome to two possibilities.</p>
+<div id="multinomial-logistic-regression" class="section level2">
+<h2>Multinomial logistic regression</h2>
+<p>We can generalize the dichotomous logit model to a <strong>polytomy</strong> (more than 2 outcomes) bby employing the <strong>multivariate logistic distribution</strong>. Here the response variable <span class="math inline">\(Y\)</span> can take on any of <span class="math inline">\(m\)</span> discrete values from <span class="math inline">\(1,2,\dots,m\)</span>. We presume the ordering of the values does not matter, so that <span class="math inline">\(\pi_{ij}\)</span> denotes the probability that the <span class="math inline">\(i\)</span>th observation falls into the <span class="math inline">\(j\)</span>th category of the response variable:</p>
+<p><span class="math display">\[\pi_{ij} \equiv \text{Pr}(Y_i = j), \text{for} j = 1, \dots, m\]</span></p>
+<p>For a model with <span class="math inline">\(k\)</span> regressors, <span class="math inline">\(X_1, \dots, X_k\)</span>, this dependence of <span class="math inline">\(\pi_{ij}\)</span> can be modeled using the multivariate logistic distribution:</p>
+<p><span class="math display">\[\pi_{ij} = \frac{\exp[\gamma_{0j} + \gamma_{1j}X_{i1} + \dots + \gamma_{kj}X_{ik}]}{1 + \sum_{l = 1}^{m-1} \exp[\gamma_{0l} + \gamma_{1l}X_{i1} + \dots + \gamma_{kl}X_{ik}]}, \text{for } j = 1, \dots, m-1\]</span></p>
+<p><span class="math display">\[\pi_{im} = 1 - \sum_{i = 1}^{m-1} \pi_{ij}\]</span></p>
+<p>There is one set of parameters <span class="math inline">\(\gamma_{0j}, \gamma_{1j}, \dots, \gamma_{kj}\)</span> for each set of response values but the last one. The last category (category <span class="math inline">\(m\)</span>) serves as the baseline category. The response category probabilities for each observation must sum to 1:</p>
+<p><span class="math display">\[\sum_{j = 1}^{m} = 1\]</span></p>
+<p>With algebraic manipulation, we can rewrite the probability function as:</p>
+<p><span class="math display">\[\ln \frac{\pi_{ij}}{\pi_{im}} = \gamma_{0j} + \gamma_{1j}X_{i1} + \dots + \gamma_{kj}X_{ik}, \text{for } j = 1, \dots, m\]</span></p>
+<p>So the estimated parameters tell us the log-odds of membership in any category <span class="math inline">\(j\)</span> versus the baseline category. We could rewrite this equation to compare the log-odds of membership in any two categories. This also demonstrates that the dichotomous logit model is a special case of the multinominal logit model:</p>
+<p><span class="math display">\[\ln \frac{\pi_{i1}}{\pi_{i2}} = \ln \frac{\pi_{i1}}{1 - \pi_{i1}} = \gamma_{01} + \gamma_{11}X_{i1} + \dots + \gamma_{k1}X_{ik}\]</span></p>
+<div id="applying-multinomial-logisitic-regression" class="section level3">
+<h3>Applying multinomial logisitic regression</h3>
+<p>Let’s return to our Titanic dataset. Recall the dataset and codebook:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
+titanic &lt;-<span class="st"> </span>titanic_train %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="co"># remove missing values</span>
+<span class="st">  </span><span class="kw">filter</span>(Embarked !=<span class="st"> &quot;&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">na.omit</span>()
+
+titanic %&gt;%
+<span class="st">  </span><span class="kw">head</span>() %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>()</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">PassengerId</th>
+<th align="right">Survived</th>
+<th align="right">Pclass</th>
+<th align="left">Name</th>
+<th align="left">Sex</th>
+<th align="right">Age</th>
+<th align="right">SibSp</th>
+<th align="right">Parch</th>
+<th align="left">Ticket</th>
+<th align="right">Fare</th>
+<th align="left">Cabin</th>
+<th align="left">Embarked</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Braund, Mr. Owen Harris</td>
+<td align="left">male</td>
+<td align="right">22</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">A/5 21171</td>
+<td align="right">7.2500</td>
+<td align="left"></td>
+<td align="left">S</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Cumings, Mrs. John Bradley (Florence Briggs Thayer)</td>
+<td align="left">female</td>
+<td align="right">38</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">PC 17599</td>
+<td align="right">71.2833</td>
+<td align="left">C85</td>
+<td align="left">C</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="left">Heikkinen, Miss. Laina</td>
+<td align="left">female</td>
+<td align="right">26</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">STON/O2. 3101282</td>
+<td align="right">7.9250</td>
+<td align="left"></td>
+<td align="left">S</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>
+<td align="left">female</td>
+<td align="right">35</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">113803</td>
+<td align="right">53.1000</td>
+<td align="left">C123</td>
+<td align="left">S</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Allen, Mr. William Henry</td>
+<td align="left">male</td>
+<td align="right">35</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">373450</td>
+<td align="right">8.0500</td>
+<td align="left"></td>
+<td align="left">S</td>
+</tr>
+<tr class="even">
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">McCarthy, Mr. Timothy J</td>
+<td align="left">male</td>
+<td align="right">54</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">17463</td>
+<td align="right">51.8625</td>
+<td align="left">E46</td>
+<td align="left">S</td>
+</tr>
+</tbody>
+</table>
+<p>The codebook contains the following information on the variables:</p>
+<pre><code>VARIABLE DESCRIPTIONS:
+Survived        Survival
+                (0 = No; 1 = Yes)
+Pclass          Passenger Class
+                (1 = 1st; 2 = 2nd; 3 = 3rd)
+Name            Name
+Sex             Sex
+Age             Age
+SibSp           Number of Siblings/Spouses Aboard
+Parch           Number of Parents/Children Aboard
+Ticket          Ticket Number
+Fare            Passenger Fare
+Cabin           Cabin
+Embarked        Port of Embarkation
+                (C = Cherbourg; Q = Queenstown; S = Southampton)
+
+SPECIAL NOTES:
+Pclass is a proxy for socio-economic status (SES)
+ 1st ~ Upper; 2nd ~ Middle; 3rd ~ Lower
+
+Age is in Years; Fractional if Age less than One (1)
+ If the Age is Estimated, it is in the form xx.5
+
+With respect to the family relation variables (i.e. sibsp and parch)
+some relations were ignored.  The following are the definitions used
+for sibsp and parch.
+
+Sibling:  Brother, Sister, Stepbrother, or Stepsister of Passenger Aboard Titanic
+Spouse:   Husband or Wife of Passenger Aboard Titanic (Mistresses and Fiances Ignored)
+Parent:   Mother or Father of Passenger Aboard Titanic
+Child:    Son, Daughter, Stepson, or Stepdaughter of Passenger Aboard Titanic
+
+Other family relatives excluded from this study include cousins,
+nephews/nieces, aunts/uncles, and in-laws.  Some children travelled
+only with a nanny, therefore parch=0 for them.  As well, some
+travelled with very close friends or neighbors in a village, however,
+the definitions do not support such relations.</code></pre>
+<p>But this time instead of modeling survival we want to model port of embarkation as a function of passenger fare and age. First we set “Southampton” as our reference category, then we can use the <code>multinom()</code> function from the <code>nnet</code> library to do this.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_multi &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Embarked =</span> <span class="kw">relevel</span>(<span class="kw">factor</span>(Embarked), <span class="dt">ref =</span> <span class="st">&quot;S&quot;</span>))
+port_mod &lt;-<span class="st"> </span><span class="kw">multinom</span>(Embarked ~<span class="st"> </span>Fare, <span class="dt">data =</span> titanic_multi)</code></pre></div>
+<pre><code>## # weights:  9 (4 variable)
+## initial  value 782.211950 
+## iter  10 value 423.965155
+## final  value 422.773331 
+## converged</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(port_mod)</code></pre></div>
+<pre><code>## Call:
+## multinom(formula = Embarked ~ Fare, data = titanic_multi)
+## 
+## Coefficients:
+##   (Intercept)        Fare
+## C   -1.961393  0.01255073
+## Q   -2.635604 -0.01593038
+## 
+## Std. Errors:
+##   (Intercept)        Fare
+## C   0.1327167 0.002020486
+## Q   0.2783763 0.010823741
+## 
+## Residual Deviance: 845.5467 
+## AIC: 853.5467</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate t-statistics</span>
+(port_mod_t &lt;-<span class="st"> </span><span class="kw">summary</span>(port_mod)$coefficients /<span class="st"> </span><span class="kw">summary</span>(port_mod)$standard.errors)</code></pre></div>
+<pre><code>##   (Intercept)      Fare
+## C  -14.778790  6.211738
+## Q   -9.467776 -1.471800</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate p-values</span>
+(port_mod_p &lt;-<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span><span class="kw">pnorm</span>(<span class="kw">abs</span>(port_mod_t), <span class="dv">0</span>, <span class="dv">1</span>))*<span class="dv">2</span>)</code></pre></div>
+<pre><code>##   (Intercept)         Fare
+## C           0 5.240164e-10
+## Q           0 1.410749e-01</code></pre>
+<p>As expected, we’ve estimated separate parameters and standard errors for each of our categories, Cherbourg and Queenstown, compared against our reference category Southampton. Each of these blocks has one row of values corresponding to a separate category. Focusing on the block of coefficients, we can look at the first row comparing <code>Embarked = &quot;C&quot;</code> to our baseline <code>Embarked = &quot;Q&quot;</code> and the second row comparing <code>Embarked = &quot;Q&quot;</code> to our baseline <code>Embarked = &quot;Q&quot;</code>.</p>
+<ul>
+<li>A one-unit increase in <code>Fare</code> is associated with a 0.0125507 increase in the log-odds of embarking from Cherbourg as opposed to Southampton.</li>
+<li>A one-unit increase in <code>Fare</code> is associated with a 0.0125507 decrease in the log-odds of embarking from Cherbourg as opposed to Southampton.</li>
+</ul>
+<p>We can convert the log-odds parameters to <strong>relative risks</strong>, also referred to as odds, by exponentiating the parameters:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(port_mod_exp &lt;-<span class="st"> </span><span class="kw">exp</span>(<span class="kw">coef</span>(port_mod)))</code></pre></div>
+<pre><code>##   (Intercept)      Fare
+## C  0.14066240 1.0126298
+## Q  0.07167565 0.9841958</code></pre>
+<ul>
+<li>The relative risk ratio for a one-unit increase in fare is 1.0126298 for embarking from Cherbourg vs. Southampton.</li>
+<li>The relative risk ratio for a one-unit increase in fare is 0.9841958 for embarking from Queenstown vs. Southampton.</li>
+</ul>
+<p>We can also calculate predicted probabilities of each outcome given known values for fare.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat_grid &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(Fare)
+
+dat_pred &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(dat_grid,
+                      <span class="kw">predict</span>(port_mod, dat_grid, <span class="dt">type =</span> <span class="st">&quot;probs&quot;</span>) %&gt;%
+<span class="st">                        </span><span class="kw">as_tibble</span>()) %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(port, prob, S:Q) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">port =</span> <span class="kw">factor</span>(port, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;C&quot;</span>, <span class="st">&quot;S&quot;</span>, <span class="st">&quot;Q&quot;</span>),
+                       <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Cherbourg&quot;</span>, <span class="st">&quot;Southampton&quot;</span>, <span class="st">&quot;Queenstown&quot;</span>)))
+
+<span class="kw">ggplot</span>(dat_pred, <span class="kw">aes</span>(Fare, prob, <span class="dt">color =</span> port)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Fare&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability for port of embarkation&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/titanic-multi-pred-1.png" width="672" /></p>
+<p>As fare increases, the probability of embarking from Southampton decreases dramatically and increases for Cherbourg. Overall the probability of departing from Queenstown is low. Not surprising given that overall that had the lowest frequency of departure.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(Embarked)) +
+<span class="st">  </span><span class="kw">geom_bar</span>()</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/titanic-port-hist-1.png" width="672" /></p>
+<p>We could also look at the cumulative probability distribution:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dat_pred, <span class="kw">aes</span>(Fare, prob, <span class="dt">fill =</span> port)) +
+<span class="st">  </span><span class="kw">geom_area</span>(<span class="dt">position =</span> <span class="st">&quot;stack&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Fare&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability for port of embarkation&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/titanic-multi-cum-1.png" width="672" /></p>
+<p>This demonstrates that for any given fare value, the probabilities of all the possible outcomes must add up to 1.</p>
+</div>
+</div>
+<div id="ordinal-logistic-regression" class="section level2">
+<h2>Ordinal logistic regression</h2>
+<p>Consider the case where your response variable contains more than 2 possible values and they are inherently ordered. Survey research typically contains answers measured using a Likert scale (strongly agree, agree, neither agree nor disagree, disagree, strongly disagree). What method should you use? Linear regression is not appropriate because the variable is discrete. Depending on the number of levels, some researchers may attempt to treat it as a continuous variable but when you only have 3-5 values this doesn’t work very well. Logistic regression sounds like it would work but so far we have only used it in situations where there are two possible outcomes. Can we generalize it to a larger number of response values?</p>
+<p>Yes we can. This is called <strong>ordinal logistic regression</strong>. It works in situations where you have more than two possible outcomes and they contain an inherent ordering. It is similar to multinominal logistic regression but preserves the ordering of the variables. It presumes that the response variable is in fact a <strong>latent continuous variable</strong> that is a linear function of the <span class="math inline">\(X\)</span>s plus a random error:</p>
+<p><span class="math display">\[\zeta_i = \alpha + \beta_{1}X_{i1} + \dots + \beta_{k}X_{ik} + \epsilon_i\]</span></p>
+<p>Rather than dividing the latent variable into two regions (as we would with a dichotomous variable), instead it is divided into <span class="math inline">\(m\)</span> regions split by <span class="math inline">\(m-1\)</span> <strong>thresholds</strong>. The thresholds are denoted by <span class="math inline">\(\alpha_k\)</span>, and we only observe the resulting response <span class="math inline">\(Y\)</span>:</p>
+<p><span class="math display">\[Y_i = \begin{cases} 
+      1 &amp; \text{if } \zeta_{i} \leq \alpha_{1} \\
+      2 &amp; \text{if } \alpha_{1} \lt \zeta_{i} \leq \alpha_{2} \\
+      \vdots &amp; \\
+      m - 1 &amp; \text{if } \alpha_{m - 2} \lt \zeta_{i} \leq \alpha_{m - 1} \\
+      m &amp; \text{if } \alpha_{m - 1} \lt \zeta_{i} \\
+   \end{cases}\]</span></p>
+<p>Skipping some of the math, the result is an ordered logistic regression model. The parameters estimate for every one-unit increase in <span class="math inline">\(X\)</span> the log-odds of <span class="math inline">\(Y_i\)</span> increasing to the next level. If we exponentiate the parameters, we get the <strong>odds ratio</strong>. The important thing is that the change in log-odds between any given levels is <strong>constant</strong> - that is, a one-unit change in <span class="math inline">\(X\)</span> equates to the same magnitude of change between outcomes <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>, <span class="math inline">\(1\)</span> and <span class="math inline">\(2\)</span>, etc. The only difference is the intercept for each value.</p>
+<p>Let’s see how this works by predicting passenger class on the Titanic. We can use the <code>polr</code> function from the <code>MASS</code> library to estimate the ordered logistic regression model:<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_ord &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Pclass =</span> <span class="kw">factor</span>(Pclass))
+
+m &lt;-<span class="st"> </span>MASS::<span class="kw">polr</span>(Pclass ~<span class="st"> </span>Fare, <span class="dt">data =</span> titanic_ord, <span class="dt">Hess=</span><span class="ot">TRUE</span>)
+<span class="kw">summary</span>(m)</code></pre></div>
+<pre><code>## Call:
+## MASS::polr(formula = Pclass ~ Fare, data = titanic_ord, Hess = TRUE)
+## 
+## Coefficients:
+##         Value Std. Error t value
+## Fare -0.09585   0.006819  -14.06
+## 
+## Intercepts:
+##     Value    Std. Error t value 
+## 1|2  -4.0640   0.2245   -18.1020
+## 2|3  -2.0243   0.1527   -13.2566
+## 
+## Residual Deviance: 970.3814 
+## AIC: 976.3814</code></pre>
+<p>The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the <strong>cut points</strong> used to determine the estimated thresholds <span class="math inline">\(\hat{\alpha_{k}}\)</span> for the underlying latent variable. They are typically of little direct concern in our analysis. Instead, we care about the coefficients.</p>
+<ul>
+<li>For every one-pound increase in fare, the log-odds of a passenger’s berthing class change by -0.0958455. That is, the log-odds of berthing in second class are 0.0958455 lower than berthing in first class. The same for berthing in third class compared to second class.</li>
+</ul>
+<p>We can convert the log-odds to an odds ratio by exponentiating the estimated parameter.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">exp</span>(<span class="kw">coef</span>(m))</code></pre></div>
+<pre><code>##      Fare 
+## 0.9086044</code></pre>
+<p>That is, the odds of berthing in second class are 0.9086044 the size of berthing in first class.</p>
+<p>We can predict log-odds, odds, and predicted probabilities of each outcome.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat_grid &lt;-<span class="st"> </span>titanic_ord %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(Fare)
+
+dat_pred &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(dat_grid,
+                      <span class="kw">predict</span>(m, dat_grid, <span class="dt">type =</span> <span class="st">&quot;probs&quot;</span>) %&gt;%
+<span class="st">                        </span><span class="kw">as_tibble</span>()) %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(outcome, prob, <span class="st">`</span><span class="dt">1</span><span class="st">`</span>:<span class="st">`</span><span class="dt">3</span><span class="st">`</span>)
+
+<span class="kw">ggplot</span>(dat_pred, <span class="kw">aes</span>(Fare, prob, <span class="dt">color =</span> outcome)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Fare amount&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability of passenger class&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Passenger class&quot;</span>)</code></pre></div>
+<p><img src="persp005_glm_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>Unsurprisingly, cheap fares have a high probability of 3rd class berthing, whereas expensive fairs are almost exclusively 1st class cabins.</p>
+</div>
 </div>
 <div id="poisson-regression" class="section level1">
 <h1>Poisson regression</h1>
@@ -686,68 +1078,6 @@ africa</code></pre></div>
 <p>Still quite similar to 1.</p>
 </div>
 </div>
-<div id="ordinal-logistic-regression" class="section level1">
-<h1>Ordinal logistic regression</h1>
-<p>Consider the case where your response variable contains more than 2 possible values and they are inherently ordered. Survey research typically contains answers measured using a Likert scale (strongly agree, agree, neither agree nor disagree, disagree, strongly disagree). What method should you use? Linear regression is not appropriate because the variable is discrete. Depending on the number of levels, some researchers may attempt to treat it as a continuous variable but when you only have 3-5 values this doesn’t work very well. Logistic regression sounds like it would work but so far we have only used it in situations where there are two possible outcomes. Can we generalize it to a larger number of response values?</p>
-<p>Yes we can. This is called <strong>ordinal logistic regression</strong>. It works in situations where you have more than two possible outcomes and they contain an inherent ordering. Let’s see how this works using a simulated dataset of individuals applying to graduate school.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;http://www.ats.ucla.edu/stat/data/ologit.csv&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">apply =</span> <span class="kw">factor</span>(apply, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">2</span>,
-                        <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Unlikely&quot;</span>, <span class="st">&quot;Somewhat unlikely&quot;</span>, <span class="st">&quot;Very likely&quot;</span>)))
-dat</code></pre></div>
-<pre><code>## # A tibble: 400 × 4
-##                apply pared public   gpa
-##               &lt;fctr&gt; &lt;int&gt;  &lt;int&gt; &lt;dbl&gt;
-## 1        Very likely     0      0  3.26
-## 2  Somewhat unlikely     1      0  3.21
-## 3           Unlikely     1      1  3.94
-## 4  Somewhat unlikely     0      0  2.81
-## 5  Somewhat unlikely     0      0  2.53
-## 6           Unlikely     0      1  2.59
-## 7  Somewhat unlikely     0      0  2.56
-## 8  Somewhat unlikely     0      0  2.73
-## 9           Unlikely     0      0  3.00
-## 10 Somewhat unlikely     1      0  3.50
-## # ... with 390 more rows</code></pre>
-<p>Each observation is an individual asked if they are going to apply to graduate school. The variables are:</p>
-<ul>
-<li><code>apply</code> - whether or not the student intends to apply. Possible levels are “Unlikely”, “Somewhat unlikely”, and “Very likely”, coded as 0, 1, 2 respectively.</li>
-<li><code>pared</code> - binary indicator of whether at least one parent has a graduate degree.</li>
-<li><code>public</code> - binary indicator of whether their undergraduate institution is a public university.</li>
-<li><code>gpa</code> - student’s grade point average.</li>
-</ul>
-<p>We can use the <code>polr</code> function from the <code>MASS</code> library to estimate the ordered logistic regression model:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m &lt;-<span class="st"> </span><span class="kw">polr</span>(apply ~<span class="st"> </span>pared +<span class="st"> </span>public +<span class="st"> </span>gpa, <span class="dt">data =</span> dat, <span class="dt">Hess=</span><span class="ot">TRUE</span>)
-<span class="kw">summary</span>(m)</code></pre></div>
-<pre><code>## Call:
-## polr(formula = apply ~ pared + public + gpa, data = dat, Hess = TRUE)
-## 
-## Coefficients:
-##           Value Std. Error t value
-## pared   1.04769     0.2658  3.9418
-## public -0.05879     0.2979 -0.1974
-## gpa     0.61594     0.2606  2.3632
-## 
-## Intercepts:
-##                               Value   Std. Error t value
-## Unlikely|Somewhat unlikely     2.2039  0.7795     2.8272
-## Somewhat unlikely|Very likely  4.2994  0.8043     5.3453
-## 
-## Residual Deviance: 717.0249 
-## AIC: 727.0249</code></pre>
-<p>The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the cut points used to determine</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dat_grid &lt;-<span class="st"> </span>dat %&gt;%
-<span class="st">  </span><span class="kw">data_grid</span>(pared, public, gpa)
-
-dat_pred &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(dat_grid,
-                      <span class="kw">predict</span>(m, dat_grid, <span class="dt">type =</span> <span class="st">&quot;probs&quot;</span>) %&gt;%
-<span class="st">                        </span><span class="kw">as_tibble</span>()) %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(outcome, prob, Unlikely:<span class="st">`</span><span class="dt">Very likely</span><span class="st">`</span>)
-
-<span class="kw">ggplot</span>(dat_pred, <span class="kw">aes</span>(gpa, prob, <span class="dt">color =</span> outcome)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">facet_grid</span>(pared ~<span class="st"> </span>public, <span class="dt">labeller =</span> <span class="st">&quot;label_both&quot;</span>)</code></pre></div>
-<p><img src="persp005_glm_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
-</div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
@@ -758,7 +1088,7 @@ dat_pred &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(dat_gri
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-14                  
+##  date     2017-02-15                  
 ## 
 ##  package    * version date       source        
 ##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
@@ -786,12 +1116,12 @@ dat_pred &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(dat_gri
 ##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
 ##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
 ##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
-##  MASS       * 7.3-45  2016-04-21 CRAN (R 3.3.2)
 ##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
 ##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
 ##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
 ##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
 ##  nlme         3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  nnet       * 7.3-12  2016-02-02 CRAN (R 3.3.2)
 ##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
 ##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
 ##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
@@ -809,9 +1139,16 @@ dat_pred &lt;-<span class="st"> </span><span class="kw">bind_cols</span>(dat_gri
 ##  tibble     * 1.2     2016-08-26 cran (@1.2)   
 ##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
 ##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
 ##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
 ##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
 ##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Note that the response variable must be coded as a factor, not a numeric, column.<a href="#fnref1">↩</a></p></li>
+</ol>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
