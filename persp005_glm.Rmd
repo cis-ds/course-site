@@ -31,7 +31,7 @@ library(tidyverse)
 library(modelr)
 library(broom)
 library(haven)
-library(MASS)
+library(nnet)
 
 options(na.action = na.warn)
 set.seed(1234)
@@ -91,9 +91,24 @@ Which can also be written as:
 $$\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = \sum_{i=1}^{N}{\ln\left(\frac{1}{\sqrt{2\pi\sigma^2}} \exp \left[\frac{(Y_i - \mu)^2}{2\sigma^2}\right]\right)}$$
 $$\ln L(\hat{\mu}, \hat{\sigma}^2 | Y) = -\frac{N}{2} \ln(2\pi) - \left[ \sum_{i = 1}^{N} \ln{\sigma^2 - \frac{1}{2\sigma^2}} (Y_i - \mu)^2 \right]$$
 
-Now right now the mean of the distribution $\mu$ is a constant. We are testing different values for $\mu$ to see what optimizes the function. But more typically we want $\mu$ to be a function of some other variable $X$. We can write this as:
+Suppose we had a sample of assistant professor salaries:
+
+```{r prof, echo = FALSE}
+prof <- data_frame(id = 1:5,
+                   years = c(3,2,4,1,5),
+                   salary = 45000 + 5000 * years)
+
+prof %>%
+  select(-years) %>%
+  knitr::kable(caption = "Salaries of assistant professors")
+```
+
+If we want to explain the distribution of possible assistant professor salaries given these data points, we could use maximum-likelihood estimation to find the $\hat{\mu}$ that maximizes the likelihood of the data. Now right now the mean of the distribution $\mu$ is a constant. We are testing different values for $\mu$ to see what optimizes the function. If we have no regressors or predictors, our 
+
+But more typically we want $\mu$ to be a function of some other variable $X$. We can write this as:
 
 $$E(Y) \equiv \mu = \beta_0 + \beta_{1}X_{i}$$
+
 $$\mathrm{Var}(Y) = \sigma^2$$
 
 Now we just substitute this equation for the systematic mean part ($\mu$) in the previous equations:
@@ -128,30 +143,30 @@ The normal distribution does not properly describe  binary outcome variables whi
 
 Instead, we assume our outcome variable $Y$ is drawn from the **binomial distribution** with probability $\pi$:
 
-$$Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}$$
+$$Pr(Y_i = y_i | \pi_i) = \pi_i^{y_i} (1 - \pi_i)^{(1 - y_i)}$$
 
 This is a probability mass function (PMF):
 
 * The probability that, for any one observation $i$, $Y$ will take on the particular value $y$.
-* This is a function of $\mu$, the expected value of $Y_i$ that takes on the value 1 across repeated experiments. So $Y_i$ takes on the expected value of 1 with probability $\pi$ and 0 with probability $1 - \pi$.
+* $Y_i$ takes on the expected value of 1 with probability $\pi$ and 0 with probability $1 - \pi$., so $\pi_i$ is the conditional probability of sampling a 1 in this group.
 
 Of course, the probability of the outcome $Y$ may vary systematically given known predictors. To incorporate that into the model, we need to choose a linear predictor:
 
-$$\pi \equiv \eta = g(\mu)$$
+$$\pi_i = \eta_i$$
 
 Now in the linear context we would write something like this:
 
-$$g(\mu_i) = \beta_0 + \beta_{1}X_i$$
+$$g(\pi_i) \equiv \eta_i = \beta_0 + \beta_{1}X_i$$
 
-However remember the problem with that approach using the Titanic data. We need to constrain the linear predictor to the probability range $[0,1]$. So in logistic regression, we cannot use the identity link function. Instead, we use the **logit link function**:
+However remember the problem with that approach using the Titanic data. We need to constrain the linear predictor to the probability range $[0,1]$. So in logistic regression, we cannot use the identity link function. Instead, we use the **logit link function** to constrain the linear predictor onto the $[0,1]$ range:
 
-$$g(\mu_i) = \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}}$$
+$$g(\pi_i) = \frac{e^{\eta_i}}{1 + e^{\eta_i}}$$
 
 So to recap, for logistic regression:
 
 * The random component is the Bernoulli distribution
 
-    $$Pr(Y_i = y_i | \mu) = \mu^{y_i} (1 - \mu)^{(1 - y_i)}$$
+    $$Pr(Y_i = y_i | \pi) = \pi_i^{y_i} (1 - \pi_i)^{(1 - y_i)}$$
 
 * The linear predictor is:
 
@@ -159,7 +174,7 @@ So to recap, for logistic regression:
 
 * The link function is the logit function:
 
-    $$\mu_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}}$$
+    $$\pi_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}}$$
 
 So the likelihood for a given observation $i$ is:
 
@@ -176,6 +191,230 @@ And therefore the log-likelihood function:
 $$\ln L = \sum_{i = 1}^{N} Y_i \ln \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) + (1 - Y_i) \ln \left[ 1 - \left( \frac{e^{\beta_0 + \beta_{1}X_i}}{1 + e^{\beta_0 + \beta_{1}X_i}} \right) \right]$$
 
 Which we maximize with respect to the $\beta$s to obtain our estimated parameters, just as we would linear regression.
+
+# Logistic regression for more than two response classes
+
+A downside to logistic regression as presented above is that it only works for response variables with two potential values. However it is common to encounter discrete variables with more than two possible values. Consider voting in a legislature. Roll-call votes are typically recorded as:
+
+1. Yay
+1. Nay
+
+However there are other potential outcomes for legislators. We could instead code their votes as:
+
+1. Yay
+1. Nay
+1. Abstain
+1. Not present
+
+If a large number of legislators abstain or are missing from a vote, we may not want to throw that information away by arbitrarily restricting the outcome to two possibilities.
+
+## Multinomial logistic regression
+
+We can generalize the dichotomous logit model to a **polytomy** (more than 2 outcomes) bby employing the **multivariate logistic distribution**. Here the response variable $Y$ can take on any of $m$ discrete values from $1,2,\dots,m$. We presume the ordering of the values does not matter, so that $\pi_{ij}$ denotes the probability that the $i$th observation falls into the $j$th category of the response variable:
+
+$$\pi_{ij} \equiv \text{Pr}(Y_i = j), \text{for} j = 1, \dots, m$$
+
+For a model with $k$ regressors, $X_1, \dots, X_k$, this dependence of $\pi_{ij}$ can be modeled using the multivariate logistic distribution:
+
+$$\pi_{ij} = \frac{\exp[\gamma_{0j} + \gamma_{1j}X_{i1} + \dots + \gamma_{kj}X_{ik}]}{1 + \sum_{l = 1}^{m-1} \exp[\gamma_{0l} + \gamma_{1l}X_{i1} + \dots + \gamma_{kl}X_{ik}]}, \text{for } j = 1, \dots, m-1$$
+
+$$\pi_{im} = 1 - \sum_{i = 1}^{m-1} \pi_{ij}$$
+
+There is one set of parameters $\gamma_{0j}, \gamma_{1j}, \dots, \gamma_{kj}$ for each set of response values but the last one. The last category (category $m$) serves as the baseline category. The response category probabilities for each observation must sum to 1:
+
+$$\sum_{j = 1}^{m} = 1$$
+
+With algebraic manipulation, we can rewrite the probability function as:
+
+$$\ln \frac{\pi_{ij}}{\pi_{im}} = \gamma_{0j} + \gamma_{1j}X_{i1} + \dots + \gamma_{kj}X_{ik}, \text{for } j = 1, \dots, m$$
+
+So the estimated parameters tell us the log-odds of membership in any category $j$ versus the baseline category. We could rewrite this equation to compare the log-odds of membership in any two categories. This also demonstrates that the dichotomous logit model is a special case of the multinominal logit model:
+
+$$\ln \frac{\pi_{i1}}{\pi_{i2}} = \ln \frac{\pi_{i1}}{1 - \pi_{i1}} = \gamma_{01} + \gamma_{11}X_{i1} + \dots + \gamma_{k1}X_{ik}$$
+
+### Applying multinomial logisitic regression
+
+Let's return to our Titanic dataset. Recall the dataset and codebook:
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble() %>%
+  # remove missing values
+  filter(Embarked != "") %>%
+  na.omit()
+
+titanic %>%
+  head() %>%
+  knitr::kable()
+```
+
+The codebook contains the following information on the variables:
+
+```
+VARIABLE DESCRIPTIONS:
+Survived        Survival
+                (0 = No; 1 = Yes)
+Pclass          Passenger Class
+                (1 = 1st; 2 = 2nd; 3 = 3rd)
+Name            Name
+Sex             Sex
+Age             Age
+SibSp           Number of Siblings/Spouses Aboard
+Parch           Number of Parents/Children Aboard
+Ticket          Ticket Number
+Fare            Passenger Fare
+Cabin           Cabin
+Embarked        Port of Embarkation
+                (C = Cherbourg; Q = Queenstown; S = Southampton)
+
+SPECIAL NOTES:
+Pclass is a proxy for socio-economic status (SES)
+ 1st ~ Upper; 2nd ~ Middle; 3rd ~ Lower
+
+Age is in Years; Fractional if Age less than One (1)
+ If the Age is Estimated, it is in the form xx.5
+
+With respect to the family relation variables (i.e. sibsp and parch)
+some relations were ignored.  The following are the definitions used
+for sibsp and parch.
+
+Sibling:  Brother, Sister, Stepbrother, or Stepsister of Passenger Aboard Titanic
+Spouse:   Husband or Wife of Passenger Aboard Titanic (Mistresses and Fiances Ignored)
+Parent:   Mother or Father of Passenger Aboard Titanic
+Child:    Son, Daughter, Stepson, or Stepdaughter of Passenger Aboard Titanic
+
+Other family relatives excluded from this study include cousins,
+nephews/nieces, aunts/uncles, and in-laws.  Some children travelled
+only with a nanny, therefore parch=0 for them.  As well, some
+travelled with very close friends or neighbors in a village, however,
+the definitions do not support such relations.
+```
+
+But this time instead of modeling survival we want to model port of embarkation as a function of passenger fare and age. First we set "Southampton" as our reference category, then we can use the `multinom()` function from the `nnet` library to do this.
+
+```{r titanic-multi}
+titanic_multi <- titanic %>%
+  mutate(Embarked = relevel(factor(Embarked), ref = "S"))
+port_mod <- multinom(Embarked ~ Fare, data = titanic_multi)
+summary(port_mod)
+
+# calculate t-statistics
+(port_mod_t <- summary(port_mod)$coefficients / summary(port_mod)$standard.errors)
+
+# calculate p-values
+(port_mod_p <- (1 - pnorm(abs(port_mod_t), 0, 1))*2)
+```
+
+As expected, we've estimated separate parameters and standard errors for each of our categories, Cherbourg and Queenstown, compared against our reference category Southampton. Each of these blocks has one row of values corresponding to a separate category. Focusing on the block of coefficients, we can look at the first row comparing `Embarked = "C"` to our baseline `Embarked = "Q"` and the second row comparing `Embarked = "Q"` to our baseline `Embarked = "Q"`.
+
+* A one-unit increase in `Fare` is associated with a `r coef(port_mod)[1, 2]` increase in the log-odds of embarking from Cherbourg as opposed to Southampton.
+* A one-unit increase in `Fare` is associated with a `r coef(port_mod)[1, 2]` decrease in the log-odds of embarking from Cherbourg as opposed to Southampton.
+
+We can convert the log-odds parameters to **relative risks**, also referred to as odds, by exponentiating the parameters:
+
+```{r titanic-multi-rr}
+(port_mod_exp <- exp(coef(port_mod)))
+```
+
+* The relative risk ratio for a one-unit increase in fare is `r port_mod_exp[1,2]` for embarking from Cherbourg vs. Southampton.
+* The relative risk ratio for a one-unit increase in fare is `r port_mod_exp[2,2]` for embarking from Queenstown vs. Southampton.
+
+We can also calculate predicted probabilities of each outcome given known values for fare.
+
+```{r titanic-multi-pred}
+dat_grid <- titanic %>%
+  data_grid(Fare)
+
+dat_pred <- bind_cols(dat_grid,
+                      predict(port_mod, dat_grid, type = "probs") %>%
+                        as_tibble()) %>%
+  gather(port, prob, S:Q) %>%
+  mutate(port = factor(port, levels = c("C", "S", "Q"),
+                       labels = c("Cherbourg", "Southampton", "Queenstown")))
+
+ggplot(dat_pred, aes(Fare, prob, color = port)) +
+  geom_line() +
+  labs(x = "Fare",
+       y = "Predicted probability for port of embarkation")
+```
+
+As fare increases, the probability of embarking from Southampton decreases dramatically and increases for Cherbourg. Overall the probability of departing from Queenstown is low. Not surprising given that overall that had the lowest frequency of departure.
+
+```{r titanic-port-hist}
+titanic %>%
+  ggplot(aes(Embarked)) +
+  geom_bar()
+```
+
+We could also look at the cumulative probability distribution:
+
+```{r titanic-multi-cum}
+ggplot(dat_pred, aes(Fare, prob, fill = port)) +
+  geom_area(position = "stack") +
+  labs(x = "Fare",
+       y = "Predicted probability for port of embarkation")
+```
+
+This demonstrates that for any given fare value, the probabilities of all the possible outcomes must add up to 1.
+
+## Ordinal logistic regression
+
+Consider the case where your response variable contains more than 2 possible values and they are inherently ordered. Survey research typically contains answers measured using a Likert scale (strongly agree, agree, neither agree nor disagree, disagree, strongly disagree). What method should you use? Linear regression is not appropriate because the variable is discrete. Depending on the number of levels, some researchers may attempt to treat it as a continuous variable but when you only have 3-5 values this doesn't work very well. Logistic regression sounds like it would work but so far we have only used it in situations where there are two possible outcomes. Can we generalize it to a larger number of response values?
+
+Yes we can. This is called **ordinal logistic regression**. It works in situations where you have more than two possible outcomes and they contain an inherent ordering. It is similar to multinominal logistic regression but preserves the ordering of the variables. It presumes that the response variable is in fact a **latent continuous variable** that is a linear function of the $X$s plus a random error:
+
+$$\zeta_i = \alpha + \beta_{1}X_{i1} + \dots + \beta_{k}X_{ik} + \epsilon_i$$
+
+Rather than dividing the latent variable into two regions (as we would with a dichotomous variable), instead it is divided into $m$ regions split by $m-1$ **thresholds**. The thresholds are denoted by $\alpha_k$, and we only observe the resulting response $Y$:
+
+$$Y_i = \begin{cases} 
+      1 & \text{if } \zeta_{i} \leq \alpha_{1} \\
+      2 & \text{if } \alpha_{1} \lt \zeta_{i} \leq \alpha_{2} \\
+      \vdots & \\
+      m - 1 & \text{if } \alpha_{m - 2} \lt \zeta_{i} \leq \alpha_{m - 1} \\
+      m & \text{if } \alpha_{m - 1} \lt \zeta_{i} \\
+   \end{cases}$$
+
+We can determine the cumulative probability distribution of $Y$:
+
+$$\Pr(Y_i \leq j) = \Pr(\zeta_i \leq \alpha_j)$$
+
+$$\Pr(Y_i \leq j) = \Pr(\alpha + \beta_{1}X_{i1} + \dots + \beta_{k}X_{ik} \leq \alpha_j)$$
+
+$$\Pr(Y_i \leq j) = \Pr(\epsilon_i \lt \alpha + \beta_{1}X_{i1} + \dots + \beta_{k}X_{ik})$$
+
+If the errors follow a logistic distribution, then we have an ordered logistic regression model:
+
+$$$$
+
+Let's see how this works by predicting passenger class on the Titanic. We can use the `polr` function from the `MASS` library to estimate the ordered logistic regression model:^[Note that the response variable must be coded as a factor, not a numeric, column.]
+
+```{r titanic-ord}
+titanic_ord <- titanic %>%
+  mutate(Pclass = factor(Pclass))
+
+m <- MASS::polr(Pclass ~ Fare, data = titanic_ord, Hess=TRUE)
+summary(m)
+```
+
+The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the **cut points** used to determine 
+
+```{r}
+dat_grid <- dat %>%
+  data_grid(pared, public, gpa)
+
+dat_pred <- bind_cols(dat_grid,
+                      predict(m, dat_grid, type = "probs") %>%
+                        as_tibble()) %>%
+  gather(outcome, prob, Unlikely:`Very likely`)
+
+ggplot(dat_pred, aes(gpa, prob, color = outcome)) +
+  geom_line() +
+  facet_grid(pared ~ public, labeller = "label_both")
+```
+
+
 
 # Poisson regression
 
@@ -315,49 +554,6 @@ summary(africa_quasibig)
 ```
 
 Still quite similar to 1.
-
-# Ordinal logistic regression
-
-Consider the case where your response variable contains more than 2 possible values and they are inherently ordered. Survey research typically contains answers measured using a Likert scale (strongly agree, agree, neither agree nor disagree, disagree, strongly disagree). What method should you use? Linear regression is not appropriate because the variable is discrete. Depending on the number of levels, some researchers may attempt to treat it as a continuous variable but when you only have 3-5 values this doesn't work very well. Logistic regression sounds like it would work but so far we have only used it in situations where there are two possible outcomes. Can we generalize it to a larger number of response values?
-
-Yes we can. This is called **ordinal logistic regression**. It works in situations where you have more than two possible outcomes and they contain an inherent ordering. Let's see how this works using a simulated dataset of individuals applying to graduate school.
-
-```{r grad-data}
-dat <- read_csv("http://www.ats.ucla.edu/stat/data/ologit.csv") %>%
-  mutate(apply = factor(apply, levels = 0:2,
-                        labels = c("Unlikely", "Somewhat unlikely", "Very likely")))
-dat
-```
-
-Each observation is an individual asked if they are going to apply to graduate school. The variables are:
-
-* `apply` - whether or not the student intends to apply. Possible levels are "Unlikely", "Somewhat unlikely", and "Very likely", coded as 0, 1, 2 respectively.
-* `pared` - binary indicator of whether at least one parent has a graduate degree.
-* `public` - binary indicator of whether their undergraduate institution is a public university.
-* `gpa` - student's grade point average.
-
-We can use the `polr` function from the `MASS` library to estimate the ordered logistic regression model:
-
-```{r grad-model}
-m <- polr(apply ~ pared + public + gpa, data = dat, Hess=TRUE)
-summary(m)
-```
-
-The model results give use estimated parameters and standard errors. However now we have two separate intercepts. These are the cut points used to determine 
-
-```{r}
-dat_grid <- dat %>%
-  data_grid(pared, public, gpa)
-
-dat_pred <- bind_cols(dat_grid,
-                      predict(m, dat_grid, type = "probs") %>%
-                        as_tibble()) %>%
-  gather(outcome, prob, Unlikely:`Very likely`)
-
-ggplot(dat_pred, aes(gpa, prob, color = outcome)) +
-  geom_line() +
-  facet_grid(pared ~ public, labeller = "label_both")
-```
 
 
 
