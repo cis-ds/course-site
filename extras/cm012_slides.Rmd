@@ -1,0 +1,234 @@
+---
+title: "Distributed learning"
+author: |
+  | MACS 30500
+  | University of Chicago
+date: "February 15, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      echo = FALSE)
+
+library(tidyverse)
+library(gapminder)
+library(stringr)
+
+set.seed(1234)
+
+theme_set(theme_minimal(base_size = 18))
+```
+
+## Distributed computing
+
+![](https://tctechcrunch2011.files.wordpress.com/2015/08/clouds.jpg)
+
+## SQL
+
+* *Structured Query Language*
+* Means of communicating with a relational database management system
+* Different flavors of SQL
+    * SQLite
+    * MySQL
+    * Microsoft SQL
+    * PostgreSQL
+    * BigQuery
+* Hosting platforms
+    * [UChicago Research Computing Center](https://rcc.uchicago.edu/)
+    * [Amazon Web Services](https://aws.amazon.com/)
+    * [Google Cloud Platform](https://cloud.google.com/)
+
+## SQL locally
+
+```{r, cache = FALSE}
+library(RSQLite)
+my_db <- src_sqlite("../data/my_db.sqlite3", create = T)
+```
+
+```{r eval = FALSE}
+flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+  c("year", "month", "day"), "carrier", "tailnum"))
+```
+
+```{r, echo = FALSE}
+if(file.exists("my_db.sqlite3")){
+  flights_sqlite <- tbl(my_db, "flights")
+} else{
+  flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+  c("year", "month", "day"), "carrier", "tailnum"))
+}
+```
+
+```{r}
+flights_sqlite
+```
+
+## Basic verbs {.scrollable}
+
+```{r echo = TRUE}
+select(flights_sqlite, year:day, dep_delay, arr_delay)
+filter(flights_sqlite, dep_delay > 240)
+arrange(flights_sqlite, year, month, day)
+mutate(flights_sqlite, speed = air_time / distance)
+summarise(flights_sqlite, delay = mean(dep_time))
+```
+
+## Convert to SQL
+
+```{r, echo = TRUE}
+select(flights_sqlite, year:day, dep_delay, arr_delay) %>%
+  explain()
+```
+
+```sql
+SELECT `year` AS `year`, `month` AS `month`, `day` AS `day`, `dep_delay` AS `dep_delay`, `arr_delay` AS `arr_delay`
+FROM `flights`
+```
+
+## Laziness
+
+```{r}
+c1 <- filter(flights_sqlite, year == 2013, month == 1, day == 1)
+c2 <- select(c1, year, month, day, carrier, dep_delay, air_time, distance)
+c3 <- mutate(c2, speed = distance / air_time * 60)
+c4 <- arrange(c3, year, month, day, carrier)
+```
+
+## Laziness {.scrollable}
+
+```{r}
+c4
+```
+
+```{r}
+collect(c4)
+```
+
+## Google Bigquery
+
+* Can scan TB in seconds and PB in minutes
+* Flexible pricing depending on needs
+* Could be as little a pennies, though depending on your computation may cost more
+
+## Interacting with Google Bigquery via `dplyr`
+
+```{r, echo = TRUE}
+library(bigrquery)
+
+taxi <- src_bigquery(project = "nyc-tlc",
+                     dataset = "yellow",
+                     billing = getOption("bigquery_id"))
+taxi
+```
+
+## Questions {.scrollable}
+
+How many trips per taken each month in yellow cabs?
+
+```sql
+SELECT
+  LEFT(STRING(pickup_datetime), 7) month,
+  COUNT(*) trips
+FROM
+  [nyc-tlc:yellow.trips]
+WHERE
+  YEAR(pickup_datetime) = 2014
+GROUP BY
+  1
+ORDER BY
+  1
+```
+
+```{r echo = TRUE}
+system.time({
+  trips_by_month <- taxi %>%
+    tbl("trips") %>%
+    filter(year(pickup_datetime) == 2014) %>%
+    mutate(month = month(pickup_datetime)) %>%
+    count(month) %>%
+    arrange(month) %>%
+    collect()
+})
+trips_by_month
+```
+
+## Questions {.scrollable}
+
+What about the average speed per hour of day in yellow cabs?
+
+```{r echo = TRUE}
+system.time({
+  speed_per_hour <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10) %>%
+    group_by(hour) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(hour) %>%
+    collect()
+})
+
+ggplot(speed_per_hour, aes(hour, speed)) +
+  geom_line() +
+  labs(title = "Average Speed of NYC Yellow Taxis",
+       x = "Hour of day",
+       y = "Average speed, in MPH")
+```
+
+## Questions {.scrollable}
+
+Finally, what is the average speed by day of the week?
+
+```{r echo = TRUE}
+system.time({
+  speed_per_day <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           day = dayofweek(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10,
+           hour >= 8,
+           hour <= 18) %>%
+    group_by(day) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(day) %>%
+    collect()
+})
+speed_per_day
+```
+
+## Parallel computing
+
+![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
+
+## Parallel computing
+
+* Parallel processing
+* Serial processing
+* Multithreading
+
+## Why use parallel computing
+
+* Imitates real life
+* More efficient (maybe)
+* Tackle larger problems
+* Distributed resources
+
+## Why not to use parallel computing
+
+![Amdahl's Law from [Wikipedia](https://en.wikipedia.org/wiki/Amdahl's_law)](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png)
+    
+## Why not to use parallel computing
+
+* Limits to efficiency gains
+* Complexity
+* Dependencies
+* Parallel slowdown
