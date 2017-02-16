@@ -1,0 +1,273 @@
+---
+title: "Getting data from the web: API access"
+author: |
+  | MACS 30500
+  | University of Chicago
+date: "February 20, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+
+library(tidyverse)
+library(knitr)
+
+set.seed(1234)
+```
+
+```{r, eval = FALSE, echo = FALSE}
+load("webdata-supp/countryInfo.rds")
+load("webdata-supp/francebirds.rds")
+load("webdata-supp/frenchcities.rds")
+load("webdata-supp/rio_english.rds")
+load("webdata-supp/rio_portuguese.rds")
+```
+
+## How to get data online
+
+* Click-and-download
+* Install-and-play
+* API-query
+* Scraping
+
+## Click-and-Download
+
+* Use `read.csv` or `readr::read_csv` to read the data straight into R
+* Store, then read
+    * Download using `downloader` for R or `curl` from the shell
+    * Then read into R using `read_csv`
+    * Even if the file disappears from the internet, you have a local copy cached
+
+## APIs
+
+* **A**pplication **P**rogramming **I**nterfaces
+* Many websites use APIs to allow programatic access
+    * Clients sends request to server
+    * Server responds by sending data (or an error message)
+* Clients
+    * Phone app
+    * R/Python
+    
+## Install and play packages
+
+* Pre-wrapped packages for APIs
+* Reproducible
+* Updating
+* Ease
+* Scaling
+
+## Sightings of birds: `rebird`
+
+* [`ebird`](http://ebird.org) - online database of bird sightings
+* [`rebird`](https://github.com/ropensci/rebird) - R package to interface with e-Bird
+
+## Search birds by geography
+
+[![Lincoln Park Zoo](../images/lincoln_park_zoo.png)](http://ebird.org/ebird/hotspot/L1573785)
+
+## Search birds by geography
+
+```{r message=FALSE}
+library(rebird)
+```
+
+```{r}
+ebirdhotspot(locID = "L1573785") %>%
+  tbl_df()
+```
+
+## Search birds by geographic area
+
+```{r}
+chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298)
+chibirds %>%
+  tbl_df()
+```
+
+## Search birds by geographic region
+
+```{r}
+frenchbirds <- ebirdregion("FR")
+frenchbirds %>%
+  tbl_df()
+```
+
+## Search birds by species
+
+```{r}
+warbler <- ebirdgeo(species = 'Setophaga coronata', lat = 41.8781, lng = -87.6298)
+warbler %>%
+  tbl_df()
+```
+
+## Use known location
+
+```{r}
+ebirdgeo(species = 'Setophaga coronata') %>%
+  tbl_df()
+```
+
+## Searching geographic info: `geonames`
+
+```{r message=FALSE}
+# install.packages(geonames)
+library(geonames)
+```
+
+## API authentication
+
+* Registering for access
+* API key/token
+* Rate-limiting
+
+## Accessing the geonames API
+
+1. Go to [the geonames site](www.geonames.org/login/) and register an account
+2. Click [here to enable the free web service](http://www.geonames.org/enablefreewebservice)
+3. Tell R your geonames username
+
+## Bad API key storage
+
+```{r, eval = FALSE}
+library(geonames)
+options(geonamesUsername = "my_user_name")
+
+# All my code here
+``` 
+
+## Good API key storage
+
+``` r 
+options(geonamesUsername = "my_user_name")
+``` 
+
+* `.Rprofile`
+* Store in folder with `.Rproj`
+
+## Important details for `.Rprofile`
+
+* Make sure your `.Rprofile` ends with a blank line
+* Make sure `.Rprofile` is included in your `.gitignore` file
+* Restart RStudio after modifying `.Rprofile`
+* Check your spelling
+* You can do a similar process for an arbitrary package or key. For example:
+
+    ```{r eval = FALSE}
+    # in .Rprofile
+    options("this_is_my_key" = XXXX)
+
+    # later, in the R script:
+    key <- getOption("this_is_my_key")
+    ```
+
+## using Geonames
+
+```{r}
+countryInfo <- GNcountryInfo()
+countryInfo %>%
+	tbl_df()
+```
+
+## `rplos`
+
+```{r}
+library(rplos)
+searchplos(q = "alcohol", fl = "id,title", limit = 10)
+```
+
+## Relative frequency plot {.scrollable}
+
+```{r}
+out <- plosword(list("alcohol", "heroin", "marijuana"),
+    vis = "TRUE")
+out$table
+out$plot
+```
+
+## Plots over time {.scrollable}
+
+```{r}
+plot_throughtime(terms = c("alcohol", "heroin", "marijuana"), limit = 200)
+```
+
+## Scraping Twitter
+
+1. *REST* API
+1. *Streaming* API
+
+## Packages for Twitter
+
+* [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html)
+* [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html)
+* [`tweepy`](http://www.tweepy.org/)
+
+## OAuth authentication
+
+```{r, include = FALSE}
+library(twitteR)
+```
+
+1. Create a Twitter application for yourself
+1. Store your API key and token using the `.Rprofile` method.
+    ```{r eval = FALSE}
+    options(twitter_api_key = "Your API key")
+    options(twitter_api_token = "Your API secret")
+    ```
+1. Run from the console:
+
+    ```{r, eval = FALSE}
+    library(twitteR)
+    setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                        consumer_secret = getOption("twitter_api_token"))
+    ```
+1. At this point you should get a message back in RStudio "Authentication complete."
+
+## Searching tweets
+
+```{r include = FALSE}
+setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                    consumer_secret = getOption("twitter_api_token"))
+```
+
+```{r}
+tweets <- searchTwitter('#rstats', n = 5)
+tweets
+```
+
+## Searching users
+
+```{r}
+clinton <- getUser("hillaryclinton")
+clinton$getDescription()
+clinton$getFriends(n = 5)
+```
+
+## Tidying tweets
+
+```{r}
+str(tweets)
+```
+
+## Tidying tweets
+
+```{r}
+df <- twListToDF(tweets) %>%
+  tbl_df()
+df
+```
+
+## Practice using `twitteR`
+
+1. Create a new R project on your computer
+1. Setup your API key with a Twitter app.
+1. Authenticate using the `twitteR` package in R
+1. Find the 50 most recent tweets by Donald Trump and store them in a data frame.
+    * `userTimeline()` can be used to retrieve tweets from individual users
+    * `searchTwitter()` finds tweets from any public account that references the username
+
+
+
+
