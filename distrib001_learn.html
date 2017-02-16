@@ -592,7 +592,7 @@ taxi</code></pre></div>
 <span class="st">    </span><span class="kw">collect</span>()
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.070   0.003   3.227</code></pre>
+##   0.065   0.001   1.480</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trips_by_month</code></pre></div>
 <pre><code>## # A tibble: 12 × 2
 ##    month        n
@@ -623,17 +623,14 @@ taxi</code></pre></div>
 <span class="st">    </span><span class="kw">arrange</span>(hour) %&gt;%
 <span class="st">    </span><span class="kw">collect</span>()
 })</code></pre></div>
-<pre><code>## 
-Running query:   RUNNING  2.5s
-Running query:   RUNNING  3.1s</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.096   0.003   5.477</code></pre>
+##   0.056   0.001   2.504</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(speed_per_hour, <span class="kw">aes</span>(hour, speed)) +
 <span class="st">  </span><span class="kw">geom_line</span>() +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Average Speed of NYC Yellow Taxis&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Hour of day&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Average speed, in MPH&quot;</span>)</code></pre></div>
-<p><img src="distrib-comp_01_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="distrib001_learn_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
 <p>Finally, what is the average speed by day of the week?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   speed_per_day &lt;-<span class="st"> </span>taxi %&gt;%
@@ -651,12 +648,8 @@ Running query:   RUNNING  3.1s</code></pre>
 <span class="st">    </span><span class="kw">arrange</span>(day) %&gt;%
 <span class="st">    </span><span class="kw">collect</span>()
 })</code></pre></div>
-<pre><code>## 
-Running query:   RUNNING  2.4s
-Running query:   RUNNING  3.0s
-Running query:   RUNNING  3.6s</code></pre>
 <pre><code>##    user  system elapsed 
-##   0.109   0.004   5.958</code></pre>
+##   0.075   0.001   2.653</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">speed_per_day</code></pre></div>
 <pre><code>## # A tibble: 7 × 2
 ##     day    speed
@@ -911,21 +904,21 @@ flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)
 <p>The <code>dplyr</code> code looks the same as usual, but behind the scenes things are very different. <code>flights1</code> and <code>flights2</code> are <code>party df</code>s. These look like normal data frames, but have an additional attribute: the number of shards. In this example, it tells us that <code>flights2</code> is spread across three nodes, and the size on each node varies from 1275 to 1286 rows. <code>partition()</code> always makes sure a group is kept together on one node.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights2</code></pre></div>
 <pre><code>## Source: party_df [3,844 x 2]
-## Shards: 3 [1,250--1,321 rows]
+## Shards: 3 [1,243--1,308 rows]
 ## 
 ## # S3: party_df
-##    flight dep_delay
-##     &lt;int&gt;     &lt;dbl&gt;
-## 1       4  7.516624
-## 2       8  6.935897
-## 3      17 13.917431
-## 4      18 12.750000
-## 5      19 10.050000
-## 6      27 13.282658
-## 7      29 27.710046
-## 8      31 11.908517
-## 9      35 20.272727
-## 10     36 15.974359
+##    flight  dep_delay
+##     &lt;int&gt;      &lt;dbl&gt;
+## 1       2 -0.5686275
+## 2       3  3.6650794
+## 3       4  7.5166240
+## 4       6  8.5024155
+## 5       8  6.9358974
+## 6      10 24.3114754
+## 7      11  6.8242991
+## 8      12 28.2834646
+## 9      15 10.2643080
+## 10     20  3.7053571
 ## # ... with 3,834 more rows</code></pre>
 </div>
 <div id="performance" class="section level2">
@@ -938,14 +931,14 @@ flights3 &lt;-<span class="st"> </span><span class="kw">collect</span>(flights2)
 <span class="st">    </span><span class="kw">collect</span>()
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.440   0.068   0.866</code></pre>
+##   0.422   0.064   0.823</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   flights %&gt;%<span class="st"> </span>
 <span class="st">    </span><span class="kw">group_by</span>() %&gt;%
 <span class="st">    </span><span class="kw">summarise</span>(<span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.006   0.001   0.007</code></pre>
+##   0.006   0.001   0.006</code></pre>
 <p>That’s because there’s some overhead associated with sending the data to each node and retrieving the results at the end. For basic <code>dplyr</code> verbs, <code>multidplyr</code> is unlikely to give you significant speed ups unless you have 10s or 100s of millions of data points. It might however, if you’re doing more complex things.</p>
 <div id="gapminder" class="section level3">
 <h3><code id="gapminder">gapminder</code></h3>
@@ -967,14 +960,14 @@ gap_nested_part &lt;-<span class="st"> </span>gap_nested %&gt;%
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.001   0.001   0.066</code></pre>
+##   0.001   0.000   0.066</code></pre>
 <p>Compared to how long running it locally?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   gap_nested %&gt;%<span class="st"> </span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">fit =</span> <span class="kw">map</span>(data, function(df) <span class="kw">lm</span>(lifeExp ~<span class="st"> </span>year, <span class="dt">data =</span> df)))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-##   0.124   0.005   0.133</code></pre>
+##   0.127   0.004   0.134</code></pre>
 <p>So it’s roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. In relative terms this is great, but in absolute terms it doesn’t mean much. This demonstrates it doesn’t always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.</p>
 </div>
 </div>
@@ -1051,7 +1044,7 @@ weather_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, ny
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">size =</span> count), <span class="dt">alpha =</span> <span class="dv">1</span>/<span class="dv">2</span>) +
 <span class="st">  </span><span class="kw">geom_smooth</span>() +
 <span class="st">  </span><span class="kw">scale_size_area</span>(<span class="dt">max_size =</span> <span class="dv">2</span>)</code></pre></div>
-<p><img src="distrib-comp_01_files/figure-html/flights_delay-1.png" width="672" /></p>
+<p><img src="distrib001_learn_files/figure-html/flights_delay-1.png" width="672" /></p>
 <p>To join together two tables, use the standard set of <code>_join</code> functions:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights_tbl %&gt;%
 <span class="st">  </span><span class="kw">select</span>(-time_hour) %&gt;%
@@ -1252,7 +1245,7 @@ perf_metrics</code></pre></div>
 ## 3          Random Forest 86.93462 82.92683
 ## 4 Gradient Boosted Trees 85.89769 79.51220
 ## 5            Naive Bayes 66.47738 69.26829
-## 6             Neural Net 82.79182 83.41463</code></pre>
+## 6             Neural Net 80.38218 81.46341</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot results</span>
 <span class="kw">gather</span>(perf_metrics, metric, value, AUC, Accuracy) %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">reorder</span>(model, value), value, <span class="dt">fill =</span> metric)) +<span class="st"> </span>
@@ -1261,7 +1254,7 @@ perf_metrics</code></pre></div>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Performance metrics&quot;</span>,
        <span class="dt">x =</span> <span class="ot">NULL</span>,
        <span class="dt">y =</span> <span class="st">&quot;Percent&quot;</span>)</code></pre></div>
-<p><img src="distrib-comp_01_files/figure-html/titanic_eval-1.png" width="672" /></p>
+<p><img src="distrib001_learn_files/figure-html/titanic_eval-1.png" width="672" /></p>
 <p>Overall it appears the tree-based models performed the best - they had the highest accuracy rates and AUC values.</p>
 </div>
 <div id="feature-importance" class="section level3">
@@ -1287,7 +1280,7 @@ feature_importance %&gt;%
 <span class="st">  </span><span class="kw">coord_flip</span>() +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Feature importance&quot;</span>,
        <span class="dt">x =</span> <span class="ot">NULL</span>)</code></pre></div>
-<p><img src="distrib-comp_01_files/figure-html/titanic_feature-1.png" width="672" /></p>
+<p><img src="distrib001_learn_files/figure-html/titanic_feature-1.png" width="672" /></p>
 </div>
 </div>
 <div id="compare-run-times" class="section level2">
@@ -1335,7 +1328,7 @@ result %&gt;%
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Model training times&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Seconds&quot;</span>,
        <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
-<p><img src="distrib-comp_01_files/figure-html/titanic_compare_runtime-1.png" width="672" /></p>
+<p><img src="distrib001_learn_files/figure-html/titanic_compare_runtime-1.png" width="672" /></p>
 <div id="run-time-for-serial-vs.parallel-computing" class="section level3">
 <h3>Run time for serial vs. parallel computing</h3>
 <p>Let’s look just at the logistic regression model. Is it beneficial to estimate this using Spark, or would <code>glm()</code> and a serial method work just as well?</p>
@@ -1365,7 +1358,7 @@ result_serial %&gt;%
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Model training times&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Seconds&quot;</span>,
        <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
-<p><img src="distrib-comp_01_files/figure-html/titanic_serial_parallel-1.png" width="672" /></p>
+<p><img src="distrib001_learn_files/figure-html/titanic_serial_parallel-1.png" width="672" /></p>
 <p>Alas, it is not in this instance. With a larger dataset it might become more apparent.</p>
 </div>
 <div id="what-about-cross-validation" class="section level3">
@@ -1403,6 +1396,7 @@ result_serial %&gt;%
 ##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.2)                    
 ##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                    
 ##  config         0.2        2016-08-02 CRAN (R 3.3.0)                    
+##  curl           2.3        2016-11-24 CRAN (R 3.3.2)                    
 ##  DBI            0.5-1      2016-09-10 CRAN (R 3.3.0)                    
 ##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                    
 ##  digest         0.6.12     2017-01-27 CRAN (R 3.3.2)                    
@@ -1419,17 +1413,21 @@ result_serial %&gt;%
 ##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                    
 ##  jsonlite       1.2        2016-12-31 CRAN (R 3.3.2)                    
 ##  knitr          1.15.1     2016-11-22 cran (@1.15.1)                    
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                    
 ##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.2)                    
 ##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                    
 ##  lubridate      1.6.0      2016-09-13 CRAN (R 3.3.0)                    
 ##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                    
+##  Matrix         1.2-8      2017-01-20 CRAN (R 3.3.2)                    
 ##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                    
+##  mgcv           1.8-16     2016-11-07 CRAN (R 3.3.0)                    
 ##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                    
 ##  modelr         0.1.0      2016-08-31 CRAN (R 3.3.0)                    
 ##  multidplyr   * 0.0.0.9000 2016-11-23 Github (hadley/multidplyr@f6bece5)
 ##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                    
 ##  nlme           3.1-130    2017-01-24 CRAN (R 3.3.2)                    
 ##  nycflights13 * 0.2.2      2017-01-27 CRAN (R 3.3.2)                    
+##  openssl        0.9.6      2016-12-31 CRAN (R 3.3.2)                    
 ##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                    
 ##  psych          1.6.12     2017-01-08 CRAN (R 3.3.2)                    
 ##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                    
