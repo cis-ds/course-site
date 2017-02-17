@@ -336,11 +336,11 @@ An alternative method is **leave-one-out cross validation** (LOOCV). Like with t
 
 $$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$
 
-This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the MSE estimate is highly dependent on the sampling process for training/test sets. LOOCV is also highly flexible and works with any kind of predictive modeling.
+This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the test MSE estimate is highly dependent on the sampling process for training/test sets. LOOCV is also highly flexible and works with any kind of predictive modeling.
 
 Of course the downside is that this method is computationally difficult. You have to estimate $n$ different models - if you have a large $n$ or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.
 
-## LOOCV in linear regression
+### LOOCV in linear regression
 
 We can use the `crossv_kfold()` function in the `modelr` library to compute the LOOCV of any linear or logistic regression model. It takes two arguments: the data frame and the number of $k$-folds (which we will define shortly). For our purposes now, all you need to know is that `k` should equal the number of observations in the data frame which we can retrieve using the `nrow()` function. For the `Auto` dataset, this looks like:
 
@@ -348,7 +348,7 @@ We can use the `crossv_kfold()` function in the `modelr` library to compute the 
 loocv_data <- crossv_kfold(Auto, k = nrow(Auto))
 ```
 
-Now we estimate the linear model $k$ times, excluding the holdout test observation, then calculate the MSE:
+Now we estimate the linear model $k$ times, excluding the holdout test observation, then calculate the test MSE:
 
 ```{r loocv, dependson="Auto"}
 loocv_models <- map(loocv_data$train, ~ lm(mpg ~ horsepower, data = .))
@@ -384,7 +384,7 @@ ggplot(cv_mse, aes(terms, cv_MSE)) +
 
 And arrive at a similar conclusion. There may be a very marginal advantage to adding a fifth-order polynomial, but not substantial enough for the additional complexity over a mere second-order polynomial.
 
-## LOOCV in classification
+### LOOCV in classification
 
 Let's use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom `mse.glm()` function to properly calculate the MSE for binary response variables:^[This function can also be loaded via the [`rcfss`](https://github.com/uc-cfss/rcfss) library. Be sure to update your package to the latest version to make sure the function is available.]
 
@@ -407,58 +407,11 @@ titanic_mse <- map2_dbl(titanic_models, titanic_loocv$test, mse.glm)
 mean(titanic_mse, na.rm = TRUE)
 ```
 
-In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(mean(titanic_mse, na.rm = TRUE) * 100, digits = 3)`% error rate, or `r formatC((1 - mean(titanic_mse, na.rm = TRUE)) * 100, digits = 3)`%. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
+In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(mean(titanic_mse, na.rm = TRUE) * 100, digits = 3)`% error rate. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
 
-## Exercise: LOOCV in linear regression
+## k-fold cross-validation
 
-1. Estimate the LOOCV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](stat002_linear_models.html#exercise:_linear_regression_with_scorecard).
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-mse}
-    library(rcfss)
-    
-    scorecard_loocv <- crossv_kfold(scorecard, k = nrow(scorecard)) %>%
-      mutate(model = map(train, ~ lm(cost ~ admrate, data = .)),
-             mse = map2_dbl(model, test, mse))
-    mean(scorecard_loocv$mse, na.rm = TRUE)
-    ```
-    
-      </p>
-    </details>
-
-1. Estimate the LOOCV MSE of a [logistic regression model of voter turnout](stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health) using only `mhealth` as the predictor. Compare this to the LOOCV MSE of a logistic regression model using all available predictors. Which is the better model?
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r mh-mse}
-    # basic model
-    mh_loocv_lite <- crossv_kfold(mental_health, k = nrow(mental_health)) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ mhealth, data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_loocv_lite$mse, na.rm = TRUE)
-    
-    # full model
-    mh_loocv_full <- crossv_kfold(mental_health, k = nrow(mental_health)) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ ., data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_loocv_full$mse, na.rm = TRUE)
-    ```
-    
-    The full model is better and has a lower error rate.
-    
-      </p>
-    </details>
-
-# k-fold cross-validation
-
-A less computationally-intensive approach to cross validation is **$k$-fold cross-validation**. Rather than dividing the data into $n$ groups, one divides the observations into $k$ groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining $k-1$ folds. This process is repeated $k$ times, with each fold serving as the validation set precisely once. The $k$-fold CV estimate is calculated by averaging the MSE values for each fold:
+A less computationally-intensive approach to cross-validation is **$k$-fold cross-validation**. Rather than dividing the data into $n$ groups, one divides the observations into $k$ groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining $k-1$ folds. This process is repeated $k$ times, with each fold serving as the validation set precisely once. The $k$-fold CV estimate is calculated by averaging the MSE values for each fold:
 
 $$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
