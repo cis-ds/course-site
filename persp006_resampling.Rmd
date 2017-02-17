@@ -417,7 +417,7 @@ $$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
 As you probably figured out by now, LOOCV is the special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
 
-## k-fold CV in linear regression
+### k-fold CV in linear regression
 
 Let's go back to the `Auto` data set. Instead of LOOCV, let's use 10-fold CV to compare the different polynomial models.
 
@@ -455,6 +455,8 @@ Pretty much the same results.
 
 ## Computational speed of LOOCV vs. $k$-fold CV
 
+Remember that using LOOCV you have to estimate $n$ models, whereas for $k$-fold CV you only estimate $k$ models. How long does it take to estimate each type of CV?
+
 ### LOOCV
 
 ```{r loocv_time}
@@ -491,7 +493,7 @@ profvis({
 
 On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimating $k=10$ models is going to be much easier than estimating $k=`r nrow(Auto)`$ models.
 
-## k-fold CV in logistic regression
+### k-fold CV in logistic regression
 
 You've gotten the idea by now, but let's do it one more time on our interactive Titanic model.
 
@@ -504,51 +506,6 @@ mean(titanic_mse, na.rm = TRUE)
 ```
 
 Not a large difference from the LOOCV approach, but it take much less time to compute.
-
-## Exercise: k-fold CV
-
-1. Estimate the 10-fold CV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](stat002_linear_models.html#exercise:_linear_regression_with_scorecard).
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-cv}
-    scorecard_cv10 <- crossv_kfold(scorecard, k = 10) %>%
-      mutate(model = map(train, ~ lm(cost ~ admrate, data = .)),
-             mse = map2_dbl(model, test, mse))
-    mean(scorecard_cv10$mse, na.rm = TRUE)
-    ```
-    
-      </p>
-    </details>
-
-1. Estimate the 10-fold CV MSE of a [logistic regression model of voter turnout](stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health) using only `mhealth` as the predictor. Compare this to the LOOCV MSE of a logistic regression model using all available predictors. Which is the better model?
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r mh-cv}
-    # basic model
-    mh_cv10_lite <- crossv_kfold(mental_health, k = 10) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ mhealth, data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_cv10_lite$mse, na.rm = TRUE)
-    
-    # full model
-    mh_cv10_full <- crossv_kfold(mental_health, k = 10) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ ., data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_cv10_full$mse, na.rm = TRUE)
-    ```
-    
-      </p>
-    </details>
-
-
 
 # The bootstrap
 
