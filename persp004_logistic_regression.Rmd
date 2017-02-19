@@ -763,11 +763,11 @@ The rows define the predicted outcomes and the columns define the actual (or ref
 
 Perhaps instead of boosting overall model accuracy, we instead care more about improving class-specific accuracy. For example, if we want to increase **sensitivity/recall** we need to increase the true positive rate (TPR):
 
-$$TPR = \frac{\text{Number of actual positives}}{\text{Number of predicted positives}}$$
+$$TPR = \frac{\text{Number of actual positives correctly predicted}}{\text{Number of actual positives}}$$
 
 However if we are concerned with increasing **specificity** we need to increase the true negative rate (TNR):
 
-$$TNR = \frac{\text{Number of actual negatives}}{\text{Number of predicted negatives}}$$
+$$TNR = \frac{\text{Number of actual negatives correctly predicted}}{\text{Number of actual negatives}}$$
 
 While the only way to achieve higher sensitivity **and** specificity is to estimate a better model, we can use our existing model to meet one of these goals. We do this by adjusting our **threshold**, or the cut-off point for classifying individuals as survivors or dead. The confusion matrix above also calculates the sensitivity and specificity of the predictive model. For the original threshold of $.5$, our true positive rate (or sensitivity) was `r formatC(cm_5$byClass[["Sensitivity"]], digits = 3)`. What about for a threshold of $.8$?
 
@@ -820,7 +820,7 @@ By graphing across many alternative thresholds, we can select a threshold level 
 
 ### ROC curve
 
-A receiver operating characteristic (ROC) curve is an alternative graphical method for comparing the types of errors for differing thresholds. In this graph, you plot the false positive rate vs. the true positive rate (i.e. 1 - sensitivity vs. specificity).
+A receiver operating characteristic (ROC) curve is an alternative graphical method for comparing the types of errors for differing thresholds. In this graph, you plot the false positive rate vs. the true positive rate (i.e. 1- specificity vs. sensitivity).
 
 ```{r roc-ggplot}
 ggplot(threshold_x, aes(1 - specificity, sensitivity)) +
@@ -832,7 +832,12 @@ The overall performance of the classifier across all potential thresholds is the
 
 ```{r roc-auc, cache = FALSE}
 library(pROC)
+roc_x <- roc(x_accuracy$Survived, x_accuracy$prob)
+plot(roc_x)   # use pROC to draw the ROC curve
+
+# calculate the AUC
 auc_x <- auc(x_accuracy$Survived, x_accuracy$prob)
+auc_x
 ```
 
 With an AUC of `r formatC(auc_x, digits = 3)`, this model performs decently.

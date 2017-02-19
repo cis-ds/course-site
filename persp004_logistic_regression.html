@@ -1209,9 +1209,9 @@ cm_5</code></pre></div>
 <div id="alternative-thresholds" class="section level3">
 <h3>Alternative thresholds</h3>
 <p>Perhaps instead of boosting overall model accuracy, we instead care more about improving class-specific accuracy. For example, if we want to increase <strong>sensitivity/recall</strong> we need to increase the true positive rate (TPR):</p>
-<p><span class="math display">\[TPR = \frac{\text{Number of actual positives}}{\text{Number of predicted positives}}\]</span></p>
+<p><span class="math display">\[TPR = \frac{\text{Number of actual positives correctly predicted}}{\text{Number of actual positives}}\]</span></p>
 <p>However if we are concerned with increasing <strong>specificity</strong> we need to increase the true negative rate (TNR):</p>
-<p><span class="math display">\[TNR = \frac{\text{Number of actual negatives}}{\text{Number of predicted negatives}}\]</span></p>
+<p><span class="math display">\[TNR = \frac{\text{Number of actual negatives correctly predicted}}{\text{Number of actual negatives}}\]</span></p>
 <p>While the only way to achieve higher sensitivity <strong>and</strong> specificity is to estimate a better model, we can use our existing model to meet one of these goals. We do this by adjusting our <strong>threshold</strong>, or the cut-off point for classifying individuals as survivors or dead. The confusion matrix above also calculates the sensitivity and specificity of the predictive model. For the original threshold of <span class="math inline">\(.5\)</span>, our true positive rate (or sensitivity) was 0.849. What about for a threshold of <span class="math inline">\(.8\)</span>?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">threshold_8 &lt;-<span class="st"> </span>titanic %&gt;%
 <span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) %&gt;%
@@ -1282,14 +1282,20 @@ threshold_x %&gt;%
 </div>
 <div id="roc-curve" class="section level3">
 <h3>ROC curve</h3>
-<p>A receiver operating characteristic (ROC) curve is an alternative graphical method for comparing the types of errors for differing thresholds. In this graph, you plot the false positive rate vs. the true positive rate (i.e. 1 - sensitivity vs. specificity).</p>
+<p>A receiver operating characteristic (ROC) curve is an alternative graphical method for comparing the types of errors for differing thresholds. In this graph, you plot the false positive rate vs. the true positive rate (i.e. 1- specificity vs. sensitivity).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(threshold_x, <span class="kw">aes</span>(<span class="dv">1</span> -<span class="st"> </span>specificity, sensitivity)) +
 <span class="st">  </span><span class="kw">geom_line</span>() +
 <span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;grey&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/roc-ggplot-1.png" width="672" /></p>
 <p>The overall performance of the classifier across all potential thresholds is the <strong>area under the (ROC) curve</strong> (AUC). The ideal AUC curve hugs the top left corner of the graph, so a larger AUC indicates a better classifier. An AUC of <span class="math inline">\(1\)</span> means perfect prediction for any threshold value. The dashed line represents the null model where we randomly guess whether individuals are survivors or dead (i.e. flipped a coin) and would have an AUC of <span class="math inline">\(.5\)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pROC)
-auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy$Survived, x_accuracy$prob)</code></pre></div>
+roc_x &lt;-<span class="st"> </span><span class="kw">roc</span>(x_accuracy$Survived, x_accuracy$prob)
+<span class="kw">plot</span>(roc_x)   <span class="co"># use pROC to draw the ROC curve</span></code></pre></div>
+<p><img src="persp004_logistic_regression_files/figure-html/roc-auc-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate the AUC</span>
+auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy$Survived, x_accuracy$prob)
+auc_x</code></pre></div>
+<pre><code>## Area under the curve: 0.787</code></pre>
 <p>With an AUC of 0.787, this model performs decently.</p>
 </div>
 </div>
@@ -1304,12 +1310,12 @@ auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy$Survi
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-16                  
+##  date     2017-02-19                  
 ## 
 ##  package      * version date       source        
 ##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
 ##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom        * 0.4.1   2016-06-24 CRAN (R 3.3.0)
+##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)
 ##  car            2.1-4   2016-12-02 CRAN (R 3.3.2)
 ##  caret        * 6.0-73  2016-11-10 CRAN (R 3.3.2)
 ##  class          7.3-14  2015-08-30 CRAN (R 3.3.2)
@@ -1319,7 +1325,7 @@ auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy$Survi
 ##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)
 ##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)
 ##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  e1071          1.6-7   2015-08-05 CRAN (R 3.3.0)
+##  e1071          1.6-8   2017-02-02 CRAN (R 3.3.2)
 ##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
 ##  forcats      * 0.2.0   2017-01-23 CRAN (R 3.3.2)
 ##  foreach        1.4.3   2015-10-13 CRAN (R 3.3.0)
@@ -1342,18 +1348,18 @@ auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy$Survi
 ##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)
 ##  MatrixModels   0.4-1   2015-08-22 CRAN (R 3.3.0)
 ##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mgcv           1.8-16  2016-11-07 CRAN (R 3.3.0)
+##  mgcv           1.8-17  2017-02-08 CRAN (R 3.3.2)
 ##  minqa          1.2.4   2014-10-09 cran (@1.2.4) 
 ##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)
 ##  ModelMetrics   1.1.0   2016-08-26 CRAN (R 3.3.0)
 ##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)
 ##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme           3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)
 ##  nloptr         1.0.4   2014-08-04 cran (@1.0.4) 
 ##  nnet           7.3-12  2016-02-02 CRAN (R 3.3.2)
 ##  pbkrtest       0.4-6   2016-01-27 CRAN (R 3.3.0)
 ##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  pROC         * 1.8     2015-05-05 CRAN (R 3.3.0)
+##  pROC         * 1.9.1   2017-02-05 CRAN (R 3.3.2)
 ##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)
 ##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)
 ##  quantreg       5.29    2016-09-04 CRAN (R 3.3.0)
