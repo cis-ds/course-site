@@ -251,16 +251,23 @@ train_model <- glm(Survived ~ Age * Sex, data = titanic_split$train,
                    family = binomial)
 summary(train_model)
 
-x_test_accuracy <- titanic_split$test %>%
-  as_tibble() %>%
+x_train_accuracy <- titanic_split$train %>%
+  tbl_df() %>%
   add_predictions(train_model) %>%
   mutate(pred = logit2prob(pred),
          pred = as.numeric(pred > .5))
 
-mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
+x_test_accuracy <- titanic_split$test %>%
+  tbl_df() %>%
+  add_predictions(train_model) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+train_err <- mean(x_train_accuracy$Survived != x_train_accuracy$pred, na.rm = TRUE)
+test_err <- mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
 ```
 
-Under the validation set approach, we estimate a test error rate of `r mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)`, compared to the original `r mean(x_accuracy$Survived != x_accuracy$pred, na.rm = TRUE)`. This suggests that original model might have been overfitting the data.
+Under the validation set approach, we estimate a test error rate of `r test_err`, compared to the train error rate of `r train_err`.
 
 ### Regression
 
@@ -544,7 +551,15 @@ Statistical learning methods are frequently used to draw inferences about a popu
 1. Make **assumptions** about the shape of the population.
 1. Use the **information in the sample** to learn about it.
 
+### Making assumptions
+
+![[When you assume](https://www.xkcd.com/1339/)](images/xkcd_assume.png)
+
 Suppose you decide to make assumptions, e.g. that the sample is distributed normally or [Bernoulli](https://en.wikipedia.org/wiki/Bernoulli_distribution) or some other probability distribution. You could learn about how much the answer to your question varies based on the specific sample drawn by repeatedly generating samples of the same size and asking them the same question. If you have a computaionally convenient assumption (such as the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)), you may even be able to bypass the resampling step and use a known formula to estimate your confidence in the original answer.
+
+### Using information in the sample
+
+![](images/sample_pop_meme.jpg)
 
 Provided you are happy to make the assumptions, this seems like a good idea. If you are not willing to make the assumption, you could instead take the sample you have and sample from it. You can do this because the sample you have **is also a population**, just a very small and discrete one. It is identical to the histogram of your data. Sampling with replacement merely allows you to treat the sample like it's a population and sample from it in a way that reflects its shape.
 

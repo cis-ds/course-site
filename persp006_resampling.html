@@ -660,15 +660,21 @@ train_model &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~
 ## AIC: 516
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_test_accuracy &lt;-<span class="st"> </span>titanic_split$test %&gt;%
-<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_train_accuracy &lt;-<span class="st"> </span>titanic_split$train %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%
 <span class="st">  </span><span class="kw">add_predictions</span>(train_model) %&gt;%
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
 
-<span class="kw">mean</span>(x_test_accuracy$Survived !=<span class="st"> </span>x_test_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## [1] 0.256</code></pre>
-<p>Under the validation set approach, we estimate a test error rate of 0.256, compared to the original 0.22. This suggests that original model might have been overfitting the data.</p>
+x_test_accuracy &lt;-<span class="st"> </span>titanic_split$test %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(train_model) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
+         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
+
+train_err &lt;-<span class="st"> </span><span class="kw">mean</span>(x_train_accuracy$Survived !=<span class="st"> </span>x_train_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+test_err &lt;-<span class="st"> </span><span class="kw">mean</span>(x_test_accuracy$Survived !=<span class="st"> </span>x_test_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<p>Under the validation set approach, we estimate a test error rate of 0.256, compared to the train error rate of 0.205.</p>
 </div>
 <div id="regression" class="section level3">
 <h3>Regression</h3>
@@ -932,9 +938,23 @@ titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titan
 <li>Make <strong>assumptions</strong> about the shape of the population.</li>
 <li>Use the <strong>information in the sample</strong> to learn about it.</li>
 </ol>
+<div id="making-assumptions" class="section level3">
+<h3>Making assumptions</h3>
+<div class="figure">
+<img src="images/xkcd_assume.png" alt="When you assume" />
+<p class="caption"><a href="https://www.xkcd.com/1339/">When you assume</a></p>
+</div>
 <p>Suppose you decide to make assumptions, e.g. that the sample is distributed normally or <a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Bernoulli</a> or some other probability distribution. You could learn about how much the answer to your question varies based on the specific sample drawn by repeatedly generating samples of the same size and asking them the same question. If you have a computaionally convenient assumption (such as the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>), you may even be able to bypass the resampling step and use a known formula to estimate your confidence in the original answer.</p>
+</div>
+<div id="using-information-in-the-sample" class="section level3">
+<h3>Using information in the sample</h3>
+<div class="figure">
+<img src="images/sample_pop_meme.jpg" />
+
+</div>
 <p>Provided you are happy to make the assumptions, this seems like a good idea. If you are not willing to make the assumption, you could instead take the sample you have and sample from it. You can do this because the sample you have <strong>is also a population</strong>, just a very small and discrete one. It is identical to the histogram of your data. Sampling with replacement merely allows you to treat the sample like it’s a population and sample from it in a way that reflects its shape.</p>
 <p>This is a reasonable thing to do for a couple reasons. First, it’s the only information you have about the population. Second, randomly chosen samples should look quite similar to the population from which they came, so as long as you drew a random sample it is likely that your’s is also similar.</p>
+</div>
 </div>
 <div id="estimating-the-accuracy-of-a-statistic-of-interest" class="section level2">
 <h2>Estimating the accuracy of a statistic of interest</h2>
@@ -1115,12 +1135,12 @@ auto2_boot %&gt;%
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-17                  
+##  date     2017-02-19                  
 ## 
 ##  package     * version date       source        
 ##  assertthat    0.1     2013-12-06 CRAN (R 3.3.0)
 ##  backports     1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom       * 0.4.1   2016-06-24 CRAN (R 3.3.0)
+##  broom       * 0.4.2   2017-02-13 CRAN (R 3.3.2)
 ##  codetools     0.2-15  2016-10-05 CRAN (R 3.3.2)
 ##  colorspace    1.3-2   2016-12-14 CRAN (R 3.3.2)
 ##  DBI           0.5-1   2016-09-10 CRAN (R 3.3.0)
@@ -1140,7 +1160,6 @@ auto2_boot %&gt;%
 ##  ISLR        * 1.0     2013-06-11 CRAN (R 3.3.0)
 ##  jsonlite      1.2     2016-12-31 CRAN (R 3.3.2)
 ##  knitr         1.15.1  2016-11-22 cran (@1.15.1)
-##  labeling      0.3     2014-08-23 CRAN (R 3.3.0)
 ##  lattice       0.20-34 2016-09-06 CRAN (R 3.3.2)
 ##  lazyeval      0.2.0   2016-06-12 CRAN (R 3.3.0)
 ##  lubridate     1.6.0   2016-09-13 CRAN (R 3.3.0)
@@ -1149,7 +1168,7 @@ auto2_boot %&gt;%
 ##  mnormt        1.5-5   2016-10-15 CRAN (R 3.3.0)
 ##  modelr      * 0.1.0   2016-08-31 CRAN (R 3.3.0)
 ##  munsell       0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme          3.1-130 2017-01-24 CRAN (R 3.3.2)
+##  nlme          3.1-131 2017-02-06 CRAN (R 3.3.2)
 ##  plyr          1.8.4   2016-06-08 CRAN (R 3.3.0)
 ##  profvis     * 0.3.3   2017-01-14 CRAN (R 3.3.2)
 ##  psych         1.6.12  2017-01-08 CRAN (R 3.3.2)
