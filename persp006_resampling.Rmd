@@ -16,7 +16,7 @@ knitr::opts_chunk$set(cache = TRUE,
 
 # Objectives
 
-* Define common metrics for assessing model fit
+* Define common metrics for assessing model accuracy
 * Explain the difference between the training and test MSE and the need for a test set of data
 * Define resampling methods
 * Compare and contrast the validation set approach with leave-one-out and $k$-fold cross-validation
@@ -37,9 +37,62 @@ options(digits = 3)
 theme_set(theme_minimal())
 ```
 
-# Assessing model fit
+# Assessing model accuracy
 
-Some statistical learning methods will perform better on specific datasets than other methods. Even within methods, various model specifications will perform differentially. We need metrics to determine which method/model works better on any given set of data. Here, I'll briefly introduce two major approaches for regression and classification problems.
+Some statistical learning methods will perform better on specific datasets than other methods. Even within methods, various model specifications will perform differentially. We need metrics to determine which method/model works better on any given set of data.
+
+Model accuracy (also called **goodness of fit**) will identify how well a given model fits a set of observations. However, it is important to realize that there are some things model accuracy does not do. It does not identify whether:
+
+* Omitted-variable bias exists
+* The correct statistical learning method was used
+* The most appropriate set of independent variables has been chosen
+* **The independent variables are a cause of the changes in the dependent variable**
+
+Most importantly, it does not tell you the importance of specific variables in the model. Model accuracy describes the overall model's performance, not individual variables. To conduct inference, not only do you need a well-specified (and good fitting) model, but the variables themselves also need to be **statistically** and **substantively significant**. In order to assess that in a regression context, we typically examine the size of the estimated parameters relative to their standard errors by estimating a [$t$-statistic](https://en.wikipedia.org/wiki/T-statistic) and p-value, and comparing the magnitude of the relationships in a multiple variable model to determine which relationship is the strongest/largest.
+
+Here, I'll briefly introduce some major approaches for regression and classification problems.
+
+## Coefficient of determination
+
+The **coefficient of determination** is a number that identifies the proportional reduction in squared error in a linear regression model, and is the ratio of the **regression sum of squares** and the **residual sum of squares**:
+
+$$R^2 = \frac{\text{RegSS}}{\text{TSS}}$$
+
+$$R^2 = \frac{\text{TSS} - \text{RSS}}{\text{TSS}}$$
+
+where TSS is the **total sum of squares** for $Y$ and RSS is the **residual sum of squares**.
+
+$$R^2 = \frac{\sum_{i = 1}^{N} (Y_i - \bar{Y}_i)^2 - \sum_{i = 1}^{N} (Y_i - \hat{Y}_i)^2}{\sum_{i = 1}^{N} (Y_i - \bar{Y}_i)^2}$$
+
+$$R^2 = \frac{\sum_{i = 1}^{N} (\hat{Y}_i - \bar{Y}_i)^2}{\sum_{i = 1}^{N} (Y_i - \bar{Y}_i)^2}$$
+
+```{r r-squared}
+dist1 <- sim1 %>% 
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge,
+    pred = 7 + x1 * 1.5
+  )
+
+ggplot(dist1, aes(x1, y)) + 
+  geom_abline(aes(color = "TSS"), intercept = 7, slope = 1.5) +
+  geom_hline(aes(color = "RegSS"), yintercept = mean(dist1$y), color = "grey40", linetype = 2) +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred, color = "TSS")) +
+  geom_linerange(aes(ymin = pred, ymax = mean(y), color = "RegSS"), linetype = 2) +
+  labs(title = expression(R^2),
+       color = NULL)
+```
+
+$R^2$ ranges on a 0-1 scale and can be interpreted as the proportion of the variation in the outcome $Y$ explained by the independent variables $X$ in the linear regression model. It is a **relative measure of fit** because it explains the relative amount of error/accuracy in the model and is frequently used when conducting inference.
+
+However a downside to $R^2$ is that it will only increase as the number of predictors in the regression model increases. Adjustments to $R^2$ can be made to counter this inflationary effect, most commonly employing **adjusted $R^2$**:
+
+$\text{adj-}R^2 = 1 - (1 - R^2) \frac{n - 1}{n - p - 1}$
+
+where $n$ is the number of observations in the data and $p$ is the number of predictors (not including the constant term).
+
+Statisticians and researchers [debate the merits of using $R^2$ to compare models.](http://andrewgelman.com/2007/08/29/rsquared_useful/) For one, because $R^2$ increases with the number of predictors, comparing a simple single variable model to a multiple variable model with 50 predictors could yield the determination that the 50 variable model is better, **merely because it has 50 predictors**. Because of properties of $R^2$ we will not go into here, it is not the best approach for comparing the accuracy of different models using the same dataset. Instead, we want an **absolute measure of fit**.
 
 ## Mean squared error
 
@@ -53,7 +106,9 @@ where:
 * $\hat{f}(x_i) =$ the predicted response value for the $i$th observation given by $\hat{f}$
 * $n =$ the total number of observations
 
-The MSE will be small if predicted values $\hat{Y}$ are close to the actual values $Y$, and will be large if for some/all observations the predicted and actual values differ significantly.
+The MSE is an absolute measure of fit because its value depends on the measurement units of the response variable $Y$. It will be small if predicted values $\hat{Y}$ are close to the actual values $Y$, and will be large if for some/all observations the predicted and actual values differ significantly.
+
+> **Root mean squared error** (RMSE) is the square root of MSE. It is also commonly seen in statistical packages as a model accuracy metric. You can use that as well, however we will use MSE because it is associated with **variance** ($\sigma^2$), whereas RMSE is associated with **standard deviation** ($\sigma$). Variance has certain statistical properties that are missing from standard deviation, so we will use MSE.
 
 Consider the relationship between horsepower and car mileage in the `Auto` dataset (found in `library(ISLR)`):
 

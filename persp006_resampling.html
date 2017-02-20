@@ -369,7 +369,7 @@ div.tocify {
 <div id="objectives" class="section level1">
 <h1>Objectives</h1>
 <ul>
-<li>Define common metrics for assessing model fit</li>
+<li>Define common metrics for assessing model accuracy</li>
 <li>Explain the difference between the training and test MSE and the need for a test set of data</li>
 <li>Define resampling methods</li>
 <li>Compare and contrast the validation set approach with leave-one-out and <span class="math inline">\(k\)</span>-fold cross-validation</li>
@@ -388,9 +388,47 @@ div.tocify {
 
 <span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
 </div>
-<div id="assessing-model-fit" class="section level1">
-<h1>Assessing model fit</h1>
-<p>Some statistical learning methods will perform better on specific datasets than other methods. Even within methods, various model specifications will perform differentially. We need metrics to determine which method/model works better on any given set of data. Here, I’ll briefly introduce two major approaches for regression and classification problems.</p>
+<div id="assessing-model-accuracy" class="section level1">
+<h1>Assessing model accuracy</h1>
+<p>Some statistical learning methods will perform better on specific datasets than other methods. Even within methods, various model specifications will perform differentially. We need metrics to determine which method/model works better on any given set of data.</p>
+<p>Model accuracy (also called <strong>goodness of fit</strong>) will identify how well a given model fits a set of observations. However, it is important to realize that there are some things model accuracy does not do. It does not identify whether:</p>
+<ul>
+<li>Omitted-variable bias exists</li>
+<li>The correct statistical learning method was used</li>
+<li>The most appropriate set of independent variables has been chosen</li>
+<li><strong>The independent variables are a cause of the changes in the dependent variable</strong></li>
+</ul>
+<p>Most importantly, it does not tell you the importance of specific variables in the model. Model accuracy describes the overall model’s performance, not individual variables. To conduct inference, not only do you need a well-specified (and good fitting) model, but the variables themselves also need to be <strong>statistically</strong> and <strong>substantively significant</strong>. In order to assess that in a regression context, we typically examine the size of the estimated parameters relative to their standard errors by estimating a <a href="https://en.wikipedia.org/wiki/T-statistic"><span class="math inline">\(t\)</span>-statistic</a> and p-value, and comparing the magnitude of the relationships in a multiple variable model to determine which relationship is the strongest/largest.</p>
+<p>Here, I’ll briefly introduce some major approaches for regression and classification problems.</p>
+<div id="coefficient-of-determination" class="section level2">
+<h2>Coefficient of determination</h2>
+<p>The <strong>coefficient of determination</strong> is a number that identifies the proportional reduction in squared error in a linear regression model, and is the ratio of the <strong>regression sum of squares</strong> and the <strong>residual sum of squares</strong>:</p>
+<p><span class="math display">\[R^2 = \frac{\text{TSS} - \text{RSS}}{\text{TSS}}\]</span></p>
+<p>where TSS is the <strong>total sum of squares</strong> for <span class="math inline">\(Y\)</span> and RSS is the <strong>residual sum of squares</strong>.</p>
+<p><span class="math display">\[R^2 = \frac{\sum_{i = 1}^{N} (Y_i - \bar{Y}_i)^2 - \sum_{i = 1}^{N} (Y_i - \hat{Y}_i)^2}{\sum_{i = 1}^{N} (Y_i - \bar{Y}_i)^2}\]</span></p>
+<p><span class="math display">\[R^2 = \frac{\sum_{i = 1}^{N} (\hat{Y}_i - \bar{Y}_i)^2}{\sum_{i = 1}^{N} (Y_i - \bar{Y}_i)^2}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dist1 &lt;-<span class="st"> </span>sim1 %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="kw">mutate</span>(
+    <span class="dt">dodge =</span> <span class="kw">rep</span>(<span class="kw">c</span>(-<span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>) /<span class="st"> </span><span class="dv">20</span>, <span class="dv">10</span>),
+    <span class="dt">x1 =</span> x +<span class="st"> </span>dodge,
+    <span class="dt">pred =</span> <span class="dv">7</span> +<span class="st"> </span>x1 *<span class="st"> </span><span class="fl">1.5</span>
+  )
+
+<span class="kw">ggplot</span>(dist1, <span class="kw">aes</span>(x1, y)) +<span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;TSS&quot;</span>), <span class="dt">intercept =</span> <span class="dv">7</span>, <span class="dt">slope =</span> <span class="fl">1.5</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;RegSS&quot;</span>), <span class="dt">yintercept =</span> <span class="kw">mean</span>(dist1$y), <span class="dt">color =</span> <span class="st">&quot;grey40&quot;</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">color =</span> <span class="st">&quot;grey40&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_linerange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> y, <span class="dt">ymax =</span> pred, <span class="dt">color =</span> <span class="st">&quot;TSS&quot;</span>)) +
+<span class="st">  </span><span class="kw">geom_linerange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> pred, <span class="dt">ymax =</span> <span class="kw">mean</span>(y), <span class="dt">color =</span> <span class="st">&quot;RegSS&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>(R^<span class="dv">2</span>),
+       <span class="dt">color =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="persp006_resampling_files/figure-html/r-squared-1.png" width="672" /></p>
+<p><span class="math inline">\(R^2\)</span> ranges on a 0-1 scale and can be interpreted as the proportion of the variation in the outcome <span class="math inline">\(Y\)</span> explained by the independent variables <span class="math inline">\(X\)</span> in the linear regression model. It is a <strong>relative measure of fit</strong> because it explains the relative amount of error/accuracy in the model and is frequently used when conducting inference.</p>
+<p>However a downside to <span class="math inline">\(R^2\)</span> is that it will only increase as the number of predictors in the regression model increases. Adjustments to <span class="math inline">\(R^2\)</span> can be made to counter this inflationary effect, most commonly employing <strong>adjusted <span class="math inline">\(R^2\)</span></strong>:</p>
+<p><span class="math inline">\(\text{adj-}R^2 = 1 - (1 - R^2) \frac{n - 1}{n - p - 1}\)</span></p>
+<p>where <span class="math inline">\(n\)</span> is the number of observations in the data and <span class="math inline">\(p\)</span> is the number of predictors (not including the constant term).</p>
+<p>Statisticians and researchers <a href="http://andrewgelman.com/2007/08/29/rsquared_useful/">debate the merits of using <span class="math inline">\(R^2\)</span> to compare models.</a> For one, because <span class="math inline">\(R^2\)</span> increases with the number of predictors, comparing a simple single variable model to a multiple variable model with 50 predictors could yield the determination that the 50 variable model is better, <strong>merely because it has 50 predictors</strong>. Because of properties of <span class="math inline">\(R^2\)</span> we will not go into here, it is not the best approach for comparing the accuracy of different models using the same dataset. Instead, we want an <strong>absolute measure of fit</strong>.</p>
+</div>
 <div id="mean-squared-error" class="section level2">
 <h2>Mean squared error</h2>
 <p><strong>Mean Squared Error</strong> (MSE) is defined as</p>
@@ -401,7 +439,10 @@ div.tocify {
 <li><span class="math inline">\(\hat{f}(x_i) =\)</span> the predicted response value for the <span class="math inline">\(i\)</span>th observation given by <span class="math inline">\(\hat{f}\)</span></li>
 <li><span class="math inline">\(n =\)</span> the total number of observations</li>
 </ul>
-<p>The MSE will be small if predicted values <span class="math inline">\(\hat{Y}\)</span> are close to the actual values <span class="math inline">\(Y\)</span>, and will be large if for some/all observations the predicted and actual values differ significantly.</p>
+<p>The MSE is an absolute measure of fit because its value depends on the measurement units of the response variable <span class="math inline">\(Y\)</span>. It will be small if predicted values <span class="math inline">\(\hat{Y}\)</span> are close to the actual values <span class="math inline">\(Y\)</span>, and will be large if for some/all observations the predicted and actual values differ significantly.</p>
+<blockquote>
+<p><strong>Root mean squared error</strong> (RMSE) is the square root of MSE. It is also commonly seen in statistical packages as a model accuracy metric. You can use that as well, however we will use MSE because it is associated with <strong>variance</strong> (<span class="math inline">\(\sigma^2\)</span>), whereas RMSE is associated with <strong>standard deviation</strong> (<span class="math inline">\(\sigma\)</span>). Variance has certain statistical properties that are missing from standard deviation, so we will use MSE.</p>
+</blockquote>
 <p>Consider the relationship between horsepower and car mileage in the <code>Auto</code> dataset (found in <code>library(ISLR)</code>):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ISLR)
 
@@ -1135,63 +1176,59 @@ auto2_boot %&gt;%
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-02-19                  
+##  date     2017-02-20                  
 ## 
-##  package     * version date       source        
-##  assertthat    0.1     2013-12-06 CRAN (R 3.3.0)
-##  backports     1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom       * 0.4.2   2017-02-13 CRAN (R 3.3.2)
-##  codetools     0.2-15  2016-10-05 CRAN (R 3.3.2)
-##  colorspace    1.3-2   2016-12-14 CRAN (R 3.3.2)
-##  DBI           0.5-1   2016-09-10 CRAN (R 3.3.0)
-##  devtools      1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest        0.6.12  2017-01-27 CRAN (R 3.3.2)
-##  dplyr       * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  evaluate      0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats       0.2.0   2017-01-23 CRAN (R 3.3.2)
-##  foreign       0.8-67  2016-09-13 CRAN (R 3.3.2)
-##  ggplot2     * 2.2.1   2016-12-30 CRAN (R 3.3.2)
-##  gtable        0.2.0   2016-02-26 CRAN (R 3.3.0)
-##  haven         1.0.0   2016-09-23 cran (@1.0.0) 
-##  hms           0.3     2016-11-22 CRAN (R 3.3.2)
-##  htmltools     0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  htmlwidgets   0.8     2016-11-09 CRAN (R 3.3.1)
-##  httr          1.2.1   2016-07-03 CRAN (R 3.3.0)
-##  ISLR        * 1.0     2013-06-11 CRAN (R 3.3.0)
-##  jsonlite      1.2     2016-12-31 CRAN (R 3.3.2)
-##  knitr         1.15.1  2016-11-22 cran (@1.15.1)
-##  lattice       0.20-34 2016-09-06 CRAN (R 3.3.2)
-##  lazyeval      0.2.0   2016-06-12 CRAN (R 3.3.0)
-##  lubridate     1.6.0   2016-09-13 CRAN (R 3.3.0)
-##  magrittr      1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise       1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mnormt        1.5-5   2016-10-15 CRAN (R 3.3.0)
-##  modelr      * 0.1.0   2016-08-31 CRAN (R 3.3.0)
-##  munsell       0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme          3.1-131 2017-02-06 CRAN (R 3.3.2)
-##  plyr          1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  profvis     * 0.3.3   2017-01-14 CRAN (R 3.3.2)
-##  psych         1.6.12  2017-01-08 CRAN (R 3.3.2)
-##  purrr       * 0.2.2   2016-06-18 CRAN (R 3.3.0)
-##  R6            2.2.0   2016-10-05 CRAN (R 3.3.0)
-##  rcfss       * 0.1.3   2017-02-16 local         
-##  Rcpp          0.12.9  2017-01-14 CRAN (R 3.3.2)
-##  readr       * 1.0.0   2016-08-03 CRAN (R 3.3.0)
-##  readxl        0.1.1   2016-03-28 CRAN (R 3.3.0)
-##  reshape2      1.4.2   2016-10-22 CRAN (R 3.3.0)
-##  rmarkdown     1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot     1.2     2017-01-16 CRAN (R 3.3.2)
-##  rvest         0.3.2   2016-06-17 CRAN (R 3.3.0)
-##  scales        0.4.1   2016-11-09 CRAN (R 3.3.1)
-##  stringi       1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr       1.1.0   2016-08-19 cran (@1.1.0) 
-##  tibble      * 1.2     2016-08-26 cran (@1.2)   
-##  tidyr       * 0.6.1   2017-01-10 CRAN (R 3.3.2)
-##  tidyverse   * 1.1.1   2017-01-27 CRAN (R 3.3.2)
-##  titanic     * 0.1.0   2015-08-31 CRAN (R 3.3.0)
-##  withr         1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  xml2          1.1.1   2017-01-24 CRAN (R 3.3.2)
-##  yaml          2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr        1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss      * 0.1.3   2017-02-16 local         
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
