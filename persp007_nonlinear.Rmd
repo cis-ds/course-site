@@ -17,8 +17,7 @@ knitr::opts_chunk$set(cache = TRUE,
 # Objectives
 
 * Identify reasons for relaxing the linearity assumption of linear models
-* Review polynomial regression
-* Explain why and how to use log transformations of independent and dependent variables
+* Introduce monotonic transformations
 * Introduce step functions
 * Demonstrate regression and smoothing splines
 * Review local regression
@@ -194,7 +193,79 @@ We see a distinct funnel-shape to the relationship between the predicted values 
 
 ## How to relax the assumption
 
-We have already seen how to do this by adding [quadratic](persp003_linear_regression.html#non-linear_relationships) and [interactive](persp004_logistic_regression.html#interactive_terms) terms. Here we will review adding quadratic terms (also called **polynomial regression**) and explore alternative approaches to introducing non-linearity in both regression and classification problems.
+We have already seen how to do this by adding [quadratic](persp003_linear_regression.html#non-linear_relationships) and [interactive](persp004_logistic_regression.html#interactive_terms) terms. Here we will review adding other forms of monotonic transformations and explore alternative approaches to introducing non-linearity in both regression and classification problems.
+
+# Monotonic transformations
+
+A **monotonic function** is a function for transforming a set of numbers into a different set of numbers so that the rank order of the original set of numbers is preserved. One major family of monotonic functions is the **ladder of powers**.
+
+Transformation | Power | $f(X)$
+---------------|-------|--------
+Cube | 3 | $X^3$
+Square | 2 | $X^2$
+Identity | 1 | $X$
+Square root | $\frac{1}{2}$ | $\sqrt{X}$
+Cube root | $\frac{1}{3}$ | $\sqrt[3]{X}$
+Log | 0 (sort of) | $\ln(X)$
+
+```{r power-ladder}
+data_frame(x = runif(1000, 0, 10),
+           cube = x^3,
+           square = x^2,
+           identity = x,
+           sqrt = sqrt(x),
+           cubert = x ^ (1/3),
+           log = log(x)) %>%
+  gather(transform, value, -x) %>%
+  mutate(transform = factor(transform,
+                            levels = c("cube", "square", "identity", "sqrt", "cubert", "log"),
+                            labels = c("X^3", "X^2", "X", "sqrt(X)", "sqrt(X, 3)", "ln(X)"))) %>%
+  ggplot(aes(x, value)) +
+  geom_line() +
+  facet_wrap( ~ transform, scales = "free_y", labeller = label_parsed) +
+  labs(title = "Ladder of powers transformations",
+       x = "X",
+       y = "Transformed X")
+```
+
+* Higher-order power transformations "inflate" large values and "compress" small ones
+* Lower-order power transformations "compress" large values and "inflate" small ones
+
+In order for power transformations to "work", all the values of $X$ need to be **positive** (remember that $\ln(0) is undefined). If you need to, you can adjust $X$ first to ensure it only contains positive values by adding the absolute value of the lowest (negative) value of $X$ (call it $X_l$), plus some small additional value $\epsilon$ to $X$ itself:
+
+$$X^* = X + (|X_l| + \epsilon)$$
+
+## Which transformation should I use?
+
+This depends on the situation. Typically we use these transformations to induce linearity between $Y$ and one or more predictors $X$. Tukey and Mosteller suggest a "bulging rule" for power transformations to make things more linear:
+
+```{r bulge-rule, fig.asp = 1}
+# from http://freakonometrics.hypotheses.org/14967
+fakedataMT <- function(p = 1, q = 1, n = 500, s = .1) {
+  X <- seq(1 / (n + 1), 1 - 1 / (n + 1), length = n)
+  Y <- (5 + 2 * X ^ p + rnorm(n, sd = s)) ^ (1 / q)
+  return(data_frame(x = X, y = Y))
+}
+
+bind_rows(`1` = fakedataMT(p = .5, q = 2),
+          `2` = fakedataMT(p = 3, q = -5),
+          `3` = fakedataMT(p = .5, q = -1),
+          `4` = fakedataMT(p = 3, q = 5),
+          .id = "id") %>%
+  mutate(id = factor(id, levels = 1:4,
+                     labels = c("Log X or Square Y", "Square X or Y",
+                                "Log X or Y", "Square X or Log Y"))) %>%
+  ggplot(aes(x, y)) +
+  geom_point() +
+  facet_wrap(~ id, scales = "free_y") +
+  labs(title = 'Tukey and Mosteller\'s "Bulging Rule" for monotone transformations to linearity',
+       x = "X",
+       y = "Y") +
+  theme_bw() +
+  theme(axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        panel.grid = element_blank())
+```
 
 # Polynomial regressions
 
