@@ -376,6 +376,7 @@ div.tocify {
 <span class="kw">library</span>(rcfss)
 <span class="kw">library</span>(titanic)
 <span class="kw">library</span>(knitr)
+<span class="kw">library</span>(splines)
 
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
 <span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
@@ -824,7 +825,128 @@ biden_step_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(bi
 </div>
 <div id="regression-splines" class="section level1">
 <h1>Regression splines</h1>
-<p><strong>Regression splines</strong> extend monotonic transformations and piecewise constant regression</p>
+<p><strong>Regression splines</strong> extend monotonic transformations and piecewise constant regression by fitting separate polynomial functions over different regions of <span class="math inline">\(X\)</span>.</p>
+<div id="piecewise-polynomials" class="section level2">
+<h2>Piecewise polynomials</h2>
+<p><strong>Piecewise polynomial regression</strong> fits separate low-degree polynomials for different regions of <span class="math inline">\(X\)</span>. For instance, a cubic piecewise polynomial regression model takes the form:</p>
+<p><span class="math display">\[y_i = \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_3 x_i^3 + \epsilon_i\]</span></p>
+<p>where the <span class="math inline">\(\beta\)</span>s are now vectors with different values for different parts of the range of <span class="math inline">\(X\)</span>. The points where the parameters change are called <strong>knots</strong>.</p>
+<p>The special case of a piecewise cubic polynomial with 0 knots is just an ordinary cubic polynomial:</p>
+<p><span class="math display">\[y_i = \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_3 x_i^3 + \epsilon_i\]</span></p>
+<p>Likewise, the special case of a piecewise constant polynomial (i.e. polynomial with degree <span class="math inline">\(0\)</span>) is piecewise constant regression.</p>
+<p>A piecewise cubic polynomial with a single knot at point <span class="math inline">\(c\)</span> takes the form:</p>
+<p><span class="math display">\[y_i = \begin{cases} 
+      \beta_{01} + \beta_{11}x_i^2 + \beta_{21}x_i^2 + \beta_{31}x_i^3 + \epsilon_i &amp; \text{if } x_i &lt; c \\
+      \beta_{02} + \beta_{12}x_i^2 + \beta_{22}x_i^2 + \beta_{32}x_i^3 + \epsilon_i &amp; \text{if } x_i \geq c
+   \end{cases}\]</span></p>
+<p>In essence, we fit two separate polynomial functions to the data. Each function is estimated using least squares applied to the individual functions and subsets of data. The more knots <span class="math inline">\(K\)</span> used, the more flexible the piecewise polynomial.</p>
+<p>Of course this leads to a somewhat odd and discontinuous function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate data</span>
+sim_piece &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">10</span>),
+                        <span class="dt">y =</span> <span class="kw">ifelse</span>(x &lt;<span class="st"> </span><span class="dv">5</span>,
+                                   .<span class="dv">05</span> *<span class="st"> </span>x +<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">2</span> +<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">3</span> +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">3</span>),
+                                   .<span class="dv">1</span> *<span class="st"> </span>x +<span class="st"> </span>.<span class="dv">1</span> *<span class="st"> </span>x^<span class="dv">2</span> -<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">3</span> +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">3</span>)))
+
+<span class="co"># estimate models</span>
+sim_piece_mod1 &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">3</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> sim_piece, <span class="dt">subset =</span> x &lt;<span class="st"> </span><span class="dv">5</span>)
+sim_piece_mod2 &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">3</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> sim_piece, <span class="dt">subset =</span> x &gt;=<span class="st"> </span><span class="dv">5</span>)
+
+<span class="co"># draw the plot</span>
+sim_piece %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(<span class="dt">x =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dt">by =</span> .<span class="dv">001</span>)) %&gt;%
+<span class="st">  </span><span class="kw">gather_predictions</span>(sim_piece_mod1, sim_piece_mod2) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>((x &lt;<span class="st"> </span><span class="dv">5</span> &amp;<span class="st"> </span>model ==<span class="st"> &quot;sim_piece_mod1&quot;</span>) |
+<span class="st">           </span>(x &gt;=<span class="dv">5</span> &amp;<span class="st"> </span>model ==<span class="st"> &quot;sim_piece_mod2&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_piece) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred, <span class="dt">color =</span> model), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">5</span>, <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;grey&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Piecewise cubic regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Y&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-piecewise-1.png" width="672" /></p>
+</div>
+<div id="constraints-and-splines" class="section level2">
+<h2>Constraints and splines</h2>
+<p>Instead of a discontinuous piecewise function, we’d rather have something continuous. That is, we impose the <strong>constraint</strong> that the fitted curve must be continuous.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">###### very hackish implementation
+<span class="co"># simulate data</span>
+sim_piece_cont &lt;-<span class="st"> </span>sim_piece %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="kw">ifelse</span>(x &lt;<span class="st"> </span><span class="dv">5</span>,
+                    <span class="dv">15</span> +<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x -<span class="st"> </span>.<span class="dv">5</span> *<span class="st"> </span>x^<span class="dv">2</span> -<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">3</span>,
+                    .<span class="dv">05</span> *<span class="st"> </span>x +<span class="st"> </span>.<span class="dv">1</span> *<span class="st"> </span>x^<span class="dv">2</span> -<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">3</span>))
+
+<span class="co"># estimate models</span>
+sim_piece_cont_mod1 &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">3</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> sim_piece_cont, <span class="dt">subset =</span> x &lt;<span class="st"> </span><span class="dv">5</span>)
+sim_piece_cont_mod2 &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">3</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> sim_piece_cont, <span class="dt">subset =</span> x &gt;=<span class="st"> </span><span class="dv">5</span>)
+
+<span class="co"># draw the plot</span>
+sim_piece_cont %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(<span class="dt">x =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dt">by =</span> .<span class="dv">001</span>)) %&gt;%
+<span class="st">  </span><span class="kw">gather_predictions</span>(sim_piece_cont_mod1, sim_piece_cont_mod2) %&gt;%
+<span class="st">  </span><span class="kw">filter</span>((x &lt;<span class="st"> </span><span class="dv">5</span> &amp;<span class="st"> </span>model ==<span class="st"> &quot;sim_piece_cont_mod1&quot;</span>) |
+<span class="st">           </span>(x &gt;=<span class="dv">5</span> &amp;<span class="st"> </span>model ==<span class="st"> &quot;sim_piece_cont_mod2&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_piece %&gt;%
+<span class="st">               </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="kw">ifelse</span>(x &lt;<span class="st"> </span><span class="dv">5</span>,
+                                 <span class="dv">15</span> +<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x -<span class="st"> </span>.<span class="dv">5</span> *<span class="st"> </span>x^<span class="dv">2</span> -<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">3</span> +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">3</span>),
+                                 .<span class="dv">05</span> *<span class="st"> </span>x +<span class="st"> </span>.<span class="dv">1</span> *<span class="st"> </span>x^<span class="dv">2</span> -<span class="st"> </span>.<span class="dv">05</span> *<span class="st"> </span>x^<span class="dv">3</span>) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">3</span>)), <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(x, pred, <span class="dt">color =</span> model), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">5</span>, <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;grey&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Continuous piecewise cubic regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Y&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-spline-1.png" width="672" /></p>
+<p>But notice that this constraint is insufficient. Now the function is continuous, but still looks unnatural because of the V-shaped join. We should add two additional constraints: not only should the fitted curve be continuous, but the first and second <strong>derivatives</strong> should also be continuous at the knot. This will generate a fitted curve that is continuous and <strong>smooth</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate models</span>
+sim_piece_smooth &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">bs</span>(x, <span class="dt">knots =</span> <span class="kw">c</span>(<span class="dv">5</span>)), <span class="dt">data =</span> sim_piece)
+
+<span class="co"># draw the plot</span>
+sim_piece %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(sim_piece_smooth) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">5</span>, <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;grey&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Cubic spline&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Y&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-spline-smooth-1.png" width="672" /></p>
+<p>By increasing the number of knots, we will increase the flexibility of the resulting spline:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">10</span>),
+           <span class="dt">models =</span> <span class="kw">map</span>(terms, ~<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">bs</span>(x, <span class="dt">df =</span> .), <span class="dt">data =</span> sim_piece)),
+           <span class="dt">pred =</span> <span class="kw">map</span>(models, ~<span class="st"> </span><span class="kw">add_predictions</span>(sim_piece, .))) %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(pred) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_piece, <span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred, <span class="dt">color =</span> <span class="kw">factor</span>(terms))) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Cubic spline&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Y&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Knots&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-spline-smooth-5-1.png" width="672" /></p>
+<p>We can also see how the spline imposes a local structure by comparing it to the related polynomial regression model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># models</span>
+sim_piece_global &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">5</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> sim_piece)
+sim_piece_local &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">bs</span>(x, <span class="dt">df =</span> <span class="dv">5</span>), <span class="dt">data =</span> sim_piece)
+
+<span class="co"># graph</span>
+sim_piece_cont %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(<span class="dt">x =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">10</span>, <span class="dt">by =</span> .<span class="dv">001</span>)) %&gt;%
+<span class="st">  </span><span class="kw">gather_predictions</span>(sim_piece_global, sim_piece_local) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, pred)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_piece, <span class="kw">aes</span>(<span class="dt">y =</span> y)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred, <span class="dt">color =</span> model), <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">5</span>, <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;grey&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Piecewise cubic regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Y&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-spline-compare-1.png" width="672" /></p>
+</div>
 </div>
 <div id="smoothing-splines" class="section level1">
 <h1>Smoothing splines</h1>

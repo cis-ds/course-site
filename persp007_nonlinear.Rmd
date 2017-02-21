@@ -31,6 +31,7 @@ library(broom)
 library(rcfss)
 library(titanic)
 library(knitr)
+library(splines)
 
 set.seed(1234)
 options(digits = 3)
@@ -448,8 +449,150 @@ ggplot(biden_step_pred, aes(age)) +
 
 # Regression splines
 
-**Regression splines** extend monotonic transformations and piecewise constant regression
+**Regression splines** extend monotonic transformations and piecewise constant regression by fitting separate polynomial functions over different regions of $X$.
 
+## Piecewise polynomials
+
+**Piecewise polynomial regression** fits separate low-degree polynomials for different regions of $X$. For instance, a cubic piecewise polynomial regression model takes the form:
+
+$$y_i = \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_3 x_i^3 + \epsilon_i$$
+
+where the $\beta$s are now vectors with different values for different parts of the range of $X$. The points where the parameters change are called **knots**.
+
+The special case of a piecewise cubic polynomial with 0 knots is just an ordinary cubic polynomial:
+
+$$y_i = \beta_0 + \beta_1 x_i + \beta_2 x_i^2 + \beta_3 x_i^3 + \epsilon_i$$
+
+Likewise, the special case of a piecewise constant polynomial (i.e. polynomial with degree $0$) is piecewise constant regression. 
+
+A piecewise cubic polynomial with a single knot at point $c$ takes the form:
+
+$$y_i = \begin{cases} 
+      \beta_{01} + \beta_{11}x_i^2 + \beta_{21}x_i^2 + \beta_{31}x_i^3 + \epsilon_i & \text{if } x_i < c \\
+      \beta_{02} + \beta_{12}x_i^2 + \beta_{22}x_i^2 + \beta_{32}x_i^3 + \epsilon_i & \text{if } x_i \geq c
+   \end{cases}$$
+   
+In essence, we fit two separate polynomial functions to the data. Each function is estimated using least squares applied to the individual functions and subsets of data. The more knots $K$ used, the more flexible the piecewise polynomial.
+
+Of course this leads to a somewhat odd and discontinuous function:
+
+```{r sim-piecewise}
+# simulate data
+sim_piece <- data_frame(x = runif(100, 0, 10),
+                        y = ifelse(x < 5,
+                                   .05 * x + .05 * x^2 + .05 * x^3 + rnorm(100, 0, 3),
+                                   .1 * x + .1 * x^2 - .05 * x^3 + rnorm(100, 0, 3)))
+
+# estimate models
+sim_piece_mod1 <- glm(y ~ poly(x, 3, raw = TRUE), data = sim_piece, subset = x < 5)
+sim_piece_mod2 <- glm(y ~ poly(x, 3, raw = TRUE), data = sim_piece, subset = x >= 5)
+
+# draw the plot
+sim_piece %>%
+  data_grid(x = seq(0, 10, by = .001)) %>%
+  gather_predictions(sim_piece_mod1, sim_piece_mod2) %>%
+  filter((x < 5 & model == "sim_piece_mod1") |
+           (x >=5 & model == "sim_piece_mod2")) %>%
+  ggplot(aes(x, y)) +
+  geom_point(data = sim_piece) +
+  geom_line(aes(y = pred, color = model), size = 1) +
+  geom_vline(xintercept = 5, linetype = 2, color = "grey") +
+  labs(title = "Piecewise cubic regression",
+       x = "X",
+       y = "Y") +
+  theme(legend.position = "none")
+```
+
+## Constraints and splines
+
+Instead of a discontinuous piecewise function, we'd rather have something continuous. That is, we impose the **constraint** that the fitted curve must be continuous.
+
+```{r sim-spline}
+###### very hackish implementation
+# simulate data
+sim_piece_cont <- sim_piece %>%
+  mutate(y = ifelse(x < 5,
+                    15 + .05 * x - .5 * x^2 - .05 * x^3,
+                    .05 * x + .1 * x^2 - .05 * x^3))
+
+# estimate models
+sim_piece_cont_mod1 <- glm(y ~ poly(x, 3, raw = TRUE), data = sim_piece_cont, subset = x < 5)
+sim_piece_cont_mod2 <- glm(y ~ poly(x, 3, raw = TRUE), data = sim_piece_cont, subset = x >= 5)
+
+# draw the plot
+sim_piece_cont %>%
+  data_grid(x = seq(0, 10, by = .001)) %>%
+  gather_predictions(sim_piece_cont_mod1, sim_piece_cont_mod2) %>%
+  filter((x < 5 & model == "sim_piece_cont_mod1") |
+           (x >=5 & model == "sim_piece_cont_mod2")) %>%
+  ggplot() +
+  geom_point(data = sim_piece %>%
+               mutate(y = ifelse(x < 5,
+                                 15 + .05 * x - .5 * x^2 - .05 * x^3 + rnorm(100, 0, 3),
+                                 .05 * x + .1 * x^2 - .05 * x^3) + rnorm(100, 0, 3)), aes(x, y)) +
+  geom_line(aes(x, pred, color = model), size = 1) +
+  geom_vline(xintercept = 5, linetype = 2, color = "grey") +
+  labs(title = "Continuous piecewise cubic regression",
+       x = "X",
+       y = "Y") +
+  theme(legend.position = "none")
+```
+
+But notice that this constraint is insufficient. Now the function is continuous, but still looks unnatural because of the V-shaped join. We should add two additional constraints: not only should the fitted curve be continuous, but the first and second **derivatives** should also be continuous at the knot. This will generate a fitted curve that is continuous and **smooth**.
+
+```{r sim-spline-smooth}
+# estimate models
+sim_piece_smooth <- glm(y ~ bs(x, knots = c(5)), data = sim_piece)
+
+# draw the plot
+sim_piece %>%
+  add_predictions(sim_piece_smooth) %>%
+  ggplot(aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pred), size = 1) +
+  geom_vline(xintercept = 5, linetype = 2, color = "grey") +
+  labs(title = "Cubic spline",
+       x = "X",
+       y = "Y") +
+  theme(legend.position = "none")
+```
+
+By increasing the number of knots, we will increase the flexibility of the resulting spline:
+
+```{r sim-spline-smooth-5}
+data_frame(terms = c(1, 5, 10),
+           models = map(terms, ~ glm(y ~ bs(x, df = .), data = sim_piece)),
+           pred = map(models, ~ add_predictions(sim_piece, .))) %>%
+  unnest(pred) %>%
+  ggplot(aes(x, y)) +
+  geom_point(data = sim_piece, alpha = .2) +
+  geom_line(aes(y = pred, color = factor(terms))) +
+  labs(title = "Cubic spline",
+       x = "X",
+       y = "Y",
+       color = "Knots")
+```
+
+We can also see how the spline imposes a local structure by comparing it to the related polynomial regression model:
+
+```{r sim-spline-compare}
+# models
+sim_piece_global <- glm(y ~ poly(x, 5, raw = TRUE), data = sim_piece)
+sim_piece_local <- glm(y ~ bs(x, df = 5), data = sim_piece)
+
+# graph
+sim_piece_cont %>%
+  data_grid(x = seq(0, 10, by = .001)) %>%
+  gather_predictions(sim_piece_global, sim_piece_local) %>%
+  ggplot(aes(x, pred)) +
+  geom_point(data = sim_piece, aes(y = y)) +
+  geom_line(aes(y = pred, color = model), size = 1) +
+  geom_vline(xintercept = 5, linetype = 2, color = "grey") +
+  labs(title = "Piecewise cubic regression",
+       x = "X",
+       y = "Y") +
+  theme(legend.position = "none")
+```
 
 # Smoothing splines
 
