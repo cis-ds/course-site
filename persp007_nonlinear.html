@@ -401,17 +401,28 @@ sim_linear_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<spa
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a linear relationship&quot;</span>)</code></pre></div>
 <p><img src="persp007_nonlinear_files/figure-html/sim-linear-1.png" width="672" /></p>
-<p>When this assumption holds, the <strong>residuals</strong> of the observations should not be correlated with the fitted values.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_linear %&gt;%
+<p>When this assumption holds, the <strong>residuals</strong> of the observations should be distributed normally with an expected error <span class="math inline">\(E(\epsilon) = 0\)</span> and not be correlated with the fitted values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_linear_pred &lt;-<span class="st"> </span>sim_linear %&gt;%
 <span class="st">  </span><span class="kw">add_predictions</span>(sim_linear_mod) %&gt;%
-<span class="st">  </span><span class="kw">add_residuals</span>(sim_linear_mod) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(pred, resid)) +
+<span class="st">  </span><span class="kw">add_residuals</span>(sim_linear_mod)
+
+<span class="co"># distribution of residuals</span>
+<span class="kw">ggplot</span>(sim_linear_pred, <span class="kw">aes</span>(resid)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">y =</span> ..density..)) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> dnorm,
+                <span class="dt">args =</span> <span class="kw">list</span>(<span class="dt">mean =</span> <span class="kw">mean</span>(sim_linear_pred$resid),
+                            <span class="dt">sd =</span> <span class="kw">sd</span>(sim_linear_pred$resid))) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a linear relationship&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-linear-resid-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># predicted vs. residuals</span>
+<span class="kw">ggplot</span>(sim_linear_pred, <span class="kw">aes</span>(pred, resid)) +
 <span class="st">  </span><span class="kw">geom_point</span>() +
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a linear relationship&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
-<p><img src="persp007_nonlinear_files/figure-html/sim-linear-resid-1.png" width="672" /></p>
+<p><img src="persp007_nonlinear_files/figure-html/sim-linear-resid-2.png" width="672" /></p>
 <p>Inferences we draw from the model will be accurate and the accuracy of the model will be high.</p>
 <p>However if the relationship is not actually linear, then we should see a discernable pattern in the residuals plot. Now I simulate a data generating process:</p>
 <p><span class="math display">\[Y = 2 + 3X + 2X^2 + \epsilon\]</span></p>
@@ -427,16 +438,27 @@ sim_nonlinear_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a non-linear relationship&quot;</span>)</code></pre></div>
 <p><img src="persp007_nonlinear_files/figure-html/sim-nonlinear-1.png" width="672" /></p>
 <p>Now that the assumption no longer holds true, we see a distinct polynomial relationship between the predicted values <span class="math inline">\(\hat{y}_i\)</span> and the residuals <span class="math inline">\((y_i - \hat{y}_i)^2\)</span>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_nonlinear %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_nonlinear_pred &lt;-<span class="st"> </span>sim_nonlinear %&gt;%
 <span class="st">  </span><span class="kw">add_predictions</span>(sim_nonlinear_mod) %&gt;%
-<span class="st">  </span><span class="kw">add_residuals</span>(sim_nonlinear_mod) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(pred, resid)) +
+<span class="st">  </span><span class="kw">add_residuals</span>(sim_nonlinear_mod)
+
+<span class="co"># distribution of residuals</span>
+<span class="kw">ggplot</span>(sim_nonlinear_pred, <span class="kw">aes</span>(resid)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="kw">aes</span>(<span class="dt">y =</span> ..density..)) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> dnorm,
+                <span class="dt">args =</span> <span class="kw">list</span>(<span class="dt">mean =</span> <span class="kw">mean</span>(sim_nonlinear_pred$resid),
+                            <span class="dt">sd =</span> <span class="kw">sd</span>(sim_nonlinear_pred$resid))) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a non-linear relationship&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-nonlinear-resid-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># predicted vs. residuals</span>
+<span class="kw">ggplot</span>(sim_nonlinear_pred, <span class="kw">aes</span>(pred, resid)) +
 <span class="st">  </span><span class="kw">geom_point</span>() +
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a non-linear relationship&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
-<p><img src="persp007_nonlinear_files/figure-html/sim-nonlinear-resid-1.png" width="672" /></p>
+<p><img src="persp007_nonlinear_files/figure-html/sim-nonlinear-resid-2.png" width="672" /></p>
 <p>If we want to draw accurate inferences from the model, we need to relax the linearity assumption in some way.</p>
 </div>
 <div id="non-constant-variance-of-the-error-terms" class="section level3">
@@ -480,7 +502,7 @@ sim_hetero %&gt;%
        <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
 <p><img src="persp007_nonlinear_files/figure-html/sim-hetero-1.png" width="672" /></p>
-<p>We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response <span class="math inline">\(Y_i\)</span> as <span class="math inline">\(X\)</span> increases.</p>
+<p>We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response <span class="math inline">\(Y_i\)</span> as <span class="math inline">\(X_i\)</span> increases.</p>
 </div>
 </div>
 <div id="how-to-relax-the-assumption" class="section level2">

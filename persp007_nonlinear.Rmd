@@ -63,13 +63,24 @@ ggplot(sim_linear, aes(x, y)) +
   labs(title = "Linear model for a linear relationship")
 ```
 
-When this assumption holds, the **residuals** of the observations should not be correlated with the fitted values.
+When this assumption holds, the **residuals** of the observations should be distributed normally with an expected error $E(\epsilon) = 0$ and not be correlated with the fitted values.
 
 ```{r sim-linear-resid, dependson = "sim-linear"}
-sim_linear %>%
+sim_linear_pred <- sim_linear %>%
   add_predictions(sim_linear_mod) %>%
-  add_residuals(sim_linear_mod) %>%
-  ggplot(aes(pred, resid)) +
+  add_residuals(sim_linear_mod)
+
+# distribution of residuals
+ggplot(sim_linear_pred, aes(resid)) +
+  geom_histogram(aes(y = ..density..)) +
+  stat_function(fun = dnorm,
+                args = list(mean = mean(sim_linear_pred$resid),
+                            sd = sd(sim_linear_pred$resid))) +
+  labs(title = "Linear model for a linear relationship",
+       x = "Residuals")
+
+# predicted vs. residuals
+ggplot(sim_linear_pred, aes(pred, resid)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   labs(title = "Linear model for a linear relationship",
@@ -101,10 +112,21 @@ ggplot(sim_nonlinear, aes(x, y)) +
 Now that the assumption no longer holds true, we see a distinct polynomial relationship between the predicted values $\hat{y}_i$ and the residuals $(y_i - \hat{y}_i)^2$.
 
 ```{r sim-nonlinear-resid, dependson = "sim-nonlinear"}
-sim_nonlinear %>%
+sim_nonlinear_pred <- sim_nonlinear %>%
   add_predictions(sim_nonlinear_mod) %>%
-  add_residuals(sim_nonlinear_mod) %>%
-  ggplot(aes(pred, resid)) +
+  add_residuals(sim_nonlinear_mod)
+
+# distribution of residuals
+ggplot(sim_nonlinear_pred, aes(resid)) +
+  geom_histogram(aes(y = ..density..)) +
+  stat_function(fun = dnorm,
+                args = list(mean = mean(sim_nonlinear_pred$resid),
+                            sd = sd(sim_nonlinear_pred$resid))) +
+  labs(title = "Linear model for a non-linear relationship",
+       x = "Residuals")
+
+# predicted vs. residuals
+ggplot(sim_nonlinear_pred, aes(pred, resid)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   labs(title = "Linear model for a non-linear relationship",
@@ -168,7 +190,7 @@ sim_hetero %>%
        y = "Residuals")
 ```
 
-We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response $Y_i$ as $X$ increases.
+We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response $Y_i$ as $X_i$ increases.
 
 ## How to relax the assumption
 
