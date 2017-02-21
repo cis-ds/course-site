@@ -32,6 +32,7 @@ library(rcfss)
 library(titanic)
 library(knitr)
 library(splines)
+library(ISLR)
 
 set.seed(1234)
 options(digits = 3)
@@ -561,7 +562,7 @@ By increasing the number of knots, we will increase the flexibility of the resul
 
 ```{r sim-spline-smooth-5}
 data_frame(terms = c(1, 5, 10),
-           models = map(terms, ~ glm(y ~ bs(x, df = .), data = sim_piece)),
+           models = map(terms, ~ glm(y ~ bs(x, df = . + 3), data = sim_piece)),
            pred = map(models, ~ add_predictions(sim_piece, .))) %>%
   unnest(pred) %>%
   ggplot(aes(x, y)) +
@@ -573,14 +574,152 @@ data_frame(terms = c(1, 5, 10),
        color = "Knots")
 ```
 
-# Smoothing splines
+## Choosing the number and location of knots
 
+Typically knots are placed in a uniform fashion; that is, the cutpoints $c$ are determined by first identifying the number of knots $K$ for the model, then partitioning $X$ into uniform quantiles. So if we fit a cubic regression spline with 5 knots on the Biden feeling thermometer regression, it would divide `age` into 5 equal quantiles and estimate the cubic spline function for each quantile:
+
+```{r biden-spline}
+# estimate model
+biden_spline <- glm(biden ~ bs(age, df = 8), data = biden)
+
+# estimate the predicted values and confidence interval
+biden_spline_pred <- augment(biden_spline, newdata = data_grid(biden, age)) %>%
+  mutate(pred_low = .fitted - 1.96 * .se.fit,
+         pred_high = .fitted + 1.96 * .se.fit)
+
+# plot the curve
+ggplot(biden_spline_pred, aes(age)) +
+  # geom_point(data = biden, aes(age, biden), alpha = .05) +
+  geom_line(aes(y = .fitted)) +
+  geom_line(aes(y = pred_low), linetype = 2) +
+  geom_line(aes(y = pred_high), linetype = 2) +
+  geom_vline(xintercept = attr(bs(biden$age, df = 8), "knots"),
+             linetype = 2, color = "blue") +
+  labs(title = "Cubic spline regression of Biden feeling thermometer",
+       subtitle = "5 knots, with 95% confidence interval",
+       x = "Age",
+       y = "Predicted Biden thermometer rating")
+```
+
+But this still leaves unaddressed the matter of how many knots should we use? Or how many degrees should each polynomial be? While theory should still be our guide, we can also use [cross-validation](persp006_resampling.html) to determine the optimal number of knots and/or polynomial degrees.
+
+Let's apply this approach to the running `Wage` example in ISL.
+
+```{r wage}
+wage <- as_tibble(Wage)
+
+ggplot(wage, aes(age, wage)) +
+  geom_point(alpha = .2) +
+  labs(x = "Age",
+       y = "Wage")
+```
+
+```{r wage-knots}
+# function to simplify things
+wage_knots <- function(data, degree = 3, df = NULL){
+  # estimate the model on each fold
+  models <- map(data$train, ~ glm(wage ~ bs(age, df = df, degree = degree),
+                                data = .))
+  
+  # calculate mse for each test fold
+  models_mse <- map2_dbl(models, data$test, mse)
+  
+  return(mean(models_mse, na.rm = TRUE))
+}
+
+# fold the data
+wage_kfold <- crossv_kfold(wage, k = 10)
+
+# estimate mse for knots in 1:10
+(wage_degree_mse <- data_frame(knots = 1:10,
+                            mse = map_dbl(knots, ~ wage_knots(wage_kfold, df = .))))
+```
 
 # Local regression
 
+**Locally weighted scatterplot smoothing** (local regression, LOWESS, or LOESS) fits a separate non-linear function at each target point $x_0$ using only the nearby training observations. This method estimates a regression line based on localized subsets of the data, building up the global function $f$ point-by-point.
+
+## Algorithm for local linear regression
+
+1. Gather the fraction $s = \frac{k}{n}$ of training points whose $x_i$ are closest to $x_0$.
+1. Assign a weight $K_{i0} = K(x_i, x_0)$ to each point in the neighborhood, so that the point furthest from $x_0$ has a weight of 0, and the closest has the highest weight. All but these $k$ nearest neighbors get a weight of 0.
+1. Fit a **weighted least squares regression** of the $y_i$ on the $x_i$ using the aformentioned weights. Weighted least squares allows us to adjust the variance for each observation $\sigma_i^2$ by weights $w_i$. This is useful in correcting for heterscedasticity in OLS, and also allows us to estimate the local regression.
+1. The fitted value at $x_0$ is given by $\hat{f}(x_0) = \hat{\beta}_0 + \hat{\beta}_1 x_0$
+
+To obtain the local regression fit at a new value of $x_0$, we have to perform this same procedure again adjusting the weights for the new region of data.
+
+Here is an example of a local linear regression (highest degree equal to 1) on the `ethanol` dataset in the `lattice` package:
+
+```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
+library(lattice)
+
+mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+fit <- augment(mod)
+
+ggplot(fit, aes(E, NOx)) +
+  geom_point() +
+  geom_line(aes(y = .fitted), color = "red") +
+  labs(title = "Local linear regression",
+       x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+```
+
+The LOESS is built up point-by-point:
+
+```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+dat <- ethanol %>%
+  inflate(center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= .75) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+library(gganimate)
+
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_line(aes(y = .fitted), data = fit, color = "red") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+gg_animate(p)
+```
+
+One important argument you can control with LOESS is the **span**, or how smooth the LOESS function will become. A larger span will result in a smoother curve, but may not be as accurate. A smaller span will be more local and wiggly, but improve our fit to the training data.
+
+```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
+spans <- c(.25, .5, .75, 1)
+
+# create loess fits, one for each span
+fits <- data_frame(span = spans) %>%
+  group_by(span) %>%
+  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
+
+# calculate weights to reproduce this with local weighted fits
+dat <- ethanol %>%
+  inflate(span = spans, center = unique(ethanol$E)) %>%
+  mutate(dist = abs(E - center)) %>%
+  filter(rank(dist) / n() <= span) %>%
+  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+
+# create faceted plot with changing points, local linear fits, and vertical lines,
+# and constant hollow points and loess fit
+p <- ggplot(dat, aes(E, NOx)) +
+  geom_point(aes(alpha = weight, frame = center)) +
+  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
+  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
+  geom_point(shape = 1, data = ethanol, alpha = .25) +
+  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
+  facet_wrap(~span) +
+  ylim(0, 5) +
+  ggtitle("x0 = ") +
+  labs(x = "Equivalence ratio",
+       y = "Concentration of nitrogen oxides in micrograms/J")
+
+gg_animate(p)
+```
 
 # Generalized additive models
-
 
 
 

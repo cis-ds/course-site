@@ -377,6 +377,7 @@ div.tocify {
 <span class="kw">library</span>(titanic)
 <span class="kw">library</span>(knitr)
 <span class="kw">library</span>(splines)
+<span class="kw">library</span>(ISLR)
 
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
 <span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
@@ -917,7 +918,7 @@ sim_piece %&gt;%
 <p><img src="persp007_nonlinear_files/figure-html/sim-spline-smooth-1.png" width="672" /></p>
 <p>By increasing the number of knots, we will increase the flexibility of the resulting spline:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">10</span>),
-           <span class="dt">models =</span> <span class="kw">map</span>(terms, ~<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">bs</span>(x, <span class="dt">df =</span> .), <span class="dt">data =</span> sim_piece)),
+           <span class="dt">models =</span> <span class="kw">map</span>(terms, ~<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span><span class="kw">bs</span>(x, <span class="dt">df =</span> . +<span class="st"> </span><span class="dv">3</span>), <span class="dt">data =</span> sim_piece)),
            <span class="dt">pred =</span> <span class="kw">map</span>(models, ~<span class="st"> </span><span class="kw">add_predictions</span>(sim_piece, .))) %&gt;%
 <span class="st">  </span><span class="kw">unnest</span>(pred) %&gt;%
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
@@ -929,15 +930,111 @@ sim_piece %&gt;%
        <span class="dt">color =</span> <span class="st">&quot;Knots&quot;</span>)</code></pre></div>
 <p><img src="persp007_nonlinear_files/figure-html/sim-spline-smooth-5-1.png" width="672" /></p>
 </div>
+<div id="choosing-the-number-and-location-of-knots" class="section level2">
+<h2>Choosing the number and location of knots</h2>
+<p>Typically knots are placed in a uniform fashion; that is, the cutpoints <span class="math inline">\(c\)</span> are determined by first identifying the number of knots <span class="math inline">\(K\)</span> for the model, then partitioning <span class="math inline">\(X\)</span> into uniform quantiles. So if we fit a cubic regression spline with 5 knots on the Biden feeling thermometer regression, it would divide <code>age</code> into 5 equal quantiles and estimate the cubic spline function for each quantile:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
+biden_spline &lt;-<span class="st"> </span><span class="kw">glm</span>(biden ~<span class="st"> </span><span class="kw">bs</span>(age, <span class="dt">df =</span> <span class="dv">8</span>), <span class="dt">data =</span> biden)
+
+<span class="co"># estimate the predicted values and confidence interval</span>
+biden_spline_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(biden_spline, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(biden, age)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred_low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+         <span class="dt">pred_high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
+
+<span class="co"># plot the curve</span>
+<span class="kw">ggplot</span>(biden_spline_pred, <span class="kw">aes</span>(age)) +
+<span class="st">  </span><span class="co"># geom_point(data = biden, aes(age, biden), alpha = .05) +</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw">attr</span>(<span class="kw">bs</span>(biden$age, <span class="dt">df =</span> <span class="dv">8</span>), <span class="st">&quot;knots&quot;</span>),
+             <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Cubic spline regression of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;5 knots, with 95% confidence interval&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted Biden thermometer rating&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-spline-1.png" width="672" /></p>
+<p>But this still leaves unaddressed the matter of how many knots should we use? Or how many degrees should each polynomial be? While theory should still be our guide, we can also use <a href="persp006_resampling.html">cross-validation</a> to determine the optimal number of knots and/or polynomial degrees.</p>
+<p>Let’s apply this approach to the running <code>Wage</code> example in ISL.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wage &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(Wage)
+
+<span class="kw">ggplot</span>(wage, <span class="kw">aes</span>(age, wage)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Wage&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/wage-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># function to simplify things</span>
+wage_knots &lt;-<span class="st"> </span>function(data, <span class="dt">degree =</span> <span class="dv">3</span>, <span class="dt">df =</span> <span class="ot">NULL</span>){
+  <span class="co"># estimate the model on each fold</span>
+  models &lt;-<span class="st"> </span><span class="kw">map</span>(data$train, ~<span class="st"> </span><span class="kw">glm</span>(wage ~<span class="st"> </span><span class="kw">bs</span>(age, <span class="dt">df =</span> df, <span class="dt">degree =</span> degree),
+                                <span class="dt">data =</span> .))
+  
+  <span class="co"># calculate mse for each test fold</span>
+  models_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(models, data$test, mse)
+  
+  <span class="kw">return</span>(<span class="kw">mean</span>(models_mse, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+}
+
+<span class="co"># fold the data</span>
+wage_kfold &lt;-<span class="st"> </span><span class="kw">crossv_kfold</span>(wage, <span class="dt">k =</span> <span class="dv">10</span>)
+
+<span class="co"># estimate mse for knots in 1:10</span>
+(wage_degree_mse &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">knots =</span> <span class="dv">1</span>:<span class="dv">10</span>,
+                            <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knots, ~<span class="st"> </span><span class="kw">wage_knots</span>(wage_kfold, <span class="dt">df =</span> .))))</code></pre></div>
+<pre><code>## # A tibble: 10 × 2
+##    knots   mse
+##    &lt;int&gt; &lt;dbl&gt;
+## 1      1  1595
+## 2      2  1595
+## 3      3  1595
+## 4      4  1595
+## 5      5  1593
+## 6      6  1594
+## 7      7  1595
+## 8      8  1595
+## 9      9  1594
+## 10    10  1594</code></pre>
 </div>
-<div id="smoothing-splines" class="section level1">
-<h1>Smoothing splines</h1>
 </div>
 <div id="local-regression" class="section level1">
 <h1>Local regression</h1>
+<p><strong>Locally weighted scatterplot smoothing</strong> (local regression, LOWESS, or LOESS) fits a separate non-linear function at each target point <span class="math inline">\(x_0\)</span> using only the nearby training observations. This method estimates a regression line based on localized subsets of the data, building up the global function <span class="math inline">\(f\)</span> point-by-point.</p>
+<div id="algorithm-for-local-linear-regression" class="section level2">
+<h2>Algorithm for local linear regression</h2>
+<ol style="list-style-type: decimal">
+<li>Gather the fraction <span class="math inline">\(s = \frac{k}{n}\)</span> of training points whose <span class="math inline">\(x_i\)</span> are closest to <span class="math inline">\(x_0\)</span>.</li>
+<li>Assign a weight <span class="math inline">\(K_{i0} = K(x_i, x_0)\)</span> to each point in the neighborhood, so that the point furthest from <span class="math inline">\(x_0\)</span> has a weight of 0, and the closest has the highest weight. All but these <span class="math inline">\(k\)</span> nearest neighbors get a weight of 0.</li>
+<li>Fit a <strong>weighted least squares regression</strong> of the <span class="math inline">\(y_i\)</span> on the <span class="math inline">\(x_i\)</span> using the aformentioned weights. Weighted least squares allows us to adjust the variance for each observation <span class="math inline">\(\sigma_i^2\)</span> by weights <span class="math inline">\(w_i\)</span>. This is useful in correcting for heterscedasticity in OLS, and also allows us to estimate the local regression.</li>
+<li>The fitted value at <span class="math inline">\(x_0\)</span> is given by <span class="math inline">\(\hat{f}(x_0) = \hat{\beta}_0 + \hat{\beta}_1 x_0\)</span></li>
+</ol>
+<p>To obtain the local regression fit at a new value of <span class="math inline">\(x_0\)</span>, we have to perform this same procedure again adjusting the weights for the new region of data.</p>
+<p>Here is an example of a local linear regression (highest degree equal to 1) on the <code>ethanol</code> dataset in the <code>lattice</code> package:</p>
+<p><img src="persp007_nonlinear_files/figure-html/loess-1.png" width="672" /></p>
+<p>The LOESS is built up point-by-point:</p>
+<video width="672"  controls loop>
+<source src="persp007_nonlinear_files/figure-html/loess_buildup-.webm" />
+<p>
+video of chunk loess_buildup
+</p>
+</video>
+<p>One important argument you can control with LOESS is the <strong>span</strong>, or how smooth the LOESS function will become. A larger span will result in a smoother curve, but may not be as accurate. A smaller span will be more local and wiggly, but improve our fit to the training data.</p>
+<video width="672"  controls loop>
+<source src="persp007_nonlinear_files/figure-html/loess_span-.webm" />
+<p>
+video of chunk loess_span
+</p>
+</video>
+</div>
 </div>
 <div id="generalized-additive-models" class="section level1">
 <h1>Generalized additive models</h1>
+</div>
+<div id="to-do" class="section level1">
+<h1>To do</h1>
+<ul>
+<li>Finish the regression splines demo</li>
+<li></li>
+</ul>
 </div>
 <div id="acknowledgements" class="section level1 toc-ignore">
 <h1>Acknowledgements</h1>
@@ -958,57 +1055,65 @@ sim_piece %&gt;%
 ##  tz       America/Chicago             
 ##  date     2017-02-21                  
 ## 
-##  package    * version date       source        
-##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
-##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
-##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
-##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
-##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
-##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
-##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
-##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
-##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
-##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
-##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
-##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
-##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
-##  knitr      * 1.15.1  2016-11-22 cran (@1.15.1)
-##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
-##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
-##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
-##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
-##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
-##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
-##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
-##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
-##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
-##  rcfss      * 0.1.3   2017-02-16 local         
-##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
-##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
-##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
-##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
-##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
-##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
-##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
-##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
-##  tibble     * 1.2     2016-08-26 cran (@1.2)   
-##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
-##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
-##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
-##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
-##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version date       source                           
+##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)                   
+##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)                   
+##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)                   
+##  codetools      0.2-15  2016-10-05 CRAN (R 3.3.2)                   
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)                   
+##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)                   
+##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)                   
+##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)                   
+##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)                   
+##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)                   
+##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)                   
+##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)                   
+##  gganimate    * 0.1     2016-11-11 Github (dgrtwo/gganimate@26ec501)
+##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)                   
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)                   
+##  haven          1.0.0   2016-09-23 cran (@1.0.0)                    
+##  hms            0.3     2016-11-22 CRAN (R 3.3.2)                   
+##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)                   
+##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)                   
+##  ISLR         * 1.0     2013-06-11 CRAN (R 3.3.0)                   
+##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)                   
+##  knitr        * 1.15.1  2016-11-22 cran (@1.15.1)                   
+##  labeling       0.3     2014-08-23 CRAN (R 3.3.0)                   
+##  lattice      * 0.20-34 2016-09-06 CRAN (R 3.3.2)                   
+##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)                   
+##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)                   
+##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)                   
+##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)                   
+##  MatrixModels * 0.4-1   2015-08-22 CRAN (R 3.3.0)                   
+##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)                   
+##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)                   
+##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)                   
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)                   
+##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)                   
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)                   
+##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)                   
+##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)                   
+##  quantreg     * 5.29    2016-09-04 CRAN (R 3.3.0)                   
+##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)                   
+##  rcfss        * 0.1.3   2017-02-16 local                            
+##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)                   
+##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)                   
+##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)                   
+##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)                   
+##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)                   
+##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)                   
+##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)                   
+##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)                   
+##  SparseM      * 1.74    2016-11-10 CRAN (R 3.3.2)                   
+##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)                   
+##  stringr        1.1.0   2016-08-19 cran (@1.1.0)                    
+##  tibble       * 1.2     2016-08-26 cran (@1.2)                      
+##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)                   
+##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)                   
+##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)                   
+##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)                   
+##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)                   
+##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
