@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: moving beyond linearity</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: moving beyond linearity</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Review polynomial regression</li>
+<li>Explain why and how to use log transformations of independent and dependent variables</li>
+<li>Introduce step functions</li>
+<li>Demonstrate regression and smoothing splines</li>
+<li>Review local regression</li>
+<li>Explain generalized additive models for regression and classification</li>
+<li>Practice interpreting estimated parameters in multiple variable models</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(rcfss)
+<span class="kw">library</span>(titanic)
+<span class="kw">library</span>(knitr)
+
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="linearity-in-linear-models" class="section level1">
+<h1>Linearity in linear models</h1>
+<p>Linear models are a commonly used statistical learning method because they are intuitive and easy to interpret. The drawback is that in order to create that intuitiveness and interpretability, linear models also make strong assumptions of a <strong>linear relationship</strong> between the predictor(s) and response variable. It is an approximation, and in the real-world most relationships are not strictly linear. We could turn to more advanced statistical learning methods such as decision trees and support vector machines which do not impose a linear assumption, however conducting inference using those methods is more difficult. Instead, we would like to relax the linearity assumption while still maintaining the interpretability of linear models.</p>
+<p>We have already seen how to do this by adding <a href="persp003_linear_regression.html#non-linear_relationships">quadratic</a> and <a href="persp004_logistic_regression.html#interactive_terms">interactive</a> terms. Here we will review adding quadratic terms (also called <strong>polynomial regression</strong>) and explore alternative approaches to introducing non-linearity in both regression and classification problems.</p>
+</div>
+<div id="polynomial-regressions" class="section level1">
+<h1>Polynomial regressions</h1>
+<p><strong>Polynomial regression</strong> is a technique we have already discussed at length. Rather than fitting the standard linear model:</p>
+<p><span class="math display">\[y_i = \beta_0 + \beta_{1}x_{i} + \epsilon_{i}\]</span></p>
+<p>we instead fit a polynomial function:</p>
+<p><span class="math display">\[y_i = \beta_0 + \beta_{1}x_{i} + \beta_{2}x_i^2 + \beta_{3}x_i^3 + \dots + \beta_{d}x_i^d + \epsilon_i\]</span></p>
+<p>As <span class="math inline">\(d\)</span> increases, the linear model’s flexibility increases. We still use ordinary least squares (OLS) regression (or a Normal GLM) to estimate the parameters, which are also interpreted in the same way.</p>
+<div id="biden-and-age" class="section level2">
+<h2>Biden and age</h2>
+<p>Let’s take a look at the <a href="https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS5/ps5-linear-regression.md">Joe Biden feeling thermometer data</a> again and estimate a polynomial regression of the relationship between age and attitudes towards Biden:</p>
+<p><span class="math display">\[\text{Biden}_i = \beta_0 + \beta_1 \text{Age} + \beta_2 \text{Age}^2 + \beta_3 \text{Age}^3 + \beta_4 \text{Age}^4\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get data</span>
+biden &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/biden.csv&quot;</span>)
+
+<span class="co"># estimate model</span>
+biden_age &lt;-<span class="st"> </span><span class="kw">glm</span>(biden ~<span class="st"> </span><span class="kw">I</span>(age^<span class="dv">1</span>) +<span class="st"> </span><span class="kw">I</span>(age^<span class="dv">2</span>) +<span class="st"> </span><span class="kw">I</span>(age^<span class="dv">3</span>) +<span class="st"> </span><span class="kw">I</span>(age^<span class="dv">4</span>), <span class="dt">data =</span> biden)
+<span class="kw">tidy</span>(biden_age)</code></pre></div>
+<pre><code>##          term  estimate std.error statistic p.value
+## 1 (Intercept)  3.75e+01  2.49e+01      1.50   0.133
+## 2    I(age^1)  2.37e+00  2.28e+00      1.04   0.299
+## 3    I(age^2) -8.33e-02  7.30e-02     -1.14   0.254
+## 4    I(age^3)  1.22e-03  9.76e-04      1.25   0.211
+## 5    I(age^4) -6.22e-06  4.64e-06     -1.34   0.180</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate the predicted values and confidence interval</span>
+biden_pred &lt;-<span class="st"> </span>biden %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(age)
+
+biden_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(biden_age, <span class="dt">newdata =</span> biden_pred) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred_low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+         <span class="dt">pred_high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
+
+<span class="co"># plot the curve</span>
+<span class="kw">ggplot</span>(biden_pred, <span class="kw">aes</span>(age)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Polynomial regression of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;With 95% confidence interval&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted Biden thermometer rating&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-age-1.png" width="672" /></p>
+<p>When interpreting the model, we don’t look to any individual parameters since they are all based on the same variable. Instead we fit the function to the full range of potential values for age (hence the use of <code>data_grid()</code>) and examine the relationship.</p>
+<p>In the figure above I graphed the predicted values with 95% confidence intervals. In the case of ordinary linear regression, this is easy to estimate. The <strong>standard error</strong> is a measure of variance for the estimated parameter and defined by the square root of the diagonal of the variance-covariance matrix:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vcov</span>(biden_age) %&gt;%
+<span class="st">  </span><span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Variance-covariance matrix of Biden polynomial regression&quot;</span>,
+        <span class="dt">digits =</span> <span class="dv">5</span>)</code></pre></div>
+<table>
+<caption>Variance-covariance matrix of Biden polynomial regression</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">(Intercept)</th>
+<th align="right">I(age^1)</th>
+<th align="right">I(age^2)</th>
+<th align="right">I(age^3)</th>
+<th align="right">I(age^4)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>(Intercept)</td>
+<td align="right">620.00316</td>
+<td align="right">-56.31558</td>
+<td align="right">1.76432</td>
+<td align="right">-0.02291</td>
+<td align="right">0.00011</td>
+</tr>
+<tr class="even">
+<td>I(age^1)</td>
+<td align="right">-56.31558</td>
+<td align="right">5.20765</td>
+<td align="right">-0.16556</td>
+<td align="right">0.00218</td>
+<td align="right">-0.00001</td>
+</tr>
+<tr class="odd">
+<td>I(age^2)</td>
+<td align="right">1.76432</td>
+<td align="right">-0.16556</td>
+<td align="right">0.00533</td>
+<td align="right">-0.00007</td>
+<td align="right">0.00000</td>
+</tr>
+<tr class="even">
+<td>I(age^3)</td>
+<td align="right">-0.02291</td>
+<td align="right">0.00218</td>
+<td align="right">-0.00007</td>
+<td align="right">0.00000</td>
+<td align="right">0.00000</td>
+</tr>
+<tr class="odd">
+<td>I(age^4)</td>
+<td align="right">0.00011</td>
+<td align="right">-0.00001</td>
+<td align="right">0.00000</td>
+<td align="right">0.00000</td>
+<td align="right">0.00000</td>
+</tr>
+</tbody>
+</table>
+<p>Confidence intervals are typically plus/minus 1.96 times the standard error for the parameter. However for polynomial regression, this is more complicated. Suppose we compute the fit at a particular value of age, <span class="math inline">\(x_0\)</span>:</p>
+<p><span class="math display">\[\hat{f}(x_0) = \hat{\beta}_0 + \hat{\beta}_1 x_{0} + \hat{\beta}_2 x_{0}^2 + \hat{\beta}_3 x_{0}^3 + \hat{\beta}_4 x_{0}^4\]</span></p>
+<p>What is the variance of the fit for this point, i.e. <span class="math inline">\(\text{Var}(\hat{f}(x_o))\)</span>. The variance is now a function not only of <span class="math inline">\(\hat{\beta}_1\)</span>, but the variance of each of the estimated parameters <span class="math inline">\(\hat{\beta}_j\)</span> as well as the covariances between the pairs of estimated parameters (i.e. the off-diagonal elements). We use all of this information to estimate the <strong>pointwise</strong> standard error of <span class="math inline">\(\hat{f}(x_0)\)</span>, which is the square-root of the variance <span class="math inline">\(\text{Var}(\hat{f}(x_o))\)</span>.</p>
+<p>Likewise, we can use polynomial regression for classification problems as well. Consider the <a href="https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS6/ps6-glm.md">mental health and voting data</a>. Let’s estimate a logistic regression model of the relationship between mental health and voter turnout:</p>
+<p><span class="math display">\[\Pr(\text{Voter turnout} = \text{Yes} | \text{mhealth}) = \frac{\exp[\beta_0 + \beta_1 \text{mhealth} + \beta_2 \text{mhealth}^2 + \beta_3 \text{mhealth}^3 + \beta_4 \text{mhealth}^4]}{1 + \exp[\beta_0 + \beta_1 \text{mhealth} + \beta_2 \text{mhealth}^2 + \beta_3 \text{mhealth}^3 + \beta_4 \text{mhealth}^4]}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># load data</span>
+mh &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/mental_health.csv&quot;</span>)
+
+<span class="co"># estimate model</span>
+mh_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 ~<span class="st"> </span><span class="kw">poly</span>(mhealth_sum, <span class="dv">4</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> mh,
+              <span class="dt">family =</span> binomial)
+<span class="kw">tidy</span>(mh_mod)</code></pre></div>
+<pre><code>##                                term  estimate std.error statistic  p.value
+## 1                       (Intercept)  1.084465  0.119372      9.08 1.04e-19
+## 2 poly(mhealth_sum, 4, raw = TRUE)1  0.244677  0.160774      1.52 1.28e-01
+## 3 poly(mhealth_sum, 4, raw = TRUE)2 -0.169696  0.057135     -2.97 2.98e-03
+## 4 poly(mhealth_sum, 4, raw = TRUE)3  0.019607  0.006729      2.91 3.57e-03
+## 5 poly(mhealth_sum, 4, raw = TRUE)4 -0.000637  0.000245     -2.60 9.20e-03</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate the predicted values and confidence interval</span>
+mh_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(mh_mod, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(mh, mhealth_sum)) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">pred =</span> .fitted) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred_low =</span> pred -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+         <span class="dt">pred_high =</span> pred +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit) 
+
+<span class="co"># plot the log-odds curve</span>
+<span class="kw">ggplot</span>(mh_pred, <span class="kw">aes</span>(mhealth_sum, pred, <span class="dt">ymin =</span> pred_low, <span class="dt">ymax =</span> pred_high)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_errorbar</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Polynomial regression of voter turnout&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;With 95% confidence interval&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Mental health score&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted log-odds of voter turnout&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/mhealth-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the probability curve</span>
+mh_pred %&gt;%
+<span class="st">  </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(logit2prob), <span class="kw">starts_with</span>(<span class="st">&quot;pred&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(mhealth_sum, pred, <span class="dt">ymin =</span> pred_low, <span class="dt">ymax =</span> pred_high)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_errorbar</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Polynomial regression of voter turnout&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;With 95% confidence interval&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Mental health score&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability of voter turnout&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/mhealth-2.png" width="672" /></p>
+</div>
+</div>
+<div id="log-transformations" class="section level1">
+<h1>Log transformations</h1>
+</div>
+<div id="step-functions" class="section level1">
+<h1>Step functions</h1>
+</div>
+<div id="regression-splines" class="section level1">
+<h1>Regression splines</h1>
+</div>
+<div id="smoothing-splines" class="section level1">
+<h1>Smoothing splines</h1>
+</div>
+<div id="local-regression" class="section level1">
+<h1>Local regression</h1>
+</div>
+<div id="generalized-additive-models" class="section level1">
+<h1>Generalized additive models</h1>
+</div>
+<div id="acknowledgements" class="section level1 toc-ignore">
+<h1>Acknowledgements</h1>
+<ul>
+<li>Bootstrap standard error of the mean example derived from <a href="http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html">A gentle introduction to bootstrapping</a>.</li>
+<li>“Why use the bootstrap?” reproduced from <a href="http://stats.stackexchange.com/a/26093">Explaining to laypeople why bootstrapping works - Stack Overflow</a>, licensed under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0 Creative Commons License</a>.</li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-02-21                  
+## 
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  codetools    0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
+##  highr        0.6     2016-05-09 CRAN (R 3.3.0)
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr      * 1.15.1  2016-11-22 cran (@1.15.1)
+##  labeling     0.3     2014-08-23 CRAN (R 3.3.0)
+##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss      * 0.1.3   2017-02-16 local         
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,179 @@
+---
+title: "Statistical learning: moving beyond linearity"
+author: "MACS 30100 - Perspectives on Computational Modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Review polynomial regression
+* Explain why and how to use log transformations of independent and dependent variables
+* Introduce step functions
+* Demonstrate regression and smoothing splines
+* Review local regression
+* Explain generalized additive models for regression and classification
+* Practice interpreting estimated parameters in multiple variable models
+
+```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
+library(tidyverse)
+library(modelr)
+library(broom)
+library(rcfss)
+library(titanic)
+library(knitr)
+
+set.seed(1234)
+options(digits = 3)
+theme_set(theme_minimal())
+```
+
+# Linearity in linear models
+
+Linear models are a commonly used statistical learning method because they are intuitive and easy to interpret. The drawback is that in order to create that intuitiveness and interpretability, linear models also make strong assumptions of a **linear relationship** between the predictor(s) and response variable. It is an approximation, and in the real-world most relationships are not strictly linear. We could turn to more advanced statistical learning methods such as decision trees and support vector machines which do not impose a linear assumption, however conducting inference using those methods is more difficult. Instead, we would like to relax the linearity assumption while still maintaining the interpretability of linear models.
+
+We have already seen how to do this by adding [quadratic](persp003_linear_regression.html#non-linear_relationships) and [interactive](persp004_logistic_regression.html#interactive_terms) terms. Here we will review adding quadratic terms (also called **polynomial regression**) and explore alternative approaches to introducing non-linearity in both regression and classification problems.
+
+# Polynomial regressions
+
+**Polynomial regression** is a technique we have already discussed at length. Rather than fitting the standard linear model:
+
+$$y_i = \beta_0 + \beta_{1}x_{i} + \epsilon_{i}$$
+
+we instead fit a polynomial function:
+
+$$y_i = \beta_0 + \beta_{1}x_{i} + \beta_{2}x_i^2 + \beta_{3}x_i^3 + \dots + \beta_{d}x_i^d + \epsilon_i$$
+
+As $d$ increases, the linear model's flexibility increases. We still use ordinary least squares (OLS) regression (or a Normal GLM) to estimate the parameters, which are also interpreted in the same way.
+
+## Biden and age
+
+Let's take a look at the [Joe Biden feeling thermometer data](https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS5/ps5-linear-regression.md) again and estimate a polynomial regression of the relationship between age and attitudes towards Biden:
+
+$$\text{Biden}_i = \beta_0 + \beta_1 \text{Age} + \beta_2 \text{Age}^2 + \beta_3 \text{Age}^3 + \beta_4 \text{Age}^4$$
+
+```{r biden-age}
+# get data
+biden <- read_csv("data/biden.csv")
+
+# estimate model
+biden_age <- glm(biden ~ I(age^1) + I(age^2) + I(age^3) + I(age^4), data = biden)
+tidy(biden_age)
+
+# estimate the predicted values and confidence interval
+biden_pred <- biden %>%
+  data_grid(age)
+
+biden_pred <- augment(biden_age, newdata = biden_pred) %>%
+  mutate(pred_low = .fitted - 1.96 * .se.fit,
+         pred_high = .fitted + 1.96 * .se.fit)
+
+# plot the curve
+ggplot(biden_pred, aes(age)) +
+  geom_line(aes(y = .fitted)) +
+  geom_line(aes(y = pred_low), linetype = 2) +
+  geom_line(aes(y = pred_high), linetype = 2) +
+  labs(title = "Polynomial regression of Biden feeling thermometer",
+       subtitle = "With 95% confidence interval",
+       x = "Age",
+       y = "Predicted Biden thermometer rating")
+```
+
+When interpreting the model, we don't look to any individual parameters since they are all based on the same variable. Instead we fit the function to the full range of potential values for age (hence the use of `data_grid()`) and examine the relationship.
+
+In the figure above I graphed the predicted values with 95% confidence intervals. In the case of ordinary linear regression, this is easy to estimate. The **standard error** is a measure of variance for the estimated parameter and defined by the square root of the diagonal of the variance-covariance matrix:
+
+```{r biden-matrix}
+vcov(biden_age) %>%
+  kable(caption = "Variance-covariance matrix of Biden polynomial regression",
+        digits = 5)
+```
+
+Confidence intervals are typically plus/minus 1.96 times the standard error for the parameter. However for polynomial regression, this is more complicated. Suppose we compute the fit at a particular value of age, $x_0$:
+
+$$\hat{f}(x_0) = \hat{\beta}_0 + \hat{\beta}_1 x_{0} + \hat{\beta}_2 x_{0}^2 + \hat{\beta}_3 x_{0}^3 + \hat{\beta}_4 x_{0}^4$$
+
+What is the variance of the fit for this point, i.e. $\text{Var}(\hat{f}(x_o))$. The variance is now a function not only of $\hat{\beta}_1$, but the variance of each of the estimated parameters $\hat{\beta}_j$ as well as the covariances between the pairs of estimated parameters (i.e. the off-diagonal elements). We use all of this information to estimate the **pointwise** standard error of $\hat{f}(x_0)$, which is the square-root of the variance $\text{Var}(\hat{f}(x_o))$.
+
+Likewise, we can use polynomial regression for classification problems as well. Consider the [mental health and voting data](https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS6/ps6-glm.md). Let's estimate a logistic regression model of the relationship between mental health and voter turnout:
+
+$$\Pr(\text{Voter turnout} = \text{Yes} | \text{mhealth}) = \frac{\exp[\beta_0 + \beta_1 \text{mhealth} + \beta_2 \text{mhealth}^2 + \beta_3 \text{mhealth}^3 + \beta_4 \text{mhealth}^4]}{1 + \exp[\beta_0 + \beta_1 \text{mhealth} + \beta_2 \text{mhealth}^2 + \beta_3 \text{mhealth}^3 + \beta_4 \text{mhealth}^4]}$$
+
+```{r mhealth}
+# load data
+mh <- read_csv("data/mental_health.csv")
+
+# estimate model
+mh_mod <- glm(vote96 ~ poly(mhealth_sum, 4, raw = TRUE), data = mh,
+              family = binomial)
+tidy(mh_mod)
+
+# estimate the predicted values and confidence interval
+mh_pred <- augment(mh_mod, newdata = data_grid(mh, mhealth_sum)) %>%
+  rename(pred = .fitted) %>%
+  mutate(pred_low = pred - 1.96 * .se.fit,
+         pred_high = pred + 1.96 * .se.fit) 
+
+# plot the log-odds curve
+ggplot(mh_pred, aes(mhealth_sum, pred, ymin = pred_low, ymax = pred_high)) +
+  geom_point() +
+  geom_errorbar() +
+  labs(title = "Polynomial regression of voter turnout",
+       subtitle = "With 95% confidence interval",
+       x = "Mental health score",
+       y = "Predicted log-odds of voter turnout")
+
+# plot the probability curve
+mh_pred %>%
+  mutate_each(funs(logit2prob), starts_with("pred")) %>%
+  ggplot(aes(mhealth_sum, pred, ymin = pred_low, ymax = pred_high)) +
+  geom_point() +
+  geom_errorbar() +
+  labs(title = "Polynomial regression of voter turnout",
+       subtitle = "With 95% confidence interval",
+       x = "Mental health score",
+       y = "Predicted probability of voter turnout")
+```
+
+# Log transformations
+
+
+# Step functions
+
+
+# Regression splines
+
+
+# Smoothing splines
+
+
+# Local regression
+
+
+# Generalized additive models
+
+
+
+
+# Acknowledgements {.toc-ignore}
+
+* Bootstrap standard error of the mean example derived from [A gentle introduction to bootstrapping
+](http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html).
+* "Why use the bootstrap?" reproduced from [Explaining to laypeople why bootstrapping works - Stack Overflow](http://stats.stackexchange.com/a/26093), licensed under the [CC BY-SA 3.0 Creative Commons License](https://creativecommons.org/licenses/by-sa/3.0/).
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
