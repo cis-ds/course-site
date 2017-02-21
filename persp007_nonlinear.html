@@ -661,15 +661,13 @@ biden_age &lt;-<span class="st"> </span><span class="kw">glm</span>(biden ~<span
 ## 4    I(age^3)  1.22e-03  9.76e-04      1.25   0.211
 ## 5    I(age^4) -6.22e-06  4.64e-06     -1.34   0.180</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate the predicted values and confidence interval</span>
-biden_pred &lt;-<span class="st"> </span>biden %&gt;%
-<span class="st">  </span><span class="kw">data_grid</span>(age)
-
-biden_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(biden_age, <span class="dt">newdata =</span> biden_pred) %&gt;%
+biden_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(biden_age, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(biden, age)) %&gt;%
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred_low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
          <span class="dt">pred_high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
 
 <span class="co"># plot the curve</span>
 <span class="kw">ggplot</span>(biden_pred, <span class="kw">aes</span>(age)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> biden, <span class="kw">aes</span>(age, biden), <span class="dt">alpha =</span> .<span class="dv">05</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted)) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
 <span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
@@ -789,14 +787,44 @@ mh_pred %&gt;%
 </div>
 </div>
 </div>
-<div id="log-transformations-1" class="section level1">
-<h1>Log transformations</h1>
-</div>
 <div id="step-functions" class="section level1">
 <h1>Step functions</h1>
+<p>Monotonic transformations impose a <strong>global</strong> structure on the non-linear function of <span class="math inline">\(X\)</span>. That is, the function applies across the entire range of <span class="math inline">\(X\)</span>. Instead, we may believe that the non-linear behavior of <span class="math inline">\(X\)</span> is instead a <strong>local</strong> structure that varies across the range of <span class="math inline">\(X\)</span>. We can use <strong>step functions</strong> to avoid imposing a global structure. In step functions, you split the predictor <span class="math inline">\(X\)</span> into <strong>bins</strong> and fit a different constant to each bin. This converts a continuous variable into an <strong>ordered categorical variable</strong>.</p>
+<p>We create <span class="math inline">\(c_1, c_2, \dots, c_K\)</span> cutpoints in the range of <span class="math inline">\(X\)</span>, and construct <span class="math inline">\(K + 1\)</span> new variables <span class="math inline">\(C_1(X), C_2(X), \dots, C_K(X)\)</span>. Each of the new variables is an <strong>indicator</strong> or <strong>dummy</strong> variable that returns a 1 if <span class="math inline">\(x_i\)</span> falls within the range of the cutpoints and 0 otherwise. For any given <span class="math inline">\(x_i\)</span>, the sum of these variables will be precisely <span class="math inline">\(1\)</span>. We can then fit the linear regression model to the new indicator variables as predictors:</p>
+<p><span class="math display">\[y_i = \beta_0 + \beta_1 C_1 (x_i) + \beta_2 C_2 (x_i) + \dots + \beta_K C_K (x_i) + \epsilon_i\]</span></p>
+<div id="biden-and-age-1" class="section level2">
+<h2>Biden and age</h2>
+<p>We can fit a piecewise constant regression to the Biden data, dividing age into 5 bins.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
+biden_step &lt;-<span class="st"> </span><span class="kw">glm</span>(biden ~<span class="st"> </span><span class="kw">cut</span>(age, <span class="dv">5</span>), <span class="dt">data =</span> biden)
+<span class="kw">tidy</span>(biden_step)</code></pre></div>
+<pre><code>##                   term estimate std.error statistic p.value
+## 1          (Intercept)    61.68      1.11    55.369   0.000
+## 2   cut(age, 5)(33,48]    -1.28      1.52    -0.841   0.400
+## 3   cut(age, 5)(48,63]     1.32      1.52     0.869   0.385
+## 4   cut(age, 5)(63,78]     2.22      1.82     1.221   0.222
+## 5 cut(age, 5)(78,93.1]     3.59      2.91     1.232   0.218</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate the predicted values and confidence interval</span>
+biden_step_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(biden_step, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(biden, age)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred_low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+         <span class="dt">pred_high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
+
+<span class="co"># plot the curve</span>
+<span class="kw">ggplot</span>(biden_step_pred, <span class="kw">aes</span>(age)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> biden, <span class="kw">aes</span>(age, biden), <span class="dt">alpha =</span> .<span class="dv">05</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Piecewise constant regression of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;With 95% confidence interval&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted Biden thermometer rating&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-step-1.png" width="672" /></p>
+</div>
 </div>
 <div id="regression-splines" class="section level1">
 <h1>Regression splines</h1>
+<p><strong>Regression splines</strong> extend monotonic transformations and piecewise constant regression</p>
 </div>
 <div id="smoothing-splines" class="section level1">
 <h1>Smoothing splines</h1>
@@ -826,57 +854,63 @@ mh_pred %&gt;%
 ##  tz       America/Chicago             
 ##  date     2017-02-21                  
 ## 
-##  package    * version date       source        
-##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
-##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
-##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
-##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
-##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
-##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
-##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
-##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
-##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
-##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
-##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
-##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
-##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
-##  knitr      * 1.15.1  2016-11-22 cran (@1.15.1)
-##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
-##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
-##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
-##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
-##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
-##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
-##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
-##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
-##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
-##  rcfss      * 0.1.3   2017-02-16 local         
-##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
-##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
-##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
-##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
-##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
-##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
-##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
-##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
-##  tibble     * 1.2     2016-08-26 cran (@1.2)   
-##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
-##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
-##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
-##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
-##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version date       source        
+##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  codetools      0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven          1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms            0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr        * 1.15.1  2016-11-22 cran (@1.15.1)
+##  labeling       0.3     2014-08-23 CRAN (R 3.3.0)
+##  lattice        0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)
+##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)
+##  MatrixModels * 0.4-1   2015-08-22 CRAN (R 3.3.0)
+##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  quantreg     * 5.29    2016-09-04 CRAN (R 3.3.0)
+##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss        * 0.1.3   2017-02-16 local         
+##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  SparseM      * 1.74    2016-11-10 CRAN (R 3.3.2)
+##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr        1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble       * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>

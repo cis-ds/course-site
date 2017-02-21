@@ -336,15 +336,13 @@ biden_age <- glm(biden ~ I(age^1) + I(age^2) + I(age^3) + I(age^4), data = biden
 tidy(biden_age)
 
 # estimate the predicted values and confidence interval
-biden_pred <- biden %>%
-  data_grid(age)
-
-biden_pred <- augment(biden_age, newdata = biden_pred) %>%
+biden_pred <- augment(biden_age, newdata = data_grid(biden, age)) %>%
   mutate(pred_low = .fitted - 1.96 * .se.fit,
          pred_high = .fitted + 1.96 * .se.fit)
 
 # plot the curve
 ggplot(biden_pred, aes(age)) +
+  geom_point(data = biden, aes(age, biden), alpha = .05) +
   geom_line(aes(y = .fitted)) +
   geom_line(aes(y = pred_low), linetype = 2) +
   geom_line(aes(y = pred_high), linetype = 2) +
@@ -414,13 +412,43 @@ mh_pred %>%
 
 With logistic regression we presume the relationship between $X$ and the log-odds of $Y$ is linear, whereas the relationship between $X$ and the probability of $Y$ is curvilinear, defined by the logit function $\ln \left( \frac{\Pr(Y)}{1 - \Pr(Y)} \right)$. Now with the polynomial terms, even the predicted log-odds relationship is **curvilinear**. Notice that the confidence intervals are narrow for lower mental health scores and larger for higher values. This is because there are fewer individuals with high levels of depression, so the variance is larger around these scores for mental health.
 
-# Log transformations
-
-
 # Step functions
 
+Monotonic transformations impose a **global** structure on the non-linear function of $X$. That is, the function applies across the entire range of $X$. Instead, we may believe that the non-linear behavior of $X$ is instead a **local** structure that varies across the range of $X$. We can use **step functions** to avoid imposing a global structure. In step functions, you split the predictor $X$ into **bins** and fit a different constant to each bin. This converts a continuous variable into an **ordered categorical variable**.
+
+We create $c_1, c_2, \dots, c_K$ cutpoints in the range of $X$, and construct $K + 1$ new variables $C_1(X), C_2(X), \dots, C_K(X)$. Each of the new variables is an **indicator** or **dummy** variable that returns a 1 if $x_i$ falls within the range of the cutpoints and 0 otherwise. For any given $x_i$, the sum of these variables will be precisely $1$. We can then fit the linear regression model to the new indicator variables as predictors:
+
+$$y_i = \beta_0 + \beta_1 C_1 (x_i) + \beta_2 C_2 (x_i) + \dots + \beta_K C_K (x_i) + \epsilon_i$$
+
+## Biden and age
+
+We can fit a piecewise constant regression to the Biden data, dividing age into 5 bins.
+
+```{r biden-step}
+# estimate model
+biden_step <- glm(biden ~ cut(age, 5), data = biden)
+tidy(biden_step)
+
+# estimate the predicted values and confidence interval
+biden_step_pred <- augment(biden_step, newdata = data_grid(biden, age)) %>%
+  mutate(pred_low = .fitted - 1.96 * .se.fit,
+         pred_high = .fitted + 1.96 * .se.fit)
+
+# plot the curve
+ggplot(biden_step_pred, aes(age)) +
+  geom_point(data = biden, aes(age, biden), alpha = .05) +
+  geom_line(aes(y = .fitted)) +
+  geom_line(aes(y = pred_low), linetype = 2) +
+  geom_line(aes(y = pred_high), linetype = 2) +
+  labs(title = "Piecewise constant regression of Biden feeling thermometer",
+       subtitle = "With 95% confidence interval",
+       x = "Age",
+       y = "Predicted Biden thermometer rating")
+```
 
 # Regression splines
+
+**Regression splines** extend monotonic transformations and piecewise constant regression
 
 
 # Smoothing splines
