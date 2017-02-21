@@ -267,9 +267,51 @@ bind_rows(`1` = fakedataMT(p = .5, q = 2),
         panel.grid = element_blank())
 ```
 
-# Polynomial regressions
+Notice that you are not limited to transforming your predictors $X$ - **you can also transform the response variable $Y$**. You can use simple scatterplots and residual plots to help determine if a transformation is necessary, but these are not a substitute for **good theory**. Is there a theoretical reason why the relationship should be curvilinear rather than strictly linear? If so, use that as a guide to determine an appropriate transformation.
 
-**Polynomial regression** is a technique we have already discussed at length. Rather than fitting the standard linear model:
+## Interpreting transformed variables
+
+### Log transformations
+
+Interpreting the transformed variables is relatively straightforward. For instance, let's use the example of a one-sided log transformation of $Y$:
+
+$$\ln(Y_i) = \beta_0 + \beta_{1}X_i + \epsilon_i$$
+
+The expected value for $Y$ is therefore:
+
+$$E(Y) = e^{\beta_0 + \beta_{1}X_i}$$
+
+This means that the effect of a one-unit increase in $X$ on the expected value of $Y$ is:
+
+$$\frac{\vartheta E(Y)}{\vartheta X} = e^{\beta_1}$$
+
+What used to be a strictly linear relationship is now multiplicative (and non-linear). So for instance if $\beta_1 = 0.69$ then $e^{\beta_1} = 2$. So for every one-unit change in $X$, we believe the expected value of $Y$ will double. Conversely, if $\beta_1 = -0.69$ then $e^{\beta_1} = 0.5$, meaning a one-unit increase in $X$ is associated with a decrease in $\hat{Y}$ by about $50\%$.
+
+The same thing holds true for a regression where $X$ is the transformed variable:
+
+$$Y_i = \beta_0 + \beta_{1} \ln(X_i) + \epsilon_i$$
+
+Now the expected value of $Y$ varies linearly with the natural log of $X$. Substantively, this is also a multiplicative relationship but in the "opposite direction". That is, a multiplicative increase in $X$ has a linear increase on $Y$ of $\beta_1$ magnitude.
+
+#### Log-log regressions
+
+A special case is the instance where both $X$ and $Y$ are logarithmically transformed:
+
+$$\ln(Y_i) = \beta_0 + \beta_{1} \ln(X_i) + \dots + \epsilon_i$$
+
+The parameter $\beta_1$ can be interpreted as the **elasticity** of $Y$ with respect to $X$:
+
+$$\text{Elasticity}_{YX} = \frac{\% \Delta Y}{\% \Delta X}$$
+
+This can be interpreted a few different ways:
+
+* A direct means of interpreting a nonlinear effect: a one-percent change in $X$ leads to a $\hat{\beta}_1$-percent change in $Y$.
+* A double multiplicative relationship: an increase in $X$ of some multiplicative factor $\delta$ leads to a multiplicative increase in $Y$ equal to $\delta^{\beta_1}$.
+* If we have an estimate of $\hat{\beta}_1 = 0.5$ in a log-log regression, and you want to know the effect on the predicted value of $Y$ of tripling $X$, that effect is equal to $3^{0.5} \approx = 1.73$. That is, tripling $X$ is associated with an increase in the expected value of $Y$ by a factor of 1.73 (i.e. increase it by 73 percent).
+
+## Polynomial regressions
+
+**Polynomial regression** is a technique we have already discussed at length and is just a special case of monotonic transformations. Rather than fitting the standard linear model:
 
 $$y_i = \beta_0 + \beta_{1}x_{i} + \epsilon_{i}$$
 
@@ -279,7 +321,7 @@ $$y_i = \beta_0 + \beta_{1}x_{i} + \beta_{2}x_i^2 + \beta_{3}x_i^3 + \dots + \be
 
 As $d$ increases, the linear model's flexibility increases. We still use ordinary least squares (OLS) regression (or a Normal GLM) to estimate the parameters, which are also interpreted in the same way.
 
-## Biden and age
+### Biden and age
 
 Let's take a look at the [Joe Biden feeling thermometer data](https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS5/ps5-linear-regression.md) again and estimate a polynomial regression of the relationship between age and attitudes towards Biden:
 
@@ -327,6 +369,8 @@ Confidence intervals are typically plus/minus 1.96 times the standard error for 
 $$\hat{f}(x_0) = \hat{\beta}_0 + \hat{\beta}_1 x_{0} + \hat{\beta}_2 x_{0}^2 + \hat{\beta}_3 x_{0}^3 + \hat{\beta}_4 x_{0}^4$$
 
 What is the variance of the fit for this point, i.e. $\text{Var}(\hat{f}(x_o))$. The variance is now a function not only of $\hat{\beta}_1$, but the variance of each of the estimated parameters $\hat{\beta}_j$ as well as the covariances between the pairs of estimated parameters (i.e. the off-diagonal elements). We use all of this information to estimate the **pointwise** standard error of $\hat{f}(x_0)$, which is the square-root of the variance $\text{Var}(\hat{f}(x_o))$.
+
+### Voter turnout and mental health
 
 Likewise, we can use polynomial regression for classification problems as well. Consider the [mental health and voting data](https://github.com/UC-MACSS/persp-model/blob/master/assignments/PS6/ps6-glm.md). Let's estimate a logistic regression model of the relationship between mental health and voter turnout:
 
