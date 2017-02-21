@@ -362,6 +362,7 @@ div.tocify {
 <div id="objectives" class="section level1">
 <h1>Objectives</h1>
 <ul>
+<li>Identify reasons for relaxing the linearity assumption of linear models</li>
 <li>Review polynomial regression</li>
 <li>Explain why and how to use log transformations of independent and dependent variables</li>
 <li>Introduce step functions</li>
@@ -384,7 +385,108 @@ div.tocify {
 <div id="linearity-in-linear-models" class="section level1">
 <h1>Linearity in linear models</h1>
 <p>Linear models are a commonly used statistical learning method because they are intuitive and easy to interpret. The drawback is that in order to create that intuitiveness and interpretability, linear models also make strong assumptions of a <strong>linear relationship</strong> between the predictor(s) and response variable. It is an approximation, and in the real-world most relationships are not strictly linear. We could turn to more advanced statistical learning methods such as decision trees and support vector machines which do not impose a linear assumption, however conducting inference using those methods is more difficult. Instead, we would like to relax the linearity assumption while still maintaining the interpretability of linear models.</p>
+<div id="when-to-relax-the-assumption" class="section level2">
+<h2>When to relax the assumption</h2>
+<div id="non-linearity-of-the-data" class="section level3">
+<h3>Non-linearity of the data</h3>
+<p>Linear regression models assume the relationship between predictors and the response variable is a straight line. Here I simulate the data generating process:</p>
+<p><span class="math display">\[Y = 2 + 3X + \epsilon\]</span></p>
+<p>where <span class="math inline">\(\epsilon\)</span> is random error distributed normally <span class="math inline">\(N(0,3)\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_linear &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">10</span>),
+                         <span class="dt">y =</span> <span class="dv">2</span> +<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>x +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">3</span>))
+sim_linear_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim_linear)
+
+<span class="kw">ggplot</span>(sim_linear, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a linear relationship&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-linear-1.png" width="672" /></p>
+<p>When this assumption holds, the <strong>residuals</strong> of the observations should not be correlated with the fitted values.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_linear %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(sim_linear_mod) %&gt;%
+<span class="st">  </span><span class="kw">add_residuals</span>(sim_linear_mod) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(pred, resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a linear relationship&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-linear-resid-1.png" width="672" /></p>
+<p>Inferences we draw from the model will be accurate and the accuracy of the model will be high.</p>
+<p>However if the relationship is not actually linear, then we should see a discernable pattern in the residuals plot. Now I simulate a data generating process:</p>
+<p><span class="math display">\[Y = 2 + 3X + 2X^2 + \epsilon\]</span></p>
+<p>with the same distribution of <span class="math inline">\(\epsilon\)</span> and fit a linear model to the data:</p>
+<p><span class="math display">\[\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X + \epsilon\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_nonlinear &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">10</span>),
+                         <span class="dt">y =</span> <span class="dv">2</span> +<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>x^<span class="dv">2</span> +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">3</span>))
+sim_nonlinear_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim_nonlinear)
+
+<span class="kw">ggplot</span>(sim_nonlinear, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a non-linear relationship&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-nonlinear-1.png" width="672" /></p>
+<p>Now that the assumption no longer holds true, we see a distinct polynomial relationship between the predicted values <span class="math inline">\(\hat{y}_i\)</span> and the residuals <span class="math inline">\((y_i - \hat{y}_i)^2\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_nonlinear %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(sim_nonlinear_mod) %&gt;%
+<span class="st">  </span><span class="kw">add_residuals</span>(sim_nonlinear_mod) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(pred, resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model for a non-linear relationship&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-nonlinear-resid-1.png" width="672" /></p>
+<p>If we want to draw accurate inferences from the model, we need to relax the linearity assumption in some way.</p>
+</div>
+<div id="non-constant-variance-of-the-error-terms" class="section level3">
+<h3>Non-constant variance of the error terms</h3>
+<p>Another assumption of linear regression is that the error terms <span class="math inline">\(\epsilon_i\)</span> have a constant variance, <span class="math inline">\(\text{Var}(\epsilon_i) = \sigma^2\)</span>. This is called <strong>homoscedasticity</strong>. Remember that the <a href="persp006_resampling.html#estimating_the_accuracy_of_a_linear_regression_model">standard errors directly rely upon the estimate of this value</a>:</p>
+<p><span class="math display">\[\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\hat{\sigma}^{2} (X^{T}X)^{-1}_{jj}}\]</span></p>
+<p>If the variances of the error terms are non-constant (aka <strong>heteroscedastic</strong>), our estimates of the parameters <span class="math inline">\(\hat{\beta}\)</span> will still be unbiased because they do not depend on <span class="math inline">\(\sigma^2\)</span>. However our estimates of the standard errors will be inaccurate - they will either be inflated or deflated, leading to incorrect inferences about the statistical significance of predictor variables.</p>
+<p>We can uncover homo- or heteroscedasticity through the use of the residual plot. Below is data generated from the process:</p>
+<p><span class="math display">\[Y = 2 + 3X + \epsilon\]</span></p>
+<p>where <span class="math inline">\(\epsilon\)</span> is random error distributed normally <span class="math inline">\(N(0,1)\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_homo &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">1000</span>, <span class="dv">0</span>, <span class="dv">10</span>),
+                       <span class="dt">y =</span> <span class="dv">2</span> +<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>x +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>, <span class="dv">0</span>, <span class="dv">1</span>))
+sim_homo_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim_homo)
+
+sim_homo %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(sim_homo_mod) %&gt;%
+<span class="st">  </span><span class="kw">add_residuals</span>(sim_homo_mod) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(pred, resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_quantile</span>(<span class="dt">method =</span> <span class="st">&quot;rqss&quot;</span>, <span class="dt">lambda =</span> <span class="dv">5</span>, <span class="dt">quantiles =</span> <span class="kw">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Homoscedastic variance of error terms&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-homo-1.png" width="672" /></p>
+<p>Compare this to a linear model fit to the data generating process:</p>
+<p><span class="math display">\[Y = 2 + 3X + \epsilon\]</span></p>
+<p>where <span class="math inline">\(\epsilon\)</span> is random error distributed normally <span class="math inline">\(N(0,\frac{X}{2})\)</span>. Note that the variance for the error term of each observation <span class="math inline">\(\epsilon_i\)</span> is not constant, and is itself a function of <span class="math inline">\(X\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_hetero &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">1000</span>, <span class="dv">0</span>, <span class="dv">10</span>),
+                       <span class="dt">y =</span> <span class="dv">2</span> +<span class="st"> </span><span class="dv">3</span> *<span class="st"> </span>x +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>, <span class="dv">0</span>, (x /<span class="st"> </span><span class="dv">2</span>)))
+sim_hetero_mod &lt;-<span class="st"> </span><span class="kw">glm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim_hetero)
+
+sim_hetero %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(sim_hetero_mod) %&gt;%
+<span class="st">  </span><span class="kw">add_residuals</span>(sim_hetero_mod) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(pred, resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_quantile</span>(<span class="dt">method =</span> <span class="st">&quot;rqss&quot;</span>, <span class="dt">lambda =</span> <span class="dv">5</span>, <span class="dt">quantiles =</span> <span class="kw">c</span>(.<span class="dv">05</span>, .<span class="dv">95</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Heteroscedastic variance of error terms&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Predicted values&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Residuals&quot;</span>)</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/sim-hetero-1.png" width="672" /></p>
+<p>We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response <span class="math inline">\(Y_i\)</span> as <span class="math inline">\(X\)</span> increases.</p>
+</div>
+</div>
+<div id="how-to-relax-the-assumption" class="section level2">
+<h2>How to relax the assumption</h2>
 <p>We have already seen how to do this by adding <a href="persp003_linear_regression.html#non-linear_relationships">quadratic</a> and <a href="persp004_logistic_regression.html#interactive_terms">interactive</a> terms. Here we will review adding quadratic terms (also called <strong>polynomial regression</strong>) and explore alternative approaches to introducing non-linearity in both regression and classification problems.</p>
+</div>
 </div>
 <div id="polynomial-regressions" class="section level1">
 <h1>Polynomial regressions</h1>
@@ -571,57 +673,63 @@ mh_pred %&gt;%
 ##  tz       America/Chicago             
 ##  date     2017-02-21                  
 ## 
-##  package    * version date       source        
-##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
-##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
-##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
-##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
-##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
-##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
-##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
-##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
-##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
-##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
-##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
-##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
-##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
-##  knitr      * 1.15.1  2016-11-22 cran (@1.15.1)
-##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
-##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
-##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
-##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
-##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
-##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
-##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
-##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
-##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
-##  rcfss      * 0.1.3   2017-02-16 local         
-##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
-##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
-##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
-##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
-##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
-##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
-##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
-##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
-##  tibble     * 1.2     2016-08-26 cran (@1.2)   
-##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
-##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
-##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
-##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
-##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version date       source        
+##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  codetools      0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven          1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms            0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr        * 1.15.1  2016-11-22 cran (@1.15.1)
+##  labeling       0.3     2014-08-23 CRAN (R 3.3.0)
+##  lattice        0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)
+##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)
+##  MatrixModels * 0.4-1   2015-08-22 CRAN (R 3.3.0)
+##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  quantreg     * 5.29    2016-09-04 CRAN (R 3.3.0)
+##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss        * 0.1.3   2017-02-16 local         
+##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  SparseM      * 1.74    2016-11-10 CRAN (R 3.3.2)
+##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr        1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble       * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>

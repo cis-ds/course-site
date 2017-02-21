@@ -16,6 +16,7 @@ knitr::opts_chunk$set(cache = TRUE,
 
 # Objectives
 
+* Identify reasons for relaxing the linearity assumption of linear models
 * Review polynomial regression
 * Explain why and how to use log transformations of independent and dependent variables
 * Introduce step functions
@@ -40,6 +41,136 @@ theme_set(theme_minimal())
 # Linearity in linear models
 
 Linear models are a commonly used statistical learning method because they are intuitive and easy to interpret. The drawback is that in order to create that intuitiveness and interpretability, linear models also make strong assumptions of a **linear relationship** between the predictor(s) and response variable. It is an approximation, and in the real-world most relationships are not strictly linear. We could turn to more advanced statistical learning methods such as decision trees and support vector machines which do not impose a linear assumption, however conducting inference using those methods is more difficult. Instead, we would like to relax the linearity assumption while still maintaining the interpretability of linear models.
+
+## When to relax the assumption
+
+### Non-linearity of the data
+
+Linear regression models assume the relationship between predictors and the response variable is a straight line. Here I simulate the data generating process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,3)$.
+
+```{r sim-linear}
+sim_linear <- data_frame(x = runif(100, 0, 10),
+                         y = 2 + 3 * x + rnorm(100, 0, 3))
+sim_linear_mod <- glm(y ~ x, data = sim_linear)
+
+ggplot(sim_linear, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Linear model for a linear relationship")
+```
+
+When this assumption holds, the **residuals** of the observations should not be correlated with the fitted values.
+
+```{r sim-linear-resid, dependson = "sim-linear"}
+sim_linear %>%
+  add_predictions(sim_linear_mod) %>%
+  add_residuals(sim_linear_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  labs(title = "Linear model for a linear relationship",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+Inferences we draw from the model will be accurate and the accuracy of the model will be high.
+
+However if the relationship is not actually linear, then we should see a discernable pattern in the residuals plot. Now I simulate a data generating process:
+
+$$Y = 2 + 3X + 2X^2 + \epsilon$$
+
+with the same distribution of $\epsilon$ and fit a linear model to the data:
+
+$$\hat{Y} = \hat{\beta}_0 + \hat{\beta}_1 X + \epsilon$$
+
+```{r sim-nonlinear}
+sim_nonlinear <- data_frame(x = runif(100, 0, 10),
+                         y = 2 + 3 * x + 2 * x^2 + rnorm(100, 0, 3))
+sim_nonlinear_mod <- glm(y ~ x, data = sim_nonlinear)
+
+ggplot(sim_nonlinear, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "Linear model for a non-linear relationship")
+```
+
+Now that the assumption no longer holds true, we see a distinct polynomial relationship between the predicted values $\hat{y}_i$ and the residuals $(y_i - \hat{y}_i)^2$.
+
+```{r sim-nonlinear-resid, dependson = "sim-nonlinear"}
+sim_nonlinear %>%
+  add_predictions(sim_nonlinear_mod) %>%
+  add_residuals(sim_nonlinear_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  labs(title = "Linear model for a non-linear relationship",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+If we want to draw accurate inferences from the model, we need to relax the linearity assumption in some way.
+
+### Non-constant variance of the error terms
+
+Another assumption of linear regression is that the error terms $\epsilon_i$ have a constant variance, $\text{Var}(\epsilon_i) = \sigma^2$. This is called **homoscedasticity**. Remember that the [standard errors directly rely upon the estimate of this value](persp006_resampling.html#estimating_the_accuracy_of_a_linear_regression_model):
+
+$$\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\hat{\sigma}^{2} (X^{T}X)^{-1}_{jj}}$$
+
+If the variances of the error terms are non-constant (aka **heteroscedastic**), our estimates of the parameters $\hat{\beta}$ will still be unbiased because they do not depend on $\sigma^2$. However our estimates of the standard errors will be inaccurate - they will either be inflated or deflated, leading to incorrect inferences about the statistical significance of predictor variables.
+
+We can uncover homo- or heteroscedasticity through the use of the residual plot. Below is data generated from the process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,1)$.
+
+```{r sim-homo}
+sim_homo <- data_frame(x = runif(1000, 0, 10),
+                       y = 2 + 3 * x + rnorm(1000, 0, 1))
+sim_homo_mod <- glm(y ~ x, data = sim_homo)
+
+sim_homo %>%
+  add_predictions(sim_homo_mod) %>%
+  add_residuals(sim_homo_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Homoscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+Compare this to a linear model fit to the data generating process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,\frac{X}{2})$. Note that the variance for the error term of each observation $\epsilon_i$ is not constant, and is itself a function of $X$.
+
+```{r sim-hetero}
+sim_hetero <- data_frame(x = runif(1000, 0, 10),
+                       y = 2 + 3 * x + rnorm(1000, 0, (x / 2)))
+sim_hetero_mod <- glm(y ~ x, data = sim_hetero)
+
+sim_hetero %>%
+  add_predictions(sim_hetero_mod) %>%
+  add_residuals(sim_hetero_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Heteroscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response $Y_i$ as $X$ increases.
+
+## How to relax the assumption
 
 We have already seen how to do this by adding [quadratic](persp003_linear_regression.html#non-linear_relationships) and [interactive](persp004_logistic_regression.html#interactive_terms) terms. Here we will review adding quadratic terms (also called **polynomial regression**) and explore alternative approaches to introducing non-linearity in both regression and classification problems.
 
