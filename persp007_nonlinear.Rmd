@@ -683,6 +683,32 @@ augment(wage_optim, newdata = data_grid(wage, age)) %>%
        y = "Wage")
 ```
 
+## Basis splines versus natural splines
+
+The splines we have estimated so far are **basic splines**. They contain internal knots with constraints that the function be continuous and smooth. However basis splines also tend to have high variance at the outer range of the predictors.
+
+```{r nat-spline}
+wage_frac <- filter(wage, wage < 250, wage > 50)
+wage_bs <- glm(wage ~ bs(age, df = 5), data = wage_frac)
+wage_ns <- glm(wage ~ ns(age, df = 5), data = wage_frac)
+
+wage_bs_pred <- augment(wage_bs, newdata = data_grid(wage_frac, age)) %>%
+  mutate(.fitted_low = .fitted - 1.96 * .se.fit,
+         .fitted_high = .fitted + 1.96 * .se.fit)
+wage_ns_pred <- augment(wage_ns, newdata = data_grid(wage_frac, age)) %>%
+  mutate(.fitted_low = .fitted - 1.96 * .se.fit,
+         .fitted_high = .fitted + 1.96 * .se.fit)
+
+bind_rows(wage_bs_pred, wage_ns_pred, .id = "model") %>%
+  mutate(model = factor(model, levels = 1:2,
+                        labels = c("Basis cubic spline", "Natural cubic spline"))) %>%
+  ggplot(aes(age, .fitted, color = model)) +
+  geom_line() +
+  geom_line(aes(y = .fitted_low), linetype = 2) +
+  geom_line(aes(y = .fitted_high), linetype = 2) +
+  geom_point(data = wage_frac, aes(age, wage, color = NULL), alpha = .05)
+```
+
 # Local regression
 
 **Locally weighted scatterplot smoothing** (local regression, LOWESS, or LOESS) fits a separate non-linear function at each target point $x_0$ using only the nearby training observations. This method estimates a regression line based on localized subsets of the data, building up the global function $f$ point-by-point.
