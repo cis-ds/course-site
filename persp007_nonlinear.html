@@ -379,6 +379,7 @@ div.tocify {
 <span class="kw">library</span>(splines)
 <span class="kw">library</span>(ISLR)
 <span class="kw">library</span>(lattice)
+<span class="kw">library</span>(gam)
 
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
 <span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
@@ -1060,6 +1061,258 @@ video of chunk loess_span
 </div>
 <div id="generalized-additive-models" class="section level1">
 <h1>Generalized additive models</h1>
+<p>So far each of these nonlinear methods has been implemented for a single predictor <span class="math inline">\(X\)</span>. To generalize this approach to multiple predictors <span class="math inline">\(X_1, X_2, \dots, X_p\)</span>, we need to utilize a <strong>generalized additive model</strong> (GAM). GAMs extend the linear model by allowing non-linear functions of each of the variables, while also maintaining the <strong>additive assumption</strong> that each variable independently and additively shapes the response variable <span class="math inline">\(Y\)</span>. GAMs work for both quantitative and qualitative responses.</p>
+<div id="gams-for-regression-problems" class="section level2">
+<h2>GAMs for regression problems</h2>
+<p>To extend the multiple linear regression model</p>
+<p><span class="math display">\[y_i = \beta_0 + \beta_{1} X_{i1} + \beta_{2} X_{i2} + \dots + \beta_{p} X_{ip} + \epsilon_i\]</span></p>
+<p>and allow for non-linear relationships between each predictor and the response variable, we replace each linear component <span class="math inline">\(\beta_{j} x_{ij}\)</span> with a smooth, non-linear function <span class="math inline">\(f_j(x_{ij})\)</span>:</p>
+<p><span class="math display">\[y_i = \beta_0 + \sum_{j = 1}^p f_j(x_{ij}) + \epsilon_i\]</span></p>
+<p><span class="math display">\[y_i = \beta_0 + f_1(x_{i1}) + \beta_{2} f_2(x_{i2}) + \dots + f_p(x_{ip}) + \epsilon_i\]</span></p>
+<p>As you can see, each <span class="math inline">\(f_j\)</span> provides an <strong>additive</strong> component to the overall model of <span class="math inline">\(y_i\)</span>. We estimate each <span class="math inline">\(f_j\)</span> then add together all of their contributions. Importantly, each functional component is estimated <strong>simultaneously</strong> so that it is truly still a multiple variable regression model. Let’s estimate a GAM for the Biden dataset using the model</p>
+<p><span class="math display">\[\text{Biden} = \beta_0 + f_1(\text{Age}) + f_2(\text{Education}) + f_3(\text{Gender}) + \epsilon\]</span></p>
+<p>Where <span class="math inline">\(f_1\)</span> and <span class="math inline">\(f_2\)</span> are cubic splines with 2 knots and <span class="math inline">\(f_3\)</span> generates a separate constant for males and females using traditional dummy variables.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gam)
+
+<span class="co"># estimate model for splines on age and education plus dichotomous female</span>
+biden_gam &lt;-<span class="st"> </span><span class="kw">gam</span>(biden ~<span class="st"> </span><span class="kw">bs</span>(age, <span class="dt">df =</span> <span class="dv">5</span>) +<span class="st"> </span><span class="kw">bs</span>(educ, <span class="dt">df =</span> <span class="dv">5</span>) +<span class="st"> </span>female, <span class="dt">data =</span> biden)
+<span class="kw">summary</span>(biden_gam)</code></pre></div>
+<pre><code>## 
+## Call: gam(formula = biden ~ bs(age, df = 5) + bs(educ, df = 5) + female, 
+##     data = biden)
+## Deviance Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -67.499 -13.522   0.548  17.953  46.582 
+## 
+## (Dispersion Parameter for gaussian family taken to be 532)
+## 
+##     Null Deviance: 994144 on 1806 degrees of freedom
+## Residual Deviance: 955772 on 1795 degrees of freedom
+## AIC: 16485 
+## 
+## Number of Local Scoring Iterations: 2 
+## 
+## Anova for Parametric Effects
+##                    Df Sum Sq Mean Sq F value  Pr(&gt;F)    
+## bs(age, df = 5)     5   4038     808    1.52    0.18    
+## bs(educ, df = 5)    5  16660    3332    6.26 9.2e-06 ***
+## female              1  17673   17673   33.19 9.8e-09 ***
+## Residuals        1795 955772     532                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get graphs of each term</span>
+biden_gam_terms &lt;-<span class="st"> </span><span class="kw">preplot</span>(biden_gam, <span class="dt">se =</span> <span class="ot">TRUE</span>, <span class="dt">rug =</span> <span class="ot">FALSE</span>)
+
+## age
+<span class="kw">data_frame</span>(<span class="dt">x =</span> biden_gam_terms$<span class="st">`</span><span class="dt">bs(age, df = 5)</span><span class="st">`</span>$x,
+           <span class="dt">y =</span> biden_gam_terms$<span class="st">`</span><span class="dt">bs(age, df = 5)</span><span class="st">`</span>$y,
+           <span class="dt">se.fit =</span> biden_gam_terms$<span class="st">`</span><span class="dt">bs(age, df = 5)</span><span class="st">`</span>$se.y) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Cubic spline&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">1</span>](age)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-gam-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## education
+<span class="kw">data_frame</span>(<span class="dt">x =</span> biden_gam_terms$<span class="st">`</span><span class="dt">bs(educ, df = 5)</span><span class="st">`</span>$x,
+           <span class="dt">y =</span> biden_gam_terms$<span class="st">`</span><span class="dt">bs(educ, df = 5)</span><span class="st">`</span>$y,
+           <span class="dt">se.fit =</span> biden_gam_terms$<span class="st">`</span><span class="dt">bs(educ, df = 5)</span><span class="st">`</span>$se.y) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Cubic spline&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Education&quot;</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">2</span>](education)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-gam-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## gender
+<span class="kw">data_frame</span>(<span class="dt">x =</span> biden_gam_terms$female$x,
+           <span class="dt">y =</span> biden_gam_terms$female$y,
+           <span class="dt">se.fit =</span> biden_gam_terms$female$se.y) %&gt;%
+<span class="st">  </span>unique %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">x =</span> <span class="kw">factor</span>(x, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">ymin =</span> y_low, <span class="dt">ymax =</span> y_high)) +
+<span class="st">  </span><span class="kw">geom_errorbar</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Biden feeling thermometer&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">3</span>](gender)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-gam-3.png" width="672" /></p>
+<p>For age, there does not appear to be a substantial or significant relationship with Biden feeling thermometers after controlling for education and gender. The cubic spline is relatively flat and the 95% confidence interval is wide. For education, the effect appears substantial and statistically significant; as education increases, predicted Biden feeling thermometer ratings decrease until approximately 15 years of formal education, then increase again for those with college or post-graduate degrees. Finally, for gender the difference between males and females is substantial and statistically distinguishable from 0.</p>
+<p>Instead of cubic splines, we could use local regression. At this point we can no longer use OLS to fit the model, but instead uses a <strong>backfitting</strong> process to model each predictor simultaneously.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model for splines on age and education plus dichotomous female</span>
+biden_gam_local &lt;-<span class="st"> </span><span class="kw">gam</span>(biden ~<span class="st"> </span><span class="kw">lo</span>(age) +<span class="st"> </span><span class="kw">lo</span>(educ) +<span class="st"> </span>female, <span class="dt">data =</span> biden)
+<span class="kw">summary</span>(biden_gam_local)</code></pre></div>
+<pre><code>## 
+## Call: gam(formula = biden ~ lo(age) + lo(educ) + female, data = biden)
+## Deviance Residuals:
+##    Min     1Q Median     3Q    Max 
+## -66.66 -13.92   1.28  18.97  44.03 
+## 
+## (Dispersion Parameter for gaussian family taken to be 534)
+## 
+##     Null Deviance: 994144 on 1806 degrees of freedom
+## Residual Deviance: 959708 on 1798 degrees of freedom
+## AIC: 16488 
+## 
+## Number of Local Scoring Iterations: 2 
+## 
+## Anova for Parametric Effects
+##             Df Sum Sq Mean Sq F value  Pr(&gt;F)    
+## lo(age)      1   1406    1406    2.63     0.1    
+## lo(educ)     1   8338    8338   15.62 8.1e-05 ***
+## female       1  17750   17750   33.25 9.5e-09 ***
+## Residuals 1798 959708     534                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Anova for Nonparametric Effects
+##             Npar Df Npar F  Pr(F)   
+## (Intercept)                         
+## lo(age)         2.4   0.83 0.4544   
+## lo(educ)        3.1   3.87 0.0085 **
+## female                              
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get graphs of each term</span>
+biden_gam_local_terms &lt;-<span class="st"> </span><span class="kw">preplot</span>(biden_gam_local, <span class="dt">se =</span> <span class="ot">TRUE</span>, <span class="dt">rug =</span> <span class="ot">FALSE</span>)
+
+## age
+<span class="kw">data_frame</span>(<span class="dt">x =</span> biden_gam_local_terms$<span class="st">`</span><span class="dt">lo(age)</span><span class="st">`</span>$x,
+           <span class="dt">y =</span> biden_gam_local_terms$<span class="st">`</span><span class="dt">lo(age)</span><span class="st">`</span>$y,
+           <span class="dt">se.fit =</span> biden_gam_local_terms$<span class="st">`</span><span class="dt">lo(age)</span><span class="st">`</span>$se.y) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Local regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">1</span>](age)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-gam-local-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## education
+<span class="kw">data_frame</span>(<span class="dt">x =</span> biden_gam_local_terms$<span class="st">`</span><span class="dt">lo(educ)</span><span class="st">`</span>$x,
+           <span class="dt">y =</span> biden_gam_local_terms$<span class="st">`</span><span class="dt">lo(educ)</span><span class="st">`</span>$y,
+           <span class="dt">se.fit =</span> biden_gam_local_terms$<span class="st">`</span><span class="dt">lo(educ)</span><span class="st">`</span>$se.y) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Biden feeling thermometer&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Local regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Education&quot;</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">2</span>](education)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-gam-local-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## gender
+<span class="kw">data_frame</span>(<span class="dt">x =</span> biden_gam_local_terms$female$x,
+           <span class="dt">y =</span> biden_gam_local_terms$female$y,
+           <span class="dt">se.fit =</span> biden_gam_local_terms$female$se.y) %&gt;%
+<span class="st">  </span>unique %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">x =</span> <span class="kw">factor</span>(x, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">ymin =</span> y_low, <span class="dt">ymax =</span> y_high)) +
+<span class="st">  </span><span class="kw">geom_errorbar</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Biden feeling thermometer&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">3</span>](gender)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/biden-gam-local-3.png" width="672" /></p>
+<p>The results are pretty similar to the cubic splines.</p>
+<p>We can also use GAMs for classification problems, like the Titanic example.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
+
+<span class="co"># estimate model for splines on age and education plus dichotomous female</span>
+titanic_gam &lt;-<span class="st"> </span><span class="kw">gam</span>(Survived ~<span class="st"> </span><span class="kw">bs</span>(Age, <span class="dt">df =</span> <span class="dv">5</span>) +<span class="st"> </span><span class="kw">bs</span>(Fare, <span class="dt">df =</span> <span class="dv">5</span>) +<span class="st"> </span>Sex, <span class="dt">data =</span> titanic_train,
+                   <span class="dt">family =</span> binomial)
+<span class="kw">summary</span>(titanic_gam)</code></pre></div>
+<pre><code>## 
+## Call: gam(formula = Survived ~ bs(Age, df = 5) + bs(Fare, df = 5) + 
+##     Sex, family = binomial, data = titanic_train)
+## Deviance Residuals:
+##    Min     1Q Median     3Q    Max 
+## -2.743 -0.605 -0.491  0.735  2.230 
+## 
+## (Dispersion Parameter for binomial family taken to be 1)
+## 
+##     Null Deviance: 965 on 713 degrees of freedom
+## Residual Deviance: 684 on 702 degrees of freedom
+## AIC: 708 
+## 177 observations deleted due to missingness 
+## 
+## Number of Local Scoring Iterations: 9 
+## 
+## Anova for Parametric Effects
+##                   Df Sum Sq Mean Sq F value  Pr(&gt;F)    
+## bs(Age, df = 5)    5      8     1.7    1.60    0.16    
+## bs(Fare, df = 5)   5     41     8.2    7.79 3.8e-07 ***
+## Sex                1    142   141.6  135.01 &lt; 2e-16 ***
+## Residuals        702    736     1.0                    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get graphs of each term</span>
+titanic_gam_terms &lt;-<span class="st"> </span><span class="kw">preplot</span>(titanic_gam, <span class="dt">se =</span> <span class="ot">TRUE</span>, <span class="dt">rug =</span> <span class="ot">FALSE</span>)
+
+## age
+<span class="kw">data_frame</span>(<span class="dt">x =</span> titanic_gam_terms$<span class="st">`</span><span class="dt">bs(Age, df = 5)</span><span class="st">`</span>$x,
+           <span class="dt">y =</span> titanic_gam_terms$<span class="st">`</span><span class="dt">bs(Age, df = 5)</span><span class="st">`</span>$y,
+           <span class="dt">se.fit =</span> titanic_gam_terms$<span class="st">`</span><span class="dt">bs(Age, df = 5)</span><span class="st">`</span>$se.y) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Titanic survival&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Cubic spline&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">1</span>](age)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/titanic-gam-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## fare
+<span class="kw">data_frame</span>(<span class="dt">x =</span> titanic_gam_terms$<span class="st">`</span><span class="dt">bs(Fare, df = 5)</span><span class="st">`</span>$x,
+           <span class="dt">y =</span> titanic_gam_terms$<span class="st">`</span><span class="dt">bs(Fare, df = 5)</span><span class="st">`</span>$y,
+           <span class="dt">se.fit =</span> titanic_gam_terms$<span class="st">`</span><span class="dt">bs(Fare, df = 5)</span><span class="st">`</span>$se.y) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> y_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Titanic survival&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Cubic spline&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Fare&quot;</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">2</span>](fare)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/titanic-gam-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">## gender
+<span class="kw">data_frame</span>(<span class="dt">x =</span> titanic_gam_terms$Sex$x,
+           <span class="dt">y =</span> titanic_gam_terms$Sex$y,
+           <span class="dt">se.fit =</span> titanic_gam_terms$Sex$se.y) %&gt;%
+<span class="st">  </span>unique %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y_low =</span> y -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">y_high =</span> y +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se.fit,
+         <span class="dt">x =</span> <span class="kw">factor</span>(x, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;male&quot;</span>, <span class="st">&quot;female&quot;</span>), <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">ymin =</span> y_low, <span class="dt">ymax =</span> y_high)) +
+<span class="st">  </span><span class="kw">geom_errorbar</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;GAM of Titanic survival&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="kw">expression</span>(f[<span class="dv">3</span>](gender)))</code></pre></div>
+<p><img src="persp007_nonlinear_files/figure-html/titanic-gam-3.png" width="672" /></p>
+</div>
 </div>
 <div id="acknowledgements" class="section level1 toc-ignore">
 <h1>Acknowledgements</h1>
@@ -1080,58 +1333,68 @@ video of chunk loess_span
 ##  tz       America/Chicago             
 ##  date     2017-02-22                  
 ## 
-##  package    * version date       source        
-##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
-##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
-##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
-##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
-##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
-##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
-##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
-##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
-##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
-##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
-##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
-##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
-##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
-##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
-##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
-##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
-##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
-##  ISLR       * 1.0     2013-06-11 CRAN (R 3.3.0)
-##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
-##  knitr      * 1.15.1  2016-11-22 cran (@1.15.1)
-##  lattice    * 0.20-34 2016-09-06 CRAN (R 3.3.2)
-##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
-##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
-##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
-##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
-##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
-##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
-##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
-##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
-##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
-##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
-##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
-##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
-##  rcfss      * 0.1.3   2017-02-16 local         
-##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
-##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
-##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
-##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
-##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
-##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
-##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
-##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
-##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
-##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
-##  tibble     * 1.2     2016-08-26 cran (@1.2)   
-##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
-##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
-##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
-##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
-##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
-##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version date       source                           
+##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)                   
+##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)                   
+##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)                   
+##  codetools      0.2-15  2016-10-05 CRAN (R 3.3.2)                   
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)                   
+##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)                   
+##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)                   
+##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)                   
+##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)                   
+##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)                   
+##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)                   
+##  foreach      * 1.4.3   2015-10-13 CRAN (R 3.3.0)                   
+##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)                   
+##  gam          * 1.14    2016-09-10 CRAN (R 3.3.0)                   
+##  gganimate    * 0.1     2016-11-11 Github (dgrtwo/gganimate@26ec501)
+##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)                   
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)                   
+##  haven          1.0.0   2016-09-23 cran (@1.0.0)                    
+##  hms            0.3     2016-11-22 CRAN (R 3.3.2)                   
+##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)                   
+##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)                   
+##  ISLR         * 1.0     2013-06-11 CRAN (R 3.3.0)                   
+##  iterators      1.0.8   2015-10-13 CRAN (R 3.3.0)                   
+##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)                   
+##  knitr        * 1.15.1  2016-11-22 cran (@1.15.1)                   
+##  labeling       0.3     2014-08-23 CRAN (R 3.3.0)                   
+##  lattice      * 0.20-34 2016-09-06 CRAN (R 3.3.2)                   
+##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)                   
+##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)                   
+##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)                   
+##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)                   
+##  MatrixModels * 0.4-1   2015-08-22 CRAN (R 3.3.0)                   
+##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)                   
+##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)                   
+##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)                   
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)                   
+##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)                   
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)                   
+##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)                   
+##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)                   
+##  quantreg     * 5.29    2016-09-04 CRAN (R 3.3.0)                   
+##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)                   
+##  rcfss        * 0.1.3   2017-02-16 local                            
+##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)                   
+##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)                   
+##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)                   
+##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)                   
+##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)                   
+##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)                   
+##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)                   
+##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)                   
+##  SparseM      * 1.74    2016-11-10 CRAN (R 3.3.2)                   
+##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)                   
+##  stringr        1.1.0   2016-08-19 cran (@1.1.0)                    
+##  tibble       * 1.2     2016-08-26 cran (@1.2)                      
+##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)                   
+##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)                   
+##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)                   
+##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)                   
+##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)                   
+##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>

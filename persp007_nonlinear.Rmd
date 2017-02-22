@@ -34,6 +34,7 @@ library(knitr)
 library(splines)
 library(ISLR)
 library(lattice)
+library(gam)
 
 set.seed(1234)
 options(digits = 3)
@@ -779,7 +780,200 @@ gg_animate(p)
 
 # Generalized additive models
 
+So far each of these nonlinear methods has been implemented for a single predictor $X$. To generalize this approach to multiple predictors $X_1, X_2, \dots, X_p$, we need to utilize a **generalized additive model** (GAM). GAMs extend the linear model by allowing non-linear functions of each of the variables, while also maintaining the **additive assumption** that each variable independently and additively shapes the response variable $Y$. GAMs work for both quantitative and qualitative responses.
 
+## GAMs for regression problems
+
+To extend the multiple linear regression model
+
+$$y_i = \beta_0 + \beta_{1} X_{i1} + \beta_{2} X_{i2} + \dots + \beta_{p} X_{ip} + \epsilon_i$$
+
+and allow for non-linear relationships between each predictor and the response variable, we replace each linear component $\beta_{j} x_{ij}$ with a smooth, non-linear function $f_j(x_{ij})$:
+
+$$y_i = \beta_0 + \sum_{j = 1}^p f_j(x_{ij}) + \epsilon_i$$
+
+$$y_i = \beta_0 + f_1(x_{i1}) + \beta_{2} f_2(x_{i2}) + \dots + f_p(x_{ip}) + \epsilon_i$$
+
+As you can see, each $f_j$ provides an **additive** component to the overall model of $y_i$. We estimate each $f_j$ then add together all of their contributions. Importantly, each functional component is estimated **simultaneously** so that it is truly still a multiple variable regression model. Let's estimate a GAM for the Biden dataset using the model
+
+$$\text{Biden} = \beta_0 + f_1(\text{Age}) + f_2(\text{Education}) + f_3(\text{Gender}) + \epsilon$$
+
+Where $f_1$ and $f_2$ are cubic splines with 2 knots and $f_3$ generates a separate constant for males and females using traditional dummy variables.
+
+```{r biden-gam}
+library(gam)
+
+# estimate model for splines on age and education plus dichotomous female
+biden_gam <- gam(biden ~ bs(age, df = 5) + bs(educ, df = 5) + female, data = biden)
+summary(biden_gam)
+
+# get graphs of each term
+biden_gam_terms <- preplot(biden_gam, se = TRUE, rug = FALSE)
+
+## age
+data_frame(x = biden_gam_terms$`bs(age, df = 5)`$x,
+           y = biden_gam_terms$`bs(age, df = 5)`$y,
+           se.fit = biden_gam_terms$`bs(age, df = 5)`$se.y) %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit) %>%
+  ggplot(aes(x, y)) +
+  geom_line() +
+  geom_line(aes(y = y_low), linetype = 2) +
+  geom_line(aes(y = y_high), linetype = 2) +
+  labs(title = "GAM of Biden feeling thermometer",
+       subtitle = "Cubic spline",
+       x = "Age",
+       y = expression(f[1](age)))
+
+## education
+data_frame(x = biden_gam_terms$`bs(educ, df = 5)`$x,
+           y = biden_gam_terms$`bs(educ, df = 5)`$y,
+           se.fit = biden_gam_terms$`bs(educ, df = 5)`$se.y) %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit) %>%
+  ggplot(aes(x, y)) +
+  geom_line() +
+  geom_line(aes(y = y_low), linetype = 2) +
+  geom_line(aes(y = y_high), linetype = 2) +
+  labs(title = "GAM of Biden feeling thermometer",
+       subtitle = "Cubic spline",
+       x = "Education",
+       y = expression(f[2](education)))
+
+## gender
+data_frame(x = biden_gam_terms$female$x,
+           y = biden_gam_terms$female$y,
+           se.fit = biden_gam_terms$female$se.y) %>%
+  unique %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit,
+         x = factor(x, levels = 0:1, labels = c("Male", "Female"))) %>%
+  ggplot(aes(x, y, ymin = y_low, ymax = y_high)) +
+  geom_errorbar() +
+  geom_point() +
+  labs(title = "GAM of Biden feeling thermometer",
+       x = NULL,
+       y = expression(f[3](gender)))
+```
+
+For age, there does not appear to be a substantial or significant relationship with Biden feeling thermometers after controlling for education and gender. The cubic spline is relatively flat and the 95% confidence interval is wide. For education, the effect appears substantial and statistically significant; as education increases, predicted Biden feeling thermometer ratings decrease until approximately 15 years of formal education, then increase again for those with college or post-graduate degrees. Finally, for gender the difference between males and females is substantial and statistically distinguishable from 0.
+
+Instead of cubic splines, we could use local regression. At this point we can no longer use OLS to fit the model, but instead uses a **backfitting** process to model each predictor simultaneously.
+
+```{r biden-gam-local}
+# estimate model for splines on age and education plus dichotomous female
+biden_gam_local <- gam(biden ~ lo(age) + lo(educ) + female, data = biden)
+summary(biden_gam_local)
+
+# get graphs of each term
+biden_gam_local_terms <- preplot(biden_gam_local, se = TRUE, rug = FALSE)
+
+## age
+data_frame(x = biden_gam_local_terms$`lo(age)`$x,
+           y = biden_gam_local_terms$`lo(age)`$y,
+           se.fit = biden_gam_local_terms$`lo(age)`$se.y) %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit) %>%
+  ggplot(aes(x, y)) +
+  geom_line() +
+  geom_line(aes(y = y_low), linetype = 2) +
+  geom_line(aes(y = y_high), linetype = 2) +
+  labs(title = "GAM of Biden feeling thermometer",
+       subtitle = "Local regression",
+       x = "Age",
+       y = expression(f[1](age)))
+
+## education
+data_frame(x = biden_gam_local_terms$`lo(educ)`$x,
+           y = biden_gam_local_terms$`lo(educ)`$y,
+           se.fit = biden_gam_local_terms$`lo(educ)`$se.y) %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit) %>%
+  ggplot(aes(x, y)) +
+  geom_line() +
+  geom_line(aes(y = y_low), linetype = 2) +
+  geom_line(aes(y = y_high), linetype = 2) +
+  labs(title = "GAM of Biden feeling thermometer",
+       subtitle = "Local regression",
+       x = "Education",
+       y = expression(f[2](education)))
+
+## gender
+data_frame(x = biden_gam_local_terms$female$x,
+           y = biden_gam_local_terms$female$y,
+           se.fit = biden_gam_local_terms$female$se.y) %>%
+  unique %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit,
+         x = factor(x, levels = 0:1, labels = c("Male", "Female"))) %>%
+  ggplot(aes(x, y, ymin = y_low, ymax = y_high)) +
+  geom_errorbar() +
+  geom_point() +
+  labs(title = "GAM of Biden feeling thermometer",
+       x = NULL,
+       y = expression(f[3](gender)))
+```
+
+The results are pretty similar to the cubic splines.
+
+We can also use GAMs for classification problems, like the Titanic example.
+
+```{r titanic-gam}
+library(titanic)
+
+# estimate model for splines on age and education plus dichotomous female
+titanic_gam <- gam(Survived ~ bs(Age, df = 5) + bs(Fare, df = 5) + Sex, data = titanic_train,
+                   family = binomial)
+summary(titanic_gam)
+
+# get graphs of each term
+titanic_gam_terms <- preplot(titanic_gam, se = TRUE, rug = FALSE)
+
+## age
+data_frame(x = titanic_gam_terms$`bs(Age, df = 5)`$x,
+           y = titanic_gam_terms$`bs(Age, df = 5)`$y,
+           se.fit = titanic_gam_terms$`bs(Age, df = 5)`$se.y) %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit) %>%
+  ggplot(aes(x, y)) +
+  geom_line() +
+  geom_line(aes(y = y_low), linetype = 2) +
+  geom_line(aes(y = y_high), linetype = 2) +
+  labs(title = "GAM of Titanic survival",
+       subtitle = "Cubic spline",
+       x = "Age",
+       y = expression(f[1](age)))
+
+## fare
+data_frame(x = titanic_gam_terms$`bs(Fare, df = 5)`$x,
+           y = titanic_gam_terms$`bs(Fare, df = 5)`$y,
+           se.fit = titanic_gam_terms$`bs(Fare, df = 5)`$se.y) %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit) %>%
+  ggplot(aes(x, y)) +
+  geom_line() +
+  geom_line(aes(y = y_low), linetype = 2) +
+  geom_line(aes(y = y_high), linetype = 2) +
+  labs(title = "GAM of Titanic survival",
+       subtitle = "Cubic spline",
+       x = "Fare",
+       y = expression(f[2](fare)))
+
+## gender
+data_frame(x = titanic_gam_terms$Sex$x,
+           y = titanic_gam_terms$Sex$y,
+           se.fit = titanic_gam_terms$Sex$se.y) %>%
+  unique %>%
+  mutate(y_low = y - 1.96 * se.fit,
+         y_high = y + 1.96 * se.fit,
+         x = factor(x, levels = c("male", "female"), labels = c("Male", "Female"))) %>%
+  ggplot(aes(x, y, ymin = y_low, ymax = y_high)) +
+  geom_errorbar() +
+  geom_point() +
+  labs(title = "GAM of Titanic survival",
+       x = NULL,
+       y = expression(f[3](gender)))
+```
 
 # Acknowledgements {.toc-ignore}
 
