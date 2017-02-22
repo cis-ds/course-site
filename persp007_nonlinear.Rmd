@@ -33,6 +33,7 @@ library(titanic)
 library(knitr)
 library(splines)
 library(ISLR)
+library(lattice)
 
 set.seed(1234)
 options(digits = 3)
@@ -614,12 +615,14 @@ ggplot(wage, aes(age, wage)) +
        y = "Wage")
 ```
 
-```{r wage-knots}
+We can estimate $10$-fold CV MSE for varying numbers of polynomial degrees and knots.
+
+```{r wage-cv}
 # function to simplify things
-wage_knots <- function(data, degree = 3, df = NULL){
+wage_spline_cv <- function(data, degree = 3, df = NULL){
   # estimate the model on each fold
   models <- map(data$train, ~ glm(wage ~ bs(age, df = df, degree = degree),
-                                data = .))
+                                  data = .))
   
   # calculate mse for each test fold
   models_mse <- map2_dbl(models, data$test, mse)
@@ -630,9 +633,54 @@ wage_knots <- function(data, degree = 3, df = NULL){
 # fold the data
 wage_kfold <- crossv_kfold(wage, k = 10)
 
-# estimate mse for knots in 1:10
-(wage_degree_mse <- data_frame(knots = 1:10,
-                            mse = map_dbl(knots, ~ wage_knots(wage_kfold, df = .))))
+# estimate mse for polynomial degrees in 1:10
+wage_degree_mse <- data_frame(degrees = 1:10,
+                              mse = map_dbl(degrees, ~ wage_spline_cv(wage_kfold, degree = .,
+                                                                      df = 3 + .)))
+
+# estimate mse for degrees of freedom (aka knots)
+wage_df_mse <- data_frame(df = 1:10,
+                          mse = map_dbl(df, ~ wage_spline_cv(wage_kfold, df = 3 + .)))
+
+# graph the results
+ggplot(wage_degree_mse, aes(degrees, mse)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "Optimal number of degrees for wage spline regression",
+       subtitle = "Knots = 3",
+       x = "Highest-order polynomial",
+       y = "10-fold CV MSE")
+
+ggplot(wage_df_mse, aes(df, mse)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = 1:10) +
+  labs(title = "Optimal number of knots for wage spline regression",
+       subtitle = "Highest-order polynomial = 3",
+       x = "Knots",
+       y = "10-fold CV MSE")
+```
+
+These results suggest the optimal number of polynomial degrees is 6, while the optimal number of knots is 2. The resulting model produced by these parameters is:
+
+```{r wage-optimal-mod}
+wage_optim <- glm(wage ~ bs(age, df = 8, degree = 6), data = wage)
+
+augment(wage_optim, newdata = data_grid(wage, age)) %>%
+  mutate(.fitted_low = .fitted - 1.96 * .se.fit,
+         .fitted_high = .fitted + 1.96 * .se.fit) %>%
+  ggplot(aes(age, .fitted)) +
+  geom_point(data = wage, aes(y = wage), alpha = .05) +
+  geom_line() +
+  geom_line(aes(y = .fitted_low), linetype = 2) +
+  geom_line(aes(y = .fitted_high), linetype = 2) +
+  geom_vline(xintercept = attr(bs(wage$age, df = 8, degree = 6), "knots"),
+             linetype = 2, color = "blue") +
+  labs(title = "Sixth-order polynomial spline of wage",
+       subtitle = "Knots = 2",
+       x = "Age",
+       y = "Wage")
 ```
 
 # Local regression
@@ -643,12 +691,12 @@ wage_kfold <- crossv_kfold(wage, k = 10)
 
 1. Gather the fraction $s = \frac{k}{n}$ of training points whose $x_i$ are closest to $x_0$.
 1. Assign a weight $K_{i0} = K(x_i, x_0)$ to each point in the neighborhood, so that the point furthest from $x_0$ has a weight of 0, and the closest has the highest weight. All but these $k$ nearest neighbors get a weight of 0.
-1. Fit a **weighted least squares regression** of the $y_i$ on the $x_i$ using the aformentioned weights. Weighted least squares allows us to adjust the variance for each observation $\sigma_i^2$ by weights $w_i$. This is useful in correcting for heterscedasticity in OLS, and also allows us to estimate the local regression.
+1. Fit a **weighted least squares regression** of the $y_i$ on the $x_i$ using the aformentioned weights. Weighted least squares allows us to adjust the variance for each observation $\sigma_i^2$ by weights $w_i$. This is useful in correcting for heteroscedasticity in OLS, and also allows us to estimate the local regression.
 1. The fitted value at $x_0$ is given by $\hat{f}(x_0) = \hat{\beta}_0 + \hat{\beta}_1 x_0$
 
 To obtain the local regression fit at a new value of $x_0$, we have to perform this same procedure again adjusting the weights for the new region of data.
 
-Here is an example of a local linear regression (highest degree equal to 1) on the `ethanol` dataset in the `lattice` package:
+Here is an example of a local linear regression on the `ethanol` dataset in the `lattice` package:
 
 ```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
 library(lattice)
@@ -656,12 +704,22 @@ library(lattice)
 mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
 fit <- augment(mod)
 
-ggplot(fit, aes(E, NOx)) +
+mod0 <- loess(NOx ~ E, ethanol, degree = 0, span = .75)
+mod1 <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
+mod2 <- loess(NOx ~ E, ethanol, degree = 2, span = .75)
+
+fit_all <- ethanol %>%
+  gather_predictions(mod0, mod1, mod2) %>%
+  mutate(model = factor(model, levels = c("mod0", "mod1", "mod2"),
+                        labels = c("Constant", "Linear", "Quadratic")))
+
+ggplot(fit_all, aes(E, NOx)) +
   geom_point() +
-  geom_line(aes(y = .fitted), color = "red") +
+  geom_line(aes(y = pred, color = model)) +
   labs(title = "Local linear regression",
        x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
+       y = "Concentration of nitrogen oxides in micrograms/J",
+       color = "Regression")
 ```
 
 The LOESS is built up point-by-point:
