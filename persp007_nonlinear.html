@@ -1027,30 +1027,6 @@ wage_df_mse &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<sp
        <span class="dt">y =</span> <span class="st">&quot;Wage&quot;</span>)</code></pre></div>
 <p><img src="persp007_nonlinear_files/figure-html/wage-optimal-mod-1.png" width="672" /></p>
 </div>
-<div id="basis-splines-versus-natural-splines" class="section level2">
-<h2>Basis splines versus natural splines</h2>
-<p>The splines we have estimated so far are <strong>basic splines</strong>. They contain internal knots with constraints that the function be continuous and smooth. However basis splines also tend to have high variance at the outer range of the predictors.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wage_frac &lt;-<span class="st"> </span><span class="kw">filter</span>(wage, wage &lt;<span class="st"> </span><span class="dv">250</span>, wage &gt;<span class="st"> </span><span class="dv">50</span>)
-wage_bs &lt;-<span class="st"> </span><span class="kw">glm</span>(wage ~<span class="st"> </span><span class="kw">bs</span>(age, <span class="dt">df =</span> <span class="dv">5</span>), <span class="dt">data =</span> wage_frac)
-wage_ns &lt;-<span class="st"> </span><span class="kw">glm</span>(wage ~<span class="st"> </span><span class="kw">ns</span>(age, <span class="dt">df =</span> <span class="dv">5</span>), <span class="dt">data =</span> wage_frac)
-
-wage_bs_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(wage_bs, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(wage_frac, age)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.fitted_low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
-         <span class="dt">.fitted_high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
-wage_ns_pred &lt;-<span class="st"> </span><span class="kw">augment</span>(wage_ns, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(wage_frac, age)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.fitted_low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
-         <span class="dt">.fitted_high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
-
-<span class="kw">bind_rows</span>(wage_bs_pred, wage_ns_pred, <span class="dt">.id =</span> <span class="st">&quot;model&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">factor</span>(model, <span class="dt">levels =</span> <span class="dv">1</span>:<span class="dv">2</span>,
-                        <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Basis cubic spline&quot;</span>, <span class="st">&quot;Natural cubic spline&quot;</span>))) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, .fitted, <span class="dt">color =</span> model)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted_low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted_high), <span class="dt">linetype =</span> <span class="dv">2</span>) +
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> wage_frac, <span class="kw">aes</span>(age, wage, <span class="dt">color =</span> <span class="ot">NULL</span>), <span class="dt">alpha =</span> .<span class="dv">05</span>)</code></pre></div>
-<p><img src="persp007_nonlinear_files/figure-html/nat-spline-1.png" width="672" /></p>
-</div>
 </div>
 <div id="local-regression" class="section level1">
 <h1>Local regression</h1>
@@ -1104,65 +1080,58 @@ video of chunk loess_span
 ##  tz       America/Chicago             
 ##  date     2017-02-22                  
 ## 
-##  package      * version date       source                           
-##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)                   
-##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)                   
-##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)                   
-##  codetools      0.2-15  2016-10-05 CRAN (R 3.3.2)                   
-##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)                   
-##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)                   
-##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)                   
-##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)                   
-##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)                   
-##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)                   
-##  forcats        0.2.0   2017-01-23 CRAN (R 3.3.2)                   
-##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)                   
-##  gganimate    * 0.1     2016-11-11 Github (dgrtwo/gganimate@26ec501)
-##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)                   
-##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)                   
-##  haven          1.0.0   2016-09-23 cran (@1.0.0)                    
-##  hms            0.3     2016-11-22 CRAN (R 3.3.2)                   
-##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)                   
-##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)                   
-##  ISLR         * 1.0     2013-06-11 CRAN (R 3.3.0)                   
-##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)                   
-##  knitr        * 1.15.1  2016-11-22 cran (@1.15.1)                   
-##  labeling       0.3     2014-08-23 CRAN (R 3.3.0)                   
-##  lattice      * 0.20-34 2016-09-06 CRAN (R 3.3.2)                   
-##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)                   
-##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)                   
-##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)                   
-##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)                   
-##  MatrixModels * 0.4-1   2015-08-22 CRAN (R 3.3.0)                   
-##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)                   
-##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)                   
-##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)                   
-##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)                   
-##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)                   
-##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)                   
-##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)                   
-##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)                   
-##  quantreg     * 5.29    2016-09-04 CRAN (R 3.3.0)                   
-##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)                   
-##  rcfss        * 0.1.3   2017-02-16 local                            
-##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)                   
-##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)                   
-##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)                   
-##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)                   
-##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)                   
-##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)                   
-##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)                   
-##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)                   
-##  SparseM      * 1.74    2016-11-10 CRAN (R 3.3.2)                   
-##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)                   
-##  stringr        1.1.0   2016-08-19 cran (@1.1.0)                    
-##  tibble       * 1.2     2016-08-26 cran (@1.2)                      
-##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)                   
-##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)                   
-##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)                   
-##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)                   
-##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)                   
-##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  ISLR       * 1.0     2013-06-11 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr      * 1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice    * 0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss      * 0.1.3   2017-02-16 local         
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
