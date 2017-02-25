@@ -532,10 +532,11 @@ Let's return to our running Titanic example. I want to predict who lives and who
 ```{r titanic_tree}
 titanic <- titanic_train %>%
   as_tibble() %>%
-  mutate(Survived = factor(Survived, levels = 0:1, labels = c("Died", "Survived")))
+  mutate(Survived = factor(Survived, levels = 0:1, labels = c("Died", "Survived")),
+         Female = factor(Sex, levels = c("male", "female")))
 
 # estimate model
-titanic_tree <- tree(Survived ~ Age + Sex, data = titanic,
+titanic_tree <- tree(Survived ~ Age + Female, data = titanic,
                      control = tree.control(nobs = nrow(titanic),
                             mindev = .001))
 
@@ -569,7 +570,7 @@ mse.tree <- function (model, data){
 titanic_cv <- titanic %>%
   na.omit() %>%
   crossv_kfold(k = 10) %>%
-  mutate(tree = map(train, ~ tree(Survived ~ Age + Sex, data = .,
+  mutate(tree = map(train, ~ tree(Survived ~ Age + Female, data = .,
      control = tree.control(nobs = nrow(titanic),
                             mindev = .001))))
 
@@ -600,7 +601,7 @@ titanic_cv %>%
 Here I select 7 as the optimal number of nodes; while the error rate continues to decline, there are diminishing marginal returns.
 
 ```{r titanic-tree-7, dependson="titanic-tree"}
-mod <- prune.tree(titanic_tree, best = 7)
+mod <- prune.tree(titanic_tree, best = 10)
 
 tree_data <- dendro_data(mod)
 ggplot(segment(tree_data)) +
