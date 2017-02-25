@@ -27,6 +27,7 @@ knitr::opts_chunk$set(cache = TRUE,
 library(tidyverse)
 library(modelr)
 library(broom)
+library(tree)
 library(stringr)
 library(ISLR)
 library(ggdendro)
@@ -190,10 +191,13 @@ partition.tree.data <- function (tree, label = "yval", add = FALSE, ordvars, ...
     xx <- matrix(xy$xcoord, nrow = 4L)
     yy <- matrix(xy$ycoord, nrow = 2L)
 
-    return(data_frame(xmin = xx[1L,],
-                      ymin = xx[2L,],
-                      xmax = xx[3L,],
-                      ymax = xx[4L,]))
+    return(list(data_frame(xmin = xx[1L,],
+                           ymin = xx[2L,],
+                           xmax = xx[3L,],
+                           ymax = xx[4L,]),
+                data_frame(x = yy[1L,],
+                           y = yy[2L,],
+                           label = lab)))
     # if (!add) 
     #   plot(rx, rz, xlab = var[1L], ylab = var[2L], type = "n", 
     #        xaxs = "i", yaxs = "i", ...)
@@ -297,11 +301,86 @@ preg <- ggplot(Auto, aes(horsepower, mpg)) +
 grid.arrange(ptree, preg, ncol = 2)
 ```
 
-There are `r nrow(mod$frame)` nodes in this decision tree, with `r nrow(mod$frame)` different regions and `r nrow(mod$frame)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
+There are `r nrow(mod$frame)` nodes in this decision tree, with `r nrow(mod$frame)` different regions and `r nrow(mod$frame)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
 
 ### Multiple predictors
 
+With just a single predictor, the regions are a function of that one predictor. If we add a second predictor (say, vehicle weight), the regions become a function of **both** predictors and can be visualized as grids or boxes.
 
+```{r auto-tree-weight}
+auto_tree <- tree(mpg ~ horsepower + weight, data = Auto,
+     control = tree.control(nobs = nrow(Auto),
+                            mindev = 0))
+
+mod <- prune.tree(auto_tree, best = 3)
+
+# plot tree
+tree_data <- dendro_data(mod)
+ptree <- ggplot(segment(tree_data)) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend), 
+               alpha = 0.5) +
+  geom_text(data = label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = -0.5, size = 3) +
+  geom_text(data = leaf_label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = 0.5, size = 3) +
+  theme_dendro()
+
+# plot region space
+preg <- ggplot(Auto, aes(weight, horsepower)) +
+  geom_point(alpha = .2) +
+  geom_segment(data = partition.tree.data(mod)[[1]],
+               aes(x = xmin, xend = xmax, y = ymin, yend = ymax)) +
+  geom_text(data = partition.tree.data(mod)[[2]],
+            aes(x = x, y = y, label = label)) +
+  coord_cartesian(xlim = c(min(Auto$weight), max(Auto$weight)),
+                  ylim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                  expand = FALSE) +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+
+# display plots side by side
+grid.arrange(ptree, preg, ncol = 2,
+             top = textGrob(str_c("Nodes = 3"), gp = gpar(fontsize = 20)))
+```
+
+* If `weight` $`r mod$frame$splits[1,2]`$, then the model estimates highway mileage to be approximately `r mod$frame$yval[5]`.
+* If `weight` $`r mod$frame$splits[1,1]`$, then we proceed down the left branch to the next internal node.
+    * If `horsepower` $`r mod$frame$splits[2,1]`$, then the model estimates highway mileage to be `r mod$frame$yval[3]`.
+    * If `horsepower` $`r mod$frame$splits[2,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[4]`.
+
+We can continue to build the tree up by adding additional nodes:
+
+```{r auto-tree-weight-i}
+for(i in c(4:10, 20, 50, 100)){
+  mod <- prune.tree(auto_tree, best = i)
+  
+  # plot tree
+  tree_data <- dendro_data(mod)
+  ptree <- ggplot(segment(tree_data)) +
+    geom_segment(aes(x = x, y = y, xend = xend, yend = yend), 
+                 alpha = 0.5) +
+    geom_text(data = label(tree_data), 
+              aes(x = x, y = y, label = label), vjust = -0.5, size = 3) +
+    geom_text(data = leaf_label(tree_data), 
+              aes(x = x, y = y, label = label), vjust = 0.5, size = 3) +
+    theme_dendro()
+  
+  # plot region space
+  preg <- ggplot(Auto, aes(weight, horsepower)) +
+    geom_point(alpha = .2) +
+    geom_segment(data = partition.tree.data(mod)[[1]],
+                 aes(x = xmin, xend = xmax, y = ymin, yend = ymax)) +
+    geom_text(data = partition.tree.data(mod)[[2]],
+              aes(x = x, y = y, label = label)) +
+    coord_cartesian(xlim = c(min(Auto$weight), max(Auto$weight)),
+                    ylim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                    expand = FALSE) +
+    theme(panel.border = element_rect(fill = NA, size = 1))
+  
+  # display plots side by side
+  grid.arrange(ptree, preg, ncol = 2,
+               top = textGrob(str_c("Nodes = ", i), gp = gpar(fontsize = 20))) 
+}
+```
 
 ### Estimation procedure
 
