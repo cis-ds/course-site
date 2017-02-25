@@ -35,7 +35,7 @@ library(gridExtra)
 library(grid)
 library(rcfss)
 
-options(digits = 2)
+options(digits = 3)
 set.seed(1234)
 theme_set(theme_minimal())
 ```
@@ -339,7 +339,8 @@ preg <- ggplot(Auto, aes(weight, horsepower)) +
 
 # display plots side by side
 grid.arrange(ptree, preg, ncol = 2,
-             top = textGrob(str_c("Nodes = 3"), gp = gpar(fontsize = 20)))
+             top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                            gp = gpar(fontsize = 20)))
 ```
 
 * If `weight` $`r mod$frame$splits[1,2]`$, then the model estimates highway mileage to be approximately `r mod$frame$yval[5]`.
@@ -350,7 +351,7 @@ grid.arrange(ptree, preg, ncol = 2,
 We can continue to build the tree up by adding additional nodes:
 
 ```{r auto-tree-weight-i}
-for(i in c(4:10, 20, 50, 100)){
+for(i in c(4:10, 20, 50)){
   mod <- prune.tree(auto_tree, best = i)
   
   # plot tree
@@ -378,13 +379,130 @@ for(i in c(4:10, 20, 50, 100)){
   
   # display plots side by side
   grid.arrange(ptree, preg, ncol = 2,
-               top = textGrob(str_c("Nodes = ", i), gp = gpar(fontsize = 20))) 
+               top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                              gp = gpar(fontsize = 20))) 
 }
 ```
 
 ### Estimation procedure
 
+We have already identified that decision trees use stratification to divide the observations into $R_J$ regions. Like in linear regression, our goal is to minimize the residual sum of the squared errors (RSS), defined for a decision tree as:
+
+$$\sum_{j=1}^J \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2$$
+
+where $\hat{y}_{R_j}$ is the mean response for the observations in the $j$th region. In order to do this, decision trees implement a **recursive binary strategy**. The process begins at the top of the tree (**top-down**) and successively splits the data into a new region. This split generates two new branches in the tree. Rather than looking forward to select the optimal split among all future possibilities, this approach is **greedy** in that it selects the best split **at that particular step**. Given all the potential splits that could be performed on one of the predictors $X_1, X_2, \dots, X_p$ predictors, the algorithm assigns a cutpoint $s$ that splits the data in the manner that reduces the RSS by the largest amount. As the number of predictors $p$ and observations $N$ increases, the more potential cutpoints the algorithm must consider. However even with relatively large numbers of predictors and observations, the computational process is quite efficient.
+
+This process continues until some designated stopping criteria is reached, otherwise it could continue until each training observation is sorted into its own node (i.e. overfitting). For example, the `tree()` function in R (from the `tree` library) will not split a node if it would contain fewer than 10 training observations. Once this iterative process stops, we can generate predicted values for the response of a given test observation by calculating the mean of the training observations for the region in which the test observation belongs.
+
 ### Pruning the tree
+
+Notice that we stop splitting the tree in order to prevent overfitting. Even with the above process, decision trees are highly susceptible to overfitting due to its natural complexity. And if we simply set the stopping criteria at a higher level, we may miss crucial branches later on in the process. Instead we want a method that allows us to grow a large tree and preserve the most important branches or elements.
+
+![](https://growingtogether.areavoices.com/files/2015/11/pruning.jpg)
+
+In essence, we want to **prune** the tree. **Cost complexity pruning** is one predominant method for achieving this goal. While I leave the mathematics of this operation to [ISL](https://link-springer-com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7), cost complexity pruning uses a **tuning parameter** to selectively prune or snip branches that do not contribute significant predictive accuracy, resulting in a subtree generated from the full tree. Different tuning parameter values will lead to different trade-offs between model complexity and model accuracy, so functions such as `prune.tree()` use [$k$-fold cross-validation](persp006_resampling.html#k-fold_cross-validation) to select a cost complexity parameter that optimally balances the trade-off for the specific dataset.
+
+For example, here is the full tree grown for the horsepower + weight decision tree using the default control parameters for `tree()`:
+
+```{r auto-tree-default}
+auto_tree <- tree(mpg ~ horsepower + weight, data = Auto,
+     control = tree.control(nobs = nrow(Auto),
+                            mindev = 0))
+mod <- auto_tree
+
+# plot tree
+tree_data <- dendro_data(mod)
+ptree <- ggplot(segment(tree_data)) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend), 
+               alpha = 0.5) +
+  geom_text(data = label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = -0.5, size = 3) +
+  geom_text(data = leaf_label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = 0.5, size = 3) +
+  theme_dendro()
+
+# plot region space
+preg <- ggplot(Auto, aes(weight, horsepower)) +
+  geom_point(alpha = .2) +
+  geom_segment(data = partition.tree.data(mod)[[1]],
+               aes(x = xmin, xend = xmax, y = ymin, yend = ymax)) +
+  geom_text(data = partition.tree.data(mod)[[2]],
+            aes(x = x, y = y, label = label)) +
+  coord_cartesian(xlim = c(min(Auto$weight), max(Auto$weight)),
+                  ylim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                  expand = FALSE) +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+
+# display plots side by side
+grid.arrange(ptree, preg, ncol = 2,
+             top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                            gp = gpar(fontsize = 20)))
+```
+
+Let's use $10$-fold CV to select the optimal tree size:
+
+```{r auto-tree-default-prune}
+# generate 10-fold CV trees
+auto_cv <- crossv_kfold(Auto, k = 10) %>%
+  mutate(tree = map(train, ~ tree(mpg ~ horsepower + weight, data = .,
+     control = tree.control(nobs = nrow(Auto),
+                            mindev = 0))))
+
+# calculate each possible prune result for each fold
+auto_cv <- expand.grid(auto_cv$.id, 2:10) %>%
+  as_tibble() %>%
+  mutate(Var2 = as.numeric(Var2)) %>%
+  rename(.id = Var1,
+         k = Var2) %>%
+  left_join(auto_cv) %>%
+  mutate(prune = map2(tree, k, ~ prune.tree(.x, best = .y)),
+         mse = map2_dbl(prune, test, mse))
+
+auto_cv %>%
+  select(k, mse) %>%
+  group_by(k) %>%
+  summarize(test_mse = mean(mse),
+            sd = sd(mse, na.rm = TRUE)) %>%
+  ggplot(aes(k, test_mse)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Number of terminal nodes",
+       y = "Test MSE")
+```
+
+The minimum cross-validated test MSE is for 7 terminal nodes. Here's what that tree looks like:
+
+```{r auto-tree-7}
+mod <- prune.tree(auto_tree, best = 7)
+
+# plot tree
+tree_data <- dendro_data(mod)
+ptree <- ggplot(segment(tree_data)) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend), 
+               alpha = 0.5) +
+  geom_text(data = label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = -0.5, size = 3) +
+  geom_text(data = leaf_label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = 0.5, size = 3) +
+  theme_dendro()
+
+# plot region space
+preg <- ggplot(Auto, aes(weight, horsepower)) +
+  geom_point(alpha = .2) +
+  geom_segment(data = partition.tree.data(mod)[[1]],
+               aes(x = xmin, xend = xmax, y = ymin, yend = ymax)) +
+  geom_text(data = partition.tree.data(mod)[[2]],
+            aes(x = x, y = y, label = label)) +
+  coord_cartesian(xlim = c(min(Auto$weight), max(Auto$weight)),
+                  ylim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                  expand = FALSE) +
+  theme(panel.border = element_rect(fill = NA, size = 1))
+
+# display plots side by side
+grid.arrange(ptree, preg, ncol = 2,
+             top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                            gp = gpar(fontsize = 20)))
+```
 
 ## Classification trees
 
