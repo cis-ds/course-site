@@ -653,7 +653,64 @@ Decision trees are an entirely different method of estimating functional forms a
 However there are also drawbacks to trees:
 
 * Their accuracy rates are generally lower than other regression and classification approaches.
-* Trees can be non-robust. That is, a small change in the data or inclusion/exclusion of a handful of observations can dramatically alter the final estimated tree.
+* Trees can be non-robust. That is, a small change in the data or inclusion/exclusion of a handful of observations can dramatically alter the final estimated tree. For example, let's estimate a decision tree for the highway mileage example ($N = `r nrow(Auto)`) by splitting the data into a training/test set (70/30%) and estimating the test MSE, and repeat this process 1000 times using random combinations of training/test sets:
+
+    ```{r auto-tree-val}
+    auto_val_test <- function(){
+      # split data
+      auto_split <- resample_partition(Auto, p = c(test = 0.3, train = 0.7))
+      
+      # estimate model
+      val <- tree(mpg ~ horsepower + weight, data = auto_split$train)
+      
+      # estimate test mse
+      mse(val, auto_split$test)
+    }
+    
+    # repeat the procedure 100 times
+    val_mse <- data_frame(id = 1:1000,
+                          mse = map_dbl(id, ~ auto_val_test()))
+    
+    # mean of the mse
+    mean(val_mse$mse)
+    
+    # distribution of the mse
+    ggplot(val_mse, aes(mse)) +
+      geom_histogram()
+    ```
+    
+    Even on larger datasets, this same trend will hold:
+    
+    ```{r sim-tree-val}
+    simdata <- data_frame(x = runif(10000, 0, 10),
+                          y = 2 + 3 * x + ifelse(x < 3, -x, 0) + rnorm(10000, 0, 3))
+    
+    simdata_val_test <- function(){
+      # split data
+      simdata_split <- resample_partition(simdata, p = c(test = 0.3, train = 0.7))
+      
+      # estimate model
+      val <- tree(y ~ x, data = simdata_split$train)
+      
+      # estimate test mse
+      mse(val, simdata_split$test)
+    }
+    
+    # repeat the procedure 100 times
+    val_mse <- data_frame(id = 1:1000,
+                          mse = map_dbl(id, ~ simdata_val_test()))
+    ```
+    
+    ```{r sim-tree-val-plot}
+    # mean of the mse
+    mean(val_mse$mse)
+    
+    # distribution of the mse
+    ggplot(val_mse, aes(mse)) +
+      geom_histogram()
+    ```
+
+
 
 Fortuntately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.
 
