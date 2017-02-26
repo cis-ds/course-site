@@ -619,6 +619,27 @@ ggplot(segment(tree_data)) +
        subtitle = "Age + Gender")
 ```
 
+Notice that some branches split and lead to the same outcome. For instance, the bottom-left branch assigns individuals with an age both greater than and less than $.96$ to `Survived`. This is because splitting the node leads to increased **node purity** where we are even more confident in our predictions. Think about it. Here are the outcomes in the training observations for females less than 13 years old:
+
+```{r titanic-f-13}
+titanic %>%
+  filter(Female == "female", Age < 13) %>%
+  count(Survived)
+```
+
+We would predict for all of these observations that the individual survived, being incorrect 13 times. What happens if we split this subset even further?
+
+```{r titanic-f-13-split}
+titanic %>%
+  filter(Female == "female", Age < 13) %>%
+  mutate(age96 = Age < .96) %>%
+  count(age96, Survived) %>%
+  complete(age96, Survived, fill = list(n = 0)) %>%
+  knitr::kable(col.names = c("Less than .96 years old", "Outcome", "Number of training observations"))
+```
+
+For individuals less than $.96$ years old, the decision tree prediction achieves complete node purity - it perfectly predicts all of the training observations as survivors. If we had a test observation for a female infant (i.e. less than a year old), we'd be more confident in our prediction than if we had terminated the node at $\text{age} < 13$. While this does not improve our error rate (we would have made the same prediction regardless), it does improve our Gini index and cross-entropy which are the measures used to grow the tree.
+
 ## Trees vs. regression
 
 # Bagging
