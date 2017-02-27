@@ -36,6 +36,8 @@ library(gridExtra)
 library(grid)
 library(titanic)
 library(rcfss)
+library(pROC)
+library(gbm)
 # to get the tree graphs with the labels and values, use the forked
 # version of ggdendro
 # devtools::install_github("bensoltoff/ggdendro")
@@ -672,7 +674,7 @@ Decision trees are an entirely different method of estimating functional forms a
 However there are also drawbacks to trees:
 
 * Their accuracy rates are generally lower than other regression and classification approaches.
-* Trees can be non-robust. That is, a small change in the data or inclusion/exclusion of a handful of observations can dramatically alter the final estimated tree. For example, let's estimate a decision tree for the highway mileage example ($N = `r nrow(Auto)`) by splitting the data into a training/test set (70/30%) and estimating the test MSE, and repeat this process 1000 times using random combinations of training/test sets:
+* Trees can be non-robust. That is, a small change in the data or inclusion/exclusion of a handful of observations can dramatically alter the final estimated tree. For example, let's estimate a decision tree for the highway mileage example ($N = `r nrow(Auto)`$) by splitting the data into a training/test set (70/30%) and estimating the test MSE, and repeat this process 1000 times using random combinations of training/test sets:
 
     ```{r auto-tree-val}
     auto_val_test <- function(){
@@ -690,15 +692,13 @@ However there are also drawbacks to trees:
     val_mse <- data_frame(id = 1:1000,
                           mse = map_dbl(id, ~ auto_val_test()))
     
-    # mean of the mse
-    mean(val_mse$mse)
-    
     # distribution of the mse
     ggplot(val_mse, aes(mse)) +
-      geom_histogram()
+      geom_histogram() +
+      geom_vline(xintercept = mean(val_mse$mse))
     ```
 
-Fortuntately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.
+The distribution of test MSEs is quite large for each of the splits, indicating substantial variance in our estimate of the test MSE. Fortuntately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.
 
 # Bagging
 
@@ -743,20 +743,31 @@ titanic_tree_bag <- function(){
                               mtry = 7, ntree = 500)
   
   # calculate difference in test MSE
-  err.rate.tree(titanic_tree, as_tibble(titanic_split$test)) - err.rate.rf(titanic_bag, as_tibble(titanic_split$test))
+  data_frame(err_rf = err.rate.rf(titanic_bag, as_tibble(titanic_split$test)),
+             err_tree = err.rate.tree(titanic_tree, as_tibble(titanic_split$test)),
+             auc_rf = auc(as_tibble(titanic_split$test)$Survived, predict(titanic_bag, newdata = as_tibble(titanic_split$test), type = "prob")[,2]),
+             auc_tree = auc(as_tibble(titanic_split$test)$Survived, predict(titanic_tree, newdata = as_tibble(titanic_split$test), type = "vector")[,2]))
 }
 
 tree_bag_comp <- rerun(100, titanic_tree_bag()) %>%
-  unlist() %>%
-  data_frame(err_diff = .)
+  bind_rows() %>%
+  mutate(err_diff = err_rf - err_tree,
+             auc_diff = auc_rf - auc_tree)
 
 ggplot(tree_bag_comp, aes(err_diff)) +
   geom_histogram() +
   geom_vline(xintercept = mean(tree_bag_comp$err_diff)) +
-  labs(x = "Tree error rate - bagged error rate")
+  labs(x = "Bagged error rate - Tree error rate",
+       caption = "Lower values are better for bagging")
+
+ggplot(tree_bag_comp, aes(auc_diff)) +
+  geom_histogram() +
+  geom_vline(xintercept = mean(tree_bag_comp$auc_diff)) +
+  labs(x = "Bagged AUC - Tree AUC",
+       caption = "Lower values are better for bagging")
 ```
 
-On average, the decision tree test error rate is `r mean(tree_bag_comp$err_diff)` higher than the comparable bagged test error rate.
+On average, the decision tree test error rate is `r mean(tree_bag_comp$err_diff)` higher than the comparable bagged test error rate and the AUC difference is `r mean(tree_bag_comp$auc_diff)`.
 
 ## Out-of-bag estimates
 
@@ -784,7 +795,7 @@ ggplot(prop_drawn, aes(.id, n_prop, group = x)) +
        y = "Proportion i-th observation in samples 1:b")
 ```
 
-Because of this, we can calculate the **out-of-bag error estimate**, or the average error estimate for out-of-bag observations. First we generate bagged predictions for each observation $i$ only using its OOB estimates, then we average across all $i$ observations to get the OOB error estimate. This is a valid estimate of the test error rate/MSE because it only uses observations that were not part of the training observations for a given bag $b$. This is far more computationally advantageous than calculating a cross-validated error rate for a bagged model.
+Because of this, we can calculate the **out-of-bag error estimate**, or the average error estimate for out-of-bag observations. First we generate bagged predictions for each observation $i$ using only its OOB estimates, then we average across all $i$ observations to get the OOB error estimate. This is a valid estimate of the test error rate/MSE because it only uses observations that were not part of the training observations for a given bag $b$. This is far more computationally advantageous than calculating a cross-validated error rate for a bagged model.
 
 ```{r titanic-bag-oob}
 titanic_rf_data <- titanic %>%
@@ -796,7 +807,28 @@ titanic_rf_data <- titanic %>%
                               mtry = 7, ntree = 500))
 ```
 
-For our Titanic bagged model with all available predictors, we estimate an OOB error rate of `r tail(titanic_bag$err.rate[,1], n = 1)`.
+##### Estimation time for OOB error rate
+
+```{r titanic-bag-oob-time}
+system.time({
+  randomForest(Survived ~ ., data = titanic_rf_data,
+                              mtry = 7, ntree = 500)
+})
+```
+
+##### Estimation time for $10$-fold CV error rate
+
+```{r titanic-bag-cv-time}
+system.time({
+  crossv_kfold(titanic_rf_data, k = 10) %>%
+    mutate(model = map(train, ~ randomForest(Survived ~ ., data = .,
+                              mtry = 7, ntree = 500)),
+           test.err = map2_dbl(model, test, err.rate.rf)) %>%
+    summarize(mean(test.err))
+})
+```
+
+For our Titanic bagged model with all available predictors, we estimate an OOB error rate of $`r tail(titanic_bag$err.rate[,1], n = 1) * 100`\%$. Likewise, we obtain a [confusion matrix](persp004_logistic_regression.html#confusion_matrix) to identify our error rate for each class.
 
 ## Variable importance measures
 
@@ -855,6 +887,85 @@ data_frame(var = rownames(importance(titanic_rf)),
 The OOB error rate is a couple points smaller on the random forest model. Also we can observe that the average decrease in the Gini index associated with each variable is generally smaller using the random forest method compared to bagging - this is because of the variable restriction imposed when considering splits.
 
 # Boosting
+
+**Boosting** is another approach to improve upon the result of a single decision tree. Instead of creating multiple independent decision trees through a bootstrapping process, boosting grows trees **sequentially**, using information from the previously grown trees. Rather than fitting a model to the response variable $Y$, we fit a large number of decision trees $\hat{f}^1, \dots, \hat{f}^B$ to the current **residuals**. Each time a new decision tree is estimated, the residuals are updated combining the results of all previous decision trees in preparation for fitting the next tree.
+
+Rather than learning hard and fast like in bagging and random forests, boosting **learns slowly** over time as new trees are added. Boosting is a general process that can be used for other statistical learning methods. The three main tuning parameters when boosting are:
+
+1. The **number of trees** $B$. If $B$ is too large, boosting can overfit. Typically we would use cross-validation to select $B$.
+1. The **shrinkage parameter** $\lambda$, which is a small positive number (i.e. $.01$ or $.001$). This controls the rate at which boosting learns. As $\lambda$ gets smaller, $B$ generally must increase.
+1. The **number of $d$ split in each tree**. Surprisingly, $d=1$ actually works well which is essentially an additive model (each tree is a **stump** with a single predictor), though larger values of $d$ are also common.
+
+Let's evaluate all the approaches we've seen so far using the Titanic model.
+
+```{r titanic-compare-all}
+titanic_split <- resample_partition(titanic_rf_data, p = c("test" = .3,
+                                                           "train" = .7))
+
+titanic_models <- list("bagging" = randomForest(Survived ~ ., data = titanic_split$train,
+                                                mtry = 7, ntree = 5000),
+                       "rf_mtry2" = randomForest(Survived ~ ., data = titanic_split$train,
+                                                 mtry = 2, ntree = 5000),
+                       "rf_mtry4" = randomForest(Survived ~ ., data = titanic_split$train,
+                                                 mtry = 4, ntree = 5000),
+                       "boosting_depth1" = gbm(as.numeric(Survived) - 1 ~ .,
+                                               data = titanic_split$train,
+                                               n.trees = 5000, interaction.depth = 1),
+                       "boosting_depth2" = gbm(as.numeric(Survived) - 1 ~ .,
+                                               data = titanic_split$train,
+                                               n.trees = 5000, interaction.depth = 2),
+                       "boosting_depth4" = gbm(as.numeric(Survived) - 1 ~ .,
+                                               data = titanic_split$train,
+                                               n.trees = 5000, interaction.depth = 4))
+
+boost_test_err <- data_frame(bagging = predict(titanic_models$bagging,
+                                               newdata = as_tibble(titanic_split$test),
+                                               predict.all = TRUE)[[2]] %>%
+                               apply(2, function(x) x != as_tibble(titanic_split$test)$Survived) %>%
+                               apply(2, mean),
+                             rf_mtry2 = predict(titanic_models$rf_mtry2,
+                                                newdata = as_tibble(titanic_split$test),
+                                                predict.all = TRUE)[[2]] %>%
+                               apply(2, function(x) x != as_tibble(titanic_split$test)$Survived) %>%
+                               apply(2, mean),
+                             rf_mtry4 = predict(titanic_models$rf_mtry4,
+                                                newdata = as_tibble(titanic_split$test),
+                                                predict.all = TRUE)[[2]] %>%
+                               apply(2, function(x) x != as_tibble(titanic_split$test)$Survived) %>%
+                               apply(2, mean),
+                             boosting_depth1 = predict(titanic_models$boosting_depth1,
+                                                       newdata = as_tibble(titanic_split$test),
+                                                       n.trees = 1:5000) %>%
+                               apply(2, function(x) round(x) == as.numeric(as_tibble(titanic_split$test)$Survived) - 1) %>%
+                               apply(2, mean),
+                             boosting_depth2 = predict(titanic_models$boosting_depth2,
+                                                       newdata = as_tibble(titanic_split$test),
+                                                       n.trees = 1:5000) %>%
+                               apply(2, function(x) round(x) == as.numeric(as_tibble(titanic_split$test)$Survived) - 1) %>%
+                               apply(2, mean),
+                             boosting_depth4 = predict(titanic_models$boosting_depth4,
+                                                       newdata = as_tibble(titanic_split$test),
+                                                       n.trees = 1:5000) %>%
+                               apply(2, function(x) round(x) == as.numeric(as_tibble(titanic_split$test)$Survived) - 1) %>%
+                               apply(2, mean))
+
+boost_test_err %>%
+  mutate(id = row_number()) %>%
+  mutate_each(funs(cummean(.)), bagging:rf_mtry4) %>%
+  gather(model, err, -id) %>%
+  mutate(model = factor(model, levels = names(titanic_models),
+                        labels = c("Bagging", "Random forest: m = \\sqrt(p)",
+                                   "Random forest: m = 4",
+                                   "Boosting: depth = 1",
+                                   "Boosting: depth = 2",
+                                   "Boosting: depth = 4"))) %>%
+  ggplot(aes(id, err, color = model)) +
+  geom_line() +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  labs(x = "Number of trees",
+       y = "Test error",
+       color = "Model")
+```
 
 # Session Info {.toc-ignore}
 
