@@ -25,8 +25,9 @@ knitr::opts_chunk$set(cache = TRUE,
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
-library(modelr)
+library(forcats)
 library(broom)
+library(modelr)
 library(tree)
 library(randomForest)
 library(stringr)
@@ -237,7 +238,9 @@ preg <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5)
 
 # display plots side by side
-grid.arrange(ptree, preg, ncol = 2)
+grid.arrange(ptree, preg, ncol = 2,
+             top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                            gp = gpar(fontsize = 20)))
 ```
 
 On the left is the decision tree after the first iteration, and on the right is the decision tree estimation of the relationship between horsepower and highway mileage. The tree consists of three different components:
@@ -270,7 +273,9 @@ preg <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5)
 
 # display plots side by side
-grid.arrange(ptree, preg, ncol = 2)
+grid.arrange(ptree, preg, ncol = 2,
+             top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                            gp = gpar(fontsize = 20)))
 ```
 
 Now there are three terminal nodes (`r mod$frame$yval[3:5]`), two internal nodes (`horsepower` $`r mod$frame$splits[1,1]`$ and `horsepower` $`r mod$frame$splits[2,1]`$), and three branches. Interpreting the decision tree is still relatively intuitive:
@@ -303,7 +308,9 @@ preg <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_smooth(data = partition.tree.data(mod), aes(x, y), se = FALSE)
 
 # display plots side by side
-grid.arrange(ptree, preg, ncol = 2)
+grid.arrange(ptree, preg, ncol = 2,
+             top = textGrob(str_c("Terminal Nodes = ", ceiling(length(mod$frame$yval) / 2)),
+                            gp = gpar(fontsize = 20)))
 ```
 
 There are `r nrow(mod$frame)` nodes in this decision tree, with `r nrow(mod$frame)` different regions and `r nrow(mod$frame)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
@@ -750,7 +757,7 @@ Fortunately using a bagged approach also allows us to avoid using any type of re
 samp <- data_frame(x = seq.int(1000))
 
 # generate bootstrap sample and count proportion of observations in each draw
-prop_drawn <- modelr::bootstrap(samp, n = nrow(samp)) %>%
+prop_drawn <- bootstrap(samp, n = nrow(samp)) %>%
   mutate(strap = map(strap, as_tibble)) %>%
   unnest(strap) %>%
   mutate(drawn = TRUE) %>%
@@ -786,14 +793,56 @@ For our Titanic bagged model with all available predictors, we estimate an OOB e
 Interpreting a bagged model is much more difficult than interpreting a single decision tree. Because each tree is unique, we cannot plot an "average" of the trees like we might with a bootstrapped linear model. The most common method of interpretation (beyond prediction accuracy) is **variable importance**, or attempting to assess how important each variable is to the model. In regression trees, for each predictor we calculate the total amount of reduction in the RSS attributable to splits caused by the predictor, averaged over the $B$ trees. For classification trees, we do the same thing using average reduction in the Gini index.
 
 ```{r titanic-varimp}
-varImpPlot(titanic_bag)
+data_frame(var = rownames(importance(titanic_bag)),
+           MeanDecreaseGini = importance(titanic_bag)[,1]) %>%
+  mutate(var = fct_reorder(var, MeanDecreaseGini, fun = median)) %>%
+  ggplot(aes(var, MeanDecreaseGini)) +
+  geom_point() +
+  coord_flip() +
+  labs(title = "Predicting survival on the Titanic",
+       subtitle = "Bagging",
+       x = NULL,
+       y = "Average decrease in the Gini Index")
 ```
 
 For classification trees, larger values are better. So for the Titanic bagged model, gender, age, and fare are the most important predictors, wherease number of siblings/parents aboard and the port of departure are relatively unimportant.
 
-
-
 # Random forests
+
+**Random forests** improve upon bagging by decorrelating the individual trees. The problem with bagging is that if there is a single dominant predictor in the dataset, most trees will use the same predictor for the first split and ensure correlation and similarity among the trees. Remember that the goal of bagging is to reduce the variance of our estimates of the response variable $Y$. But averaging across a set of correlated trees will not substantially reduce variance, at least not as much as if the trees were uncorrelated.
+
+To resolve this problem, when spliting a tree random forests will only consider a random sample $m$ of the total possible predictors $p$. That is, it intentionally ignores a random set of variables. Every time a new split is considered, a new random sample $m$ is drawn. The main question then becomes how to select the size of $m$. ISL recommends $m = \sqrt{p}$. By default, the `randomForest` package uses $m = \sqrt{p}$ for classification trees and $m = \frac{p}{3}$ for regression trees.
+
+Let's compare the results of the bagged Titanic model to the same model, only this time employing the random forest method:
+
+##### Bagged model
+
+```{r titanic-bag}
+titanic_bag
+```
+
+##### Random forest model
+
+```{r titanic-rf}
+(titanic_rf <- randomForest(Survived ~ ., data = titanic_rf_data,
+                            ntree = 500))
+
+data_frame(var = rownames(importance(titanic_rf)),
+           `Random forest` = importance(titanic_rf)[,1]) %>%
+  left_join(data_frame(var = rownames(importance(titanic_rf)),
+           Bagging = importance(titanic_bag)[,1])) %>%
+  mutate(var = fct_reorder(var, Bagging, fun = median)) %>%
+  gather(model, gini, -var) %>%
+  ggplot(aes(var, gini, color = model)) +
+  geom_point() +
+  coord_flip() +
+  labs(title = "Predicting survival on the Titanic",
+       x = NULL,
+       y = "Average decrease in the Gini Index",
+       color = "Method")
+```
+
+The OOB error rate is a couple points smaller on the random forest model. Also we can observe that the average decrease in the Gini index associated with each variable is generally smaller using the random forest method compared to bagging - this is because of the variable restriction imposed when considering splits.
 
 # Boosting
 
