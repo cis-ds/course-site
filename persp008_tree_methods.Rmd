@@ -237,7 +237,12 @@ ptree <- ggplot(segment(tree_data)) +
 # plot region space
 preg <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_point(alpha = .2) +
-  geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5)
+  geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5) +
+  geom_vline(data = partition.tree.data(mod), aes(xintercept = x), linetype = 2) +
+  coord_cartesian(xlim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                  ylim = c(min(Auto$mpg), max(Auto$mpg)),
+                  expand = FALSE) +
+  theme(panel.border = element_rect(fill = NA, size = 1))
 
 # display plots side by side
 grid.arrange(ptree, preg, ncol = 2,
@@ -247,11 +252,11 @@ grid.arrange(ptree, preg, ncol = 2,
 
 On the left is the decision tree after the first iteration, and on the right is the decision tree estimation of the relationship between horsepower and highway mileage. The tree consists of three different components:
 
-* Each outcome (survived or died) is a **terminal node** or a **leaf**
+* Each outcome is a **terminal node** or a **leaf**
 * Splits occur at **internal nodes**
 * The segments connecting each node are called **branches**
 
-This model has two terminal nodes (`r mod$frame$yval[[2]]` and `r mod$frame$yval[[3]]`), one internal node (`horsepower` $`r mod$frame$splits[1,1]`$), and two branches. For observations with horsepower $`r mod$frame$splits[1,1]`$, the model estimates highway mileage of `r mod$frame$yval[[2]]`. For observations with horsepower $`r mod$frame$splits[1,2]`$, the model estimates highway mileage of `r mod$frame$yval[[3]]`. The resulting relationship "curve" (see right) looks like a step function. Each segment of the function is the `mean()` of the observations inside that region.
+This model has two terminal nodes (`r mod$frame$yval[[2]]` and `r mod$frame$yval[[3]]`), one internal node (horsepower $`r mod$frame$splits[1,1]`$), and two branches. For observations with horsepower $`r mod$frame$splits[1,1]`$, the model estimates highway mileage of `r mod$frame$yval[[2]]`. For observations with horsepower $`r mod$frame$splits[1,2]`$, the model estimates highway mileage of `r mod$frame$yval[[3]]`. The resulting relationship "curve" (see right) looks like a step function. Each segment of the function is the `mean()` of the observations inside that region.
 
 If we proceed to the next iteration, the decision tree segments $R_1$ further.
 
@@ -272,7 +277,12 @@ ptree <- ggplot(segment(tree_data)) +
 # plot region space
 preg <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_point(alpha = .2) +
-  geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5)
+  geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5) +
+  geom_vline(data = partition.tree.data(mod), aes(xintercept = x), linetype = 2) +
+  coord_cartesian(xlim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                  ylim = c(min(Auto$mpg), max(Auto$mpg)),
+                  expand = FALSE) +
+  theme(panel.border = element_rect(fill = NA, size = 1))
 
 # display plots side by side
 grid.arrange(ptree, preg, ncol = 2,
@@ -280,12 +290,12 @@ grid.arrange(ptree, preg, ncol = 2,
                             gp = gpar(fontsize = 20)))
 ```
 
-Now there are three terminal nodes (`r mod$frame$yval[3:5]`), two internal nodes (`horsepower` $`r mod$frame$splits[1,1]`$ and `horsepower` $`r mod$frame$splits[2,1]`$), and three branches. Interpreting the decision tree is still relatively intuitive:
+Now there are three terminal nodes (`r mod$frame$yval[3:5]`), two internal nodes (horsepower $`r mod$frame$splits[1,1]`$ and horsepower $`r mod$frame$splits[2,1]`$), and three branches. Interpreting the decision tree is still relatively intuitive:
 
-* If `horsepower` $`r mod$frame$splits[1,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[5]`.
-* If `horsepower` $`r mod$frame$splits[1,1]`$, then we proceed down the left branch to the next internal node.
-    * If `horsepower` $`r mod$frame$splits[2,1]`$, then the model estimates highway mileage to be `r mod$frame$yval[3]`.
-    * If `horsepower` $`r mod$frame$splits[2,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[4]`.
+* If horsepower $`r mod$frame$splits[1,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[5]`.
+* If horsepower $`r mod$frame$splits[1,1]`$, then we proceed down the left branch to the next internal node.
+    * If horsepower $`r mod$frame$splits[2,1]`$, then the model estimates highway mileage to be `r mod$frame$yval[3]`.
+    * If horsepower $`r mod$frame$splits[2,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[4]`.
 
 If we continued the iterative process many many times, we'd get a decision tree that looks like this:
 
@@ -307,7 +317,11 @@ ptree <- ggplot(segment(tree_data)) +
 preg <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_point(alpha = .2) +
   geom_step(data = partition.tree.data(mod), aes(x, y), size = 1.5) +
-  geom_smooth(data = partition.tree.data(mod), aes(x, y), se = FALSE)
+  geom_smooth(data = partition.tree.data(mod), aes(x, y), se = FALSE) +
+  coord_cartesian(xlim = c(min(Auto$horsepower), max(Auto$horsepower)),
+                  ylim = c(min(Auto$mpg), max(Auto$mpg)),
+                  expand = FALSE) +
+  theme(panel.border = element_rect(fill = NA, size = 1))
 
 # display plots side by side
 grid.arrange(ptree, preg, ncol = 2,
@@ -315,7 +329,7 @@ grid.arrange(ptree, preg, ncol = 2,
                             gp = gpar(fontsize = 20)))
 ```
 
-There are `r nrow(mod$frame)` nodes in this decision tree, with `r ceiling(length(mod$frame$yval) / 2)` different regions and `r ceiling(length(mod$frame$yval) / 2)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
+There are `r nrow(mod$frame)` nodes (internal and terminal) in this decision tree, with `r ceiling(length(mod$frame$yval) / 2)` different regions and `r ceiling(length(mod$frame$yval) / 2)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
 
 ### Multiple predictors
 
@@ -357,10 +371,10 @@ grid.arrange(ptree, preg, ncol = 2,
                             gp = gpar(fontsize = 20)))
 ```
 
-* If `weight` $`r mod$frame$splits[1,2]`$, then the model estimates highway mileage to be approximately `r mod$frame$yval[5]`.
-* If `weight` $`r mod$frame$splits[1,1]`$, then we proceed down the left branch to the next internal node.
-    * If `horsepower` $`r mod$frame$splits[2,1]`$, then the model estimates highway mileage to be `r mod$frame$yval[3]`.
-    * If `horsepower` $`r mod$frame$splits[2,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[4]`.
+* If weight $`r mod$frame$splits[1,2]`$, then the model estimates highway mileage to be approximately `r mod$frame$yval[5]`.
+* If weight $`r mod$frame$splits[1,1]`$, then we proceed down the left branch to the next internal node.
+    * If horsepower $`r mod$frame$splits[2,1]`$, then the model estimates highway mileage to be `r mod$frame$yval[3]`.
+    * If horsepower $`r mod$frame$splits[2,2]`$, then the model estimates highway mileage to be `r mod$frame$yval[4]`.
 
 We can continue to build the tree up by adding additional nodes:
 
@@ -406,7 +420,7 @@ $$\sum_{j=1}^J \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2$$
 
 where $\hat{y}_{R_j}$ is the mean response for the observations in the $j$th region. In order to do this, decision trees implement a **recursive binary strategy**. The process begins at the top of the tree (**top-down**) and successively splits the data into a new region. This split generates two new branches in the tree. Rather than looking forward to select the optimal split among all future possibilities, this approach is **greedy** in that it selects the best split **at that particular step**. Given all the potential splits that could be performed on one of the predictors $X_1, X_2, \dots, X_p$ predictors, the algorithm assigns a cutpoint $s$ that splits the data in the manner that reduces the RSS by the largest amount. As the number of predictors $p$ and observations $N$ increases, the more potential cutpoints the algorithm must consider. However even with relatively large numbers of predictors and observations, the computational process is quite efficient.
 
-This process continues until some designated stopping criteria is reached, otherwise it could continue until each training observation is sorted into its own node (i.e. overfitting). For example, by defaul the `tree()` function in R (from the `tree` library) will not split a node if a resulting node would contain fewer than 10 training observations. Once this iterative process stops, we can generate predicted values for the response of a given test observation by calculating the mean of the training observations for the region in which the test observation belongs.
+This process continues until some designated stopping criteria is reached, otherwise it could continue until each training observation is sorted into its own node (i.e. overfitting). For example, by default the `tree()` function in R (from the `tree` library) will not split a node if a resulting node would contain fewer than 10 training observations. Once this iterative process stops, we can generate predicted values for the response of a given test observation by calculating the mean of the training observations for the region in which the test observation belongs.
 
 ### Pruning the tree
 
@@ -633,9 +647,13 @@ ggplot(segment(tree_data)) +
 Notice that some branches split and lead to the same outcome. For instance, the bottom-left branch assigns males with an age less than 13 but both greater than and less than $24.75$ to `Died`. This is because splitting the node leads to increased **node purity** where we are even more confident in our predictions. Think about it. Here are the outcomes in the training observations for males older than 13 years old:
 
 ```{r titanic-m-13}
-(titanic_m13 <- titanic %>%
+titanic_m13 <- titanic %>%
   filter(Female == "male", Age >= 13) %>%
-  count(Survived))
+  count(Survived)
+
+knitr::kable(titanic_m13,
+             caption = "Males older than or equal to 13 on the Titanic",
+             col.names = c("Outcome", "Number of training observations"))
 ```
 
 We would predict for all of these observations that the individual died, being incorrect `r titanic_m13$n[[2]]` times. What happens if we split this subset even further?
@@ -698,7 +716,7 @@ However there are also drawbacks to trees:
       geom_vline(xintercept = mean(val_mse$mse))
     ```
 
-The distribution of test MSEs is quite large for each of the splits, indicating substantial variance in our estimate of the test MSE. Fortuntately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.
+The distribution of test MSEs is quite large for each of the splits, indicating substantial variance in our estimate of the test MSE. Fortunately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.
 
 # Bagging
 
@@ -714,7 +732,7 @@ Since we don't have that many training sets, we bootstrap them, just like how we
 
 $$\hat{f}_{\text{bag}}(x) = \frac{1}{B} \sum_{b = 1}^B \hat{f}^b(x)$$
 
-Each tree is grown without pruning, so they are high-variance but low-bias. Then by averaging across the results, we should get an estimate that has low-bias **and** low-variance. For regression trees this is straight-forward. For classification trees, we estimate $B$ trees and for a given test observation assign it the **majority-class result**: the overall prediction is the most commonly occuring predicted outcome across all the $B$ predictions.
+Each tree is grown without pruning, so they are high-variance but low-bias. Then by averaging across the results, we should get an estimate that has low-bias **and** low-variance. For regression trees this is straight-forward. For classification trees, we estimate $B$ trees and for a given test observation assign it the **majority-class result**: the overall prediction is the most commonly occurring predicted outcome across all the $B$ predictions.
 
 Compared to the error rate for the corresponding classification tree, bagged estimates generally have slightly lower error rates. Consider the following example predicting survival on the Titanic using all available predictors in the dataset:^[This includes all variables in the data frame that are not merely text values.]
 
@@ -847,13 +865,13 @@ data_frame(var = rownames(importance(titanic_bag)),
        y = "Average decrease in the Gini Index")
 ```
 
-For classification trees, larger values are better. So for the Titanic bagged model, gender, age, and fare are the most important predictors, wherease number of siblings/parents aboard and the port of departure are relatively unimportant.
+For classification trees, larger values are better. So for the Titanic bagged model, gender, age, and fare are the most important predictors, whereas number of siblings/parents aboard and the port of departure are relatively unimportant.
 
 # Random forests
 
 **Random forests** improve upon bagging by decorrelating the individual trees. The problem with bagging is that if there is a single dominant predictor in the dataset, most trees will use the same predictor for the first split and ensure correlation and similarity among the trees. Remember that the goal of bagging is to reduce the variance of our estimates of the response variable $Y$. But averaging across a set of correlated trees will not substantially reduce variance, at least not as much as if the trees were uncorrelated.
 
-To resolve this problem, when spliting a tree random forests will only consider a random sample $m$ of the total possible predictors $p$. That is, it intentionally ignores a random set of variables. Every time a new split is considered, a new random sample $m$ is drawn. The main question then becomes how to select the size of $m$. ISL recommends $m = \sqrt{p}$. By default, the `randomForest` package uses $m = \sqrt{p}$ for classification trees and $m = \frac{p}{3}$ for regression trees.
+To resolve this problem, when splitting a tree random forests will only consider a random sample $m$ of the total possible predictors $p$. That is, it intentionally ignores a random set of variables. Every time a new split is considered, a new random sample $m$ is drawn. The main question then becomes how to select the size of $m$. ISL recommends $m = \sqrt{p}$. By default, the `randomForest` package uses $m = \sqrt{p}$ for classification trees and $m = \frac{p}{3}$ for regression trees.
 
 Let's compare the results of the bagged Titanic model to the same model, only this time employing the random forest method:
 
