@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: tree-based methods</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: tree-based methods</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Define a decision tree</li>
+<li>Identify the steps to estimating a decision tree</li>
+<li>Demonstrate how to estimate a decision tree for regression and classification problems</li>
+<li>Define and estimate bagging models</li>
+<li>Define and estimate random forest models</li>
+<li>Define and estimate boosting models</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(forcats)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(tree)
+<span class="kw">library</span>(randomForest)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(ISLR)
+<span class="kw">library</span>(gridExtra)
+<span class="kw">library</span>(grid)
+<span class="kw">library</span>(titanic)
+<span class="kw">library</span>(rcfss)
+<span class="kw">library</span>(pROC)
+<span class="kw">library</span>(gbm)
+<span class="co"># to get the tree graphs with the labels and values, use the forked</span>
+<span class="co"># version of ggdendro</span>
+<span class="co"># devtools::install_github(&quot;bensoltoff/ggdendro&quot;)</span>
+<span class="kw">library</span>(ggdendro)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">err.rate.rf &lt;-<span class="st"> </span>function(model, data) {
+  data &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(data)
+  response &lt;-<span class="st"> </span><span class="kw">as.character</span>(model$terms[[<span class="dv">2</span>]])
+  
+  pred &lt;-<span class="st"> </span><span class="kw">predict</span>(model, <span class="dt">newdata =</span> data, <span class="dt">type =</span> <span class="st">&quot;response&quot;</span>)
+  actual &lt;-<span class="st"> </span>data[[response]]
+  
+  <span class="kw">return</span>(<span class="kw">mean</span>(pred !=<span class="st"> </span>actual, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+}</code></pre></div>
+</div>
+<div id="decision-trees" class="section level1">
+<h1>Decision trees</h1>
+<div class="figure">
+<img src="https://s-media-cache-ak0.pinimg.com/originals/7a/89/ff/7a89ff67b4ce34204c23135cbf35acfa.jpg" />
+
+</div>
+<div class="figure">
+<img src="https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700" />
+
+</div>
+<div class="figure">
+<img src="https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg" />
+
+</div>
+<p><strong>Decision trees</strong> are intuitive concepts for making decisions. They are also useful methods for regression and classification. They work by splitting the observations into a number of regions, and predictions are made based on the mean or mode of the training observations in that region.</p>
+<div id="regression-trees" class="section level2">
+<h2>Regression trees</h2>
+<div id="single-predictor" class="section level3">
+<h3>Single predictor</h3>
+<p>Let’s first consider a basic linear regression model of the relationship between horsepower and highway mileage from the <code>Auto</code> dataset.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># add 95% confidence intervals to fitted values from augment()</span>
+add_ci &lt;-<span class="st"> </span>function(df_augment) {
+  df_augment %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">.fitted.low =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+           <span class="dt">.fitted.high =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit)
+}
+
+<span class="co"># draw 95% confidence interval plot using results of add_ci()</span>
+plot_ci &lt;-<span class="st"> </span>function(df_ci, x){
+  <span class="kw">ggplot</span>(df_ci, <span class="kw">aes_string</span>(x, <span class="st">&quot;.fitted&quot;</span>)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted.low), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> .fitted.high), <span class="dt">linetype =</span> <span class="dv">2</span>)
+}
+
+auto_lm &lt;-<span class="st"> </span><span class="kw">glm</span>(mpg ~<span class="st"> </span>horsepower, <span class="dt">data =</span> Auto)
+
+<span class="kw">augment</span>(auto_lm, <span class="dt">newdata =</span> <span class="kw">data_grid</span>(Auto, horsepower)) %&gt;%
+<span class="st">  </span><span class="kw">add_ci</span>() %&gt;%
+<span class="st">  </span><span class="kw">plot_ci</span>(<span class="st">&quot;horsepower&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> Auto, <span class="kw">aes</span>(<span class="dt">y =</span> mpg), <span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Linear model of highway mileage&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Horsepower&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Highway mileage&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-lm-1.png" width="672" /></p>
+<p>As we recall, a strictly linear model is a poor fit for the data since the relationship actually appears to be quadratic. But unless we <a href="persp007_nonlinear.html">relax our linear assumption</a>, this is the best OLS model we can estimate.</p>
+<p>Let’s compare this instead to a decision tree using horsepower to predict highway mileage. Decision trees work through a process of <strong>stratification</strong>:</p>
+<ol style="list-style-type: decimal">
+<li>Divide the predictor space (<span class="math inline">\(X_1, X_2, \dots, X_p\)</span>) into <span class="math inline">\(J\)</span> distinct and non-overlapping regions <span class="math inline">\(R_1, R_2, \dots, R_J\)</span>.</li>
+<li>For every observation in region <span class="math inline">\(R_j\)</span>, we make the same prediction which is the mean of the response variable <span class="math inline">\(Y\)</span> for all observations in <span class="math inline">\(R_j\)</span>.</li>
+</ol>
+<p>This process is iterative: during the first iteration, we segment the predictor space <span class="math inline">\(X\)</span> into two regions <span class="math inline">\(R_1, R_2\)</span>. In the context of a decision tree with a single predictor, that process results in decision trees like the following:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># hackish function to get line segment coordinates for ggplot</span>
+partition.tree.data &lt;-<span class="st"> </span>function (tree, <span class="dt">label =</span> <span class="st">&quot;yval&quot;</span>, <span class="dt">add =</span> <span class="ot">FALSE</span>, ordvars, ...) 
+{
+  ptXlines &lt;-<span class="st"> </span>function(x, v, xrange, <span class="dt">xcoord =</span> <span class="ot">NULL</span>, <span class="dt">ycoord =</span> <span class="ot">NULL</span>, 
+                       tvar, <span class="dt">i =</span> 1L) {
+    if (v[i] ==<span class="st"> &quot;&lt;leaf&gt;&quot;</span>) {
+      y1 &lt;-<span class="st"> </span>(xrange[1L] +<span class="st"> </span>xrange[3L])/<span class="dv">2</span>
+      y2 &lt;-<span class="st"> </span>(xrange[2L] +<span class="st"> </span>xrange[4L])/<span class="dv">2</span>
+      <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">xcoord =</span> xcoord, <span class="dt">ycoord =</span> <span class="kw">c</span>(ycoord, y1, 
+                                              y2), <span class="dt">i =</span> i))
+    }
+    if (v[i] ==<span class="st"> </span>tvar[1L]) {
+      xcoord &lt;-<span class="st"> </span><span class="kw">c</span>(xcoord, x[i], xrange[2L], x[i], xrange[4L])
+      xr &lt;-<span class="st"> </span>xrange
+      xr[3L] &lt;-<span class="st"> </span>x[i]
+      ll2 &lt;-<span class="st"> </span><span class="kw">Recall</span>(x, v, xr, xcoord, ycoord, tvar, i +<span class="st"> </span>
+<span class="st">                      </span>1L)
+      xr &lt;-<span class="st"> </span>xrange
+      xr[1L] &lt;-<span class="st"> </span>x[i]
+      <span class="kw">return</span>(<span class="kw">Recall</span>(x, v, xr, ll2$xcoord, ll2$ycoord, tvar, 
+                    ll2$i +<span class="st"> </span>1L))
+    }
+    else if (v[i] ==<span class="st"> </span>tvar[2L]) {
+      xcoord &lt;-<span class="st"> </span><span class="kw">c</span>(xcoord, xrange[1L], x[i], xrange[3L], 
+                  x[i])
+      xr &lt;-<span class="st"> </span>xrange
+      xr[4L] &lt;-<span class="st"> </span>x[i]
+      ll2 &lt;-<span class="st"> </span><span class="kw">Recall</span>(x, v, xr, xcoord, ycoord, tvar, i +<span class="st"> </span>
+<span class="st">                      </span>1L)
+      xr &lt;-<span class="st"> </span>xrange
+      xr[2L] &lt;-<span class="st"> </span>x[i]
+      <span class="kw">return</span>(<span class="kw">Recall</span>(x, v, xr, ll2$xcoord, ll2$ycoord, tvar, 
+                    ll2$i +<span class="st"> </span>1L))
+    }
+    else <span class="kw">stop</span>(<span class="st">&quot;wrong variable numbers in tree.&quot;</span>)
+  }
+  if (<span class="kw">inherits</span>(tree, <span class="st">&quot;singlenode&quot;</span>)) 
+    <span class="kw">stop</span>(<span class="st">&quot;cannot plot singlenode tree&quot;</span>)
+  if (!<span class="kw">inherits</span>(tree, <span class="st">&quot;tree&quot;</span>)) 
+    <span class="kw">stop</span>(<span class="st">&quot;not legitimate tree&quot;</span>)
+  frame &lt;-<span class="st"> </span>tree$frame
+  leaves &lt;-<span class="st"> </span>frame$var ==<span class="st"> &quot;&lt;leaf&gt;&quot;</span>
+  var &lt;-<span class="st"> </span><span class="kw">unique</span>(<span class="kw">as.character</span>(frame$var[!leaves]))
+  if (<span class="kw">length</span>(var) &gt;<span class="st"> </span>2L ||<span class="st"> </span><span class="kw">length</span>(var) &lt;<span class="st"> </span>1L) 
+    <span class="kw">stop</span>(<span class="st">&quot;tree can only have one or two predictors&quot;</span>)
+  nlevels &lt;-<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">attr</span>(tree, <span class="st">&quot;xlevels&quot;</span>), length)
+  if (<span class="kw">any</span>(nlevels[var] &gt;<span class="st"> </span>0L)) 
+    <span class="kw">stop</span>(<span class="st">&quot;tree can only have continuous predictors&quot;</span>)
+  x &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="kw">length</span>(leaves))
+  x[!leaves] &lt;-<span class="st"> </span><span class="kw">as.double</span>(<span class="kw">substring</span>(frame$splits[!leaves, <span class="st">&quot;cutleft&quot;</span>], 
+                                    2L, 100L))
+  m &lt;-<span class="st"> </span><span class="kw">model.frame</span>(tree)
+  if (<span class="kw">length</span>(var) ==<span class="st"> </span>1L) {
+    x &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">c</span>(<span class="kw">range</span>(m[[var]]), x[!leaves]))
+    if (<span class="kw">is.null</span>(<span class="kw">attr</span>(tree, <span class="st">&quot;ylevels&quot;</span>))) 
+      y &lt;-<span class="st"> </span>frame$yval[leaves]
+    else y &lt;-<span class="st"> </span>frame$yprob[, 1L]
+    y &lt;-<span class="st"> </span><span class="kw">c</span>(y, y[<span class="kw">length</span>(y)])
+    if (add) {
+      <span class="co"># lines(x, y, type = &quot;s&quot;, ...)</span>
+    }
+    else {
+      a &lt;-<span class="st"> </span><span class="kw">attributes</span>(<span class="kw">attr</span>(m, <span class="st">&quot;terms&quot;</span>))
+      yvar &lt;-<span class="st"> </span><span class="kw">as.character</span>(a$variables[<span class="dv">1</span> +<span class="st"> </span>a$response])
+      xo &lt;-<span class="st"> </span>m[[yvar]]
+      if (<span class="kw">is.factor</span>(xo)) 
+        ylim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)
+      else ylim &lt;-<span class="st"> </span><span class="kw">range</span>(xo)
+      <span class="co"># plot(x, y, ylab = yvar, xlab = var, type = &quot;s&quot;, ylim = ylim,</span>
+      <span class="co">#      xaxs = &quot;i&quot;, ...)</span>
+    }
+    <span class="kw">data_frame</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)
+  }
+  else {
+    if (!<span class="kw">missing</span>(ordvars)) {
+      ind &lt;-<span class="st"> </span><span class="kw">match</span>(var, ordvars)
+      if (<span class="kw">any</span>(<span class="kw">is.na</span>(ind))) 
+        <span class="kw">stop</span>(<span class="st">&quot;unmatched names in vars&quot;</span>)
+      var &lt;-<span class="st"> </span>ordvars[<span class="kw">sort</span>(ind)]
+    }
+    lab &lt;-<span class="st"> </span>frame$yval[leaves]
+    if (<span class="kw">is.null</span>(frame$yprob)) 
+      lab &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">signif</span>(lab, 3L))
+    else if (<span class="kw">match</span>(label, <span class="kw">attr</span>(tree, <span class="st">&quot;ylevels&quot;</span>), <span class="dt">nomatch =</span> 0L)) 
+      lab &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">signif</span>(frame$yprob[leaves, label], 
+                           3L))
+    rx &lt;-<span class="st"> </span><span class="kw">range</span>(m[[var[1L]]])
+    rx &lt;-<span class="st"> </span>rx +<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.025</span>, <span class="fl">0.025</span>) *<span class="st"> </span><span class="kw">diff</span>(rx)
+    rz &lt;-<span class="st"> </span><span class="kw">range</span>(m[[var[2L]]])
+    rz &lt;-<span class="st"> </span>rz +<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.025</span>, <span class="fl">0.025</span>) *<span class="st"> </span><span class="kw">diff</span>(rz)
+    xrange &lt;-<span class="st"> </span><span class="kw">c</span>(rx, rz)[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">4</span>)]
+    xcoord &lt;-<span class="st"> </span><span class="ot">NULL</span>
+    ycoord &lt;-<span class="st"> </span><span class="ot">NULL</span>
+    xy &lt;-<span class="st"> </span><span class="kw">ptXlines</span>(x, frame$var, xrange, xcoord, ycoord, 
+                   var)
+    xx &lt;-<span class="st"> </span><span class="kw">matrix</span>(xy$xcoord, <span class="dt">nrow =</span> 4L)
+    yy &lt;-<span class="st"> </span><span class="kw">matrix</span>(xy$ycoord, <span class="dt">nrow =</span> 2L)
+
+    <span class="kw">return</span>(<span class="kw">list</span>(<span class="kw">data_frame</span>(<span class="dt">xmin =</span> xx[1L,],
+                           <span class="dt">ymin =</span> xx[2L,],
+                           <span class="dt">xmax =</span> xx[3L,],
+                           <span class="dt">ymax =</span> xx[4L,]),
+                <span class="kw">data_frame</span>(<span class="dt">x =</span> yy[1L,],
+                           <span class="dt">y =</span> yy[2L,],
+                           <span class="dt">label =</span> lab)))
+    <span class="co"># if (!add) </span>
+    <span class="co">#   plot(rx, rz, xlab = var[1L], ylab = var[2L], type = &quot;n&quot;, </span>
+    <span class="co">#        xaxs = &quot;i&quot;, yaxs = &quot;i&quot;, ...)</span>
+    <span class="co"># segments(xx[1L, ], xx[2L, ], xx[3L, ], xx[4L, ])</span>
+    <span class="co"># text(yy[1L, ], yy[2L, ], as.character(lab), ...)</span>
+  }
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
+auto_tree &lt;-<span class="st"> </span><span class="kw">tree</span>(mpg ~<span class="st"> </span>horsepower, <span class="dt">data =</span> Auto,
+     <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(Auto),
+                            <span class="dt">mindev =</span> <span class="dv">0</span>))
+
+mod &lt;-<span class="st"> </span><span class="kw">prune.tree</span>(auto_tree, <span class="dt">best =</span> <span class="dv">2</span>)
+
+<span class="co"># plot tree</span>
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+
+<span class="co"># plot region space</span>
+preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod), <span class="kw">aes</span>(x, y), <span class="dt">size =</span> <span class="fl">1.5</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod), <span class="kw">aes</span>(<span class="dt">xintercept =</span> x), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                  <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$mpg), <span class="kw">max</span>(Auto$mpg)),
+                  <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+
+<span class="co"># display plots side by side</span>
+<span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+             <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>)),
+                            <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>)))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree2-1.png" width="672" /></p>
+<p>On the left is the decision tree after the first iteration, and on the right is the decision tree estimation of the relationship between horsepower and highway mileage. The tree consists of three different components:</p>
+<ul>
+<li>Each outcome is a <strong>terminal node</strong> or a <strong>leaf</strong></li>
+<li>Splits occur at <strong>internal nodes</strong></li>
+<li>The segments connecting each node are called <strong>branches</strong></li>
+</ul>
+<p>This model has two terminal nodes (29.038 and 17.854), one internal node (horsepower <span class="math inline">\(&lt;93.5\)</span>), and two branches. For observations with horsepower <span class="math inline">\(&lt;93.5\)</span>, the model estimates highway mileage of 29.038. For observations with horsepower <span class="math inline">\(&gt;93.5\)</span>, the model estimates highway mileage of 17.854. The resulting relationship “curve” (see right) looks like a step function. Each segment of the function is the <code>mean()</code> of the observations inside that region.</p>
+<p>If we proceed to the next iteration, the decision tree segments <span class="math inline">\(R_1\)</span> further.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mod &lt;-<span class="st"> </span><span class="kw">prune.tree</span>(auto_tree, <span class="dt">best =</span> <span class="dv">3</span>)
+
+<span class="co"># plot tree</span>
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+
+<span class="co"># plot region space</span>
+preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod), <span class="kw">aes</span>(x, y), <span class="dt">size =</span> <span class="fl">1.5</span>) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod), <span class="kw">aes</span>(<span class="dt">xintercept =</span> x), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                  <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$mpg), <span class="kw">max</span>(Auto$mpg)),
+                  <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+
+<span class="co"># display plots side by side</span>
+<span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+             <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>)),
+                            <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>)))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree3-1.png" width="672" /></p>
+<p>Now there are three terminal nodes (33.666, 26.409, 17.854), two internal nodes (horsepower <span class="math inline">\(&lt;93.5\)</span> and horsepower <span class="math inline">\(&lt;70.5\)</span>), and three branches. Interpreting the decision tree is still relatively intuitive:</p>
+<ul>
+<li>If horsepower <span class="math inline">\(&gt;93.5\)</span>, then the model estimates highway mileage to be 17.854.</li>
+<li>If horsepower <span class="math inline">\(&lt;93.5\)</span>, then we proceed down the left branch to the next internal node.
+<ul>
+<li>If horsepower <span class="math inline">\(&lt;70.5\)</span>, then the model estimates highway mileage to be 33.666.</li>
+<li>If horsepower <span class="math inline">\(&gt;70.5\)</span>, then the model estimates highway mileage to be 26.409.</li>
+</ul></li>
+</ul>
+<p>If we continued the iterative process many many times, we’d get a decision tree that looks like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mod &lt;-<span class="st"> </span>auto_tree
+
+<span class="co"># plot tree</span>
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+
+<span class="co"># plot region space</span>
+preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod), <span class="kw">aes</span>(x, y), <span class="dt">size =</span> <span class="fl">1.5</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod), <span class="kw">aes</span>(x, y), <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                  <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$mpg), <span class="kw">max</span>(Auto$mpg)),
+                  <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+
+<span class="co"># display plots side by side</span>
+<span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+             <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>)),
+                            <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>)))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-treeall-1.png" width="672" /></p>
+<p>There are 77 nodes (internal and terminal) in this decision tree, with 39 different regions and 39 different predicted values depending on the observation’s value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (23.944) the decision tree generates a far lower training MSE (14.498).<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+</div>
+<div id="multiple-predictors" class="section level3">
+<h3>Multiple predictors</h3>
+<p>With just a single predictor, the regions are a function of that one predictor. If we add a second predictor (say, vehicle weight), the regions become a function of <strong>both</strong> predictors and can be visualized as grids or boxes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_tree &lt;-<span class="st"> </span><span class="kw">tree</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span>weight, <span class="dt">data =</span> Auto,
+     <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(Auto),
+                            <span class="dt">mindev =</span> <span class="dv">0</span>))
+
+mod &lt;-<span class="st"> </span><span class="kw">prune.tree</span>(auto_tree, <span class="dt">best =</span> <span class="dv">3</span>)
+
+<span class="co"># plot tree</span>
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+
+<span class="co"># plot region space</span>
+preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(weight, horsepower)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">1</span>]],
+               <span class="kw">aes</span>(<span class="dt">x =</span> xmin, <span class="dt">xend =</span> xmax, <span class="dt">y =</span> ymin, <span class="dt">yend =</span> ymax)) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">2</span>]],
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label)) +
+<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$weight), <span class="kw">max</span>(Auto$weight)),
+                  <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                  <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+
+<span class="co"># display plots side by side</span>
+<span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+             <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>)),
+                            <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>)))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-1.png" width="672" /></p>
+<ul>
+<li>If weight <span class="math inline">\(&gt;2764.5\)</span>, then the model estimates highway mileage to be approximately 17.769.</li>
+<li>If weight <span class="math inline">\(&lt;2764.5\)</span>, then we proceed down the left branch to the next internal node.
+<ul>
+<li>If horsepower <span class="math inline">\(&lt;70.5\)</span>, then the model estimates highway mileage to be 33.68.</li>
+<li>If horsepower <span class="math inline">\(&gt;70.5\)</span>, then the model estimates highway mileage to be 27.011.</li>
+</ul></li>
+</ul>
+<p>We can continue to build the tree up by adding additional nodes:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">for(i in <span class="kw">c</span>(<span class="dv">4</span>:<span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">50</span>)){
+  mod &lt;-<span class="st"> </span><span class="kw">prune.tree</span>(auto_tree, <span class="dt">best =</span> i)
+  
+  <span class="co"># plot tree</span>
+  tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+  ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">    </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+                 <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">    </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">    </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+              <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">    </span><span class="kw">theme_dendro</span>()
+  
+  <span class="co"># plot region space</span>
+  preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(weight, horsepower)) +
+<span class="st">    </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">    </span><span class="kw">geom_segment</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">1</span>]],
+                 <span class="kw">aes</span>(<span class="dt">x =</span> xmin, <span class="dt">xend =</span> xmax, <span class="dt">y =</span> ymin, <span class="dt">yend =</span> ymax)) +
+<span class="st">    </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">2</span>]],
+              <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label)) +
+<span class="st">    </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$weight), <span class="kw">max</span>(Auto$weight)),
+                    <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                    <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+  
+  <span class="co"># display plots side by side</span>
+  <span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+               <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, i),
+                              <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>))) 
+}</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-1.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-2.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-3.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-4.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-5.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-6.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-7.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-8.png" width="672" /><img src="persp008_tree_methods_files/figure-html/auto-tree-weight-i-9.png" width="672" /></p>
+</div>
+<div id="estimation-procedure" class="section level3">
+<h3>Estimation procedure</h3>
+<p>We have already identified that decision trees use stratification to divide the observations into <span class="math inline">\(R_J\)</span> regions. Like in linear regression, our goal is to minimize the residual sum of the squared errors (RSS), defined for a decision tree as:</p>
+<p><span class="math display">\[\sum_{j=1}^J \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2\]</span></p>
+<p>where <span class="math inline">\(\hat{y}_{R_j}\)</span> is the mean response for the observations in the <span class="math inline">\(j\)</span>th region. In order to do this, decision trees implement a <strong>recursive binary strategy</strong>. The process begins at the top of the tree (<strong>top-down</strong>) and successively splits the data into a new region. This split generates two new branches in the tree. Rather than looking forward to select the optimal split among all future possibilities, this approach is <strong>greedy</strong> in that it selects the best split <strong>at that particular step</strong>. Given all the potential splits that could be performed on one of the predictors <span class="math inline">\(X_1, X_2, \dots, X_p\)</span> predictors, the algorithm assigns a cutpoint <span class="math inline">\(s\)</span> that splits the data in the manner that reduces the RSS by the largest amount. As the number of predictors <span class="math inline">\(p\)</span> and observations <span class="math inline">\(N\)</span> increases, the more potential cutpoints the algorithm must consider. However even with relatively large numbers of predictors and observations, the computational process is quite efficient.</p>
+<p>This process continues until some designated stopping criteria is reached, otherwise it could continue until each training observation is sorted into its own node (i.e. overfitting). For example, by default the <code>tree()</code> function in R (from the <code>tree</code> library) will not split a node if a resulting node would contain fewer than 10 training observations. Once this iterative process stops, we can generate predicted values for the response of a given test observation by calculating the mean of the training observations for the region in which the test observation belongs.</p>
+</div>
+<div id="pruning-the-tree" class="section level3">
+<h3>Pruning the tree</h3>
+<p>Notice that we stop splitting the tree in order to prevent overfitting. Even with the above process, decision trees are highly susceptible to overfitting due to its natural complexity. And if we simply set the stopping criteria at a higher level, we may miss crucial branches later on in the process. Instead we want a method that allows us to grow a large tree and preserve the most important branches or elements.</p>
+<div class="figure">
+<img src="https://growingtogether.areavoices.com/files/2015/11/pruning.jpg" />
+
+</div>
+<p>In essence, we want to <strong>prune</strong> the tree. <strong>Cost complexity pruning</strong> is one predominant method for achieving this goal. While I leave the mathematics of this operation to <a href="https://link-springer-com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7">ISL</a>, cost complexity pruning uses a <strong>tuning parameter</strong> to selectively prune or snip branches that do not contribute significant predictive accuracy, resulting in a subtree generated from the full tree. Different tuning parameter values will lead to different trade-offs between model complexity and model accuracy, so we can use function such as <code>prune.tree()</code> in conjunction with <a href="persp006_resampling.html#k-fold_cross-validation"><span class="math inline">\(k\)</span>-fold cross-validation</a> to select a cost complexity parameter that optimally balances the trade-off for the specific dataset.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<p>For example, here is the full tree grown for the <code>horsepower + weight</code> decision tree:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_tree &lt;-<span class="st"> </span><span class="kw">tree</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span>weight, <span class="dt">data =</span> Auto,
+     <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(Auto),
+                            <span class="dt">mindev =</span> <span class="dv">0</span>))
+mod &lt;-<span class="st"> </span>auto_tree
+
+<span class="co"># plot tree</span>
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+
+<span class="co"># plot region space</span>
+preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(weight, horsepower)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">1</span>]],
+               <span class="kw">aes</span>(<span class="dt">x =</span> xmin, <span class="dt">xend =</span> xmax, <span class="dt">y =</span> ymin, <span class="dt">yend =</span> ymax)) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">2</span>]],
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label)) +
+<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$weight), <span class="kw">max</span>(Auto$weight)),
+                  <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                  <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+
+<span class="co"># display plots side by side</span>
+<span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+             <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>)),
+                            <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>)))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree-default-1.png" width="672" /></p>
+<p>Let’s use <span class="math inline">\(10\)</span>-fold CV to select the optimal tree size:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate 10-fold CV trees</span>
+auto_cv &lt;-<span class="st"> </span><span class="kw">crossv_kfold</span>(Auto, <span class="dt">k =</span> <span class="dv">10</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tree =</span> <span class="kw">map</span>(train, ~<span class="st"> </span><span class="kw">tree</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span>weight, <span class="dt">data =</span> .,
+     <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(Auto),
+                            <span class="dt">mindev =</span> <span class="dv">0</span>))))
+
+<span class="co"># calculate each possible prune result for each fold</span>
+auto_cv &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(auto_cv$.id, <span class="dv">2</span>:<span class="dv">10</span>) %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Var2 =</span> <span class="kw">as.numeric</span>(Var2)) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">.id =</span> Var1,
+         <span class="dt">k =</span> Var2) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(auto_cv) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prune =</span> <span class="kw">map2</span>(tree, k, ~<span class="st"> </span><span class="kw">prune.tree</span>(.x, <span class="dt">best =</span> .y)),
+         <span class="dt">mse =</span> <span class="kw">map2_dbl</span>(prune, test, mse))
+
+auto_cv %&gt;%
+<span class="st">  </span><span class="kw">select</span>(k, mse) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(k) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">test_mse =</span> <span class="kw">mean</span>(mse),
+            <span class="dt">sd =</span> <span class="kw">sd</span>(mse, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(k, test_mse)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Number of terminal nodes&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test MSE&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree-default-prune-1.png" width="672" /></p>
+<p>The minimum cross-validated test MSE is for 7 terminal nodes. Here’s what that tree looks like:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mod &lt;-<span class="st"> </span><span class="kw">prune.tree</span>(auto_tree, <span class="dt">best =</span> <span class="dv">7</span>)
+
+<span class="co"># plot tree</span>
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+
+<span class="co"># plot region space</span>
+preg &lt;-<span class="st"> </span><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(weight, horsepower)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">1</span>]],
+               <span class="kw">aes</span>(<span class="dt">x =</span> xmin, <span class="dt">xend =</span> xmax, <span class="dt">y =</span> ymin, <span class="dt">yend =</span> ymax)) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">partition.tree.data</span>(mod)[[<span class="dv">2</span>]],
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label)) +
+<span class="st">  </span><span class="kw">coord_cartesian</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$weight), <span class="kw">max</span>(Auto$weight)),
+                  <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="kw">min</span>(Auto$horsepower), <span class="kw">max</span>(Auto$horsepower)),
+                  <span class="dt">expand =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">panel.border =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="ot">NA</span>, <span class="dt">size =</span> <span class="dv">1</span>))
+
+<span class="co"># display plots side by side</span>
+<span class="kw">grid.arrange</span>(ptree, preg, <span class="dt">ncol =</span> <span class="dv">2</span>,
+             <span class="dt">top =</span> <span class="kw">textGrob</span>(<span class="kw">str_c</span>(<span class="st">&quot;Terminal Nodes = &quot;</span>, <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>)),
+                            <span class="dt">gp =</span> <span class="kw">gpar</span>(<span class="dt">fontsize =</span> <span class="dv">20</span>)))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree-7-1.png" width="672" /></p>
+</div>
+</div>
+<div id="classification-trees" class="section level2">
+<h2>Classification trees</h2>
+<p>A <strong>classification tree</strong> is similar to a regression tree, except that the response variable is qualitative. In making predictions, we would predict for a test set observation the most commonly occurring class value in the given region. However we will also consider the <strong>class proportions</strong>, or the proportion of training observations in the region <span class="math inline">\(R_j\)</span> that fall into a given class.</p>
+<p>Rather than using RSS to grow the tree, we have three options for minimizing error. An obvious choice might be the <strong>classification error rate</strong>, or the proportion of training observations in a given region that do not belong to the most common class:</p>
+<p><span class="math display">\[E = 1 - \max_{k}(\hat{p}_{mk})\]</span></p>
+<p>where <span class="math inline">\(\hat{p}_{mk}\)</span> is the proportion of training observations in region <span class="math inline">\(m\)</span> that do not belong to the most common class <span class="math inline">\(k\)</span>.</p>
+<p>In practice, two other methods grow better and more accurate trees. The <strong>Gini index</strong> is defined as:</p>
+<p><span class="math display">\[G = \sum_{k = 1}^k \hat{p}_{mk} (1 - \hat{p}_{mk})\]</span></p>
+<p>and is a measure of node <strong>purity</strong>. The higher the proportion of observations belonging to a single class, the closer this value will be to 0.</p>
+<p>The alternative is <strong>cross-entropy</strong>:</p>
+<p><span class="math display">\[D = - \sum_{k = 1}^K \hat{p}_{mk} \log(\hat{p}_{mk})\]</span></p>
+<p>As more observations are closer to or near 0 or 1, cross-entropy will shrink towards zero. So for classification trees, each split can be evaluated using one of these criteria, though again it is typically the Gini index or cross-entropy.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<p>Let’s return to our running Titanic example. I want to predict who lives and who dies during this event. Instead of using <a href="persp004_logistic_regression.html">logistic regression</a>, I’m going to calculate a decision tree based on a passenger’s age and gender. Here’s what that decision tree looks like:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic &lt;-<span class="st"> </span>titanic_train %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">factor</span>(Survived, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Died&quot;</span>, <span class="st">&quot;Survived&quot;</span>)),
+         <span class="dt">Female =</span> <span class="kw">factor</span>(Sex, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;male&quot;</span>, <span class="st">&quot;female&quot;</span>)))
+
+<span class="co"># estimate model</span>
+titanic_tree &lt;-<span class="st"> </span><span class="kw">tree</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Female, <span class="dt">data =</span> titanic,
+                     <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(titanic),
+                            <span class="dt">mindev =</span> .<span class="dv">001</span>))
+
+<span class="co"># plot unpruned tree</span>
+mod &lt;-<span class="st"> </span>titanic_tree
+
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+<span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Titanic survival tree&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age + Gender&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/titanic_tree-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">err.rate.tree &lt;-<span class="st"> </span>function(model, data) {
+  data &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(data)
+  response &lt;-<span class="st"> </span><span class="kw">as.character</span>(model$terms[[<span class="dv">2</span>]])
+  
+  pred &lt;-<span class="st"> </span><span class="kw">predict</span>(model, <span class="dt">newdata =</span> data, <span class="dt">type =</span> <span class="st">&quot;class&quot;</span>)
+  actual &lt;-<span class="st"> </span>data[[response]]
+  
+  <span class="kw">return</span>(<span class="kw">mean</span>(pred !=<span class="st"> </span>actual, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))
+}
+
+<span class="co"># generate 10-fold CV trees</span>
+titanic_cv &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">na.omit</span>() %&gt;%
+<span class="st">  </span><span class="kw">crossv_kfold</span>(<span class="dt">k =</span> <span class="dv">10</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">tree =</span> <span class="kw">map</span>(train, ~<span class="st"> </span><span class="kw">tree</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Female, <span class="dt">data =</span> .,
+     <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(titanic),
+                            <span class="dt">mindev =</span> .<span class="dv">001</span>))))
+
+<span class="co"># calculate each possible prune result for each fold</span>
+titanic_cv &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(titanic_cv$.id,
+                          <span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">2</span>, <span class="dt">to =</span> <span class="kw">ceiling</span>(<span class="kw">length</span>(mod$frame$yval) /<span class="st"> </span><span class="dv">2</span>))) %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Var2 =</span> <span class="kw">as.numeric</span>(Var2)) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">.id =</span> Var1,
+         <span class="dt">k =</span> Var2) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(titanic_cv) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prune =</span> <span class="kw">map2</span>(tree, k, ~<span class="st"> </span><span class="kw">prune.misclass</span>(.x, <span class="dt">best =</span> .y)),
+         <span class="dt">mse =</span> <span class="kw">map2_dbl</span>(prune, test, err.rate.tree))
+
+titanic_cv %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(k) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">test_mse =</span> <span class="kw">mean</span>(mse),
+            <span class="dt">sd =</span> <span class="kw">sd</span>(mse, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(k, test_mse)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Titanic survival tree&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age + Gender&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Number of terminal nodes&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test error rate&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/titanic-tree-prune-1.png" width="672" /></p>
+<p>Here I select 6 as the optimal number of nodes.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mod &lt;-<span class="st"> </span><span class="kw">prune.tree</span>(titanic_tree, <span class="dt">best =</span> <span class="dv">6</span>)
+
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(mod)
+<span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Titanic survival tree&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age + Gender&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/titanic-tree-6-1.png" width="672" /></p>
+<p>Notice that some branches split and lead to the same outcome. For instance, the bottom-left branch assigns males with an age less than 13 but both greater than and less than <span class="math inline">\(24.75\)</span> to <code>Died</code>. This is because splitting the node leads to increased <strong>node purity</strong> where we are even more confident in our predictions. Think about it. Here are the outcomes in the training observations for males older than 13 years old:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_m13 &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(Female ==<span class="st"> &quot;male&quot;</span>, Age &gt;=<span class="st"> </span><span class="dv">13</span>) %&gt;%
+<span class="st">  </span><span class="kw">count</span>(Survived)
+
+knitr::<span class="kw">kable</span>(titanic_m13,
+             <span class="dt">caption =</span> <span class="st">&quot;Males older than or equal to 13 on the Titanic&quot;</span>,
+             <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">&quot;Outcome&quot;</span>, <span class="st">&quot;Number of training observations&quot;</span>))</code></pre></div>
+<table>
+<caption>Males older than or equal to 13 on the Titanic</caption>
+<thead>
+<tr class="header">
+<th align="left">Outcome</th>
+<th align="right">Number of training observations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Died</td>
+<td align="right">344</td>
+</tr>
+<tr class="even">
+<td align="left">Survived</td>
+<td align="right">72</td>
+</tr>
+</tbody>
+</table>
+<p>We would predict for all of these observations that the individual died, being incorrect 72 times. What happens if we split this subset even further?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(Female ==<span class="st"> &quot;male&quot;</span>, Age &gt;=<span class="st"> </span><span class="dv">13</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">age25 =</span> Age &lt;<span class="st"> </span><span class="fl">24.75</span>) %&gt;%
+<span class="st">  </span><span class="kw">count</span>(age25, Survived) %&gt;%
+<span class="st">  </span><span class="kw">complete</span>(age25, Survived, <span class="dt">fill =</span> <span class="kw">list</span>(<span class="dt">n =</span> <span class="dv">0</span>)) %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>(<span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">&quot;Less than 24.75 years old&quot;</span>, <span class="st">&quot;Outcome&quot;</span>, <span class="st">&quot;Number of training observations&quot;</span>))</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Less than 24.75 years old</th>
+<th align="left">Outcome</th>
+<th align="right">Number of training observations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="left">Died</td>
+<td align="right">232</td>
+</tr>
+<tr class="even">
+<td align="left">FALSE</td>
+<td align="left">Survived</td>
+<td align="right">60</td>
+</tr>
+<tr class="odd">
+<td align="left">TRUE</td>
+<td align="left">Died</td>
+<td align="right">112</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="left">Survived</td>
+<td align="right">12</td>
+</tr>
+</tbody>
+</table>
+<p>For males between 13 and 24.75 years old, the decision tree prediction achieves higher node purity - it more accurately predicts all of the training observations as dead. If we had a test observation for a 16-year-old male, we’d be more confident in our prediction than if we had terminated the node at <span class="math inline">\(\text{age} &lt; 13\)</span>. While this does not improve our error rate (we would have made the same prediction regardless), it does improve our Gini index and cross-entropy which are the measures used to grow the tree.</p>
+</div>
+<div id="trees-vs.regression" class="section level2">
+<h2>Trees vs. regression</h2>
+<p>Linear regression and decision trees utilize entirely different functional forms. Linear regression assumes linear and additive relationships between predictors and the response:</p>
+<p><span class="math display">\[f(X) = \beta_0 + \sum_{j = 1}^p X_j \beta_j\]</span></p>
+<p>Whereas decision trees assume the observations can be partitioned into the feature space:</p>
+<p><span class="math display">\[f(X) = \sum_{m = 1}^M c_m \cdot 1_{X \in R_m}\]</span></p>
+<p>If the relationship between the predictor(s) and the response are truly linear and additive, then linear regression will likely perform better than a decision tree. If the relationship is highly complex and non-linear, then decision trees may be the better option. Using resampling methods such as cross-validation can help you to decide the appropriate statistical learning method.</p>
+</div>
+<div id="benefitsdrawbacks-to-decision-trees" class="section level2">
+<h2>Benefits/drawbacks to decision trees</h2>
+<p>Decision trees are an entirely different method of estimating functional forms as compared to linear regression. There are some benefits to trees:</p>
+<ul>
+<li>They are easy to explain. Most people, even if they lack statistical training, can understand decision trees.</li>
+<li>They are easily presented as visualizations, and pretty interpretable.</li>
+<li>Qualitative predictors are easily handled without the need to create a long series of dummy variables.</li>
+</ul>
+<p>However there are also drawbacks to trees:</p>
+<ul>
+<li>Their accuracy rates are generally lower than other regression and classification approaches.</li>
+<li><p>Trees can be non-robust. That is, a small change in the data or inclusion/exclusion of a handful of observations can dramatically alter the final estimated tree. For example, let’s estimate a decision tree for the highway mileage example (<span class="math inline">\(N = 392\)</span>) by splitting the data into a training/test set (70/30%) and estimating the test MSE, and repeat this process 1000 times using random combinations of training/test sets:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_val_test &lt;-<span class="st"> </span>function(){
+  <span class="co"># split data</span>
+  auto_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(Auto, <span class="dt">p =</span> <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))
+
+  <span class="co"># estimate model</span>
+  val &lt;-<span class="st"> </span><span class="kw">tree</span>(mpg ~<span class="st"> </span>horsepower +<span class="st"> </span>weight, <span class="dt">data =</span> auto_split$train)
+
+  <span class="co"># estimate test mse</span>
+  <span class="kw">mse</span>(val, auto_split$test)
+}
+
+<span class="co"># repeat the procedure 100 times</span>
+val_mse &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">id =</span> <span class="dv">1</span>:<span class="dv">1000</span>,
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(id, ~<span class="st"> </span><span class="kw">auto_val_test</span>()))
+
+<span class="co"># distribution of the mse</span>
+<span class="kw">ggplot</span>(val_mse, <span class="kw">aes</span>(mse)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(val_mse$mse))</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/auto-tree-val-1.png" width="672" /></p></li>
+</ul>
+<p>The distribution of test MSEs is quite large for each of the splits, indicating substantial variance in our estimate of the test MSE. Fortunately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.</p>
+</div>
+</div>
+<div id="bagging" class="section level1">
+<h1>Bagging</h1>
+<p>Decision trees suffer from <strong>high variance</strong>: as we saw above, even a small change in the training/test set partitions can lead to substantial changes in the estimated model and resulting fit. However a method implementing <strong>low variance</strong> should provide more consistent estimates, regardless of the sample split. By <strong>bootstrap aggregating</strong>, or simply <strong>bagging</strong>, is a general method for reducing variance in estimates.</p>
+<p>We already met the <a href="persp006_resampling.html#the_bootstrap">bootstrap</a>. Recall that this involves repeatedly sampling with replacement from a sample, estimating a parameter or set of parameters for each bootstrap sample, then averaging across the bootstrap samples to form our bootstrap estimate of the parameter. By averaging across all the bootstrap samples, we reduce the variance <span class="math inline">\(\sigma^2\)</span> in our final estimate.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<p>As this applies to statistical learning methods, we estimate <span class="math inline">\(\hat{f}^1(x), \hat{f}^2(x), \dots, \hat{f}^B(x)\)</span> using <span class="math inline">\(B\)</span> separate training sets, and average across the models to generate a single low-variance model:</p>
+<p><span class="math display">\[\hat{f}_{\text{avg}}(x) = \frac{1}{B} \sum_{b = 1}^B \hat{f}^b(x)\]</span></p>
+<p>Since we don’t have that many training sets, we bootstrap them, just like how we <a href="persp006_resampling.html#estimating_the_accuracy_of_a_linear_regression_model">estimated bootstrap parameters for a linear regression model</a>. We estimate a decision tree model on each bootstrap sample and average the results of the models to generate the bagged estimate:</p>
+<p><span class="math display">\[\hat{f}_{\text{bag}}(x) = \frac{1}{B} \sum_{b = 1}^B \hat{f}^b(x)\]</span></p>
+<p>Each tree is grown without pruning, so they are high-variance but low-bias. Then by averaging across the results, we should get an estimate that has low-bias <strong>and</strong> low-variance. For regression trees this is straight-forward. For classification trees, we estimate <span class="math inline">\(B\)</span> trees and for a given test observation assign it the <strong>majority-class result</strong>: the overall prediction is the most commonly occurring predicted outcome across all the <span class="math inline">\(B\)</span> predictions. Compared to the error rate for the corresponding classification tree, bagged estimates generally have slightly lower error rates.</p>
+<div id="out-of-bag-estimates" class="section level2">
+<h2>Out-of-bag estimates</h2>
+<p>Fortunately using a bagged approach also allows us to avoid using any type of resampling method to calculate the test MSE or error rate. This is because we have a natural test set as a result of the bootstrapping process. Recall that in a bootstrap sampling process, we <strong>sample with replacement</strong>. This means that in some bootstrap samples, an observation may never be drawn. In fact, there is a pattern to this phenomenon. On average, each bagged tree uses approximately two-thirds of the original observations. Therefore observations not appearing in a given bag are considered <strong>out-of-bag observations</strong> (OOB).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate sample index</span>
+samp &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">seq.int</span>(<span class="dv">1000</span>))
+
+<span class="co"># generate bootstrap sample and count proportion of observations in each draw</span>
+prop_drawn &lt;-<span class="st"> </span><span class="kw">bootstrap</span>(samp, <span class="dt">n =</span> <span class="kw">nrow</span>(samp)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">strap =</span> <span class="kw">map</span>(strap, as_tibble)) %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(strap) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">drawn =</span> <span class="ot">TRUE</span>) %&gt;%
+<span class="st">  </span><span class="kw">complete</span>(.id, x, <span class="dt">fill =</span> <span class="kw">list</span>(<span class="dt">drawn =</span> <span class="ot">FALSE</span>)) %&gt;%
+<span class="st">  </span>distinct %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(x) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">n_drawn =</span> <span class="kw">cumsum</span>(drawn),
+         <span class="dt">.id =</span> <span class="kw">as.numeric</span>(.id),
+         <span class="dt">n_prop =</span> n_drawn /<span class="st"> </span>.id)
+
+<span class="kw">ggplot</span>(prop_drawn, <span class="kw">aes</span>(.id, n_prop, <span class="dt">group =</span> x)) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">alpha =</span> .<span class="dv">05</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;b-th bootstrap sample &quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Proportion i-th observation in samples 1:b&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/boot-prop-1.png" width="672" /></p>
+<p>Because of this, we can calculate the <strong>out-of-bag error estimate</strong>, or the average error estimate for out-of-bag observations. First we generate bagged predictions for each observation <span class="math inline">\(i\)</span> using only its OOB estimates, then we average across all <span class="math inline">\(i\)</span> observations to get the OOB error estimate. This is a valid estimate of the test error rate/MSE because it only uses observations that were not part of the training observations for a given bag <span class="math inline">\(b\)</span>. This is far more computationally advantageous than calculating a cross-validated error rate for a bagged model. Consider the following example predicting survival on the Titanic using all available predictors in the dataset:<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_rf_data &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">    </span><span class="kw">select</span>(-Name, -Ticket, -Cabin, -Sex, -PassengerId) %&gt;%
+<span class="st">    </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(<span class="kw">as.factor</span>(.)), Pclass, Embarked) %&gt;%
+<span class="st">    </span>na.omit
+
+(titanic_bag &lt;-<span class="st"> </span><span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_rf_data,
+                             <span class="dt">mtry =</span> <span class="dv">7</span>, <span class="dt">ntree =</span> <span class="dv">500</span>))</code></pre></div>
+<pre><code>## 
+## Call:
+##  randomForest(formula = Survived ~ ., data = titanic_rf_data,      mtry = 7, ntree = 500) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 7
+## 
+##         OOB estimate of  error rate: 20.9%
+## Confusion matrix:
+##          Died Survived class.error
+## Died      356       68       0.160
+## Survived   81      209       0.279</code></pre>
+<div id="estimation-time-for-oob-error-rate" class="section level5">
+<h5>Estimation time for OOB error rate</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  <span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_rf_data,
+                              <span class="dt">mtry =</span> <span class="dv">7</span>, <span class="dt">ntree =</span> <span class="dv">500</span>)
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   0.426   0.014   0.440</code></pre>
+</div>
+<div id="estimation-time-for-10-fold-cv-error-rate" class="section level5">
+<h5>Estimation time for <span class="math inline">\(10\)</span>-fold CV error rate</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
+  <span class="kw">crossv_kfold</span>(titanic_rf_data, <span class="dt">k =</span> <span class="dv">10</span>) %&gt;%
+<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(train, ~<span class="st"> </span><span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> .,
+                              <span class="dt">mtry =</span> <span class="dv">7</span>, <span class="dt">ntree =</span> <span class="dv">500</span>)),
+           <span class="dt">test.err =</span> <span class="kw">map2_dbl</span>(model, test, err.rate.rf)) %&gt;%
+<span class="st">    </span><span class="kw">summarize</span>(<span class="kw">mean</span>(test.err))
+})</code></pre></div>
+<pre><code>##    user  system elapsed 
+##   2.899   0.085   2.992</code></pre>
+<p>For our Titanic bagged model with all available predictors, we estimate an OOB error rate of <span class="math inline">\(20.868\%\)</span>. Likewise, we obtain a <a href="persp004_logistic_regression.html#confusion_matrix">confusion matrix</a> to identify our error rate for each class.</p>
+</div>
+</div>
+<div id="variable-importance-measures" class="section level2">
+<h2>Variable importance measures</h2>
+<p>Interpreting a bagged model is much more difficult than interpreting a single decision tree. Because each tree is unique, we cannot plot an “average” of the trees like we might with a bootstrapped linear model. The most common method of interpretation (beyond prediction accuracy) is <strong>variable importance</strong>, or attempting to assess how important each variable is to the model. In regression trees, for each predictor we calculate the total amount of reduction in the RSS attributable to splits caused by the predictor, averaged over the <span class="math inline">\(B\)</span> trees. For classification trees, we do the same thing using average reduction in the Gini index.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">var =</span> <span class="kw">rownames</span>(<span class="kw">importance</span>(titanic_bag)),
+           <span class="dt">MeanDecreaseGini =</span> <span class="kw">importance</span>(titanic_bag)[,<span class="dv">1</span>]) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">var =</span> <span class="kw">fct_reorder</span>(var, MeanDecreaseGini, <span class="dt">fun =</span> median)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(var, MeanDecreaseGini)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">coord_flip</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Predicting survival on the Titanic&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Bagging&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Average decrease in the Gini Index&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/titanic-varimp-1.png" width="672" /></p>
+<p>For classification trees, larger values are better. So for the Titanic bagged model, gender, age, and fare are the most important predictors, whereas number of siblings/parents aboard and the port of departure are relatively unimportant.</p>
+</div>
+</div>
+<div id="random-forests" class="section level1">
+<h1>Random forests</h1>
+<p><strong>Random forests</strong> improve upon bagging by decorrelating the individual trees. The problem with bagging is that if there is a single dominant predictor in the dataset, most trees will use the same predictor for the first split and ensure correlation and similarity among the trees. Remember that the goal of bagging is to reduce the variance of our estimates of the response variable <span class="math inline">\(Y\)</span>. But averaging across a set of correlated trees will not substantially reduce variance, at least not as much as if the trees were uncorrelated.</p>
+<p>To resolve this problem, when splitting a tree random forests will only consider a random sample <span class="math inline">\(m\)</span> of the total possible predictors <span class="math inline">\(p\)</span>. That is, it intentionally ignores a random set of variables. Every time a new split is considered, a new random sample <span class="math inline">\(m\)</span> is drawn. The main question then becomes how to select the size of <span class="math inline">\(m\)</span>. ISL recommends <span class="math inline">\(m = \sqrt{p}\)</span>. By default, the <code>randomForest</code> package uses <span class="math inline">\(m = \sqrt{p}\)</span> for classification trees and <span class="math inline">\(m = \frac{p}{3}\)</span> for regression trees.</p>
+<p>Let’s compare the results of the bagged Titanic model to the same model, only this time employing the random forest method:</p>
+<div id="bagged-model" class="section level5">
+<h5>Bagged model</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_bag</code></pre></div>
+<pre><code>## 
+## Call:
+##  randomForest(formula = Survived ~ ., data = titanic_rf_data,      mtry = 7, ntree = 500) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 7
+## 
+##         OOB estimate of  error rate: 20.2%
+## Confusion matrix:
+##          Died Survived class.error
+## Died      358       66       0.156
+## Survived   78      212       0.269</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">seq.int</span>(titanic_bag$ntree) %&gt;%
+<span class="st">  </span><span class="kw">map_df</span>(~<span class="st"> </span><span class="kw">getTree</span>(titanic_bag, <span class="dt">k =</span> ., <span class="dt">labelVar =</span> <span class="ot">TRUE</span>)[<span class="dv">1</span>,]) %&gt;%
+<span class="st">  </span><span class="kw">count</span>(<span class="st">`</span><span class="dt">split var</span><span class="st">`</span>) %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Variable used to generate the first split in each tree&quot;</span>,
+               <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">&quot;Variable used to split&quot;</span>, <span class="st">&quot;Number of training observations&quot;</span>))</code></pre></div>
+<table>
+<caption>Variable used to generate the first split in each tree</caption>
+<thead>
+<tr class="header">
+<th align="left">Variable used to split</th>
+<th align="right">Number of training observations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Female</td>
+<td align="right">500</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="random-forest-model" class="section level5">
+<h5>Random forest model</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(titanic_rf &lt;-<span class="st"> </span><span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_rf_data,
+                            <span class="dt">ntree =</span> <span class="dv">500</span>))</code></pre></div>
+<pre><code>## 
+## Call:
+##  randomForest(formula = Survived ~ ., data = titanic_rf_data,      ntree = 500) 
+##                Type of random forest: classification
+##                      Number of trees: 500
+## No. of variables tried at each split: 2
+## 
+##         OOB estimate of  error rate: 18.4%
+## Confusion matrix:
+##          Died Survived class.error
+## Died      382       42      0.0991
+## Survived   89      201      0.3069</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">seq.int</span>(titanic_rf$ntree) %&gt;%
+<span class="st">  </span><span class="kw">map_df</span>(~<span class="st"> </span><span class="kw">getTree</span>(titanic_rf, <span class="dt">k =</span> ., <span class="dt">labelVar =</span> <span class="ot">TRUE</span>)[<span class="dv">1</span>,]) %&gt;%
+<span class="st">  </span><span class="kw">count</span>(<span class="st">`</span><span class="dt">split var</span><span class="st">`</span>) %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Variable used to generate the first split in each tree&quot;</span>,
+               <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">&quot;Variable used to split&quot;</span>, <span class="st">&quot;Number of training observations&quot;</span>))</code></pre></div>
+<table>
+<caption>Variable used to generate the first split in each tree</caption>
+<thead>
+<tr class="header">
+<th align="left">Variable used to split</th>
+<th align="right">Number of training observations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Age</td>
+<td align="right">44</td>
+</tr>
+<tr class="even">
+<td align="left">Embarked</td>
+<td align="right">66</td>
+</tr>
+<tr class="odd">
+<td align="left">Fare</td>
+<td align="right">99</td>
+</tr>
+<tr class="even">
+<td align="left">Female</td>
+<td align="right">140</td>
+</tr>
+<tr class="odd">
+<td align="left">Parch</td>
+<td align="right">30</td>
+</tr>
+<tr class="even">
+<td align="left">Pclass</td>
+<td align="right">112</td>
+</tr>
+<tr class="odd">
+<td align="left">SibSp</td>
+<td align="right">9</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">var =</span> <span class="kw">rownames</span>(<span class="kw">importance</span>(titanic_rf)),
+           <span class="st">`</span><span class="dt">Random forest</span><span class="st">`</span> =<span class="st"> </span><span class="kw">importance</span>(titanic_rf)[,<span class="dv">1</span>]) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(<span class="kw">data_frame</span>(<span class="dt">var =</span> <span class="kw">rownames</span>(<span class="kw">importance</span>(titanic_rf)),
+           <span class="dt">Bagging =</span> <span class="kw">importance</span>(titanic_bag)[,<span class="dv">1</span>])) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">var =</span> <span class="kw">fct_reorder</span>(var, Bagging, <span class="dt">fun =</span> median)) %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(model, gini, -var) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(var, gini, <span class="dt">color =</span> model)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">coord_flip</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Predicting survival on the Titanic&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Average decrease in the Gini Index&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Method&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/titanic-rf-1.png" width="672" /></p>
+<p>The OOB error rate is a couple points smaller on the random forest model, and in the random forest model gender is no longer exclusively used to generate the first split for each tree. We can also observe that the average decrease in the Gini index associated with each variable is generally smaller using the random forest method compared to bagging - this is because of the variable restriction imposed when considering splits.</p>
+</div>
+</div>
+<div id="boosting" class="section level1">
+<h1>Boosting</h1>
+<p><strong>Boosting</strong> is another approach to improve upon the result of a single decision tree. Instead of creating multiple independent decision trees through a bootstrapping process, boosting grows trees <strong>sequentially</strong>, using information from the previously grown trees. Rather than fitting a model to the response variable <span class="math inline">\(Y\)</span>, we fit a large number of decision trees <span class="math inline">\(\hat{f}^1, \dots, \hat{f}^B\)</span> to the current <strong>residuals</strong>. Each time a new decision tree is estimated, the residuals are updated combining the results of all previous decision trees in preparation for fitting the next tree.</p>
+<p>Rather than learning hard and fast like in bagging and random forests, boosting <strong>learns slowly</strong> over time as new trees are added. Because boosting is additive and slow, we can estimate fairly small trees and still gain considerable predictive power.</p>
+<p>Boosting is a general process that can be used for other statistical learning methods. The three main tuning parameters when boosting are:</p>
+<ol style="list-style-type: decimal">
+<li>The <strong>number of trees</strong> <span class="math inline">\(B\)</span>. If <span class="math inline">\(B\)</span> is too large, boosting can overfit. Typically we would use cross-validation to select <span class="math inline">\(B\)</span>.</li>
+<li>The <strong>shrinkage parameter</strong> <span class="math inline">\(\lambda\)</span>, which is a small positive number (i.e. <span class="math inline">\(.01\)</span> or <span class="math inline">\(.001\)</span>). This controls the rate at which boosting learns. As <span class="math inline">\(\lambda\)</span> gets smaller, <span class="math inline">\(B\)</span> generally must increase.</li>
+<li>The <strong>number of <span class="math inline">\(d\)</span> split in each tree</strong>. Surprisingly, <span class="math inline">\(d=1\)</span> actually works well which is essentially an additive model (each tree is a <strong>stump</strong> with a single predictor), though larger values of <span class="math inline">\(d\)</span> are also common.</li>
+</ol>
+<p>Let’s evaluate all the approaches we’ve seen so far using the Titanic model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(titanic_rf_data, <span class="dt">p =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span> =<span class="st"> </span>.<span class="dv">3</span>,
+                                                           <span class="st">&quot;train&quot;</span> =<span class="st"> </span>.<span class="dv">7</span>))
+
+titanic_models &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="st">&quot;bagging&quot;</span> =<span class="st"> </span><span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_split$train,
+                                                <span class="dt">mtry =</span> <span class="dv">7</span>, <span class="dt">ntree =</span> <span class="dv">10000</span>),
+                       <span class="st">&quot;rf_mtry2&quot;</span> =<span class="st"> </span><span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_split$train,
+                                                 <span class="dt">mtry =</span> <span class="dv">2</span>, <span class="dt">ntree =</span> <span class="dv">10000</span>),
+                       <span class="st">&quot;rf_mtry4&quot;</span> =<span class="st"> </span><span class="kw">randomForest</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_split$train,
+                                                 <span class="dt">mtry =</span> <span class="dv">4</span>, <span class="dt">ntree =</span> <span class="dv">10000</span>),
+                       <span class="st">&quot;boosting_depth1&quot;</span> =<span class="st"> </span><span class="kw">gbm</span>(<span class="kw">as.numeric</span>(Survived) -<span class="st"> </span><span class="dv">1</span> ~<span class="st"> </span>.,
+                                               <span class="dt">data =</span> titanic_split$train,
+                                               <span class="dt">n.trees =</span> <span class="dv">10000</span>, <span class="dt">interaction.depth =</span> <span class="dv">1</span>),
+                       <span class="st">&quot;boosting_depth2&quot;</span> =<span class="st"> </span><span class="kw">gbm</span>(<span class="kw">as.numeric</span>(Survived) -<span class="st"> </span><span class="dv">1</span> ~<span class="st"> </span>.,
+                                               <span class="dt">data =</span> titanic_split$train,
+                                               <span class="dt">n.trees =</span> <span class="dv">10000</span>, <span class="dt">interaction.depth =</span> <span class="dv">2</span>),
+                       <span class="st">&quot;boosting_depth4&quot;</span> =<span class="st"> </span><span class="kw">gbm</span>(<span class="kw">as.numeric</span>(Survived) -<span class="st"> </span><span class="dv">1</span> ~<span class="st"> </span>.,
+                                               <span class="dt">data =</span> titanic_split$train,
+                                               <span class="dt">n.trees =</span> <span class="dv">10000</span>, <span class="dt">interaction.depth =</span> <span class="dv">4</span>))</code></pre></div>
+<pre><code>## Distribution not specified, assuming bernoulli ...
+## Distribution not specified, assuming bernoulli ...
+## Distribution not specified, assuming bernoulli ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">boost_test_err &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">bagging =</span> <span class="kw">predict</span>(titanic_models$bagging,
+                                               <span class="dt">newdata =</span> <span class="kw">as_tibble</span>(titanic_split$test),
+                                               <span class="dt">predict.all =</span> <span class="ot">TRUE</span>)[[<span class="dv">2</span>]] %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, function(x) x !=<span class="st"> </span><span class="kw">as_tibble</span>(titanic_split$test)$Survived) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, mean),
+                             <span class="dt">rf_mtry2 =</span> <span class="kw">predict</span>(titanic_models$rf_mtry2,
+                                                <span class="dt">newdata =</span> <span class="kw">as_tibble</span>(titanic_split$test),
+                                                <span class="dt">predict.all =</span> <span class="ot">TRUE</span>)[[<span class="dv">2</span>]] %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, function(x) x !=<span class="st"> </span><span class="kw">as_tibble</span>(titanic_split$test)$Survived) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, mean),
+                             <span class="dt">rf_mtry4 =</span> <span class="kw">predict</span>(titanic_models$rf_mtry4,
+                                                <span class="dt">newdata =</span> <span class="kw">as_tibble</span>(titanic_split$test),
+                                                <span class="dt">predict.all =</span> <span class="ot">TRUE</span>)[[<span class="dv">2</span>]] %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, function(x) x !=<span class="st"> </span><span class="kw">as_tibble</span>(titanic_split$test)$Survived) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, mean),
+                             <span class="dt">boosting_depth1 =</span> <span class="kw">predict</span>(titanic_models$boosting_depth1,
+                                                       <span class="dt">newdata =</span> <span class="kw">as_tibble</span>(titanic_split$test),
+                                                       <span class="dt">n.trees =</span> <span class="dv">1</span>:<span class="dv">10000</span>) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, function(x) <span class="kw">round</span>(x) ==<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as_tibble</span>(titanic_split$test)$Survived) -<span class="st"> </span><span class="dv">1</span>) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, mean),
+                             <span class="dt">boosting_depth2 =</span> <span class="kw">predict</span>(titanic_models$boosting_depth2,
+                                                       <span class="dt">newdata =</span> <span class="kw">as_tibble</span>(titanic_split$test),
+                                                       <span class="dt">n.trees =</span> <span class="dv">1</span>:<span class="dv">10000</span>) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, function(x) <span class="kw">round</span>(x) ==<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as_tibble</span>(titanic_split$test)$Survived) -<span class="st"> </span><span class="dv">1</span>) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, mean),
+                             <span class="dt">boosting_depth4 =</span> <span class="kw">predict</span>(titanic_models$boosting_depth4,
+                                                       <span class="dt">newdata =</span> <span class="kw">as_tibble</span>(titanic_split$test),
+                                                       <span class="dt">n.trees =</span> <span class="dv">1</span>:<span class="dv">10000</span>) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, function(x) <span class="kw">round</span>(x) ==<span class="st"> </span><span class="kw">as.numeric</span>(<span class="kw">as_tibble</span>(titanic_split$test)$Survived) -<span class="st"> </span><span class="dv">1</span>) %&gt;%
+<span class="st">                               </span><span class="kw">apply</span>(<span class="dv">2</span>, mean))
+
+boost_test_err %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">id =</span> <span class="kw">row_number</span>()) %&gt;%
+<span class="st">  </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(<span class="kw">cummean</span>(.)), bagging:rf_mtry4) %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(model, err, -id) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">factor</span>(model, <span class="dt">levels =</span> <span class="kw">names</span>(titanic_models),
+                        <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Bagging&quot;</span>, <span class="st">&quot;Random forest: m = </span><span class="ch">\\</span><span class="st">sqrt(p)&quot;</span>,
+                                   <span class="st">&quot;Random forest: m = 4&quot;</span>,
+                                   <span class="st">&quot;Boosting: depth = 1&quot;</span>,
+                                   <span class="st">&quot;Boosting: depth = 2&quot;</span>,
+                                   <span class="st">&quot;Boosting: depth = 4&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(id, err, <span class="dt">color =</span> model)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Number of trees&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test classification error&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Model&quot;</span>)</code></pre></div>
+<p><img src="persp008_tree_methods_files/figure-html/titanic-compare-all-1.png" width="672" /></p>
+<p>Using bagging or random forest methods, the models quickly converge on a test classification error rate. This helps to demonstrate that for bagging and random forests, you do not need a particularly large <span class="math inline">\(B\)</span> to build a good model. For boosting, additional trees are necessary for the error rate to begin converging and stabilizing around a single value. We can use the <code>gbm.perf()</code> function to help determine the optimal number of boosting iterations based on either OOB, test set, or CV estimates of the error rate/MSE:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">depth =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>),
+           <span class="dt">model =</span> titanic_models[<span class="kw">c</span>(<span class="st">&quot;boosting_depth1&quot;</span>, <span class="st">&quot;boosting_depth2&quot;</span>, <span class="st">&quot;boosting_depth4&quot;</span>)],
+           <span class="dt">optimal =</span> <span class="kw">map_dbl</span>(model, gbm.perf, <span class="dt">plot.it =</span> <span class="ot">FALSE</span>)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-model) %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>(<span class="dt">caption =</span> <span class="st">&quot;Optimal number of boosting iterations&quot;</span>,
+               <span class="dt">col.names =</span> <span class="kw">c</span>(<span class="st">&quot;Depth&quot;</span>, <span class="st">&quot;Optimal number of iterations&quot;</span>))</code></pre></div>
+<pre><code>## Using OOB method...
+## Using OOB method...
+## Using OOB method...</code></pre>
+<table>
+<caption>Optimal number of boosting iterations</caption>
+<thead>
+<tr class="header">
+<th align="right">Depth</th>
+<th align="right">Optimal number of iterations</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">3909</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">3371</td>
+</tr>
+<tr class="odd">
+<td align="right">4</td>
+<td align="right">2436</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-02-27                  
+## 
+##  package      * version date       source        
+##  assertthat     0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports      1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom        * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI            0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools       1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest         0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr        * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate       0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats      * 0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign        0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  gbm          * 2.1.1   2015-03-11 CRAN (R 3.3.0)
+##  ggdendro     * 0.1-20  2017-02-27 local         
+##  ggplot2      * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gridExtra    * 2.2.1   2016-02-29 cran (@2.2.1) 
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven          1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms            0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools      0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr           1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  ISLR         * 1.0     2013-06-11 CRAN (R 3.3.0)
+##  jsonlite       1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr          1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice      * 0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval       0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate      1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr       1.5     2014-11-22 CRAN (R 3.3.0)
+##  MASS           7.3-45  2016-04-21 CRAN (R 3.3.2)
+##  Matrix         1.2-8   2017-01-20 CRAN (R 3.3.2)
+##  memoise        1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt         1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr       * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme           3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  pROC         * 1.9.1   2017-02-05 CRAN (R 3.3.2)
+##  psych          1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr        * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6             2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  randomForest * 4.6-12  2015-10-07 CRAN (R 3.3.0)
+##  rcfss        * 0.1.3   2017-02-16 local         
+##  Rcpp           0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr        * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl         0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2       1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown      1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot      1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest          0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales         0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi        1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr      * 1.1.0   2016-08-19 cran (@1.1.0) 
+##  survival     * 2.40-1  2016-10-30 CRAN (R 3.3.0)
+##  tibble       * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr        * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse    * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic      * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  tree         * 1.0-37  2016-01-21 CRAN (R 3.3.0)
+##  withr          1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2           1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml           2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Yes, we know <a href="persp006_resampling.html#training_vs_test_data">the pitfalls of using training MSE for model comparison</a>. It’s just an example because we haven’t split the data into a validation set.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Alternatively, you specify the total number of terminal nodes to keep in the model and select that value to optimally balance the trade-off between complexity and accuracy.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><code>tree()</code> uses the Gini index for classification trees.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>The variance for each observation in an independent sample <span class="math inline">\(Z_1, Z_2, \dots, Z_n\)</span> is <span class="math inline">\(\sigma^2\)</span>. The variance for the average of the sample <span class="math inline">\(\bar{Z}\)</span> is <span class="math inline">\(\frac{\sigma^2}{n}\)</span>. By averaging across the observations, we reduce the estimated variance. Intuitively this makes sense because our estimate of <span class="math inline">\(\bar{Z}\)</span> is based on more information, and should therefore be more stable.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>This includes all variables in the data frame that are not merely text values.<a href="#fnref5">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
