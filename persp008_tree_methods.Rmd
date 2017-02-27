@@ -313,7 +313,7 @@ grid.arrange(ptree, preg, ncol = 2,
                             gp = gpar(fontsize = 20)))
 ```
 
-There are `r nrow(mod$frame)` nodes in this decision tree, with `r nrow(mod$frame)` different regions and `r nrow(mod$frame)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
+There are `r nrow(mod$frame)` nodes in this decision tree, with `r ceiling(length(mod$frame$yval) / 2)` different regions and `r ceiling(length(mod$frame$yval) / 2)` different predicted values depending on the observation's value for horsepower. Notice though that the step function actually looks similar to a quadratic smoothing line, matching our expectations of the relationship. In fact, compared to the linear model (`r mse(auto_lm, Auto)`) the decision tree generates a far lower training MSE (`r mse(auto_tree, Auto)`).^[Yes, we know [the pitfalls of using training MSE for model comparison](persp006_resampling.html#training_vs_test_data). It's just an example because we haven't split the data into a validation set.]
 
 ### Multiple predictors
 
@@ -404,7 +404,7 @@ $$\sum_{j=1}^J \sum_{i \in R_j} (y_i - \hat{y}_{R_j})^2$$
 
 where $\hat{y}_{R_j}$ is the mean response for the observations in the $j$th region. In order to do this, decision trees implement a **recursive binary strategy**. The process begins at the top of the tree (**top-down**) and successively splits the data into a new region. This split generates two new branches in the tree. Rather than looking forward to select the optimal split among all future possibilities, this approach is **greedy** in that it selects the best split **at that particular step**. Given all the potential splits that could be performed on one of the predictors $X_1, X_2, \dots, X_p$ predictors, the algorithm assigns a cutpoint $s$ that splits the data in the manner that reduces the RSS by the largest amount. As the number of predictors $p$ and observations $N$ increases, the more potential cutpoints the algorithm must consider. However even with relatively large numbers of predictors and observations, the computational process is quite efficient.
 
-This process continues until some designated stopping criteria is reached, otherwise it could continue until each training observation is sorted into its own node (i.e. overfitting). For example, the `tree()` function in R (from the `tree` library) will not split a node if it would contain fewer than 10 training observations. Once this iterative process stops, we can generate predicted values for the response of a given test observation by calculating the mean of the training observations for the region in which the test observation belongs.
+This process continues until some designated stopping criteria is reached, otherwise it could continue until each training observation is sorted into its own node (i.e. overfitting). For example, by defaul the `tree()` function in R (from the `tree` library) will not split a node if a resulting node would contain fewer than 10 training observations. Once this iterative process stops, we can generate predicted values for the response of a given test observation by calculating the mean of the training observations for the region in which the test observation belongs.
 
 ### Pruning the tree
 
@@ -412,9 +412,9 @@ Notice that we stop splitting the tree in order to prevent overfitting. Even wit
 
 ![](https://growingtogether.areavoices.com/files/2015/11/pruning.jpg)
 
-In essence, we want to **prune** the tree. **Cost complexity pruning** is one predominant method for achieving this goal. While I leave the mathematics of this operation to [ISL](https://link-springer-com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7), cost complexity pruning uses a **tuning parameter** to selectively prune or snip branches that do not contribute significant predictive accuracy, resulting in a subtree generated from the full tree. Different tuning parameter values will lead to different trade-offs between model complexity and model accuracy, so functions such as `prune.tree()` use [$k$-fold cross-validation](persp006_resampling.html#k-fold_cross-validation) to select a cost complexity parameter that optimally balances the trade-off for the specific dataset.
+In essence, we want to **prune** the tree. **Cost complexity pruning** is one predominant method for achieving this goal. While I leave the mathematics of this operation to [ISL](https://link-springer-com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7), cost complexity pruning uses a **tuning parameter** to selectively prune or snip branches that do not contribute significant predictive accuracy, resulting in a subtree generated from the full tree. Different tuning parameter values will lead to different trade-offs between model complexity and model accuracy, so we can use function such as `prune.tree()` in conjunction with [$k$-fold cross-validation](persp006_resampling.html#k-fold_cross-validation) to select a cost complexity parameter that optimally balances the trade-off for the specific dataset.^[Alternatively, you specify the total number of terminal nodes to keep in the model and select that value to optimally balance the trade-off between complexity and accuracy.]
 
-For example, here is the full tree grown for the horsepower + weight decision tree using the default control parameters for `tree()`:
+For example, here is the full tree grown for the `horsepower + weight` decision tree:
 
 ```{r auto-tree-default}
 auto_tree <- tree(mpg ~ horsepower + weight, data = Auto,
@@ -610,7 +610,7 @@ titanic_cv %>%
        y = "Test error rate")
 ```
 
-Here I select 6 as the optimal number of nodes; while the error rate continues to decline, there are diminishing marginal returns.
+Here I select 6 as the optimal number of nodes.
 
 ```{r titanic-tree-6, dependson="titanic-tree"}
 mod <- prune.tree(titanic_tree, best = 6)
@@ -650,6 +650,16 @@ titanic %>%
 For males between 13 and 24.75 years old, the decision tree prediction achieves higher node purity - it more accurately predicts all of the training observations as dead. If we had a test observation for a 16-year-old male, we'd be more confident in our prediction than if we had terminated the node at $\text{age} < 13$. While this does not improve our error rate (we would have made the same prediction regardless), it does improve our Gini index and cross-entropy which are the measures used to grow the tree.
 
 ## Trees vs. regression
+
+Linear regression and decision trees utilize entirely different functional forms. Linear regression assumes linear and additive relationships between predictors and the response:
+
+$$f(X) = \beta_0 + \sum_{j = 1}^p X_j \beta_j$$
+
+Whereas decision trees assume the observations can be partitioned into the feature space:
+
+$$f(X) = \sum_{m = 1}^M c_m \cdot 1_{X \in R_m}$$
+
+If the relationship between the predictor(s) and the response are truly linear and additive, then linear regression will likely perform better than a decision tree. If the relationship is highly complex and non-linear, then decision trees may be the better option. Using resampling methods such as cross-validation can help you to decide the appropriate statistical learning method.
 
 ## Benefits/drawbacks to decision trees
 
