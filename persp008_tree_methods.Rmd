@@ -28,6 +28,7 @@ library(tidyverse)
 library(modelr)
 library(broom)
 library(tree)
+library(randomForest)
 library(stringr)
 library(ISLR)
 library(gridExtra)
@@ -560,13 +561,14 @@ ggplot(segment(tree_data)) +
 ```
 
 ```{r titanic-tree-prune, dependson="titanic-tree"}
-mse.tree <- function (model, data){
-  residuals.glm <- function(model, data) {
-    modelr:::response(model, data) - stats::predict(model, data, type = "response")
-  }
-
-  x <- residuals(model, data, type = "usual")
-  mean(x^2, na.rm = TRUE)
+err.rate.tree <- function(model, data) {
+  data <- as_tibble(data)
+  response <- as.character(model$terms[[2]])
+  
+  pred <- predict(model, newdata = data, type = "class")
+  actual <- data[[response]]
+  
+  return(mean(pred != actual, na.rm = TRUE))
 }
 
 # generate 10-fold CV trees
@@ -586,7 +588,7 @@ titanic_cv <- expand.grid(titanic_cv$.id,
          k = Var2) %>%
   left_join(titanic_cv) %>%
   mutate(prune = map2(tree, k, ~ prune.misclass(.x, best = .y)),
-         mse = map2_dbl(prune, test, mse.tree))
+         mse = map2_dbl(prune, test, err.rate.tree))
 
 titanic_cv %>%
   group_by(k) %>%
@@ -601,10 +603,10 @@ titanic_cv %>%
        y = "Test error rate")
 ```
 
-Here I select 7 as the optimal number of nodes; while the error rate continues to decline, there are diminishing marginal returns.
+Here I select 6 as the optimal number of nodes; while the error rate continues to decline, there are diminishing marginal returns.
 
-```{r titanic-tree-7, dependson="titanic-tree"}
-mod <- prune.tree(titanic_tree, best = 10)
+```{r titanic-tree-6, dependson="titanic-tree"}
+mod <- prune.tree(titanic_tree, best = 6)
 
 tree_data <- dendro_data(mod)
 ggplot(segment(tree_data)) +
@@ -619,26 +621,26 @@ ggplot(segment(tree_data)) +
        subtitle = "Age + Gender")
 ```
 
-Notice that some branches split and lead to the same outcome. For instance, the bottom-left branch assigns individuals with an age both greater than and less than $.96$ to `Survived`. This is because splitting the node leads to increased **node purity** where we are even more confident in our predictions. Think about it. Here are the outcomes in the training observations for females less than 13 years old:
+Notice that some branches split and lead to the same outcome. For instance, the bottom-left branch assigns males with an age less than 13 but both greater than and less than $24.75$ to `Died`. This is because splitting the node leads to increased **node purity** where we are even more confident in our predictions. Think about it. Here are the outcomes in the training observations for males older than 13 years old:
 
-```{r titanic-f-13}
-titanic %>%
-  filter(Female == "female", Age < 13) %>%
-  count(Survived)
+```{r titanic-m-13}
+(titanic_m13 <- titanic %>%
+  filter(Female == "male", Age >= 13) %>%
+  count(Survived))
 ```
 
-We would predict for all of these observations that the individual survived, being incorrect 13 times. What happens if we split this subset even further?
+We would predict for all of these observations that the individual died, being incorrect `r titanic_m13$n[[2]]` times. What happens if we split this subset even further?
 
-```{r titanic-f-13-split}
+```{r titanic-m-13-split}
 titanic %>%
-  filter(Female == "female", Age < 13) %>%
-  mutate(age96 = Age < .96) %>%
-  count(age96, Survived) %>%
-  complete(age96, Survived, fill = list(n = 0)) %>%
-  knitr::kable(col.names = c("Less than .96 years old", "Outcome", "Number of training observations"))
+  filter(Female == "male", Age >= 13) %>%
+  mutate(age25 = Age < 24.75) %>%
+  count(age25, Survived) %>%
+  complete(age25, Survived, fill = list(n = 0)) %>%
+  knitr::kable(col.names = c("Less than 24.75 years old", "Outcome", "Number of training observations"))
 ```
 
-For individuals less than $.96$ years old, the decision tree prediction achieves complete node purity - it perfectly predicts all of the training observations as survivors. If we had a test observation for a female infant (i.e. less than a year old), we'd be more confident in our prediction than if we had terminated the node at $\text{age} < 13$. While this does not improve our error rate (we would have made the same prediction regardless), it does improve our Gini index and cross-entropy which are the measures used to grow the tree.
+For males between 13 and 24.75 years old, the decision tree prediction achieves higher node purity - it more accurately predicts all of the training observations as dead. If we had a test observation for a 16-year-old male, we'd be more confident in our prediction than if we had terminated the node at $\text{age} < 13$. While this does not improve our error rate (we would have made the same prediction regardless), it does improve our Gini index and cross-entropy which are the measures used to grow the tree.
 
 ## Trees vs. regression
 
@@ -682,6 +684,114 @@ However there are also drawbacks to trees:
 Fortuntately, there is an easy way to improve on these poor predictions: by aggregating many decision trees and averaging across them, we can substantially improve performance.
 
 # Bagging
+
+Decision trees suffer from **high variance**: as we saw above, even a small change in the training/test set partitions can lead to substantial changes in the estimated model and resulting fit. However a method implementing **low variance** should provide more consistent estimates, regardless of the sample split. By **bootstrap aggregating**, or simply **bagging**, is a general method for reducing variance in estimates.
+
+We already met the [bootstrap](persp006_resampling.html#the_bootstrap). Recall that this involves repeatedly sampling with replacement from a sample, estimating a parameter or set of parameters for each bootstrap sample, then averaging across the bootstrap samples to form our bootstrap estimate of the parameter. By averaging across all the bootstrap samples, we reduce the variance $\sigma^2$ in our final estimate.^[The variance for each observation in an independent sample $Z_1, Z_2, \dots, Z_n$ is $\sigma^2$. The variance for the average of the sample $\bar{Z}$ is $\frac{\sigma^2}{n}$. By averaging across the observations, we reduce the estimated variance. Intuitively this makes sense because our estimate of $\bar{Z}$ is based on more information, and should therefore be more stable.]
+
+As this applies to statistical learning methods, we estimate $\hat{f}^1(x), \hat{f}^2(x), \dots, \hat{f}^B(x)$ using $B$ separate training sets, and average across the models to generate a single low-variance model:
+
+$$\hat{f}_{\text{avg}}(x) = \frac{1}{B} \sum_{b = 1}^B \hat{f}^b(x)$$
+
+Since we don't have that many training sets, we bootstrap them, just like how we [estimated bootstrap parameters for a linear regression model](persp006_resampling.html#estimating_the_accuracy_of_a_linear_regression_model). We estimate a decision tree model on each bootstrap sample and average the results of the models to generate the bagged estimate:
+
+$$\hat{f}_{\text{bag}}(x) = \frac{1}{B} \sum_{b = 1}^B \hat{f}^b(x)$$
+
+Each tree is grown without pruning, so they are high-variance but low-bias. Then by averaging across the results, we should get an estimate that has low-bias **and** low-variance. For regression trees this is straight-forward. For classification trees, we estimate $B$ trees and for a given test observation assign it the **majority-class result**: the overall prediction is the most commonly occuring predicted outcome across all the $B$ predictions.
+
+Compared to the error rate for the corresponding classification tree, bagged estimates generally have slightly lower error rates. Consider the following example predicting survival on the Titanic using all available predictors in the dataset:^[This includes all variables in the data frame that are not merely text values.]
+
+```{r auto-bag}
+err.rate.rf <- function(model, data) {
+  data <- as_tibble(data)
+  response <- as.character(model$terms[[2]])
+  
+  pred <- predict(model, newdata = data, type = "response")
+  actual <- data[[response]]
+  
+  return(mean(pred != actual, na.rm = TRUE))
+}
+
+titanic_tree_bag <- function(){
+  # split into training and test set
+  titanic_split <- titanic %>%
+    select(-Name, -Ticket, -Cabin, -Sex, -PassengerId) %>%
+    mutate_each(funs(as.factor(.)), Pclass, Embarked) %>%
+    na.omit %>%
+    resample_partition(p = c("test" = .5, "train" = .5))
+  
+  # estimate model
+  titanic_tree <- tree(Survived ~ ., data = titanic_split$train)
+  titanic_bag <- randomForest(Survived ~ ., data = titanic_split$train,
+                              mtry = 7, ntree = 500)
+  
+  # calculate difference in test MSE
+  err.rate.tree(titanic_tree, as_tibble(titanic_split$test)) - err.rate.rf(titanic_bag, as_tibble(titanic_split$test))
+}
+
+tree_bag_comp <- rerun(100, titanic_tree_bag()) %>%
+  unlist() %>%
+  data_frame(err_diff = .)
+
+ggplot(tree_bag_comp, aes(err_diff)) +
+  geom_histogram() +
+  geom_vline(xintercept = mean(tree_bag_comp$err_diff)) +
+  labs(x = "Tree error rate - bagged error rate")
+```
+
+On average, the decision tree test error rate is `r mean(tree_bag_comp$err_diff)` higher than the comparable bagged test error rate.
+
+## Out-of-bag estimates
+
+Fortunately using a bagged approach also allows us to avoid using any type of resampling method to calculate the test MSE or error rate. This is because we have a natural test set as a result of the bootstrapping process. Recall that in a bootstrap sampling process, we sample **with replacement**. This means that in some bootstrap samples, an observation may never be drawn. In fact, there is a pattern to this phenomenon. On average, each bagged tree uses approximately two-thirds of the original observations. Therefore observations not appearing in a given bag are considered **out-of-bag observations** (OOB).
+
+```{r boot-prop}
+# generate sample index
+samp <- data_frame(x = seq.int(1000))
+
+# generate bootstrap sample and count proportion of observations in each draw
+prop_drawn <- modelr::bootstrap(samp, n = nrow(samp)) %>%
+  mutate(strap = map(strap, as_tibble)) %>%
+  unnest(strap) %>%
+  mutate(drawn = TRUE) %>%
+  complete(.id, x, fill = list(drawn = FALSE)) %>%
+  distinct %>%
+  group_by(x) %>%
+  mutate(n_drawn = cumsum(drawn),
+         .id = as.numeric(.id),
+         n_prop = n_drawn / .id)
+
+ggplot(prop_drawn, aes(.id, n_prop, group = x)) +
+  geom_line(alpha = .05) +
+  labs(x = "b-th bootstrap sample ",
+       y = "Proportion i-th observation in samples 1:b")
+```
+
+Because of this, we can calculate the **out-of-bag error estimate**, or the average error estimate for out-of-bag observations. First we generate bagged predictions for each observation $i$ only using its OOB estimates, then we average across all $i$ observations to get the OOB error estimate. This is a valid estimate of the test error rate/MSE because it only uses observations that were not part of the training observations for a given bag $b$. This is far more computationally advantageous than calculating a cross-validated error rate for a bagged model.
+
+```{r titanic-bag-oob}
+titanic_rf_data <- titanic %>%
+    select(-Name, -Ticket, -Cabin, -Sex, -PassengerId) %>%
+    mutate_each(funs(as.factor(.)), Pclass, Embarked) %>%
+    na.omit
+
+(titanic_bag <- randomForest(Survived ~ ., data = titanic_rf_data,
+                              mtry = 7, ntree = 500))
+```
+
+For our Titanic bagged model with all available predictors, we estimate an OOB error rate of `r tail(titanic_bag$err.rate[,1], n = 1)`.
+
+## Variable importance measures
+
+Interpreting a bagged model is much more difficult than interpreting a single decision tree. Because each tree is unique, we cannot plot an "average" of the trees like we might with a bootstrapped linear model. The most common method of interpretation (beyond prediction accuracy) is **variable importance**, or attempting to assess how important each variable is to the model. In regression trees, for each predictor we calculate the total amount of reduction in the RSS attributable to splits caused by the predictor, averaged over the $B$ trees. For classification trees, we do the same thing using average reduction in the Gini index.
+
+```{r titanic-varimp}
+varImpPlot(titanic_bag)
+```
+
+For classification trees, larger values are better. So for the Titanic bagged model, gender, age, and fare are the most important predictors, wherease number of siblings/parents aboard and the port of departure are relatively unimportant.
+
+
 
 # Random forests
 
