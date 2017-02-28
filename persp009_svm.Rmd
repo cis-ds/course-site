@@ -1,0 +1,193 @@
+---
+title: "Statistical learning: support vector machines"
+author: "MACS 30100 - Perspectives on Computational Modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define the maximal margin classifier
+* Define the support vector classifier and discuss the logic of this approach
+* Define support vector machines (SVM) and non-linear decision boundaries
+* Apply SVM classification to example data sets and compare with alternative statistical learning models
+* Estimate and interpret SVMs with more than two classes
+* Estimate and interpret support vector regression
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(forcats)
+library(broom)
+library(modelr)
+library(tree)
+library(randomForest)
+library(stringr)
+library(ISLR)
+library(titanic)
+library(rcfss)
+library(pROC)
+library(gbm)
+library(e1071)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+**Support vector machines** (SVMs) are a popular statistical learning method for classification tasks.^[Though they can also be applied to regression on continuous response variables.] SVMs build on several important concepts, that while related are distinct from one another. We will first discuss the logic of these individual components, then demonstrate how to estimate and interpret SVMs, and compare model results using this method to other statistical learning procedures we have discussed so far.
+
+# Maximal margin classifier
+
+## Hyperplanes
+
+In $p$-dimensional space, a **hyperplane** is a flat subspace of $p - 1$ dimensions that is *affine* (does not need to pass through the origin).In two dimensions, a hyperplane is a flat one-dimensional subspace (also known as a **line**). In three dimensions, a hyper plane is a flat two-dimensional subspace (also known as a **plane**). In higher dimensions it gets harder to visualize this concept, but the definition still holds true.
+
+In two dimensions, the mathematical equation for a hyperplane is:
+
+$$\beta_0 + \beta_1 X_1 + \beta_2 X_2 = 0$$
+
+Any $X = (X_1, X_2)^T$ for which this equation holds is a point on the hyperplane (line). This functional form generalizes to $p$ dimensions quite easily:
+
+$$\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p = 0$$
+
+Again, for any point $X = (X_1, X_2, \dots, X_p)^T$ in $p$-dimensional space (i.e. a vector of length $p$) that equals 0, then $X$ lies on the hyperplane.
+
+For $X$ that does not meet this condition, then the data point lies on either side of the hyperplane:
+
+$$\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p > 0$$
+
+$$\beta_0 + \beta_1 X_1 + \beta_2 X_2 + \dots + \beta_p X_p < 0$$
+
+The hyperplane therefore divides the $p$-dimensional space into two halves. To determine on which side of the hyperplane an observation lies, we simply calculate the sign of the corresponding hyperplane equation.
+
+```{r hyperplane}
+sim_hyper <- data_frame(x1 = seq(-1.5, 1.5, length.out = 20),
+                        x2 = seq(-1.5, 1.5, length.out = 20)) %>%
+  expand(x1, x2) %>%
+  mutate(y = 1 + 2 * x1 + 3 * x2,
+         group = ifelse(y < 0, -1,
+                        ifelse(y > 0, 1, 0)),
+         group = factor(group))
+
+sim_hyper_line <- data_frame(x1 = seq(-1.5, 1.5, length.out = 20),
+                             x2 = (-1 - 2 * x1) / 3)
+
+ggplot(sim_hyper, aes(x1, x2, color = group)) +
+  geom_point() +
+  geom_line(data = sim_hyper_line, aes(color = NULL)) +
+  labs(title = "Hyperplane in two dimensions") +
+  theme(legend.position = "none")
+```
+
+## Classification using a separating hyperplane
+
+Let's represent a hypothetical classification problem as the following: suppose we have an $n \times p$ data matrix $\mathbf{X}$ that consists of $n$ training observations with $p$ predictors in $p$-dimensional space:
+
+$$x_1 = \begin{pmatrix}
+  x_{11} \\
+  \vdots \\
+  x_{1p}
+ \end{pmatrix},
+ \dots, x_n = \begin{pmatrix}
+  x_{n1} \\
+  \vdots \\
+  x_{np}
+ \end{pmatrix}$$
+
+These observations fall into one of two classes $y_1, \dots, y_n \in \{-1, 1 \}$ where $-1$ and $1$ represent two separate classes or categories. We also have a test observation $x^*$ which is a $p$-vector of observed predictors $x^* = (x_1^*, \dots, x_p^*)$. We want to develop a model that classifies the test observation correctly given our knowledge of the training observations. Previously we have used methods such as logistic regression (where the response variable is coded $\{0, 1 \}$) and decision trees to perform this task. Now we want to use a hyperplane to **separate** the training observations into the two possible classes.
+
+A **separating hyperplane** perfectly separates training observations into their class labels. Observations in the blue class are coded as $y_i = 1$ those from the red class as $y_i = -1$. So a separating hyperplane takes on the properties:
+
+$$\beta_0 + \beta_1 x_{i1} + \dots + \beta_p x_{ip} > 0, \text{if } y_i = 1$$
+$$\beta_0 + \beta_1 x_{i1} + \dots + \beta_p x_{ip} < 0, \text{if } y_i = -1$$
+
+```{r sim}
+sim <- data_frame(x1 = runif(20, -2, 2),
+                  x2 = runif(20, -2, 2),
+                  y = ifelse(1 + 2 * x1 + 3 * x2 < 0, -1, 1)) %>%
+  mutate_each(funs(ifelse(y == 1, . + 1.5, .)), x2) %>%
+  mutate(line1 = (-1 - 2 * x1) / 3,
+         line2 = .5 + (-1 - 1.5 * x1) / 3,
+         line3 = .25 - .05 * x1)
+
+ggplot(sim, aes(x1)) +
+  geom_point(aes(y = x2, color = factor(y))) +
+  geom_line(aes(y = line1, color = NULL)) +
+  geom_line(aes(y = line2, color = NULL)) +
+  geom_line(aes(y = line3, color = NULL)) +
+  labs(title = "Examples of separating hyperplanes") +
+  theme(legend.position = "none")
+```
+
+If a separating hyperplane exists, then we can classify test observations based on their location relative to the hyperplane:
+
+```{r sim-decision}
+sim_mod <- svm(factor(y) ~ x1 + x2, data = sim, kernel = "linear", cost = 1e05,
+               scale = FALSE)
+sim_coef <- c(sim_mod$rho, t(sim_mod$coefs) %*% sim_mod$SV)
+
+sim_grid <- data_frame(x1 = seq(-2, 2, length.out = 100),
+                  x2 = seq(-2, 3.5, length.out = 100)) %>%
+  expand(x1, x2) %>%
+  mutate(y = ifelse(-sim_coef[[1]] + sim_coef[[2]] * x1 + sim_coef[[3]] * x2 > 0, -1, 1),
+         y = factor(y, levels = c(-1, 1)))
+
+sim_plane <- data_frame(x1 = seq(-2, 2, length.out = 100),
+                        x2 = (sim_coef[[1]] - sim_coef[[2]] * x1) / sim_coef[[3]])
+
+sim %>%
+  mutate(y = factor(y, levels = c(-1, 1))) %>%
+  ggplot(aes(x1)) +
+  geom_point(data = sim_grid, aes(x1, x2, color = y), alpha = .25, size = .25) +
+  geom_point(aes(y = x2, color = y)) +
+  geom_line(data = sim_plane, aes(x1, x2)) +
+  labs(title = "Classification using a separating hyperplane") +
+  theme(legend.position = "none")
+```
+
+Classifications are based off the sign of $f(x^*) = \beta_0 + \beta_1 x_1^* + \dots + \beta_p x_p^*$. If $f(x^*)$ is positive, then we predict the test observation is $1$. If $f(x^*)$ is negative, then we predict the test observation is $-1$. We can also consider the **magnitude** of $f(x^*)$: the farther the magnitude is away from zero, then the farther the test observation falls from the hyperplane. We can be more confident of our predictions for observations far from the hyperplane, and less so for observations near the hyperplane (i.e. $f(x^*)$ close to zero). The classifier resulting from the separating hyperplane $f(x^*) = \beta_0 + \beta_1 x_1^* + \dots + \beta_p x_p^*$ is a **linear decision boundary** because the function itself is a linear form.
+
+
+## Maximal margin classifier
+
+
+# Support vector classifier
+
+
+## How the support vector classifier works
+
+
+## Generalizing the support vector classifier
+
+
+# Support vector machines
+
+
+## Non-linear decision boundaries
+
+
+## Support vector machines
+
+
+### Kernals
+
+
+# Application of SVM to datasets
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
