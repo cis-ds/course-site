@@ -115,12 +115,13 @@ sim <- data_frame(x1 = runif(20, -2, 2),
                   x2 = runif(20, -2, 2),
                   y = ifelse(1 + 2 * x1 + 3 * x2 < 0, -1, 1)) %>%
   mutate_each(funs(ifelse(y == 1, . + 1.5, .)), x2) %>%
+  mutate(y = factor(y, levels = c(-1, 1)) )%>%
   mutate(line1 = (-1 - 2 * x1) / 3,
          line2 = .5 + (-1 - 1.5 * x1) / 3,
          line3 = .25 - .05 * x1)
 
 ggplot(sim, aes(x1)) +
-  geom_point(aes(y = x2, color = factor(y))) +
+  geom_point(aes(y = x2, color = y)) +
   geom_line(aes(y = line1, color = NULL)) +
   geom_line(aes(y = line2, color = NULL)) +
   geom_line(aes(y = line3, color = NULL)) +
@@ -131,7 +132,7 @@ ggplot(sim, aes(x1)) +
 If a separating hyperplane exists, then we can classify test observations based on their location relative to the hyperplane:
 
 ```{r sim-decision}
-sim_mod <- svm(factor(y) ~ x1 + x2, data = sim, kernel = "linear", cost = 1e05,
+sim_mod <- svm(y ~ x1 + x2, data = sim, kernel = "linear", cost = 1e05,
                scale = FALSE)
 sim_coef <- c(sim_mod$rho, t(sim_mod$coefs) %*% sim_mod$SV)
 
@@ -144,21 +145,66 @@ sim_grid <- data_frame(x1 = seq(-2, 2, length.out = 100),
 sim_plane <- data_frame(x1 = seq(-2, 2, length.out = 100),
                         x2 = (sim_coef[[1]] - sim_coef[[2]] * x1) / sim_coef[[3]])
 
-sim %>%
-  mutate(y = factor(y, levels = c(-1, 1))) %>%
-  ggplot(aes(x1)) +
+ggplot(sim, aes(x1)) +
   geom_point(data = sim_grid, aes(x1, x2, color = y), alpha = .25, size = .25) +
   geom_point(aes(y = x2, color = y)) +
   geom_line(data = sim_plane, aes(x1, x2)) +
-  labs(title = "Classification using a separating hyperplane") +
+  labs(title = "Maximal margin classification") +
   theme(legend.position = "none")
 ```
 
 Classifications are based off the sign of $f(x^*) = \beta_0 + \beta_1 x_1^* + \dots + \beta_p x_p^*$. If $f(x^*)$ is positive, then we predict the test observation is $1$. If $f(x^*)$ is negative, then we predict the test observation is $-1$. We can also consider the **magnitude** of $f(x^*)$: the farther the magnitude is away from zero, then the farther the test observation falls from the hyperplane. We can be more confident of our predictions for observations far from the hyperplane, and less so for observations near the hyperplane (i.e. $f(x^*)$ close to zero). The classifier resulting from the separating hyperplane $f(x^*) = \beta_0 + \beta_1 x_1^* + \dots + \beta_p x_p^*$ is a **linear decision boundary** because the function itself is a linear form.
 
-
 ## Maximal margin classifier
 
+As we saw previously, if the data can be perfectly separated by a hyperplane it is likely true that there are **multiple potential separating hyperplanes**. We need a method for identifying the *optimal* separating hyperplane. This is known as the **maximal margin hyperplane**, which is the separating hyperplane that is farthest from the training observations. The **margin** is the smallest possible (perpendicular) distance between a training observation and the separating hyperplane. This distance is simply $\hat{f}(x_i)$. The maximal margin hyperplane defines the hyperplane that minimizes the marginal distance across all training observations, and can be used to classify the test observation $x^*$ based on which side of the hyperplane it lies. This is known as the **maximal margin classifier**. The expectation is that a classifier with a large margin for the training observations will also have a large margin for the test observations, leading to accurate classifications. As with the other methods we have discussed so far, this is an assumption and it is still possible to overfit the training data using the maximal margin classifier.
+
+```{r sim-margin}
+sim_pred <- predict(sim_mod, sim, decision.values = TRUE)
+sim_dist <- attr(sim_pred, "decision.values")
+
+sim %>%
+  mutate(y = factor(y, levels = c(-1, 1))) %>%
+  ggplot(aes(x1)) +
+  geom_point(aes(y = x2, color = y)) +
+  geom_point(data = sim_grid, aes(x1, x2, color = y), alpha = .1, size = .25) +
+  geom_line(data = sim_plane, aes(x1, x2)) +
+  geom_line(data = mutate(sim_plane, x2 = x2 - max(sim_dist[sim_dist < 0])),
+            aes(x1, x2), linetype = 2) +
+  geom_line(data = mutate(sim_plane, x2 = x2 - min(sim_dist[sim_dist > 0])),
+            aes(x1, x2), linetype = 2) +
+  labs(title = "Maximal margin classification") +
+  theme(legend.position = "none")
+```
+
+Two observations are equidistant from the maximal margin hyperplane and lie along the dashed lines indicating the width of the margin. These observations are called the **support vectors**. They are vectors in $p$-dimensional space and "support" the maximal margin hyperplane because if the observations shifted at all in their predictor values $X$, then the maximal margin hyperplane would shift as well. In fact, the maximal margin hyperplane is defined entirely by the support vectors; changes to the other observations would not effect the separating hyperplane as long as the changed observations do not cross the boundary set by the margin.
+
+### Constructing the maximal margin hyperplane
+
+Constructing the maximal margin hyperplane is a (relatively) straight forward affair. Consider a set of $n$ training observations with some number of real number predictors $x_1, \dots, x_n \in \mathbb{R}^p$ and associated class labels $y_1, \dots, y_n \in \{-1, 1\}$. We want to solve the optimization problem:
+
+$$\begin{aligned}
+& \underset{\beta_0, \beta_1, \dots, \beta_p}{\text{maximize}} & & M \\
+& \text{s.t.} & &  \sum_{j=1}^p \beta_j^2 = 1, \\
+& & & y_i(\beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \dots + \beta_p x_{ip}) \geq M \; \forall \; i = 1, \dots, n \\
+\end{aligned}$$
+
+This is simpler than it looks. $y_i(\beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \dots + \beta_p x_{ip}) \geq M \; \forall \; i = 1, \dots, n$ requires the maximal margin hyperplane to sort observations on the correct side of the hyperplane with some amount of cushion, provided $M$ is positive. The requirement $\sum_{j=1}^p \beta_j^2 = 1$ means that not only are the observations sorted onto the correct sides of the hyperplane, but that the function $y_i(\beta_0 + \beta_1 x_{i1} + \beta_2 x_{i2} + \dots + \beta_p x_{ip})$ defines the **perpendicular distance** between the observation $y_i$ and the hyperplane. Therefore $M$ defines the margin of the hyperplane (i.e. the amount of cushion between the hyperplane and the closest training observations), so we select values for the parameters $\beta_0, \beta_1, \dots, \beta_p$ to maximize $M$; that is, obtain the largest amount of cushion possible given the training observations.
+
+### Non-separable cases
+
+Unfortunately the maximal margin classifier only works if there exists a separating hyperplane for the data. If the cases cannot be perfectly separated by a hyperplane, then we can never satisfy the conditions of the maximal margin classifier.
+
+```{r sim-nosep}
+data_frame(x1 = runif(20, -2, 2),
+           x2 = runif(20, -2, 2),
+           y = c(rep(-1, 10), rep(1, 10))) %>%
+  mutate(y = factor(y, levels = c(-1, 1))) %>%
+  ggplot(aes(x1, x2, color = y)) +
+  geom_point() +
+  labs(title = "Non-separable data") +
+  theme(legend.position = "none")
+```
 
 # Support vector classifier
 
