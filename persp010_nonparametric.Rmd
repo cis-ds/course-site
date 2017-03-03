@@ -1,0 +1,548 @@
+---
+title: "Statistical learning: non-parametric methods"
+author: "MACS 30100 - Perspectives on Computational Modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define non-parametric methods and distinguish from parametric methods
+* Introduce histograms as a non-parametric procedure
+* Define kernel density estimation and review different types of kernels
+* Non-parametric regression
+* $K$-nearest neighbors regression
+* $K$-nearest neighbors classification
+* Kernel regression
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(forcats)
+library(broom)
+library(modelr)
+library(stringr)
+library(ISLR)
+library(titanic)
+library(rcfss)
+library(pROC)
+library(grid)
+library(gridExtra)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Estimating functional forms
+
+## Parametric methods
+
+**Parametric methods** involve a two-stage process:
+
+1. First make an assumption about the functional form of $f$. For instance, OLS assumes that the relationship between $X$ and $Y$ is **linear**. This greatly simplifies the problem of estimating the model because we know a great deal about the properties of linear models.
+1. After a model has been selected, we need to **fit** or **train** the model using the actual data. We demonstrated this previously with ordinary least squares. The estimation procedure minimizes the sum of the squares of the differences between the observed responses $Y$ and those predicted by a linear function $\hat{Y}$.
+
+```{r get_ad, message = FALSE, warning = FALSE}
+# get advertising data
+(advertising <- read_csv("data/Advertising.csv") %>%
+  tbl_df() %>%
+  # remove id column
+  select(-X1))
+```
+
+```{r plot_ad, dependson="get_ad"}
+# plot separate facets for relationship between ad spending and sales
+plot_ad <- advertising %>%
+  gather(method, spend, -Sales) %>%
+  ggplot(aes(spend, Sales)) +
+  facet_wrap(~ method, scales = "free_x") +
+  geom_point() +
+  labs(x = "Spending (in thousands of dollars)")
+```
+
+```{r plot_parametric, dependson="get_ad"}
+method_model <- function(df) {
+  lm(Sales ~ spend, data = df)
+}
+
+ad_pred <- advertising %>%
+  gather(method, spend, -Sales) %>%
+  group_by(method) %>%
+  nest() %>%
+  mutate(model = map(data, method_model),
+         pred = map(model, broom::augment)) %>%
+  unnest(pred)
+
+plot_ad +
+  geom_smooth(method = "lm", se = FALSE) +
+  geom_linerange(data = ad_pred,
+                 aes(ymin = Sales, ymax = .fitted),
+                 color = "blue",
+                 alpha = .5) 
+```
+
+This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as **parametric**, because it simplifies the problem of estimating $f$ to estimating a set of parameters in the function:
+
+$$Y = \beta_0 + \beta_{1}X_1$$
+
+where $Y$ is the sales, $X_1$ is the advertising spending in a given medium (newspaper, radio, or TV), and $\beta_0$ and $\beta_1$ are parameters defining the intercept and slope of the line.
+
+The downside to parametric methods is that they assume a specific functional form of the relationship between the variables. Sometimes relationships really are linear - often however they are not. They could be curvilinear, parbolic, interactive, etc. Unless we know this *a priori* or test for all of these potential functional forms, it is possible our parametric method will not accurately summarize the relationship between $X$ and $Y$.
+
+## Non-parametric methods
+
+**Non-parametric methods** do not make explicit assumptions about the functional form of $f$. Instead, they use the data itself to estimate $f$ so that it gets as close as possible to the data points without becoming overly complex. By avoiding any assumptions about the functional form, non-parametric methods avoid the issues caused by parametic models. However, by doing so non-parametric methods require a large set of observations to avoid **overfitting** the data and obtain an accurate estimate of $f$.
+
+### Defining non-parametric
+
+Non-parametric covers two types of statistical techniques:
+
+1. Techniques that do not rely on data belonging to any particular distribution. Distribution free methods do not rely on assumptions that data are drawn from a specified probability distribution and can include non-parametric descriptive statistics, statistical models, inference, and statistical tests.
+1. Techniques that do not assume that the **structure** of a model is fixed. As the data becomes more complex, the model itself gets larger to accomodate this complexity. **Individual variables are assumed to belong to a parametric distribution, and assumptions about the type of connections among variables are also made.** So for example, many of the [non-linear methods we covered previously](persp007_nonlinear.html) are in fact non-parametric estimation procedures. We will review these methods later and explicitly identify what makes them parametric or non-parametric.
+
+Today we focus on non-parametric procedures for modeling data, however there is also a wide range of non-parametric methods for conducting statistical inference.
+
+# Non-parametric methods for description
+
+Non-parametric methods can be used for describing data. That is, examining individual variables at a basic level without performing higher-level modeling approaches in an effort to summarize the relationship between variables or generate predictions.
+
+## Really basic stuff
+
+### Measures of central tendency
+
+#### Median
+
+#### Mode
+
+#### Arithmetic mean
+
+### Measures of dispersion
+
+#### Standard deviation
+
+#### Variance
+
+#### Range
+
+#### Median absolute deviation
+
+#### Skewness
+
+## Histograms
+
+**Histograms** are graphical representations of the distribution of data. They attempt to estimate the probability distribution of a continuous variable by dividing the range of the variable into equal-width intervals called **bins**, counting the number of observations falling into each bin, and displaying the frequency counts in a bar chart.
+
+```{r infant-data}
+infant <- read_csv("data/infant.csv") %>%
+  # remove non-countries
+  filter(is.na(`Value Footnotes`) | `Value Footnotes` != 1) %>%
+  select(`Country or Area`, Year, Value) %>%
+  rename(country = `Country or Area`,
+         year = Year,
+         mortal = Value)
+```
+
+```{r infant-hist}
+ggplot(infant, aes(mortal)) +
+  geom_histogram(bins = 10, origin = 0) +
+  labs(title = "Histogram of infant mortality rate for 195 nations",
+       subtitle = "10 bins, origin = 0",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Frequency")
+
+ggplot(infant, aes(mortal)) +
+  geom_histogram(bins = 10, origin = -5) +
+  labs(title = "Histogram of infant mortality rate for 195 nations",
+       subtitle = "10 bins, origin = -5",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Frequency")
+```
+
+Both histograms above use bins of width 10 but differ in their **origin**, or the starting point for the histogram. The first graph uses bins starting at 0 (e.g. 0 to 10, 10 to 20, 20 to 30), whereas the second graph uses bins starting at -5 (e.g. -5 to 5, 5 to 15, 15 to 25). Determining the optimal binwidth and origin point can be trial-and-error, though there are more complex options to try and optimize these values.
+
+## Density estimation
+
+In fact histograms are strongly related to **nonparametric density estimation**. Unlike histograms, which divide the data into discrete bins, nonparametric density estimation attempts to estimate the probability density function (PDF) of a variable based on a sample. Since the PDF is a smooth, continuous function, we can think of it like a smoothing histogram.
+
+Histograms can also be thought of as simple density estimators, though rather than each bar representing a frequency count having it represent the proportion of observations in the sample that fall into the given bin.
+
+$x_0$ is the origin and each of the $m$ bins has width $2h$. The end points of each bin are at $x_0, x_0 + 2h, x_o + 4h, \dots, x_0 + 2mh$. An observation $X_i$ falls in the $j$th bin if:
+
+$$x_0 + 2(j - 1)h \leq X_i < x_0 + 2jh$$
+
+Therefore the histogram estimator of the density at any $x$ value located in the $j$th bin is based the number of observations that fall into that bin:
+
+$$\hat{p}(x) = \frac{\#_{i = 1}^n [x_0 + 2(j - 1)h \leq X_i < x_0 + 2jh]}{2nh}$$
+
+where $\#$ is the counting operator. If we remove the arbitrary origin $x_0$ by counting locally within a continuously moving window of half-width $h$ centered at $x$:
+
+$$\hat{p}(x) = \frac{\#_{i = 1}^n [x_0 + 2(j - 1)h \leq X_i < x_0 + 2jh]}{2nh}$$
+
+We can generalize this equation to evaluate $\hat{p}(x)$ at a large number of $x$ values covering the range of $X$ by applying a locally weighted averaging function using a rectangular weight function:
+
+$$\hat{p}(x) = \frac{1}{nh} \sum_{i = 1}^n W \left( \frac{x - X_i}{h} \right)$$
+
+where
+
+$$W(z) = \begin{cases} 
+      \frac{1}{2} & \text{for } |z| < 1 \\
+      0 & \text{otherwise} \\
+   \end{cases}$$
+   
+$$z = \frac{x - X_i}{h}$$
+
+This **naive estimator** is very similar to a histogram that uses bins of width $2h$ but has no fixed origin.
+
+```{r}
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "rectangular") +
+  labs(title = "Naive density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+The downside to the rectangular weighting function is that the resulting density plot is not very clean and smooth. As observations enter and exit the window defined by the rectangle $W(z)$, the resulting estimator is rough.
+
+The rectangular weighting function produces a density estimate which covers an area of $1$; that is, integrating over the range of $X$ for $\hat{p}(x)$ yields a value of 1. Any function that has this property (such as a probability density function) can be used as a weight function.
+
+Another term for a weight function is a **kernel**, which should sound quite familiar as they are an important component of [support vector machines](persp009_svm.html#support_vector_machines11). We should select a kernel that is smooth, symmertric, and unimodal to smooth out these rough edges of the naive density estimator. Therefore we can write the general density estimator as:
+
+$$\hat{x}(x) = \frac{1}{nh} \sum_{i = 1}^k K \left( \frac{x - X_i}{h} \right)$$
+
+and substitute for $K(z)$ any other kernel.
+
+##### Gaussian kernel
+
+$$K(z) = \frac{1}{\sqrt{2 \pi}}e^{-\frac{1}{2} z^2}$$
+
+Not to be confused with the [(Gaussian) radial basis function kernel](persp009_svm.html#kernels).
+
+```{r gaussian}
+x <- rnorm(1000)
+
+qplot(x, geom = "blank") +
+  stat_function(fun = dnorm) +
+  labs(title = "Gaussian (normal) kernel",
+       x = NULL,
+       y = NULL)
+
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "gaussian") +
+  labs(title = "Gaussian density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+Now we have a much smoother density function.
+
+##### Rectangular (uniform) kernel
+
+$$K(u) = \frac{1}{2} \mathbf{1}_{\{ |z| \leq 1 \} }$$
+
+where $\mathbf{1}_{\{ |z| \leq 1 \} }$ is an indicator function that takes on the value of 1 if the condition is true ($|z| \leq 1$) or 0 if the condition is false. This is the naive density estimator identified previously.
+
+```{r uniform}
+x <- runif(1000, -1.5, 1.5)
+x_lines <- tribble(
+  ~x, ~y, ~xend, ~yend,
+  -1, 0, -1, .5,
+  1, 0, 1, .5
+)
+
+qplot(x, geom = "blank") +
+  stat_function(fun = dunif, args = list(min = -1), geom = "step") +
+  # geom_segment(data = x_lines, aes(x = x, y = y, xend = xend, yend = yend)) +
+  labs(title = "Rectangular kernel",
+       x = NULL,
+       y = NULL)
+
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "rectangular") +
+  labs(title = "Rectangular density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+##### Triangular kernel
+
+$$K(z) = (1 - |z|) \mathbf{1}_{\{ |z| \leq 1 \} }$$
+
+```{r triangular}
+triangular <- function(x) {
+  (1 - abs(x)) * ifelse(abs(x) <= 1, 1, 0)
+}
+
+qplot(x, geom = "blank") +
+  stat_function(fun = triangular) +
+  labs(title = "Triangular kernel",
+       x = NULL,
+       y = NULL)
+
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "triangular") +
+  labs(title = "Triangular density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+##### Quartic (biweight) kernel
+
+$$K(z) = \frac{15}{16} (1 - z^2)^2 \mathbf{1}_{\{ |z| \leq 1 \} }$$
+
+```{r biweight}
+biweight <- function(x) {
+  (15 / 16) * (1 - x^2)^2 * ifelse(abs(x) <= 1, 1, 0)
+}
+
+qplot(x, geom = "blank") +
+  stat_function(fun = biweight) +
+  labs(title = "Biweight kernel",
+       x = NULL,
+       y = NULL)
+
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "biweight") +
+  labs(title = "Biweight density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+##### Epanechnikov kernel
+
+$$K(z) = \frac{3}{4} (1 - z^2) \mathbf{1}_{\{ |z| \leq 1 \} }$$
+
+```{r epanechnikov}
+epanechnikov <- function(x) {
+  (15 / 16) * (1 - x^2)^2 * ifelse(abs(x) <= 1, 1, 0)
+}
+
+qplot(x, geom = "blank") +
+  stat_function(fun = epanechnikov) +
+  labs(title = "Epanechnikov kernel",
+       x = NULL,
+       y = NULL)
+
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "epanechnikov") +
+  labs(title = "Epanechnikov density estimator of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+##### Comparison of kernels
+
+```{r kernels}
+qplot(x, geom = "blank") +
+  stat_function(aes(color = "Gaussian"), fun = dnorm) +
+  stat_function(aes(color = "Epanechnikov"), fun = epanechnikov) +
+  stat_function(aes(color = "Rectangular"), fun = dunif, args = list(min = -1), geom = "step") +
+  stat_function(aes(color = "Triangular"), fun = triangular) +
+  stat_function(aes(color = "Biweight"), fun = biweight) +
+  labs(x = NULL,
+       y = NULL,
+       color = NULL) +
+  theme(legend.position = c(0.04, 1),
+        legend.justification = c(0, 1),
+        legend.background = element_rect(fill = "white"))
+
+ggplot(infant, aes(mortal)) +
+  geom_density(aes(color = "Gaussian"), kernel = "gaussian") +
+  geom_density(aes(color = "Epanechnikov"), kernel = "epanechnikov") +
+  geom_density(aes(color = "Rectangular"), kernel = "rectangular") +
+  geom_density(aes(color = "Triangular"), kernel = "triangular") +
+  geom_density(aes(color = "Biweight"), kernel = "biweight") +
+  labs(title = "Density estimators of infant mortality rate for 195 nations",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density",
+       color = "Kernel") +
+  theme(legend.position = c(0.96, 1),
+        legend.justification = c(1, 1),
+        legend.background = element_rect(fill = "white"))
+```
+
+### Selecting the bandwidth $h$
+
+Even within the same kernel, different values for the bandwidth $h$ will produce different density estimates because the moving window used to include observations in the local estimate will change.
+
+```{r gaussian-h}
+ggplot(infant, aes(mortal)) +
+  geom_density(kernel = "gaussian", adjust = 5) +
+  geom_density(kernel = "gaussian", adjust = 1, linetype = 2) +
+  geom_density(kernel = "gaussian", adjust = 1/5, linetype = 3) +
+  labs(title = "Gaussian density estimators of infant mortality rate for 195 nations",
+       subtitle = "Three different bandwidth parameters",
+       x = "Infant mortality rate (per 1,000)",
+       y = "Density")
+```
+
+If the underlying density of the sample is normal with standard deviation $\sigma$, then for the Gaussian kernel estimation the most efficient bandwidth $h$ will be:
+
+$$h = 0.9 \sigma n^{-1 / 5}$$
+
+As the sample size increases, the optimal window narrower and permits finer detail than a smaller sample. Of course we don't actually know the population standard deviation $\sigma$. Instead we know the sample standard deviation $s$. If the underlying density is normal, we could just substitute $s$ as an unbiased estimate for $\sigma$. Of course the problem is that we **assumed** the underlying density is normal. If this is not true, then it's possible that the sample standard deviation is inflated. In that case, we can adjust by using an "adaptive" estimator of spread:
+
+$$A = \min \left( S, \frac{IQR}{1.349} \right)$$
+
+where $IQR$ is the interquartile range of the sample and 1.349 is the interquartile range of the standard normal distribution $N(0,1)$.
+
+This is the default method for calculating the bandwidth with a Gaussian kernel using the `density()` function in R. Other kernels use different functions for determining the optimal value for $h$.
+
+# Non-parametric regression
+
+Suppose we have detailed information wages and education. We don't have data for the entire population, but we do have observations for one million employed Americans:
+
+```{r np-data}
+n <- 1000000
+wage <- data_frame(educ = rpois(n, lambda = 12),
+                   age = rpois(n, lambda = 40),
+                   prestige = rpois(n, lambda = 3)) %>%
+  mutate(educ = ifelse(educ > 25, 25, educ),
+         wage = 10 + 2 * educ + .5 * age + 5 * prestige + rnorm(n, 0, 3))
+
+ggplot(wage, aes(wage)) +
+  geom_histogram(binwidth = 5) +
+  labs(title = "Histogram of simulated income data",
+       subtitle = "Binwidth = 5",
+       x = "Income, in thousands of dollars",
+       y = "Frequency count")
+```
+
+If we want to estimate the income for an individual given their education level $(0, 1, 2, \dots, 25)$, we could estimate the conditional distribution of income for each of these values:
+
+$$\mu = E(\text{Income}|\text{Education}) = f(\text{Education})$$
+
+For each level of education, the conditional (or expected) income would be the mean or median of all individuals in the sample with the same level of education.
+
+```{r np-wage-cond}
+wage %>%
+  group_by(educ) %>%
+  summarize(mean = mean(wage),
+            sd = sd(wage)) %>%
+  ggplot(aes(educ, mean, ymin = mean - sd, ymax = mean + sd)) +
+  geom_errorbar() +
+  geom_point() +
+  labs(title = "Conditional income, by education level",
+       subtitle = "Plus/minus SD",
+       x = "Education level",
+       y = "Income, in thousands of dollars")
+
+wage %>%
+  filter(educ == 12) %>%
+  ggplot(aes(wage)) +
+  geom_density() +
+  geom_vline(xintercept = mean(wage$wage[wage$educ == 12]), linetype = 2) +
+  labs(title = "Conditional distribution of income for education = 12",
+       subtitle = str_c("Mean income = ", formatC(mean(wage$wage[wage$educ == 12]), digits = 3)),
+       x = "Income, in thousands of dollars",
+       y = "Frequency count")
+```
+
+Imagine instead that we we have $X$ and $Y$, two continuous variables from a sample of a population, and we want to understand the relationship between the variables. Specifically, we want to use our knowledge of $X$ to predict $Y$. Therefore what we want to know is the mean value of $Y$ as a function of $X$ in the population of individuals from whom the sample was drawn:
+
+$$\mu = E(Y|x) = f(x)$$
+
+Unfortunately because $X$ is continuous, it is unlikely that we would draw precisely the same values of $X$ for more than a single observation. Therefore we cannot directly calculate the conditional distribution of $Y$ given $X$, and therefore cannot calculate conditional means. Instead, we can divide $X$ into many narrow intervals (or **bins**), just like we would for a histogram. Within each bin we can estimate the conditional distribution of $Y$ and estimate the conditional mean of $Y$ with great precision.
+
+If we have fewer observations, then we have to settle for fewer bins and less precision in our estimates. Here we use data on the average income of 102 different occupations in Canada and their relationship to occupational prestige (measured continuously):
+
+```{r prestige}
+# get data
+prestige <- read_csv("data/prestige.csv")
+```
+
+```{r prestige-5bins, dependson="prestige"}
+# bin into 5 and get means
+prestige_bin <- prestige %>%
+  mutate(bin = cut_number(income, 6)) %>%
+  group_by(bin) %>%
+  summarize(prestige = mean(prestige),
+            income = mean(income))
+
+# get cutpoints
+labs <- levels(prestige_bin$bin)
+cutpoints <- c(as.numeric( sub("\\((.+),.*", "\\1", labs) ),
+  as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs) )) %>%
+  unique %>%
+  sort %>%
+  .[2:(length(.)-1)] %>%
+  as_tibble
+
+ggplot(prestige, aes(income, prestige)) +
+  geom_point(shape = 1) +
+  geom_line(data = prestige_bin) +
+  geom_point(data = prestige_bin) +
+  geom_vline(data = cutpoints, aes(xintercept = value), linetype = 2) +
+  labs(title = "Naive nonparametric regression",
+       subtitle = "Bins = 5",
+       x = "Average income (in dollars)",
+       y = "Occupational prestige")
+```
+
+The $X$-axis is carved into 5 bins with roughly 20 observations in each bin. The line is a **nonparametric regression line** that is calculated by connecting the points defined by the conditional variable means $\bar{Y}$ and the explanatory variable means $\bar{X}$ in the five intervals.
+
+Just like ordinary least squares regression (OLS), this regression line also suffers from **bias** and **variance**. If the actual relationship between prestige and income is non-linear **within a bin**, then our estimate of the conditional mean $\bar{Y}$ will be biased towards a linear relationship. We can minimize bias by making the bins as numerous and narrow as possible:
+
+```{r prestige-50bins, dependson="prestige"}
+# bin into 50 and get means
+prestige_bin <- prestige %>%
+  mutate(bin = cut_number(income, 51)) %>%
+  group_by(bin) %>%
+  summarize(prestige = mean(prestige),
+            income = mean(income))
+
+# get cutpoints
+labs <- levels(prestige_bin$bin)
+cutpoints <- c(as.numeric( sub("\\((.+),.*", "\\1", labs) ),
+  as.numeric( sub("[^,]*,([^]]*)\\]", "\\1", labs) )) %>%
+  unique %>%
+  sort %>%
+  .[2:(length(.)-1)] %>%
+  as_tibble
+
+ggplot(prestige, aes(income, prestige)) +
+  geom_point(shape = 1) +
+  geom_line(data = prestige_bin) +
+  geom_point(data = prestige_bin) +
+  geom_vline(data = cutpoints, aes(xintercept = value), linetype = 2, alpha = .25) +
+  labs(title = "Naive nonparametric regression",
+       subtitle = "Bins = 50",
+       x = "Average income (in dollars)",
+       y = "Occupational prestige")
+```
+
+But now we have introduced overfitting into the nonparametric regression estimates. In addition, we substantially increased our variance of the estimated conditional sample means $\bar{Y}$. If we were to draw a new sample, the estimated conditional sample means $\bar{Y}$ could be widely different from the original model.
+
+## Pure non-parametric regression
+
+
+## $K$-nearest neighbors regression
+
+
+## Kernel regression
+
+
+# Non-parametric classification
+
+
+## $K$-nearest neighbors classification
+
+
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
