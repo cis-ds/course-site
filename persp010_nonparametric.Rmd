@@ -794,12 +794,52 @@ sim_pred_wknn %>%
   theme(legend.position = "bottom")
 ```
 
+## Relaxing the non-linearity assumption in linear regression
 
-## Kernel regression
+We previously discussed [how to relax the non-linearity assumption of linear regression](persp007_nonlinear.html). Which of those methods were parametric vs. non-parametric? Generally speaking, any of the methods that relied upon local averaging to estimate the regression model would be considered non-parametric. While these methods include parametric components, these are fit at the local-level. The global structure of the relationship between the predictor(s) and the response variable are not assumed by any specific functional form.
 
+##### Parametric methods
+
+* Polynomial regression
+* Step functions
+
+##### Non-parametric methods
+
+* Regression splines
+* Smoothing splines
+* Local regression
+* Generalized additive models
 
 # Non-parametric classification
 
+## Bayes decision rule
+
+For classification problems, the test error rate is minimized by a simple classifier that assigns each observation to the most likely class given its predictor values:
+
+$$\Pr(Y = j | X = x_0)$$
+
+where $x_0$ is the test observation and each possible class is represented by $J$. This is a **conditional probability** that $Y = j$, given the observed predictor vector$x_0$. This classifier is known as the **Bayes classifier**. If the response variable is binary (i.e. two classes), the Bayes classifier corresponds to predicting class one if $\Pr(Y = 1 | X = x_0) > 0.5$, and class two otherwise.
+
+```{r bayes-class}
+bayes_rule <- function(x1, x2) {
+  x1 + x1^2 + x2 + x2^2
+}
+
+bayes_grid <- expand.grid(x1 = seq(-1, 1, by = .05),
+            x2 = seq(-1, 1, by = .05)) %>%
+  as_tibble %>%
+  mutate(logodds = bayes_rule(x1, x2),
+         y = logodds > .5)
+
+sim_bayes <- data_frame(x1 = runif(100, -1, 1),
+                        x2 = runif(100, -1, 1),
+                        logodds = bayes_rule(x1, x2) + rnorm(100, 0, .5),
+                        y = logodds > .5)
+
+ggplot(bayes_grid, aes(x1, x2, color = y)) +
+  geom_point(size = .5, alpha = .5) +
+  geom_point(data = sim_bayes)
+```
 
 ## $K$-nearest neighbors classification
 
