@@ -829,15 +829,26 @@ bayes_grid <- expand.grid(x1 = seq(-1, 1, by = .05),
             x2 = seq(-1, 1, by = .05)) %>%
   as_tibble %>%
   mutate(logodds = bayes_rule(x1, x2),
-         y = logodds > .5)
+         y = logodds > .5,
+         prob = logit2prob(logodds))
+
+bayes_bound <- bind_rows(mutate(bayes_grid,
+                                prob = prob,
+                                cls = TRUE,
+                                prob_cls = ifelse(y == cls, 1, 0)),
+                         mutate(bayes_grid,
+                                prob = prob,
+                                cls = FALSE,
+                                prob_cls = ifelse(y == cls, 1, 0)))
 
 sim_bayes <- data_frame(x1 = runif(100, -1, 1),
                         x2 = runif(100, -1, 1),
                         logodds = bayes_rule(x1, x2) + rnorm(100, 0, .5),
                         y = logodds > .5)
 
-ggplot(bayes_grid, aes(x1, x2, color = y)) +
+ggplot(bayes_bound, aes(x1, x2, color = y)) +
   geom_point(size = .5, alpha = .5) +
+  geom_contour(aes(z = prob_cls, group = cls), bins = 1) +
   geom_point(data = sim_bayes)
 ```
 
