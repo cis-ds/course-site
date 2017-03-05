@@ -820,6 +820,8 @@ $$\Pr(Y = j | X = x_0)$$
 
 where $x_0$ is the test observation and each possible class is represented by $J$. This is a **conditional probability** that $Y = j$, given the observed predictor vector$x_0$. This classifier is known as the **Bayes classifier**. If the response variable is binary (i.e. two classes), the Bayes classifier corresponds to predicting class one if $\Pr(Y = 1 | X = x_0) > 0.5$, and class two otherwise.
 
+In the simulated example below, the blue lines indicate the **Bayes decision boundary**. The Bayes classifier's prediction is determined by this boundary: observations on the blue side would be assigned to the blue class, and observations on the red side are assigned to the red class.
+
 ```{r bayes-class}
 bayes_rule <- function(x1, x2) {
   x1 + x1^2 + x2 + x2^2
@@ -841,21 +843,151 @@ bayes_bound <- bind_rows(mutate(bayes_grid,
                                 cls = FALSE,
                                 prob_cls = ifelse(y == cls, 1, 0)))
 
-sim_bayes <- data_frame(x1 = runif(100, -1, 1),
-                        x2 = runif(100, -1, 1),
-                        logodds = bayes_rule(x1, x2) + rnorm(100, 0, .5),
-                        y = logodds > .5)
+sim_bayes <- data_frame(x1 = runif(200, -1, 1),
+                        x2 = runif(200, -1, 1),
+                        logodds = bayes_rule(x1, x2) + rnorm(200, 0, .5),
+                        y = logodds > .5,
+                        y_actual = bayes_rule(x1, x2) > .5)
+sim_bayes_err <- mean(sim_bayes$y != sim_bayes$y_actual)
 
 ggplot(bayes_bound, aes(x1, x2, color = y)) +
   geom_point(size = .5, alpha = .5) +
   geom_contour(aes(z = prob_cls, group = cls), bins = 1) +
-  geom_point(data = sim_bayes)
+  geom_point(data = sim_bayes) +
+  theme(legend.position = "none")
 ```
+
+The Bayes classifer produces the lowest possible test error rate, called the **Bayes error rule**, because it will always assign observations based on the maximum conditional probability:
+
+$$1 - E \left( \max_j \Pr(Y = j | X) \right)$$
+
+where the expectation averages the probability over all possible values of $X$. In this simulation the Bayes error rate is $`r sim_bayes_err`$. Because in the true population the classes overlap somewhat, the Bayes classifier cannot generate an error rate of zero.
 
 ## $K$-nearest neighbors classification
 
+Unfortunately we do not know the conditional distribution of $Y$ given $X$ in real-world data, so we cannot compute the Bayes classifier. Instead we try to produce **estimates** of the conditional distribution of $Y$ given $X$, and then classify a given observation to the class with the highest estimated probability. Logistic regression and other types of GLMs, tree-based methods, and SVMs all operate on this basic principle (or related ones - in the case of SVMs the decision is based on the test observation's location relative to the separating hyperplane).
 
+However regression-based methods such as GLMs make assumptions about the functional form of $f$. For a purely non-parametric approach, we could use **$K$-nearest neighbors** (KNN) classification. Similar to KNN regression, given a positive integer $K$ and a test observation $x_0$, the KNN classifier identifies the $K$ nearest training observations to $x_0$, again represented by $N_0$. The conditional probability for class $j$ is the fraction of points in $N_0$ whose response values equal $j$:
 
+$Pr(Y = j| X = x_0) = \frac{1}{K} \sum_{i \in N_0} I(y_i = j)$$
+
+where $I(y_i = j)$ is an indicator function. Finally KNN applies Bayes rule and classifies the test observation $x_0$ to the class with the largest probability. Here is the KNN classifier applied to the example above with $K=1$:
+
+```{r knn-class1, dependson="bayes-class"}
+knn1 <- class::knn(select(sim_bayes, x1, x2), test = select(bayes_grid, x1, x2),
+                   cl = sim_bayes$y, k = 1, prob = TRUE)
+prob1 <- attr(knn1, "prob")
+
+bayes_bound1 <- bind_rows(mutate(bayes_grid,
+                           prob = attr(knn1, "prob"),
+                           y = as.logical(knn1),
+                           cls = TRUE,
+                           prob_cls = ifelse(y == cls,
+                                           1, 0)),
+                    mutate(bayes_grid,
+                           prob = attr(knn1, "prob"),
+                           y = as.logical(knn1),
+                           cls = FALSE,
+                           prob_cls = ifelse(y == cls,
+                                           1, 0)))
+
+ggplot(bayes_bound, aes(x1, x2, color = y)) +
+  geom_contour(aes(z = prob_cls, group = cls, linetype = "True boundary"), bins = 1) +
+  geom_contour(data = bayes_bound1, aes(z = prob_cls, group = cls, linetype = "KNN"), bins = 1) +
+  geom_point(data = sim_bayes) +
+  scale_color_discrete(guide = FALSE) +
+  labs(title = "K nearest neighbor classifier",
+       subtitle = expression(K==1),
+       linetype = NULL) +
+  theme(legend.position = "bottom")
+```
+
+All this classifier does is look to the single closest neighbor to make a prediction. Compared to the known decision boundary, this strongly overfits the training data. Compare this to $K=5$:
+
+```{r knn-class5, dependson="bayes-class"}
+knn5 <- class::knn(select(sim_bayes, x1, x2), test = select(bayes_grid, x1, x2),
+                   cl = sim_bayes$y, k = 5, prob = TRUE)
+prob5 <- attr(knn5, "prob")
+
+bayes_bound5 <- bind_rows(mutate(bayes_grid,
+                           prob = attr(knn5, "prob"),
+                           y = as.logical(knn5),
+                           cls = TRUE,
+                           prob_cls = ifelse(y == cls,
+                                           1, 0)),
+                    mutate(bayes_grid,
+                           prob = attr(knn5, "prob"),
+                           y = as.logical(knn5),
+                           cls = FALSE,
+                           prob_cls = ifelse(y == cls,
+                                           1, 0)))
+
+ggplot(bayes_bound, aes(x1, x2, color = y)) +
+  geom_contour(aes(z = prob_cls, group = cls, linetype = "True boundary"), bins = 1) +
+  geom_contour(data = bayes_bound5, aes(z = prob_cls, group = cls, linetype = "KNN"), bins = 1) +
+  geom_point(data = sim_bayes) +
+  scale_color_discrete(guide = FALSE) +
+  labs(title = "K nearest neighbor classifier",
+       subtitle = expression(K==5),
+       linetype = NULL) +
+  theme(legend.position = "bottom")
+```
+
+The resulting decision boundary is still choppy, but not as much as before.
+
+```{r knn-class10, dependson="bayes-class"}
+knn10 <- class::knn(select(sim_bayes, x1, x2), test = select(bayes_grid, x1, x2),
+                   cl = sim_bayes$y, k = 10, prob = TRUE)
+prob10 <- attr(knn10, "prob")
+
+bayes_bound10 <- bind_rows(mutate(bayes_grid,
+                           prob = attr(knn10, "prob"),
+                           y = as.logical(knn5),
+                           cls = TRUE,
+                           prob_cls = ifelse(y == cls,
+                                           1, 0)),
+                    mutate(bayes_grid,
+                           prob = attr(knn10, "prob"),
+                           y = as.logical(knn5),
+                           cls = FALSE,
+                           prob_cls = ifelse(y == cls,
+                                           1, 0)))
+
+ggplot(bayes_bound, aes(x1, x2, color = y)) +
+  geom_contour(aes(z = prob_cls, group = cls, linetype = "True boundary"), bins = 1) +
+  geom_contour(data = bayes_bound10, aes(z = prob_cls, group = cls, linetype = "KNN"), bins = 1) +
+  geom_point(data = sim_bayes) +
+  scale_color_discrete(guide = FALSE) +
+  labs(title = "K nearest neighbor classifier",
+       subtitle = expression(K==10),
+       linetype = NULL) +
+  theme(legend.position = "bottom")
+```
+
+```{r knn-class-compare, dependson="bayes-class"}
+# estimate test MSE for KNN models
+sim_test <- data_frame(x1 = runif(5000, -1, 1),
+                       x2 = runif(5000, -1, 1),
+                       logodds = bayes_rule(x1, x2) + rnorm(5000, 0, .5),
+                       y = logodds > .5)
+
+mse_knn <- data_frame(k = 1:100,
+                      knn_train = map(k, ~ class::knn(select(sim_bayes, x1, x2),
+                                                test = select(sim_bayes, x1, x2),
+                                                cl = sim_bayes$y, k = .)),
+                      knn_test = map(k, ~ class::knn(select(sim_bayes, x1, x2),
+                                                test = select(sim_test, x1, x2),
+                                                cl = sim_bayes$y, k = .)),
+                      mse_train = map_dbl(knn_train, ~ mean(sim_bayes$y != as.logical(.))),
+                      mse_test = map_dbl(knn_test, ~ mean(sim_test$y != as.logical(.))))
+
+ggplot(mse_knn, aes(k, mse_test)) +
+  geom_line() +
+  geom_hline(yintercept = sim_bayes_err, linetype = 2) +
+  labs(x = "K",
+       y = "Test error rate") +
+  expand_limits(y = 0)
+```
 
 # Session Info {.toc-ignore}
 
