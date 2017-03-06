@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: non-parametric methods</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: non-parametric methods</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Define non-parametric methods and distinguish from parametric methods</li>
+<li>Introduce histograms as a non-parametric procedure</li>
+<li>Define kernel density estimation and review different types of kernels</li>
+<li>Introduce pure non-parametric regression</li>
+<li>Demonstrate and evaluate <span class="math inline">\(K\)</span>-nearest neighbors regression</li>
+<li>Demonstrate and evaluate <span class="math inline">\(K\)</span>-nearest neighbors classification</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(forcats)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(ISLR)
+<span class="kw">library</span>(titanic)
+<span class="kw">library</span>(rcfss)
+<span class="kw">library</span>(pROC)
+<span class="kw">library</span>(grid)
+<span class="kw">library</span>(gridExtra)
+<span class="kw">library</span>(FNN)
+<span class="kw">library</span>(kknn)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="estimating-functional-forms" class="section level1">
+<h1>Estimating functional forms</h1>
+<div id="parametric-methods" class="section level2">
+<h2>Parametric methods</h2>
+<p><strong>Parametric methods</strong> involve a two-stage process:</p>
+<ol style="list-style-type: decimal">
+<li>First make an assumption about the functional form of <span class="math inline">\(f\)</span>. For instance, OLS assumes that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is <strong>linear</strong>. This greatly simplifies the problem of estimating the model because we know a great deal about the properties of linear models.</li>
+<li>After a model has been selected, we need to <strong>fit</strong> or <strong>train</strong> the model using the actual data. We demonstrated this previously with ordinary least squares. The estimation procedure minimizes the sum of the squares of the differences between the observed responses <span class="math inline">\(Y\)</span> and those predicted by a linear function <span class="math inline">\(\hat{Y}\)</span>.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get advertising data</span>
+(advertising &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Advertising.csv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">tbl_df</span>() %&gt;%
+<span class="st">  </span><span class="co"># remove id column</span>
+<span class="st">  </span><span class="kw">select</span>(-X1))</code></pre></div>
+<pre><code>## # A tibble: 200 × 4
+##       TV Radio Newspaper Sales
+##    &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;
+## 1  230.1  37.8      69.2  22.1
+## 2   44.5  39.3      45.1  10.4
+## 3   17.2  45.9      69.3   9.3
+## 4  151.5  41.3      58.5  18.5
+## 5  180.8  10.8      58.4  12.9
+## 6    8.7  48.9      75.0   7.2
+## 7   57.5  32.8      23.5  11.8
+## 8  120.2  19.6      11.6  13.2
+## 9    8.6   2.1       1.0   4.8
+## 10 199.8   2.6      21.2  10.6
+## # ... with 190 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot separate facets for relationship between ad spending and sales</span>
+plot_ad &lt;-<span class="st"> </span>advertising %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(method, spend, -Sales) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(spend, Sales)) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>method, <span class="dt">scales =</span> <span class="st">&quot;free_x&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Spending (in thousands of dollars)&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">method_model &lt;-<span class="st"> </span>function(df) {
+  <span class="kw">lm</span>(Sales ~<span class="st"> </span>spend, <span class="dt">data =</span> df)
+}
+
+ad_pred &lt;-<span class="st"> </span>advertising %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(method, spend, -Sales) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(method) %&gt;%
+<span class="st">  </span><span class="kw">nest</span>() %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, method_model),
+         <span class="dt">pred =</span> <span class="kw">map</span>(model, broom::augment)) %&gt;%
+<span class="st">  </span><span class="kw">unnest</span>(pred)
+
+plot_ad +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_linerange</span>(<span class="dt">data =</span> ad_pred,
+                 <span class="kw">aes</span>(<span class="dt">ymin =</span> Sales, <span class="dt">ymax =</span> .fitted),
+                 <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>,
+                 <span class="dt">alpha =</span> .<span class="dv">5</span>) </code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/plot_parametric-1.png" width="672" /></p>
+<p>This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as <strong>parametric</strong>, because it simplifies the problem of estimating <span class="math inline">\(f\)</span> to estimating a set of parameters in the function:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_{1}X_1\]</span></p>
+<p>where <span class="math inline">\(Y\)</span> is the sales, <span class="math inline">\(X_1\)</span> is the advertising spending in a given medium (newspaper, radio, or TV), and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are parameters defining the intercept and slope of the line.</p>
+<p>The downside to parametric methods is that they assume a specific functional form of the relationship between the variables. Sometimes relationships really are linear - often however they are not. They could be curvilinear, parbolic, interactive, etc. Unless we know this <em>a priori</em> or test for all of these potential functional forms, it is possible our parametric method will not accurately summarize the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</p>
+</div>
+<div id="non-parametric-methods" class="section level2">
+<h2>Non-parametric methods</h2>
+<p><strong>Non-parametric methods</strong> do not make explicit assumptions about the functional form of <span class="math inline">\(f\)</span>. Instead, they use the data itself to estimate <span class="math inline">\(f\)</span> so that it gets as close as possible to the data points without becoming overly complex. By avoiding any assumptions about the functional form, non-parametric methods avoid the issues caused by parametic models. However, by doing so non-parametric methods require a large set of observations to avoid <strong>overfitting</strong> the data and obtain an accurate estimate of <span class="math inline">\(f\)</span>.</p>
+<div id="defining-non-parametric" class="section level3">
+<h3>Defining non-parametric</h3>
+<p>Non-parametric covers two types of statistical techniques:</p>
+<ol style="list-style-type: decimal">
+<li>Techniques that do not rely on data belonging to any particular distribution. Distribution free methods do not rely on assumptions that data are drawn from a specified probability distribution and can include non-parametric descriptive statistics, statistical models, inference, and statistical tests.</li>
+<li>Techniques that do not assume that the <strong>structure</strong> of a model is fixed. As the data becomes more complex, the model itself gets larger to accomodate this complexity. <strong>Individual variables are assumed to belong to a parametric distribution, and assumptions about the type of connections among variables are also made.</strong> So for example, many of the <a href="persp007_nonlinear.html">non-linear methods we covered previously</a> are in fact non-parametric estimation procedures. We will review these methods later and explicitly identify what makes them parametric or non-parametric.</li>
+</ol>
+<p>Today we focus on non-parametric procedures for modeling data, however there is also a wide range of non-parametric methods for conducting statistical inference.</p>
+</div>
+</div>
+</div>
+<div id="non-parametric-methods-for-description" class="section level1">
+<h1>Non-parametric methods for description</h1>
+<p>Non-parametric methods can be used for describing data. That is, examining individual variables at a basic level without performing higher-level modeling approaches in an effort to summarize the relationship between variables or generate predictions.</p>
+<div id="really-basic-stuff" class="section level2">
+<h2>Really basic stuff</h2>
+<p>We can think of some really basic descriptive statistics as nonparametric estimators. They assume random variables are drawn from a probability distribution, but make no assumptions as to <strong>which</strong> distribution.</p>
+<div id="measures-of-central-tendency" class="section level3">
+<h3>Measures of central tendency</h3>
+<p>These statistics measure the central or typical value of a probability distribution.</p>
+<ul>
+<li><strong>Median</strong> - the value separating the data into two halves each containing 50% of the observations</li>
+<li><strong>Mode</strong> - the value that appears most often in a data set</li>
+<li><p><strong>Arithmetic mean</strong></p>
+<p><span class="math display">\[\bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i\]</span></p>
+<ul>
+<li>Note that means can also be parameters in probability distributions, such as the Normal distribution which contains a mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma^2\)</span>.</li>
+</ul></li>
+</ul>
+</div>
+<div id="measures-of-dispersion" class="section level3">
+<h3>Measures of dispersion</h3>
+<p>These measure the extent to which a distribution is stretched or squeezed. The <strong>variance</strong> is the expectation of the squared deviation of a random variable from its mean:</p>
+<p><span class="math display">\[E[X] = \mu\]</span></p>
+<p><span class="math display">\[\text{Var}(X) \equiv \sigma^2 = E[X^2] - (E[X])^2\]</span></p>
+<p>While <strong>deviation</strong> is a measure of the difference between the observed value of a variable and some other value (often that variable’s mean).</p>
+<ul>
+<li><strong>Standard deviation</strong> - quantifies the amount of variation or dispersion in a set of data values</li>
+</ul>
+<p><span class="math display">\[\sigma = \sqrt{E[X^2] - (E[X])^2}\]</span></p>
+<ul>
+<li><p><strong>Median absolute deviation</strong> - robust measure of the variability of a univariate sample of data</p>
+<p><span class="math display">\[MAD = \text{median}(|X_i - \text{median}(X)|)\]</span></p>
+<ul>
+<li>The median of the absolute deviations from the data’s median</li>
+<li>MAD is more resilient to outliers in the data, because it is derived from medians and not arithmetic means</li>
+</ul></li>
+</ul>
+</div>
+</div>
+<div id="histograms" class="section level2">
+<h2>Histograms</h2>
+<p><strong>Histograms</strong> are graphical representations of the distribution of data. They attempt to estimate the probability distribution of a continuous variable by dividing the range of the variable into equal-width intervals called <strong>bins</strong>, counting the number of observations falling into each bin, and displaying the frequency counts in a bar chart.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">infant &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/infant.csv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="co"># remove non-countries</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="kw">is.na</span>(<span class="st">`</span><span class="dt">Value Footnotes</span><span class="st">`</span>) |<span class="st"> `</span><span class="dt">Value Footnotes</span><span class="st">`</span> !=<span class="st"> </span><span class="dv">1</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(<span class="st">`</span><span class="dt">Country or Area</span><span class="st">`</span>, Year, Value) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">country =</span> <span class="st">`</span><span class="dt">Country or Area</span><span class="st">`</span>,
+         <span class="dt">year =</span> Year,
+         <span class="dt">mortal =</span> Value)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">bins =</span> <span class="dv">10</span>, <span class="dt">origin =</span> <span class="dv">0</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Histogram of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;10 bins, origin = 0&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/infant-hist-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">bins =</span> <span class="dv">10</span>, <span class="dt">origin =</span> -<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Histogram of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;10 bins, origin = -5&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/infant-hist-2.png" width="672" /></p>
+<p>Both histograms above use bins of width 10 but differ in their <strong>origin</strong>, or the starting point for the histogram. The first graph uses bins starting at 0 (e.g. 0 to 10, 10 to 20, 20 to 30), whereas the second graph uses bins starting at -5 (e.g. -5 to 5, 5 to 15, 15 to 25). Determining the optimal binwidth and origin point can be trial-and-error, though there are more complex options to try and optimize these values.</p>
+</div>
+<div id="density-estimation" class="section level2">
+<h2>Density estimation</h2>
+<p>In fact histograms are strongly related to <strong>nonparametric density estimation</strong>. Unlike histograms, which divide the data into discrete bins, nonparametric density estimation attempts to estimate the probability density function (PDF) of a variable based on a sample. Since the PDF is a smooth, continuous function, we can think of it like a smoothing histogram.</p>
+<p>Histograms can also be thought of as simple density estimators, though rather than each bar representing a frequency count having it represent the proportion of observations in the sample that fall into the given bin.</p>
+<p><span class="math inline">\(x_0\)</span> is the origin and each of the <span class="math inline">\(m\)</span> bins has width <span class="math inline">\(2h\)</span>. The end points of each bin are at <span class="math inline">\(x_0, x_0 + 2h, x_o + 4h, \dots, x_0 + 2mh\)</span>. An observation <span class="math inline">\(X_i\)</span> falls in the <span class="math inline">\(j\)</span>th bin if:</p>
+<p><span class="math display">\[x_0 + 2(j - 1)h \leq X_i &lt; x_0 + 2jh\]</span></p>
+<p>Therefore the histogram estimator of the density at any <span class="math inline">\(x\)</span> value located in the <span class="math inline">\(j\)</span>th bin is based the number of observations that fall into that bin:</p>
+<p><span class="math display">\[\hat{p}(x) = \frac{\#_{i = 1}^n [x_0 + 2(j - 1)h \leq X_i &lt; x_0 + 2jh]}{2nh}\]</span></p>
+<p>where <span class="math inline">\(\#\)</span> is the counting operator. If we remove the arbitrary origin <span class="math inline">\(x_0\)</span> by counting locally within a continuously moving window of half-width <span class="math inline">\(h\)</span> centered at <span class="math inline">\(x\)</span>:</p>
+<p><span class="math display">\[\hat{p}(x) = \frac{\#_{i = 1}^n [x_0 + 2(j - 1)h \leq X_i &lt; x_0 + 2jh]}{2nh}\]</span></p>
+<p>We can generalize this equation to evaluate <span class="math inline">\(\hat{p}(x)\)</span> at a large number of <span class="math inline">\(x\)</span> values covering the range of <span class="math inline">\(X\)</span> by applying a locally weighted averaging function using a rectangular weight function:</p>
+<p><span class="math display">\[\hat{p}(x) = \frac{1}{nh} \sum_{i = 1}^n W \left( \frac{x - X_i}{h} \right)\]</span></p>
+<p>where</p>
+<p><span class="math display">\[W(z) = \begin{cases} 
+      \frac{1}{2} &amp; \text{for } |z| &lt; 1 \\
+      0 &amp; \text{otherwise} \\
+   \end{cases}\]</span></p>
+<p><span class="math display">\[z = \frac{x - X_i}{h}\]</span></p>
+<p>This <strong>naive estimator</strong> is very similar to a histogram that uses bins of width <span class="math inline">\(2h\)</span> but has no fixed origin.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;rectangular&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Naive density estimator of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>The downside to the rectangular weighting function is that the resulting density plot is not very clean and smooth. As observations enter and exit the window defined by the rectangle <span class="math inline">\(W(z)\)</span>, the resulting estimator is rough.</p>
+<p>The rectangular weighting function produces a density estimate which covers an area of <span class="math inline">\(1\)</span>; that is, integrating over the range of <span class="math inline">\(X\)</span> for <span class="math inline">\(\hat{p}(x)\)</span> yields a value of 1. Any function that has this property (such as a probability density function) can be used as a weight function.</p>
+<p>Another term for a weight function is a <strong>kernel</strong>, which should sound quite familiar as they are an important component of <a href="persp009_svm.html#support_vector_machines11">support vector machines</a>. We should select a kernel that is smooth, symmertric, and unimodal to smooth out these rough edges of the naive density estimator. Therefore we can write the general density estimator as:</p>
+<p><span class="math display">\[\hat{x}(x) = \frac{1}{nh} \sum_{i = 1}^k K \left( \frac{x - X_i}{h} \right)\]</span></p>
+<p>and substitute for <span class="math inline">\(K(z)\)</span> any other kernel.</p>
+<div id="gaussian-kernel" class="section level5">
+<h5>Gaussian kernel</h5>
+<p><span class="math display">\[K(z) = \frac{1}{\sqrt{2 \pi}}e^{-\frac{1}{2} z^2}\]</span></p>
+<p>Not to be confused with the <a href="persp009_svm.html#kernels">(Gaussian) radial basis function kernel</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">1000</span>)
+
+<span class="kw">qplot</span>(x, <span class="dt">geom =</span> <span class="st">&quot;blank&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> dnorm) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Gaussian (normal) kernel&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/gaussian-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;gaussian&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Gaussian density estimator of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/gaussian-2.png" width="672" /></p>
+<p>Now we have a much smoother density function.</p>
+</div>
+<div id="rectangular-uniform-kernel" class="section level5">
+<h5>Rectangular (uniform) kernel</h5>
+<p><span class="math display">\[K(z) = \frac{1}{2} \mathbf{1}_{\{ |z| \leq 1 \} }\]</span></p>
+<p>where <span class="math inline">\(\mathbf{1}_{\{ |z| \leq 1 \} }\)</span> is an indicator function that takes on the value of 1 if the condition is true (<span class="math inline">\(|z| \leq 1\)</span>) or 0 if the condition is false. This is the naive density estimator identified previously.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="kw">runif</span>(<span class="dv">1000</span>, -<span class="fl">1.5</span>, <span class="fl">1.5</span>)
+x_lines &lt;-<span class="st"> </span><span class="kw">tribble</span>(
+  ~x, ~y, ~xend, ~yend,
+  -<span class="dv">1</span>, <span class="dv">0</span>, -<span class="dv">1</span>, .<span class="dv">5</span>,
+  <span class="dv">1</span>, <span class="dv">0</span>, <span class="dv">1</span>, .<span class="dv">5</span>
+)
+
+<span class="kw">qplot</span>(x, <span class="dt">geom =</span> <span class="st">&quot;blank&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> dunif, <span class="dt">args =</span> <span class="kw">list</span>(<span class="dt">min =</span> -<span class="dv">1</span>), <span class="dt">geom =</span> <span class="st">&quot;step&quot;</span>) +
+<span class="st">  </span><span class="co"># geom_segment(data = x_lines, aes(x = x, y = y, xend = xend, yend = yend)) +</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Rectangular kernel&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/uniform-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;rectangular&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Rectangular density estimator of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/uniform-2.png" width="672" /></p>
+</div>
+<div id="triangular-kernel" class="section level5">
+<h5>Triangular kernel</h5>
+<p><span class="math display">\[K(z) = (1 - |z|) \mathbf{1}_{\{ |z| \leq 1 \} }\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">triangular &lt;-<span class="st"> </span>function(x) {
+  (<span class="dv">1</span> -<span class="st"> </span><span class="kw">abs</span>(x)) *<span class="st"> </span><span class="kw">ifelse</span>(<span class="kw">abs</span>(x) &lt;=<span class="st"> </span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)
+}
+
+<span class="kw">qplot</span>(x, <span class="dt">geom =</span> <span class="st">&quot;blank&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> triangular) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Triangular kernel&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/triangular-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;triangular&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Triangular density estimator of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/triangular-2.png" width="672" /></p>
+</div>
+<div id="quartic-biweight-kernel" class="section level5">
+<h5>Quartic (biweight) kernel</h5>
+<p><span class="math display">\[K(z) = \frac{15}{16} (1 - z^2)^2 \mathbf{1}_{\{ |z| \leq 1 \} }\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">biweight &lt;-<span class="st"> </span>function(x) {
+  (<span class="dv">15</span> /<span class="st"> </span><span class="dv">16</span>) *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x^<span class="dv">2</span>)^<span class="dv">2</span> *<span class="st"> </span><span class="kw">ifelse</span>(<span class="kw">abs</span>(x) &lt;=<span class="st"> </span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)
+}
+
+<span class="kw">qplot</span>(x, <span class="dt">geom =</span> <span class="st">&quot;blank&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> biweight) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Biweight kernel&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/biweight-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;biweight&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Biweight density estimator of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/biweight-2.png" width="672" /></p>
+</div>
+<div id="epanechnikov-kernel" class="section level5">
+<h5>Epanechnikov kernel</h5>
+<p><span class="math display">\[K(z) = \frac{3}{4} (1 - z^2) \mathbf{1}_{\{ |z| \leq 1 \} }\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">epanechnikov &lt;-<span class="st"> </span>function(x) {
+  (<span class="dv">15</span> /<span class="st"> </span><span class="dv">16</span>) *<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x^<span class="dv">2</span>)^<span class="dv">2</span> *<span class="st"> </span><span class="kw">ifelse</span>(<span class="kw">abs</span>(x) &lt;=<span class="st"> </span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">0</span>)
+}
+
+<span class="kw">qplot</span>(x, <span class="dt">geom =</span> <span class="st">&quot;blank&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="dt">fun =</span> epanechnikov) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Epanechnikov kernel&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/epanechnikov-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;epanechnikov&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Epanechnikov density estimator of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/epanechnikov-2.png" width="672" /></p>
+</div>
+<div id="comparison-of-kernels" class="section level5">
+<h5>Comparison of kernels</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">qplot</span>(x, <span class="dt">geom =</span> <span class="st">&quot;blank&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Gaussian&quot;</span>), <span class="dt">fun =</span> dnorm) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Epanechnikov&quot;</span>), <span class="dt">fun =</span> epanechnikov) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Rectangular&quot;</span>), <span class="dt">fun =</span> dunif, <span class="dt">args =</span> <span class="kw">list</span>(<span class="dt">min =</span> -<span class="dv">1</span>), <span class="dt">geom =</span> <span class="st">&quot;step&quot;</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Triangular&quot;</span>), <span class="dt">fun =</span> triangular) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Biweight&quot;</span>), <span class="dt">fun =</span> biweight) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="ot">NULL</span>,
+       <span class="dt">color =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.04</span>, <span class="dv">1</span>),
+        <span class="dt">legend.justification =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>),
+        <span class="dt">legend.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;white&quot;</span>))</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/kernels-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Gaussian&quot;</span>), <span class="dt">kernel =</span> <span class="st">&quot;gaussian&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Epanechnikov&quot;</span>), <span class="dt">kernel =</span> <span class="st">&quot;epanechnikov&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Rectangular&quot;</span>), <span class="dt">kernel =</span> <span class="st">&quot;rectangular&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Triangular&quot;</span>), <span class="dt">kernel =</span> <span class="st">&quot;triangular&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Biweight&quot;</span>), <span class="dt">kernel =</span> <span class="st">&quot;biweight&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Density estimators of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Kernel&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="kw">c</span>(<span class="fl">0.96</span>, <span class="dv">1</span>),
+        <span class="dt">legend.justification =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">1</span>),
+        <span class="dt">legend.background =</span> <span class="kw">element_rect</span>(<span class="dt">fill =</span> <span class="st">&quot;white&quot;</span>))</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/kernels-2.png" width="672" /></p>
+</div>
+<div id="selecting-the-bandwidth-h" class="section level3">
+<h3>Selecting the bandwidth <span class="math inline">\(h\)</span></h3>
+<p>Even within the same kernel, different values for the bandwidth <span class="math inline">\(h\)</span> will produce different density estimates because the moving window used to include observations in the local estimate will change.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(infant, <span class="kw">aes</span>(mortal)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="dt">adjust =</span> <span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="dt">adjust =</span> <span class="dv">1</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">kernel =</span> <span class="st">&quot;gaussian&quot;</span>, <span class="dt">adjust =</span> <span class="dv">1</span>/<span class="dv">5</span>, <span class="dt">linetype =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Gaussian density estimators of infant mortality rate for 195 nations&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Three different bandwidth parameters&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/gaussian-h-1.png" width="672" /></p>
+<p>If the underlying density of the sample is normal with standard deviation <span class="math inline">\(\sigma\)</span>, then for the Gaussian kernel estimation the most efficient bandwidth <span class="math inline">\(h\)</span> will be:</p>
+<p><span class="math display">\[h = 0.9 \sigma n^{-1 / 5}\]</span></p>
+<p>As the sample size increases, the optimal window narrower and permits finer detail than a smaller sample. Of course we don’t actually know the population standard deviation <span class="math inline">\(\sigma\)</span>. Instead we know the sample standard deviation <span class="math inline">\(s\)</span>. If the underlying density is normal, we could just substitute <span class="math inline">\(s\)</span> as an unbiased estimate for <span class="math inline">\(\sigma\)</span>. Of course the problem is that we <strong>assumed</strong> the underlying density is normal. If this is not true, then it’s possible that the sample standard deviation is inflated. In that case, we can adjust by using an “adaptive” estimator of spread:</p>
+<p><span class="math display">\[A = \min \left( S, \frac{IQR}{1.349} \right)\]</span></p>
+<p>where <span class="math inline">\(IQR\)</span> is the interquartile range of the sample and 1.349 is the interquartile range of the standard normal distribution <span class="math inline">\(N(0,1)\)</span>.</p>
+<p>This is the default method for calculating the bandwidth with a Gaussian kernel using the <code>density()</code> function in R. Other kernels use different functions for determining the optimal value for <span class="math inline">\(h\)</span>.</p>
+</div>
+</div>
+</div>
+<div id="non-parametric-regression" class="section level1">
+<h1>Non-parametric regression</h1>
+<div id="naive-non-parametric-regression" class="section level2">
+<h2>Naive non-parametric regression</h2>
+<p>Suppose we have detailed information wages and education. We don’t have data for the entire population, but we do have observations for one million employed Americans:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">1000000</span>
+wage &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">educ =</span> <span class="kw">rpois</span>(n, <span class="dt">lambda =</span> <span class="dv">12</span>),
+                   <span class="dt">age =</span> <span class="kw">rpois</span>(n, <span class="dt">lambda =</span> <span class="dv">40</span>),
+                   <span class="dt">prestige =</span> <span class="kw">rpois</span>(n, <span class="dt">lambda =</span> <span class="dv">3</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">educ =</span> <span class="kw">ifelse</span>(educ &gt;<span class="st"> </span><span class="dv">25</span>, <span class="dv">25</span>, educ),
+         <span class="dt">wage =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>educ +<span class="st"> </span>.<span class="dv">5</span> *<span class="st"> </span>age +<span class="st"> </span><span class="dv">5</span> *<span class="st"> </span>prestige +<span class="st"> </span><span class="kw">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">3</span>))
+
+<span class="kw">ggplot</span>(wage, <span class="kw">aes</span>(wage)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Histogram of simulated income data&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Binwidth = 5&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Income, in thousands of dollars&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency count&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-data-1.png" width="672" /></p>
+<p>If we want to estimate the income for an individual given their education level <span class="math inline">\((0, 1, 2, \dots, 25)\)</span>, we could estimate the conditional distribution of income for each of these values:</p>
+<p><span class="math display">\[\mu = E(\text{Income}|\text{Education}) = f(\text{Education})\]</span></p>
+<p>For each level of education, the conditional (or expected) income would be the mean or median of all individuals in the sample with the same level of education.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wage %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(educ) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">mean =</span> <span class="kw">mean</span>(wage),
+            <span class="dt">sd =</span> <span class="kw">sd</span>(wage)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(educ, mean, <span class="dt">ymin =</span> mean -<span class="st"> </span>sd, <span class="dt">ymax =</span> mean +<span class="st"> </span>sd)) +
+<span class="st">  </span><span class="kw">geom_errorbar</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Conditional income, by education level&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Plus/minus SD&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Education level&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Income, in thousands of dollars&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-wage-cond-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wage %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(educ ==<span class="st"> </span><span class="dv">12</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(wage)) +
+<span class="st">  </span><span class="kw">geom_density</span>() +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(wage$wage[wage$educ ==<span class="st"> </span><span class="dv">12</span>]), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Conditional distribution of income for education = 12&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="kw">str_c</span>(<span class="st">&quot;Mean income = &quot;</span>, <span class="kw">formatC</span>(<span class="kw">mean</span>(wage$wage[wage$educ ==<span class="st"> </span><span class="dv">12</span>]), <span class="dt">digits =</span> <span class="dv">3</span>)),
+       <span class="dt">x =</span> <span class="st">&quot;Income, in thousands of dollars&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency count&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-wage-cond-2.png" width="672" /></p>
+<p>Imagine instead that we we have <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>, two continuous variables from a sample of a population, and we want to understand the relationship between the variables. Specifically, we want to use our knowledge of <span class="math inline">\(X\)</span> to predict <span class="math inline">\(Y\)</span>. Therefore what we want to know is the mean value of <span class="math inline">\(Y\)</span> as a function of <span class="math inline">\(X\)</span> in the population of individuals from whom the sample was drawn:</p>
+<p><span class="math display">\[\mu = E(Y|x) = f(x)\]</span></p>
+<p>Unfortunately because <span class="math inline">\(X\)</span> is continuous, it is unlikely that we would draw precisely the same values of <span class="math inline">\(X\)</span> for more than a single observation. Therefore we cannot directly calculate the conditional distribution of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span>, and therefore cannot calculate conditional means. Instead, we can divide <span class="math inline">\(X\)</span> into many narrow intervals (or <strong>bins</strong>), just like we would for a histogram. Within each bin we can estimate the conditional distribution of <span class="math inline">\(Y\)</span> and estimate the conditional mean of <span class="math inline">\(Y\)</span> with great precision.</p>
+<p>If we have fewer observations, then we have to settle for fewer bins and less precision in our estimates. Here we use data on the average income of 102 different occupations in Canada and their relationship to occupational prestige (measured continuously):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get data</span>
+prestige &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/prestige.csv&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bin into 5 and get means</span>
+prestige_bin &lt;-<span class="st"> </span>prestige %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">bin =</span> <span class="kw">cut_number</span>(income, <span class="dv">6</span>)) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(bin) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">prestige =</span> <span class="kw">mean</span>(prestige),
+            <span class="dt">income =</span> <span class="kw">mean</span>(income))
+
+<span class="co"># get cutpoints</span>
+labs &lt;-<span class="st"> </span><span class="kw">levels</span>(prestige_bin$bin)
+cutpoints &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">as.numeric</span>( <span class="kw">sub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">((.+),.*&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>, labs) ),
+  <span class="kw">as.numeric</span>( <span class="kw">sub</span>(<span class="st">&quot;[^,]*,([^]]*)</span><span class="ch">\\</span><span class="st">]&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>, labs) )) %&gt;%
+<span class="st">  </span>unique %&gt;%
+<span class="st">  </span>sort %&gt;%
+<span class="st">  </span>.[<span class="dv">2</span>:(<span class="kw">length</span>(.)-<span class="dv">1</span>)] %&gt;%
+<span class="st">  </span>as_tibble
+
+<span class="kw">ggplot</span>(prestige, <span class="kw">aes</span>(income, prestige)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">shape =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> prestige_bin) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> prestige_bin) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> cutpoints, <span class="kw">aes</span>(<span class="dt">xintercept =</span> value), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Naive nonparametric regression&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Bins = 5&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Average income (in dollars)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Occupational prestige&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/prestige-5bins-1.png" width="672" /></p>
+<p>The <span class="math inline">\(X\)</span>-axis is carved into 5 bins with roughly 20 observations in each bin. The line is a <strong>naive nonparametric regression line</strong> that is calculated by connecting the points defined by the conditional variable means <span class="math inline">\(\bar{Y}\)</span> and the explanatory variable means <span class="math inline">\(\bar{X}\)</span> in the five intervals.</p>
+<p>Just like ordinary least squares regression (OLS), this regression line also suffers from <strong>bias</strong> and <strong>variance</strong>. If the actual relationship between prestige and income is non-linear <strong>within a bin</strong>, then our estimate of the conditional mean <span class="math inline">\(\bar{Y}\)</span> will be biased towards a linear relationship. We can minimize bias by making the bins as numerous and narrow as possible:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bin into 50 and get means</span>
+prestige_bin &lt;-<span class="st"> </span>prestige %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">bin =</span> <span class="kw">cut_number</span>(income, <span class="dv">51</span>)) %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(bin) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">prestige =</span> <span class="kw">mean</span>(prestige),
+            <span class="dt">income =</span> <span class="kw">mean</span>(income))
+
+<span class="co"># get cutpoints</span>
+labs &lt;-<span class="st"> </span><span class="kw">levels</span>(prestige_bin$bin)
+cutpoints &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="kw">as.numeric</span>( <span class="kw">sub</span>(<span class="st">&quot;</span><span class="ch">\\</span><span class="st">((.+),.*&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>, labs) ),
+  <span class="kw">as.numeric</span>( <span class="kw">sub</span>(<span class="st">&quot;[^,]*,([^]]*)</span><span class="ch">\\</span><span class="st">]&quot;</span>, <span class="st">&quot;</span><span class="ch">\\</span><span class="st">1&quot;</span>, labs) )) %&gt;%
+<span class="st">  </span>unique %&gt;%
+<span class="st">  </span>sort %&gt;%
+<span class="st">  </span>.[<span class="dv">2</span>:(<span class="kw">length</span>(.)-<span class="dv">1</span>)] %&gt;%
+<span class="st">  </span>as_tibble
+
+<span class="kw">ggplot</span>(prestige, <span class="kw">aes</span>(income, prestige)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">shape =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> prestige_bin) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> prestige_bin) +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">data =</span> cutpoints, <span class="kw">aes</span>(<span class="dt">xintercept =</span> value), <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">alpha =</span> .<span class="dv">25</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Naive nonparametric regression&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Bins = 50&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Average income (in dollars)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Occupational prestige&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/prestige-50bins-1.png" width="672" /></p>
+<p>But now we have introduced overfitting into the nonparametric regression estimates. In addition, we substantially increased our variance of the estimated conditional sample means <span class="math inline">\(\bar{Y}\)</span>. If we were to draw a new sample, the estimated conditional sample means <span class="math inline">\(\bar{Y}\)</span> could be widely different from the original model and our resulting estimates of the conditional sample means will be highly variable.</p>
+<p>Naive nonparametric regression is a consistent estimator of the population regression curve as the sample size increases. As <span class="math inline">\(n \rightarrow \infty\)</span>, we can shrink the size of the individual intervals and still have sizeable numbers of observations in each interval. In the limit, we have an infinite number of intervals and infinite number of observations in each interval, so the naive nonparametric regression line and the population regression line are identical.</p>
+<p>As a practical consideration, if our sample size <span class="math inline">\(n\)</span> is truly large, then naive nonparametric regression could be a good estimation procedure. However as we introduce multiple explanatory variables into the model, the problem starts to blow up. Assume we have three discrete explanatory variables each with 10 possible values:</p>
+<p><span class="math display">\[X_1 \in \{1, 2, \dots ,10 \}\]</span> <span class="math display">\[X_2 \in \{1, 2, \dots ,10 \}\]</span> <span class="math display">\[X_3 \in \{1, 2, \dots ,10 \}\]</span></p>
+<p>There are then <span class="math inline">\(10^3 = 1000\)</span> possible combinations of the explanatory variables and <span class="math inline">\(1000\)</span> conditional expectations of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[\mu = E(Y|x_1, x_2, x_3) = f(x_1, x_2, x_3)\]</span></p>
+<p>In order to accurate estimate conditional expectations for each category, we would need substantial numbers of observations <strong>for every combination of <span class="math inline">\(X\)</span></strong>. This would require a sample size far greater than most social scientists have the resources to collect.</p>
+<p>Let’s return to our simulated wage data. Our dataset contains information on education, age, and job prestige:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(wage, <span class="kw">aes</span>(educ)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Distribution of simulated wage data&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Education&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency count&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wage-sim-describe-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(wage, <span class="kw">aes</span>(age)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Distribution of simulated wage data&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency count&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wage-sim-describe-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(wage, <span class="kw">aes</span>(prestige)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Distribution of simulated wage data&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Job prestige&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Frequency count&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wage-sim-describe-3.png" width="672" /></p>
+<p>Can we estimate naive nonparametric regression on this dataset with <span class="math inline">\(N = 1,000,000\)</span>?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wage_np &lt;-<span class="st"> </span>wage %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(educ, age, prestige) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">wage_mean =</span> <span class="kw">mean</span>(wage),
+            <span class="dt">wage_sd =</span> <span class="kw">sd</span>(wage),
+            <span class="dt">n =</span> <span class="kw">n</span>()) %&gt;%
+<span class="st">  </span>ungroup %&gt;%
+<span class="st">  </span><span class="kw">complete</span>(educ, age, prestige, <span class="dt">fill =</span> <span class="kw">list</span>(<span class="dt">wage_mean =</span> <span class="ot">NA</span>,
+                                          <span class="dt">wage_sd =</span> <span class="ot">NA</span>,
+                                          <span class="dt">n =</span> <span class="dv">0</span>))
+
+<span class="co"># number of unique combos </span>
+wage_unique &lt;-<span class="st"> </span><span class="kw">nrow</span>(wage_np)
+
+<span class="co"># n for each unique combo</span>
+<span class="kw">ggplot</span>(wage_np, <span class="kw">aes</span>(n)) +
+<span class="st">  </span><span class="kw">geom_density</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Naive nonparametric regression of simulated wage data&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Number of observations for each unique combination&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wage-sim-np-1.png" width="672" /></p>
+<p>Even on a dataset with <span class="math inline">\(1,000,000\)</span> observations, for the vast majority of the potential combinations of variables we have zero observations from which to generate expected values. What if we instead drew <span class="math inline">\(10,000,000\)</span> observations from the same data generating process?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n &lt;-<span class="st"> </span><span class="dv">10000000</span>
+wage10 &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">educ =</span> <span class="kw">rpois</span>(n, <span class="dt">lambda =</span> <span class="dv">12</span>),
+                   <span class="dt">age =</span> <span class="kw">rpois</span>(n, <span class="dt">lambda =</span> <span class="dv">40</span>),
+                   <span class="dt">prestige =</span> <span class="kw">rpois</span>(n, <span class="dt">lambda =</span> <span class="dv">3</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">educ =</span> <span class="kw">ifelse</span>(educ &gt;<span class="st"> </span><span class="dv">25</span>, <span class="dv">25</span>, educ),
+         <span class="dt">wage =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span>educ +<span class="st"> </span>.<span class="dv">5</span> *<span class="st"> </span>age +<span class="st"> </span><span class="dv">5</span> *<span class="st"> </span>prestige +<span class="st"> </span><span class="kw">rnorm</span>(n, <span class="dv">0</span>, <span class="dv">3</span>))
+
+wage10_np &lt;-<span class="st"> </span>wage10 %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(educ, age, prestige) %&gt;%
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">wage_mean =</span> <span class="kw">mean</span>(wage),
+            <span class="dt">wage_sd =</span> <span class="kw">sd</span>(wage),
+            <span class="dt">n =</span> <span class="kw">n</span>()) %&gt;%
+<span class="st">  </span>ungroup %&gt;%
+<span class="st">  </span><span class="kw">complete</span>(educ, age, prestige, <span class="dt">fill =</span> <span class="kw">list</span>(<span class="dt">wage_mean =</span> <span class="ot">NA</span>,
+                                          <span class="dt">wage_sd =</span> <span class="ot">NA</span>,
+                                          <span class="dt">n =</span> <span class="dv">0</span>))
+
+<span class="co"># number of unique combos </span>
+wage10_unique &lt;-<span class="st"> </span><span class="kw">nrow</span>(wage10_np)
+
+<span class="co"># n for each unique combo</span>
+<span class="kw">ggplot</span>(wage10_np, <span class="kw">aes</span>(n)) +
+<span class="st">  </span><span class="kw">geom_density</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Naive nonparametric regression of simulated wage data&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Number of observations for each unique combination&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Density&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wage-sim-np-ten-1.png" width="672" /></p>
+<p>Unless your dataset is extremely large or you have a small handful of variables with a low number of unique values, naive nonparametric estimation will not be effective.</p>
+</div>
+<div id="k-nearest-neighbors-regression" class="section level2">
+<h2><span class="math inline">\(K\)</span>-nearest neighbors regression</h2>
+<p>An alternative, but related, method is called <strong><span class="math inline">\(K\)</span>-nearest neighbors regression</strong> (KNN regression). Rather than binning the data into discrete and fixed intervals, KNN regression uses a moving average to generate the regression line. Given a value for <span class="math inline">\(K\)</span> and a prediction point <span class="math inline">\(x_0\)</span>, KNN regression identifies the <span class="math inline">\(K\)</span> training observations nearest to the prediction point <span class="math inline">\(x_0\)</span>, represented by <span class="math inline">\(N_0\)</span> and estimates <span class="math inline">\(f(x_0)\)</span> as the average of all the training responses in <span class="math inline">\(N_0\)</span>:</p>
+<p><span class="math display">\[\hat{f}(x_0) = \frac{1}{K} \sum_{x_i \in N_0} y_i\]</span></p>
+<p>With <span class="math inline">\(K=1\)</span>, the resulting KNN regression line will fit the training observations extraordinarily well.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prestige_knn1 &lt;-<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(prestige, income), <span class="dt">y =</span> prestige$prestige,
+                         <span class="dt">test =</span> <span class="kw">select</span>(prestige, income), <span class="dt">k =</span> <span class="dv">1</span>)
+
+prestige %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> prestige_knn1$pred) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(income, prestige)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;1-nearest neighbor regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Income (in dollars)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Occupational prestige&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/prestige-knn-1-1.png" width="672" /></p>
+<p>Perhaps a bit too well. Compare this to <span class="math inline">\(K=9\)</span>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prestige_knn9 &lt;-<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(prestige, income), <span class="dt">y =</span> prestige$prestige,
+                         <span class="dt">test =</span> <span class="kw">select</span>(prestige, income), <span class="dt">k =</span> <span class="dv">9</span>)
+
+prestige %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> prestige_knn9$pred) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(income, prestige)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;9-nearest neighbor regression&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Income (in dollars)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Occupational prestige&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/prestige-knn-9-1.png" width="672" /></p>
+<p>This regression line averages over the nine nearest observations; while still a step function, it is smoother than <span class="math inline">\(K=1\)</span>. Small values for <span class="math inline">\(K\)</span> provide low bias estimates of the training observations but high variance. Large values for <span class="math inline">\(K\)</span> provide low variance but higher bias by masking some of the structure of <span class="math inline">\(f(X)\)</span>.</p>
+<p>Parametric methods such as linear regression are superior to non-parametric methods such as KNN regression when the parametric approach accurately assumes the true functional form of <span class="math inline">\(f\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="dv">2</span> +<span class="st"> </span>x +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>))
+
+sim_knn9 &lt;-<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(sim, x), <span class="dt">y =</span> sim$y,
+                         <span class="dt">test =</span> <span class="kw">select</span>(sim, x), <span class="dt">k =</span> <span class="dv">9</span>)
+
+sim %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> sim_knn9$pred) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">shape =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;True&quot;</span>), <span class="dt">intercept =</span> <span class="dv">2</span>, <span class="dt">slope =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;LM&quot;</span>), <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred, <span class="dt">color =</span> <span class="st">&quot;KNN&quot;</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">color =</span> <span class="st">&quot;Method&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-p-line-1.png" width="672" /></p>
+<p>Here we simulate data from a linear relationship:</p>
+<p><span class="math display">\[f(x) = 2 + x + \epsilon_i\]</span></p>
+<p>The black line represents the true model, the blue line represents the linear regression model, and the red line represents the 9-nearest neighbor regression line. As we can see, the linear model does a great job approximating the true model because we have defined the relationship to be linear and that is what OLS attempts to estimate. The KNN line is too jumpy and contours too closely to the training data to capture the true relationship.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate test MSE for LM and KNN models</span>
+sim_test &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="dv">2</span> +<span class="st"> </span>x +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>))
+mse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim) %&gt;%
+<span class="st">  </span><span class="kw">mse</span>(sim_test)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="dv">1</span>:<span class="dv">10</span>,
+                      <span class="dt">knn =</span> <span class="kw">map</span>(k, ~<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(sim, x), <span class="dt">y =</span> sim$y,
+                         <span class="dt">test =</span> <span class="kw">select</span>(sim_test, x), <span class="dt">k =</span> .)),
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((sim_test$y -<span class="st"> </span>.$pred)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> mse_lm, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-p-line2-1.png" width="672" /></p>
+<p>As <span class="math inline">\(k\)</span> increases, KNN regression does a better job approximating the linear relationship. Here we can see as <span class="math inline">\(k\)</span> increases, the test MSE (based on a separate draw of observations from the data generating process) shrinks and approaches the test MSE based on the linear model (the dashed line).</p>
+<p>Of course as non-linearity in the true relationship increases, KNN will perform better relative to a parametric model which assumes linearity:</p>
+<p><span class="math display">\[f(x) = 2 + x + x^2 + x^3 + \epsilon_i\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_cube &lt;-<span class="st"> </span>function(x) {
+  <span class="dv">2</span> +<span class="st"> </span>x +<span class="st"> </span>x^<span class="dv">2</span> +<span class="st"> </span>x^<span class="dv">3</span>
+}
+
+sim &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="kw">x_cube</span>(x) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>))
+
+sim_knn9 &lt;-<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(sim, x), <span class="dt">y =</span> sim$y,
+                         <span class="dt">test =</span> <span class="kw">select</span>(sim, x), <span class="dt">k =</span> <span class="dv">9</span>)
+
+sim %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> sim_knn9$pred) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">shape =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;True&quot;</span>), <span class="dt">fun =</span> x_cube) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;LM&quot;</span>), <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred, <span class="dt">color =</span> <span class="st">&quot;KNN&quot;</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">color =</span> <span class="st">&quot;Method&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-p-cubic-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate test MSE for LM and KNN models</span>
+sim_test &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="kw">x_cube</span>(x) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>))
+
+mse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim) %&gt;%
+<span class="st">  </span><span class="kw">mse</span>(sim_test)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="dv">1</span>:<span class="dv">10</span>,
+                      <span class="dt">knn =</span> <span class="kw">map</span>(k, ~<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(sim, x), <span class="dt">y =</span> sim$y,
+                         <span class="dt">test =</span> <span class="kw">select</span>(sim_test, x), <span class="dt">k =</span> .)),
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((sim_test$y -<span class="st"> </span>.$pred)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> mse_lm, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/np-p-cubic-2.png" width="672" /></p>
+<p>While KNN performs better in the presence of a non-linear relationship, it also performs worse as the number of predictors <span class="math inline">\(p\)</span> increases. Here we use the same data generating process as before:</p>
+<p><span class="math display">\[f(x) = 2 + x + x^2 + x^3 + \epsilon_i\]</span></p>
+<p>But this time generate additional <strong>noise parameters</strong>, or variables that are not actually included in <span class="math inline">\(f(x)\)</span> but are included in <span class="math inline">\(\hat{f}(x)\)</span>. Linear regression is more robust to the addition of such parameters and the test MSE increases more slowly as a result. Compare this to the change in test MSE for KNN regression:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_nr &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="kw">x_cube</span>(x1) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>),
+                  <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                  <span class="dt">x3 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                  <span class="dt">x4 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                  <span class="dt">x5 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                  <span class="dt">x6 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>))
+sim_nr_test &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                       <span class="dt">y =</span> <span class="kw">x_cube</span>(x1) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>),
+                       <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                       <span class="dt">x3 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                       <span class="dt">x4 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                       <span class="dt">x5 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>),
+                       <span class="dt">x6 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, <span class="dv">1</span>))
+
+sim_pred_knn &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">p =</span> <span class="dv">1</span>:<span class="dv">6</span>,
+            <span class="dt">k =</span> <span class="dv">1</span>:<span class="dv">10</span>) %&gt;%
+<span class="st">  </span>as_tibble %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">lm =</span> <span class="kw">map</span>(p, ~<span class="st"> </span><span class="kw">lm</span>(<span class="kw">formula</span>(<span class="kw">str_c</span>(<span class="st">&quot;y ~ &quot;</span>, <span class="kw">str_c</span>(<span class="st">&quot;x&quot;</span>, <span class="kw">seq.int</span>(.), <span class="dt">collapse =</span> <span class="st">&quot; + &quot;</span>))),
+                          <span class="dt">data =</span> sim_nr)),
+         <span class="dt">mse_lm =</span> <span class="kw">map_dbl</span>(lm, ~<span class="st"> </span><span class="kw">mse</span>(., sim_nr_test)),
+         <span class="dt">knn =</span> <span class="kw">map2</span>(p, k, ~<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select_</span>(sim_nr, <span class="dt">.dots =</span> <span class="kw">str_c</span>(<span class="st">&quot;x&quot;</span>, <span class="kw">seq.int</span>(.x))),
+                                    <span class="dt">y =</span> sim_nr$y,
+                                    <span class="dt">test =</span> <span class="kw">select_</span>(sim_nr_test, <span class="dt">.dots =</span> <span class="kw">str_c</span>(<span class="st">&quot;x&quot;</span>, <span class="kw">seq.int</span>(.x))),
+                                    <span class="dt">k =</span> .y)),
+         <span class="dt">mse_knn =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((sim_nr_test$y -<span class="st"> </span>.$pred)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(sim_pred_knn, <span class="kw">aes</span>(k, mse_knn)) +
+<span class="st">  </span><span class="kw">facet_grid</span>(. ~<span class="st"> </span>p, <span class="dt">labeller =</span> <span class="kw">labeller</span>(<span class="dt">p =</span> label_both)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="kw">aes</span>(<span class="dt">yintercept =</span> mse_lm), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Test MSE for linear regression vs. KNN&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-nonrobust-1.png" width="672" /></p>
+<p>We should be able to anticipate this problem. It is the same pitfall of naive nonparametric regression: as the number of predictors increases, the number of dimensions also increases. Spreading 100 observations over <span class="math inline">\(p=6\)</span> dimensions results in the problem that for many observations, there are no nearby neighbors. The closest neighbor may be extraordinarily far away in <span class="math inline">\(p\)</span>-dimensional space, so the prediction resulting from averaging across these neighbors is poor.</p>
+<p>One alternative to this conundrum is to use a weighting function to weight our KNN estimates based on the <strong>distance</strong> of the nearby neighbors. For example, the <code>kknn</code> package weights KNN estimates based on the <strong>Minkowski distance</strong> between points:</p>
+<p><span class="math display">\[\text{Distance}(x_i, y_i) = \left( \sum_{i = 1}^n |x_i - y_i| ^p \right)^\frac{1}{p}\]</span></p>
+<p>where <span class="math inline">\(p\)</span> is the order parameter (not the number of predictors). <span class="math inline">\(p=1\)</span> results in <strong>Manhattan distance</strong>, while <span class="math inline">\(p=2\)</span> is known as <strong>Euclidean distance</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="kw">x_cube</span>(x) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>))
+
+sim_wknn &lt;-<span class="st"> </span><span class="kw">kknn</span>(y ~<span class="st"> </span>x, <span class="dt">train =</span> sim, <span class="dt">test =</span> sim, <span class="dt">k =</span> <span class="dv">5</span>)
+
+sim %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> sim_wknn[[<span class="st">&quot;fitted.values&quot;</span>]]) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">shape =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">stat_function</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;True&quot;</span>), <span class="dt">fun =</span> x_cube) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;LM&quot;</span>), <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_step</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred, <span class="dt">color =</span> <span class="st">&quot;KNN&quot;</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;5-nearest neighbor regression&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Euclidean distance weighting&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Method&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-weight-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate test MSE for LM and KNN models</span>
+sim_test &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">100</span>, -<span class="dv">1</span>,<span class="dv">1</span>),
+                  <span class="dt">y =</span> <span class="kw">x_cube</span>(x) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">100</span>, <span class="dv">0</span>, .<span class="dv">2</span>))
+
+mse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim) %&gt;%
+<span class="st">  </span><span class="kw">mse</span>(sim_test)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="dv">1</span>:<span class="dv">10</span>,
+                      <span class="dt">knn =</span> <span class="kw">map</span>(k, ~<span class="st"> </span><span class="kw">kknn</span>(y ~<span class="st"> </span>x, <span class="dt">train =</span> sim, <span class="dt">test =</span> sim_test, <span class="dt">k =</span> .)),
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((sim_test$y -<span class="st"> </span>.$fitted.values)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> mse_lm, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-weight-2.png" width="672" /></p>
+<p>Let’s compare the robustness of KNN vs. weighted KNN using the previous example with random noise parameters.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_pred_wknn &lt;-<span class="st"> </span>sim_pred_knn %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">wknn =</span> <span class="kw">map2</span>(p, k, ~<span class="st"> </span><span class="kw">kknn</span>(<span class="kw">formula</span>(<span class="kw">str_c</span>(<span class="st">&quot;y ~ &quot;</span>,
+                                                <span class="kw">str_c</span>(<span class="st">&quot;x&quot;</span>, <span class="kw">seq.int</span>(.x), <span class="dt">collapse =</span> <span class="st">&quot; + &quot;</span>))),
+                          <span class="dt">train =</span> sim_nr, <span class="dt">test =</span> sim_nr_test, <span class="dt">k =</span> .y)),
+         <span class="dt">mse_wknn =</span> <span class="kw">map_dbl</span>(wknn, ~<span class="st"> </span><span class="kw">mean</span>((sim_nr_test$y -<span class="st"> </span>.$fitted.values)^<span class="dv">2</span>)))
+sim_pred_lm &lt;-<span class="st"> </span>sim_pred_wknn %&gt;%
+<span class="st">  </span><span class="kw">select</span>(p, k, mse_lm) %&gt;%
+<span class="st">  </span>distinct
+
+sim_pred_wknn %&gt;%
+<span class="st">  </span><span class="kw">select</span>(p, k, <span class="kw">contains</span>(<span class="st">&quot;mse&quot;</span>), -mse_lm) %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(method, mse, <span class="kw">contains</span>(<span class="st">&quot;mse&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">method =</span> <span class="kw">str_replace</span>(method, <span class="st">&quot;mse_&quot;</span>, <span class="st">&quot;&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">method =</span> <span class="kw">factor</span>(method, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;knn&quot;</span>, <span class="st">&quot;wknn&quot;</span>),
+                         <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;KNN&quot;</span>, <span class="st">&quot;Weighted KNN&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(k, mse, <span class="dt">color =</span> method)) +
+<span class="st">  </span><span class="kw">facet_grid</span>(. ~<span class="st"> </span>p, <span class="dt">labeller =</span> <span class="kw">labeller</span>(<span class="dt">p =</span> label_both)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">data =</span> sim_pred_lm, <span class="kw">aes</span>(<span class="dt">yintercept =</span> mse_lm), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Test MSE for linear regression vs. KNN&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Traditional and weighted KNN&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>,
+       <span class="dt">method =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wknn-nonrobust-1.png" width="672" /></p>
+<div id="estimating-knn-on-simulated-wage-data" class="section level3">
+<h3>Estimating KNN on simulated wage data</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># split into train/test set</span>
+wage_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(wage, <span class="dt">p =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span> =<span class="st"> </span>.<span class="dv">5</span>, <span class="st">&quot;train&quot;</span> =<span class="st"> </span>.<span class="dv">5</span>))
+wage_train &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(wage_split$train)
+wage_test &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(wage_split$test)
+
+<span class="co"># estimate test MSE for LM and KNN models</span>
+mse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(wage ~<span class="st"> </span>educ +<span class="st"> </span>age +<span class="st"> </span>prestige, <span class="dt">data =</span> wage_train) %&gt;%
+<span class="st">  </span><span class="kw">mse</span>(wage_test)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">10</span>, <span class="kw">seq</span>(<span class="dv">20</span>, <span class="dv">100</span>, <span class="dt">by =</span> <span class="dv">10</span>)),
+                      <span class="dt">knn =</span> <span class="kw">map</span>(k, ~<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(wage_train, -wage), <span class="dt">y =</span> wage_train$wage,
+                         <span class="dt">test =</span> <span class="kw">select</span>(wage_test, -wage), <span class="dt">k =</span> .)),
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((wage_test$wage -<span class="st"> </span>.$pred)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> mse_lm, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;KNN on simulated wage data&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/wage-sim-knn-1.png" width="672" /></p>
+</div>
+<div id="knn-on-biden" class="section level3">
+<h3>KNN on Biden</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">biden &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/biden.csv&quot;</span>)
+
+<span class="co"># split into train/test set</span>
+biden_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(biden, <span class="dt">p =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span> =<span class="st"> </span>.<span class="dv">3</span>, <span class="st">&quot;train&quot;</span> =<span class="st"> </span>.<span class="dv">7</span>))
+biden_train &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(biden_split$train)
+biden_test &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(biden_split$test)
+
+<span class="co"># estimate test MSE for LM and KNN models</span>
+mse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(biden ~<span class="st"> </span>., <span class="dt">data =</span> biden_train) %&gt;%
+<span class="st">  </span><span class="kw">mse</span>(biden_test)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">10</span>, <span class="kw">seq</span>(<span class="dv">20</span>, <span class="dv">100</span>, <span class="dt">by =</span> <span class="dv">10</span>)),
+                      <span class="dt">knn =</span> <span class="kw">map</span>(k, ~<span class="st"> </span><span class="kw">knn.reg</span>(<span class="kw">select</span>(biden_train, -biden), <span class="dt">y =</span> biden_train$biden,
+                         <span class="dt">test =</span> <span class="kw">select</span>(biden_test, -biden), <span class="dt">k =</span> .)),
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((biden_test$biden -<span class="st"> </span>.$pred)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> mse_lm, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;KNN for Biden&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/biden-knn-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate test MSE for LM and WKNN models</span>
+mse_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(biden ~<span class="st"> </span>., <span class="dt">data =</span> biden_train) %&gt;%
+<span class="st">  </span><span class="kw">mse</span>(biden_test)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">10</span>, <span class="kw">seq</span>(<span class="dv">20</span>, <span class="dv">100</span>, <span class="dt">by =</span> <span class="dv">10</span>)),
+                      <span class="dt">knn =</span> <span class="kw">map</span>(k, ~<span class="st"> </span><span class="kw">kknn</span>(biden ~<span class="st"> </span>.,
+                                          <span class="dt">train =</span> biden_train, <span class="dt">test =</span> biden_test, <span class="dt">k =</span> .)),
+                      <span class="dt">mse =</span> <span class="kw">map_dbl</span>(knn, ~<span class="st"> </span><span class="kw">mean</span>((sim_test$y -<span class="st"> </span>.$fitted.values)^<span class="dv">2</span>)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> mse_lm, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Weighted KNN for Biden&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test mean squared error&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/biden-wknn-1.png" width="672" /></p>
+</div>
+</div>
+<div id="relaxing-the-non-linearity-assumption-in-linear-regression" class="section level2">
+<h2>Relaxing the non-linearity assumption in linear regression</h2>
+<p>We previously discussed <a href="persp007_nonlinear.html">how to relax the non-linearity assumption of linear regression</a>. Which of those methods were parametric vs. non-parametric? Generally speaking, any of the methods that relied upon local averaging to estimate the regression model would be considered non-parametric. While these methods include parametric components, these are fit at the local-level. The global structure of the relationship between the predictor(s) and the response variable are not assumed by any specific functional form.</p>
+<p>Likewise, decision trees and SVMs<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> are also non-parametric methods because they do not assume a global structure to the data. Certain variations of SVMs are parametric, primarily the support vector classifier, because they assume the separating hyperplane assumes a linear functional form. However by introducing kernels into the model (as we discussed above), SVMs relax the linearity assumption sufficiently to become non-parametric models.</p>
+<div id="parametric-methods-1" class="section level5">
+<h5>Parametric methods</h5>
+<ul>
+<li>Linear regression</li>
+<li>Logistic regression</li>
+<li>Generalized linear models (GLMs)</li>
+<li>Polynomial regression</li>
+<li>Step functions</li>
+</ul>
+</div>
+<div id="non-parametric-methods-1" class="section level5">
+<h5>Non-parametric methods</h5>
+<ul>
+<li>Regression splines</li>
+<li>Smoothing splines</li>
+<li>Local regression</li>
+<li>Generalized additive models</li>
+<li>Decision trees</li>
+<li>Bagging/random forest/boosting</li>
+<li>Support vector machines</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="non-parametric-classification" class="section level1">
+<h1>Non-parametric classification</h1>
+<div id="bayes-decision-rule" class="section level2">
+<h2>Bayes decision rule</h2>
+<p>For classification problems, the test error rate is minimized by a simple classifier that assigns each observation to the most likely class given its predictor values:</p>
+<p><span class="math display">\[\Pr(Y = j | X = x_0)\]</span></p>
+<p>where <span class="math inline">\(x_0\)</span> is the test observation and each possible class is represented by <span class="math inline">\(J\)</span>. This is a <strong>conditional probability</strong> that <span class="math inline">\(Y = j\)</span>, given the observed predictor vector<span class="math inline">\(x_0\)</span>. This classifier is known as the <strong>Bayes classifier</strong>. If the response variable is binary (i.e. two classes), the Bayes classifier corresponds to predicting class one if <span class="math inline">\(\Pr(Y = 1 | X = x_0) &gt; 0.5\)</span>, and class two otherwise.</p>
+<p>In the simulated example below, the blue lines indicate the <strong>Bayes decision boundary</strong>. The Bayes classifier’s prediction is determined by this boundary: observations on the blue side would be assigned to the blue class, and observations on the red side are assigned to the red class.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bayes_rule &lt;-<span class="st"> </span>function(x1, x2) {
+  x1 +<span class="st"> </span>x1^<span class="dv">2</span> +<span class="st"> </span>x2 +<span class="st"> </span>x2^<span class="dv">2</span>
+}
+
+bayes_grid &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">x1 =</span> <span class="kw">seq</span>(-<span class="dv">1</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">05</span>),
+            <span class="dt">x2 =</span> <span class="kw">seq</span>(-<span class="dv">1</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">05</span>)) %&gt;%
+<span class="st">  </span>as_tibble %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">logodds =</span> <span class="kw">bayes_rule</span>(x1, x2),
+         <span class="dt">y =</span> logodds &gt;<span class="st"> </span>.<span class="dv">5</span>,
+         <span class="dt">prob =</span> <span class="kw">logit2prob</span>(logodds))
+
+bayes_bound &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(<span class="kw">mutate</span>(bayes_grid,
+                                <span class="dt">prob =</span> prob,
+                                <span class="dt">cls =</span> <span class="ot">TRUE</span>,
+                                <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls, <span class="dv">1</span>, <span class="dv">0</span>)),
+                         <span class="kw">mutate</span>(bayes_grid,
+                                <span class="dt">prob =</span> prob,
+                                <span class="dt">cls =</span> <span class="ot">FALSE</span>,
+                                <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls, <span class="dv">1</span>, <span class="dv">0</span>)))
+
+sim_bayes &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">runif</span>(<span class="dv">200</span>, -<span class="dv">1</span>, <span class="dv">1</span>),
+                        <span class="dt">x2 =</span> <span class="kw">runif</span>(<span class="dv">200</span>, -<span class="dv">1</span>, <span class="dv">1</span>),
+                        <span class="dt">logodds =</span> <span class="kw">bayes_rule</span>(x1, x2) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">200</span>, <span class="dv">0</span>, .<span class="dv">5</span>),
+                        <span class="dt">y =</span> logodds &gt;<span class="st"> </span>.<span class="dv">5</span>,
+                        <span class="dt">y_actual =</span> <span class="kw">bayes_rule</span>(x1, x2) &gt;<span class="st"> </span>.<span class="dv">5</span>)
+sim_bayes_err &lt;-<span class="st"> </span><span class="kw">mean</span>(sim_bayes$y !=<span class="st"> </span>sim_bayes$y_actual)
+
+<span class="kw">ggplot</span>(bayes_bound, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> .<span class="dv">5</span>, <span class="dt">alpha =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_bayes) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/bayes-class-1.png" width="672" /></p>
+<p>The Bayes classifer produces the lowest possible test error rate, called the <strong>Bayes error rule</strong>, because it will always assign observations based on the maximum conditional probability:</p>
+<p><span class="math display">\[1 - E \left( \max_j \Pr(Y = j | X) \right)\]</span></p>
+<p>where the expectation averages the probability over all possible values of <span class="math inline">\(X\)</span>. In this simulation the Bayes error rate is <span class="math inline">\(0.17\)</span>. Because in the true population the classes overlap somewhat, the Bayes classifier cannot generate an error rate of zero.</p>
+</div>
+<div id="k-nearest-neighbors-classification" class="section level2">
+<h2><span class="math inline">\(K\)</span>-nearest neighbors classification</h2>
+<p>Unfortunately we do not know the conditional distribution of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span> in real-world data, so we cannot compute the Bayes classifier. Instead we try to produce <strong>estimates</strong> of the conditional distribution of <span class="math inline">\(Y\)</span> given <span class="math inline">\(X\)</span>, and then classify a given observation to the class with the highest estimated probability. Logistic regression and other types of GLMs, tree-based methods, and SVMs all operate on this basic principle (or related ones - in the case of SVMs the decision is based on the test observation’s location relative to the separating hyperplane).</p>
+<p>However regression-based methods such as GLMs make assumptions about the functional form of <span class="math inline">\(f\)</span>. For a purely non-parametric approach, we could use <strong><span class="math inline">\(K\)</span>-nearest neighbors</strong> (KNN) classification. Similar to KNN regression, given a positive integer <span class="math inline">\(K\)</span> and a test observation <span class="math inline">\(x_0\)</span>, the KNN classifier identifies the <span class="math inline">\(K\)</span> nearest training observations to <span class="math inline">\(x_0\)</span>, again represented by <span class="math inline">\(N_0\)</span>. The conditional probability for class <span class="math inline">\(j\)</span> is the fraction of points in <span class="math inline">\(N_0\)</span> whose response values equal <span class="math inline">\(j\)</span>:</p>
+<p><span class="math inline">\(Pr(Y = j| X = x_0) = \frac{1}{K} \sum_{i \in N_0} I(y_i = j)\)</span>$</p>
+<p>where <span class="math inline">\(I(y_i = j)\)</span> is an indicator function. Finally KNN applies Bayes rule and classifies the test observation <span class="math inline">\(x_0\)</span> to the class with the largest probability. Here is the KNN classifier applied to the example above with <span class="math inline">\(K=1\)</span>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knn1 &lt;-<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(sim_bayes, x1, x2), <span class="dt">test =</span> <span class="kw">select</span>(bayes_grid, x1, x2),
+                   <span class="dt">cl =</span> sim_bayes$y, <span class="dt">k =</span> <span class="dv">1</span>, <span class="dt">prob =</span> <span class="ot">TRUE</span>)
+prob1 &lt;-<span class="st"> </span><span class="kw">attr</span>(knn1, <span class="st">&quot;prob&quot;</span>)
+
+bayes_bound1 &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(<span class="kw">mutate</span>(bayes_grid,
+                           <span class="dt">prob =</span> <span class="kw">attr</span>(knn1, <span class="st">&quot;prob&quot;</span>),
+                           <span class="dt">y =</span> <span class="kw">as.logical</span>(knn1),
+                           <span class="dt">cls =</span> <span class="ot">TRUE</span>,
+                           <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls,
+                                           <span class="dv">1</span>, <span class="dv">0</span>)),
+                    <span class="kw">mutate</span>(bayes_grid,
+                           <span class="dt">prob =</span> <span class="kw">attr</span>(knn1, <span class="st">&quot;prob&quot;</span>),
+                           <span class="dt">y =</span> <span class="kw">as.logical</span>(knn1),
+                           <span class="dt">cls =</span> <span class="ot">FALSE</span>,
+                           <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls,
+                                           <span class="dv">1</span>, <span class="dv">0</span>)))
+
+<span class="kw">ggplot</span>(bayes_bound, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls, <span class="dt">linetype =</span> <span class="st">&quot;True boundary&quot;</span>), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="dt">data =</span> bayes_bound1, <span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls, <span class="dt">linetype =</span> <span class="st">&quot;KNN&quot;</span>), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_bayes) +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;K nearest neighbor classifier&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="kw">expression</span>(K==<span class="dv">1</span>),
+       <span class="dt">linetype =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-class1-1.png" width="672" /></p>
+<p>All this classifier does is look to the single closest neighbor to make a prediction. Compared to the known decision boundary, this strongly overfits the training data. Compare this to <span class="math inline">\(K=5\)</span>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knn5 &lt;-<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(sim_bayes, x1, x2), <span class="dt">test =</span> <span class="kw">select</span>(bayes_grid, x1, x2),
+                   <span class="dt">cl =</span> sim_bayes$y, <span class="dt">k =</span> <span class="dv">5</span>, <span class="dt">prob =</span> <span class="ot">TRUE</span>)
+prob5 &lt;-<span class="st"> </span><span class="kw">attr</span>(knn5, <span class="st">&quot;prob&quot;</span>)
+
+bayes_bound5 &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(<span class="kw">mutate</span>(bayes_grid,
+                           <span class="dt">prob =</span> <span class="kw">attr</span>(knn5, <span class="st">&quot;prob&quot;</span>),
+                           <span class="dt">y =</span> <span class="kw">as.logical</span>(knn5),
+                           <span class="dt">cls =</span> <span class="ot">TRUE</span>,
+                           <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls,
+                                           <span class="dv">1</span>, <span class="dv">0</span>)),
+                    <span class="kw">mutate</span>(bayes_grid,
+                           <span class="dt">prob =</span> <span class="kw">attr</span>(knn5, <span class="st">&quot;prob&quot;</span>),
+                           <span class="dt">y =</span> <span class="kw">as.logical</span>(knn5),
+                           <span class="dt">cls =</span> <span class="ot">FALSE</span>,
+                           <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls,
+                                           <span class="dv">1</span>, <span class="dv">0</span>)))
+
+<span class="kw">ggplot</span>(bayes_bound, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls, <span class="dt">linetype =</span> <span class="st">&quot;True boundary&quot;</span>), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="dt">data =</span> bayes_bound5, <span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls, <span class="dt">linetype =</span> <span class="st">&quot;KNN&quot;</span>), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_bayes) +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;K nearest neighbor classifier&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="kw">expression</span>(K==<span class="dv">5</span>),
+       <span class="dt">linetype =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-class5-1.png" width="672" /></p>
+<p>The resulting decision boundary is still choppy, but not as much as before.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knn10 &lt;-<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(sim_bayes, x1, x2), <span class="dt">test =</span> <span class="kw">select</span>(bayes_grid, x1, x2),
+                   <span class="dt">cl =</span> sim_bayes$y, <span class="dt">k =</span> <span class="dv">10</span>, <span class="dt">prob =</span> <span class="ot">TRUE</span>)
+prob10 &lt;-<span class="st"> </span><span class="kw">attr</span>(knn10, <span class="st">&quot;prob&quot;</span>)
+
+bayes_bound10 &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(<span class="kw">mutate</span>(bayes_grid,
+                           <span class="dt">prob =</span> <span class="kw">attr</span>(knn10, <span class="st">&quot;prob&quot;</span>),
+                           <span class="dt">y =</span> <span class="kw">as.logical</span>(knn5),
+                           <span class="dt">cls =</span> <span class="ot">TRUE</span>,
+                           <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls,
+                                           <span class="dv">1</span>, <span class="dv">0</span>)),
+                    <span class="kw">mutate</span>(bayes_grid,
+                           <span class="dt">prob =</span> <span class="kw">attr</span>(knn10, <span class="st">&quot;prob&quot;</span>),
+                           <span class="dt">y =</span> <span class="kw">as.logical</span>(knn5),
+                           <span class="dt">cls =</span> <span class="ot">FALSE</span>,
+                           <span class="dt">prob_cls =</span> <span class="kw">ifelse</span>(y ==<span class="st"> </span>cls,
+                                           <span class="dv">1</span>, <span class="dv">0</span>)))
+
+<span class="kw">ggplot</span>(bayes_bound, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls, <span class="dt">linetype =</span> <span class="st">&quot;True boundary&quot;</span>), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_contour</span>(<span class="dt">data =</span> bayes_bound10, <span class="kw">aes</span>(<span class="dt">z =</span> prob_cls, <span class="dt">group =</span> cls, <span class="dt">linetype =</span> <span class="st">&quot;KNN&quot;</span>), <span class="dt">bins =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> sim_bayes) +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;K nearest neighbor classifier&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="kw">expression</span>(K==<span class="dv">10</span>),
+       <span class="dt">linetype =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-class10-1.png" width="672" /></p>
+<p>As with KNN regression, we can calculate the test error rate across different values for <span class="math inline">\(k\)</span> to determine an optimal value:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate test MSE for KNN models</span>
+sim_test &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">runif</span>(<span class="dv">5000</span>, -<span class="dv">1</span>, <span class="dv">1</span>),
+                       <span class="dt">x2 =</span> <span class="kw">runif</span>(<span class="dv">5000</span>, -<span class="dv">1</span>, <span class="dv">1</span>),
+                       <span class="dt">logodds =</span> <span class="kw">bayes_rule</span>(x1, x2) +<span class="st"> </span><span class="kw">rnorm</span>(<span class="dv">5000</span>, <span class="dv">0</span>, .<span class="dv">5</span>),
+                       <span class="dt">y =</span> logodds &gt;<span class="st"> </span>.<span class="dv">5</span>)
+
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="dv">1</span>:<span class="dv">100</span>,
+                      <span class="dt">knn_train =</span> <span class="kw">map</span>(k, ~<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(sim_bayes, x1, x2),
+                                                <span class="dt">test =</span> <span class="kw">select</span>(sim_bayes, x1, x2),
+                                                <span class="dt">cl =</span> sim_bayes$y, <span class="dt">k =</span> .)),
+                      <span class="dt">knn_test =</span> <span class="kw">map</span>(k, ~<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(sim_bayes, x1, x2),
+                                                <span class="dt">test =</span> <span class="kw">select</span>(sim_test, x1, x2),
+                                                <span class="dt">cl =</span> sim_bayes$y, <span class="dt">k =</span> .)),
+                      <span class="dt">mse_train =</span> <span class="kw">map_dbl</span>(knn_train, ~<span class="st"> </span><span class="kw">mean</span>(sim_bayes$y !=<span class="st"> </span><span class="kw">as.logical</span>(.))),
+                      <span class="dt">mse_test =</span> <span class="kw">map_dbl</span>(knn_test, ~<span class="st"> </span><span class="kw">mean</span>(sim_test$y !=<span class="st"> </span><span class="kw">as.logical</span>(.))))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse_test)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> sim_bayes_err, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test error rate&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/knn-class-compare-1.png" width="672" /></p>
+<p>And of course we could adapt this to use LOOCV or <span class="math inline">\(k\)</span>-fold CV rather than the validation set approach.</p>
+<div id="applying-knn-to-titanic" class="section level3">
+<h3>Applying KNN to Titanic</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic &lt;-<span class="st"> </span>titanic::titanic_train %&gt;%
+<span class="st">  </span>as_tibble %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-Name, -Ticket, -Cabin, -PassengerId, -Embarked) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Female =</span> <span class="kw">ifelse</span>(Sex ==<span class="st"> &quot;female&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-Sex) %&gt;%
+<span class="st">  </span>na.omit
+
+titanic_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(titanic, <span class="dt">p =</span> <span class="kw">c</span>(<span class="st">&quot;test&quot;</span> =<span class="st"> </span>.<span class="dv">3</span>, <span class="st">&quot;train&quot;</span> =<span class="st"> </span>.<span class="dv">7</span>))
+titanic_train &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(titanic_split$train)
+titanic_test &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(titanic_split$test)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_logit &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>., <span class="dt">data =</span> titanic_train, <span class="dt">family =</span> binomial)
+titanic_logit_mse &lt;-<span class="st"> </span><span class="kw">mse.glm</span>(titanic_logit, titanic_test)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate test MSE for KNN models</span>
+mse_knn &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">k =</span> <span class="dv">1</span>:<span class="dv">100</span>,
+                      <span class="dt">knn_train =</span> <span class="kw">map</span>(k, ~<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(titanic_train, -Survived),
+                                                <span class="dt">test =</span> <span class="kw">select</span>(titanic_train, -Survived),
+                                                <span class="dt">cl =</span> titanic_train$Survived, <span class="dt">k =</span> .)),
+                      <span class="dt">knn_test =</span> <span class="kw">map</span>(k, ~<span class="st"> </span>class::<span class="kw">knn</span>(<span class="kw">select</span>(titanic_train, -Survived),
+                                                <span class="dt">test =</span> <span class="kw">select</span>(titanic_test, -Survived),
+                                                <span class="dt">cl =</span> titanic_train$Survived, <span class="dt">k =</span> .)),
+                      <span class="dt">mse_train =</span> <span class="kw">map_dbl</span>(knn_train, ~<span class="st"> </span><span class="kw">mean</span>(titanic_test$Survived !=<span class="st"> </span>.)),
+                      <span class="dt">mse_test =</span> <span class="kw">map_dbl</span>(knn_test, ~<span class="st"> </span><span class="kw">mean</span>(titanic_test$Survived !=<span class="st"> </span>.)))
+
+<span class="kw">ggplot</span>(mse_knn, <span class="kw">aes</span>(k, mse_test)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> titanic_logit_mse, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;K&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Test error rate&quot;</span>) +
+<span class="st">  </span><span class="kw">expand_limits</span>(<span class="dt">y =</span> <span class="dv">0</span>)</code></pre></div>
+<p><img src="persp010_nonparametric_files/figure-html/titanic-knn-compare-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-03-06                  
+## 
+##  package    * version date       source        
+##  assertthat   0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports    1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom      * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI          0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools     1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest       0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr      * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate     0.10    2016-10-11 CRAN (R 3.3.0)
+##  FNN        * 1.1     2013-07-31 CRAN (R 3.3.0)
+##  forcats    * 0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign      0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggplot2    * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gridExtra  * 2.2.1   2016-02-29 cran (@2.2.1) 
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven        1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms          0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools    0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr         1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  igraph       1.0.1   2015-06-26 CRAN (R 3.3.0)
+##  ISLR       * 1.0     2013-06-11 CRAN (R 3.3.0)
+##  jsonlite     1.2     2016-12-31 CRAN (R 3.3.2)
+##  kknn       * 1.3.1   2016-03-26 CRAN (R 3.3.0)
+##  knitr        1.15.1  2016-11-22 cran (@1.15.1)
+##  lattice      0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval     0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate    1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.3.0)
+##  Matrix       1.2-8   2017-01-20 CRAN (R 3.3.2)
+##  memoise      1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt       1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr     * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  munsell      0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme         3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  pROC       * 1.9.1   2017-02-05 CRAN (R 3.3.2)
+##  psych        1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr      * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6           2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss      * 0.1.4   2017-02-28 local         
+##  Rcpp         0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr      * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl       0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2     1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown    1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot    1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales       0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  stringi      1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr    * 1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble     * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr      * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidyverse  * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic    * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  withr        1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2         1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml         2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Though we only discussed SVM classifiers, SVMs can also be used for regression problems<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

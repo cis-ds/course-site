@@ -118,25 +118,40 @@ Non-parametric methods can be used for describing data. That is, examining indiv
 
 ## Really basic stuff
 
+We can think of some really basic descriptive statistics as nonparametric estimators. They assume random variables are drawn from a probability distribution, but make no assumptions as to **which** distribution.
+
 ### Measures of central tendency
 
-#### Median
+These statistics measure the central or typical value of a probability distribution.
 
-#### Mode
-
-#### Arithmetic mean
+* **Median** - the value separating the data into two halves each containing 50% of the observations
+* **Mode** - the value that appears most often in a data set
+* **Arithmetic mean**
+    
+    $$\bar{x} = \frac{1}{n} \sum_{i = 1}^n x_i$$
+        
+    * Note that means can also be parameters in probability distributions, such as the Normal distribution which contains a mean $\mu$ and variance $\sigma^2$.
 
 ### Measures of dispersion
 
-#### Standard deviation
+These measure the extent to which a distribution is stretched or squeezed. The **variance** is the expectation of the squared deviation of a random variable from its mean:
 
-#### Variance
+  $$E[X] = \mu$$
+        
+  $$\text{Var}(X) \equiv \sigma^2 = E[X^2] - (E[X])^2$$
 
-#### Range
+While **deviation** is a measure of the difference between the observed value of a variable and some other value (often that variable's mean).
 
-#### Median absolute deviation
+* **Standard deviation** - quantifies the amount of variation or dispersion in a set of data values
+    
+  $$\sigma = \sqrt{E[X^2] - (E[X])^2}$$
+        
+* **Median absolute deviation** - robust measure of the variability of a univariate sample of data
 
-#### Skewness
+    $$MAD = \text{median}(|X_i - \text{median}(X)|)$$
+        
+    * The median of the absolute deviations from the data's median
+    * MAD is more resilient to outliers in the data, because it is derived from medians and not arithmetic means
 
 ## Histograms
 
@@ -247,7 +262,7 @@ Now we have a much smoother density function.
 
 ##### Rectangular (uniform) kernel
 
-$$K(u) = \frac{1}{2} \mathbf{1}_{\{ |z| \leq 1 \} }$$
+$$K(z) = \frac{1}{2} \mathbf{1}_{\{ |z| \leq 1 \} }$$
 
 where $\mathbf{1}_{\{ |z| \leq 1 \} }$ is an indicator function that takes on the value of 1 if the condition is true ($|z| \leq 1$) or 0 if the condition is false. This is the naive density estimator identified previously.
 
@@ -538,6 +553,85 @@ $$\mu = E(Y|x_1, x_2, x_3) = f(x_1, x_2, x_3)$$
 
 In order to accurate estimate conditional expectations for each category, we would need substantial numbers of observations **for every combination of $X$**. This would require a sample size far greater than most social scientists have the resources to collect.
 
+Let's return to our simulated wage data. Our dataset contains information on education, age, and job prestige:
+
+```{r wage-sim-describe}
+ggplot(wage, aes(educ)) +
+  geom_histogram(binwidth = 1) +
+  labs(title = "Distribution of simulated wage data",
+       x = "Education",
+       y = "Frequency count")
+
+ggplot(wage, aes(age)) +
+  geom_histogram(binwidth = 1) +
+  labs(title = "Distribution of simulated wage data",
+       x = "Age",
+       y = "Frequency count")
+
+ggplot(wage, aes(prestige)) +
+  geom_histogram(binwidth = 1) +
+  labs(title = "Distribution of simulated wage data",
+       x = "Job prestige",
+       y = "Frequency count")
+```
+
+Can we estimate naive nonparametric regression on this dataset with $N = 1,000,000$?
+
+```{r wage-sim-np}
+wage_np <- wage %>%
+  group_by(educ, age, prestige) %>%
+  summarize(wage_mean = mean(wage),
+            wage_sd = sd(wage),
+            n = n()) %>%
+  ungroup %>%
+  complete(educ, age, prestige, fill = list(wage_mean = NA,
+                                          wage_sd = NA,
+                                          n = 0))
+
+# number of unique combos 
+wage_unique <- nrow(wage_np)
+
+# n for each unique combo
+ggplot(wage_np, aes(n)) +
+  geom_density() +
+  labs(title = "Naive nonparametric regression of simulated wage data",
+       x = "Number of observations for each unique combination",
+       y = "Density")
+```
+
+Even on a dataset with $1,000,000$ observations, for the vast majority of the potential combinations of variables we have zero observations from which to generate expected values. What if we instead drew $10,000,000$ observations from the same data generating process?
+
+```{r wage-sim-np-ten}
+n <- 10000000
+wage10 <- data_frame(educ = rpois(n, lambda = 12),
+                   age = rpois(n, lambda = 40),
+                   prestige = rpois(n, lambda = 3)) %>%
+  mutate(educ = ifelse(educ > 25, 25, educ),
+         wage = 10 + 2 * educ + .5 * age + 5 * prestige + rnorm(n, 0, 3))
+
+wage10_np <- wage10 %>%
+  group_by(educ, age, prestige) %>%
+  summarize(wage_mean = mean(wage),
+            wage_sd = sd(wage),
+            n = n()) %>%
+  ungroup %>%
+  complete(educ, age, prestige, fill = list(wage_mean = NA,
+                                          wage_sd = NA,
+                                          n = 0))
+
+# number of unique combos 
+wage10_unique <- nrow(wage10_np)
+
+# n for each unique combo
+ggplot(wage10_np, aes(n)) +
+  geom_density() +
+  labs(title = "Naive nonparametric regression of simulated wage data",
+       x = "Number of observations for each unique combination",
+       y = "Density")
+```
+
+Unless your dataset is extremely large or you have a small handful of variables with a low number of unique values, naive nonparametric estimation will not be effective.
+
 ## $K$-nearest neighbors regression
 
 An alternative, but related, method is called **$K$-nearest neighbors regression** (KNN regression). Rather than binning the data into discrete and fixed intervals, KNN regression uses a moving average to generate the regression line. Given a value for $K$ and a prediction point $x_0$, KNN regression identifies the $K$ training observations nearest to the prediction point $x_0$, represented by $N_0$ and estimates $f(x_0)$ as the average of all the training responses in $N_0$:
@@ -793,6 +887,82 @@ sim_pred_wknn %>%
   theme(legend.position = "bottom")
 ```
 
+### Estimating KNN on simulated wage data
+
+```{r wage-sim-knn}
+# split into train/test set
+wage_split <- resample_partition(wage, p = c("test" = .5, "train" = .5))
+wage_train <- as_tibble(wage_split$train)
+wage_test <- as_tibble(wage_split$test)
+
+# estimate test MSE for LM and KNN models
+mse_lm <- lm(wage ~ educ + age + prestige, data = wage_train) %>%
+  mse(wage_test)
+
+mse_knn <- data_frame(k = c(1:10, seq(20, 100, by = 10)),
+                      knn = map(k, ~ knn.reg(select(wage_train, -wage), y = wage_train$wage,
+                         test = select(wage_test, -wage), k = .)),
+                      mse = map_dbl(knn, ~ mean((wage_test$wage - .$pred)^2)))
+
+ggplot(mse_knn, aes(k, mse)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = mse_lm, linetype = 2) +
+  labs(title = "KNN on simulated wage data",
+       x = "K",
+       y = "Test mean squared error") +
+  expand_limits(y = 0)
+```
+
+### KNN on Biden
+
+```{r biden-knn}
+biden <- read_csv("data/biden.csv")
+
+# split into train/test set
+biden_split <- resample_partition(biden, p = c("test" = .3, "train" = .7))
+biden_train <- as_tibble(biden_split$train)
+biden_test <- as_tibble(biden_split$test)
+
+# estimate test MSE for LM and KNN models
+mse_lm <- lm(biden ~ ., data = biden_train) %>%
+  mse(biden_test)
+
+mse_knn <- data_frame(k = c(1:10, seq(20, 100, by = 10)),
+                      knn = map(k, ~ knn.reg(select(biden_train, -biden), y = biden_train$biden,
+                         test = select(biden_test, -biden), k = .)),
+                      mse = map_dbl(knn, ~ mean((biden_test$biden - .$pred)^2)))
+
+ggplot(mse_knn, aes(k, mse)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = mse_lm, linetype = 2) +
+  labs(title = "KNN for Biden",
+       x = "K",
+       y = "Test mean squared error") +
+  expand_limits(y = 0)
+```
+
+```{r biden-wknn}
+# estimate test MSE for LM and WKNN models
+mse_lm <- lm(biden ~ ., data = biden_train) %>%
+  mse(biden_test)
+
+mse_knn <- data_frame(k = c(1:10, seq(20, 100, by = 10)),
+                      knn = map(k, ~ kknn(biden ~ .,
+                                          train = biden_train, test = biden_test, k = .)),
+                      mse = map_dbl(knn, ~ mean((sim_test$y - .$fitted.values)^2)))
+
+ggplot(mse_knn, aes(k, mse)) +
+  geom_line() +
+  geom_point() +
+  geom_hline(yintercept = mse_lm, linetype = 2) +
+  labs(title = "Weighted KNN for Biden",
+       x = "K",
+       y = "Test mean squared error") +
+  expand_limits(y = 0)
+```
+
 ## Relaxing the non-linearity assumption in linear regression
 
 We previously discussed [how to relax the non-linearity assumption of linear regression](persp007_nonlinear.html). Which of those methods were parametric vs. non-parametric? Generally speaking, any of the methods that relied upon local averaging to estimate the regression model would be considered non-parametric. While these methods include parametric components, these are fit at the local-level. The global structure of the relationship between the predictor(s) and the response variable are not assumed by any specific functional form.
@@ -971,6 +1141,8 @@ ggplot(bayes_bound, aes(x1, x2, color = y)) +
   theme(legend.position = "bottom")
 ```
 
+As with KNN regression, we can calculate the test error rate across different values for $k$ to determine an optimal value:
+
 ```{r knn-class-compare, dependson="bayes-class"}
 # estimate test MSE for KNN models
 sim_test <- data_frame(x1 = runif(5000, -1, 1),
@@ -991,6 +1163,48 @@ mse_knn <- data_frame(k = 1:100,
 ggplot(mse_knn, aes(k, mse_test)) +
   geom_line() +
   geom_hline(yintercept = sim_bayes_err, linetype = 2) +
+  labs(x = "K",
+       y = "Test error rate") +
+  expand_limits(y = 0)
+```
+
+And of course we could adapt this to use LOOCV or $k$-fold CV rather than the validation set approach.
+
+### Applying KNN to Titanic
+
+```{r titanic-data}
+titanic <- titanic::titanic_train %>%
+  as_tibble %>%
+  select(-Name, -Ticket, -Cabin, -PassengerId, -Embarked) %>%
+  mutate(Female = ifelse(Sex == "female", 1, 0)) %>%
+  select(-Sex) %>%
+  na.omit
+
+titanic_split <- resample_partition(titanic, p = c("test" = .3, "train" = .7))
+titanic_train <- as_tibble(titanic_split$train)
+titanic_test <- as_tibble(titanic_split$test)
+```
+
+```{r titanic-logit}
+titanic_logit <- glm(Survived ~ ., data = titanic_train, family = binomial)
+titanic_logit_mse <- mse.glm(titanic_logit, titanic_test)
+```
+
+```{r titanic-knn-compare, dependson="bayes-class"}
+# estimate test MSE for KNN models
+mse_knn <- data_frame(k = 1:100,
+                      knn_train = map(k, ~ class::knn(select(titanic_train, -Survived),
+                                                test = select(titanic_train, -Survived),
+                                                cl = titanic_train$Survived, k = .)),
+                      knn_test = map(k, ~ class::knn(select(titanic_train, -Survived),
+                                                test = select(titanic_test, -Survived),
+                                                cl = titanic_train$Survived, k = .)),
+                      mse_train = map_dbl(knn_train, ~ mean(titanic_test$Survived != .)),
+                      mse_test = map_dbl(knn_test, ~ mean(titanic_test$Survived != .)))
+
+ggplot(mse_knn, aes(k, mse_test)) +
+  geom_line() +
+  geom_hline(yintercept = titanic_logit_mse, linetype = 2) +
   labs(x = "K",
        y = "Test error rate") +
   expand_limits(y = 0)
