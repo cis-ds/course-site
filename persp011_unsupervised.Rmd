@@ -1,0 +1,148 @@
+---
+title: "Statistical learning: unsupervised learning"
+author: "MACS 30100 - Perspectives on Computational Modeling"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Distinguish unsupervised learning from supervised learning
+* Demonstrate how to estimate and interpret $K$-means clustering
+* Demonstrate how to estimate and interpret heirarchical clustering
+* Define key terms for unsupervised text analysis
+* Explain the purpose of dimension reduction techniques
+* Demonstrate how to estimate and interpret principal components analysis
+* Implement latent semantic analysis using text data
+* Introduce Latent Dirchlet allocation and apply it to example data
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(forcats)
+library(broom)
+library(modelr)
+library(stringr)
+library(ISLR)
+library(titanic)
+library(rcfss)
+library(grid)
+library(gridExtra)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Unsupervised learning
+
+**Supervised learning** methods are used in situations where you have a set of $p$ predictors $X_1, X_2, \dots, X_p$ measured on $n$ observations and you want to explain or predict a response $Y$ also measured on those $n$ observations. **Unsupervised learning** methods differ in that you have a set of $p$ predictors $X_1, X_2, \dots, X_p$ measured on $n$ observations, *but you do not have an associated response variable $Y$*. Instead you want to explore the structure and grouping of the observations. Typically unsupervised learning is a more **exploratory process** because you have no end result you are specifically looking for, and you have no measuring stick to decide if you have the "right" results. At least with supervised learning, you can assess the accuracy or fit of the model and decide how well it performs or compare it to other models. Techinques such as cross-validation and resampling methods can be used to ensure we are not overfitting the training data. But with unsupervised learning this is impossible, because you don't know the "true" answer.
+
+There are a wide range of unsupervised learning methods, and their use is governed by the type of research question you have. Here we will examine three types of methods: clustering, dimension reduction, and topic modeling.
+
+# Clustering methods
+
+**Clustering** refers to a set of techniques for finding subgroups within a dataset, called **clusters**. The goal is to partition the dataset into similar and distinct groups so that observations in each group are similar to one another, while each group is distinctive and dissimilar to the other groups.
+
+## $K$-means clustering
+
+$K$-means clustering is one approach to identifying distinct clusters within data. First we specify the number of $K$ clusters we want to estimate in the data, then assign each observation to precisely one of those $K$ clusters.
+
+```{r kmeans}
+# generate data
+x <- data_frame(x1 = rnorm(150) + 3,
+                x2 = rnorm(150) - 4)
+
+# estimate k clusters
+x.out <- x %>%
+  mutate(k2 = kmeans(x, 2, nstart = 20)$cluster,
+         k3 = kmeans(x, 3, nstart = 20)$cluster,
+         k4 = kmeans(x, 4, nstart = 20)$cluster)
+
+# plot clusters
+x.out %>%
+  gather(K, pred, k2:k4) %>%
+  mutate(K = parse_numeric(K),
+         pred = factor(pred)) %>%
+  ggplot(aes(x1, x2, color = pred)) +
+  facet_grid(. ~ K, labeller = label_both) +
+  geom_point() +
+  theme(legend.position = "none")
+```
+
+Let $C_1, C_2, \dots, C_K$ denote sets containing the indicies of the observations in each cluster. $K$-means clustering defines a good cluster as one for which within-cluster variation is as small as possible. So we want to minimize the within-cluster variation defined by some function $W(C_K)$ that identifies variation:
+
+$$\min_{C_1, C_2, \dots, C_K} \left\{ \sum_{k = 1}^K W(C_k) \right\}$$
+
+so that the overall amount of within-cluster variation across all the clusters is as small as possible. We can define within-cluster variation in several different ways, but a standard approach uses **squared Euclidean distance**:
+
+$$W(C_k) = \frac{1}{|C_k|} \sum_{i,i' \in C_k} \sum_{j = 1}^p (x_{ij} - x_{i'j})^2$$
+
+where the within-cluster variation is the sum of all of the pairwise squared Euclidean distances between the observations in the $k$th cluster, divided by the number of observations in the $k$th cluster. Unfortunately we cannot evaluate every possible cluster combination because there are almost $K^n$ ways to partition $n$ observations into $K$ clusters. Instead, we will settle for a **good enough** approach; that is, rather than finding the global optimum for the optimization problem we will instead estimate the local optimum.
+
+To do this we employ an iterative process. First we randomly assign each observation to one of the $K$ clusters. This will be the initial cluster assignment for each observation. Then we iterate over the cluster assignments:
+
+1. For each of the $K$ clusters, compute the cluster **centroid**, or the vector of $p$ feature means for the observations in the $k$th cluster.
+1. Assign each observation to the cluster whose centroid is closest as defined by Euclidean distance.
+
+Each time we do this observations will move around and join different clusters because the initial assignments were made entirely at random. As we iterate over this process, the cluster assignments will become more stable and eventually stop entirely. This is when we reach the local optimum. Since the local optimum is based on the initial (random) assignments, we run this algorithm multiple times from different random starting configurations and select the best solution (the one with the lowest total within-cluster variation).
+
+```{r kmeans-sim-start}
+kmean.out <- rerun(6, kmeans(x, 3, nstart = 1))
+
+kmean.out %>%
+  map_df(~ as_tibble(.$cluster), .id = "id") %>%
+  bind_cols(bind_rows(x,x,x,x,x,x)) %>%
+  mutate(withinss = rep(map_chr(kmean.out, ~ .$tot.withinss), each = nrow(x)),
+         value = factor(value)) %>%
+  ggplot(aes(x1, x2, color = value)) +
+  facet_wrap(~ id + withinss, ncol = 3, labeller = label_wrap_gen(multi_line = FALSE)) +
+  geom_point() +
+  theme(legend.position = "none")
+```
+
+## Heirarchical clustering
+
+
+# Dimension reduction
+
+
+## Application: DW-NOMINATE
+
+
+## Principal components analysis
+
+
+### Interpretation: `USArrests`
+
+
+## Latent semantic analysis
+
+
+### Interpretation: `NYTimes`
+
+
+# Topic modeling
+
+
+## Latent Direchet allocation
+
+## Interpretation: Associated Press
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
