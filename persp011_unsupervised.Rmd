@@ -37,6 +37,9 @@ library(rcfss)
 library(grid)
 library(gridExtra)
 library(ggdendro)
+library(tidytext)
+library(tm)
+library(topicmodels)
 
 options(digits = 3)
 set.seed(1234)
@@ -279,8 +282,88 @@ We can also interpret the plot for individual states based on their positions al
 
 ## Latent semantic analysis
 
+Text documents can be utilized in computational text analysis under the **bag of words** approach. Documents are represented as vectors, and each variable counts the frequency a word appears in a given document. While we throw away information such as word order, we can represent the information in a mathematical fashion using a matrix. Each row represents a single document, and each column is a different word:
+
+```
+ a abandoned abc ability able about above abroad absorbed absorbing abstract
+43         0   0       0    0    10     0      0        0         0        1
+```
+
+These vectors can be very large depending on the dictionary, or the number of unique words in the dataset. These bag-of-words vectors have three important properties:
+
+1. They are **sparse**. Most entries in the matrix are zero.
+1. A small number of words appear frequently across all documents. These are typically uninformative words called **stop words** that inform us nothing about the document (e.g. "a", "an", "at", "of", "or").
+1. Other than these words, the other words in the dataset are correlated with some words but not others. Words typically come together in related bunches.
+
+Considering these three properties, we probably don't need to keep all of the words. Instead, we could reduce the dimensionality of the data by projecting the larger dataset into a smaller feature space with fewer dimensions that summarize most of the variation in the data. Each dimension would represent a set of correlated words. Principal component analysis can be used for precisely this task.
+
+In a textual context, this process is known as **latent semantic analysis**. By identifying words that are closely related to one another, by searching for just one of the terms we can find documents that use not only that specific term but other similar ones.
 
 ### Interpretation: `NYTimes`
+
+```{r nytimes}
+# get NYTimes data
+load("data/pca-examples.Rdata")
+```
+
+Let's look at an application of LSA. `nyt.frame` contains a document-term matrix of a random sample of stories from the New York Times: 57 stories are about art, and 45 are about music. The first column identifies the topic of the article, and each remaining cell contains a frequency count of the number of times each word appeared in that article.^[Actually it contains the [term frequency-inverse document frequency](http://cfss.uchicago.edu/text001_tidytext.html#assessing_word_and_document_frequency) which downweights words that appear frequently across many documents. This is one method for guarding against any biases caused by stop words.] The resulting data frame contains `r nrow(nyt.frame)` rows and `r ncol(nyt.frame)` columns.
+
+Some examples of words appearing in these articles:
+
+```{r nytimes-words}
+colnames(nyt.frame)[sample(ncol(nyt.frame),30)]
+```
+
+We can estimate the LSA using the standard PCA procedure:
+
+```{r nytimes-pca}
+# Omit the first column of class labels
+nyt.pca <- prcomp(nyt.frame[,-1])
+
+# Extract the actual component directions/weights for ease of reference
+nyt.latent.sem <- nyt.pca$rotation
+```
+
+Because of the number of variables in the data set, it would be difficult to visualize this data using a biplot. Instead, we can extract the biggest components for the first principal component:
+
+##### First PCA: positive loadings
+
+```{r nytimes-1pos}
+signif(sort(nyt.latent.sem[,1],decreasing=TRUE)[1:30],2)
+```
+
+##### First PCA: negative loadings
+
+```{r nytimes-1neg}
+signif(sort(nyt.latent.sem[,1],decreasing=FALSE)[1:30],2)
+```
+
+These are the 30 words with the largest positive and negative loadings on the first principal component. The words on the positive loading seem associated with music, whereas the words on teh negative loading are more strongly associated with art.
+
+##### Second PCA: positive loadings
+
+```{r nytimes-2pos}
+signif(sort(nyt.latent.sem[,2],decreasing=TRUE)[1:30],2)
+```
+
+##### Second PCA: negative loadings
+
+```{r nytimes-2neg}
+signif(sort(nyt.latent.sem[,2],decreasing=FALSE)[1:30],2)
+```
+
+Here the positive words are about art, but more focused on acquiring and trading ("collections", "dealers", "donations"). We could perform similar analysis on each of the `r ncol(nyt.latent.sem)` principal components.
+
+```{r nytimes-plot-dim}
+cbind(type = nyt.frame$class.labels, as_tibble(nyt.pca$x[,1:2])) %>%
+  mutate(type = factor(type, levels = c("art", "music"),
+                       labels = c("A", "M"))) %>%
+  ggplot(aes(PC1, PC2, label = type, color = type)) +
+  geom_text() +
+  theme(legend.position = "none")
+```
+
+Even after throwing away the vast majority of information in the original data set, the first two principal components still strongly distinguish the two types of articles.
 
 
 # Topic modeling
