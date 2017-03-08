@@ -113,6 +113,8 @@ kmean.out %>%
   theme(legend.position = "none")
 ```
 
+This is basically like starting the algorithm with a different random seed each time. In the above example I ran $K-mean clustering with $K=4$ six times with different starting seed values. In four of the iterations, the algorithm converged on the same local optimum solution, while the other two times the algorithm converged on a local optimum with a larger sum of within-cluster variation.
+
 ## Hierarchical clustering
 
 A drawback to $K$-means clustering is that it requires you to specify in advance the number of clusters in the data. Since this is unsupervised learning, you don't really know the actual number of clusters. Depending on the major features of the data, different values of $K$ could produce equally meaningful results. Imagine if your data contains observations on individuals, split between males and females as well as split between Americans, Canadians, and South Africans. $K=2$ would potentially cluster the observations based on gender, whereas $K=3$ could cluster based on nationality. Which is "right"? Well, both of them. It depends on the features of the data in which you are most interested.
@@ -121,7 +123,10 @@ A drawback to $K$-means clustering is that it requires you to specify in advance
 
 ## Interpreting dendrograms
 
-```{r dendro}
+Here we plot a dendrogram using simulated data, consisting of `r nrow(x)` observations in two-dimensional space. We simulate three natural classes in the data, but in the real-world you would not know that.
+
+
+```{r dendro-sim}
 # generate data
 x <- data_frame(x1 = rnorm(50) + 3,
                 x2 = rnorm(50) - 4,
@@ -130,9 +135,15 @@ x <- data_frame(x1 = rnorm(50) + 3,
 
 ggplot(x, aes(x1, x2, color = y)) +
   geom_point() +
-  labs(title = "Simulated data") +
+  labs(title = "Simulated data",
+       x = expression(X[1]),
+       y = expression(X[2])) +
   theme(legend.position = "none")
+```
 
+Suppose that we observe the data without class labels and want to perform hierarchical clustering on the data. The result is plotted below.
+
+```{r dendro-cluster, dependson="dendro-sim"}
 # estimate hierarchical cluster
 hc.complete <- hclust(dist(x), method = "complete")
 
@@ -140,9 +151,7 @@ hc.complete <- hclust(dist(x), method = "complete")
 ggdendrogram(hc.complete)
 ```
 
-Here we plot a dendrogram using simulated data, consisting of `r nrow(x)` observations in two-dimensional space. We simulate three natural classes in the data, but in the real-world you would not know that. Suppose that we observe the data without class labels and want to perform hierarchical clustering on the data. The result is plotted above.
-
-Like with decision trees, we have **leafs** and **branches**. Rather than reading the dendrogram from the top-down, we read it from the bottom-up. Each observation is represented by a leaf. As we move up the tree, leaves **fuse** into branches. These are observations that are similar to one another, similarity generally being defined by Euclidean distance. Observations that fuse together near the bottom of the tree are generally similar to one another, whereas observations that fuse near the top of the tree are dissimilar. The height on the graph where the fusion occurs defines how similar or dissimilar any two observations are. The larger the value, the more dissimilar they are. Rather than paying attention to the proximity of observations along the horizontal axis, we should instead focus on the location of observations relative to the vertical axis.
+Like with decision trees, we have **leafs** and **branches**. Each leaf is labeled with the observation id number. Rather than reading the dendrogram from the top-down, we read it from the bottom-up. Each observation is represented by a leaf. As we move up the tree, leafs **fuse** into branches. These are observations that are similar to one another, similarity generally being defined by Euclidean distance. Observations that fuse together near the bottom of the tree are generally similar to one another, whereas observations that fuse near the top of the tree are dissimilar. The height on the graph where the fusion occurs defines how similar or dissimilar any two observations are. The larger the value, the more dissimilar they are. Rather than paying attention to the proximity of observations along the horizontal axis, we should instead focus on the location of observations relative to the vertical axis.
 
 From this dendrogram we can assign observations to clusters. To generate clusters, we make a horizontal cut somewhere on the dendrogram, severing the tree into multiple subtrees. The height of the cut will dictate how many clusters are formed. For instance, cutting the tree at a height of 4 splits the dendrogram into two subtrees, and therefore two clusters:
 
@@ -202,6 +211,8 @@ This process is continued until there is only a single cluster remaining. The on
 1. **Average** - compute all pairwise dissimilarities between observations in cluster A and cluster B and record the average of these dissimilarities.
 1. **Centroid** - compute the dissimilarity between the centroid (a mean vector of length $p$) for cluster A and cluster B.
 
+Each linkage approach leads to different hierarchical clusters:
+
 ```{r dendro-compare-linkage}
 hc.complete <- hclust(dist(x), method = "complete")
 hc.single <- hclust(dist(x), method = "single")
@@ -229,7 +240,7 @@ In either case, the goal is to reduce the dimensionality of the data by identify
 
 In the 1990s, dimension reduction techniques revolutionized the study of U.S. legislative politics. Measuring the ideology of legislators prior to this point was difficult because there was no method for locating legislators along an ideological spectrum (liberal-conservative) in a manner that allowed comparisons over time. That is, how liberal was a Democrat in 1870 compared to a Democrat in 1995? Additionally, supposed you wanted to predict how a legislator would vote on a given bill. Roll-call votes record individual legislator behavior, so you could use past votes to predict future ones. But there have been tens of thousands of recorded votes over the course of the U.S. Congress. Even in a given term of Congress, the Senate may cast hundreds of recorded votes. But there are only 100 senators (at present), and you cannot estimate a regression model when your number of predictors $p$ is larger than your number of observations $n$. We need some method for reducing the dimensionality of this data to a handful of variables which explain as much of the variation in roll-call voting as possible.
 
-**Multidimensional scaling techniques** can be used to perform this feat. The technical details of this specific application are beyond the scope of this class, but Keith Poole and Howard Rosenthal developed a specific procedure called [NOMINATE](http://voteview.org/) to reduce the dimensionality of the data. Rather than using $p$ predictors to explain or predict individual legislator's roll-call votes, where $p$ is the total number of roll-call votes in the recorded history of the U.S. Congress, Poole and Rosenthal examined the similarity of legislator's votes in a given session of Congress and over time to identify two major dimensions to roll-call voting in the U.S. Congress. That is, roll-call votes in Congress can generally be explained by two variables that can be estimated for every past and present member of Congress. The two dimensions do not have any inherent substantive interpretation, but by graphically examining the two dimensions, it becomes clear that they represent two specific factors in legislative voting:
+**Multidimensional scaling techniques** can be used to perform this feat. The technical details of this specific application are beyond the scope of this class, but Keith Poole and Howard Rosenthal developed a specific procedure called [NOMINATE](http://voteview.org/) to reduce the dimensionality of the data. Rather than using $p$ predictors to explain or predict individual legislator's roll-call votes, where $p$ is the total number of roll-call votes in the recorded history of the U.S. Congress, Poole and Rosenthal examined the similarity of legislators' votes in a given session of Congress and over time to identify two major dimensions to roll-call voting in the U.S. Congress. That is, roll-call votes in Congress can generally be explained by two variables that can be estimated for every past and present member of Congress. The two dimensions do not have any inherent substantive interpretation, but by graphically examining the two dimensions, it becomes clear that they represent two specific factors in legislative voting:
 
 1. First dimension - political ideology. This dimension appears to represent political ideology on the liberal-conservative spectrum. Positive values on this dimension refer to increasingly conservative voting patterns, and negative values refer to increasingly liberal voting patterns.
 1. Second dimension - "issue of the day". This dimension appears to pick up on attitudes that are salient at different points in the nation's history. They could be regional differences (Southern vs. non-Southern states), or attitudes towards specific policy issues (i.e. slavery).
@@ -244,7 +255,6 @@ This data can be used for a wide range of research questions. For example, we co
 
 ![[Voteview.org](http://voteview.org/political_polarization_2015.htm)](http://voteview.org/images/png/senate_party_means_1879-2015_2nd.png)
 
-
 ## Principal components analysis
 
 **Principal components analysis** (PCA) is a basic technique for dimension reduction. The goal is to find a low-dimensional representation of the data that contains as much as possible of the variation. Each dimension is a linear combination of the $p$ variables.
@@ -257,17 +267,17 @@ that has the largest variance. By normalizing the features, we mean
 
 $$\sum_{j=1}^p \phi_{j1}^2 = 1$$
 
-The elements of $\phi_{11}, \dots, \phi_{p1}$ are known as the **loadings** of the first principal component, and combined together they form the principal component loading vector $\phi_1 = (\phi_{11}, \dots, \phi_{p1})^T$.
+The elements of $\phi_{11}, \dots, \phi_{p1}$ are known as the **loadings** of the first principal component, and combined together they form the principal component loading vector $\phi_1 = (\phi_{11}, \dots, \phi_{p1})^T$. The number of individual loadings on the first principal component is $p$.
 
 Estimating the first principal component follows the following procedure. Since we are only interested in variance, we assume each column in the $n\times p$ data set $\mathbf{X}$ has mean zero and look for the linear combination of the sample column values of the form
 
 $$z_{i1} = \phi_{11}x_{i1} + \phi_{21}x_{i2} + \dots + \phi_{p1} x_{ip}$$
 
-that has the largest sample variance, subject to the constraint $$\sum_{j=1}^p \phi_{j1}^2 = 1$$.
+that has the largest sample variance, subject to the constraint $\sum_{j=1}^p \phi_{j1}^2 = 1$.
 
-The result of this optimization problem is a loading vector $\phi_1$ with elements $\phi_{11}, \phi_{21}, \dots, \phi_{p1}$ that defines a direction in feature space along which the data vary the most. We can estimate the second, third, and $n$th principal components using a similar process. The second principal component is the linear combination of $X_1, X_2, \dots, X_p$ that has the maximum variance out of all linear combinations that are uncorrelated with $Z_1$.
+The result of this optimization problem is a loading vector $\phi_1$ with elements $\phi_{11}, \phi_{21}, \dots, \phi_{p1}$ that defines a direction in feature space along which the data vary the most. We can estimate the second, third, and $n$th principal components using a similar process. The second principal component is the linear combination of $X_1, X_2, \dots, X_p$ that has the maximum variance out of all linear combinations that are uncorrelated with $Z_1$. Another way of thinking about this is that the second principal component is **orthogonal** (perpendicular) to the first principal component. If the data is two-dimensional ($p=2$) then there is only one possible value for $\phi_2$.
 
-Once we estimate the principal components, we can plot them against each other in order to produce a low-dimensional visualization of the data. Let's look at the use of PCA on the `USArrests` dataset, reproduced from **An Introduction to Statistical Learning**.
+The total number of principal components for a given $n \times p$ data set is $\min(n,p)$, either the number of observations in the data or the number of variables in the data (whichever is smaller). Once we estimate the principal components, we can plot them against each other in order to produce a low-dimensional visualization of the data. Let's look at the use of PCA on the `USArrests` dataset, reproduced from **An Introduction to Statistical Learning**.
 
 ```{r pca-usarrests}
 pr.out <- prcomp(USArrests, scale = TRUE)
@@ -276,7 +286,7 @@ pr.out$rotation
 biplot(pr.out, scale = 0, cex = .6)
 ```
 
-The principal component score vectors have length $n=50$ and the principal component loading vectors have length $p=4$. The biplot visualizes the relationship between the first two principal components for the dataset, including both the scores and the loading vectors. The first principal component places approximately equal weight on murder, assault, and rape. We can tell this because these vectors' length on the first principal component dimension are roughly the same, whereas the length for urban population is smaller. Conversely, the second principal component (the vertical axis) places more emphasis on urban population. Intuitively this makes sense because murder, assault, and rape are all measures of violent crime, and it makes sense that they should be correlated with one another (i.e. states with high murder rates are likely to have high rates of rape as well).
+The principal component score vectors have length $n=50$ and the principal component loading vectors have length $p=4$ (in this data set, $p < n$). The biplot visualizes the relationship between the first two principal components for the dataset, including both the scores and the loading vectors. The first principal component places approximately equal weight on murder, assault, and rape. We can tell this because these vectors' length on the first principal component dimension are roughly the same, whereas the length for urban population is smaller. Conversely, the second principal component (the vertical axis) places more emphasis on urban population. Intuitively this makes sense because murder, assault, and rape are all measures of violent crime, and it makes sense that they should be correlated with one another (i.e. states with high murder rates are likely to have high rates of rape as well).
 
 We can also interpret the plot for individual states based on their positions along the two dimensions. States with large positive values on the first principal component have high crime rates while states with large negative values have low crime rates; states with large positive values on the second principal component have high levels of urbanization while states with large negative values have low levels of urbanization.
 
@@ -289,7 +299,7 @@ Text documents can be utilized in computational text analysis under the **bag of
 43         0   0       0    0    10     0      0        0         0        1
 ```
 
-These vectors can be very large depending on the dictionary, or the number of unique words in the dataset. These bag-of-words vectors have three important properties:
+These vectors can be very large depending on the **dictionary**, or the number of unique words in the dataset. These bag-of-words vectors have three important properties:
 
 1. They are **sparse**. Most entries in the matrix are zero.
 1. A small number of words appear frequently across all documents. These are typically uninformative words called **stop words** that inform us nothing about the document (e.g. "a", "an", "at", "of", "or").
@@ -297,7 +307,7 @@ These vectors can be very large depending on the dictionary, or the number of un
 
 Considering these three properties, we probably don't need to keep all of the words. Instead, we could reduce the dimensionality of the data by projecting the larger dataset into a smaller feature space with fewer dimensions that summarize most of the variation in the data. Each dimension would represent a set of correlated words. Principal component analysis can be used for precisely this task.
 
-In a textual context, this process is known as **latent semantic analysis**. By identifying words that are closely related to one another, by searching for just one of the terms we can find documents that use not only that specific term but other similar ones.
+In a textual context, this process is known as **latent semantic analysis**. By identifying words that are closely related to one another, when searching for just one of the terms we can find documents that use not only that specific term but other similar ones. Think about how you search for information online. You normally identify one or more **keywords**, and search for pages that are related to those words. But search engines use techniques such as LSA to retrieve results not only for pages that use your exact word(s), but also pages that use similar or related words.
 
 ### Interpretation: `NYTimes`
 
@@ -322,57 +332,69 @@ nyt.pca <- prcomp(nyt.frame[,-1])
 
 # Extract the actual component directions/weights for ease of reference
 nyt.latent.sem <- nyt.pca$rotation
+
+# convert to data frame
+nyt.latent.sem <- nyt.latent.sem %>%
+  as_tibble %>%
+  mutate(word = names(nyt.latent.sem[,1])) %>%
+  select(word, everything())
 ```
 
-Because of the number of variables in the data set, it would be difficult to visualize this data using a biplot. Instead, we can extract the biggest components for the first principal component:
+Let's extract the biggest components for the first principal component:
 
-##### First PCA: positive loadings
-
-```{r nytimes-1pos}
-signif(sort(nyt.latent.sem[,1],decreasing=TRUE)[1:30],2)
+```{r nytimes-PC1}
+nyt.latent.sem %>%
+  select(word, PC1) %>%
+  arrange(PC1) %>%
+  slice(c(1:10, (n() - 10):n())) %>%
+  mutate(pos = ifelse(PC1 > 0, TRUE, FALSE),
+         word = fct_reorder(word, PC1)) %>%
+  ggplot(aes(word, PC1, fill = pos)) +
+  geom_col() +
+  labs(title = "LSA analysis of NYTimes articles",
+       x = NULL,
+       y = "PC1 scores") +
+  coord_flip() +
+  theme(legend.position = "none")
 ```
 
-##### First PCA: negative loadings
+These are the 10 words with the largest positive and negative loadings on the first principal component. The words on the positive loading seem associated with music, whereas the words on the negative loading are more strongly associated with art.
 
-```{r nytimes-1neg}
-signif(sort(nyt.latent.sem[,1],decreasing=FALSE)[1:30],2)
+```{r nytimes-PC2}
+nyt.latent.sem %>%
+  select(word, PC2) %>%
+  arrange(PC2) %>%
+  slice(c(1:10, (n() - 10):n())) %>%
+  mutate(pos = ifelse(PC2 > 0, TRUE, FALSE),
+         word = fct_reorder(word, PC2)) %>%
+  ggplot(aes(word, PC2, fill = pos)) +
+  geom_col() +
+  labs(title = "LSA analysis of NYTimes articles",
+       x = NULL,
+       y = "PC2 scores") +
+  coord_flip() +
+  theme(legend.position = "none")
 ```
 
-These are the 30 words with the largest positive and negative loadings on the first principal component. The words on the positive loading seem associated with music, whereas the words on teh negative loading are more strongly associated with art.
-
-##### Second PCA: positive loadings
-
-```{r nytimes-2pos}
-signif(sort(nyt.latent.sem[,2],decreasing=TRUE)[1:30],2)
-```
-
-##### Second PCA: negative loadings
-
-```{r nytimes-2neg}
-signif(sort(nyt.latent.sem[,2],decreasing=FALSE)[1:30],2)
-```
-
-Here the positive words are about art, but more focused on acquiring and trading ("collections", "dealers", "donations"). We could perform similar analysis on each of the `r ncol(nyt.latent.sem)` principal components.
+Here the positive words are about art, but more focused on acquiring and trading ("donations", "tax"). We could perform similar analysis on each of the `r ncol(nyt.latent.sem)` principal components, but if the point of LSA/PCA is to reduce the dimensionality of the data, let's just focus on the first two for now.
 
 ```{r nytimes-plot-dim}
+biplot(nyt.pca, scale = 0, cex = .6)
+
 cbind(type = nyt.frame$class.labels, as_tibble(nyt.pca$x[,1:2])) %>%
   mutate(type = factor(type, levels = c("art", "music"),
                        labels = c("A", "M"))) %>%
   ggplot(aes(PC1, PC2, label = type, color = type)) +
   geom_text() +
+  labs(title = "")
   theme(legend.position = "none")
 ```
 
-Even after throwing away the vast majority of information in the original data set, the first two principal components still strongly distinguish the two types of articles.
+The biplot looks a bit ridiculous because there are `r ncol(nyt.frame)` variables to map onto the principal components. Only a few are interpretable. If we instead just consider the articles themselves, even after throwing away the vast majority of information in the original data set the first two principal components still strongly distinguish the two types of articles. If we wanted to use PCA to reduce the dimensionality of the data and predict an article's topic using a method such as SVM, we could probably generate a pretty good model using just the first two dimensions of the PCA rather than all the individual variables (words).
 
 # Topic modeling
 
-Typically when we search for information online, there are two primary methods:
-
-1. **Keywords** - use a search engine and type in words that relate to whatever it is we want to find
-1. **Links** - use the networked structure of the web to travel from page to page. Linked pages are likely to share similar or related content.
-
-An alternative method would be to search and explore documents via themes. For instance, [David Blei](http://delivery.acm.org/10.1145/2140000/2133826/p77-blei.pdf) proposes searching through the complete history of the New York Times. Broad themes may relate to the individual sections in the paper (foreign policy, national affairs, sports) but there might be specific themes within or across these sections (Chinese foreign policy, the conflict in the Middle East, the U.S.'s relationship with Russia). If the documents are grouped by these themes, we could track the evolution of the NYT's reporting on these issues over time, or examine how discussion of different themes intersects.
+Text documents can also be modeled and explored **thematically**. For instance, [David Blei](http://delivery.acm.org/10.1145/2140000/2133826/p77-blei.pdf) proposes searching through the complete history of the New York Times. Broad themes may relate to the individual sections in the paper (foreign policy, national affairs, sports) but there might be specific themes within or across these sections (Chinese foreign policy, the conflict in the Middle East, the U.S.'s relationship with Russia). If the documents are grouped by these themes, we could track the evolution of the NYT's reporting on these issues over time, or examine how discussion of different themes intersects.
 
 In order to do this, we would need detailed information on the theme of every article. Hand-coding this corpus would be exceedingly time-consuming, not to mention would requiring knowing the thematic structure of the documents before one even begins coding. For the vast majority of corpa, this is not a feasible approach.
 
