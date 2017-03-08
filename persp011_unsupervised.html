@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30100 - Perspectives on Computational Modeling" />
+
+
+<title>Statistical learning: unsupervised learning</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: unsupervised learning</h1>
+<h4 class="author"><em>MACS 30100 - Perspectives on Computational Modeling</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Distinguish unsupervised learning from supervised learning</li>
+<li>Demonstrate how to estimate and interpret <span class="math inline">\(K\)</span>-means clustering</li>
+<li>Demonstrate how to estimate and interpret hierarchical clustering</li>
+<li>Define key terms for unsupervised text analysis</li>
+<li>Explain the purpose of dimension reduction techniques</li>
+<li>Demonstrate how to estimate and interpret principal components analysis</li>
+<li>Implement latent semantic analysis using text data</li>
+<li>Introduce Latent Dirchlet allocation and apply it to example data</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(forcats)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(ISLR)
+<span class="kw">library</span>(titanic)
+<span class="kw">library</span>(rcfss)
+<span class="kw">library</span>(grid)
+<span class="kw">library</span>(gridExtra)
+<span class="kw">library</span>(ggdendro)
+<span class="kw">library</span>(tidytext)
+<span class="kw">library</span>(tm)
+<span class="kw">library</span>(topicmodels)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="unsupervised-learning" class="section level1">
+<h1>Unsupervised learning</h1>
+<p><strong>Supervised learning</strong> methods are used in situations where you have a set of <span class="math inline">\(p\)</span> predictors <span class="math inline">\(X_1, X_2, \dots, X_p\)</span> measured on <span class="math inline">\(n\)</span> observations and you want to explain or predict a response <span class="math inline">\(Y\)</span> also measured on those <span class="math inline">\(n\)</span> observations. <strong>Unsupervised learning</strong> methods differ in that you have a set of <span class="math inline">\(p\)</span> predictors <span class="math inline">\(X_1, X_2, \dots, X_p\)</span> measured on <span class="math inline">\(n\)</span> observations, <em>but you do not have an associated response variable <span class="math inline">\(Y\)</span></em>. Instead you want to explore the structure and grouping of the observations. Typically unsupervised learning is a more <strong>exploratory process</strong> because you have no end result you are specifically looking for, and you have no measuring stick to decide if you have the “right” results. At least with supervised learning, you can assess the accuracy or fit of the model and decide how well it performs or compare it to other models. Techinques such as cross-validation and resampling methods can be used to ensure we are not overfitting the training data. But with unsupervised learning this is impossible, because you don’t know the “true” answer.</p>
+<p>There are a wide range of unsupervised learning methods, and their use is governed by the type of research question you have. Here we will examine three types of methods: clustering, dimension reduction, and topic modeling.</p>
+</div>
+<div id="clustering-methods" class="section level1">
+<h1>Clustering methods</h1>
+<p><strong>Clustering</strong> refers to a set of techniques for finding subgroups within a dataset, called <strong>clusters</strong>. The goal is to partition the dataset into similar and distinct groups so that observations in each group are similar to one another, while each group is distinctive and dissimilar to the other groups.</p>
+<div id="k-means-clustering" class="section level2">
+<h2><span class="math inline">\(K\)</span>-means clustering</h2>
+<p><span class="math inline">\(K\)</span>-means clustering is one approach to identifying distinct clusters within data. First we specify the number of <span class="math inline">\(K\)</span> clusters we want to estimate in the data, then assign each observation to precisely one of those <span class="math inline">\(K\)</span> clusters.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate data</span>
+x &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">150</span>) +<span class="st"> </span><span class="dv">3</span>,
+                <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">150</span>) -<span class="st"> </span><span class="dv">4</span>)
+
+<span class="co"># estimate k clusters</span>
+x.out &lt;-<span class="st"> </span>x %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">k2 =</span> <span class="kw">kmeans</span>(x, <span class="dv">2</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)$cluster,
+         <span class="dt">k3 =</span> <span class="kw">kmeans</span>(x, <span class="dv">3</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)$cluster,
+         <span class="dt">k4 =</span> <span class="kw">kmeans</span>(x, <span class="dv">4</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)$cluster)
+
+<span class="co"># plot clusters</span>
+x.out %&gt;%
+<span class="st">  </span><span class="kw">gather</span>(K, pred, k2:k4) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">K =</span> <span class="kw">parse_numeric</span>(K),
+         <span class="dt">pred =</span> <span class="kw">factor</span>(pred)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> pred)) +
+<span class="st">  </span><span class="kw">facet_grid</span>(. ~<span class="st"> </span>K, <span class="dt">labeller =</span> label_both) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/kmeans-1.png" width="672" /></p>
+<p>Let <span class="math inline">\(C_1, C_2, \dots, C_K\)</span> denote sets containing the indicies of the observations in each cluster. <span class="math inline">\(K\)</span>-means clustering defines a good cluster as one for which within-cluster variation is as small as possible. So we want to minimize the within-cluster variation defined by some function <span class="math inline">\(W(C_K)\)</span> that identifies variation:</p>
+<p><span class="math display">\[\min_{C_1, C_2, \dots, C_K} \left\{ \sum_{k = 1}^K W(C_k) \right\}\]</span></p>
+<p>so that the overall amount of within-cluster variation across all the clusters is as small as possible. We can define within-cluster variation in several different ways, but a standard approach uses <strong>squared Euclidean distance</strong>:</p>
+<p><span class="math display">\[W(C_k) = \frac{1}{|C_k|} \sum_{i,i&#39; \in C_k} \sum_{j = 1}^p (x_{ij} - x_{i&#39;j})^2\]</span></p>
+<p>where the within-cluster variation is the sum of all of the pairwise squared Euclidean distances between the observations in the <span class="math inline">\(k\)</span>th cluster, divided by the number of observations in the <span class="math inline">\(k\)</span>th cluster. Unfortunately we cannot evaluate every possible cluster combination because there are almost <span class="math inline">\(K^n\)</span> ways to partition <span class="math inline">\(n\)</span> observations into <span class="math inline">\(K\)</span> clusters. Instead, we will settle for a <strong>good enough</strong> approach; that is, rather than finding the global optimum for the optimization problem we will instead estimate the local optimum.</p>
+<p>To do this we employ an iterative process. First we randomly assign each observation to one of the <span class="math inline">\(K\)</span> clusters. This will be the initial cluster assignment for each observation. Then we iterate over the cluster assignments:</p>
+<ol style="list-style-type: decimal">
+<li>For each of the <span class="math inline">\(K\)</span> clusters, compute the cluster <strong>centroid</strong>, or the vector of <span class="math inline">\(p\)</span> feature means for the observations in the <span class="math inline">\(k\)</span>th cluster.</li>
+<li>Assign each observation to the cluster whose centroid is closest as defined by Euclidean distance.</li>
+</ol>
+<p>Each time we do this observations will move around and join different clusters because the initial assignments were made entirely at random. As we iterate over this process, the cluster assignments will become more stable and eventually stop entirely. This is when we reach the local optimum. Since the local optimum is based on the initial (random) assignments, we run this algorithm multiple times from different random starting configurations and select the best solution (the one with the lowest total within-cluster variation).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">kmean.out &lt;-<span class="st"> </span><span class="kw">rerun</span>(<span class="dv">6</span>, <span class="kw">kmeans</span>(x, <span class="dv">3</span>, <span class="dt">nstart =</span> <span class="dv">1</span>))
+
+kmean.out %&gt;%
+<span class="st">  </span><span class="kw">map_df</span>(~<span class="st"> </span><span class="kw">as_tibble</span>(.$cluster), <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">bind_cols</span>(<span class="kw">bind_rows</span>(x,x,x,x,x,x)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">withinss =</span> <span class="kw">rep</span>(<span class="kw">map_chr</span>(kmean.out, ~<span class="st"> </span>.$tot.withinss), <span class="dt">each =</span> <span class="kw">nrow</span>(x)),
+         <span class="dt">value =</span> <span class="kw">factor</span>(value)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> value)) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>id +<span class="st"> </span>withinss, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">labeller =</span> <span class="kw">label_wrap_gen</span>(<span class="dt">multi_line =</span> <span class="ot">FALSE</span>)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/kmeans-sim-start-1.png" width="672" /></p>
+</div>
+<div id="hierarchical-clustering" class="section level2">
+<h2>Hierarchical clustering</h2>
+<p>A drawback to <span class="math inline">\(K\)</span>-means clustering is that it requires you to specify in advance the number of clusters in the data. Since this is unsupervised learning, you don’t really know the actual number of clusters. Depending on the major features of the data, different values of <span class="math inline">\(K\)</span> could produce equally meaningful results. Imagine if your data contains observations on individuals, split between males and females as well as split between Americans, Canadians, and South Africans. <span class="math inline">\(K=2\)</span> would potentially cluster the observations based on gender, whereas <span class="math inline">\(K=3\)</span> could cluster based on nationality. Which is “right”? Well, both of them. It depends on the features of the data in which you are most interested.</p>
+<p><strong>Hierarchical clustering</strong> is an alternative approach that does not require us to fix the number of clusters <em>a priori</em>. It also produces a visual interpretation of the clusters using tree-based representations called <strong>dendrograms</strong>. Here let’s review how to interpret dendrograms generated from <strong>bottom-up</strong> clustering.</p>
+</div>
+<div id="interpreting-dendrograms" class="section level2">
+<h2>Interpreting dendrograms</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate data</span>
+x &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">50</span>) +<span class="st"> </span><span class="dv">3</span>,
+                <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">50</span>) -<span class="st"> </span><span class="dv">4</span>,
+                <span class="dt">y =</span> <span class="kw">ifelse</span>(x1 &lt;<span class="st"> </span><span class="dv">3</span>, <span class="st">&quot;1&quot;</span>,
+                           <span class="kw">ifelse</span>(x2 &gt;<span class="st"> </span>-<span class="dv">4</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;3&quot;</span>)))
+
+<span class="kw">ggplot</span>(x, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated data&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate hierarchical cluster</span>
+hc.complete &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span class="kw">dist</span>(x), <span class="dt">method =</span> <span class="st">&quot;complete&quot;</span>)
+
+<span class="co"># plot</span>
+<span class="kw">ggdendrogram</span>(hc.complete)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-2.png" width="672" /></p>
+<p>Here we plot a dendrogram using simulated data, consisting of 50 observations in two-dimensional space. We simulate three natural classes in the data, but in the real-world you would not know that. Suppose that we observe the data without class labels and want to perform hierarchical clustering on the data. The result is plotted above.</p>
+<p>Like with decision trees, we have <strong>leafs</strong> and <strong>branches</strong>. Rather than reading the dendrogram from the top-down, we read it from the bottom-up. Each observation is represented by a leaf. As we move up the tree, leaves <strong>fuse</strong> into branches. These are observations that are similar to one another, similarity generally being defined by Euclidean distance. Observations that fuse together near the bottom of the tree are generally similar to one another, whereas observations that fuse near the top of the tree are dissimilar. The height on the graph where the fusion occurs defines how similar or dissimilar any two observations are. The larger the value, the more dissimilar they are. Rather than paying attention to the proximity of observations along the horizontal axis, we should instead focus on the location of observations relative to the vertical axis.</p>
+<p>From this dendrogram we can assign observations to clusters. To generate clusters, we make a horizontal cut somewhere on the dendrogram, severing the tree into multiple subtrees. The height of the cut will dictate how many clusters are formed. For instance, cutting the tree at a height of 4 splits the dendrogram into two subtrees, and therefore two clusters:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">h &lt;-<span class="st"> </span><span class="dv">4</span>
+<span class="co"># extract dendro data</span>
+hcdata &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(hc.complete)
+hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(<span class="kw">data_frame</span>(<span class="dt">label =</span> <span class="kw">as.factor</span>(<span class="kw">seq.int</span>(<span class="kw">nrow</span>(x))),
+                       <span class="dt">cl =</span> <span class="kw">as.factor</span>(<span class="kw">cutree</span>(hc.complete, <span class="dt">h =</span> h))))
+
+<span class="co"># plot dendrogram</span>
+<span class="kw">ggdendrogram</span>(hc.complete, <span class="dt">labels =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> hclabs,
+            <span class="kw">aes</span>(<span class="dt">label =</span> label, <span class="dt">x =</span> x, <span class="dt">y =</span> <span class="dv">0</span>, <span class="dt">color =</span> cl),
+            <span class="dt">vjust =</span> .<span class="dv">5</span>, <span class="dt">angle =</span> <span class="dv">90</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> h, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+        <span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-cut-4-1.png" width="672" /></p>
+<p>Alternatively we could split it lower, for instance at 3:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">h &lt;-<span class="st"> </span><span class="dv">3</span>
+<span class="co"># extract dendro data</span>
+hcdata &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(hc.complete)
+hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) %&gt;%
+<span class="st">  </span><span class="kw">left_join</span>(<span class="kw">data_frame</span>(<span class="dt">label =</span> <span class="kw">as.factor</span>(<span class="kw">seq.int</span>(<span class="kw">nrow</span>(x))),
+                       <span class="dt">cl =</span> <span class="kw">as.factor</span>(<span class="kw">cutree</span>(hc.complete, <span class="dt">h =</span> h))))
+
+<span class="co"># plot dendrogram</span>
+<span class="kw">ggdendrogram</span>(hc.complete, <span class="dt">labels =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> hclabs,
+            <span class="kw">aes</span>(<span class="dt">label =</span> label, <span class="dt">x =</span> x, <span class="dt">y =</span> <span class="dv">0</span>, <span class="dt">color =</span> cl),
+            <span class="dt">vjust =</span> .<span class="dv">5</span>, <span class="dt">angle =</span> <span class="dv">90</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> h, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
+        <span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-cut-3-1.png" width="672" /></p>
+<p>Generating a larger number of clusters. Determining the optimal number of clusters is generally left to the discretion of the researcher based on the height of the fusions and desired number of clusters. Again, this is unsupervised learning <strong>so there is no single correct number of clusters</strong>.</p>
+</div>
+<div id="estimating-hierarchical-clusters" class="section level2">
+<h2>Estimating hierarchical clusters</h2>
+<p>The general procedure for estimating hierarchical clusters is relatively straightforward:</p>
+<ol style="list-style-type: decimal">
+<li>Assume each <span class="math inline">\(n\)</span> observation is its own cluster. Calculate the <span class="math inline">\(\binom{n}{2} = \frac{n(n-1)}{2}\)</span> pairwise dissimilarities between each observation.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
+<li>For <span class="math inline">\(i=n, n-1, \dots, 2\)</span>:
+<ol style="list-style-type: decimal">
+<li>Compare all pairwise inter-cluster dissimilarities among the <span class="math inline">\(i\)</span> clusters and identify the pair of clusters that are least dissimilar (i.e. most dissimilar). Fuse these two clusters. The dissimilarity between these two clusters determines the height in the dendrogram where the fusion should be placed.</li>
+<li>Compute the new pairwise inter-cluster dissimilarities among the <span class="math inline">\(i-1\)</span> clusters</li>
+</ol></li>
+</ol>
+<p>This process is continued until there is only a single cluster remaining. The only complication is how to measure dissimilarities between clusters once they contain more than one observation. Previously we used pairwise dissimilarities of the observations, but how do we proceed with multiple observations? There are four major approaches to defining dissimilarity between clusters, also called <strong>linkage</strong>:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Complete</strong> - compute all pairwise dissimilarities between observations in cluster A and cluster B and record the largest of these dissimilarities.</li>
+<li><strong>Single</strong> - compute all pairwise dissimilarities between observations in cluster A and cluster B and record the smallest of these dissimilarities.</li>
+<li><strong>Average</strong> - compute all pairwise dissimilarities between observations in cluster A and cluster B and record the average of these dissimilarities.</li>
+<li><strong>Centroid</strong> - compute the dissimilarity between the centroid (a mean vector of length <span class="math inline">\(p\)</span>) for cluster A and cluster B.</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">hc.complete &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span class="kw">dist</span>(x), <span class="dt">method =</span> <span class="st">&quot;complete&quot;</span>)
+hc.single &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span class="kw">dist</span>(x), <span class="dt">method =</span> <span class="st">&quot;single&quot;</span>)
+hc.average &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span class="kw">dist</span>(x), <span class="dt">method =</span> <span class="st">&quot;average&quot;</span>)
+
+<span class="co"># plot</span>
+<span class="kw">ggdendrogram</span>(hc.complete) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Complete linkage&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-compare-linkage-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggdendrogram</span>(hc.single) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Single linkage&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-compare-linkage-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggdendrogram</span>(hc.average) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Average linkage&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/dendro-compare-linkage-3.png" width="672" /></p>
+</div>
+</div>
+<div id="dimension-reduction" class="section level1">
+<h1>Dimension reduction</h1>
+<p>Another possible application of unsupervised learning is to reduce the number of dimensions in a dataset. There are a couple reasons you might do this:</p>
+<ol style="list-style-type: decimal">
+<li>You want to visualize the data but you have a lot of variables. You could generate something like a scatterplot matrix, but once you have more than a handful of variables even these become difficult to interpret.</li>
+<li>You want to use the variables in a supervised learning framework, but reduce the total number of predictors to make the estimation more efficient.</li>
+</ol>
+<p>In either case, the goal is to reduce the dimensionality of the data by identifying a smaller number of representative variables that collectively explain most of the variability in the original dataset. There are several methods available for performing such a task. First we will examine an example of applying dimension reduction techniques to summarize roll-call voting in the United States</p>
+<div id="application-dw-nominate" class="section level2">
+<h2>Application: DW-NOMINATE</h2>
+<p>In the 1990s, dimension reduction techniques revolutionized the study of U.S. legislative politics. Measuring the ideology of legislators prior to this point was difficult because there was no method for locating legislators along an ideological spectrum (liberal-conservative) in a manner that allowed comparisons over time. That is, how liberal was a Democrat in 1870 compared to a Democrat in 1995? Additionally, supposed you wanted to predict how a legislator would vote on a given bill. Roll-call votes record individual legislator behavior, so you could use past votes to predict future ones. But there have been tens of thousands of recorded votes over the course of the U.S. Congress. Even in a given term of Congress, the Senate may cast hundreds of recorded votes. But there are only 100 senators (at present), and you cannot estimate a regression model when your number of predictors <span class="math inline">\(p\)</span> is larger than your number of observations <span class="math inline">\(n\)</span>. We need some method for reducing the dimensionality of this data to a handful of variables which explain as much of the variation in roll-call voting as possible.</p>
+<p><strong>Multidimensional scaling techniques</strong> can be used to perform this feat. The technical details of this specific application are beyond the scope of this class, but Keith Poole and Howard Rosenthal developed a specific procedure called <a href="http://voteview.org/">NOMINATE</a> to reduce the dimensionality of the data. Rather than using <span class="math inline">\(p\)</span> predictors to explain or predict individual legislator’s roll-call votes, where <span class="math inline">\(p\)</span> is the total number of roll-call votes in the recorded history of the U.S. Congress, Poole and Rosenthal examined the similarity of legislator’s votes in a given session of Congress and over time to identify two major dimensions to roll-call voting in the U.S. Congress. That is, roll-call votes in Congress can generally be explained by two variables that can be estimated for every past and present member of Congress. The two dimensions do not have any inherent substantive interpretation, but by graphically examining the two dimensions, it becomes clear that they represent two specific factors in legislative voting:</p>
+<ol style="list-style-type: decimal">
+<li>First dimension - political ideology. This dimension appears to represent political ideology on the liberal-conservative spectrum. Positive values on this dimension refer to increasingly conservative voting patterns, and negative values refer to increasingly liberal voting patterns.</li>
+<li>Second dimension - “issue of the day”. This dimension appears to pick up on attitudes that are salient at different points in the nation’s history. They could be regional differences (Southern vs. non-Southern states), or attitudes towards specific policy issues (i.e. slavery).</li>
+</ol>
+<p>This data can be used for a wide range of research questions. For example, we could use it to assess the degree of polarization in the U.S. Congress over time:</p>
+<div class="figure">
+<img src="http://voteview.org/images/png/house_party_means_1879-2015.png" alt="Voteview.org" />
+<p class="caption"><a href="http://voteview.org/political_polarization_2015.htm">Voteview.org</a></p>
+</div>
+<div class="figure">
+<img src="http://voteview.org/images/png/house_party_means_1879-2015_2nd.png" alt="Voteview.org" />
+<p class="caption"><a href="http://voteview.org/political_polarization_2015.htm">Voteview.org</a></p>
+</div>
+<div class="figure">
+<img src="http://voteview.org/images/png/senate_party_means_1879-2015.png" alt="Voteview.org" />
+<p class="caption"><a href="http://voteview.org/political_polarization_2015.htm">Voteview.org</a></p>
+</div>
+<div class="figure">
+<img src="http://voteview.org/images/png/senate_party_means_1879-2015_2nd.png" alt="Voteview.org" />
+<p class="caption"><a href="http://voteview.org/political_polarization_2015.htm">Voteview.org</a></p>
+</div>
+</div>
+<div id="principal-components-analysis" class="section level2">
+<h2>Principal components analysis</h2>
+<p><strong>Principal components analysis</strong> (PCA) is a basic technique for dimension reduction. The goal is to find a low-dimensional representation of the data that contains as much as possible of the variation. Each dimension is a linear combination of the <span class="math inline">\(p\)</span> variables.</p>
+<p>The <strong>first principal component</strong> of a set of variables <span class="math inline">\(X_1, X_2, \dots, X_p\)</span> is the normalized linear combination of the features</p>
+<p><span class="math display">\[Z_1 = \phi_{11}X_1 + \phi_{21}X_2 + \dots + \phi_{p1}X_p\]</span></p>
+<p>that has the largest variance. By normalizing the features, we mean</p>
+<p><span class="math display">\[\sum_{j=1}^p \phi_{j1}^2 = 1\]</span></p>
+<p>The elements of <span class="math inline">\(\phi_{11}, \dots, \phi_{p1}\)</span> are known as the <strong>loadings</strong> of the first principal component, and combined together they form the principal component loading vector <span class="math inline">\(\phi_1 = (\phi_{11}, \dots, \phi_{p1})^T\)</span>.</p>
+<p>Estimating the first principal component follows the following procedure. Since we are only interested in variance, we assume each column in the <span class="math inline">\(n\times p\)</span> data set <span class="math inline">\(\mathbf{X}\)</span> has mean zero and look for the linear combination of the sample column values of the form</p>
+<p><span class="math display">\[z_{i1} = \phi_{11}x_{i1} + \phi_{21}x_{i2} + \dots + \phi_{p1} x_{ip}\]</span></p>
+<p>that has the largest sample variance, subject to the constraint <span class="math display">\[\sum_{j=1}^p \phi_{j1}^2 = 1\]</span>.</p>
+<p>The result of this optimization problem is a loading vector <span class="math inline">\(\phi_1\)</span> with elements <span class="math inline">\(\phi_{11}, \phi_{21}, \dots, \phi_{p1}\)</span> that defines a direction in feature space along which the data vary the most. We can estimate the second, third, and <span class="math inline">\(n\)</span>th principal components using a similar process. The second principal component is the linear combination of <span class="math inline">\(X_1, X_2, \dots, X_p\)</span> that has the maximum variance out of all linear combinations that are uncorrelated with <span class="math inline">\(Z_1\)</span>.</p>
+<p>Once we estimate the principal components, we can plot them against each other in order to produce a low-dimensional visualization of the data. Let’s look at the use of PCA on the <code>USArrests</code> dataset, reproduced from <strong>An Introduction to Statistical Learning</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pr.out &lt;-<span class="st"> </span><span class="kw">prcomp</span>(USArrests, <span class="dt">scale =</span> <span class="ot">TRUE</span>)
+
+pr.out$rotation</code></pre></div>
+<pre><code>##             PC1    PC2    PC3    PC4
+## Murder   -0.536  0.418 -0.341  0.649
+## Assault  -0.583  0.188 -0.268 -0.743
+## UrbanPop -0.278 -0.873 -0.378  0.134
+## Rape     -0.543 -0.167  0.818  0.089</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">biplot</span>(pr.out, <span class="dt">scale =</span> <span class="dv">0</span>, <span class="dt">cex =</span> .<span class="dv">6</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/pca-usarrests-1.png" width="672" /></p>
+<p>The principal component score vectors have length <span class="math inline">\(n=50\)</span> and the principal component loading vectors have length <span class="math inline">\(p=4\)</span>. The biplot visualizes the relationship between the first two principal components for the dataset, including both the scores and the loading vectors. The first principal component places approximately equal weight on murder, assault, and rape. We can tell this because these vectors’ length on the first principal component dimension are roughly the same, whereas the length for urban population is smaller. Conversely, the second principal component (the vertical axis) places more emphasis on urban population. Intuitively this makes sense because murder, assault, and rape are all measures of violent crime, and it makes sense that they should be correlated with one another (i.e. states with high murder rates are likely to have high rates of rape as well).</p>
+<p>We can also interpret the plot for individual states based on their positions along the two dimensions. States with large positive values on the first principal component have high crime rates while states with large negative values have low crime rates; states with large positive values on the second principal component have high levels of urbanization while states with large negative values have low levels of urbanization.</p>
+</div>
+<div id="latent-semantic-analysis" class="section level2">
+<h2>Latent semantic analysis</h2>
+<p>Text documents can be utilized in computational text analysis under the <strong>bag of words</strong> approach.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> Documents are represented as vectors, and each variable counts the frequency a word appears in a given document. While we throw away information such as word order, we can represent the information in a mathematical fashion using a matrix. Each row represents a single document, and each column is a different word:</p>
+<pre><code> a abandoned abc ability able about above abroad absorbed absorbing abstract
+43         0   0       0    0    10     0      0        0         0        1</code></pre>
+<p>These vectors can be very large depending on the dictionary, or the number of unique words in the dataset. These bag-of-words vectors have three important properties:</p>
+<ol style="list-style-type: decimal">
+<li>They are <strong>sparse</strong>. Most entries in the matrix are zero.</li>
+<li>A small number of words appear frequently across all documents. These are typically uninformative words called <strong>stop words</strong> that inform us nothing about the document (e.g. “a”, “an”, “at”, “of”, “or”).</li>
+<li>Other than these words, the other words in the dataset are correlated with some words but not others. Words typically come together in related bunches.</li>
+</ol>
+<p>Considering these three properties, we probably don’t need to keep all of the words. Instead, we could reduce the dimensionality of the data by projecting the larger dataset into a smaller feature space with fewer dimensions that summarize most of the variation in the data. Each dimension would represent a set of correlated words. Principal component analysis can be used for precisely this task.</p>
+<p>In a textual context, this process is known as <strong>latent semantic analysis</strong>. By identifying words that are closely related to one another, by searching for just one of the terms we can find documents that use not only that specific term but other similar ones.</p>
+<div id="interpretation-nytimes" class="section level3">
+<h3>Interpretation: <code>NYTimes</code></h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get NYTimes data</span>
+<span class="kw">load</span>(<span class="st">&quot;data/pca-examples.Rdata&quot;</span>)</code></pre></div>
+<p>Let’s look at an application of LSA. <code>nyt.frame</code> contains a document-term matrix of a random sample of stories from the New York Times: 57 stories are about art, and 45 are about music. The first column identifies the topic of the article, and each remaining cell contains a frequency count of the number of times each word appeared in that article.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> The resulting data frame contains 102 rows and 4432 columns.</p>
+<p>Some examples of words appearing in these articles:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">colnames</span>(nyt.frame)[<span class="kw">sample</span>(<span class="kw">ncol</span>(nyt.frame),<span class="dv">30</span>)]</code></pre></div>
+<pre><code>##  [1] &quot;penchant&quot;  &quot;brought&quot;   &quot;structure&quot; &quot;willing&quot;   &quot;yielding&quot; 
+##  [6] &quot;bare&quot;      &quot;school&quot;    &quot;halls&quot;     &quot;challenge&quot; &quot;step&quot;     
+## [11] &quot;largest&quot;   &quot;lovers&quot;    &quot;intense&quot;   &quot;borders&quot;   &quot;mall&quot;     
+## [16] &quot;classic&quot;   &quot;conducted&quot; &quot;mirrors&quot;   &quot;hole&quot;      &quot;location&quot; 
+## [21] &quot;desperate&quot; &quot;published&quot; &quot;head&quot;      &quot;paints&quot;    &quot;another&quot;  
+## [26] &quot;starts&quot;    &quot;familiar&quot;  &quot;window&quot;    &quot;thats&quot;     &quot;broker&quot;</code></pre>
+<p>We can estimate the LSA using the standard PCA procedure:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Omit the first column of class labels</span>
+nyt.pca &lt;-<span class="st"> </span><span class="kw">prcomp</span>(nyt.frame[,-<span class="dv">1</span>])
+
+<span class="co"># Extract the actual component directions/weights for ease of reference</span>
+nyt.latent.sem &lt;-<span class="st"> </span>nyt.pca$rotation</code></pre></div>
+<p>Because of the number of variables in the data set, it would be difficult to visualize this data using a biplot. Instead, we can extract the biggest components for the first principal component:</p>
+<div id="first-pca-positive-loadings" class="section level5">
+<h5>First PCA: positive loadings</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">signif</span>(<span class="kw">sort</span>(nyt.latent.sem[,<span class="dv">1</span>],<span class="dt">decreasing=</span><span class="ot">TRUE</span>)[<span class="dv">1</span>:<span class="dv">30</span>],<span class="dv">2</span>)</code></pre></div>
+<pre><code>##       music        trio     theater   orchestra   composers       opera 
+##       0.110       0.084       0.083       0.067       0.059       0.058 
+##    theaters           m    festival        east     program           y 
+##       0.055       0.054       0.051       0.049       0.048       0.048 
+##      jersey     players   committee      sunday        june     concert 
+##       0.047       0.047       0.046       0.045       0.045       0.045 
+##    symphony       organ     matinee   misstated instruments           p 
+##       0.044       0.044       0.043       0.042       0.041       0.041 
+##         X.d       april      samuel        jazz     pianist     society 
+##       0.041       0.040       0.040       0.039       0.038       0.038</code></pre>
+</div>
+<div id="first-pca-negative-loadings" class="section level5">
+<h5>First PCA: negative loadings</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">signif</span>(<span class="kw">sort</span>(nyt.latent.sem[,<span class="dv">1</span>],<span class="dt">decreasing=</span><span class="ot">FALSE</span>)[<span class="dv">1</span>:<span class="dv">30</span>],<span class="dv">2</span>)</code></pre></div>
+<pre><code>##       she       her        ms         i      said    mother    cooper 
+##    -0.260    -0.240    -0.200    -0.150    -0.130    -0.110    -0.100 
+##        my  painting   process paintings        im        he       mrs 
+##    -0.094    -0.088    -0.071    -0.070    -0.068    -0.065    -0.065 
+##        me  gagosian       was   picasso     image sculpture      baby 
+##    -0.063    -0.062    -0.058    -0.057    -0.056    -0.056    -0.055 
+##   artists      work    photos       you    nature    studio       out 
+##    -0.055    -0.054    -0.051    -0.051    -0.050    -0.050    -0.050 
+##      says      like 
+##    -0.050    -0.049</code></pre>
+<p>These are the 30 words with the largest positive and negative loadings on the first principal component. The words on the positive loading seem associated with music, whereas the words on teh negative loading are more strongly associated with art.</p>
+</div>
+<div id="second-pca-positive-loadings" class="section level5">
+<h5>Second PCA: positive loadings</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">signif</span>(<span class="kw">sort</span>(nyt.latent.sem[,<span class="dv">2</span>],<span class="dt">decreasing=</span><span class="ot">TRUE</span>)[<span class="dv">1</span>:<span class="dv">30</span>],<span class="dv">2</span>)</code></pre></div>
+<pre><code>##         art      museum      images     artists   donations     museums 
+##       0.150       0.120       0.095       0.092       0.075       0.073 
+##    painting         tax   paintings   sculpture     gallery  sculptures 
+##       0.073       0.070       0.065       0.060       0.055       0.051 
+##     painted       white    patterns      artist      nature     service 
+##       0.050       0.050       0.047       0.047       0.046       0.046 
+##  decorative        feet     digital      statue       color    computer 
+##       0.043       0.043       0.043       0.042       0.042       0.041 
+##       paris         war collections     diamond       stone     dealers 
+##       0.041       0.041       0.041       0.041       0.041       0.040</code></pre>
+</div>
+<div id="second-pca-negative-loadings" class="section level5">
+<h5>Second PCA: negative loadings</h5>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">signif</span>(<span class="kw">sort</span>(nyt.latent.sem[,<span class="dv">2</span>],<span class="dt">decreasing=</span><span class="ot">FALSE</span>)[<span class="dv">1</span>:<span class="dv">30</span>],<span class="dv">2</span>)</code></pre></div>
+<pre><code>##          her          she      theater        opera           ms 
+##       -0.220       -0.220       -0.160       -0.130       -0.130 
+##            i         hour   production         sang     festival 
+##       -0.083       -0.081       -0.075       -0.075       -0.074 
+##        music      musical        songs        vocal    orchestra 
+##       -0.070       -0.070       -0.068       -0.067       -0.067 
+##           la      singing      matinee  performance         band 
+##       -0.065       -0.065       -0.061       -0.061       -0.060 
+##       awards    composers         says           my           im 
+##       -0.058       -0.058       -0.058       -0.056       -0.056 
+##         play     broadway       singer       cooper performances 
+##       -0.056       -0.055       -0.052       -0.051       -0.051</code></pre>
+<p>Here the positive words are about art, but more focused on acquiring and trading (“collections”, “dealers”, “donations”). We could perform similar analysis on each of the 102 principal components.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cbind</span>(<span class="dt">type =</span> nyt.frame$class.labels, <span class="kw">as_tibble</span>(nyt.pca$x[,<span class="dv">1</span>:<span class="dv">2</span>])) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">type =</span> <span class="kw">factor</span>(type, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;art&quot;</span>, <span class="st">&quot;music&quot;</span>),
+                       <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;M&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(PC1, PC2, <span class="dt">label =</span> type, <span class="dt">color =</span> type)) +
+<span class="st">  </span><span class="kw">geom_text</span>() +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/nytimes-plot-dim-1.png" width="672" /></p>
+<p>Even after throwing away the vast majority of information in the original data set, the first two principal components still strongly distinguish the two types of articles.</p>
+</div>
+</div>
+</div>
+</div>
+<div id="topic-modeling" class="section level1">
+<h1>Topic modeling</h1>
+<p>Typically when we search for information online, there are two primary methods:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Keywords</strong> - use a search engine and type in words that relate to whatever it is we want to find</li>
+<li><strong>Links</strong> - use the networked structure of the web to travel from page to page. Linked pages are likely to share similar or related content.</li>
+</ol>
+<p>An alternative method would be to search and explore documents via themes. For instance, <a href="http://delivery.acm.org/10.1145/2140000/2133826/p77-blei.pdf">David Blei</a> proposes searching through the complete history of the New York Times. Broad themes may relate to the individual sections in the paper (foreign policy, national affairs, sports) but there might be specific themes within or across these sections (Chinese foreign policy, the conflict in the Middle East, the U.S.’s relationship with Russia). If the documents are grouped by these themes, we could track the evolution of the NYT’s reporting on these issues over time, or examine how discussion of different themes intersects.</p>
+<p>In order to do this, we would need detailed information on the theme of every article. Hand-coding this corpus would be exceedingly time-consuming, not to mention would requiring knowing the thematic structure of the documents before one even begins coding. For the vast majority of corpa, this is not a feasible approach.</p>
+<p>Instead, we can use <strong>probabilistic topic models</strong>, statistical algorithms that analyze words in original text documents to uncover the thematic structure of the both the corpus and individual documents themselves. They do not require any hand coding or labeling of the documents prior to analysis - instead, the algorithms emerge from the analysis of the text.</p>
+</div>
+<div id="latent-dirichlet-allocation" class="section level1">
+<h1>Latent Dirichlet allocation</h1>
+<p>LDA assumes that each document in a corpus contains a mix of topics that are found throughout the entire corpus. The topic structure is hidden - we can only observe the documents and words, not the topics themselves. Because the structure is hidden (also known as <strong>latent</strong>), this method seeks to infer the topic structure given the known words and documents.</p>
+<div id="food-and-animals" class="section level2">
+<h2>Food and animals</h2>
+<p>Suppose you have the following set of sentences:</p>
+<ol style="list-style-type: decimal">
+<li>I ate a banana and spinach smoothie for breakfast.</li>
+<li>I like to eat broccoli and bananas.</li>
+<li>Chinchillas and kittens are cute.</li>
+<li>My sister adopted a kitten yesterday.</li>
+<li>Look at this cute hamster munching on a piece of broccoli.</li>
+</ol>
+<p>Latent Dirichlet allocation is a way of automatically discovering <strong>topics</strong> that these sentences contain. For example, given these sentences and asked for 2 topics, LDA might produce something like</p>
+<ul>
+<li>Sentences 1 and 2: 100% Topic A</li>
+<li>Sentences 3 and 4: 100% Topic B</li>
+<li><p>Sentence 5: 60% Topic A, 40% Topic B</p></li>
+<li>Topic A: 30% broccoli, 15% bananas, 10% breakfast, 10% munching, …</li>
+<li><p>Topic B: 20% chinchillas, 20% kittens, 20% cute, 15% hamster, …</p></li>
+</ul>
+<p>You could infer that topic A is a topic about <strong>food</strong>, and topic B is a topic about <strong>cute animals</strong>. But LDA does not explicitly identify topics in this manner. All it can do is tell you the probability that specific words are associated with the topic.</p>
+</div>
+<div id="an-lda-document-structure" class="section level2">
+<h2>An LDA document structure</h2>
+<p>LDA represents documents as mixtures of topics that spit out words with certain probabilities. It assumes that documents are produced in the following fashion: when writing each document, you</p>
+<ul>
+<li>Decide on the number of words <span class="math inline">\(N\)</span> the document will have</li>
+<li>Choose a topic mixture for the document (according to a <a href="https://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet probability distribution</a> over a fixed set of <span class="math inline">\(K\)</span> topics). For example, assuming that we have the two food and cute animal topics above, you might choose the document to consist of 1/3 food and 2/3 cute animals.</li>
+<li>Generate each word in the document by:
+<ul>
+<li>First picking a topic (according to the distribution that you sampled above; for example, you might pick the food topic with 1/3 probability and the cute animals topic with 2/3 probability).</li>
+<li>Then using the topic to generate the word itself (according to the topic’s multinomial distribution). For instance, the food topic might output the word “broccoli” with 30% probability, “bananas” with 15% probability, and so on.</li>
+</ul></li>
+</ul>
+<p>Assuming this generative model for a collection of documents, LDA then tries to backtrack from the documents to find a set of topics that are likely to have generated the collection.</p>
+<div id="food-and-animals-1" class="section level3">
+<h3>Food and animals</h3>
+<p>How could we have generated the sentences in the previous example? When generating a document <span class="math inline">\(D\)</span>:</p>
+<ul>
+<li>Decide that <span class="math inline">\(D\)</span> will be 1/2 about food and 1/2 about cute animals.</li>
+<li>Pick 5 to be the number of words in <span class="math inline">\(D\)</span>.</li>
+<li>Pick the first word to come from the food topic, which then gives you the word “broccoli”.</li>
+<li>Pick the second word to come from the cute animals topic, which gives you “panda”.</li>
+<li>Pick the third word to come from the cute animals topic, giving you “adorable”.</li>
+<li>Pick the fourth word to come from the food topic, giving you “cherries”.</li>
+<li>Pick the fifth word to come from the food topic, giving you “eating”.</li>
+</ul>
+<p>So the document generated under the LDA model will be “broccoli panda adorable cherries eating” (remember that LDA uses a bag-of-words model).</p>
+</div>
+</div>
+<div id="learning-topic-structure-through-lda" class="section level2">
+<h2>Learning topic structure through LDA</h2>
+<p>Now suppose you have a set of documents. You’ve chosen some fixed number of <span class="math inline">\(K\)</span> topics to discover, and want to use LDA to learn the topic representation of each document and the words associated to each topic. How do you do this? One way (known as collapsed <a href="https://en.wikipedia.org/wiki/Gibbs_sampling">Gibbs sampling</a>) is the following:</p>
+<ul>
+<li>Go through each document, and randomly assign each word in the document to one of the <span class="math inline">\(K\)</span> topics</li>
+<li>Notice that this random assignment already gives you both topic representations of all the documents and word distributions of all the topics. But because it’s random, this is not a very accurate structure.</li>
+<li>To improve on them, for each document <span class="math inline">\(d\)</span>:
+<ul>
+<li>Go through each word <span class="math inline">\(w\)</span> in <span class="math inline">\(d\)</span>
+<ul>
+<li>And for each topic <span class="math inline">\(t\)</span>, compute two things:
+<ol style="list-style-type: decimal">
+<li>The proportion of words in document <span class="math inline">\(d\)</span> that are currently assigned to topic <span class="math inline">\(t\)</span> - <span class="math inline">\(p(t | d)\)</span></li>
+<li>The proportion of assignments to topic <span class="math inline">\(t\)</span> over all documents that come from this word <span class="math inline">\(w\)</span> - <span class="math inline">\(p(w | t)\)</span></li>
+</ol></li>
+<li>Reassign <span class="math inline">\(w\)</span> a new topic, where you choose topic <span class="math inline">\(t\)</span> with probability <span class="math inline">\(p(t|d) \times p(w|t)\)</span> - this is the probability that topic <span class="math inline">\(t\)</span> generated word <span class="math inline">\(w\)</span></li>
+<li>In other words, in this step, we’re assuming that all topic assignments except for the current word in question are correct, and then updating the assignment of the current word using our model of how documents are generated.</li>
+</ul></li>
+</ul></li>
+<li>After repeating the previous step a large number of times (really large number of times, like a minimum of 10,000), you’ll eventually reach a roughly steady state where your assignments are pretty good</li>
+<li>You can use these assignments to estimate two things:
+<ol style="list-style-type: decimal">
+<li>The topic mixtures of each document (by counting the proportion of words assigned to each topic within that document)</li>
+<li>The words associated to each topic (by counting the proportion of words assigned to each topic overall)</li>
+</ol></li>
+</ul>
+<p>Frequently when using LDA, you don’t actually know the underlying topic structure of the documents. <strong>Generally that is why you are using LDA to analyze the text in the first place</strong>. LDA is still useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.</p>
+</div>
+<div id="associated-press-articles" class="section level2">
+<h2>Associated Press articles</h2>
+<p>The <code>topicmodels</code> package includes a document-term matrix of a sample of articles published by the Associated Press in 1992. Let’s load them into R and estimate a series of LDA models.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data</span>(<span class="st">&quot;AssociatedPress&quot;</span>, <span class="dt">package =</span> <span class="st">&quot;topicmodels&quot;</span>)
+
+<span class="co"># tidy and remove stop words</span>
+ap_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(AssociatedPress)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_dtm &lt;-<span class="st"> </span>ap_td %&gt;%
+<span class="st">  </span><span class="kw">anti_join</span>(stop_words, <span class="dt">by =</span> <span class="kw">c</span>(<span class="dt">term =</span> <span class="st">&quot;word&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">cast_dtm</span>(document, term, count)
+ap_dtm</code></pre></div>
+<pre><code>## &lt;&lt;DocumentTermMatrix (documents: 2246, terms: 10134)&gt;&gt;
+## Non-/sparse entries: 259208/22501756
+## Sparsity           : 99%
+## Maximal term length: 18
+## Weighting          : term frequency (tf)</code></pre>
+</div>
+<div id="selecting-k" class="section level2">
+<h2>Selecting <span class="math inline">\(k\)</span></h2>
+<p>Remember that for LDA, you need to specify in advance the number of topics in the underlying topic structure.</p>
+<div id="k4" class="section level3">
+<h3><span class="math inline">\(k=4\)</span></h3>
+<p>Let’s estimate an LDA model for the Associated Press articles, setting <span class="math inline">\(k=4\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda &lt;-<span class="st"> </span><span class="kw">LDA</span>(ap_dtm, <span class="dt">k =</span> <span class="dv">4</span>, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">seed =</span> <span class="dv">1234</span>))
+ap_lda</code></pre></div>
+<pre><code>## A LDA_VEM topic model with 4 topics.</code></pre>
+<p>What do the top terms for each of these topics look like?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(ap_lda)
+
+top_terms &lt;-<span class="st"> </span>ap_lda_td %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(topic) %&gt;%
+<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) %&gt;%
+<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(topic, -beta)
+top_terms</code></pre></div>
+<pre><code>## # A tibble: 20 × 3
+##    topic       term    beta
+##    &lt;int&gt;      &lt;chr&gt;   &lt;dbl&gt;
+## 1      1     people 0.00610
+## 2      1     police 0.00442
+## 3      1       city 0.00344
+## 4      1       time 0.00332
+## 5      1  officials 0.00306
+## 6      2    percent 0.02205
+## 7      2    million 0.01434
+## 8      2    billion 0.00935
+## 9      2     market 0.00830
+## 10     2    company 0.00694
+## 11     3       bush 0.00884
+## 12     3  president 0.00736
+## 13     3      house 0.00548
+## 14     3    dukakis 0.00459
+## 15     3      court 0.00436
+## 16     4     soviet 0.00969
+## 17     4 government 0.00930
+## 18     4     people 0.00639
+## 19     4     police 0.00616
+## 20     4     united 0.00602</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) +
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/ap_4_topn-1.png" width="672" /></p>
+<p>Fair enough. The four topics generally look to describe:</p>
+<ol style="list-style-type: decimal">
+<li>American-Soviet relations</li>
+<li>Crime and education</li>
+<li>American (domestic) government</li>
+<li><a href="https://en.wikipedia.org/wiki/It%27s_the_economy,_stupid">It’s the economy, stupid</a></li>
+</ol>
+</div>
+<div id="k12" class="section level3">
+<h3><span class="math inline">\(k=12\)</span></h3>
+<p>What happens if we set <span class="math inline">\(k=12\)</span>? How do our results change?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda &lt;-<span class="st"> </span><span class="kw">LDA</span>(ap_dtm, <span class="dt">k =</span> <span class="dv">12</span>, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">seed =</span> <span class="dv">1234</span>))
+ap_lda</code></pre></div>
+<pre><code>## A LDA_VEM topic model with 12 topics.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(ap_lda)
+
+top_terms &lt;-<span class="st"> </span>ap_lda_td %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(topic) %&gt;%
+<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) %&gt;%
+<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(topic, -beta)
+top_terms</code></pre></div>
+<pre><code>## # A tibble: 60 × 3
+##    topic       term    beta
+##    &lt;int&gt;      &lt;chr&gt;   &lt;dbl&gt;
+## 1      1        air 0.00847
+## 2      1     people 0.00613
+## 3      1      miles 0.00601
+## 4      1  officials 0.00573
+## 5      1       fire 0.00570
+## 6      2       bush 0.01805
+## 7      2    dukakis 0.01612
+## 8      2   campaign 0.01273
+## 9      2  president 0.00990
+## 10     2 democratic 0.00841
+## # ... with 50 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) +
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/ap_12_topn-1.png" width="672" /></p>
+<p>Hmm. Well, these topics appear to be more specific, yet not as easily decodeable.</p>
+<ol style="list-style-type: decimal">
+<li>Iraq War (I)</li>
+<li>Bush’s reelection campaign</li>
+<li>Federal courts</li>
+<li>Apartheid and South Africa</li>
+<li>Crime</li>
+<li>Economy</li>
+<li>???</li>
+<li>Soviet Union</li>
+<li>Environment</li>
+<li>Stock market</li>
+<li>Wildfires?</li>
+<li>Bush-Congress relations (maybe domestic policy?)</li>
+</ol>
+<p>Alas, this is the problem with LDA. Several different values for <span class="math inline">\(k\)</span> may be plausible, but by increasing <span class="math inline">\(k\)</span> we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?</p>
+</div>
+</div>
+<div id="perplexity" class="section level2">
+<h2>Perplexity</h2>
+<p>Well, sort of. Some aspects of LDA are driven by gut-thinking (or perhaps <a href="http://www.cc.com/video-clips/63ite2/the-colbert-report-the-word---truthiness">truthiness</a>). However we can have some help. <a href="https://en.wikipedia.org/wiki/Perplexity"><strong>Perplexity</strong></a> is a statistical measure of how well a probability model predicts a sample. As applied to LDA, for a given value of <span class="math inline">\(k\)</span>, you estimate the LDA model. Then given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents.</p>
+<p><code>topicmodels</code> includes the function <code>perplexity()</code> which calculates this value for a given model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">perplexity</span>(ap_lda)</code></pre></div>
+<pre><code>## [1] 2265</code></pre>
+<p>However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying <span class="math inline">\(k\)</span>s. The model with the lowest perplexity is generally considered the “best”.</p>
+<p>Let’s estimate a series of LDA models on the Associated Press dataset. Here I make use of <code>purrr</code> and the <code>map()</code> functions to iteratively generate a series of LDA models for the AP corpus, using a different number of topics in each model.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n_topics &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">50</span>, <span class="dv">100</span>)
+
+if(<span class="kw">file.exists</span>(<span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)){
+  <span class="kw">load</span>(<span class="dt">file =</span> <span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)
+} else{
+  ap_lda_compare &lt;-<span class="st"> </span>n_topics %&gt;%
+<span class="st">    </span><span class="kw">map</span>(LDA, <span class="dt">x =</span> ap_dtm, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">seed =</span> <span class="dv">1234</span>))
+  <span class="kw">save</span>(ap_lda_compare, <span class="dt">file =</span> <span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">k =</span> n_topics,
+           <span class="dt">perplex =</span> <span class="kw">map_dbl</span>(ap_lda_compare, perplexity)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(k, perplex)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Evaluating LDA topic models&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Optimal number of topics (smaller is better)&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Number of topics&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Perplexity&quot;</span>)</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/ap_lda_compare_viz-1.png" width="672" /></p>
+<p>It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let’s look just at the first 12 topics produced by the model (<code>ggplot2</code> has difficulty rendering a graph for 100 separate facets):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(ap_lda_compare[[<span class="dv">6</span>]])
+
+top_terms &lt;-<span class="st"> </span>ap_lda_td %&gt;%
+<span class="st">  </span><span class="kw">group_by</span>(topic) %&gt;%
+<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) %&gt;%
+<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
+<span class="st">  </span><span class="kw">arrange</span>(topic, -beta)
+top_terms</code></pre></div>
+<pre><code>## # A tibble: 500 × 3
+##    topic       term    beta
+##    &lt;int&gt;      &lt;chr&gt;   &lt;dbl&gt;
+## 1      1  president 0.00802
+## 2      1        oil 0.00562
+## 3      1     people 0.00553
+## 4      1    embassy 0.00526
+## 5      1 television 0.00518
+## 6      2 convention 0.01627
+## 7      2       york 0.01024
+## 8      2    dukakis 0.00849
+## 9      2   national 0.00693
+## 10     2    jackson 0.00647
+## # ... with 490 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(topic &lt;=<span class="st"> </span><span class="dv">12</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) +
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="persp011_unsupervised_files/figure-html/ap_100_topn-1.png" width="672" /></p>
+<p>We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at <span class="math inline">\(k=100\)</span> - would <span class="math inline">\(k=200\)</span> generate an even lower perplexity score?<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
+<p>Again, this is where your intuition and domain knowledge as a researcher is important. You can use perplexity as one data point in your decision process, but a lot of the time it helps to simply look at the topics themselves and the highest probability words associated with each one to determine if the structure makes sense. If you have a known topic structure you can compare it to (such as the books example above), this can also be useful.</p>
+</div>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.2 (2016-10-31)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-03-07                  
+## 
+##  package     * version date       source        
+##  assertthat    0.1     2013-12-06 CRAN (R 3.3.0)
+##  backports     1.0.5   2017-01-18 CRAN (R 3.3.2)
+##  broom       * 0.4.2   2017-02-13 CRAN (R 3.3.2)
+##  codetools     0.2-15  2016-10-05 CRAN (R 3.3.2)
+##  colorspace    1.3-2   2016-12-14 CRAN (R 3.3.2)
+##  DBI           0.5-1   2016-09-10 CRAN (R 3.3.0)
+##  devtools      1.12.0  2016-06-24 CRAN (R 3.3.0)
+##  digest        0.6.12  2017-01-27 CRAN (R 3.3.2)
+##  dplyr       * 0.5.0   2016-06-24 CRAN (R 3.3.0)
+##  evaluate      0.10    2016-10-11 CRAN (R 3.3.0)
+##  forcats     * 0.2.0   2017-01-23 CRAN (R 3.3.2)
+##  foreign       0.8-67  2016-09-13 CRAN (R 3.3.2)
+##  ggdendro    * 0.1-20  2017-02-27 local         
+##  ggplot2     * 2.2.1   2016-12-30 CRAN (R 3.3.2)
+##  gridExtra   * 2.2.1   2016-02-29 cran (@2.2.1) 
+##  gtable        0.2.0   2016-02-26 CRAN (R 3.3.0)
+##  haven         1.0.0   2016-09-23 cran (@1.0.0) 
+##  hms           0.3     2016-11-22 CRAN (R 3.3.2)
+##  htmltools     0.3.5   2016-03-21 CRAN (R 3.3.0)
+##  httr          1.2.1   2016-07-03 CRAN (R 3.3.0)
+##  ISLR        * 1.0     2013-06-11 CRAN (R 3.3.0)
+##  janeaustenr   0.1.4   2016-10-26 CRAN (R 3.3.0)
+##  jsonlite      1.2     2016-12-31 CRAN (R 3.3.2)
+##  knitr         1.15.1  2016-11-22 cran (@1.15.1)
+##  labeling      0.3     2014-08-23 CRAN (R 3.3.0)
+##  lattice       0.20-34 2016-09-06 CRAN (R 3.3.2)
+##  lazyeval      0.2.0   2016-06-12 CRAN (R 3.3.0)
+##  lubridate     1.6.0   2016-09-13 CRAN (R 3.3.0)
+##  magrittr      1.5     2014-11-22 CRAN (R 3.3.0)
+##  MASS          7.3-45  2016-04-21 CRAN (R 3.3.2)
+##  Matrix        1.2-8   2017-01-20 CRAN (R 3.3.2)
+##  memoise       1.0.0   2016-01-29 CRAN (R 3.3.0)
+##  mnormt        1.5-5   2016-10-15 CRAN (R 3.3.0)
+##  modelr      * 0.1.0   2016-08-31 CRAN (R 3.3.0)
+##  modeltools    0.2-21  2013-09-02 CRAN (R 3.3.0)
+##  munsell       0.4.3   2016-02-13 CRAN (R 3.3.0)
+##  nlme          3.1-131 2017-02-06 CRAN (R 3.3.2)
+##  NLP         * 0.1-9   2016-02-18 CRAN (R 3.3.0)
+##  plyr          1.8.4   2016-06-08 CRAN (R 3.3.0)
+##  psych         1.6.12  2017-01-08 CRAN (R 3.3.2)
+##  purrr       * 0.2.2   2016-06-18 CRAN (R 3.3.0)
+##  R6            2.2.0   2016-10-05 CRAN (R 3.3.0)
+##  rcfss       * 0.1.4   2017-02-28 local         
+##  Rcpp          0.12.9  2017-01-14 CRAN (R 3.3.2)
+##  readr       * 1.0.0   2016-08-03 CRAN (R 3.3.0)
+##  readxl        0.1.1   2016-03-28 CRAN (R 3.3.0)
+##  reshape2      1.4.2   2016-10-22 CRAN (R 3.3.0)
+##  rmarkdown     1.3     2016-12-21 CRAN (R 3.3.2)
+##  rprojroot     1.2     2017-01-16 CRAN (R 3.3.2)
+##  rvest         0.3.2   2016-06-17 CRAN (R 3.3.0)
+##  scales        0.4.1   2016-11-09 CRAN (R 3.3.1)
+##  slam          0.1-40  2016-12-01 CRAN (R 3.3.2)
+##  SnowballC     0.5.1   2014-08-09 cran (@0.5.1) 
+##  stringi       1.1.2   2016-10-01 CRAN (R 3.3.0)
+##  stringr     * 1.1.0   2016-08-19 cran (@1.1.0) 
+##  tibble      * 1.2     2016-08-26 cran (@1.2)   
+##  tidyr       * 0.6.1   2017-01-10 CRAN (R 3.3.2)
+##  tidytext    * 0.1.2   2016-10-28 CRAN (R 3.3.0)
+##  tidyverse   * 1.1.1   2017-01-27 CRAN (R 3.3.2)
+##  titanic     * 0.1.0   2015-08-31 CRAN (R 3.3.0)
+##  tm          * 0.6-2   2015-07-03 CRAN (R 3.3.0)
+##  tokenizers    0.1.4   2016-08-29 CRAN (R 3.3.0)
+##  topicmodels * 0.2-4   2016-05-23 CRAN (R 3.3.0)
+##  withr         1.0.2   2016-06-20 CRAN (R 3.3.0)
+##  xml2          1.1.1   2017-01-24 CRAN (R 3.3.2)
+##  yaml          2.1.14  2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Again, using Euclidean distance.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>This section drawn from <a href="https://www.stat.cmu.edu/~cshalizi/uADA/12/lectures/ch18.pdf">18.3 in “Principal Component Analysis”.</a>.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Actually it contains the <a href="http://cfss.uchicago.edu/text001_tidytext.html#assessing_word_and_document_frequency">term frequency-inverse document frequency</a> which downweights words that appear frequently across many documents. This is one method for guarding against any biases caused by stop words.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the <a href="https://rcc.uchicago.edu/">Research Computing Center</a>.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>I tried to estimate this model, but my computer was taking too long.<a href="#fnref5">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
