@@ -419,7 +419,91 @@ augment(slid_log_mod, slid) %>%
 
 # Non-linearity in the data
 
+By assuming the average error $E(\epsilon)$ is 0 everywhere implies that the regression line (surface) accurately reflects the relationship between $X$ and $Y$. Violating this assumption means that the model fails to capture the systematic relationship between the response and explanatory variables. Therefore here, the term **nonlinearity** could mean a couple different things:
 
+* The relationship between $X_1$ and $Y$ is nonlinear - that is, it is not constant and monotonic
+* The relationship between $X_1$ and $Y$ is conditional on $X_2$ - that is, the relationship is interactive rather than purely additive
+
+Detecting nonlinearity can be tricky in higher-dimensional regression models with multiple explanatory variables.
+
+## Partial residual plots
+
+Define the **partial residual** for the $j$th explanatory variable:
+
+$$E_i^{(j)} = E_i + B_j X_{ij}$$
+
+In essence, calculate the least-squares residual ($E_i$) and add to it the linear component of the partial relationship between $Y$ and $X_j$. Finally, we can plot $X_j$ versus $E^{(j)}$ and assess the relationship. For instance, consider the results of the logged wage model from earlier:
+
+```{r part-resid-plot}
+# get partial resids
+slid_resid <- residuals(slid_log_mod, type = "partial") %>%
+  as_tibble
+names(slid_resid) <- str_c(names(slid_resid), "_resid")
+
+slid_diag <- augment(slid_log_mod, slid) %>%
+  bind_cols(slid_resid)
+
+ggplot(slid_diag, aes(age, age_resid)) +
+  geom_point(alpha = .1) +
+  geom_smooth(se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE, linetype = 2) +
+  labs(x = "Age",
+       y = "Partial residual for age")
+
+ggplot(slid_diag, aes(yearsEducation, yearsEducation_resid)) +
+  geom_point(alpha = .1) +
+  geom_smooth(se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE, linetype = 2) +
+  labs(x = "Education (years)",
+       y = "Partial residual for education")
+```
+
+The solid lines are GAMs, while the dashed lines are linear least-squares fits. For age, the partial relationship with logged wages is not linear - some transformation of age is necessary to correct this. For education, the relationship is more approximately linear except for the discrepancy for individual with very low education levels.
+
+We can correct this by adding a squared polynomial term for age, and square the education term. The resulting regression model is:
+
+$$\log(\text{Wage}) = \beta_0 + \beta_1(\text{Male}) + \beta_2 \text{Age} + \beta_3 \text{Age}^2 + \beta_4 \text{Education}^2$$
+
+```{r slid-part-transform}
+slid_log_trans <- lm(wage_log ~ sex + I(yearsEducation^2) + age + I(age^2), data = slid)
+tidy(slid_log_trans)
+```
+
+Because the model is now nonlinear in both age and education, we need to rethink how to draw the partial residuals plot. The easiest approach is to plot the partial residuals for both age and education against the original explanatory variable. For age, that is
+
+$$E_i^{\text{Age}} = `r coef(slid_log_trans)[[4]]` \times \text{Age}_i `r formatC(coef(slid_log_trans)[[5]])` \times \text{Age}^2_i + E_i$$
+
+and for education,
+
+$$E_i^{\text{Education}} = `r coef(slid_log_trans)[[3]]` \times \text{Education}^2_i + E_i$$
+
+```{r slid-part-trans-plot}
+# get partial resids
+slid_trans_resid <- residuals(slid_log_trans, type = "partial") %>%
+  as_tibble
+names(slid_trans_resid) <- c("sex", "education", "age", "age_sq")
+names(slid_trans_resid) <- str_c(names(slid_trans_resid), "_resid")
+
+slid_trans_diag <- augment(slid_log_trans, slid) %>%
+  as_tibble %>%
+  mutate(age_resid = coef(slid_log_trans)[[4]] * age +
+           coef(slid_log_trans)[[5]] * age^2 + .resid,
+         educ_resid = coef(slid_log_trans)[[5]] * yearsEducation^2 + .resid)
+
+ggplot(slid_trans_diag, aes(age, age_resid)) +
+  geom_point(alpha = .1) +
+  geom_smooth(se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE, linetype = 2) +
+  labs(x = "Age",
+       y = "Partial residual for age")
+
+ggplot(slid_trans_diag, aes(yearsEducation, educ_resid)) +
+  geom_point(alpha = .1) +
+  geom_smooth(se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE, linetype = 2) +
+  labs(x = "Education (years)",
+       y = "Partial residual for education")
+```
 # Collinearity
 
 

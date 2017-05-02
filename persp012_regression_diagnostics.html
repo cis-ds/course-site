@@ -771,9 +771,81 @@ slid_log_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(wage_log ~
 </div>
 <div id="non-linearity-in-the-data" class="section level1">
 <h1>Non-linearity in the data</h1>
+<p>By assuming the average error <span class="math inline">\(E(\epsilon)\)</span> is 0 everywhere implies that the regression line (surface) accurately reflects the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>. Violating this assumption means that the model fails to capture the systematic relationship between the response and explanatory variables. Therefore here, the term <strong>nonlinearity</strong> could mean a couple different things:</p>
+<ul>
+<li>The relationship between <span class="math inline">\(X_1\)</span> and <span class="math inline">\(Y\)</span> is nonlinear - that is, it is not constant and monotonic</li>
+<li>The relationship between <span class="math inline">\(X_1\)</span> and <span class="math inline">\(Y\)</span> is conditional on <span class="math inline">\(X_2\)</span> - that is, the relationship is interactive rather than purely additive</li>
+</ul>
+<p>Detecting nonlinearity can be tricky in higher-dimensional regression models with multiple explanatory variables.</p>
+<div id="partial-residual-plots" class="section level2">
+<h2>Partial residual plots</h2>
+<p>Define the <strong>partial residual</strong> for the <span class="math inline">\(j\)</span>th explanatory variable:</p>
+<p><span class="math display">\[E_i^{(j)} = E_i + B_j X_{ij}\]</span></p>
+<p>In essence, calculate the least-squares residual (<span class="math inline">\(E_i\)</span>) and add to it the linear component of the partial relationship between <span class="math inline">\(Y\)</span> and <span class="math inline">\(X_j\)</span>. Finally, we can plot <span class="math inline">\(X_j\)</span> versus <span class="math inline">\(E^{(j)}\)</span> and assess the relationship. For instance, consider the results of the logged wage model from earlier:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get partial resids</span>
+slid_resid &lt;-<span class="st"> </span><span class="kw">residuals</span>(slid_log_mod, <span class="dt">type =</span> <span class="st">&quot;partial&quot;</span>) %&gt;%
+<span class="st">  </span>as_tibble
+<span class="kw">names</span>(slid_resid) &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="kw">names</span>(slid_resid), <span class="st">&quot;_resid&quot;</span>)
+
+slid_diag &lt;-<span class="st"> </span><span class="kw">augment</span>(slid_log_mod, slid) %&gt;%
+<span class="st">  </span><span class="kw">bind_cols</span>(slid_resid)
+
+<span class="kw">ggplot</span>(slid_diag, <span class="kw">aes</span>(age, age_resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Partial residual for age&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/part-resid-plot-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(slid_diag, <span class="kw">aes</span>(yearsEducation, yearsEducation_resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Education (years)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Partial residual for education&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/part-resid-plot-2.png" width="672" /></p>
+<p>The solid lines are GAMs, while the dashed lines are linear least-squares fits. For age, the partial relationship with logged wages is not linear - some transformation of age is necessary to correct this. For education, the relationship is more approximately linear except for the discrepancy for individual with very low education levels.</p>
+<p>We can correct this by adding a squared polynomial term for age, and square the education term. The resulting regression model is:</p>
+<p><span class="math display">\[\log(\text{Wage}) = \beta_0 + \beta_1(\text{Male}) + \beta_2 \text{Age} + \beta_3 \text{Age}^2 + \beta_4 \text{Education}^2\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">slid_log_trans &lt;-<span class="st"> </span><span class="kw">lm</span>(wage_log ~<span class="st"> </span>sex +<span class="st"> </span><span class="kw">I</span>(yearsEducation^<span class="dv">2</span>) +<span class="st"> </span>age +<span class="st"> </span><span class="kw">I</span>(age^<span class="dv">2</span>), <span class="dt">data =</span> slid)
+<span class="kw">tidy</span>(slid_log_trans)</code></pre></div>
+<pre><code>##                  term  estimate std.error statistic   p.value
+## 1         (Intercept)  0.396819  5.78e-02      6.87  7.62e-12
+## 2             sexMale  0.221458  1.24e-02     17.79  3.21e-68
+## 3 I(yearsEducation^2)  0.001805  7.86e-05     22.96 1.19e-109
+## 4                 age  0.083018  3.19e-03     26.05 2.93e-138
+## 5            I(age^2) -0.000852  4.10e-05    -20.78  3.85e-91</code></pre>
+<p>Because the model is now nonlinear in both age and education, we need to rethink how to draw the partial residuals plot. The easiest approach is to plot the partial residuals for both age and education against the original explanatory variable. For age, that is</p>
+<p><span class="math display">\[E_i^{\text{Age}} = 0.083 \times \text{Age}_i -0.0008524 \times \text{Age}^2_i + E_i\]</span></p>
+<p>and for education,</p>
+<p><span class="math display">\[E_i^{\text{Education}} = 0.002 \times \text{Education}^2_i + E_i\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get partial resids</span>
+slid_trans_resid &lt;-<span class="st"> </span><span class="kw">residuals</span>(slid_log_trans, <span class="dt">type =</span> <span class="st">&quot;partial&quot;</span>) %&gt;%
+<span class="st">  </span>as_tibble
+<span class="kw">names</span>(slid_trans_resid) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;education&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;age_sq&quot;</span>)
+<span class="kw">names</span>(slid_trans_resid) &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="kw">names</span>(slid_trans_resid), <span class="st">&quot;_resid&quot;</span>)
+
+slid_trans_diag &lt;-<span class="st"> </span><span class="kw">augment</span>(slid_log_trans, slid) %&gt;%
+<span class="st">  </span>as_tibble %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">age_resid =</span> <span class="kw">coef</span>(slid_log_trans)[[<span class="dv">4</span>]] *<span class="st"> </span>age +
+<span class="st">           </span><span class="kw">coef</span>(slid_log_trans)[[<span class="dv">5</span>]] *<span class="st"> </span>age^<span class="dv">2</span> +<span class="st"> </span>.resid,
+         <span class="dt">educ_resid =</span> <span class="kw">coef</span>(slid_log_trans)[[<span class="dv">5</span>]] *<span class="st"> </span>yearsEducation^<span class="dv">2</span> +<span class="st"> </span>.resid)
+
+<span class="kw">ggplot</span>(slid_trans_diag, <span class="kw">aes</span>(age, age_resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Partial residual for age&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-part-trans-plot-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(slid_trans_diag, <span class="kw">aes</span>(yearsEducation, educ_resid)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">alpha =</span> .<span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Education (years)&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Partial residual for education&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-part-trans-plot-2.png" width="672" /> # Collinearity</p>
 </div>
-<div id="collinearity" class="section level1">
-<h1>Collinearity</h1>
 </div>
 <div id="applying-to-glms" class="section level1">
 <h1>Applying to GLMs</h1>
@@ -790,74 +862,63 @@ slid_log_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(wage_log ~
 ##  tz       America/Chicago             
 ##  date     2017-05-02                  
 ## 
-##  package      * version    date       source                           
-##  assertthat     0.2.0      2017-04-11 cran (@0.2.0)                    
-##  backports      1.0.5      2017-01-18 CRAN (R 3.3.2)                   
-##  broom        * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
-##  car            2.1-4      2016-12-02 CRAN (R 3.3.2)                   
-##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.3)                   
-##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                   
-##  curl           2.3        2016-11-24 CRAN (R 3.3.2)                   
-##  DBI            0.6        2017-03-09 CRAN (R 3.3.3)                   
-##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                   
-##  digest         0.6.12     2017-01-27 CRAN (R 3.3.2)                   
-##  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
-##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                   
-##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
-##  foreign        0.8-67     2016-09-13 CRAN (R 3.3.3)                   
-##  ggplot2      * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
-##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                   
-##  haven        * 1.0.0      2016-09-23 cran (@1.0.0)                    
-##  hms            0.3        2016-11-22 CRAN (R 3.3.2)                   
-##  htmltools      0.3.6      2017-04-28 cran (@0.3.6)                    
-##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                   
-##  ISLR         * 1.0        2013-06-11 CRAN (R 3.3.0)                   
-##  jsonlite       1.4        2017-04-08 cran (@1.4)                      
-##  knitr          1.15.1     2016-11-22 cran (@1.15.1)                   
-##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                   
-##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.3)                   
-##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                   
-##  lme4           1.1-12     2016-04-16 cran (@1.1-12)                   
-##  lubridate      1.6.0      2016-09-13 CRAN (R 3.3.0)                   
-##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                   
-##  MASS           7.3-45     2016-04-21 CRAN (R 3.3.0)                   
-##  Matrix         1.2-8      2017-01-20 CRAN (R 3.3.3)                   
-##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.3.0)                   
-##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                   
-##  mgcv           1.8-17     2017-02-08 CRAN (R 3.3.3)                   
-##  minqa          1.2.4      2014-10-09 cran (@1.2.4)                    
-##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                   
-##  modelr       * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
-##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                   
-##  nlme           3.1-131    2017-02-06 CRAN (R 3.3.3)                   
-##  nloptr         1.0.4      2014-08-04 cran (@1.0.4)                    
-##  nnet           7.3-12     2016-02-02 CRAN (R 3.3.3)                   
-##  pbkrtest       0.4-6      2016-01-27 CRAN (R 3.3.0)                   
-##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                   
-##  psych          1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
-##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
-##  quantreg       5.29       2016-09-04 CRAN (R 3.3.0)                   
-##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                   
-##  rcfss        * 0.1.4      2017-02-28 local                            
-##  Rcpp           0.12.10    2017-03-19 cran (@0.12.10)                  
-##  readr        * 1.1.0      2017-03-22 cran (@1.1.0)                    
-##  readxl         0.1.1      2016-03-28 CRAN (R 3.3.0)                   
-##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                   
-##  rlang          0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
-##  rmarkdown      1.3        2016-12-21 CRAN (R 3.3.2)                   
-##  rprojroot      1.2        2017-01-16 CRAN (R 3.3.2)                   
-##  rvest          0.3.2      2016-06-17 CRAN (R 3.3.0)                   
-##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                   
-##  SparseM        1.74       2016-11-10 CRAN (R 3.3.2)                   
-##  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                   
-##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
-##  tibble       * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
-##  tidyr        * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
-##  tidyverse    * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
-##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
-##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                   
-##  xml2           1.1.1      2017-01-24 CRAN (R 3.3.2)                   
-##  yaml           2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+##  package    * version    date       source                           
+##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                    
+##  backports    1.0.5      2017-01-18 CRAN (R 3.3.2)                   
+##  broom      * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                   
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                   
+##  DBI          0.6        2017-03-09 CRAN (R 3.3.3)                   
+##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                   
+##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                   
+##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
+##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                   
+##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
+##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.3)                   
+##  ggplot2    * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                   
+##  haven      * 1.0.0      2016-09-23 cran (@1.0.0)                    
+##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                   
+##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                    
+##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                   
+##  ISLR       * 1.0        2013-06-11 CRAN (R 3.3.0)                   
+##  jsonlite     1.4        2017-04-08 cran (@1.4)                      
+##  knitr        1.15.1     2016-11-22 cran (@1.15.1)                   
+##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                   
+##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.3)                   
+##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                   
+##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                   
+##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                   
+##  Matrix       1.2-8      2017-01-20 CRAN (R 3.3.3)                   
+##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                   
+##  mgcv         1.8-17     2017-02-08 CRAN (R 3.3.3)                   
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                   
+##  modelr     * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                   
+##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                   
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                   
+##  psych        1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
+##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
+##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                   
+##  rcfss      * 0.1.4      2017-02-28 local                            
+##  Rcpp         0.12.10    2017-03-19 cran (@0.12.10)                  
+##  readr      * 1.1.0      2017-03-22 cran (@1.1.0)                    
+##  readxl       0.1.1      2016-03-28 CRAN (R 3.3.0)                   
+##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                   
+##  rlang        0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
+##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                   
+##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                   
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                   
+##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                   
+##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                   
+##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
+##  tibble     * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
+##  tidyr      * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
+##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
+##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
+##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                   
+##  xml2         1.1.1      2017-01-24 CRAN (R 3.3.2)                   
+##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
