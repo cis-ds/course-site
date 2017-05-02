@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30200 - Perspectives on Computational Research" />
+
+
+<title>Diagnostic tests for OLS/GLM</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Diagnostic tests for OLS/GLM</h1>
+<h4 class="author"><em>MACS 30200 - Perspectives on Computational Research</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Identify key assumptions of linear regression models</li>
+<li>Explain how to use residual plots for dianosing violations of regression assumptions</li>
+<li>Introduce methods for detecting and resolving unusual and influential data</li>
+<li>Introduce methods for detecting and resolving non-normally distributed errors</li>
+<li>Introduce methods for detecting and resolving non-constant variance of error terms</li>
+<li>Introduce methods for detecting and resolving non-linearity in the data</li>
+<li>Introduce methods for detecting and resolving collinearity</li>
+<li>Identify how to extend these methods to GLMs</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(forcats)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(ISLR)
+<span class="kw">library</span>(titanic)
+<span class="kw">library</span>(rcfss)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="assumptions-of-linear-regression-models" class="section level1">
+<h1>Assumptions of linear regression models</h1>
+<p>Basic linear regression follows the functional form:</p>
+<p><span class="math display">\[Y_i = \alpha + \beta x_i + \epsilon_i\]</span></p>
+<p>where <span class="math inline">\(Y_i\)</span> is the value of the response variable <span class="math inline">\(Y\)</span> for the <span class="math inline">\(i\)</span>th observation, <span class="math inline">\(x_i\)</span> is the value for the explanatory variable <span class="math inline">\(X\)</span> for the <span class="math inline">\(i\)</span>th observation. The coefficients <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are <strong>population regression coefficients</strong> - our goal is to estimate these population parameters given the observed data. <span class="math inline">\(\epsilon_i\)</span> is the error representing the aggregated omitted causes of <span class="math inline">\(Y\)</span>, other explanatory variables that could be included in the model, measurement error in <span class="math inline">\(Y\)</span>, and any inherently random component of <span class="math inline">\(Y\)</span>.</p>
+<p>The key assumptions of linear regression concern the behavior of the errors. If these assumptions are violated, conducting inference from linear regression becomes tricky, biased, inefficient, and/or error prone.</p>
+<div id="linearity" class="section level4">
+<h4>Linearity</h4>
+<p>The expectation of the error<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> is 0:</p>
+<p><span class="math display">\[E(\epsilon_i) \equiv E(\epsilon | x_i) = 0\]</span></p>
+<p>This allows us to recover the expected value of the response variable as a linear function of the explanatory variable:</p>
+<p><span class="math display">\[\mu_i \equiv E(Y_i) \equiv E(Y | x_i) = E(\alpha + \beta x_i + \epsilon)\]</span> <span class="math display">\[\mu_i = \alpha + \beta x_i + E(\epsilon)\]</span> <span class="math display">\[\mu_i = \alpha + \beta x_i + 0\]</span> <span class="math display">\[\mu_i = \alpha + \beta x_i\]</span></p>
+<blockquote>
+<p>Because <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are fixed parameters in the population, we can remove them from the expectation operator.</p>
+</blockquote>
+</div>
+<div id="constant-variance" class="section level4">
+<h4>Constant variance</h4>
+<p>The variance of the errors is the same regardless of the values of <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[V(\epsilon | x_i) = \sigma_{\epsilon}^2\]</span></p>
+</div>
+<div id="normality" class="section level4">
+<h4>Normality</h4>
+<p>The errors are assumped to be normally distributed:</p>
+<p><span class="math display">\[\epsilon \sim N(0, \sigma_\epsilon^2)\]</span></p>
+</div>
+<div id="independence" class="section level4">
+<h4>Independence</h4>
+<p>Observations are sampled independently from one another. Any pair of errors <span class="math inline">\(\epsilon_i\)</span> and <span class="math inline">\(\epsilon_j\)</span> are independent for <span class="math inline">\(i \neq j\)</span>. Simple random sampling from a large population will ensure this assumption is met. However data collection procedures frequently (and explicitly) violate this assumption (e.g. time series data, panel survey data).</p>
+</div>
+<div id="fixed-x-or-x-measured-without-error-and-independent-of-the-error" class="section level4">
+<h4>Fixed <span class="math inline">\(X\)</span>, or <span class="math inline">\(X\)</span> measured without error and independent of the error</h4>
+<p><span class="math inline">\(X\)</span> is assumed to be fixed or measured without error and independent of the error. With a fixed <span class="math inline">\(X\)</span>, the researcher controls the precise value of <span class="math inline">\(X\)</span> for a given observation (think experimental design with treatment/control). In observational study, we assume <span class="math inline">\(X\)</span> is measured without error and that the explantory variable and the error are independent in the population from which the sample is drawn.</p>
+<p><span class="math display">\[\epsilon_i \sim N(0, \sigma_\epsilon^2), \text{for } i = 1, \dots, n\]</span></p>
+</div>
+<div id="x-is-not-invariant" class="section level4">
+<h4><span class="math inline">\(X\)</span> is not invariant</h4>
+<p>If <span class="math inline">\(X\)</span> is fixed, it must vary (i.e. it’s values cannot all be the same). If <span class="math inline">\(X\)</span> is random, then in the population <span class="math inline">\(X\)</span> must vary. You cannot estimate a regression line for an invariant <span class="math inline">\(X\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="dv">1</span>,
+           <span class="dt">y =</span> <span class="kw">rnorm</span>(<span class="dv">10</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;You cannot regress this&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Slope is undefined&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/invariant-1.png" width="672" /></p>
+</div>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.3 (2017-03-06)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-05-02                  
+## 
+##  package    * version    date       source                           
+##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                    
+##  backports    1.0.5      2017-01-18 CRAN (R 3.3.2)                   
+##  broom      * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                   
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                   
+##  DBI          0.6        2017-03-09 CRAN (R 3.3.3)                   
+##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                   
+##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                   
+##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
+##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                   
+##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
+##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.3)                   
+##  ggplot2    * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                   
+##  haven        1.0.0      2016-09-23 cran (@1.0.0)                    
+##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                   
+##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                    
+##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                   
+##  ISLR       * 1.0        2013-06-11 CRAN (R 3.3.0)                   
+##  jsonlite     1.4        2017-04-08 cran (@1.4)                      
+##  knitr        1.15.1     2016-11-22 cran (@1.15.1)                   
+##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                   
+##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.3)                   
+##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                   
+##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                   
+##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                   
+##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                   
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                   
+##  modelr     * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                   
+##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                   
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                   
+##  psych        1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
+##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
+##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                   
+##  rcfss      * 0.1.4      2017-02-28 local                            
+##  Rcpp         0.12.10    2017-03-19 cran (@0.12.10)                  
+##  readr      * 1.1.0      2017-03-22 cran (@1.1.0)                    
+##  readxl       0.1.1      2016-03-28 CRAN (R 3.3.0)                   
+##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                   
+##  rlang        0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
+##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                   
+##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                   
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                   
+##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                   
+##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                   
+##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
+##  tibble     * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
+##  tidyr      * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
+##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
+##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
+##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                   
+##  xml2         1.1.1      2017-01-24 CRAN (R 3.3.2)                   
+##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The average value of <span class="math inline">\(\epsilon\)</span> given <span class="math inline">\(XS\)</span><a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

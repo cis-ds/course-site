@@ -1,0 +1,111 @@
+---
+title: "Diagnostic tests for OLS/GLM"
+author: "MACS 30200 - Perspectives on Computational Research"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Identify key assumptions of linear regression models
+* Explain how to use residual plots for dianosing violations of regression assumptions
+* Introduce methods for detecting and resolving unusual and influential data
+* Introduce methods for detecting and resolving non-normally distributed errors
+* Introduce methods for detecting and resolving non-constant variance of error terms
+* Introduce methods for detecting and resolving non-linearity in the data
+* Introduce methods for detecting and resolving collinearity
+* Identify how to extend these methods to GLMs
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(forcats)
+library(broom)
+library(modelr)
+library(stringr)
+library(ISLR)
+library(titanic)
+library(rcfss)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Assumptions of linear regression models
+
+Basic linear regression follows the functional form:
+
+$$Y_i = \alpha + \beta x_i + \epsilon_i$$
+
+where $Y_i$ is the value of the response variable $Y$ for the $i$th observation, $x_i$ is the value for the explanatory variable $X$ for the $i$th observation. The coefficients $\alpha$ and $\beta$ are **population regression coefficients** - our goal is to estimate these population parameters given the observed data. $\epsilon_i$ is the error representing the aggregated omitted causes of $Y$, other explanatory variables that could be included in the model, measurement error in $Y$, and any inherently random component of $Y$.
+
+The key assumptions of linear regression concern the behavior of the errors. If these assumptions are violated, conducting inference from linear regression becomes tricky, biased, inefficient, and/or error prone.
+
+#### Linearity
+
+The expectation of the error^[The average value of $\epsilon$ given $XS$] is 0:
+
+$$E(\epsilon_i) \equiv E(\epsilon | x_i) = 0$$
+
+This allows us to recover the expected value of the response variable as a linear function of the explanatory variable:
+
+$$\mu_i \equiv E(Y_i) \equiv E(Y | x_i) = E(\alpha + \beta x_i + \epsilon)$$
+$$\mu_i = \alpha + \beta x_i + E(\epsilon)$$
+$$\mu_i = \alpha + \beta x_i + 0$$
+$$\mu_i = \alpha + \beta x_i$$
+
+> Because $\alpha$ and $\beta$ are fixed parameters in the population, we can remove them from the expectation operator.
+
+#### Constant variance
+
+The variance of the errors is the same regardless of the values of $X$:
+
+$$V(\epsilon | x_i) = \sigma_{\epsilon}^2$$
+
+#### Normality
+
+The errors are assumped to be normally distributed:
+
+$$\epsilon \sim N(0, \sigma_\epsilon^2)$$
+
+#### Independence
+
+Observations are sampled independently from one another. Any pair of errors $\epsilon_i$ and $\epsilon_j$ are independent for $i \neq j$. Simple random sampling from a large population will ensure this assumption is met. However data collection procedures frequently (and explicitly) violate this assumption (e.g. time series data, panel survey data).
+
+#### Fixed $X$, or $X$ measured without error and independent of the error
+
+$X$ is assumed to be fixed or measured without error and independent of the error. With a fixed $X$, the researcher controls the precise value of $X$ for a given observation (think experimental design with treatment/control). In observational study, we assume $X$ is measured without error and that the explantory variable and the error are independent in the population from which the sample is drawn.
+
+$$\epsilon_i \sim N(0, \sigma_\epsilon^2), \text{for } i = 1, \dots, n$$
+
+#### $X$ is not invariant
+
+If $X$ is fixed, it must vary (i.e. it's values cannot all be the same). If $X$ is random, then in the population $X$ must vary. You cannot estimate a regression line for an invariant $X$.
+
+```{r invariant}
+data_frame(x = 1,
+           y = rnorm(10)) %>%
+  ggplot(aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(title = "You cannot regress this",
+       subtitle = "Slope is undefined")
+```
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
