@@ -380,6 +380,7 @@ div.tocify {
 <span class="kw">library</span>(titanic)
 <span class="kw">library</span>(rcfss)
 <span class="kw">library</span>(haven)
+<span class="kw">library</span>(car)
 
 <span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
@@ -844,7 +845,206 @@ slid_trans_diag &lt;-<span class="st"> </span><span class="kw">augment</span>(sl
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Education (years)&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Partial residual for education&quot;</span>)</code></pre></div>
-<p><img src="persp012_regression_diagnostics_files/figure-html/slid-part-trans-plot-2.png" width="672" /> # Collinearity</p>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-part-trans-plot-2.png" width="672" /></p>
+</div>
+</div>
+<div id="collinearity" class="section level1">
+<h1>Collinearity</h1>
+<p><strong>Collinearity</strong> (or <strong>multicollinearity</strong>) is a state of a model where explanatory variables are correlated with one another.</p>
+<div id="perfect-collinearity" class="section level2">
+<h2>Perfect collinearity</h2>
+<p>Perfect collinearity is incredibly rare, and typically involves using transformed versions of a variable in the model <strong>along with the original variable</strong>. For example, let’s estimate a regression model explaining <code>mpg</code> as a function of <code>displ</code>, <code>wt</code>, and <code>cyl</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars1 &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>wt +<span class="st"> </span>cyl, <span class="dt">data =</span> mtcars)
+<span class="kw">summary</span>(mtcars1)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ disp + wt + cyl, data = mtcars)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.403 -1.403 -0.495  1.339  6.072 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 41.10768    2.84243   14.46  1.6e-14 ***
+## disp         0.00747    0.01184    0.63   0.5332    
+## wt          -3.63568    1.04014   -3.50   0.0016 ** 
+## cyl         -1.78494    0.60711   -2.94   0.0065 ** 
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.59 on 28 degrees of freedom
+## Multiple R-squared:  0.833,  Adjusted R-squared:  0.815 
+## F-statistic: 46.4 on 3 and 28 DF,  p-value: 5.4e-11</code></pre>
+<p>Now let’s say we want to recode <code>displ</code> so it is centered around it’s mean and reestimate the model:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars &lt;-<span class="st"> </span>mtcars %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">disp_mean =</span> disp -<span class="st"> </span><span class="kw">mean</span>(disp))
+
+mtcars2 &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg ~<span class="st"> </span>disp +<span class="st"> </span>wt +<span class="st"> </span>cyl +<span class="st"> </span>disp_mean, <span class="dt">data =</span> mtcars)
+<span class="kw">summary</span>(mtcars2)</code></pre></div>
+<pre><code>## 
+## Call:
+## lm(formula = mpg ~ disp + wt + cyl + disp_mean, data = mtcars)
+## 
+## Residuals:
+##    Min     1Q Median     3Q    Max 
+## -4.403 -1.403 -0.495  1.339  6.072 
+## 
+## Coefficients: (1 not defined because of singularities)
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 41.10768    2.84243   14.46  1.6e-14 ***
+## disp         0.00747    0.01184    0.63   0.5332    
+## wt          -3.63568    1.04014   -3.50   0.0016 ** 
+## cyl         -1.78494    0.60711   -2.94   0.0065 ** 
+## disp_mean         NA         NA      NA       NA    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 2.59 on 28 degrees of freedom
+## Multiple R-squared:  0.833,  Adjusted R-squared:  0.815 
+## F-statistic: 46.4 on 3 and 28 DF,  p-value: 5.4e-11</code></pre>
+<p>Ooops. What’s the problem? <code>disp</code> and <code>disp_mean</code> are perfectly correlated with each other:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(mtcars, <span class="kw">aes</span>(disp, disp_mean)) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/mtcars-cor-1.png" width="672" /></p>
+<p>Because they perfectly explain each other, we cannot estimate a linear regression model that contains both variables.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> Fortunately R automatically drops the second variable so it can estimate the model. Because of this, perfect multicollinearity is rarely problematic in social science.</p>
+</div>
+<div id="less-than-perfect-collinearity" class="section level2">
+<h2>Less-than-perfect collinearity</h2>
+<p>Instead consider the credit dataset:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">credit &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Credit.csv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-X1)
+<span class="kw">names</span>(credit) &lt;-<span class="st"> </span><span class="kw">tolower</span>(<span class="kw">names</span>(credit))
+
+<span class="kw">ggplot</span>(credit, <span class="kw">aes</span>(limit, age)) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/credit-1.png" width="672" /></p>
+<p>Age and limit are not strongly correlated with one another, so estimating a linear regression model to predict an individual’s balance as a function of age and limit is not a problem:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_limit &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>age +<span class="st"> </span>limit, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(age_limit)</code></pre></div>
+<pre><code>##          term estimate std.error statistic   p.value
+## 1 (Intercept) -173.411  43.82839     -3.96  9.01e-05
+## 2         age   -2.291   0.67248     -3.41  7.23e-04
+## 3       limit    0.173   0.00503     34.50 1.63e-121</code></pre>
+<p>But what about using an individuals credit card rating instead of age? It is likely a good predictor of balance as well:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(credit, <span class="kw">aes</span>(rating, balance)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/add-rating-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">limit_rate &lt;-<span class="st"> </span><span class="kw">lm</span>(balance ~<span class="st"> </span>limit +<span class="st"> </span>rating, <span class="dt">data =</span> credit)
+<span class="kw">tidy</span>(limit_rate)</code></pre></div>
+<pre><code>##          term  estimate std.error statistic  p.value
+## 1 (Intercept) -377.5368   45.2542    -8.343 1.21e-15
+## 2       limit    0.0245    0.0638     0.384 7.01e-01
+## 3      rating    2.2017    0.9523     2.312 2.13e-02</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coefplot::<span class="kw">multiplot</span>(age_limit, limit_rate)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/add-rating-2.png" width="672" /></p>
+<p>By replacing age with rating, we developed a problem in our model. The problem is that limit and rating are strongly correlated with one another:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(credit, <span class="kw">aes</span>(limit, rating)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/limit-rate-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">coefplot::<span class="kw">multiplot</span>(age_limit, limit_rate, <span class="dt">predictors =</span> <span class="st">&quot;limit&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/limit-rate-2.png" width="672" /></p>
+<p>In the regression model, it is difficult to parse out the independent effects of limit and rating on balance, because limit and rating tend to increase and decrease in association with one another. Because the accuracy of our estimates of the parameters is reduced, the standard errors increase. This is why you can see above that the standard error for limit is much larger in the second model compared to the first model.</p>
+<div id="detecting-collinearity" class="section level3">
+<h3>Detecting collinearity</h3>
+<div id="scatterplot-matrix" class="section level4">
+<h4>Scatterplot matrix</h4>
+<p>A correlation or scatterplot matrix would help to reveal any strongly correlated variables:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cormat_heatmap &lt;-<span class="st"> </span>function(data){
+  <span class="co"># generate correlation matrix</span>
+  cormat &lt;-<span class="st"> </span><span class="kw">round</span>(<span class="kw">cor</span>(data), <span class="dv">2</span>)
+  
+  <span class="co"># melt into a tidy table</span>
+  get_upper_tri &lt;-<span class="st"> </span>function(cormat){
+    cormat[<span class="kw">lower.tri</span>(cormat)]&lt;-<span class="st"> </span><span class="ot">NA</span>
+    <span class="kw">return</span>(cormat)
+  }
+  
+  upper_tri &lt;-<span class="st"> </span><span class="kw">get_upper_tri</span>(cormat)
+  
+  <span class="co"># reorder matrix based on coefficient value</span>
+  reorder_cormat &lt;-<span class="st"> </span>function(cormat){
+    <span class="co"># Use correlation between variables as distance</span>
+    dd &lt;-<span class="st"> </span><span class="kw">as.dist</span>((<span class="dv">1</span>-cormat)/<span class="dv">2</span>)
+    hc &lt;-<span class="st"> </span><span class="kw">hclust</span>(dd)
+    cormat &lt;-cormat[hc$order, hc$order]
+  }
+  
+  cormat &lt;-<span class="st"> </span><span class="kw">reorder_cormat</span>(cormat)
+  upper_tri &lt;-<span class="st"> </span><span class="kw">get_upper_tri</span>(cormat)
+  
+  <span class="co"># Melt the correlation matrix</span>
+  melted_cormat &lt;-<span class="st"> </span>reshape2::<span class="kw">melt</span>(upper_tri, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+  
+  <span class="co"># Create a ggheatmap</span>
+  ggheatmap &lt;-<span class="st"> </span><span class="kw">ggplot</span>(melted_cormat, <span class="kw">aes</span>(Var2, Var1, <span class="dt">fill =</span> value))+
+<span class="st">    </span><span class="kw">geom_tile</span>(<span class="dt">color =</span> <span class="st">&quot;white&quot;</span>)+
+<span class="st">    </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">low =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">high =</span> <span class="st">&quot;red&quot;</span>, <span class="dt">mid =</span> <span class="st">&quot;white&quot;</span>, 
+                         <span class="dt">midpoint =</span> <span class="dv">0</span>, <span class="dt">limit =</span> <span class="kw">c</span>(-<span class="dv">1</span>,<span class="dv">1</span>), <span class="dt">space =</span> <span class="st">&quot;Lab&quot;</span>, 
+                         <span class="dt">name=</span><span class="st">&quot;Pearson</span><span class="ch">\n</span><span class="st">Correlation&quot;</span>) +
+<span class="st">    </span><span class="kw">theme_minimal</span>()+<span class="st"> </span><span class="co"># minimal theme</span>
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">45</span>, <span class="dt">vjust =</span> <span class="dv">1</span>, 
+                                     <span class="dt">size =</span> <span class="dv">12</span>, <span class="dt">hjust =</span> <span class="dv">1</span>))+
+<span class="st">    </span><span class="kw">coord_fixed</span>()
+  
+  <span class="co"># add correlation values to graph</span>
+  ggheatmap +<span class="st"> </span>
+<span class="st">    </span><span class="kw">geom_text</span>(<span class="kw">aes</span>(Var2, Var1, <span class="dt">label =</span> value), <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">size =</span> <span class="dv">4</span>) +
+<span class="st">    </span><span class="kw">theme</span>(
+      <span class="dt">axis.title.x =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">axis.title.y =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">panel.grid.major =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">panel.border =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">panel.background =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">axis.ticks =</span> <span class="kw">element_blank</span>(),
+      <span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)
+}
+
+<span class="kw">cormat_heatmap</span>(<span class="kw">select_if</span>(credit, is.numeric))</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/credit-cor-mat-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(GGally)
+<span class="kw">ggpairs</span>(<span class="kw">select_if</span>(credit, is.numeric))</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/credit-scatter-mat-1.png" width="672" /></p>
+<p>Here it is very clear that limit and rating are strongly correlated with one another.</p>
+</div>
+<div id="variance-inflation-factor-vif" class="section level4">
+<h4>Variance inflation factor (VIF)</h4>
+<p>Unfortunately correlation matricies may not be sufficient to detect collinearity if the correlation exists between three or more variables (aka <strong>multicollinearity</strong>) <em>while not existing between any two pairs of these variables</em>. Instead, we can calculate the variance inflation factor (VIF) which is the ratio of the variance of <span class="math inline">\(\hat{\beta}_j\)</span> when fitting the full model divided by the variance of <span class="math inline">\(\hat{\beta}_j\)</span> if fit on its own model. We can use the <code>car::vif()</code> function in R to calculate this statistic for each coefficient. A good rule of thumb is that a VIF statistic greater than 10 indicates potential multicollinearity in the model. Applied to the <code>credit</code> regression models above:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vif</span>(age_limit)</code></pre></div>
+<pre><code>##   age limit 
+##  1.01  1.01</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vif</span>(limit_rate)</code></pre></div>
+<pre><code>##  limit rating 
+##    160    160</code></pre>
+</div>
+</div>
+</div>
+<div id="fixing-multicollinearity" class="section level2">
+<h2>Fixing multicollinearity</h2>
+<div id="what-not-to-do" class="section level3">
+<h3>What not to do</h3>
+<blockquote>
+<p>Drop one or more of the collinear variables from the model</p>
+</blockquote>
+<p>This is not a good idea, even if it makes your results “significant”. By omitting the variable, you are completely respecifying your model <strong>in direct contradiction to your theory</strong>. If your theory suggests that a variable can be dropped, go ahead. But if not, then don’t do it.</p>
+</div>
+<div id="what-you-could-do-instead" class="section level3">
+<h3>What you could do instead</h3>
+<div id="add-data" class="section level4">
+<h4>Add data</h4>
+<p>The more observations, the better. It could at least decrease your standard errors and give you more precise estimates. And if you add “odd” or unusual observations, it could also reduce the degree of multicollinearity.</p>
+</div>
+<div id="transform-the-covariates" class="section level4">
+<h4>Transform the covariates</h4>
+<p>If the variables are indicators of the same underlying concept, you can combine them into an index variable. This could be an <strong>additive index</strong> where you sum up comparable covariates or binary indicators. Alternatively, you could create an index via <a href="persp011_unsupervised.html#principal_components_analysis"><strong>principal components analysis</strong></a>.</p>
+</div>
+<div id="shrinkage-methods" class="section level4">
+<h4>Shrinkage methods</h4>
+<p>See chapter 6 in ISLR.</p>
+</div>
+</div>
 </div>
 </div>
 <div id="applying-to-glms" class="section level1">
@@ -862,63 +1062,75 @@ slid_trans_diag &lt;-<span class="st"> </span><span class="kw">augment</span>(sl
 ##  tz       America/Chicago             
 ##  date     2017-05-02                  
 ## 
-##  package    * version    date       source                           
-##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                    
-##  backports    1.0.5      2017-01-18 CRAN (R 3.3.2)                   
-##  broom      * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
-##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                   
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                   
-##  DBI          0.6        2017-03-09 CRAN (R 3.3.3)                   
-##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                   
-##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                   
-##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
-##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                   
-##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
-##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.3)                   
-##  ggplot2    * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                   
-##  haven      * 1.0.0      2016-09-23 cran (@1.0.0)                    
-##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                   
-##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                    
-##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                   
-##  ISLR       * 1.0        2013-06-11 CRAN (R 3.3.0)                   
-##  jsonlite     1.4        2017-04-08 cran (@1.4)                      
-##  knitr        1.15.1     2016-11-22 cran (@1.15.1)                   
-##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                   
-##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.3)                   
-##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                   
-##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                   
-##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                   
-##  Matrix       1.2-8      2017-01-20 CRAN (R 3.3.3)                   
-##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                   
-##  mgcv         1.8-17     2017-02-08 CRAN (R 3.3.3)                   
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                   
-##  modelr     * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                   
-##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                   
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                   
-##  psych        1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
-##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
-##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                   
-##  rcfss      * 0.1.4      2017-02-28 local                            
-##  Rcpp         0.12.10    2017-03-19 cran (@0.12.10)                  
-##  readr      * 1.1.0      2017-03-22 cran (@1.1.0)                    
-##  readxl       0.1.1      2016-03-28 CRAN (R 3.3.0)                   
-##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                   
-##  rlang        0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
-##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                   
-##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                   
-##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                   
-##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                   
-##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                   
-##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
-##  tibble     * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
-##  tidyr      * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
-##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
-##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
-##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                   
-##  xml2         1.1.1      2017-01-24 CRAN (R 3.3.2)                   
-##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version    date       source                           
+##  assertthat     0.2.0      2017-04-11 cran (@0.2.0)                    
+##  backports      1.0.5      2017-01-18 CRAN (R 3.3.2)                   
+##  broom        * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
+##  car          * 2.1-4      2016-12-02 CRAN (R 3.3.2)                   
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.3)                   
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                   
+##  DBI            0.6        2017-03-09 CRAN (R 3.3.3)                   
+##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                   
+##  digest         0.6.12     2017-01-27 CRAN (R 3.3.2)                   
+##  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
+##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                   
+##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
+##  foreign        0.8-67     2016-09-13 CRAN (R 3.3.3)                   
+##  GGally       * 1.3.0      2016-11-13 CRAN (R 3.3.2)                   
+##  ggplot2      * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                   
+##  haven        * 1.0.0      2016-09-23 cran (@1.0.0)                    
+##  hms            0.3        2016-11-22 CRAN (R 3.3.2)                   
+##  htmltools      0.3.6      2017-04-28 cran (@0.3.6)                    
+##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                   
+##  ISLR         * 1.0        2013-06-11 CRAN (R 3.3.0)                   
+##  jsonlite       1.4        2017-04-08 cran (@1.4)                      
+##  knitr          1.15.1     2016-11-22 cran (@1.15.1)                   
+##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.3)                   
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                   
+##  lme4           1.1-12     2016-04-16 cran (@1.1-12)                   
+##  lubridate      1.6.0      2016-09-13 CRAN (R 3.3.0)                   
+##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                   
+##  MASS           7.3-45     2016-04-21 CRAN (R 3.3.0)                   
+##  Matrix         1.2-8      2017-01-20 CRAN (R 3.3.3)                   
+##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.3.0)                   
+##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                   
+##  mgcv           1.8-17     2017-02-08 CRAN (R 3.3.3)                   
+##  minqa          1.2.4      2014-10-09 cran (@1.2.4)                    
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                   
+##  modelr       * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                   
+##  nlme           3.1-131    2017-02-06 CRAN (R 3.3.3)                   
+##  nloptr         1.0.4      2014-08-04 cran (@1.0.4)                    
+##  nnet           7.3-12     2016-02-02 CRAN (R 3.3.3)                   
+##  pbkrtest       0.4-6      2016-01-27 CRAN (R 3.3.0)                   
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                   
+##  psych          1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
+##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
+##  quantreg       5.29       2016-09-04 CRAN (R 3.3.0)                   
+##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                   
+##  rcfss        * 0.1.4      2017-02-28 local                            
+##  RColorBrewer   1.1-2      2014-12-07 CRAN (R 3.3.0)                   
+##  Rcpp           0.12.10    2017-03-19 cran (@0.12.10)                  
+##  readr        * 1.1.0      2017-03-22 cran (@1.1.0)                    
+##  readxl         0.1.1      2016-03-28 CRAN (R 3.3.0)                   
+##  reshape        0.8.6      2016-10-21 CRAN (R 3.3.0)                   
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                   
+##  rlang          0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
+##  rmarkdown      1.3        2016-12-21 CRAN (R 3.3.2)                   
+##  rprojroot      1.2        2017-01-16 CRAN (R 3.3.2)                   
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.3.0)                   
+##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                   
+##  SparseM        1.74       2016-11-10 CRAN (R 3.3.2)                   
+##  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                   
+##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
+##  tibble       * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
+##  tidyr        * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
+##  tidyverse    * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
+##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                   
+##  xml2           1.1.1      2017-01-24 CRAN (R 3.3.2)                   
+##  yaml           2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
@@ -926,6 +1138,7 @@ slid_trans_diag &lt;-<span class="st"> </span><span class="kw">augment</span>(sl
 <li id="fn1"><p>The average value of <span class="math inline">\(\epsilon\)</span> given <span class="math inline">\(XS\)</span><a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>74th (1935-36), 98th (1983-84), and 104th (1995-96).<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Assuming the sample size is sufficiently large.<a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Basically we cannot invert the variance-covariance matrix of <span class="math inline">\(\mathbf{X}\)</span> because the collinear columns in <span class="math inline">\(\mathbf{X}\)</span> are perfectly linearly dependent on each other. Because of this, we cannot get parameter estimates or standard errors for the model.<a href="#fnref4">↩</a></p></li>
 </ol>
 </div>
 

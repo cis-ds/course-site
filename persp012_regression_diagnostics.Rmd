@@ -35,6 +35,7 @@ library(ISLR)
 library(titanic)
 library(rcfss)
 library(haven)
+library(car)
 
 options(digits = 3)
 set.seed(1234)
@@ -504,8 +505,181 @@ ggplot(slid_trans_diag, aes(yearsEducation, educ_resid)) +
   labs(x = "Education (years)",
        y = "Partial residual for education")
 ```
+
 # Collinearity
 
+**Collinearity** (or **multicollinearity**) is a state of a model where explanatory variables are correlated with one another.
+
+## Perfect collinearity
+
+Perfect collinearity is incredibly rare, and typically involves using transformed versions of a variable in the model **along with the original variable**. For example, let's estimate a regression model explaining `mpg` as a function of `displ`, `wt`, and `cyl`:
+
+```{r mtcars}
+mtcars1 <- lm(mpg ~ disp + wt + cyl, data = mtcars)
+summary(mtcars1)
+```
+
+Now let's say we want to recode `displ` so it is centered around it's mean and reestimate the model:
+
+```{r mtcars-recenter}
+mtcars <- mtcars %>%
+  mutate(disp_mean = disp - mean(disp))
+
+mtcars2 <- lm(mpg ~ disp + wt + cyl + disp_mean, data = mtcars)
+summary(mtcars2)
+```
+
+Ooops. What's the problem? `disp` and `disp_mean` are perfectly correlated with each other:
+
+```{r mtcars-cor}
+ggplot(mtcars, aes(disp, disp_mean)) +
+  geom_point()
+```
+
+Because they perfectly explain each other, we cannot estimate a linear regression model that contains both variables.^[Basically we cannot invert the variance-covariance matrix of $\mathbf{X}$ because the collinear columns in $\mathbf{X}$ are perfectly linearly dependent on each other. Because of this, we cannot get parameter estimates or standard errors for the model.] Fortunately R automatically drops the second variable so it can estimate the model. Because of this, perfect multicollinearity is rarely problematic in social science.
+
+## Less-than-perfect collinearity
+
+Instead consider the credit dataset:
+
+```{r credit}
+credit <- read_csv("data/Credit.csv") %>%
+  select(-X1)
+names(credit) <- tolower(names(credit))
+
+ggplot(credit, aes(limit, age)) +
+  geom_point()
+```
+
+Age and limit are not strongly correlated with one another, so estimating a linear regression model to predict an individual's balance as a function of age and limit is not a problem:
+
+```{r credit-lm}
+age_limit <- lm(balance ~ age + limit, data = credit)
+tidy(age_limit)
+```
+
+But what about using an individuals credit card rating instead of age? It is likely a good predictor of balance as well:
+
+```{r add-rating}
+ggplot(credit, aes(rating, balance)) +
+  geom_point() +
+  geom_smooth()
+
+limit_rate <- lm(balance ~ limit + rating, data = credit)
+tidy(limit_rate)
+
+coefplot::multiplot(age_limit, limit_rate)
+```
+
+By replacing age with rating, we developed a problem in our model. The problem is that limit and rating are strongly correlated with one another:
+
+```{r limit-rate}
+ggplot(credit, aes(limit, rating)) +
+  geom_point() +
+  geom_smooth()
+
+coefplot::multiplot(age_limit, limit_rate, predictors = "limit")
+```
+
+In the regression model, it is difficult to parse out the independent effects of limit and rating on balance, because limit and rating tend to increase and decrease in association with one another. Because the accuracy of our estimates of the parameters is reduced, the standard errors increase. This is why you can see above that the standard error for limit is much larger in the second model compared to the first model.
+
+### Detecting collinearity
+
+#### Scatterplot matrix
+
+A correlation or scatterplot matrix would help to reveal any strongly correlated variables:
+
+```{r credit-cor-mat}
+cormat_heatmap <- function(data){
+  # generate correlation matrix
+  cormat <- round(cor(data), 2)
+  
+  # melt into a tidy table
+  get_upper_tri <- function(cormat){
+    cormat[lower.tri(cormat)]<- NA
+    return(cormat)
+  }
+  
+  upper_tri <- get_upper_tri(cormat)
+  
+  # reorder matrix based on coefficient value
+  reorder_cormat <- function(cormat){
+    # Use correlation between variables as distance
+    dd <- as.dist((1-cormat)/2)
+    hc <- hclust(dd)
+    cormat <-cormat[hc$order, hc$order]
+  }
+  
+  cormat <- reorder_cormat(cormat)
+  upper_tri <- get_upper_tri(cormat)
+  
+  # Melt the correlation matrix
+  melted_cormat <- reshape2::melt(upper_tri, na.rm = TRUE)
+  
+  # Create a ggheatmap
+  ggheatmap <- ggplot(melted_cormat, aes(Var2, Var1, fill = value))+
+    geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                         midpoint = 0, limit = c(-1,1), space = "Lab", 
+                         name="Pearson\nCorrelation") +
+    theme_minimal()+ # minimal theme
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                     size = 12, hjust = 1))+
+    coord_fixed()
+  
+  # add correlation values to graph
+  ggheatmap + 
+    geom_text(aes(Var2, Var1, label = value), color = "black", size = 4) +
+    theme(
+      axis.title.x = element_blank(),
+      axis.title.y = element_blank(),
+      panel.grid.major = element_blank(),
+      panel.border = element_blank(),
+      panel.background = element_blank(),
+      axis.ticks = element_blank(),
+      legend.position = "bottom")
+}
+
+cormat_heatmap(select_if(credit, is.numeric))
+```
+
+```{r credit-scatter-mat}
+library(GGally)
+ggpairs(select_if(credit, is.numeric))
+```
+
+Here it is very clear that limit and rating are strongly correlated with one another.
+
+#### Variance inflation factor (VIF)
+
+Unfortunately correlation matricies may not be sufficient to detect collinearity if the correlation exists between three or more variables (aka **multicollinearity**) *while not existing between any two pairs of these variables*. Instead, we can calculate the variance inflation factor (VIF) which is the ratio of the variance of $\hat{\beta}_j$ when fitting the full model divided by the variance of $\hat{\beta}_j$ if fit on its own model. We can use the `car::vif()` function in R to calculate this statistic for each coefficient. A good rule of thumb is that a VIF statistic greater than 10 indicates potential multicollinearity in the model. Applied to the `credit` regression models above:
+
+```{r vif}
+vif(age_limit)
+vif(limit_rate)
+```
+
+## Fixing multicollinearity
+
+### What not to do
+
+> Drop one or more of the collinear variables from the model
+
+This is not a good idea, even if it makes your results "significant". By omitting the variable, you are completely respecifying your model **in direct contradiction to your theory**. If your theory suggests that a variable can be dropped, go ahead. But if not, then don't do it.
+
+### What you could do instead
+
+#### Add data
+
+The more observations, the better. It could at least decrease your standard errors and give you more precise estimates. And if you add "odd" or unusual observations, it could also reduce the degree of multicollinearity.
+
+#### Transform the covariates
+
+If the variables are indicators of the same underlying concept, you can combine them into an index variable. This could be an **additive index** where you sum up comparable covariates or binary indicators. Alternatively, you could create an index via [**principal components analysis**](persp011_unsupervised.html#principal_components_analysis).
+
+#### Shrinkage methods
+
+See chapter 6 in ISLR.
 
 # Applying to GLMs
 
