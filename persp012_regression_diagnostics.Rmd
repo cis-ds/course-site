@@ -36,6 +36,7 @@ library(titanic)
 library(rcfss)
 library(haven)
 library(car)
+library(lmtest)
 
 options(digits = 3)
 set.seed(1234)
@@ -417,6 +418,170 @@ augment(slid_log_mod, slid) %>%
 
 # Non-constant error variance
 
+Recall that linear regression assumes the error terms $\epsilon_i$ have a constant variance, $\text{Var}(\epsilon_i) = \sigma^2$. This is called **homoscedasticity**. Remember that the [standard errors directly rely upon the estimate of this value](persp006_resampling.html#estimating_the_accuracy_of_a_linear_regression_model):
+
+$$\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\hat{\sigma}^{2} (X^{T}X)^{-1}_{jj}}$$
+
+If the variances of the error terms are non-constant (aka **heteroscedastic**), our estimates of the parameters $\hat{\beta}$ will still be unbiased because they do not depend on $\sigma^2$. However our estimates of the standard errors will be inaccurate - they will either be inflated or deflated, leading to incorrect inferences about the statistical significance of predictor variables.
+
+## Detecting heteroscedasticity
+
+### Graphically
+
+We can uncover homo- or heteroscedasticity through the use of the residual plot. Below is data generated from the process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,1)$.
+
+```{r sim-homo}
+sim_homo <- data_frame(x = runif(1000, 0, 10),
+                       y = 2 + 3 * x + rnorm(1000, 0, 1))
+sim_homo_mod <- glm(y ~ x, data = sim_homo)
+
+sim_homo %>%
+  add_predictions(sim_homo_mod) %>%
+  add_residuals(sim_homo_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Homoscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+Compare this to a linear model fit to the data generating process:
+
+$$Y = 2 + 3X + \epsilon$$
+
+where $\epsilon$ is random error distributed normally $N(0,\frac{X}{2})$. Note that the variance for the error term of each observation $\epsilon_i$ is not constant, and is itself a function of $X$.
+
+```{r sim-hetero}
+sim_hetero <- data_frame(x = runif(1000, 0, 10),
+                       y = 2 + 3 * x + rnorm(1000, 0, (x / 2)))
+sim_hetero_mod <- glm(y ~ x, data = sim_hetero)
+
+sim_hetero %>%
+  add_predictions(sim_hetero_mod) %>%
+  add_residuals(sim_hetero_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Heteroscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+```
+
+We see a distinct funnel-shape to the relationship between the predicted values and the residuals. This is because by assuming the variance is constant, we substantially over or underestimate the actual response $Y_i$ as $X_i$ increases.
+
+### Statistical tests
+
+There are formal statistical tests to check for heteroscedasticity. One such test is the **Breusch-Pagan test**. The procedure is:
+
+* Estimate an OLS model and obtain the residuals
+* Divide each of the squared residuals by $\frac{RSS}{N}$, aka the empirical estimate of $\hat{\sigma}^2$. Call the resulting things $p_i$
+* Regress $p_i$ against either:
+    * The predicted values $\hat{y}_i$, or
+    * All the $k$ variables you think might be causing the heteroscedasticity
+* Take the MSS of the resulting regression and divide it by 2
+    * The resulting statistic follows a $\chi^2$ distribution with either 1 (for the fitted-values test) or $(k-1)$ (for the all-variables version) degrees of freedom
+    * Rejecting the null hypothesis indicates heteroscedasticity is present
+
+The `lmtest` library contains a function for the Breusch-Pagan test:
+
+```{r breusch-pagan}
+bptest(sim_homo_mod)
+bptest(sim_hetero_mod)
+```
+
+## Accounting for heteroscedasticity
+
+### Weighted least squares regression
+
+Instead of assuming the errors have a constant variance $\text{Var}(\epsilon_i) = \sigma^2$, instead we can assume that the errors are independent and normally distributed with mean zero and different variances $\epsilon_i \sim N(0, \sigma_i^2)$:
+
+$$
+\begin{bmatrix}
+    \sigma_1^2       & 0 & 0 & 0 \\
+    0       & \sigma_2^2 & 0 & 0 \\
+    0       & 0 & \ddots & 0 \\
+    0       & 0 & 0 & \sigma_n^2 \\
+\end{bmatrix}
+$$
+
+We can define the reciprocal of each variance $\sigma_i^2$ as the weight $w_i = \frac{1}{\sigma_i^2}$, then let matrix $\mathbf{W}$ be a diagonal matrix containing these weights:
+
+$$
+\mathbf{W} =
+\begin{bmatrix}
+    \sigma_1^2       & 0 & 0 & 0 \\
+    0       & \sigma_2^2 & 0 & 0 \\
+    0       & 0 & \ddots & 0 \\
+    0       & 0 & 0 & \sigma_n^2 \\
+\end{bmatrix}
+$$
+
+So rather than following the traditional linear regression estimator
+
+$$\hat{\mathbf{\beta}} = (\mathbf{X}'\mathbf{X})^{-1} \mathbf{X}'\mathbf{y}$$
+
+we can substitute in the weighting matrix $\mathbf{W}$:
+
+$$\hat{\mathbf{\beta}} = (\mathbf{X}' \mathbf{W} \mathbf{X})^{-1} \mathbf{X}' \mathbf{W} \mathbf{y}$$
+
+$$\sigma_{\epsilon}^2 = \frac{\sum(w_i E_i^2)}{n}$$
+
+This is equivalent to minimizing the weighted sum of squares, according greater weight to observations with smaller variance.
+
+How do we estimate the weights $W_i$?
+
+1. Use the residuals from a preliminary OLS regression to obtain estimates of the error variance within different subsets of observations.
+1. Model the weights as a function of observable variables in the model.
+
+For example, using the first approach on our original SLID model:
+
+```{r wls}
+# do we have heteroscedasticity?
+slid_mod <- glm(compositeHourlyWages ~ sex + yearsEducation + age, data = slid)
+
+slid %>%
+  add_predictions(slid_mod) %>%
+  add_residuals(slid_mod) %>%
+  ggplot(aes(pred, resid)) +
+  geom_point(alpha = .2) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_quantile(method = "rqss", lambda = 5, quantiles = c(.05, .95)) +
+  labs(title = "Heteroscedastic variance of error terms",
+       x = "Predicted values",
+       y = "Residuals")
+
+# convert residuals to weights
+weights <- 1 / residuals(slid_mod)^2
+
+slid_wls <- lm(compositeHourlyWages ~ sex + yearsEducation + age, data = slid, weights = weights)
+
+tidy(slid_mod)
+tidy(slid_wls)
+```
+
+We see some mild changes in the estimated parameters, but drastic reductions in the standard errors. The problem is that this reduction is potentially biased through the estimated covariance matrix because the sampling error in the estimates should reflect hte additional source of uncertainty, which is not explicitly accounted for just basing it on the original residuals. Instead, it would be better to model the weights as a function of relevant explanatory variables.^[Omitted here for time purposes. You can find details on this estimation procedure on the internet.]
+
+### Corrections for the variance-covariance estimates
+
+Alternatively, we could instead attempt to correct for heteroscedasticity only in the standard error estimates. This produces the same estimated parameters, but adjusts the standard errors to account for the violation of the constant error variance assumption (we won't falsely believe our estimates are more precise than they really are.) One major estimation procedure are **Huber-White standard errors** (also called **robust standard errors**) which can be recovered using the `car::hccm()` function:^[This function really returns the "sandwich" estimator of the variance-covariance matrix, so we need to further take the square root of the diagonal of this matrix.]
+
+```{r huber-white}
+hw_std_err <- hccm(slid_mod, type = "hc1") %>%
+  diag %>%
+  sqrt
+
+tidy(slid_mod) %>%
+  mutate(std.error.rob = hw_std_err)
+```
+
+Notice that these new standard errors are a bit larger than the original model, accounting for the increased uncertainty of our parameter estimates due to heteroscedasticity.
 
 # Non-linearity in the data
 
@@ -478,6 +643,16 @@ and for education,
 
 $$E_i^{\text{Education}} = `r coef(slid_log_trans)[[3]]` \times \text{Education}^2_i + E_i$$
 
+On the same graph, we also plot the **partial fits** for the two explanatory variables:
+
+$$\hat{Y}_i^{(\text{Age})} = `r coef(slid_log_trans)[[4]]` \times \text{Age}_i `r formatC(coef(slid_log_trans)[[5]])` \times \text{Age}^2_i$$
+
+and for education,
+
+$$\hat{Y}_i^{(\text{Education})} = `r coef(slid_log_trans)[[3]]` \times \text{Education}^2_i$$
+
+On the graphs, the solid lines represent the partial fits and the dashed lines represent the partial residuals. If the two lines overlap significantly, then the revised model does a good job accounting for the nonlinearity.
+
 ```{r slid-part-trans-plot}
 # get partial resids
 slid_trans_resid <- residuals(slid_log_trans, type = "partial") %>%
@@ -488,19 +663,19 @@ names(slid_trans_resid) <- str_c(names(slid_trans_resid), "_resid")
 slid_trans_diag <- augment(slid_log_trans, slid) %>%
   as_tibble %>%
   mutate(age_resid = coef(slid_log_trans)[[4]] * age +
-           coef(slid_log_trans)[[5]] * age^2 + .resid,
-         educ_resid = coef(slid_log_trans)[[5]] * yearsEducation^2 + .resid)
+           coef(slid_log_trans)[[5]] * age^2,
+         educ_resid = coef(slid_log_trans)[[5]] * yearsEducation^2)
 
-ggplot(slid_trans_diag, aes(age, age_resid)) +
+ggplot(slid_trans_diag, aes(age, age_resid + .resid)) +
   geom_point(alpha = .1) +
-  geom_smooth(se = FALSE) +
-  geom_smooth(method = "lm", se = FALSE, linetype = 2) +
+  geom_smooth(aes(y = age_resid), se = FALSE) +
+  geom_smooth(se = FALSE, linetype = 2) +
   labs(x = "Age",
        y = "Partial residual for age")
 
-ggplot(slid_trans_diag, aes(yearsEducation, educ_resid)) +
+ggplot(slid_trans_diag, aes(yearsEducation, educ_resid + .resid)) +
   geom_point(alpha = .1) +
-  geom_smooth(se = FALSE) +
+  geom_smooth(aes(y = educ_resid), se = FALSE) +
   geom_smooth(method = "lm", se = FALSE, linetype = 2) +
   labs(x = "Education (years)",
        y = "Partial residual for education")
