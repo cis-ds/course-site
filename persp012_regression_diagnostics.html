@@ -700,6 +700,84 @@ coefplot::<span class="kw">multiplot</span>(dahl_mod, dahl_omit_mod,
 </div>
 </div>
 </div>
+<div id="non-normally-distributed-errors" class="section level1">
+<h1>Non-normally distributed errors</h1>
+<p>Recall that OLS assumes errors are distributed normally:</p>
+<p><span class="math display">\[\epsilon \sim N(0, \sigma_\epsilon^2)\]</span></p>
+<p>However according to the central limit theorem, inference based on the least-squares estimator is approximately valid under broad conditions.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> So while the <strong>validity</strong> of the estimates is robust to violating this assumption, the <strong>efficiency</strong> of the estimates is not robust. Recall that efficiency guarantees us the smallest possible sampling variance and therefore the smallest possible mean squared error (MSE). Heavy-tailed or skewed distributions of the errors will therefore give rise to outliers (which we just recognized as a problem). Alternatively, we interpret the least-squares fit as a conditional mean <span class="math inline">\(Y | X\)</span>. But arithmetic means are not good measures of the center of a highly skewed distribution.</p>
+<div id="detecting-non-normally-distributed-errors" class="section level2">
+<h2>Detecting non-normally distributed errors</h2>
+<p>Graphical interpretations are easiest to detect non-normality in the errors. Consider a regression model using survey data from the 1994 wave of Statistics Canada’s Survey of Labour and Income Dynamics (SLID), explaining hourly wages as an outcome of sex, education, and age:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(slid &lt;-<span class="st"> </span><span class="kw">read_tsv</span>(<span class="st">&quot;http://socserv.socsci.mcmaster.ca/jfox/Books/Applied-Regression-3E/datasets/SLID-Ontario.txt&quot;</span>))</code></pre></div>
+<pre><code>## # A tibble: 3,997 × 4
+##      age    sex compositeHourlyWages yearsEducation
+##    &lt;int&gt;  &lt;chr&gt;                &lt;dbl&gt;          &lt;int&gt;
+##  1    40   Male                10.56             15
+##  2    19   Male                11.00             13
+##  3    46   Male                17.76             14
+##  4    50 Female                14.00             16
+##  5    31   Male                 8.20             15
+##  6    30 Female                16.97             13
+##  7    61 Female                 6.70             12
+##  8    46 Female                14.00             14
+##  9    43   Male                19.20             18
+## 10    17   Male                 7.25             11
+## # ... with 3,987 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">slid_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(compositeHourlyWages ~<span class="st"> </span>sex +<span class="st"> </span>yearsEducation +<span class="st"> </span>age, <span class="dt">data =</span> slid)
+<span class="kw">tidy</span>(slid_mod)</code></pre></div>
+<pre><code>##             term estimate std.error statistic   p.value
+## 1    (Intercept)   -8.124   0.59898     -13.6  5.27e-41
+## 2        sexMale    3.474   0.20701      16.8  4.04e-61
+## 3 yearsEducation    0.930   0.03426      27.1 5.47e-149
+## 4            age    0.261   0.00866      30.2 3.42e-180</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">car::<span class="kw">qqPlot</span>(slid_mod)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-1.png" width="672" /></p>
+<p>The above figure is a <strong>quantile-comparison plot</strong>, graphing for each observation its studentized residual on the <span class="math inline">\(y\)</span> axis and the corresponding quantile in the <span class="math inline">\(t\)</span>-distribution on the <span class="math inline">\(x\)</span> axis. The dashed lines indicate 95% confidence intervals calculated under the assumption that the errors are normally distributed. If any observations fall outside this range, this is an indication that the assumption has been violated. Clearly, here that is the case.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">augment</span>(slid_mod, slid) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.student =</span> <span class="kw">rstudent</span>(slid_mod)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(.student)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">adjust =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Studentized residuals&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated density&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-density-1.png" width="672" /></p>
+<p>From the density plot of the studentized residuals, we can also see that the residuals are positively skewed.</p>
+</div>
+<div id="fixing-non-normally-distributed-errors" class="section level2">
+<h2>Fixing non-normally distributed errors</h2>
+<p><a href="persp007_nonlinear.html#monotonic_transformations">Power and log transformations</a> are typically used to correct this problem. Here, trial and error reveals that by log transforming the wage variable, the distribution of the residuals becomes much more symmetric:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">slid &lt;-<span class="st"> </span>slid %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">wage_log =</span> <span class="kw">log</span>(compositeHourlyWages))
+
+slid_log_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(wage_log ~<span class="st"> </span>sex +<span class="st"> </span>yearsEducation +<span class="st"> </span>age, <span class="dt">data =</span> slid)
+<span class="kw">tidy</span>(slid_log_mod)</code></pre></div>
+<pre><code>##             term estimate std.error statistic   p.value
+## 1    (Intercept)   1.0990  0.037965      28.9 1.97e-167
+## 2        sexMale   0.2245  0.013121      17.1  2.16e-63
+## 3 yearsEducation   0.0559  0.002171      25.7 2.95e-135
+## 4            age   0.0182  0.000549      33.1 4.50e-212</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">car::<span class="kw">qqPlot</span>(slid_log_mod)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-log-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">augment</span>(slid_log_mod, slid) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.student =</span> <span class="kw">rstudent</span>(slid_log_mod)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(.student)) +
+<span class="st">  </span><span class="kw">geom_density</span>(<span class="dt">adjust =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Studentized residuals&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated density&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/slid-log-2.png" width="672" /></p>
+</div>
+</div>
+<div id="non-constant-error-variance" class="section level1">
+<h1>Non-constant error variance</h1>
+</div>
+<div id="non-linearity-in-the-data" class="section level1">
+<h1>Non-linearity in the data</h1>
+</div>
+<div id="collinearity" class="section level1">
+<h1>Collinearity</h1>
+</div>
+<div id="applying-to-glms" class="section level1">
+<h1>Applying to GLMs</h1>
+</div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
@@ -712,69 +790,81 @@ coefplot::<span class="kw">multiplot</span>(dahl_mod, dahl_omit_mod,
 ##  tz       America/Chicago             
 ##  date     2017-05-02                  
 ## 
-##  package    * version    date       source                               
-##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                        
-##  backports    1.0.5      2017-01-18 CRAN (R 3.3.2)                       
-##  broom      * 0.4.2      2017-02-13 CRAN (R 3.3.2)                       
-##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                       
-##  coefplot     1.2.4.9000 2017-04-25 Github (jaredlander/coefplot@0755a00)
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                       
-##  DBI          0.6        2017-03-09 CRAN (R 3.3.3)                       
-##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                       
-##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                       
-##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                       
-##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                       
-##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.3.2)                       
-##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.3)                       
-##  ggplot2    * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)      
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                       
-##  haven      * 1.0.0      2016-09-23 cran (@1.0.0)                        
-##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                       
-##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                        
-##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                       
-##  ISLR       * 1.0        2013-06-11 CRAN (R 3.3.0)                       
-##  jsonlite     1.4        2017-04-08 cran (@1.4)                          
-##  knitr        1.15.1     2016-11-22 cran (@1.15.1)                       
-##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                       
-##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.3)                       
-##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                       
-##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                       
-##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                       
-##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                       
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                       
-##  modelr     * 0.1.0      2016-08-31 CRAN (R 3.3.0)                       
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                       
-##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                       
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                       
-##  psych        1.7.3.21   2017-03-22 CRAN (R 3.3.2)                       
-##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                       
-##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                       
-##  rcfss      * 0.1.4      2017-02-28 local                                
-##  Rcpp         0.12.10    2017-03-19 cran (@0.12.10)                      
-##  readr      * 1.1.0      2017-03-22 cran (@1.1.0)                        
-##  readxl       0.1.1      2016-03-28 CRAN (R 3.3.0)                       
-##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                       
-##  rlang        0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)        
-##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                       
-##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                       
-##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                       
-##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                       
-##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                       
-##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.3.2)                       
-##  tibble     * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)    
-##  tidyr      * 0.6.1      2017-01-10 CRAN (R 3.3.2)                       
-##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                       
-##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.3.0)                       
-##  useful       1.2.1      2016-06-29 CRAN (R 3.3.0)                       
-##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                       
-##  xml2         1.1.1      2017-01-24 CRAN (R 3.3.2)                       
-##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version    date       source                           
+##  assertthat     0.2.0      2017-04-11 cran (@0.2.0)                    
+##  backports      1.0.5      2017-01-18 CRAN (R 3.3.2)                   
+##  broom        * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
+##  car            2.1-4      2016-12-02 CRAN (R 3.3.2)                   
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.3)                   
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                   
+##  curl           2.3        2016-11-24 CRAN (R 3.3.2)                   
+##  DBI            0.6        2017-03-09 CRAN (R 3.3.3)                   
+##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                   
+##  digest         0.6.12     2017-01-27 CRAN (R 3.3.2)                   
+##  dplyr        * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
+##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                   
+##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
+##  foreign        0.8-67     2016-09-13 CRAN (R 3.3.3)                   
+##  ggplot2      * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                   
+##  haven        * 1.0.0      2016-09-23 cran (@1.0.0)                    
+##  hms            0.3        2016-11-22 CRAN (R 3.3.2)                   
+##  htmltools      0.3.6      2017-04-28 cran (@0.3.6)                    
+##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                   
+##  ISLR         * 1.0        2013-06-11 CRAN (R 3.3.0)                   
+##  jsonlite       1.4        2017-04-08 cran (@1.4)                      
+##  knitr          1.15.1     2016-11-22 cran (@1.15.1)                   
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                   
+##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.3)                   
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                   
+##  lme4           1.1-12     2016-04-16 cran (@1.1-12)                   
+##  lubridate      1.6.0      2016-09-13 CRAN (R 3.3.0)                   
+##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                   
+##  MASS           7.3-45     2016-04-21 CRAN (R 3.3.0)                   
+##  Matrix         1.2-8      2017-01-20 CRAN (R 3.3.3)                   
+##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.3.0)                   
+##  memoise        1.0.0      2016-01-29 CRAN (R 3.3.0)                   
+##  mgcv           1.8-17     2017-02-08 CRAN (R 3.3.3)                   
+##  minqa          1.2.4      2014-10-09 cran (@1.2.4)                    
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                   
+##  modelr       * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                   
+##  nlme           3.1-131    2017-02-06 CRAN (R 3.3.3)                   
+##  nloptr         1.0.4      2014-08-04 cran (@1.0.4)                    
+##  nnet           7.3-12     2016-02-02 CRAN (R 3.3.3)                   
+##  pbkrtest       0.4-6      2016-01-27 CRAN (R 3.3.0)                   
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                   
+##  psych          1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
+##  purrr        * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
+##  quantreg       5.29       2016-09-04 CRAN (R 3.3.0)                   
+##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                   
+##  rcfss        * 0.1.4      2017-02-28 local                            
+##  Rcpp           0.12.10    2017-03-19 cran (@0.12.10)                  
+##  readr        * 1.1.0      2017-03-22 cran (@1.1.0)                    
+##  readxl         0.1.1      2016-03-28 CRAN (R 3.3.0)                   
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                   
+##  rlang          0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
+##  rmarkdown      1.3        2016-12-21 CRAN (R 3.3.2)                   
+##  rprojroot      1.2        2017-01-16 CRAN (R 3.3.2)                   
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.3.0)                   
+##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                   
+##  SparseM        1.74       2016-11-10 CRAN (R 3.3.2)                   
+##  stringi        1.1.2      2016-10-01 CRAN (R 3.3.0)                   
+##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
+##  tibble       * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
+##  tidyr        * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
+##  tidyverse    * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
+##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                   
+##  xml2           1.1.1      2017-01-24 CRAN (R 3.3.2)                   
+##  yaml           2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p>The average value of <span class="math inline">\(\epsilon\)</span> given <span class="math inline">\(XS\)</span><a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>74th (1935-36), 98th (1983-84), and 104th (1995-96).<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Assuming the sample size is sufficiently large.<a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
 

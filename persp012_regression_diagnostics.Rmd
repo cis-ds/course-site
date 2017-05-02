@@ -359,6 +359,71 @@ rmse(dahl_omit_mod, dahl_omit)
 * $R^2$ is larger for the omitted observation model, and the RMSE is smaller
 * These three observations mostly influenced the precision of the estimates (i.e. standard errors), not the accuracy of them
 
+# Non-normally distributed errors
+
+Recall that OLS assumes errors are distributed normally:
+
+$$\epsilon \sim N(0, \sigma_\epsilon^2)$$
+
+However according to the central limit theorem, inference based on the least-squares estimator is approximately valid under broad conditions.^[Assuming the sample size is sufficiently large.] So while the **validity** of the estimates is robust to violating this assumption, the **efficiency** of the estimates is not robust. Recall that efficiency guarantees us the smallest possible sampling variance and therefore the smallest possible mean squared error (MSE). Heavy-tailed or skewed distributions of the errors will therefore give rise to outliers (which we just recognized as a problem). Alternatively, we interpret the least-squares fit as a conditional mean $Y | X$. But arithmetic means are not good measures of the center of a highly skewed distribution.
+
+## Detecting non-normally distributed errors
+
+Graphical interpretations are easiest to detect non-normality in the errors. Consider a regression model using survey data from the 1994 wave of Statistics Canada's Survey of Labour and Income Dynamics (SLID), explaining hourly wages as an outcome of sex, education, and age:
+
+```{r slid}
+(slid <- read_tsv("http://socserv.socsci.mcmaster.ca/jfox/Books/Applied-Regression-3E/datasets/SLID-Ontario.txt"))
+
+slid_mod <- lm(compositeHourlyWages ~ sex + yearsEducation + age, data = slid)
+tidy(slid_mod)
+
+car::qqPlot(slid_mod)
+```
+
+The above figure is a **quantile-comparison plot**, graphing for each observation its studentized residual on the $y$ axis and the corresponding quantile in the $t$-distribution on the $x$ axis. The dashed lines indicate 95% confidence intervals calculated under the assumption that the errors are normally distributed. If any observations fall outside this range, this is an indication that the assumption has been violated. Clearly, here that is the case.
+
+```{r slid-density}
+augment(slid_mod, slid) %>%
+  mutate(.student = rstudent(slid_mod)) %>%
+  ggplot(aes(.student)) +
+  geom_density(adjust = .5) +
+  labs(x = "Studentized residuals",
+       y = "Estimated density")
+```
+
+From the density plot of the studentized residuals, we can also see that the residuals are positively skewed.
+
+## Fixing non-normally distributed errors
+
+[Power and log transformations](persp007_nonlinear.html#monotonic_transformations) are typically used to correct this problem. Here, trial and error reveals that by log transforming the wage variable, the distribution of the residuals becomes much more symmetric:
+
+```{r slid-log}
+slid <- slid %>%
+  mutate(wage_log = log(compositeHourlyWages))
+
+slid_log_mod <- lm(wage_log ~ sex + yearsEducation + age, data = slid)
+tidy(slid_log_mod)
+
+car::qqPlot(slid_log_mod)
+
+augment(slid_log_mod, slid) %>%
+  mutate(.student = rstudent(slid_log_mod)) %>%
+  ggplot(aes(.student)) +
+  geom_density(adjust = .5) +
+  labs(x = "Studentized residuals",
+       y = "Estimated density")
+```
+
+# Non-constant error variance
+
+
+# Non-linearity in the data
+
+
+# Collinearity
+
+
+# Applying to GLMs
 
 # Session Info {.toc-ignore}
 
