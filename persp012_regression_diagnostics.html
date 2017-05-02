@@ -379,6 +379,7 @@ div.tocify {
 <span class="kw">library</span>(ISLR)
 <span class="kw">library</span>(titanic)
 <span class="kw">library</span>(rcfss)
+<span class="kw">library</span>(haven)
 
 <span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
@@ -389,7 +390,7 @@ div.tocify {
 <p>Basic linear regression follows the functional form:</p>
 <p><span class="math display">\[Y_i = \alpha + \beta x_i + \epsilon_i\]</span></p>
 <p>where <span class="math inline">\(Y_i\)</span> is the value of the response variable <span class="math inline">\(Y\)</span> for the <span class="math inline">\(i\)</span>th observation, <span class="math inline">\(x_i\)</span> is the value for the explanatory variable <span class="math inline">\(X\)</span> for the <span class="math inline">\(i\)</span>th observation. The coefficients <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are <strong>population regression coefficients</strong> - our goal is to estimate these population parameters given the observed data. <span class="math inline">\(\epsilon_i\)</span> is the error representing the aggregated omitted causes of <span class="math inline">\(Y\)</span>, other explanatory variables that could be included in the model, measurement error in <span class="math inline">\(Y\)</span>, and any inherently random component of <span class="math inline">\(Y\)</span>.</p>
-<p>The key assumptions of linear regression concern the behavior of the errors. If these assumptions are violated, conducting inference from linear regression becomes tricky, biased, inefficient, and/or error prone.</p>
+<p>The key assumptions of linear regression concern the behavior of the errors.</p>
 <div id="linearity" class="section level4">
 <h4>Linearity</h4>
 <p>The expectation of the error<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> is 0:</p>
@@ -431,6 +432,273 @@ div.tocify {
        <span class="dt">subtitle =</span> <span class="st">&quot;Slope is undefined&quot;</span>)</code></pre></div>
 <p><img src="persp012_regression_diagnostics_files/figure-html/invariant-1.png" width="672" /></p>
 </div>
+<div id="handling-violations-of-assumptions" class="section level2">
+<h2>Handling violations of assumptions</h2>
+<p>If these assumptions are violated, conducting inference from linear regression becomes tricky, biased, inefficient, and/or error prone. You could move to a more robust inferential method such as nonparametric regression, decision trees, support vector machines, etc., but these methods are more tricky to generate inference about the explanatory variables. Instead, we can attempt to diagnose assumption violations and impose solutions while still constraining ourselves to a linear regression framework.</p>
+</div>
+</div>
+<div id="unusual-and-influential-data" class="section level1">
+<h1>Unusual and influential data</h1>
+<p><strong>Outliers</strong> are observations that are somehow unusual, either in their value of <span class="math inline">\(Y_i\)</span>, of one or more <span class="math inline">\(X_i\)</span>s, or some combination thereof. Outliers have the potential to have a disproportionate influence on a regression model.</p>
+<div id="terms" class="section level2">
+<h2>Terms</h2>
+<ul>
+<li><strong>Outlier</strong> - an observation that has an unusual value on the dependent variable <span class="math inline">\(Y\)</span> given its particular combination of values on <span class="math inline">\(X\)</span></li>
+<li><strong>Leverage</strong> - degree of potential influence on the coefficient estimates that a given observation can (but not necessarily does) have</li>
+<li><strong>Discrepancy</strong> - extent to which an observation is “unusual” or “different” from the rest of the data</li>
+<li><p><strong>Influence</strong> - how much effect a particular observation’s value(s) on <span class="math inline">\(Y\)</span> and <span class="math inline">\(X\)</span> have on the coefficient estimates. Influence is a function of leverage and discrepancy:</p>
+<p><span class="math display">\[\text{Influence} = \text{Leverage} \times \text{Discrepancy}\]</span></p></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flintstones &lt;-<span class="st"> </span><span class="kw">tribble</span>(
+  ~name,    ~x, ~y,
+  <span class="st">&quot;Barney&quot;</span>, <span class="dv">13</span>, <span class="dv">75</span>,
+  <span class="st">&quot;Dino&quot;</span>,   <span class="dv">24</span>, <span class="dv">300</span>,
+  <span class="st">&quot;Betty&quot;</span>,  <span class="dv">14</span>, <span class="dv">250</span>,
+  <span class="st">&quot;Fred&quot;</span>,   <span class="dv">10</span>, <span class="dv">220</span>,
+  <span class="st">&quot;Wilma&quot;</span>,  <span class="dv">8</span>,  <span class="dv">210</span>
+)
+
+<span class="kw">ggplot</span>(flintstones, <span class="kw">aes</span>(x, y, <span class="dt">label =</span> name)) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">filter</span>(flintstones, name %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Wilma&quot;</span>, <span class="st">&quot;Fred&quot;</span>, <span class="st">&quot;Betty&quot;</span>)),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>, <span class="dt">color =</span> <span class="st">&quot;gray&quot;</span>,
+              <span class="kw">aes</span>(<span class="dt">linetype =</span> <span class="st">&quot;Betty + Fred + Wilma&quot;</span>)) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">filter</span>(flintstones, name !=<span class="st"> &quot;Dino&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>, <span class="dt">color =</span> <span class="st">&quot;gray&quot;</span>,
+              <span class="kw">aes</span>(<span class="dt">linetype =</span> <span class="st">&quot;Barney + Betty + Fred + Wilma&quot;</span>)) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">filter</span>(flintstones, name !=<span class="st"> &quot;Barney&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>, <span class="dt">color =</span> <span class="st">&quot;gray&quot;</span>,
+              <span class="kw">aes</span>(<span class="dt">linetype =</span> <span class="st">&quot;Betty + Dino + Fred + Wilma&quot;</span>)) +
+<span class="st">  </span><span class="kw">scale_linetype_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="dv">3</span>,<span class="dv">2</span>,<span class="dv">1</span>),
+                        <span class="dt">guide =</span> <span class="kw">guide_legend</span>(<span class="dt">nrow =</span> <span class="dv">3</span>,
+                                             <span class="dt">reverse =</span> <span class="ot">TRUE</span>)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">2</span>) +
+<span class="st">  </span>ggrepel::<span class="kw">geom_label_repel</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">linetype =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/flintstones-sim-1.png" width="672" /></p>
+<ul>
+<li>Dino is an observation with high leverage but low discrepancy (close to the regression line defined by Betty, Fred, and Wilma). Therefore he has little impact on the regression line (long dashed line); his influence is low because his discrepancy is low.</li>
+<li>Barney has high leverage (though lower than Dino) and high discrepancy, so he substantially influences the regression results (short-dashed line).</li>
+</ul>
+</div>
+<div id="measuring-leverage" class="section level2">
+<h2>Measuring leverage</h2>
+<p>Leverage is typically assessed using the <strong>leverage</strong> (<strong>hat</strong>) <strong>statistic</strong>:</p>
+<p><span class="math display">\[h_i = \frac{1}{n} + \frac{(X_i - \bar{X})^2}{\sum_{i&#39;=1}^{n} (X_{i&#39;} - \bar{X})^2}\]</span></p>
+<p>Generalized to the multivariate case:</p>
+<p><span class="math display">\[h_i = \mathbf{X}_i (\mathbf{X&#39;X})^{-1} \mathbf{X&#39;}_i\]</span></p>
+<ul>
+<li>It is solely a function of <span class="math inline">\(X\)</span></li>
+<li>Larger values indicate higher leverage</li>
+<li><span class="math inline">\(\frac{1}{n} \leq h_i \leq 1\)</span></li>
+<li><span class="math inline">\(\bar{h} = \frac{(p + 1)}{n}\)</span></li>
+</ul>
+<p>Observations with a leverage statistic greater than the average could have high leverage.</p>
+</div>
+<div id="measuring-discrepancy" class="section level2">
+<h2>Measuring discrepancy</h2>
+<p>Residuals are a natural way to look for discrepant or outlying observations (discrepant obserations typically have large residuals, or differences between actual and fitted values for <span class="math inline">\(y_i\)</span>.) The problem is that variability of the errors <span class="math inline">\(E_i\)</span> do not have equal variances, even if the actual errors <span class="math inline">\(\epsilon_i\)</span> do have equal variances:</p>
+<p><span class="math display">\[V(E_i) = \sigma_\epsilon^2 (1 - h_i)\]</span></p>
+<p>High leverage observations tend to have small residuals, which makes sense because they pull the regression line towards them. Alternatively we can calculate a <strong>standardized residual</strong> which parses out the variability in <span class="math inline">\(X_i\)</span> for <span class="math inline">\(E_i\)</span>:</p>
+<p><span class="math display">\[E&#39;_i \equiv \frac{E_i}{S_{E} \sqrt{1 - h_i}}\]</span></p>
+<p>where <span class="math inline">\(S_E\)</span> is the standard error of the regression:</p>
+<p><span class="math display">\[S_E = \sqrt{\frac{E_i^2}{(n - k - 1)}}\]</span></p>
+<p>The problem is that the numerator and the denominator are not independent - they both contain <span class="math inline">\(E_i\)</span>, so <span class="math inline">\(E&#39;_i\)</span> does not follow a <span class="math inline">\(t\)</span>-distribution. Instead, we can modify this measure by calculating <span class="math inline">\(S_{E(-i)}\)</span>; that is, refit the model deleting each <span class="math inline">\(i\)</span>th observation, estimating the standard error of the regression <span class="math inline">\(S_{E(-i)}\)</span> based on the remaining <span class="math inline">\(i-1\)</span> observations. We then calculate the <strong>studentized residual</strong>:</p>
+<p><span class="math display">\[E_i^{\ast} \equiv \frac{E_i}{S_{E(-i)} \sqrt{1 - h_i}}\]</span></p>
+<p>which now has an independent numerator and denominator and follows a <span class="math inline">\(t\)</span>-distribution with <span class="math inline">\(n-k-2\)</span> degrees of freedom. They are on a common scale and we should expect roughly 95% of the studentized residuals to fall within the interval <span class="math inline">\([-2,2]\)</span>.</p>
+</div>
+<div id="measuring-influence" class="section level2">
+<h2>Measuring influence</h2>
+<p>As described previously, influence is the a combination of an observation’s leverage and discrepancy. In other words, influence is the effect of a particular observation on the coefficient estimates. A simple measure of that influence is the difference between the coefficient estimate with and without the observation in question:</p>
+<p><span class="math display">\[D_{ij} = \hat{\beta_j} - \hat{\beta}_{j(-i)}, \text{for } i=1, \dots, n \text{ and } j = 0, \dots, k\]</span></p>
+<p>This measure is called <span class="math inline">\(\text{DFBETA}_{ij}\)</span>. Since coefficient estimates are scaled differently depending on how the variables are scaled, we can rescale <span class="math inline">\(\text{DFBETA}_{ij}\)</span> by the coefficient’s standard error to account for this fact:</p>
+<p><span class="math display">\[D^{\ast}_{ij} = \frac{D_{ij}}{SE_{-i}(\beta_j)}\]</span></p>
+<p>This measure is called <span class="math inline">\(\text{DFBETAS}_{ij}\)</span>.</p>
+<ul>
+<li>Positive values of <span class="math inline">\(\text{DFBETAS}_{ij}\)</span> correspond to observations which <strong>decrease</strong> the estimate of <span class="math inline">\(\hat{\beta}_j\)</span></li>
+<li>Negative values of <span class="math inline">\(\text{DFBETAS}_{ij}\)</span> correspond to observations which <strong>increase</strong> the estimate of <span class="math inline">\(\hat{\beta}_j\)</span></li>
+</ul>
+<p>Frequently <span class="math inline">\(\text{DFBETA}\)</span>s are used to construct summary statistics of each observation’s influence on the regression model. <strong>Cook’s D</strong> is based on the theory that one could conduct an <span class="math inline">\(F\)</span>-test on each observation for the hypothesis that <span class="math inline">\(\beta_j = \hat{\beta}_{k(-i)} \forall j \in J\)</span>. The formula for this measure is:</p>
+<p><span class="math display">\[D_i = \frac{E^{&#39;2}_i}{k + 1} \times \frac{h_i}{1 - h_i}\]</span></p>
+<p>where <span class="math inline">\(\tilde{u}_i^2\)</span> is the squared standardized residual, <span class="math inline">\(k\)</span> is the number of parameters in the model, and <span class="math inline">\(\frac{h_i}{1 - h_i}\)</span> is the hat value. We look for values of <span class="math inline">\(D_i\)</span> that stand out from the rest.</p>
+</div>
+<div id="visualizing-leverage-discrepancy-and-influence" class="section level2">
+<h2>Visualizing leverage, discrepancy, and influence</h2>
+<p>For example, here are the results of a basic model of the number of federal laws struck down by the U.S. Supreme Court in each Congress, based on:</p>
+<ol style="list-style-type: decimal">
+<li><strong>Age</strong> - the mean age of the members of the Supreme Court</li>
+<li><strong>Tenure</strong> - mean tenure of the members of the Court</li>
+<li><strong>Unified</strong> - a dummy variable indicating whether or not the Congress was controlled by the same party in that period</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># read in data and estimate model</span>
+dahl &lt;-<span class="st"> </span><span class="kw">read_dta</span>(<span class="st">&quot;data/LittleDahl.dta&quot;</span>)
+dahl_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(nulls ~<span class="st"> </span>age +<span class="st"> </span>tenure +<span class="st"> </span>unified, <span class="dt">data =</span> dahl)
+<span class="kw">tidy</span>(dahl_mod)</code></pre></div>
+<pre><code>##          term estimate std.error statistic  p.value
+## 1 (Intercept) -12.1034    2.5432     -4.76 6.57e-06
+## 2         age   0.2189    0.0448      4.88 4.01e-06
+## 3      tenure  -0.0669    0.0643     -1.04 3.00e-01
+## 4     unified   0.7176    0.4584      1.57 1.21e-01</code></pre>
+<p>A major concern with regression analysis of this data is that the results are being driven by outliers in the data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dahl &lt;-<span class="st"> </span>dahl %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">year =</span> congress *<span class="st"> </span><span class="dv">2</span> +<span class="st"> </span><span class="dv">1787</span>)
+
+<span class="kw">ggplot</span>(dahl, <span class="kw">aes</span>(year, nulls)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">1935</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Congressional laws struck down&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/dahl-time-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(dahl, <span class="kw">aes</span>(year, age)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="dv">1935</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Mean age of justices on the Court&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/dahl-time-2.png" width="672" /></p>
+<p>During the 74th Congress (1935-36), the New Deal/Court-packing crisis was associated with an abnormally large number of laws struck down by the court. We should determine whether or not this observation is driving our results.</p>
+<p>By combining all three variables into a “bubble plot”, we can visualize all three variables simultaneously.</p>
+<ul>
+<li>Each observation’s leverage (<span class="math inline">\(h_i\)</span>) is plotted on the <span class="math inline">\(x\)</span> axis</li>
+<li>Each observation’s discrepancy (i.e. Studentized residual) is plotted on the <span class="math inline">\(y\)</span> axis</li>
+<li>Each symbol is drawn proportional to the observation’s Cook’s <span class="math inline">\(D_i\)</span></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># add key statistics</span>
+dahl_augment &lt;-<span class="st"> </span>dahl %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">hat =</span> <span class="kw">hatvalues</span>(dahl_mod),
+         <span class="dt">student =</span> <span class="kw">rstudent</span>(dahl_mod),
+         <span class="dt">cooksd =</span> <span class="kw">cooks.distance</span>(dahl_mod))
+
+<span class="co"># draw bubble plot</span>
+<span class="kw">ggplot</span>(dahl_augment, <span class="kw">aes</span>(hat, student)) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">size =</span> cooksd), <span class="dt">shape =</span> <span class="dv">1</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> dahl_augment %&gt;%
+<span class="st">              </span><span class="kw">arrange</span>(-cooksd) %&gt;%
+<span class="st">              </span><span class="kw">slice</span>(<span class="dv">1</span>:<span class="dv">10</span>),
+            <span class="kw">aes</span>(<span class="dt">label =</span> Congress)) +
+<span class="st">  </span><span class="kw">scale_size_continuous</span>(<span class="dt">range =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">20</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Leverage&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Studentized residual&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/bubble-1.png" width="672" /></p>
+<p>The bubble plot tells us several things:</p>
+<ul>
+<li>The size/color of the symbols is proportional to Cook’s D, which is in turn a multiplicative function of the square of the Studentized residuals (Y axis) and the leverage (X axis), so observations farther away from <span class="math inline">\(Y=0\)</span> and/or have higher values of <span class="math inline">\(X\)</span> will have larger symbols.</li>
+<li>The plot tells us whether the large influence of an observation is due to high discrepancy, high leverage, or both
+<ul>
+<li>The 104th Congress has relatively low leverage but is very discrepant</li>
+<li>The 74th and 98th Congresses demonstrate both high discrepancy and high leverage</li>
+</ul></li>
+</ul>
+</div>
+<div id="numerical-rules-of-thumb" class="section level2">
+<h2>Numerical rules of thumb</h2>
+<p>These are not hard and fast rules rigorously defended by mathematical proofs; they are simply potential rules of thumb to follow when interpreting the above statistics.</p>
+<div id="hat-values" class="section level3">
+<h3>Hat-values</h3>
+<p>Anything exceeding twice the average <span class="math inline">\(\bar{h} = \frac{k + 1}{n}\)</span> is noteworthy. In our example that would be the following observations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dahl_augment %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(hat &gt;<span class="st"> </span><span class="dv">2</span> *<span class="st"> </span><span class="kw">mean</span>(hat))</code></pre></div>
+<pre><code>## # A tibble: 9 × 10
+##   Congress congress nulls   age tenure unified  year    hat student
+##      &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;
+## 1      1st        1     0  49.8    0.8       1  1789 0.0974   0.330
+## 2      3rd        3     0  52.8    4.2       0  1793 0.1132   0.511
+## 3     12th       12     0  49.0    6.6       1  1811 0.0802   0.669
+## 4     17th       17     0  59.0   16.6       1  1821 0.0887  -0.253
+## 5     20th       20     0  61.7   17.4       1  1827 0.0790  -0.577
+## 6     23rd       23     0  64.0   18.4       1  1833 0.0819  -0.844
+## 7     34th       34     0  64.0   14.6       0  1855 0.0782  -0.561
+## 8     36th       36     0  68.7   17.8       0  1859 0.1020  -1.072
+## 9     99th       99     3  71.9   16.7       0  1985 0.0912   0.295
+## # ... with 1 more variables: cooksd &lt;dbl&gt;</code></pre>
+</div>
+<div id="studentized-residuals" class="section level3">
+<h3>Studentized residuals</h3>
+<p>Anything outside of the range <span class="math inline">\([-2,2]\)</span> is discrepant.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dahl_augment %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(<span class="kw">abs</span>(student) &gt;<span class="st"> </span><span class="dv">2</span>)</code></pre></div>
+<pre><code>## # A tibble: 7 × 10
+##   Congress congress nulls   age tenure unified  year    hat student cooksd
+##      &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     67th       67     6  66.0    9.0       1  1921 0.0361    2.14 0.0415
+## 2     74th       74    10  71.1   14.2       1  1935 0.0514    4.42 0.2229
+## 3     90th       90     6  64.7   13.3       1  1967 0.0195    2.49 0.0292
+## 4     91st       91     6  65.1   13.0       1  1969 0.0189    2.42 0.0269
+## 5     92nd       92     5  62.0    9.2       1  1971 0.0146    2.05 0.0150
+## 6     98th       98     7  69.9   14.7       0  1983 0.0730    3.02 0.1655
+## 7    104th      104     8  60.6   12.5       1  1995 0.0208    4.48 0.0897</code></pre>
+</div>
+<div id="influence" class="section level3">
+<h3>Influence</h3>
+<p><span class="math display">\[D_i &gt; \frac{4}{n - k - 1}\]</span></p>
+<p>where <span class="math inline">\(n\)</span> is the number of observations and <span class="math inline">\(k\)</span> is the number of coefficients in the regression model.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dahl_augment %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(cooksd &gt;<span class="st"> </span><span class="dv">4</span> /<span class="st"> </span>(<span class="kw">nrow</span>(.) -<span class="st"> </span>(<span class="kw">length</span>(<span class="kw">coef</span>(dahl_mod)) -<span class="st"> </span><span class="dv">1</span>) -<span class="st"> </span><span class="dv">1</span>))</code></pre></div>
+<pre><code>## # A tibble: 4 × 10
+##   Congress congress nulls   age tenure unified  year    hat student cooksd
+##      &lt;chr&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+## 1     67th       67     6  66.0    9.0       1  1921 0.0361    2.14 0.0415
+## 2     74th       74    10  71.1   14.2       1  1935 0.0514    4.42 0.2229
+## 3     98th       98     7  69.9   14.7       0  1983 0.0730    3.02 0.1655
+## 4    104th      104     8  60.6   12.5       1  1995 0.0208    4.48 0.0897</code></pre>
+</div>
+</div>
+<div id="how-to-treat-unusual-observations" class="section level2">
+<h2>How to treat unusual observations</h2>
+<div id="mistakes" class="section level3">
+<h3>Mistakes</h3>
+<p>If the data is just wrong (miscoded, mismeasured, misentered, etc.), then either fix the error, impute a plausible value for the observation, or omit the offending observation.</p>
+</div>
+<div id="weird-observations" class="section level3">
+<h3>Weird observations</h3>
+<p>If the data for a particular observation is just strange, then you may want to ask “why is it so strange?”</p>
+<ol style="list-style-type: decimal">
+<li>The data are strange because something unusual/weird/singular happened to that data point
+<ul>
+<li>If that “something” is important to the theory being tested, then you may want to respecify your model</li>
+<li>If the answer is no, then you can drop the offending observation from the analysis</li>
+</ul></li>
+<li>The data are strange for apparent reason
+<ul>
+<li>Not really a good answer here. Try digging into the history of the observation to find out what is going on.</li>
+<li>Dropping the observation is a judgment call</li>
+<li>You could always rerun the model omitting the observation and including the results as a footnote (i.e. a robustness check)</li>
+</ul></li>
+</ol>
+<p>For example, let’s reestimate the SCOTUS model and omit observations that were commonly identified as outliers:<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">dahl_omit &lt;-<span class="st"> </span>dahl %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(!(congress %in%<span class="st"> </span><span class="kw">c</span>(<span class="dv">74</span>, <span class="dv">98</span>, <span class="dv">104</span>)))
+
+dahl_omit_mod &lt;-<span class="st"> </span><span class="kw">lm</span>(nulls ~<span class="st"> </span>age +<span class="st"> </span>tenure +<span class="st"> </span>unified, <span class="dt">data =</span> dahl_omit)
+
+coefplot::<span class="kw">multiplot</span>(dahl_mod, dahl_omit_mod,
+                    <span class="dt">names =</span> <span class="kw">c</span>(<span class="st">&quot;All observations&quot;</span>,
+                              <span class="st">&quot;Omit outliers&quot;</span>)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp012_regression_diagnostics_files/figure-html/dahl-reestimate-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># rsquared values</span>
+<span class="kw">rsquare</span>(dahl_mod, dahl)</code></pre></div>
+<pre><code>## [1] 0.232</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rsquare</span>(dahl_omit_mod, dahl_omit)</code></pre></div>
+<pre><code>## [1] 0.258</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># rmse values</span>
+<span class="kw">rmse</span>(dahl_mod, dahl)</code></pre></div>
+<pre><code>## [1] 1.68</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rmse</span>(dahl_omit_mod, dahl_omit)</code></pre></div>
+<pre><code>## [1] 1.29</code></pre>
+<ul>
+<li>Not much has changed from the original model
+<ul>
+<li>Estimate for age is a bit smaller, as well as a smaller standard error</li>
+<li>Tenure is also smaller, but only fractionally</li>
+<li>Unified is a bit larger and with a smaller standard error</li>
+</ul></li>
+<li><span class="math inline">\(R^2\)</span> is larger for the omitted observation model, and the RMSE is smaller</li>
+<li>These three observations mostly influenced the precision of the estimates (i.e. standard errors), not the accuracy of them</li>
+</ul>
+</div>
+</div>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
@@ -444,66 +712,69 @@ div.tocify {
 ##  tz       America/Chicago             
 ##  date     2017-05-02                  
 ## 
-##  package    * version    date       source                           
-##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                    
-##  backports    1.0.5      2017-01-18 CRAN (R 3.3.2)                   
-##  broom      * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
-##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                   
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                   
-##  DBI          0.6        2017-03-09 CRAN (R 3.3.3)                   
-##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                   
-##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                   
-##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                   
-##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                   
-##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.3.2)                   
-##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.3)                   
-##  ggplot2    * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)  
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                   
-##  haven        1.0.0      2016-09-23 cran (@1.0.0)                    
-##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                   
-##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                    
-##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                   
-##  ISLR       * 1.0        2013-06-11 CRAN (R 3.3.0)                   
-##  jsonlite     1.4        2017-04-08 cran (@1.4)                      
-##  knitr        1.15.1     2016-11-22 cran (@1.15.1)                   
-##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                   
-##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.3)                   
-##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                   
-##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                   
-##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                   
-##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                   
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                   
-##  modelr     * 0.1.0      2016-08-31 CRAN (R 3.3.0)                   
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                   
-##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                   
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                   
-##  psych        1.7.3.21   2017-03-22 CRAN (R 3.3.2)                   
-##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                   
-##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                   
-##  rcfss      * 0.1.4      2017-02-28 local                            
-##  Rcpp         0.12.10    2017-03-19 cran (@0.12.10)                  
-##  readr      * 1.1.0      2017-03-22 cran (@1.1.0)                    
-##  readxl       0.1.1      2016-03-28 CRAN (R 3.3.0)                   
-##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                   
-##  rlang        0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)    
-##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                   
-##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                   
-##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                   
-##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                   
-##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                   
-##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.3.2)                   
-##  tibble     * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)
-##  tidyr      * 0.6.1      2017-01-10 CRAN (R 3.3.2)                   
-##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                   
-##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.3.0)                   
-##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                   
-##  xml2         1.1.1      2017-01-24 CRAN (R 3.3.2)                   
+##  package    * version    date       source                               
+##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                        
+##  backports    1.0.5      2017-01-18 CRAN (R 3.3.2)                       
+##  broom      * 0.4.2      2017-02-13 CRAN (R 3.3.2)                       
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                       
+##  coefplot     1.2.4.9000 2017-04-25 Github (jaredlander/coefplot@0755a00)
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                       
+##  DBI          0.6        2017-03-09 CRAN (R 3.3.3)                       
+##  devtools     1.12.0     2016-06-24 CRAN (R 3.3.0)                       
+##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                       
+##  dplyr      * 0.5.0      2016-06-24 CRAN (R 3.3.0)                       
+##  evaluate     0.10       2016-10-11 CRAN (R 3.3.0)                       
+##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.3.2)                       
+##  foreign      0.8-67     2016-09-13 CRAN (R 3.3.3)                       
+##  ggplot2    * 2.2.1.9000 2017-05-01 Github (hadley/ggplot2@f4398b6)      
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                       
+##  haven      * 1.0.0      2016-09-23 cran (@1.0.0)                        
+##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                       
+##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                        
+##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                       
+##  ISLR       * 1.0        2013-06-11 CRAN (R 3.3.0)                       
+##  jsonlite     1.4        2017-04-08 cran (@1.4)                          
+##  knitr        1.15.1     2016-11-22 cran (@1.15.1)                       
+##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                       
+##  lattice      0.20-34    2016-09-06 CRAN (R 3.3.3)                       
+##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                       
+##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                       
+##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                       
+##  memoise      1.0.0      2016-01-29 CRAN (R 3.3.0)                       
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                       
+##  modelr     * 0.1.0      2016-08-31 CRAN (R 3.3.0)                       
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                       
+##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                       
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                       
+##  psych        1.7.3.21   2017-03-22 CRAN (R 3.3.2)                       
+##  purrr      * 0.2.2      2016-06-18 CRAN (R 3.3.0)                       
+##  R6           2.2.0      2016-10-05 CRAN (R 3.3.0)                       
+##  rcfss      * 0.1.4      2017-02-28 local                                
+##  Rcpp         0.12.10    2017-03-19 cran (@0.12.10)                      
+##  readr      * 1.1.0      2017-03-22 cran (@1.1.0)                        
+##  readxl       0.1.1      2016-03-28 CRAN (R 3.3.0)                       
+##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                       
+##  rlang        0.0.0.9018 2017-05-01 Github (hadley/rlang@460323e)        
+##  rmarkdown    1.3        2016-12-21 CRAN (R 3.3.2)                       
+##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                       
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                       
+##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                       
+##  stringi      1.1.2      2016-10-01 CRAN (R 3.3.0)                       
+##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.3.2)                       
+##  tibble     * 1.3.0.9001 2017-05-01 Github (tidyverse/tibble@08af6b0)    
+##  tidyr      * 0.6.1      2017-01-10 CRAN (R 3.3.2)                       
+##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                       
+##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.3.0)                       
+##  useful       1.2.1      2016-06-29 CRAN (R 3.3.0)                       
+##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                       
+##  xml2         1.1.1      2017-01-24 CRAN (R 3.3.2)                       
 ##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
 <li id="fn1"><p>The average value of <span class="math inline">\(\epsilon\)</span> given <span class="math inline">\(XS\)</span><a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>74th (1935-36), 98th (1983-84), and 104th (1995-96).<a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
 

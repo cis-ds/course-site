@@ -34,6 +34,7 @@ library(stringr)
 library(ISLR)
 library(titanic)
 library(rcfss)
+library(haven)
 
 options(digits = 3)
 set.seed(1234)
@@ -48,7 +49,7 @@ $$Y_i = \alpha + \beta x_i + \epsilon_i$$
 
 where $Y_i$ is the value of the response variable $Y$ for the $i$th observation, $x_i$ is the value for the explanatory variable $X$ for the $i$th observation. The coefficients $\alpha$ and $\beta$ are **population regression coefficients** - our goal is to estimate these population parameters given the observed data. $\epsilon_i$ is the error representing the aggregated omitted causes of $Y$, other explanatory variables that could be included in the model, measurement error in $Y$, and any inherently random component of $Y$.
 
-The key assumptions of linear regression concern the behavior of the errors. If these assumptions are violated, conducting inference from linear regression becomes tricky, biased, inefficient, and/or error prone.
+The key assumptions of linear regression concern the behavior of the errors.
 
 #### Linearity
 
@@ -100,6 +101,264 @@ data_frame(x = 1,
   labs(title = "You cannot regress this",
        subtitle = "Slope is undefined")
 ```
+
+## Handling violations of assumptions
+
+If these assumptions are violated, conducting inference from linear regression becomes tricky, biased, inefficient, and/or error prone. You could move to a more robust inferential method such as nonparametric regression, decision trees, support vector machines, etc., but these methods are more tricky to generate inference about the explanatory variables. Instead, we can attempt to diagnose assumption violations and impose solutions while still constraining ourselves to a linear regression framework.
+
+# Unusual and influential data
+
+**Outliers** are observations that are somehow unusual, either in their value of $Y_i$, of one or more $X_i$s, or some combination thereof. Outliers have the potential to have a disproportionate influence on a regression model.
+
+## Terms
+
+* **Outlier** - an observation that has an unusual value on the dependent variable $Y$ given its particular combination of values on $X$
+* **Leverage** - degree of potential influence on the coefficient estimates that a given observation can (but not necessarily does) have
+* **Discrepancy** - extent to which an observation is "unusual" or "different" from the rest of the data
+* **Influence** - how much effect a particular observation's value(s) on $Y$ and $X$ have on the coefficient estimates. Influence is a function of leverage and discrepancy:
+
+    $$\text{Influence} = \text{Leverage} \times \text{Discrepancy}$$
+
+```{r flintstones-sim}
+flintstones <- tribble(
+  ~name,    ~x, ~y,
+  "Barney", 13, 75,
+  "Dino",   24, 300,
+  "Betty",  14, 250,
+  "Fred",   10, 220,
+  "Wilma",  8,  210
+)
+
+ggplot(flintstones, aes(x, y, label = name)) +
+  geom_smooth(data = filter(flintstones, name %in% c("Wilma", "Fred", "Betty")),
+              method = "lm", se = FALSE, fullrange = TRUE, color = "gray",
+              aes(linetype = "Betty + Fred + Wilma")) +
+  geom_smooth(data = filter(flintstones, name != "Dino"),
+              method = "lm", se = FALSE, fullrange = TRUE, color = "gray",
+              aes(linetype = "Barney + Betty + Fred + Wilma")) +
+  geom_smooth(data = filter(flintstones, name != "Barney"),
+              method = "lm", se = FALSE, fullrange = TRUE, color = "gray",
+              aes(linetype = "Betty + Dino + Fred + Wilma")) +
+  scale_linetype_manual(values = c(3,2,1),
+                        guide = guide_legend(nrow = 3,
+                                             reverse = TRUE)) +
+  geom_point(size = 2) +
+  ggrepel::geom_label_repel() +
+  labs(linetype = NULL) +
+  theme(legend.position = "bottom")
+```
+
+* Dino is an observation with high leverage but low discrepancy (close to the regression line defined by Betty, Fred, and Wilma). Therefore he has little impact on the regression line (long dashed line); his influence is low because his discrepancy is low.
+* Barney has high leverage (though lower than Dino) and high discrepancy, so he substantially influences the regression results (short-dashed line).
+
+## Measuring leverage
+
+Leverage is typically assessed using the **leverage** (**hat**) **statistic**:
+
+$$h_i = \frac{1}{n} + \frac{(X_i - \bar{X})^2}{\sum_{i'=1}^{n} (X_{i'} - \bar{X})^2}$$
+
+Generalized to the multivariate case:
+
+$$h_i = \mathbf{X}_i (\mathbf{X'X})^{-1} \mathbf{X'}_i$$
+
+* It is solely a function of $X$
+* Larger values indicate higher leverage
+* $\frac{1}{n} \leq h_i \leq 1$
+* $\bar{h} = \frac{(p + 1)}{n}$
+
+Observations with a leverage statistic greater than the average could have high leverage.
+
+## Measuring discrepancy
+
+Residuals are a natural way to look for discrepant or outlying observations (discrepant obserations typically have large residuals, or differences between actual and fitted values for $y_i$.) The problem is that variability of the errors $E_i$ do not have equal variances, even if the actual errors $\epsilon_i$ do have equal variances:
+
+$$V(E_i) = \sigma_\epsilon^2 (1 - h_i)$$
+
+High leverage observations tend to have small residuals, which makes sense because they pull the regression line towards them. Alternatively we can calculate a **standardized residual** which parses out the variability in $X_i$ for $E_i$:
+
+$$E'_i \equiv \frac{E_i}{S_{E} \sqrt{1 - h_i}}$$
+
+where $S_E$ is the standard error of the regression:
+
+$$S_E = \sqrt{\frac{E_i^2}{(n - k - 1)}}$$
+
+The problem is that the numerator and the denominator are not independent - they both contain $E_i$, so $E'_i$ does not follow a $t$-distribution. Instead, we can modify this measure by calculating $S_{E(-i)}$; that is, refit the model deleting each $i$th observation, estimating the standard error of the regression $S_{E(-i)}$ based on the remaining $i-1$ observations. We then calculate the **studentized residual**:
+
+$$E_i^{\ast} \equiv \frac{E_i}{S_{E(-i)} \sqrt{1 - h_i}}$$
+
+which now has an independent numerator and denominator and follows a $t$-distribution with $n-k-2$ degrees of freedom. They are on a common scale and we should expect roughly 95% of the studentized residuals to fall within the interval $[-2,2]$.
+
+## Measuring influence
+
+As described previously, influence is the a combination of an observation's leverage and discrepancy. In other words, influence is the effect of a particular observation on the coefficient estimates. A simple measure of that influence is the difference between the coefficient estimate with and without the observation in question:
+
+$$D_{ij} = \hat{\beta_j} - \hat{\beta}_{j(-i)}, \text{for } i=1, \dots, n \text{ and } j = 0, \dots, k$$
+
+This measure is called $\text{DFBETA}_{ij}$. Since coefficient estimates are scaled differently depending on how the variables are scaled, we can rescale $\text{DFBETA}_{ij}$ by the coefficient's standard error to account for this fact:
+
+$$D^{\ast}_{ij} = \frac{D_{ij}}{SE_{-i}(\beta_j)}$$
+
+This measure is called $\text{DFBETAS}_{ij}$.
+
+* Positive values of $\text{DFBETAS}_{ij}$ correspond to observations which **decrease** the estimate of $\hat{\beta}_j$
+* Negative values of $\text{DFBETAS}_{ij}$ correspond to observations which **increase** the estimate of $\hat{\beta}_j$
+
+Frequently $\text{DFBETA}$s are used to construct summary statistics of each observation's influence on the regression model. **Cook's D** is based on the theory that one could conduct an $F$-test on each observation for the hypothesis that $\beta_j = \hat{\beta}_{k(-i)} \forall j \in J$. The formula for this measure is:
+
+$$D_i = \frac{E^{'2}_i}{k + 1} \times \frac{h_i}{1 - h_i}$$
+
+where $\tilde{u}_i^2$ is the squared standardized residual, $k$ is the number of parameters in the model, and $\frac{h_i}{1 - h_i}$ is the hat value. We look for values of $D_i$ that stand out from the rest.
+
+## Visualizing leverage, discrepancy, and influence
+
+For example, here are the results of a basic model of the number of federal laws struck down by the U.S. Supreme Court in each Congress, based on:
+
+1. **Age** - the mean age of the members of the Supreme Court
+1. **Tenure** - mean tenure of the members of the Court
+1. **Unified** - a dummy variable indicating whether or not the Congress was controlled by the same party in that period
+
+```{r dahl}
+# read in data and estimate model
+dahl <- read_dta("data/LittleDahl.dta")
+dahl_mod <- lm(nulls ~ age + tenure + unified, data = dahl)
+tidy(dahl_mod)
+```
+
+A major concern with regression analysis of this data is that the results are being driven by outliers in the data.
+
+```{r dahl-time}
+dahl <- dahl %>%
+  mutate(year = congress * 2 + 1787)
+
+ggplot(dahl, aes(year, nulls)) +
+  geom_line() +
+  geom_vline(xintercept = 1935, linetype = 2) +
+  labs(x = "Year",
+       y = "Congressional laws struck down")
+
+ggplot(dahl, aes(year, age)) +
+  geom_line() +
+  geom_vline(xintercept = 1935, linetype = 2) +
+  labs(x = "Year",
+       y = "Mean age of justices on the Court")
+```
+
+During the 74th Congress (1935-36), the New Deal/Court-packing crisis was associated with an abnormally large number of laws struck down by the court. We should determine whether or not this observation is driving our results.
+
+By combining all three variables into a "bubble plot", we can visualize all three variables simultaneously.
+
+* Each observation's leverage ($h_i$) is plotted on the $x$ axis
+* Each observation's discrepancy (i.e. Studentized residual) is plotted on the $y$ axis
+* Each symbol is drawn proportional to the observation's Cook's $D_i$
+
+```{r bubble}
+# add key statistics
+dahl_augment <- dahl %>%
+  mutate(hat = hatvalues(dahl_mod),
+         student = rstudent(dahl_mod),
+         cooksd = cooks.distance(dahl_mod))
+
+# draw bubble plot
+ggplot(dahl_augment, aes(hat, student)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_point(aes(size = cooksd), shape = 1) +
+  geom_text(data = dahl_augment %>%
+              arrange(-cooksd) %>%
+              slice(1:10),
+            aes(label = Congress)) +
+  scale_size_continuous(range = c(1, 20)) +
+  labs(x = "Leverage",
+       y = "Studentized residual") +
+  theme(legend.position = "none")
+```
+
+The bubble plot tells us several things:
+
+* The size/color of the symbols is proportional to Cook's D, which is in turn a multiplicative function of the square of the Studentized residuals (Y axis) and the leverage (X axis), so observations farther away from $Y=0$ and/or have higher values of $X$ will have larger symbols.
+* The plot tells us whether the large influence of an observation is due to high discrepancy, high leverage, or both
+    * The 104th Congress has relatively low leverage but is very discrepant
+    * The 74th and 98th Congresses demonstrate both high discrepancy and high leverage
+
+## Numerical rules of thumb
+
+These are not hard and fast rules rigorously defended by mathematical proofs; they are simply potential rules of thumb to follow when interpreting the above statistics.
+
+### Hat-values
+
+Anything exceeding twice the average $\bar{h} = \frac{k + 1}{n}$ is noteworthy. In our example that would be the following observations:
+
+```{r hat-sig}
+dahl_augment %>%
+  filter(hat > 2 * mean(hat))
+```
+
+### Studentized residuals
+
+Anything outside of the range $[-2,2]$ is discrepant.
+
+```{r resid-sig}
+dahl_augment %>%
+  filter(abs(student) > 2)
+```
+
+### Influence
+
+$$D_i > \frac{4}{n - k - 1}$$
+
+where $n$ is the number of observations and $k$ is the number of coefficients in the regression model.
+
+```{r cooksd-sig}
+dahl_augment %>%
+  filter(cooksd > 4 / (nrow(.) - (length(coef(dahl_mod)) - 1) - 1))
+```
+
+## How to treat unusual observations
+
+### Mistakes
+
+If the data is just wrong (miscoded, mismeasured, misentered, etc.), then either fix the error, impute a plausible value for the observation, or omit the offending observation.
+
+### Weird observations
+
+If the data for a particular observation is just strange, then you may want to ask "why is it so strange?"
+
+1. The data are strange because something unusual/weird/singular happened to that data point
+    * If that "something" is important to the theory being tested, then you may want to respecify your model
+    * If the answer is no, then you can drop the offending observation from the analysis
+1. The data are strange for apparent reason
+    * Not really a good answer here. Try digging into the history of the observation to find out what is going on.
+    * Dropping the observation is a judgment call
+    * You could always rerun the model omitting the observation and including the results as a footnote (i.e. a robustness check)
+
+For example, let's reestimate the SCOTUS model and omit observations that were commonly identified as outliers:^[74th (1935-36), 98th (1983-84), and 104th (1995-96).]
+
+```{r dahl-reestimate}
+dahl_omit <- dahl %>%
+  filter(!(congress %in% c(74, 98, 104)))
+
+dahl_omit_mod <- lm(nulls ~ age + tenure + unified, data = dahl_omit)
+
+coefplot::multiplot(dahl_mod, dahl_omit_mod,
+                    names = c("All observations",
+                              "Omit outliers")) +
+  theme(legend.position = "bottom")
+
+# rsquared values
+rsquare(dahl_mod, dahl)
+rsquare(dahl_omit_mod, dahl_omit)
+
+# rmse values
+rmse(dahl_mod, dahl)
+rmse(dahl_omit_mod, dahl_omit)
+```
+
+* Not much has changed from the original model
+    * Estimate for age is a bit smaller, as well as a smaller standard error
+    * Tenure is also smaller, but only fractionally
+    * Unified is a bit larger and with a smaller standard error
+* $R^2$ is larger for the omitted observation model, and the RMSE is smaller
+* These three observations mostly influenced the precision of the estimates (i.e. standard errors), not the accuracy of them
+
 
 # Session Info {.toc-ignore}
 
