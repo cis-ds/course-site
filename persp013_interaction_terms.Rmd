@@ -32,6 +32,7 @@ library(stringr)
 library(titanic)
 library(rcfss)
 library(car)
+library(plotly)
 
 options(digits = 3)
 set.seed(1234)
@@ -215,7 +216,7 @@ ggplot(two_dich, aes(y, color = interaction(x, z))) +
 
 Or as a boxplot:
 
-```{r sim-two-dich-hist}
+```{r sim-two-dich-box}
 ggplot(two_dich, aes(interaction(z, x), y)) +
   geom_boxplot() +
   scale_x_discrete(labels = c(expression("D1 = D2 = 0"),
@@ -236,11 +237,115 @@ This illustrates that:
 
 ## One dichotomous and one continuous covariate
 
+More commonly, we have a situation where one variable in the interaction is continous and the other is dichotomous:
+
+$$Y = \beta_0 + \beta_1 X + \beta_2 D + \beta_3 XD + e_i$$
+
+$$
+\begin{split}
+E(Y | X, D = 0) & = \beta_0 + \beta_1 X \\
+E(Y | X, D = 1) & = (\beta_0 + \beta_2) + (\beta_1 + \beta_3) X
+\end{split}
+$$
+
+This suggests four possibilities:
+
+* $X$ has both the same slope and the same intercept for $D=0$ and $D=1$; that is, $\beta_2 = \beta_3 = 0$.
+
+    ```{r sim-cont-dich-00}
+    data_frame(x = runif(n_sim, -2, 2),
+               z = runif(n_sim, -2, 2)) %>%
+      mutate_at(vars(z), funs(ifelse(. > .5, 1, 0))) %>%
+      mutate(y = 0 + 20 * x + 0 * z + 0 * (x * z) + rnorm(n_sim, 0, 5)) %>%
+      ggplot(aes(x, y, color = factor(z), shape = factor(z))) +
+      geom_point() +
+      geom_abline(intercept = 0, slope = 20) +
+      labs(title = expression({beta[2] == beta[3]} == 0),
+           color = "Z",
+           shape = "Z") +
+      theme(legend.position = "bottom")
+    ```
+    
+* $X$ has both the same slope but different intercepts for $D=0$ and $D=1$; that is, $\beta_2 \neq 0$ and $\beta_3 = 0$.
+
+    ```{r sim-cont-dich-01}
+    data_frame(x = runif(n_sim, -2, 2),
+               z = runif(n_sim, -2, 2)) %>%
+      mutate_at(vars(z), funs(ifelse(. > .5, 1, 0))) %>%
+      mutate(y = 0 + 20 * x + 10 * z + 0 * (x * z) + rnorm(n_sim, 0, 5)) %>%
+      ggplot(aes(x, y, color = factor(z), shape = factor(z))) +
+      geom_point() +
+      geom_abline(intercept = 0, slope = 20) +
+      geom_abline(intercept = 10, slope = 20, linetype = 2) +
+      labs(title = expression(paste({beta[2] != 0}, ",", beta[3] == 0)),
+           color = "Z",
+           shape = "Z") +
+      theme(legend.position = "bottom")
+    ```
+    
+* $X$ has both the same intercept but different slopes for $D=0$ and $D=1$; that is, $\beta_2 = 0$ and $\beta_3 \neq 0$.
+
+    ```{r sim-cont-dich-10}
+    data_frame(x = runif(n_sim, -2, 2),
+               z = runif(n_sim, -2, 2)) %>%
+      mutate_at(vars(z), funs(ifelse(. > .5, 1, 0))) %>%
+      mutate(y = 0 + 20 * x + 0 * z + -40 * (x * z) + rnorm(n_sim, 0, 5)) %>%
+      ggplot(aes(x, y, color = factor(z), shape = factor(z))) +
+      geom_point() +
+      geom_abline(intercept = 0, slope = 20) +
+      geom_abline(intercept = 0, slope = -20, linetype = 2) +
+      labs(title = expression(paste({beta[2] == 0}, ",", beta[3] != 0)),
+           color = "Z",
+           shape = "Z") +
+      theme(legend.position = "bottom")
+    ```
+    
+* $X$ has both different intercepts and different slopes for $D=0$ and $D=1$; that is, $\beta_2 \neq 0$ and $\beta_3 \neq 0$.
+
+    ```{r sim-cont-dich-11}
+    data_frame(x = runif(n_sim, -2, 2),
+               z = runif(n_sim, -2, 2)) %>%
+      mutate_at(vars(z), funs(ifelse(. > .5, 1, 0))) %>%
+      mutate(y = 0 + 20 * x + 20 * z + -40 * (x * z) + rnorm(n_sim, 0, 5)) %>%
+      ggplot(aes(x, y, color = factor(z), shape = factor(z))) +
+      geom_point() +
+      geom_abline(intercept = 0, slope = 20) +
+      geom_abline(intercept = 20, slope = -20, linetype = 2) +
+      labs(title = expression(paste({beta[2] == 0}, ",", beta[3] != 0)),
+           color = "Z",
+           shape = "Z") +
+      theme(legend.position = "bottom")
+    ```
 
 ## Two continuous covariates
 
+It is also common to have a model in which both interacted covariates are continuous:
+
+$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1 X_2 + e_i$$
+
+The interpretation here is that each covariate's effect on $Y$ changes **smoothly** and **monotonically** as a function of the other covariate.
+
+```{r two-cont}
+# no interactive effects
+data_frame(x = runif(n_sim, 0, 10),
+           z = runif(n_sim, 0, 10),
+           y = 10 + 10 * x - 10 * z + 0 * x * z) %>%
+  plot_ly(x = ~x, y = ~ z, z = ~ y, type = "mesh3d") %>%
+  layout(title = "No interactive effects")
+
+# inteactive effects
+data_frame(x = runif(n_sim, 0, 10),
+           z = runif(n_sim, 0, 10),
+           y = 10 + 10 * x - 10 * z + 10 * x * z) %>%
+  plot_ly(x = ~x, y = ~ z, z = ~ y, type = "mesh3d") %>%
+  layout(title = "Interactive effects")
+```
+
+Note that in the first figure, the marginal influence of a change in $X_1$ on $Y$ is not dependent on the value of $X_2$. By contrast, in the next figure when values of $X_1$ are small, the effect of $X_2$ on $Y$ is both negative and relatively small; however, when $X_1$ is large, the effect of $X_2$ on $Y$ is both large and positive.
 
 ## Quadratic, cubic, and other polynomial effects
+
+
 
 
 ## Higher-order interaction terms
