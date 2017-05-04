@@ -33,6 +33,8 @@ library(titanic)
 library(rcfss)
 library(car)
 library(plotly)
+library(haven)
+library(coefplot)
 
 options(digits = 3)
 set.seed(1234)
@@ -418,12 +420,209 @@ Here the slope of $Y$ on $X$ is positive when $D_1 = 0$ and negative when $D_1 =
 
 # Estimating models with multiplicative interactions
 
+````{r nes-data}
+# get nes data
+nes <- read_dta("data/nes2008.dta") %>%
+  select(obama_therm_post, partyid3, libcon7, libcon7_obama) %>%
+  mutate_each(funs(ifelse(is.nan(.), NA, .))) %>%
+  rename(ObamaTherm = obama_therm_post,
+         RConserv = libcon7,
+         ObamaConserv = libcon7_obama) %>%
+  mutate(GOP = ifelse(partyid3 == 3, 1, 0)) %>%
+  select(-partyid3) %>%
+  na.omit
+```
+
+Let's look at data from the 2008 American national election study. The outcome of interest is the **Obama feeling thermometer** (`ObamaTherm`). Our covariates are:
+
+* `RConserv` - the respondent's self-placement on a liberal/conservative scale, ranging in value from 1 (extremely liberal) to 7 (extremely conservative)
+* `ObamaConserv` - the respondent's placement of President Obama on the same 1 (extremely liberal) to 7 (extremely conservative) scale
+* `GOP` - a dummy variable coded 1 if the respondent self-identified as a Republican, and 0 otherwise
+
+```{r nes-sum}
+summary(nes)
+```
+
+A basic linear model would look like this:
+
+```{r obama-linear}
+obama_base <- lm(ObamaTherm ~ RConserv + GOP, data = nes)
+tidy(obama_base)
+glance(obama_base)
+```
+
+This suggests that conservatives and Republicans like Obama less than liberals and Democrats. What a shock!
 
 ## Model estimation
 
+Let's consider a couple of interactive models. First, while Obama became a polarizing figure in partisan terms after taking office, in 2008 he was seen as a uniting figure and attracted substantial support from moderate Republicans. This suggests that while most people will like or hate Obama on the basis of their own ideology, Republicans were especially responsive in this regard: even more so than for others (especially Democrats), we might expect conservative Republicans to really dislike Obama, and moderate or liberal Republicans to support him. This suggests a model of the form:
+
+$$
+\begin{align}
+\text{Obama thermometer} = \beta_0 &+ \beta_1 (\text{Respondent conservatism}) + \beta_2 (\text{GOP respondent})\\
+& + \beta_3 (\text{Respondent conservatism}) (\text{GOP respondent}) + e
+\end{align}
+$$
+
+So we expect $\beta_1 < 0$ (conservatives will be more negative towards Obama), $\beta_2 < 0$ (Republicans will be more negative towards Clinton), and $\beta_3 < 0$ (the responsiveness of Obama's thermometer score to the respondent's ideology will be even greater - that is, more negative - among Republicans).
+
+```{r obama-ideo-x-gop}
+obama_ideo_gop <- lm(ObamaTherm ~ RConserv * GOP, data = nes)
+tidy(obama_ideo_gop)
+glance(obama_ideo_gop)
+```
+
+> Note that `RConserv * GOP` automatically is expanded to include the constituent terms in the regression model.
+
+The results are as expected. For non-Republicans (that is when `GOP = 0`):
+
+$$
+\begin{align}
+E(\text{Obama thermometer}) = `r coef(obama_ideo_gop)[["(Intercept)"]]` & `r coef(obama_ideo_gop)[["RConserv"]]` (\text{Respondent conservatism})  `r coef(obama_ideo_gop)[["GOP"]]` (0)\\
+&  `r coef(obama_ideo_gop)[["RConserv:GOP"]]` (\text{Respondent conservatism} \times 0) \\
+= `r coef(obama_ideo_gop)[["(Intercept)"]]` & `r coef(obama_ideo_gop)[["RConserv"]]` (\text{Respondent conservatism})
+\end{align}
+$$
+
+while for Republicans (that is, `GOP = 1`), the equation is:
+
+$$
+\begin{align}
+E(\text{Obama thermometer}) & = (`r coef(obama_ideo_gop)[["(Intercept)"]]` `r coef(obama_ideo_gop)[["GOP"]]` (1)) + (`r coef(obama_ideo_gop)[["RConserv"]]` `r coef(obama_ideo_gop)[["RConserv:GOP"]]` (\text{Respondent conservatism} \times 1)) \\
+& = `r coef(obama_ideo_gop)[["(Intercept)"]] + coef(obama_ideo_gop)[["GOP"]]` `r coef(obama_ideo_gop)[["RConserv"]] + coef(obama_ideo_gop)[["RConserv:GOP"]]` (\text{Respondent conservatism})
+\end{align}
+$$
+
+In our previous language, $\hat{\psi}_1 = `r coef(obama_ideo_gop)[["RConserv"]] + coef(obama_ideo_gop)[["RConserv:GOP"]]`$; that is, the "quasi-coefficient" estimate for the effect of a respondent's conservatism on their Obama thermometer score.
+
+```{r obama-ideo-x-gop-plot}
+nes %>%
+  add_predictions(obama_ideo_gop) %>%
+  ggplot(aes(RConserv, ObamaTherm, color = factor(GOP))) +
+  geom_jitter(alpha = .5) +
+  geom_line(aes(y = pred)) +
+  scale_color_manual(values = c("blue", "red")) +
+  labs(x = "Respondent conservatism",
+       y = "Obama thermometer score") +
+  theme(legend.position = "none")
+```
+
+### Separate models
+
+Compare these results to two separate models where we split the data into two samples: Republicans and non-Republicans:
+
+```{r obama-split}
+tidy(lm(ObamaTherm ~ RConserv, data = filter(nes, GOP == 0)))
+tidy(lm(ObamaTherm ~ RConserv, data = filter(nes, GOP == 1)))
+```
+
+We get "almost" the same results. This is because the model with the interaction terms allows both different slopes (on `RConserv`) and intercepts for Republicans and non-Republicans. While the point estimates are identical, the standard errors are not so. This is because the interactive model estimates the two implicit models "together", and therefore is (very slightly) more efficient than the separate models. In large data sets, the difference is tiny.
+
+### Causal direction
+
+It is also the case that if GOP membership moderates the association between conservatism and Obama's thermometer score, then it is also true that conservatism moderates the association between those scores and party membership:
+
+```{r obama-other-direction}
+nes %>%
+  data_grid(RConserv, GOP) %>%
+  add_predictions(obama_ideo_gop) %>%
+  spread(GOP, pred) %>%
+  mutate(diff = `1` - `0`) %>%
+  ggplot(aes(RConserv, diff)) +
+  geom_point() +
+  labs(title = "Rxpected Obama thermometer score",
+       x = "Respondent conservatism",
+       y = "First difference between Republicans\nand non-Republicans")
+```
+
+For extremely liberal respondents (`RConserv = 1`), the difference in the expected Obama thermometer score between a Republican and a non-Republican is:
+
+$$
+\begin{align}
+\hat{\psi}_2 & = \hat{\beta}_2 + \hat{\beta}_3 (1) \\
+& = `r coef(obama_ideo_gop)[["GOP"]]` + (`r coef(obama_ideo_gop)[["RConserv:GOP"]]`) (1) \\
+& = `r coef(obama_ideo_gop)[["GOP"]] + coef(obama_ideo_gop)[["RConserv:GOP"]]`
+\end{align}
+$$
+
+Similarly, for an extremely conservative respondents (`RConserv = 7`), the difference is:
+
+$$
+\begin{align}
+\hat{\psi}_2 & = \hat{\beta}_2 + \hat{\beta}_3 (7) \\
+& = `r coef(obama_ideo_gop)[["GOP"]]` + (`r coef(obama_ideo_gop)[["RConserv:GOP"]]`) (7) \\
+& = `r coef(obama_ideo_gop)[["GOP"]] + (coef(obama_ideo_gop)[["RConserv:GOP"]] * 7)`
+\end{align}
+$$
+
+Consistent with our theory, the differences (between Republicans and non-Republicans) in opinions about Obama are largest among those who are very conservative, and smallest among those who are most liberal
 
 ## Calculating standard errors
 
+Now we need to calculate standard errors to determine if the point estimates of the $\psi$s are statistically significant. We can rewrite the functional form as:
+
+$$
+\begin{align}
+\text{Obama thermometer} = &\beta_0 + (\beta_1 + \beta_3 \text{GOP}) (\text{Respondent conservatism}) + \\
+& \beta_2 (\text{GOP respondent}) + e \\
+ = &\beta_0 + \psi_1 \text{Respondent conservatism}) + \beta_2 (\text{GOP respondent}) + e
+\end{align}
+$$
+
+Calculating the point estimates $\hat{\psi}$ is straightforward:
+
+```{r point}
+coef(obama_ideo_gop)[["GOP"]] + coef(obama_ideo_gop)[["RConserv:GOP"]]
+```
+
+Likewise, we can recover the standard errors using the formula:
+
+$$\hat{\sigma}_{\hat{\psi}_1} = \sqrt{\widehat{\text{Var}(\hat{\beta}_1)} + (\text{GOP})^2 \widehat{\text{Var}(\hat{\beta_3}) + 2 (\text{GOP}) \widehat{\text{Cov}(\hat{\beta}_1 \hat{\beta}_3)}}}$$
+
+We can retrieve all of the necessary elements from the variance-covariance matrix using the `vcov()` function:
+
+```{r std-err}
+vcov(obama_ideo_gop)
+
+sqrt(vcov(obama_ideo_gop)["RConserv", "RConserv"] +
+       (1)^2 * vcov(obama_ideo_gop)["RConserv:GOP", "RConserv:GOP"] +
+       2 * 1 * vcov(obama_ideo_gop)["RConserv", "RConserv:GOP"])
+```
+
+The ratio of the point estimate to the standard error yields a $t$-statistic of `r coef(obama_ideo_gop)[["GOP"]] + coef(obama_ideo_gop)[["RConserv:GOP"]] / sqrt(vcov(obama_ideo_gop)["RConserv", "RConserv"] + (1)^2 * vcov(obama_ideo_gop)["RConserv:GOP", "RConserv:GOP"] + 2 * 1 * vcov(obama_ideo_gop)["RConserv", "RConserv:GOP"])`, which indicates that the marginal association between the thermometer score for Obama and respondent conservatism is very precisely estimated ($p < .001$).
+
+If we want to conduct inference on $\hat{\psi}_2$ (the marginal effect of GOP on $Y$), we can do that as well:
+
+```{r obama-other-dir-std-err}
+# store coefficients and covariance matrix
+beta.hat <- coef(obama_ideo_gop)
+cov <- vcov(obama_ideo_gop)
+
+# possible set of values for z
+z <- seq(min(nes$RConserv), max(nes$RConserv))
+
+# calculate instantaneous effect
+dy.dx <- beta.hat[["GOP"]] + beta.hat[["RConserv:GOP"]] * z
+
+# calculate standard errors for instantaeous effect
+se.dy.dx <- sqrt(cov["GOP", "GOP"] + z^2 * cov["RConserv:GOP", "RConserv:GOP"] + 2 * z * cov["GOP", "RConserv:GOP"])
+
+# combine into data frame
+data_frame(dy.dx = dy.dx,
+           se = se.dy.dx)
+
+
+nes %>%
+  data_grid(RConserv, GOP) %>%
+  add_predictions(obama_ideo_gop) %>%
+  spread(GOP, pred) %>%
+  mutate(diff = `1` - `0`) %>%
+  ggplot(aes(RConserv, diff)) +
+  geom_point() +
+  labs(title = "Rxpected Obama thermometer score",
+       x = "Respondent conservatism",
+       y = "First difference between Republicans\nand non-Republicans")
+```
 
 ## Hypothesis testing
 
