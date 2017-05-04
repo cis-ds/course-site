@@ -384,6 +384,28 @@ data_frame(x = runif(n_sim, -2, 2)) %>%
 
 ## Higher-order interaction terms
 
+We could expand on this process and adopt higher-order interaction models:
+
+$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_1 X_2 + \beta_5 X_1 X_3 + \beta_6 X_2 X_3 + \beta_7 X_1 X_2 X_3 + e$$
+
+The various $X$s could be continuous or dichotomous, with corresponding interpretations. In this model, each of the three $X$s conditions the influence of the other. This can be become very complex and confusing. In the simplest case with two dichotmous variables and one continuous $X$:
+
+$$Y = \beta_0 + \beta_1 X + \beta_2 D_1 + \beta_3 D_2 + \beta_4 X D_1 + \beta_5 X D_2 + \beta_6 D_1 D_2 + \beta_7 X D_1 D_2 + e$$
+
+```{r three-way}
+data_frame(x = runif(n_sim, -2, 2),
+           d1 = runif(n_sim),
+           d2 = runif(n_sim)) %>%
+  mutate_at(vars(d1, d2), funs(ifelse(. > .5, 1, 0))) %>%
+  mutate(y = 10 + 10 * x + 10 * d1 - 20 * d2 - 20 * x * d1 + 20 * x *d2 - 50 * x * d1 * d2 + rnorm(n_sim, 0, 10)) %>%
+  add_predictions(lm(y ~ x * d1 * d2, data = .)) %>%
+  ggplot(aes(x, y)) +
+  facet_grid(d1 ~ d2, labeller = label_both) +
+  geom_point() +
+  geom_line(aes(y = pred))
+```
+
+Here the slope of $Y$ on $X$ is positive when $D_1 = 0$ and negative when $D_1 = 1$. In addition, $D_2$ has an exacerbating effect: its presence makes the effect of $X$ on $Y$ stronger, irrespective of whether the effect is positive or negative.
 
 # Key rules for estimating and interpreting interaction terms
 
