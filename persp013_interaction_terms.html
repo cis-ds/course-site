@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="MACS 30200 - Perspectives on Computational Research" />
+
+
+<title>Interaction terms in regression models</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/htmlwidgets-0.8/htmlwidgets.js"></script>
+<link href="site_libs/plotlyjs-1.26.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="site_libs/plotlyjs-1.26.1/plotly-latest.min.js"></script>
+<script src="site_libs/plotly-binding-4.6.0/plotly.js"></script>
+<link href="site_libs/crosstalk-1.0.0/css/crosstalk.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.0.0/js/crosstalk.min.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+div.sourceCode {
+  overflow-x: visible;
+}
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Interaction terms in regression models</h1>
+<h4 class="author"><em>MACS 30200 - Perspectives on Computational Research</em></h4>
+
+</div>
+
+
+<div id="objectives" class="section level1">
+<h1>Objectives</h1>
+<ul>
+<li>Define multiplicative interaction models and conditional effects</li>
+<li>Review mathematics required to calculate standard errors and conduct inference</li>
+<li>Identify major types of conceptual interactions</li>
+<li>Demonstrate how to estimate multiplicative interaction models in R</li>
+<li>Implement hypothesis testing and marginal effects plots</li>
+<li>Extend discussion to generalized linear models</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(forcats)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(modelr)
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(titanic)
+<span class="kw">library</span>(rcfss)
+<span class="kw">library</span>(car)
+<span class="kw">library</span>(plotly)
+<span class="kw">library</span>(haven)
+<span class="kw">library</span>(coefplot)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+</div>
+<div id="multiplicative-interaction-models" class="section level1">
+<h1>Multiplicative interaction models</h1>
+<div id="additive-model" class="section level2">
+<h2>Additive model</h2>
+<p>Consider a linear additive model of the form:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X + \beta_2 Z + e_i\]</span></p>
+<p>By definition, we expect <span class="math inline">\(\beta_1\)</span> to estimate the direct effect (or relationship) of <span class="math inline">\(X_1\)</span> on <span class="math inline">\(Y\)</span> independent of <span class="math inline">\(Z\)</span>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> A data generating process with a continuous value for <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> and a dichotomous value for <span class="math inline">\(Z\)</span> following this functional form would look like:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n_sim &lt;-<span class="st"> </span><span class="dv">100</span>
+
+additive &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim),
+                       <span class="dt">z =</span> <span class="kw">runif</span>(n_sim)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">z =</span> <span class="kw">ifelse</span>(z &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>),
+         <span class="dt">y =</span> x +<span class="st"> </span>z +<span class="st"> </span><span class="kw">rnorm</span>(n_sim))
+
+additive %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(<span class="kw">lm</span>(y ~<span class="st"> </span>x +<span class="st"> </span>z, <span class="dt">data =</span> .)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">color =</span> <span class="kw">factor</span>(z))) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-linear-1.png" width="672" /></p>
+<p>Consider the net impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span>:</p>
+<p><span class="math display">\[E(Y) = \beta_0 + \beta_1 X + \beta_2 Z\]</span></p>
+<p>If we take the first derivative of this with respect to <span class="math inline">\(X\)</span>, we get:</p>
+<p><span class="math display">\[\frac{\delta E(Y)}{\delta X} = \beta_1\]</span></p>
+<p>In other words, the marginal impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> is constant and completely independent of <span class="math inline">\(Z\)</span>. Likewise, the marginal impact of <span class="math inline">\(Z\)</span> on <span class="math inline">\(Y\)</span> is:</p>
+<p><span class="math display">\[\frac{\delta E(Y)}{\delta Z} = \beta_2\]</span></p>
+<p>Interpreting the estimated parameters and standard errors is relatively straightforward in this setup.</p>
+</div>
+<div id="multiplicative-interaction-model" class="section level2">
+<h2>Multiplicative interaction model</h2>
+<p>But the additive functional form only makes sense if you theoretically believe the effects of <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span> are independent. Consider instead a simple interactive model with three variables:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X + \beta_2 Z + \beta_3 XZ + e_i\]</span></p>
+<p>Here <span class="math inline">\(XZ\)</span> is just that: <span class="math inline">\(X\)</span> multiplied by <span class="math inline">\(Z\)</span>. <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> are commonly (and erroneously) referred to as the <strong>direct effects</strong> of <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span> on <span class="math inline">\(Y\)</span>,<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and <span class="math inline">\(\beta_3\)</span> as the coefficient for the <strong>interaction term</strong>.</p>
+<p>With the variables multiplied together, the net impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> is now defined by:</p>
+<p><span class="math display">\[
+\begin{split}
+E(Y) &amp; = \beta_0 + \beta_1 X + \beta_2 Z + \beta_3 XZ \\
+     &amp; = \beta_0 + \beta_2 Z + (\beta_1 + \beta_3 Z) X
+\end{split}
+\]</span></p>
+<p>And the first derivative of this with respect to <span class="math inline">\(X\)</span> is:</p>
+<p><span class="math display">\[\frac{\delta E(Y)}{\delta X} = \beta_1 + \beta_3 Z\]</span></p>
+<p>In other words, the marginal impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> now explicitly depends on the value of <span class="math inline">\(Z\)</span>. Another way of phrasing the expected value function above is:</p>
+<p><span class="math display">\[E(Y) = \beta_0 + \beta_2 Z + \psi_1 X\]</span></p>
+<p>where <span class="math inline">\(\psi_1 = \beta_1 + \beta_3 Z\)</span> is a “quasi-coefficient” for the marginal impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span>. Likewise with respect to <span class="math inline">\(Z\)</span>:</p>
+<p><span class="math display">\[
+\begin{split}
+E(Y) &amp; = \beta_0 + \beta_1 X + (\beta_2 + \beta_3 X) Z \\
+     &amp; = \beta_0 + \beta_2 Z + \psi_2 Z
+\end{split}
+\]</span></p>
+<p>In this type of interactive model, each interacted covariate’s influence on <span class="math inline">\(Y\)</span> is now conditional on the values of the other explanatory variable(s) with which it is interacted.</p>
+<ul>
+<li>The direct effects <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> represent the <em>conditional</em> impact of <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span> on <span class="math inline">\(Y\)</span> <em>conditional on the value of the other interacted variable being zero</em>.
+<ul>
+<li><p>If <span class="math inline">\(Z = 0\)</span>, then:</p>
+<p><span class="math display">\[
+\begin{split}
+E(Y) &amp; = \beta_0 + \beta_1 X + \beta_2 (0) + \beta_3 X (0) \\
+ &amp; = \beta_0 + \beta_1 X
+\end{split}
+\]</span></p></li>
+<li><p>If <span class="math inline">\(X = 0\)</span>, then:</p>
+<span class="math display">\[
+\begin{split}
+E(Y) &amp; = \beta_0 + \beta_1 (0) + \beta_2 Z + \beta_3 (0) Z \\
+ &amp; = \beta_0 + \beta_2 Z
+\end{split}
+\]</span></li>
+<li>Under these circumstances, <span class="math inline">\(\psi_1 = \beta_1\)</span> and <span class="math inline">\(\psi_2 = \beta_2\)</span></li>
+<li><span class="math inline">\(\hat{\beta}_1\)</span> and <span class="math inline">\(\hat{\beta}_2\)</span> are relevant, but only in the specific circumstance where the interacted variable is zero.</li>
+</ul></li>
+<li>The interaction coefficient <span class="math inline">\(\beta_3\)</span> indicates whether or not the effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> is systematically (and monotonically/linearly) different over different values of <span class="math inline">\(Z\)</span>, and vice-versa
+<ul>
+<li><span class="math inline">\(+\beta_3\)</span> means the impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> grows more positive/less negative at larger values of <span class="math inline">\(Z\)</span>, and less positive/more negative at lower values of <span class="math inline">\(Z\)</span></li>
+<li><span class="math inline">\(-\beta_3\)</span> means the impact of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> grows less positive/more negative at larger values of <span class="math inline">\(Z\)</span>, and more positive/less negative at lower values of <span class="math inline">\(Z\)</span></li>
+</ul></li>
+<li>In truth, what we care most about are not <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span>, and <span class="math inline">\(\beta_3\)</span>, but instead <span class="math inline">\(\psi_1\)</span> and <span class="math inline">\(\psi_2\)</span></li>
+</ul>
+<blockquote>
+<p>In an interactive model, all influences of interacted variables are now necessarily conditional on the value(s) of the variable(s) with which they are interacted.</p>
+</blockquote>
+<div id="conducting-inference" class="section level3">
+<h3>Conducting inference</h3>
+<p>That said, a multiplicative interaction model is still a standard linear regression model, so the same principles of OLS apply. That means we can obtain estimates of the <span class="math inline">\(\beta\)</span>s in the standard way, and we can estimate standard errors for those coefficient estimates in the usual way (as the square roots of the diagonal elements of the variance-covariance matrix <span class="math inline">\(\hat{\sigma}^2 (\mathbf{X}&#39; \mathbf{X})^{-1}\)</span>).</p>
+<p>The problem is that we don’t care about these quantities - we care about the marginal effects, that is <span class="math inline">\(\psi_1\)</span> and <span class="math inline">\(\psi_2\)</span>. Calculating point estimates for these is trivial:</p>
+<p><span class="math display">\[\hat{\psi}_1 = \hat{\beta}_1 + \hat{\beta}_3 Z\]</span> <span class="math display">\[\hat{\psi}_2 = \hat{\beta}_2 + \hat{\beta}_3 X\]</span></p>
+<p>But in order to conduct inference, we need to know if these values are statistically distinguishable from zero. For that, we need estimate the <strong>variance</strong> for these parameters. Three key rules help us define the equation for their variance. Where <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> are random variables and <span class="math inline">\(a\)</span> is a constant:</p>
+<ol style="list-style-type: decimal">
+<li><span class="math inline">\(\text{Var}(aX) = a^2 \text{Var}(X)\)</span></li>
+<li><span class="math inline">\(\text{Var}(X+Y) = \text{Var}(X) + \text{Var}(Y) + 2 \text{Cov}(X,Y)\)</span></li>
+<li><span class="math inline">\(\text{Cov}(X, aY) = a \text{Cov}(X,Y)\)</span></li>
+</ol>
+<p>So if we are interested in <span class="math inline">\(\text{Var} (\hat{\psi}_1)\)</span>:</p>
+<p><span class="math display">\[\widehat{\text{Var}(\hat{\psi}_1}) = \widehat{\text{Var} (\hat{\beta}_1)} +Z^2  \widehat{\text{Var} (\hat{\beta}_3)} + 2 Z \widehat{\text{Cov} (\hat{\beta}_1, \hat{\beta}_3)}\]</span></p>
+<p>Likewise for <span class="math inline">\(\text{Var} (\hat{\psi}_2)\)</span>:</p>
+<p><span class="math display">\[\widehat{\text{Var}(\hat{\psi}_2}) = \widehat{\text{Var} (\hat{\beta}_2)} + X^2  \widehat{\text{Var} (\hat{\beta}_3)} + 2 X \widehat{\text{Cov} (\hat{\beta}_2, \hat{\beta}_3)}\]</span></p>
+<ul>
+<li>Both depend on - but are not the same as - the estimated variances for the direct effects <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span>, and/or the interaction term <span class="math inline">\(\beta_3\)</span>.</li>
+<li>Both also depend on the level/value of the interacted variable. This means that just as the slope of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> depends on <span class="math inline">\(Z\)</span>, so too does the estimated variability around that slope estimate also depend on <span class="math inline">\(Z\)</span>.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="types-of-interactions" class="section level1">
+<h1>Types of interactions</h1>
+<p>There are several major types of interaction terms that can occur within regression models. Here I present examples of these major types using simulated data.</p>
+<div id="two-dichtomous-covariates" class="section level2">
+<h2>Two dichtomous covariates</h2>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 D_1 + \beta_2 D_2 + \beta_3 D_1 D_2 + e_i\]</span></p>
+<p>In this model, the expected value for <span class="math inline">\(Y\)</span> can take on four possible values:</p>
+<p><span class="math display">\[
+\begin{split}
+E(Y | D_1 = 0, D_2 = 0) &amp; = \beta_0 \\
+E(Y | D_1 = 1, D_2 = 0) &amp; = \beta_0 + \beta_1 \\
+E(Y | D_1 = 0, D_2 = 1) &amp; = \beta_0 + \beta_2 \\
+E(Y | D_1 = 1, D_2 = 1) &amp; = \beta_0 + \beta_1 + \beta_2 + \beta_3 \\
+\end{split}
+\]</span></p>
+<p>Consider data generated from the following model:</p>
+<p><span class="math display">\[Y = 10 + 20 D_1 - 20 D_2 + 40 D_1 D_2 + e, \text{ where } e \sim N(0, 5)\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">two_dich &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim),
+                       <span class="dt">z =</span> <span class="kw">runif</span>(n_sim)) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(x, z), <span class="kw">funs</span>(<span class="kw">ifelse</span>(. &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x -<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>z +<span class="st"> </span><span class="dv">40</span> *<span class="st"> </span>(x *<span class="st"> </span>z) +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">5</span>))</code></pre></div>
+<p>We could visualize it a couple of ways. First as a histogram:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(two_dich, <span class="kw">aes</span>(y, <span class="dt">color =</span> <span class="kw">interaction</span>(x, z))) +
+<span class="st">  </span><span class="kw">geom_density</span>() +
+<span class="st">  </span><span class="kw">scale_color_discrete</span>(<span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;D1 = D2 = 0&quot;</span>,
+                                  <span class="st">&quot;D1 = 1, D2 = 0&quot;</span>,
+                                  <span class="st">&quot;D1 = 0, D2 = 1&quot;</span>,
+                                  <span class="st">&quot;D1 = D2 = 1&quot;</span>),
+                       <span class="dt">guide =</span> <span class="kw">guide_legend</span>(<span class="dt">nrow =</span> <span class="dv">2</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>(<span class="kw">paste</span>(<span class="st">&quot;Values of &quot;</span>, Y, <span class="st">&quot; for various combinations of values of &quot;</span>, D[<span class="dv">1</span>], <span class="st">&quot;,&quot;</span>, D[<span class="dv">2</span>])),
+       <span class="dt">x =</span> <span class="st">&quot;Value of Y&quot;</span>,
+       <span class="dt">color =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-two-dich-hist-1.png" width="672" /></p>
+<p>Or as a boxplot:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(two_dich, <span class="kw">aes</span>(<span class="kw">interaction</span>(z, x), y)) +
+<span class="st">  </span><span class="kw">geom_boxplot</span>() +
+<span class="st">  </span><span class="kw">scale_x_discrete</span>(<span class="dt">labels =</span> <span class="kw">c</span>(<span class="kw">expression</span>(<span class="st">&quot;D1 = D2 = 0&quot;</span>),
+                                  <span class="kw">expression</span>(<span class="st">&quot;D1 = 0, D2 = 1&quot;</span>),
+                                  <span class="kw">expression</span>(<span class="st">&quot;D1 = 1, D2 = 0&quot;</span>),
+                                  <span class="kw">expression</span>(<span class="st">&quot;D1 = D2 = 1&quot;</span>))) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>(<span class="kw">paste</span>(<span class="st">&quot;Values of &quot;</span>, Y, <span class="st">&quot; for various combinations of values of &quot;</span>, D[<span class="dv">1</span>], <span class="st">&quot;,&quot;</span>, D[<span class="dv">2</span>])),
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Values of Y&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-two-dich-box-1.png" width="672" /></p>
+<p>This illustrates that:</p>
+<ul>
+<li>The effect of a change in <span class="math inline">\(D_2\)</span> varies depending on the value of <span class="math inline">\(D_1\)</span>
+<ul>
+<li>The effect is negative when <span class="math inline">\(D_1 = 0\)</span></li>
+<li>But positive when <span class="math inline">\(D_1 = 1\)</span></li>
+</ul></li>
+<li>Similar effects for the change in <span class="math inline">\(D_1\)</span> relative to <span class="math inline">\(D_2\)</span></li>
+</ul>
+</div>
+<div id="one-dichotomous-and-one-continuous-covariate" class="section level2">
+<h2>One dichotomous and one continuous covariate</h2>
+<p>More commonly, we have a situation where one variable in the interaction is continous and the other is dichotomous:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X + \beta_2 D + \beta_3 XD + e_i\]</span></p>
+<p><span class="math display">\[
+\begin{split}
+E(Y | X, D = 0) &amp; = \beta_0 + \beta_1 X \\
+E(Y | X, D = 1) &amp; = (\beta_0 + \beta_2) + (\beta_1 + \beta_3) X
+\end{split}
+\]</span></p>
+<p>This suggests four possibilities:</p>
+<ul>
+<li><p><span class="math inline">\(X\)</span> has both the same slope and the same intercept for <span class="math inline">\(D=0\)</span> and <span class="math inline">\(D=1\)</span>; that is, <span class="math inline">\(\beta_2 = \beta_3 = 0\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>),
+           <span class="dt">z =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(z), <span class="kw">funs</span>(<span class="kw">ifelse</span>(. &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">0</span> *<span class="st"> </span>z +<span class="st"> </span><span class="dv">0</span> *<span class="st"> </span>(x *<span class="st"> </span>z) +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">5</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">color =</span> <span class="kw">factor</span>(z), <span class="dt">shape =</span> <span class="kw">factor</span>(z))) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">20</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>({beta[<span class="dv">2</span>] ==<span class="st"> </span>beta[<span class="dv">3</span>]} ==<span class="st"> </span><span class="dv">0</span>),
+       <span class="dt">color =</span> <span class="st">&quot;Z&quot;</span>,
+       <span class="dt">shape =</span> <span class="st">&quot;Z&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-cont-dich-00-1.png" width="672" /></p></li>
+<li><p><span class="math inline">\(X\)</span> has both the same slope but different intercepts for <span class="math inline">\(D=0\)</span> and <span class="math inline">\(D=1\)</span>; that is, <span class="math inline">\(\beta_2 \neq 0\)</span> and <span class="math inline">\(\beta_3 = 0\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>),
+           <span class="dt">z =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(z), <span class="kw">funs</span>(<span class="kw">ifelse</span>(. &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>z +<span class="st"> </span><span class="dv">0</span> *<span class="st"> </span>(x *<span class="st"> </span>z) +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">5</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">color =</span> <span class="kw">factor</span>(z), <span class="dt">shape =</span> <span class="kw">factor</span>(z))) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">20</span>) +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">10</span>, <span class="dt">slope =</span> <span class="dv">20</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>(<span class="kw">paste</span>({beta[<span class="dv">2</span>] !=<span class="st"> </span><span class="dv">0</span>}, <span class="st">&quot;,&quot;</span>, beta[<span class="dv">3</span>] ==<span class="st"> </span><span class="dv">0</span>)),
+       <span class="dt">color =</span> <span class="st">&quot;Z&quot;</span>,
+       <span class="dt">shape =</span> <span class="st">&quot;Z&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-cont-dich-01-1.png" width="672" /></p></li>
+<li><p><span class="math inline">\(X\)</span> has both the same intercept but different slopes for <span class="math inline">\(D=0\)</span> and <span class="math inline">\(D=1\)</span>; that is, <span class="math inline">\(\beta_2 = 0\)</span> and <span class="math inline">\(\beta_3 \neq 0\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>),
+           <span class="dt">z =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(z), <span class="kw">funs</span>(<span class="kw">ifelse</span>(. &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">0</span> *<span class="st"> </span>z +<span class="st"> </span>-<span class="dv">40</span> *<span class="st"> </span>(x *<span class="st"> </span>z) +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">5</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">color =</span> <span class="kw">factor</span>(z), <span class="dt">shape =</span> <span class="kw">factor</span>(z))) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">20</span>) +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> -<span class="dv">20</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>(<span class="kw">paste</span>({beta[<span class="dv">2</span>] ==<span class="st"> </span><span class="dv">0</span>}, <span class="st">&quot;,&quot;</span>, beta[<span class="dv">3</span>] !=<span class="st"> </span><span class="dv">0</span>)),
+       <span class="dt">color =</span> <span class="st">&quot;Z&quot;</span>,
+       <span class="dt">shape =</span> <span class="st">&quot;Z&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-cont-dich-10-1.png" width="672" /></p></li>
+<li><p><span class="math inline">\(X\)</span> has both different intercepts and different slopes for <span class="math inline">\(D=0\)</span> and <span class="math inline">\(D=1\)</span>; that is, <span class="math inline">\(\beta_2 \neq 0\)</span> and <span class="math inline">\(\beta_3 \neq 0\)</span>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>),
+           <span class="dt">z =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(z), <span class="kw">funs</span>(<span class="kw">ifelse</span>(. &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>z +<span class="st"> </span>-<span class="dv">40</span> *<span class="st"> </span>(x *<span class="st"> </span>z) +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">5</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y, <span class="dt">color =</span> <span class="kw">factor</span>(z), <span class="dt">shape =</span> <span class="kw">factor</span>(z))) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">0</span>, <span class="dt">slope =</span> <span class="dv">20</span>) +
+<span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">intercept =</span> <span class="dv">20</span>, <span class="dt">slope =</span> -<span class="dv">20</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="kw">expression</span>(<span class="kw">paste</span>({beta[<span class="dv">2</span>] ==<span class="st"> </span><span class="dv">0</span>}, <span class="st">&quot;,&quot;</span>, beta[<span class="dv">3</span>] !=<span class="st"> </span><span class="dv">0</span>)),
+       <span class="dt">color =</span> <span class="st">&quot;Z&quot;</span>,
+       <span class="dt">shape =</span> <span class="st">&quot;Z&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/sim-cont-dich-11-1.png" width="672" /></p></li>
+</ul>
+</div>
+<div id="two-continuous-covariates" class="section level2">
+<h2>Two continuous covariates</h2>
+<p>It is also common to have a model in which both interacted covariates are continuous:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_1 X_2 + e_i\]</span></p>
+<p>The interpretation here is that each covariate’s effect on <span class="math inline">\(Y\)</span> changes <strong>smoothly</strong> and <strong>monotonically</strong> as a function of the other covariate.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># no interactive effects</span>
+<span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, <span class="dv">0</span>, <span class="dv">10</span>),
+           <span class="dt">z =</span> <span class="kw">runif</span>(n_sim, <span class="dv">0</span>, <span class="dv">10</span>),
+           <span class="dt">y =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>x -<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>z +<span class="st"> </span><span class="dv">0</span> *<span class="st"> </span>x *<span class="st"> </span>z) %&gt;%
+<span class="st">  </span><span class="kw">plot_ly</span>(<span class="dt">x =</span> ~x, <span class="dt">y =</span> ~<span class="st"> </span>z, <span class="dt">z =</span> ~<span class="st"> </span>y, <span class="dt">type =</span> <span class="st">&quot;mesh3d&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">layout</span>(<span class="dt">title =</span> <span class="st">&quot;No interactive effects&quot;</span>)</code></pre></div>
+<div id="b86f10a495b8" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="b86f10a495b8">{"x":{"visdat":{"b86f44e6dcb7":["function () ","plotlyVisDat"]},"cur_data":"b86f44e6dcb7","attrs":{"b86f44e6dcb7":{"x":{},"y":{},"z":{},"alpha":1,"sizes":[10,100],"type":"mesh3d"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"No interactive effects","scene":{"xaxis":{"title":"x"},"yaxis":{"title":"z"},"zaxis":{"title":"y"}},"xaxis":{"domain":[0,1]},"yaxis":{"domain":[0,1]},"hovermode":"closest","showlegend":false,"legend":{"y":0.5,"yanchor":"top"}},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"colorbar":{"title":"y","ticklen":2,"len":0.5,"y":1,"lenmode":"fraction","yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.113241479156204","rgba(72,41,120,1)"],["0.166934915568462","rgba(68,58,129,1)"],["0.298207786121494","rgba(55,95,140,1)"],["0.35718171483777","rgba(48,110,142,1)"],["0.376285808325372","rgba(46,114,142,1)"],["0.400728153692038","rgba(44,120,142,1)"],["0.429120302568875","rgba(40,126,142,1)"],["0.453005436307297","rgba(38,132,142,1)"],["0.475669434029695","rgba(38,138,141,1)"],["0.511870021938262","rgba(36,147,139,1)"],["0.536614165539578","rgba(33,153,138,1)"],["0.562695252693535","rgba(33,160,136,1)"],["0.593653204253879","rgba(41,166,132,1)"],["0.594754406577205","rgba(41,167,132,1)"],["0.6386091272867","rgba(49,177,125,1)"],["0.664534757189153","rgba(53,183,121,1)"],["0.678949268801048","rgba(62,185,118,1)"],["0.713222566654401","rgba(81,192,108,1)"],["0.749108859369908","rgba(98,199,98,1)"],["0.835405013467508","rgba(149,214,69,1)"],["0.875286541579067","rgba(172,220,52,1)"],["0.903666366207377","rgba(190,223,43,1)"],["0.948644589577735","rgba(220,227,40,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[0.804104686249048,5.6205093767494,9.91436541313305,2.8002171847038,8.08653292013332,9.52985976589844,0.623101668898016,8.27536759199575,8.7159753520973,9.18915873859078,8.51951573276892,7.60084549896419,7.22347918897867,2.51267823157832,6.55091616790742,1.71087056165561,5.57624497450888,9.55514265689999,7.32094919774681,9.830077374354,1.50891091907397,5.00770487589762,2.58054106729105,5.20153172081336,1.58170039067045,8.99368092184886,4.34125318890437,5.55422616191208,5.58298339135945,9.45901207625866,7.26431746734306,1.71832471853122,7.01616534497589,1.0281231533736,9.25868732156232,9.39974490087479,7.24849548656493,4.15095964213833,8.95499457372352,3.23202315485105,8.63775899866596,5.83334752824157,2.78111645486206,6.41415005084127,7.7376432530582,1.61880628671497,6.74910786328837,8.98866659030318,5.47432924155146,4.02258995221928,1.83160079177469,8.84590666973963,7.21727965865284,8.14220131840557,5.25406896369532,4.88242364488542,3.61356281442568,2.75191481458023,8.21864970959723,7.30046254117042,8.39480578899384,6.82363183237612,8.08822106802836,1.5656376676634,0.0451331841759384,6.99612522497773,1.84774942463264,4.32045206660405,8.25681238668039,6.81970323203132,2.28034210158512,6.29887924063951,6.5856122598052,9.05068897176534,5.72566726244986,6.74655050970614,8.65939980139956,9.83636910794303,2.38736841827631,6.67105810483918,4.76953027769923,4.3592029530555,6.3492403132841,3.75399305252358,8.98429661523551,1.51398947928101,4.2960462719202,3.68568077450618,6.1424717027694,8.31083168042824,0.896605676971376,3.52995368186384,7.36649518134072,0.630570829380304,5.81924667349085,6.95753845851868,7.38688493613154,3.10723080066964,3.40657058171928,1.72581913182512],"y":[9.54040107317269,4.76456157630309,4.4439869443886,0.149551189970225,5.48209429718554,2.96085021691397,4.57918454892933,1.51043778285384,8.01308656809852,7.77796238195151,2.21110232174397,0.197606468573213,5.79831493785605,0.106664206832647,7.17208788031712,4.40972658572719,1.0652179014869,9.35383567586541,5.90067574055865,2.98262800555676,2.76322259102017,2.33001040527597,9.23470687586814,5.72103938087821,7.59563170140609,1.47569323889911,0.422516732942313,3.39516411768273,8.21026677265763,9.15252424776554,5.86184513522312,5.44424081454054,2.8728808183223,6.55885746469721,3.61075457651168,1.01425358559936,1.01661304244772,4.87528990255669,6.50324555579573,5.53924377541989,0.50656309351325,2.59192942641675,4.44226187188178,4.68306376598775,6.75508544780314,3.34094355115667,5.33226641826332,2.88144097663462,8.04877556394786,1.20269820792601,5.2015718864277,4.80815751245245,9.89526653429493,8.88353125657886,1.95042519131675,1.24997751321644,9.381120337639,3.80022185156122,0.532131758518517,2.78444452211261,1.40669456683099,7.83083406277001,1.83698326116428,8.87719752499834,0.641158169601113,8.89597908826545,9.31187526788563,4.23455228563398,8.49362559616566,0.189282740466297,9.14854053873569,3.67381486576051,2.71288260119036,3.10197284212336,5.34106643637642,4.56369247054681,8.68324844632298,9.33475326979533,8.55548177845776,5.40404038503766,7.12306927423924,1.6790794627741,5.62829728471115,6.30212833406404,1.22176908655092,2.52744561061263,6.21600201353431,5.0681968848221,4.29167584050447,7.41411604452878,2.56386957829818,0.268073789775372,9.42505211802199,9.41653636051342,2.41525539197028,9.21185583807528,5.95949422568083,3.86610290966928,6.97085282299668,7.69589973380789],"z":[-77.3629638692364,18.559478004463,64.7037846874446,36.5066599473357,36.0443862294778,75.6900954898447,-29.5608288003132,77.649298091419,17.0288878399879,24.1119635663927,73.0841341102496,84.0323903039098,24.2516425112262,34.0601402474567,3.78828287590295,-16.9885602407157,55.1102707302198,12.0130698103458,24.2027345718816,78.4744936879724,-2.54311671946198,36.7769447062165,-56.5416580857709,4.80492339935154,-50.1393131073564,85.1798768294975,49.1873645596206,31.5906204422936,-16.2728338129818,13.0648782849312,24.0247233211994,-27.2591609600931,51.4328452665359,-45.3073431132361,66.4793274505064,93.8549131527543,72.3188244411722,2.75669739581645,34.517490179278,-13.0722062056884,91.3119590515271,42.4141810182482,-6.61145417019725,27.3108628485352,19.8255780525506,-7.22137264441699,24.1684144502506,71.0722561366856,-15.744463223964,38.1989174429327,-23.6997109465301,50.3774915728718,-16.7798687564209,2.58670061826706,43.0364377237856,46.3244613166898,-47.6755752321333,-0.483070369809866,86.8651795107871,55.1601801905781,79.8811122216284,-0.0720223039388657,72.5123780686408,-63.1155985733494,4.03975014574826,-8.99853863287717,-64.6412584325299,10.8589978097007,7.63186790514737,76.3042049156502,-58.6819843715057,36.25064374879,48.7272965861484,69.4871612964198,13.8460082607344,31.8285803915933,9.76151355076581,15.016158381477,-51.6811336018145,22.6701771980152,-13.5353899654001,36.801234902814,17.2094302857295,-15.4813528154045,87.6252752868459,-0.134561313316226,-9.19955741614103,-3.82516110315919,28.5079586226493,18.9671563589945,-6.67263901326805,42.6187989208847,-10.5855693668127,-77.8596553113312,44.0399128152058,-12.543173795566,24.2739071045071,2.4112789100036,-25.642822412774,-49.7008060198277],"type":"mesh3d","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1}},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":{"render":[{"code":"function(el, x) { var ctConfig = crosstalk.var('plotlyCrosstalkOpts').set({\"on\":\"plotly_click\",\"persistent\":false,\"dynamic\":false,\"selectize\":false,\"opacityDim\":0.2,\"selected\":{\"opacity\":1}}); }","data":null}]}}</script>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># inteactive effects</span>
+<span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, <span class="dv">0</span>, <span class="dv">10</span>),
+           <span class="dt">z =</span> <span class="kw">runif</span>(n_sim, <span class="dv">0</span>, <span class="dv">10</span>),
+           <span class="dt">y =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>x -<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>z +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>x *<span class="st"> </span>z) %&gt;%
+<span class="st">  </span><span class="kw">plot_ly</span>(<span class="dt">x =</span> ~x, <span class="dt">y =</span> ~<span class="st"> </span>z, <span class="dt">z =</span> ~<span class="st"> </span>y, <span class="dt">type =</span> <span class="st">&quot;mesh3d&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">layout</span>(<span class="dt">title =</span> <span class="st">&quot;Interactive effects&quot;</span>)</code></pre></div>
+<div id="b86f2bb075d7" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="b86f2bb075d7">{"x":{"visdat":{"b86f4bf4e58":["function () ","plotlyVisDat"]},"cur_data":"b86f4bf4e58","attrs":{"b86f4bf4e58":{"x":{},"y":{},"z":{},"alpha":1,"sizes":[10,100],"type":"mesh3d"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Interactive effects","scene":{"xaxis":{"title":"x"},"yaxis":{"title":"z"},"zaxis":{"title":"y"}},"xaxis":{"domain":[0,1]},"yaxis":{"domain":[0,1]},"hovermode":"closest","showlegend":false,"legend":{"y":0.5,"yanchor":"top"}},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"colorbar":{"title":"y","ticklen":2,"len":0.5,"y":1,"lenmode":"fraction","yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.0672950406957304","rgba(71,27,106,1)"],["0.0910246967627137","rgba(72,34,113,1)"],["0.113276699022013","rgba(72,41,120,1)"],["0.141020851410369","rgba(70,50,125,1)"],["0.160816635694295","rgba(69,56,128,1)"],["0.183087753457134","rgba(67,63,131,1)"],["0.199826343853726","rgba(65,68,134,1)"],["0.210087526714424","rgba(64,71,135,1)"],["0.222943313608168","rgba(62,74,137,1)"],["0.230625414969614","rgba(61,76,137,1)"],["0.275740671007425","rgba(57,89,139,1)"],["0.314037867692218","rgba(52,99,141,1)"],["0.333513773355316","rgba(49,104,142,1)"],["0.372577006232272","rgba(47,113,142,1)"],["0.407676519759752","rgba(43,121,142,1)"],["0.43238714171204","rgba(40,127,142,1)"],["0.45182672622725","rgba(38,132,142,1)"],["0.474002148938723","rgba(38,137,141,1)"],["0.516888761424192","rgba(35,148,139,1)"],["0.569179995565199","rgba(35,161,135,1)"],["0.600546349637754","rgba(42,168,131,1)"],["0.73344793086845","rgba(91,196,103,1)"],["0.874561179206397","rgba(172,220,52,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[8.53406241629273,8.44317411771044,6.43304007360712,9.5618029567413,9.75764479488134,8.14303816994652,6.71889532590285,6.09337196219712,3.12604882521555,3.83381701307371,5.40824669646099,6.67495944304392,7.48293482232839,0.582965852227062,0.14243679586798,1.46765201119706,4.6193340420723,5.9987423568964,5.16561600612476,4.5191124943085,4.0570753836073,7.49599400907755,5.20484071224928,6.10321870073676,0.231961566023529,0.980172585695982,6.35417424840853,2.59563202736899,5.0120853446424,2.95341062126681,3.11208226718009,2.53405889263377,0.020888748113066,2.93670512503013,3.40458276914433,1.21395356487483,5.47048786189407,3.63105745054781,4.71634902292863,0.597823809366673,2.7136250352487,9.87368808826432,6.2613928783685,2.03850432764739,1.8128219852224,9.9722205218859,7.57811795920134,4.42770944209769,7.95522037195042,6.03163188090548,8.30853478051722,0.0403298391029239,7.87810224108398,0.21086941473186,3.62371430499479,2.22682373365387,4.90048686275259,4.66551078017801,8.93447614973411,2.19506683060899,7.2938100178726,2.70932437386364,6.35660407599062,0.629581185057759,8.99583113379776,2.5025016721338,2.65380147378892,1.72535816440359,5.10077520506456,1.94665657822043,9.0345785417594,9.76796131813899,4.01374991517514,8.86078621027991,5.5369341163896,2.96525959158316,4.41694973036647,9.41671287408099,8.91385620692745,1.4769275044091,5.53862455766648,8.44479234190658,5.26804794091731,7.52765083452687,2.47865482000634,6.2705985433422,3.37804336333647,8.13543838681653,0.582990173716098,6.36065219296142,6.58945361850783,6.47732601733878,8.01726211793721,0.749961228575557,0.905486110132188,9.3756097718142,6.55920512508601,9.244308185298,6.2889793026261,2.78750038240105],"y":[5.77429167926311,4.11489965394139,5.28485210146755,0.836086890194565,9.48968483600765,3.9589960873127,6.30435530329123,4.43550584604964,9.19514396693558,0.914096073247492,6.74011359922588,2.77973299380392,6.86985491774976,0.431512729264796,2.94689054600894,1.38135377084836,9.96437095338479,8.75365922460333,4.76151059148833,5.89123618323356,3.0942675517872,4.67659309972078,6.48924009408802,8.34628896787763,6.5879627992399,9.43879224359989,7.65389129519463,4.4953482132405,1.8011561431922,4.94657596107572,4.4544224627316,3.97032382199541,9.42290168488398,5.2466925769113,3.14577081473544,7.23801469430327,3.60848947660998,9.59271635161713,7.29142711963505,1.5363069740124,2.72245705127716,2.59561176877469,8.71710077160969,3.05256909690797,6.63658377481624,7.82302878564224,5.35677475854754,7.52729630563408,0.557244920637459,6.1213063611649,3.64232922205701,6.78451562998816,9.79039123281837,1.87596180709079,3.87475382303819,4.89109860965982,7.43566096760333,5.42854154715315,1.77548600360751,9.89664309890941,0.558382058516145,8.58171855099499,7.60961377294734,7.09350342163816,9.26376830553636,3.13358432147652,0.612481110729277,6.62026221863925,8.01242945250124,3.40398103231564,6.29652249626815,7.93661707779393,3.57112657045946,1.99608688941225,9.5987910986878,9.452611701563,1.57413523411378,8.73201441485435,4.53255968401209,7.33959771925583,7.48094523558393,9.72393037518486,1.39520974596962,4.58854289492592,8.65629770793021,4.04009457444772,4.54558097757399,8.34337601670995,8.90491900034249,1.45284784957767,4.90706755546853,8.65424625109881,2.3113762983121,9.10216021351516,0.900390138849616,7.02602253761142,0.848659330513328,5.21317922044545,4.40754291135818,5.19867358263582],"z":[530.379363377408,400.710887189027,361.458533239671,177.202141653018,938.649338040082,374.222983362901,437.728434027259,296.850530766278,236.753738538068,74.2419801702633,361.203302040203,234.498314453722,530.197564929523,14.0301030892494,-13.8470810299381,31.1364488030894,416.837210414942,507.560295007579,260.002407393612,262.51035353648,145.164845464708,388.751147677571,334.910616514309,496.961566433628,-38.2784706539994,17.9302574135258,483.344419212578,107.685536105915,132.384775101565,136.161046425352,135.201889612441,96.247694584015,-82.0518031698119,140.980015281918,119.688490659343,37.625526113374,226.021962668515,298.700452784619,328.138370747396,9.79957722914951,83.7889559570658,339.063373225989,531.254847981363,62.08610545229,82.071831841633,811.621599357293,438.156142017993,312.290940623867,128.30981596134,378.317921205323,359.286245820151,-54.7056736713655,762.174141206209,-2.69509424038371,147.899613388334,92.27339591626,349.031847827715,255.638883419121,240.220274995446,150.22216732491,118.081606115618,183.782650627171,481.182922288747,-9.97985946174178,840.673581674944,82.1071735492454,46.6672363738087,75.2741941518618,389.579472362107,61.6905761459959,606.244830779808,803.559128531174,157.76232313977,255.515985050923,500.860169281231,225.420954035911,107.956906941319,839.115710162463,457.838817955156,59.7738352802055,404.918263184458,818.374347323156,122.228700243507,384.800566918524,162.783311492472,285.643151223911,151.876320395648,686.690838920931,-21.3044855168894,151.488642038392,350.172801226838,548.794541689389,252.367954563806,-5.25931728520216,18.2038673571089,692.228327948192,122.770764247278,532.233643038419,306.003825362359,130.801313993408],"type":"mesh3d","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1}},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":{"render":[{"code":"function(el, x) { var ctConfig = crosstalk.var('plotlyCrosstalkOpts').set({\"on\":\"plotly_click\",\"persistent\":false,\"dynamic\":false,\"selectize\":false,\"opacityDim\":0.2,\"selected\":{\"opacity\":1}}); }","data":null}]}}</script>
+<p>Note that in the first figure, the marginal influence of a change in <span class="math inline">\(X_1\)</span> on <span class="math inline">\(Y\)</span> is not dependent on the value of <span class="math inline">\(X_2\)</span>. By contrast, in the next figure when values of <span class="math inline">\(X_1\)</span> are small, the effect of <span class="math inline">\(X_2\)</span> on <span class="math inline">\(Y\)</span> is both negative and relatively small; however, when <span class="math inline">\(X_1\)</span> is large, the effect of <span class="math inline">\(X_2\)</span> on <span class="math inline">\(Y\)</span> is both large and positive.</p>
+</div>
+<div id="quadratic-cubic-and-other-polynomial-effects" class="section level2">
+<h2>Quadratic, cubic, and other polynomial effects</h2>
+<p>Curvilinear or quadratic relationships for a single variable are also a type of interactive model. For example, consider a second-order polynomial regression:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X + \beta_2 X^2 + e\]</span></p>
+<p>The marginal effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> is:</p>
+<p><span class="math display">\[\frac{\delta E(Y)}{\delta X} = \beta_1 + 2 \beta_2 X\]</span></p>
+<p>This tells us that the marginal effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> depends linearly on the value of <span class="math inline">\(X\)</span> itself.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>x -<span class="st"> </span>(<span class="dv">50</span> *<span class="st"> </span>x^<span class="dv">2</span>) +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">5</span>)) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(<span class="kw">lm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">2</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> .)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Example of a quadratic relationship&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/poly-interact-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> -<span class="dv">500</span> -<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">300</span> *<span class="st"> </span>x^<span class="dv">2</span> +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">50</span>)) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(<span class="kw">lm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">2</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> .)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Example of a quadratic relationship&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/poly-interact-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>x -<span class="st"> </span><span class="dv">50</span> *<span class="st"> </span>x^<span class="dv">2</span> +<span class="st"> </span><span class="dv">300</span> *<span class="st"> </span>x^<span class="dv">3</span> +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">300</span>)) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(<span class="kw">lm</span>(y ~<span class="st"> </span><span class="kw">poly</span>(x, <span class="dv">3</span>, <span class="dt">raw =</span> <span class="ot">TRUE</span>), <span class="dt">data =</span> .)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Example of a cubic relationship&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/poly-interact-3.png" width="672" /></p>
+</div>
+<div id="higher-order-interaction-terms" class="section level2">
+<h2>Higher-order interaction terms</h2>
+<p>We could expand on this process and adopt higher-order interaction models:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_1 X_2 + \beta_5 X_1 X_3 + \beta_6 X_2 X_3 + \beta_7 X_1 X_2 X_3 + e\]</span></p>
+<p>The various <span class="math inline">\(X\)</span>s could be continuous or dichotomous, with corresponding interpretations. In this model, each of the three <span class="math inline">\(X\)</span>s conditions the influence of the other. This can be become very complex and confusing. In the simplest case with two dichotmous variables and one continuous <span class="math inline">\(X\)</span>:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_1 X + \beta_2 D_1 + \beta_3 D_2 + \beta_4 X D_1 + \beta_5 X D_2 + \beta_6 D_1 D_2 + \beta_7 X D_1 D_2 + e\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(n_sim, -<span class="dv">2</span>, <span class="dv">2</span>),
+           <span class="dt">d1 =</span> <span class="kw">runif</span>(n_sim),
+           <span class="dt">d2 =</span> <span class="kw">runif</span>(n_sim)) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(d1, d2), <span class="kw">funs</span>(<span class="kw">ifelse</span>(. &gt;<span class="st"> </span>.<span class="dv">5</span>, <span class="dv">1</span>, <span class="dv">0</span>))) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">y =</span> <span class="dv">10</span> +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>x +<span class="st"> </span><span class="dv">10</span> *<span class="st"> </span>d1 -<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>d2 -<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x *<span class="st"> </span>d1 +<span class="st"> </span><span class="dv">20</span> *<span class="st"> </span>x *d2 -<span class="st"> </span><span class="dv">50</span> *<span class="st"> </span>x *<span class="st"> </span>d1 *<span class="st"> </span>d2 +<span class="st"> </span><span class="kw">rnorm</span>(n_sim, <span class="dv">0</span>, <span class="dv">10</span>)) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(<span class="kw">lm</span>(y ~<span class="st"> </span>x *<span class="st"> </span>d1 *<span class="st"> </span>d2, <span class="dt">data =</span> .)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">facet_grid</span>(d1 ~<span class="st"> </span>d2, <span class="dt">labeller =</span> label_both) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred))</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/three-way-1.png" width="672" /></p>
+<p>Here the slope of <span class="math inline">\(Y\)</span> on <span class="math inline">\(X\)</span> is positive when <span class="math inline">\(D_1 = 0\)</span> and negative when <span class="math inline">\(D_1 = 1\)</span>. In addition, <span class="math inline">\(D_2\)</span> has an exacerbating effect: its presence makes the effect of <span class="math inline">\(X\)</span> on <span class="math inline">\(Y\)</span> stronger, irrespective of whether the effect is positive or negative.</p>
+</div>
+</div>
+<div id="key-rules-for-estimating-and-interpreting-interaction-terms" class="section level1">
+<h1>Key rules for estimating and interpreting interaction terms</h1>
+<ul>
+<li>Don’t omit the “direct effects” components from an interactive regression model. Doing so leads to bias in your estimates of the parameters - see Brambor et. al. (2006) for more details.</li>
+<li>Because the direct effects are the impact of one variable on the dependent variable when the other is zero, it is important that zero be a meaningful value.
+<ul>
+<li>E.g. if you interact with time, the year 0 A.D. is pretty out-of-sample</li>
+</ul></li>
+<li>Rescaling the variables in an interactive model can make the direct effects appear statistically distinguishable from zero (recall that the standard errors of the interactive effect are influenced directly by the value of the constituent term) - that doesn’t mean the variables’ effects are meaningful.</li>
+<li>Remember that there are <a href="persp010_nonparametric.html">more flexible alternatives</a> to polynomial terms in a regression model.</li>
+<li>Three-way interactions are incredibly difficult to interpret and understand substantively. If possible, split the sample by a dummy variable and estimate multiple regression models.</li>
+</ul>
+</div>
+<div id="estimating-models-with-multiplicative-interactions" class="section level1">
+<h1>Estimating models with multiplicative interactions</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get nes data</span>
+nes &lt;-<span class="st"> </span><span class="kw">read_dta</span>(<span class="st">&quot;data/nes2008.dta&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(obama_therm_post, partyid3, libcon7, libcon7_obama) %&gt;%
+<span class="st">  </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(<span class="kw">ifelse</span>(<span class="kw">is.nan</span>(.), <span class="ot">NA</span>, .))) %&gt;%
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">ObamaTherm =</span> obama_therm_post,
+         <span class="dt">RConserv =</span> libcon7,
+         <span class="dt">ObamaConserv =</span> libcon7_obama) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">GOP =</span> <span class="kw">ifelse</span>(partyid3 ==<span class="st"> </span><span class="dv">3</span>, <span class="dv">1</span>, <span class="dv">0</span>)) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-partyid3) %&gt;%
+<span class="st">  </span>na.omit</code></pre></div>
+<p>Let’s look at data from the 2008 American national election study. The outcome of interest is the <strong>Obama feeling thermometer</strong> (<code>ObamaTherm</code>). Our covariates are:</p>
+<ul>
+<li><code>RConserv</code> - the respondent’s self-placement on a liberal/conservative scale, ranging in value from 1 (extremely liberal) to 7 (extremely conservative)</li>
+<li><code>ObamaConserv</code> - the respondent’s placement of President Obama on the same 1 (extremely liberal) to 7 (extremely conservative) scale</li>
+<li><code>GOP</code> - a dummy variable coded 1 if the respondent self-identified as a Republican, and 0 otherwise</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summary</span>(nes)</code></pre></div>
+<pre><code>##    ObamaTherm       RConserv     ObamaConserv       GOP      
+##  Min.   :  0.0   Min.   :1.00   Min.   :1.00   Min.   :0.00  
+##  1st Qu.: 50.0   1st Qu.:2.00   1st Qu.:2.00   1st Qu.:0.00  
+##  Median : 75.0   Median :5.00   Median :2.00   Median :0.00  
+##  Mean   : 69.6   Mean   :4.24   Mean   :2.98   Mean   :0.24  
+##  3rd Qu.:100.0   3rd Qu.:6.00   3rd Qu.:4.00   3rd Qu.:0.00  
+##  Max.   :100.0   Max.   :7.00   Max.   :7.00   Max.   :1.00</code></pre>
+<p>A basic linear model would look like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">obama_base &lt;-<span class="st"> </span><span class="kw">lm</span>(ObamaTherm ~<span class="st"> </span>RConserv +<span class="st"> </span>GOP, <span class="dt">data =</span> nes)
+<span class="kw">tidy</span>(obama_base)</code></pre></div>
+<pre><code>##          term estimate std.error statistic  p.value
+## 1 (Intercept)     93.4     1.572      59.4 0.00e+00
+## 2    RConserv     -4.1     0.368     -11.2 9.48e-28
+## 3         GOP    -26.5     1.587     -16.7 2.82e-57</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(obama_base)</code></pre></div>
+<pre><code>##   r.squared adj.r.squared sigma statistic   p.value df logLik   AIC   BIC
+## 1     0.325         0.324  23.1       336 9.28e-120  3  -6365 12738 12759
+##   deviance df.residual
+## 1   741815        1394</code></pre>
+<p>This suggests that conservatives and Republicans like Obama less than liberals and Democrats. What a shock!</p>
+<div id="model-estimation" class="section level2">
+<h2>Model estimation</h2>
+<p>Let’s consider a couple of interactive models. First, while Obama became a polarizing figure in partisan terms after taking office, in 2008 he was seen as a uniting figure and attracted substantial support from moderate Republicans. This suggests that while most people will like or hate Obama on the basis of their own ideology, Republicans were especially responsive in this regard: even more so than for others (especially Democrats), we might expect conservative Republicans to really dislike Obama, and moderate or liberal Republicans to support him. This suggests a model of the form:</p>
+<p><span class="math display">\[
+\begin{align}
+\text{Obama thermometer} = \beta_0 &amp;+ \beta_1 (\text{Respondent conservatism}) + \beta_2 (\text{GOP respondent})\\
+&amp; + \beta_3 (\text{Respondent conservatism}) (\text{GOP respondent}) + e
+\end{align}
+\]</span></p>
+<p>So we expect <span class="math inline">\(\beta_1 &lt; 0\)</span> (conservatives will be more negative towards Obama), <span class="math inline">\(\beta_2 &lt; 0\)</span> (Republicans will be more negative towards Clinton), and <span class="math inline">\(\beta_3 &lt; 0\)</span> (the responsiveness of Obama’s thermometer score to the respondent’s ideology will be even greater - that is, more negative - among Republicans).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">obama_ideo_gop &lt;-<span class="st"> </span><span class="kw">lm</span>(ObamaTherm ~<span class="st"> </span>RConserv *<span class="st"> </span>GOP, <span class="dt">data =</span> nes)
+<span class="kw">tidy</span>(obama_ideo_gop)</code></pre></div>
+<pre><code>##           term estimate std.error statistic  p.value
+## 1  (Intercept)    92.25     1.640     56.24 0.00e+00
+## 2     RConserv    -3.81     0.388     -9.81 5.26e-22
+## 3          GOP   -11.07     6.684     -1.66 9.79e-02
+## 4 RConserv:GOP    -2.86     1.201     -2.38 1.75e-02</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(obama_ideo_gop)</code></pre></div>
+<pre><code>##   r.squared adj.r.squared sigma statistic   p.value df logLik   AIC   BIC
+## 1     0.328         0.326    23       226 1.15e-119  4  -6362 12735 12761
+##   deviance df.residual
+## 1   738815        1393</code></pre>
+<blockquote>
+<p>Note that <code>RConserv * GOP</code> automatically is expanded to include the constituent terms in the regression model.</p>
+</blockquote>
+<p>The results are as expected. For non-Republicans (that is when <code>GOP = 0</code>):</p>
+<p><span class="math display">\[
+\begin{align}
+E(\text{Obama thermometer}) = 92.255 &amp; -3.805 (\text{Respondent conservatism})  -11.069 (0)\\
+&amp;  -2.856 (\text{Respondent conservatism} \times 0) \\
+= 92.255 &amp; -3.805 (\text{Respondent conservatism})
+\end{align}
+\]</span></p>
+<p>while for Republicans (that is, <code>GOP = 1</code>), the equation is:</p>
+<p><span class="math display">\[
+\begin{align}
+E(\text{Obama thermometer}) &amp; = (92.255 -11.069 (1)) + (-3.805 -2.856 (\text{Respondent conservatism} \times 1)) \\
+&amp; = 81.186 -6.661 (\text{Respondent conservatism})
+\end{align}
+\]</span></p>
+<p>In our previous language, <span class="math inline">\(\hat{\psi}_1 = -6.661\)</span>; that is, the “quasi-coefficient” estimate for the effect of a respondent’s conservatism on their Obama thermometer score.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nes %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(obama_ideo_gop) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(RConserv, ObamaTherm, <span class="dt">color =</span> <span class="kw">factor</span>(GOP))) +
+<span class="st">  </span><span class="kw">geom_jitter</span>(<span class="dt">alpha =</span> .<span class="dv">5</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> pred)) +
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;red&quot;</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Respondent conservatism&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Obama thermometer score&quot;</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-ideo-x-gop-plot-1.png" width="672" /></p>
+<div id="separate-models" class="section level3">
+<h3>Separate models</h3>
+<p>Compare these results to two separate models where we split the data into two samples: Republicans and non-Republicans:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(<span class="kw">lm</span>(ObamaTherm ~<span class="st"> </span>RConserv, <span class="dt">data =</span> <span class="kw">filter</span>(nes, GOP ==<span class="st"> </span><span class="dv">0</span>)))</code></pre></div>
+<pre><code>##          term estimate std.error statistic  p.value
+## 1 (Intercept)    92.25     1.598      57.7 0.00e+00
+## 2    RConserv    -3.81     0.378     -10.1 7.87e-23</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(<span class="kw">lm</span>(ObamaTherm ~<span class="st"> </span>RConserv, <span class="dt">data =</span> <span class="kw">filter</span>(nes, GOP ==<span class="st"> </span><span class="dv">1</span>)))</code></pre></div>
+<pre><code>##          term estimate std.error statistic  p.value
+## 1 (Intercept)    81.19      6.98     11.62 1.90e-26
+## 2    RConserv    -6.66      1.22     -5.44 1.04e-07</code></pre>
+<p>We get “almost” the same results. This is because the model with the interaction terms allows both different slopes (on <code>RConserv</code>) and intercepts for Republicans and non-Republicans. While the point estimates are identical, the standard errors are not so. This is because the interactive model estimates the two implicit models “together”, and therefore is (very slightly) more efficient than the separate models. In large data sets, the difference is tiny.</p>
+</div>
+<div id="causal-direction" class="section level3">
+<h3>Causal direction</h3>
+<p>It is also the case that if GOP membership moderates the association between conservatism and Obama’s thermometer score, then it is also true that conservatism moderates the association between those scores and party membership:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nes %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(RConserv, GOP) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(obama_ideo_gop) %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(GOP, pred) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">diff =</span> <span class="st">`</span><span class="dt">1</span><span class="st">`</span> -<span class="st"> `</span><span class="dt">0</span><span class="st">`</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(RConserv, diff)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Expected Obama thermometer score&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Respondent conservatism&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;First difference between Republicans</span><span class="ch">\n</span><span class="st">and non-Republicans&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-other-direction-1.png" width="672" /></p>
+<p>For extremely liberal respondents (<code>RConserv = 1</code>), the difference in the expected Obama thermometer score between a Republican and a non-Republican is:</p>
+<p><span class="math display">\[
+\begin{align}
+\hat{\psi}_2 &amp; = \hat{\beta}_2 + \hat{\beta}_3 (1) \\
+&amp; = -11.069 + (-2.856) (1) \\
+&amp; = -13.925
+\end{align}
+\]</span></p>
+<p>Similarly, for an extremely conservative respondents (<code>RConserv = 7</code>), the difference is:</p>
+<p><span class="math display">\[
+\begin{align}
+\hat{\psi}_2 &amp; = \hat{\beta}_2 + \hat{\beta}_3 (7) \\
+&amp; = -11.069 + (-2.856) (7) \\
+&amp; = -31.058
+\end{align}
+\]</span></p>
+<p>Consistent with our theory, the differences (between Republicans and non-Republicans) in opinions about Obama are largest among those who are very conservative, and smallest among those who are most liberal</p>
+</div>
+</div>
+<div id="calculating-standard-errors" class="section level2">
+<h2>Calculating standard errors</h2>
+<p>Now we need to calculate standard errors to determine if the point estimates of the <span class="math inline">\(\psi\)</span>s are statistically significant. We can rewrite the functional form as:</p>
+<p><span class="math display">\[
+\begin{align}
+\text{Obama thermometer} = &amp;\beta_0 + (\beta_1 + \beta_3 \text{GOP}) (\text{Respondent conservatism}) + \\
+&amp; \beta_2 (\text{GOP respondent}) + e \\
+ = &amp;\beta_0 + \psi_1 \text{Respondent conservatism}) + \beta_2 (\text{GOP respondent}) + e
+\end{align}
+\]</span></p>
+<p>Calculating the point estimates <span class="math inline">\(\hat{\psi}\)</span> is straightforward:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">coef</span>(obama_ideo_gop)[[<span class="st">&quot;GOP&quot;</span>]] +<span class="st"> </span><span class="kw">coef</span>(obama_ideo_gop)[[<span class="st">&quot;RConserv:GOP&quot;</span>]]</code></pre></div>
+<pre><code>## [1] -13.9</code></pre>
+<p>Likewise, we can recover the standard errors using the formula:</p>
+<p><span class="math display">\[\hat{\sigma}_{\hat{\psi}_1} = \sqrt{\widehat{\text{Var}(\hat{\beta}_1)} + (\text{GOP})^2 \widehat{\text{Var}(\hat{\beta_3}) + 2 (\text{GOP}) \widehat{\text{Cov}(\hat{\beta}_1 \hat{\beta}_3)}}}\]</span></p>
+<p>We can retrieve all of the necessary elements from the variance-covariance matrix using the <code>vcov()</code> function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">vcov</span>(obama_ideo_gop)</code></pre></div>
+<pre><code>##              (Intercept) RConserv    GOP RConserv:GOP
+## (Intercept)        2.691   -0.574 -2.691        0.574
+## RConserv          -0.574    0.151  0.574       -0.151
+## GOP               -2.691    0.574 44.677       -7.797
+## RConserv:GOP       0.574   -0.151 -7.797        1.442</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sqrt</span>(<span class="kw">vcov</span>(obama_ideo_gop)[<span class="st">&quot;RConserv&quot;</span>, <span class="st">&quot;RConserv&quot;</span>] +
+<span class="st">       </span>(<span class="dv">1</span>)^<span class="dv">2</span> *<span class="st"> </span><span class="kw">vcov</span>(obama_ideo_gop)[<span class="st">&quot;RConserv:GOP&quot;</span>, <span class="st">&quot;RConserv:GOP&quot;</span>] +
+<span class="st">       </span><span class="dv">2</span> *<span class="st"> </span><span class="dv">1</span> *<span class="st"> </span><span class="kw">vcov</span>(obama_ideo_gop)[<span class="st">&quot;RConserv&quot;</span>, <span class="st">&quot;RConserv:GOP&quot;</span>])</code></pre></div>
+<pre><code>## [1] 1.14</code></pre>
+<p>The ratio of the point estimate to the standard error yields a <span class="math inline">\(t\)</span>-statistic of -13.582, which indicates that the marginal association between the thermometer score for Obama and respondent conservatism is very precisely estimated (<span class="math inline">\(p &lt; .001\)</span>).</p>
+<p>If we want to conduct inference on <span class="math inline">\(\hat{\psi}_2\)</span> (the marginal effect of GOP on <span class="math inline">\(Y\)</span>), we can do that as well:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># function to get point estimates and standard errors</span>
+<span class="co"># model - lm object</span>
+<span class="co"># mod_var - name of moderating variable in the interaction</span>
+instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
+  <span class="co"># get interaction term name</span>
+  int.name &lt;-<span class="st"> </span><span class="kw">names</span>(model$coefficients)[[<span class="kw">which</span>(<span class="kw">str_detect</span>(<span class="kw">names</span>(model$coefficients), <span class="st">&quot;:&quot;</span>))]]
+  
+  marg_var &lt;-<span class="st"> </span><span class="kw">str_split</span>(int.name, <span class="st">&quot;:&quot;</span>)[[<span class="dv">1</span>]][[<span class="kw">which</span>(<span class="kw">str_split</span>(int.name, <span class="st">&quot;:&quot;</span>)[[<span class="dv">1</span>]] !=<span class="st"> </span>mod_var)]]
+  
+  <span class="co"># store coefficients and covariance matrix</span>
+  beta.hat &lt;-<span class="st"> </span><span class="kw">coef</span>(model)
+  cov &lt;-<span class="st"> </span><span class="kw">vcov</span>(model)
+  
+  <span class="co"># possible set of values for mod_var</span>
+  z &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="kw">min</span>(model$model[[mod_var]]), <span class="kw">max</span>(model$model[[mod_var]]))
+  
+  <span class="co"># calculate instantaneous effect</span>
+  dy.dx &lt;-<span class="st"> </span>beta.hat[[marg_var]] +<span class="st"> </span>beta.hat[[int.name]] *<span class="st"> </span>z
+  
+  <span class="co"># calculate standard errors for instantaeous effect</span>
+  se.dy.dx &lt;-<span class="st"> </span><span class="kw">sqrt</span>(cov[marg_var, marg_var] +
+<span class="st">                     </span>z^<span class="dv">2</span> *<span class="st"> </span>cov[int.name, int.name] +
+<span class="st">                     </span><span class="dv">2</span> *<span class="st"> </span>z *<span class="st"> </span>cov[marg_var, int.name])
+  
+  <span class="co"># combine into data frame</span>
+  <span class="kw">data_frame</span>(<span class="dt">z =</span> z,
+             <span class="dt">dy.dx =</span> dy.dx,
+             <span class="dt">se =</span> se.dy.dx)
+}
+
+<span class="co"># point range plot</span>
+<span class="kw">instant_effect</span>(obama_ideo_gop, <span class="st">&quot;RConserv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(z, dy.dx,
+             <span class="dt">ymin =</span> dy.dx -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se,
+             <span class="dt">ymax =</span> dy.dx +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se)) +
+<span class="st">  </span><span class="kw">geom_pointrange</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Marginal effect of GOP&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;By respondent conservatism&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Respondent conservatism&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated marginal effect&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-other-dir-std-err-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># line plot</span>
+<span class="kw">instant_effect</span>(obama_ideo_gop, <span class="st">&quot;RConserv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(z, dy.dx)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> dy.dx -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> dy.dx +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Marginal effect of GOP&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;By respondent conservatism&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Respondent conservatism&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated marginal effect&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-other-dir-std-err-2.png" width="672" /></p>
+</div>
+<div id="hypothesis-testing" class="section level2">
+<h2>Hypothesis testing</h2>
+<p>Calculating these values by hand is a pain in the @ss. Instead, we can conduct hypothesis testing on our estimates of the <span class="math inline">\(\psi\)</span>s using <code>linear.hypothesis()</code> in the <code>car</code> package. The function conducts an <span class="math inline">\(F\)</span>-test on linear combinations of parameters in the model. So to test the hypothesis that <span class="math inline">\(\hat{\psi}_1 = 0\)</span> in the model above, we use:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">linear.hypothesis</span>(obama_ideo_gop, <span class="st">&quot;RConserv + RConserv:GOP&quot;</span>)</code></pre></div>
+<pre><code>## Linear hypothesis test
+## 
+## Hypothesis:
+## RConserv  + RConserv:GOP = 0
+## 
+## Model 1: restricted model
+## Model 2: ObamaTherm ~ RConserv * GOP
+## 
+##   Res.Df    RSS Df Sum of Sq    F  Pr(&gt;F)    
+## 1   1394 757039                              
+## 2   1393 738815  1     18225 34.4 5.7e-09 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+<p>The marginal effect is statistically significant. We can do the same thing for the hypothesis that the effect of GOP on Obama’s thermometer rating for extreme conservatives (<code>RConserv = 7</code>) is zero:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">linear.hypothesis</span>(obama_ideo_gop, <span class="st">&quot;GOP + 7 * RConserv:GOP&quot;</span>)</code></pre></div>
+<pre><code>## Linear hypothesis test
+## 
+## Hypothesis:
+## GOP  + 7 RConserv:GOP = 0
+## 
+## Model 1: restricted model
+## Model 2: ObamaTherm ~ RConserv * GOP
+## 
+##   Res.Df    RSS Df Sum of Sq   F Pr(&gt;F)    
+## 1   1394 821850                            
+## 2   1393 738815  1     83036 157 &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1</code></pre>
+</div>
+<div id="estimating-model-with-two-continuous-variables" class="section level2">
+<h2>Estimating model with two continuous variables</h2>
+<p>Now consider a different interactive model form:</p>
+<p><span class="math display">\[
+\begin{align}
+\text{Obama thermometer} = \beta_0 &amp;+ \beta_1 (\text{Respondent conservatism}) + \beta_2 (\text{Obama conservatism})\\
+&amp; + \beta_3 (\text{Respondent conservatism}) (\text{Obama conservatism}) + e
+\end{align}
+\]</span></p>
+<p>Now we have two continous variables interacted with one another. The same basic estimation approach applies:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">obama_ideo2 &lt;-<span class="st"> </span><span class="kw">lm</span>(ObamaTherm ~<span class="st"> </span>RConserv *<span class="st"> </span>ObamaConserv, <span class="dt">data =</span> nes)
+<span class="kw">tidy</span>(obama_ideo2)</code></pre></div>
+<pre><code>##                    term estimate std.error statistic   p.value
+## 1           (Intercept)   117.12     2.972     39.41 8.00e-229
+## 2              RConserv   -14.94     0.600    -24.88 2.52e-113
+## 3          ObamaConserv    -6.73     0.929     -7.25  7.06e-13
+## 4 RConserv:ObamaConserv     2.81     0.182     15.40  1.53e-49</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(obama_ideo2)</code></pre></div>
+<pre><code>##   r.squared adj.r.squared sigma statistic  p.value df logLik   AIC   BIC
+## 1     0.451          0.45  20.8       381 8.3e-181  4  -6221 12452 12478
+##   deviance df.residual
+## 1   603467        1393</code></pre>
+<p>We can do the same hypothesis testing and what not that we did above, but I find it easier to just skip to the graph:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">instant_effect</span>(obama_ideo2, <span class="st">&quot;RConserv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(z, dy.dx,
+             <span class="dt">ymin =</span> dy.dx -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se,
+             <span class="dt">ymax =</span> dy.dx +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se)) +
+<span class="st">  </span><span class="kw">geom_pointrange</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Marginal effect of Obama&#39;s conservatism&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;By respondent conservatism&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Respondent conservatism&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated marginal effect&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-two-marg-effect-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">instant_effect</span>(obama_ideo2, <span class="st">&quot;ObamaConserv&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(z, dy.dx,
+             <span class="dt">ymin =</span> dy.dx -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se,
+             <span class="dt">ymax =</span> dy.dx +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se)) +
+<span class="st">  </span><span class="kw">geom_pointrange</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Marginal effect of respondent&#39;s conservatism&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;By Obama conservatism&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Obama conservatism&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated marginal effect&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-two-marg-effect-2.png" width="672" /></p>
+<div id="predicted-values-plots" class="section level3">
+<h3>Predicted values plots</h3>
+<p>With three continuous variables, we can start to consider three dimensional visualizations. For instance, we could represent this as a heatmap with contour lines:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nes %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(RConserv, ObamaConserv) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(obama_ideo2) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(RConserv, ObamaConserv, <span class="dt">z =</span> pred, <span class="dt">fill =</span> pred)) +
+<span class="st">  </span><span class="kw">geom_raster</span>() +
+<span class="st">  </span><span class="kw">scale_fill_gradient2</span>(<span class="dt">midpoint =</span> <span class="dv">50</span>) +
+<span class="st">  </span><span class="kw">geom_contour</span>()</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/obama-heatmap-1.png" width="672" /></p>
+<p>Or a 3D surface plot:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nes %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(RConserv, ObamaConserv) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(obama_ideo2)  %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(ObamaConserv, pred) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-RConserv) %&gt;%
+<span class="st">  </span>as.matrix %&gt;%
+<span class="st">  </span><span class="kw">plot_ly</span>(<span class="dt">x =</span> ~<span class="st"> </span><span class="dv">1</span>:<span class="dv">7</span>, <span class="dt">y =</span> ~<span class="st"> </span><span class="dv">1</span>:<span class="dv">7</span>, <span class="dt">z =</span> .) %&gt;%
+<span class="st">  </span><span class="kw">add_surface</span>() %&gt;%
+<span class="st">  </span><span class="kw">layout</span>(<span class="dt">title =</span> <span class="st">&quot;Predicted values for Obama feeling thermometer&quot;</span>,
+         <span class="dt">scene =</span> <span class="kw">list</span>(
+           <span class="dt">xaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Respondent conservatism&quot;</span>
+           ),
+           <span class="dt">yaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Obama conservatism&quot;</span>
+           ),
+           <span class="dt">zaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Predictions&quot;</span>
+           )
+         )
+  )</code></pre></div>
+<div id="c1d664448f21" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="c1d664448f21">{"x":{"visdat":{"c1d65685b557":["function () ","plotlyVisDat"]},"cur_data":"c1d65685b557","attrs":{"c1d65685b557":{"x":{},"y":{},"z":[[98.257863263028,94.3329231093637,90.4079829556995,86.4830428020353,82.5581026483711,78.6331624947069,74.7082223410427],[86.1259080675068,85.0063556248863,83.8868031822658,82.7672507396453,81.6476982970248,80.5281458544043,79.4085934117838],[73.9939528719857,75.6797881404089,77.3656234088321,79.0514586772553,80.7372939456784,82.4231292141016,84.1089644825248],[61.8619976764646,66.3532206559315,70.8444436353984,75.3356666148652,79.8268895943321,84.318112573799,88.8093355532659],[49.7300424809435,57.0266531714541,64.3232638619646,71.6198745524752,78.9164852429858,86.2130959334964,93.509706624007],[37.5980872854224,47.7000856869766,57.8020840885309,67.9040824900852,78.0060808916395,88.1080792931937,98.210077694748],[25.4661320899012,38.3735182024992,51.2809043150972,64.1882904276952,77.0956765402931,90.0030626528911,102.910448765489]],"alpha":1,"sizes":[10,100],"type":"surface"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Predicted values for Obama feeling thermometer","scene":{"xaxis":{"title":"Respondent conservatism"},"yaxis":{"title":"Obama conservatism"},"zaxis":{"title":"Predictions"}},"xaxis":{"domain":[0,1]},"yaxis":{"domain":[0,1]},"hovermode":"closest","showlegend":false,"legend":{"y":0.5,"yanchor":"top"}},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"colorbar":{"title":"","ticklen":2,"len":0.5,"y":1,"lenmode":"fraction","yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.166666666666667","rgba(68,58,128,1)"],["0.313307824674638","rgba(52,99,141,1)"],["0.407525334799699","rgba(43,121,142,1)"],["0.469961737011957","rgba(38,136,141,1)"],["0.501742844924759","rgba(36,144,140,1)"],["0.54798017752491","rgba(32,156,137,1)"],["0.595960355049819","rgba(41,167,131,1)"],["0.635838656275001","rgba(49,176,126,1)"],["0.648384002932731","rgba(51,179,124,1)"],["0.670152356516185","rgba(56,184,120,1)"],["0.686519459233154","rgba(67,187,116,1)"],["0.691920710099639","rgba(70,188,114,1)"],["0.701933464428986","rgba(75,190,112,1)"],["0.713689063683093","rgba(82,192,108,1)"],["0.735457417266547","rgba(92,197,102,1)"],["0.739900887624548","rgba(94,197,101,1)"],["0.757225770850001","rgba(101,201,96,1)"],["0.768813336999246","rgba(106,203,92,1)"],["0.78439537529994","rgba(114,206,87,1)"],["0.808864354316637","rgba(131,210,79,1)"],["0.833333333333333","rgba(147,214,70,1)"],["0.878612885425001","rgba(174,220,50,1)"],["0.9393064427125","rgba(214,226,41,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[1,2,3,4,5,6,7],"y":[1,2,3,4,5,6,7],"z":[[98.257863263028,94.3329231093637,90.4079829556995,86.4830428020353,82.5581026483711,78.6331624947069,74.7082223410427],[86.1259080675068,85.0063556248863,83.8868031822658,82.7672507396453,81.6476982970248,80.5281458544043,79.4085934117838],[73.9939528719857,75.6797881404089,77.3656234088321,79.0514586772553,80.7372939456784,82.4231292141016,84.1089644825248],[61.8619976764646,66.3532206559315,70.8444436353984,75.3356666148652,79.8268895943321,84.318112573799,88.8093355532659],[49.7300424809435,57.0266531714541,64.3232638619646,71.6198745524752,78.9164852429858,86.2130959334964,93.509706624007],[37.5980872854224,47.7000856869766,57.8020840885309,67.9040824900852,78.0060808916395,88.1080792931937,98.210077694748],[25.4661320899012,38.3735182024992,51.2809043150972,64.1882904276952,77.0956765402931,90.0030626528911,102.910448765489]],"type":"surface","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1}},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":{"render":[{"code":"function(el, x) { var ctConfig = crosstalk.var('plotlyCrosstalkOpts').set({\"on\":\"plotly_click\",\"persistent\":false,\"dynamic\":false,\"selectize\":false,\"opacityDim\":0.2,\"selected\":{\"opacity\":1}}); }","data":null}]}}</script>
+</div>
+</div>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>Code for estimating marginal effects is drawn from <a href="http://www.statsblogs.com/2013/08/27/creating-marginal-effect-plots-for-linear-regression-models-in-r/">Creating Marginal Effect Plots for Linear Regression Models in R</a></li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.3 (2017-03-06)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-05-04                  
+## 
+##  package      * version    date      
+##  assertthat     0.2.0      2017-04-11
+##  backports      1.0.5      2017-01-18
+##  broom        * 0.4.2      2017-02-13
+##  car          * 2.1-4      2016-12-02
+##  codetools      0.2-15     2016-10-05
+##  coefplot     * 1.2.4.9000 2017-04-25
+##  colorspace     1.3-2      2016-12-14
+##  crosstalk      1.0.0      2016-12-21
+##  DBI            0.6        2017-03-09
+##  devtools       1.12.0     2016-06-24
+##  digest         0.6.12     2017-01-27
+##  dplyr        * 0.5.0      2016-06-24
+##  evaluate       0.10       2016-10-11
+##  forcats      * 0.2.0      2017-01-23
+##  foreign        0.8-67     2016-09-13
+##  ggplot2      * 2.2.1.9000 2017-05-01
+##  gtable         0.2.0      2016-02-26
+##  haven        * 1.0.0      2016-09-23
+##  hms            0.3        2016-11-22
+##  htmltools      0.3.6      2017-04-28
+##  htmlwidgets    0.8        2016-11-09
+##  httpuv         1.3.3      2015-08-04
+##  httr           1.2.1      2016-07-03
+##  jsonlite       1.4        2017-04-08
+##  knitr          1.15.1     2016-11-22
+##  lattice        0.20-34    2016-09-06
+##  lazyeval       0.2.0      2016-06-12
+##  lme4           1.1-12     2016-04-16
+##  lubridate      1.6.0      2016-09-13
+##  magrittr       1.5        2014-11-22
+##  MASS           7.3-45     2016-04-21
+##  Matrix         1.2-8      2017-01-20
+##  MatrixModels   0.4-1      2015-08-22
+##  memoise        1.0.0      2016-01-29
+##  mgcv           1.8-17     2017-02-08
+##  mime           0.5        2016-07-07
+##  minqa          1.2.4      2014-10-09
+##  mnormt         1.5-5      2016-10-15
+##  modelr       * 0.1.0      2016-08-31
+##  munsell        0.4.3      2016-02-13
+##  nlme           3.1-131    2017-02-06
+##  nloptr         1.0.4      2014-08-04
+##  nnet           7.3-12     2016-02-02
+##  pbkrtest       0.4-6      2016-01-27
+##  plotly       * 4.6.0      2017-04-25
+##  plyr           1.8.4      2016-06-08
+##  psych          1.7.3.21   2017-03-22
+##  purrr        * 0.2.2      2016-06-18
+##  quantreg       5.29       2016-09-04
+##  R6             2.2.0      2016-10-05
+##  rcfss        * 0.1.4      2017-02-28
+##  Rcpp           0.12.10    2017-03-19
+##  readr        * 1.1.0      2017-03-22
+##  readxl         0.1.1      2016-03-28
+##  reshape2       1.4.2      2016-10-22
+##  rlang          0.0.0.9018 2017-05-01
+##  rmarkdown      1.3        2016-12-21
+##  rprojroot      1.2        2017-01-16
+##  rvest          0.3.2      2016-06-17
+##  scales         0.4.1      2016-11-09
+##  shiny          1.0.0      2017-01-12
+##  SparseM        1.74       2016-11-10
+##  stringi        1.1.2      2016-10-01
+##  stringr      * 1.2.0      2017-02-18
+##  tibble       * 1.3.0.9001 2017-05-01
+##  tidyr        * 0.6.1      2017-01-10
+##  tidyverse    * 1.1.1      2017-01-27
+##  titanic      * 0.1.0      2015-08-31
+##  useful         1.2.1      2016-06-29
+##  viridisLite    0.2.0      2017-03-24
+##  withr          1.0.2      2016-06-20
+##  xml2           1.1.1      2017-01-24
+##  xtable         1.8-2      2016-02-05
+##  yaml           2.1.14     2016-11-12
+##  source                               
+##  cran (@0.2.0)                        
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.3)                       
+##  Github (jaredlander/coefplot@0755a00)
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.3)                       
+##  Github (hadley/ggplot2@f4398b6)      
+##  CRAN (R 3.3.0)                       
+##  cran (@1.0.0)                        
+##  CRAN (R 3.3.2)                       
+##  cran (@0.3.6)                        
+##  CRAN (R 3.3.1)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  cran (@1.4)                          
+##  cran (@1.15.1)                       
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.0)                       
+##  cran (@1.1-12)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.0)                       
+##  cran (@1.2.4)                        
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.3)                       
+##  cran (@1.0.4)                        
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  local                                
+##  cran (@0.12.10)                      
+##  cran (@1.1.0)                        
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  Github (hadley/rlang@460323e)        
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.1)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.2)                       
+##  Github (tidyverse/tibble@08af6b0)    
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.0)                       
+##  cran (@0.2.0)                        
+##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
+##  cran (@2.1.14)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Likewise for <span class="math inline">\(\beta_2\)</span>.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Brambor et. al. define <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span> as the <strong>constitutive terms</strong><a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

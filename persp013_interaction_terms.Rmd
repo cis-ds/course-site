@@ -530,7 +530,7 @@ nes %>%
   mutate(diff = `1` - `0`) %>%
   ggplot(aes(RConserv, diff)) +
   geom_point() +
-  labs(title = "Rxpected Obama thermometer score",
+  labs(title = "Expected Obama thermometer score",
        x = "Respondent conservatism",
        y = "First difference between Republicans\nand non-Republicans")
 ```
@@ -594,45 +594,163 @@ The ratio of the point estimate to the standard error yields a $t$-statistic of 
 If we want to conduct inference on $\hat{\psi}_2$ (the marginal effect of GOP on $Y$), we can do that as well:
 
 ```{r obama-other-dir-std-err}
-# store coefficients and covariance matrix
-beta.hat <- coef(obama_ideo_gop)
-cov <- vcov(obama_ideo_gop)
+# function to get point estimates and standard errors
+# model - lm object
+# mod_var - name of moderating variable in the interaction
+instant_effect <- function(model, mod_var){
+  # get interaction term name
+  int.name <- names(model$coefficients)[[which(str_detect(names(model$coefficients), ":"))]]
+  
+  marg_var <- str_split(int.name, ":")[[1]][[which(str_split(int.name, ":")[[1]] != mod_var)]]
+  
+  # store coefficients and covariance matrix
+  beta.hat <- coef(model)
+  cov <- vcov(model)
+  
+  # possible set of values for mod_var
+  z <- seq(min(model$model[[mod_var]]), max(model$model[[mod_var]]))
+  
+  # calculate instantaneous effect
+  dy.dx <- beta.hat[[marg_var]] + beta.hat[[int.name]] * z
+  
+  # calculate standard errors for instantaeous effect
+  se.dy.dx <- sqrt(cov[marg_var, marg_var] +
+                     z^2 * cov[int.name, int.name] +
+                     2 * z * cov[marg_var, int.name])
+  
+  # combine into data frame
+  data_frame(z = z,
+             dy.dx = dy.dx,
+             se = se.dy.dx)
+}
 
-# possible set of values for z
-z <- seq(min(nes$RConserv), max(nes$RConserv))
-
-# calculate instantaneous effect
-dy.dx <- beta.hat[["GOP"]] + beta.hat[["RConserv:GOP"]] * z
-
-# calculate standard errors for instantaeous effect
-se.dy.dx <- sqrt(cov["GOP", "GOP"] + z^2 * cov["RConserv:GOP", "RConserv:GOP"] + 2 * z * cov["GOP", "RConserv:GOP"])
-
-# combine into data frame
-data_frame(dy.dx = dy.dx,
-           se = se.dy.dx)
-
-
-nes %>%
-  data_grid(RConserv, GOP) %>%
-  add_predictions(obama_ideo_gop) %>%
-  spread(GOP, pred) %>%
-  mutate(diff = `1` - `0`) %>%
-  ggplot(aes(RConserv, diff)) +
-  geom_point() +
-  labs(title = "Rxpected Obama thermometer score",
+# point range plot
+instant_effect(obama_ideo_gop, "RConserv") %>%
+  ggplot(aes(z, dy.dx,
+             ymin = dy.dx - 1.96 * se,
+             ymax = dy.dx + 1.96 * se)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  labs(title = "Marginal effect of GOP",
+       subtitle = "By respondent conservatism",
        x = "Respondent conservatism",
-       y = "First difference between Republicans\nand non-Republicans")
+       y = "Estimated marginal effect")
+
+# line plot
+instant_effect(obama_ideo_gop, "RConserv") %>%
+  ggplot(aes(z, dy.dx)) +
+  geom_line() +
+  geom_line(aes(y = dy.dx - 1.96 * se), linetype = 2) +
+  geom_line(aes(y = dy.dx + 1.96 * se), linetype = 2) +
+  geom_hline(yintercept = 0) +
+  labs(title = "Marginal effect of GOP",
+       subtitle = "By respondent conservatism",
+       x = "Respondent conservatism",
+       y = "Estimated marginal effect")
 ```
 
 ## Hypothesis testing
 
+Calculating these values by hand is a pain in the \@ss. Instead, we can conduct hypothesis testing on our estimates of the $\psi$s using `linear.hypothesis()` in the `car` package. The function conducts an $F$-test on linear combinations of parameters in the model. So to test the hypothesis that $\hat{\psi}_1 = 0$ in the model above, we use:
 
-## Predicted values plots
+```{r hypo-test}
+linear.hypothesis(obama_ideo_gop, "RConserv + RConserv:GOP")
+```
 
+The marginal effect is statistically significant. We can do the same thing for the hypothesis that the effect of GOP on Obama's thermometer rating for extreme conservatives (`RConserv = 7`) is zero:
 
-## Marginal effects plots
+```{r hypo-test-rconserv7}
+linear.hypothesis(obama_ideo_gop, "GOP + 7 * RConserv:GOP")
+```
 
+## Estimating model with two continuous variables
 
+Now consider a different interactive model form:
+
+$$
+\begin{align}
+\text{Obama thermometer} = \beta_0 &+ \beta_1 (\text{Respondent conservatism}) + \beta_2 (\text{Obama conservatism})\\
+& + \beta_3 (\text{Respondent conservatism}) (\text{Obama conservatism}) + e
+\end{align}
+$$
+
+Now we have two continous variables interacted with one another. The same basic estimation approach applies:
+
+```{r obama-two-cont}
+obama_ideo2 <- lm(ObamaTherm ~ RConserv * ObamaConserv, data = nes)
+tidy(obama_ideo2)
+glance(obama_ideo2)
+```
+
+We can do the same hypothesis testing and what not that we did above, but I find it easier to just skip to the graph:
+
+```{r obama-two-marg-effect}
+instant_effect(obama_ideo2, "RConserv") %>%
+  ggplot(aes(z, dy.dx,
+             ymin = dy.dx - 1.96 * se,
+             ymax = dy.dx + 1.96 * se)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  labs(title = "Marginal effect of Obama's conservatism",
+       subtitle = "By respondent conservatism",
+       x = "Respondent conservatism",
+       y = "Estimated marginal effect")
+
+instant_effect(obama_ideo2, "ObamaConserv") %>%
+  ggplot(aes(z, dy.dx,
+             ymin = dy.dx - 1.96 * se,
+             ymax = dy.dx + 1.96 * se)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  labs(title = "Marginal effect of respondent's conservatism",
+       subtitle = "By Obama conservatism",
+       x = "Obama conservatism",
+       y = "Estimated marginal effect")
+```
+
+### Predicted values plots
+
+With three continuous variables, we can start to consider three dimensional visualizations. For instance, we could represent this as a heatmap with contour lines:
+
+```{r obama-heatmap}
+nes %>%
+  data_grid(RConserv, ObamaConserv) %>%
+  add_predictions(obama_ideo2) %>%
+  ggplot(aes(RConserv, ObamaConserv, z = pred, fill = pred)) +
+  geom_raster() +
+  scale_fill_gradient2(midpoint = 50) +
+  geom_contour()
+```
+
+Or a 3D surface plot:
+
+```{r obama-3d}
+nes %>%
+  data_grid(RConserv, ObamaConserv) %>%
+  add_predictions(obama_ideo2)  %>%
+  spread(ObamaConserv, pred) %>%
+  select(-RConserv) %>%
+  as.matrix %>%
+  plot_ly(x = ~ 1:7, y = ~ 1:7, z = .) %>%
+  add_surface() %>%
+  layout(title = "Predicted values for Obama feeling thermometer",
+         scene = list(
+           xaxis = list(
+             title = "Respondent conservatism"
+           ),
+           yaxis = list(
+             title = "Obama conservatism"
+           ),
+           zaxis = list(
+             title = "Predictions"
+           )
+         )
+  )
+```
+
+# Acknowledgments {.toc-ignore}
+
+* Code for estimating marginal effects is drawn from [Creating Marginal Effect Plots for Linear Regression Models in R](http://www.statsblogs.com/2013/08/27/creating-marginal-effect-plots-for-linear-regression-models-in-r/)
 
 # Session Info {.toc-ignore}
 
