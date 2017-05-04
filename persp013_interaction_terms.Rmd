@@ -52,9 +52,9 @@ By definition, we expect $\beta_1$ to estimate the direct effect (or relationshi
 n_sim <- 100
 
 additive <- data_frame(x = runif(n_sim),
-                       z = runif(n_sim),
-                       y = x + z + rnorm(n_sim)) %>%
-  mutate(z = ifelse(z > .5, 1, 0))
+                       z = runif(n_sim)) %>%
+  mutate(z = ifelse(z > .5, 1, 0),
+         y = x + z + rnorm(n_sim))
 
 additive %>%
   add_predictions(lm(y ~ x + z, data = .)) %>%
@@ -173,8 +173,66 @@ There are several major types of interaction terms that can occur within regress
 
 ## Two dichtomous covariates
 
+$$Y = \beta_0 + \beta_1 D_1 + \beta_2 D_2 + \beta_3 D_1 D_2 + e_i$$
 
+In this model, the expected value for $Y$ can take on four possible values:
 
+$$
+\begin{split}
+E(Y | D_1 = 0, D_2 = 0) & = \beta_0 \\
+E(Y | D_1 = 1, D_2 = 0) & = \beta_0 + \beta_1 \\
+E(Y | D_1 = 0, D_2 = 1) & = \beta_0 + \beta_2 \\
+E(Y | D_1 = 1, D_2 = 1) & = \beta_0 + \beta_1 + \beta_2 + \beta_3 \\
+\end{split}
+$$
+
+Consider data generated from the following model:
+
+$$Y = 10 + 20 D_1 - 20 D_2 + 40 D_1 D_2 + e, \text{ where } e \sim N(0, 5)$$
+
+```{r sim-two-dich}
+two_dich <- data_frame(x = runif(n_sim),
+                       z = runif(n_sim)) %>%
+  mutate_at(vars(x, z), funs(ifelse(. > .5, 1, 0))) %>%
+  mutate(y = 10 + 20 * x - 20 * z + 40 * (x * z) + rnorm(n_sim, 0, 5))
+```
+
+We could visualize it a couple of ways. First as a histogram:
+
+```{r sim-two-dich-hist}
+ggplot(two_dich, aes(y, color = interaction(x, z))) +
+  geom_density() +
+  scale_color_discrete(labels = c("D1 = D2 = 0",
+                                  "D1 = 1, D2 = 0",
+                                  "D1 = 0, D2 = 1",
+                                  "D1 = D2 = 1"),
+                       guide = guide_legend(nrow = 2)) +
+  labs(title = expression(paste("Values of ", Y, " for various combinations of values of ", D[1], ",", D[2])),
+       x = "Value of Y",
+       color = NULL) +
+  theme(legend.position = "bottom")
+```
+
+Or as a boxplot:
+
+```{r sim-two-dich-hist}
+ggplot(two_dich, aes(interaction(z, x), y)) +
+  geom_boxplot() +
+  scale_x_discrete(labels = c(expression("D1 = D2 = 0"),
+                                  expression("D1 = 0, D2 = 1"),
+                                  expression("D1 = 1, D2 = 0"),
+                                  expression("D1 = D2 = 1"))) +
+  labs(title = expression(paste("Values of ", Y, " for various combinations of values of ", D[1], ",", D[2])),
+       x = NULL,
+       y = "Values of Y")
+```
+
+This illustrates that:
+
+* The effect of a change in $D_2$ varies depending on the value of $D_1$
+    * The effect is negative when $D_1 = 0$
+    * But positive when $D_1 = 1$
+* Similar effects for the change in $D_1$ relative to $D_2$
 
 ## One dichotomous and one continuous covariate
 
