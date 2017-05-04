@@ -1,0 +1,220 @@
+---
+title: "Interaction terms in regression models"
+author: "MACS 30200 - Perspectives on Computational Research"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define multiplicative interaction models and conditional effects
+* Review mathematics required to calculate standard errors and conduct inference
+* Identify major types of conceptual interactions
+* Demonstrate how to estimate multiplicative interaction models in R
+* Implement hypothesis testing and marginal effects plots
+* Extend discussion to generalized linear models
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(forcats)
+library(broom)
+library(modelr)
+library(stringr)
+library(titanic)
+library(rcfss)
+library(car)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Multiplicative interaction models
+
+## Additive model
+
+Consider a linear additive model of the form:
+
+$$Y = \beta_0 + \beta_1 X + \beta_2 Z + e_i$$
+
+By definition, we expect $\beta_1$ to estimate the direct effect (or relationship) of $X_1$ on $Y$ independent of $Z$.^[Likewise for $\beta_2$.] A data generating process with a continuous value for $X$ and $Y$ and a dichotomous value for $Z$ following this functional form would look like:
+
+```{r sim-linear}
+n_sim <- 100
+
+additive <- data_frame(x = runif(n_sim),
+                       z = runif(n_sim),
+                       y = x + z + rnorm(n_sim)) %>%
+  mutate(z = ifelse(z > .5, 1, 0))
+
+additive %>%
+  add_predictions(lm(y ~ x + z, data = .)) %>%
+  ggplot(aes(x, y, color = factor(z))) +
+  geom_point() +
+  geom_line(aes(y = pred)) +
+  theme(legend.position = "none")
+```
+
+Consider the net impact of $X$ on $Y$:
+
+$$E(Y) = \beta_0 + \beta_1 X + \beta_2 Z$$
+
+If we take the first derivative of this with respect to $X$, we get:
+
+$$\frac{\delta E(Y)}{\delta X} = \beta_1$$
+
+In other words, the marginal impact of $X$ on $Y$ is constant and completely independent of $Z$. Likewise, the marginal impact of $Z$ on $Y$ is:
+
+$$\frac{\delta E(Y)}{\delta Z} = \beta_2$$
+
+Interpreting the estimated parameters and standard errors is relatively straightforward in this setup.
+
+## Multiplicative interaction model
+
+But the additive functional form only makes sense if you theoretically believe the effects of $X$ and $Z$ are independent. Consider instead a simple interactive model with three variables:
+
+$$Y = \beta_0 + \beta_1 X + \beta_2 Z + \beta_3 XZ + e_i$$
+
+Here $XZ$ is just that: $X$ multiplied by $Z$. $\beta_1$ and $\beta_2$ are commonly (and erroneously) referred to as the **direct effects** of $X$ and $Z$ on $Y$,^[Brambor et. al. define $X$ and $Z$ as the **constitutive terms**] and $\beta_3$ as the coefficient for the **interaction term**.
+
+With the variables multiplied together, the net impact of $X$ on $Y$ is now defined by:
+
+$$
+\begin{split}
+E(Y) & = \beta_0 + \beta_1 X + \beta_2 Z + \beta_3 XZ \\
+     & = \beta_0 + \beta_2 Z + (\beta_1 + \beta_3 Z) X
+\end{split}
+$$
+
+And the first derivative of this with respect to $X$ is:
+
+$$\frac{\delta E(Y)}{\delta X} = \beta_1 + \beta_3 Z$$
+
+In other words, the marginal impact of $X$ on $Y$ now explicitly depends on the value of $Z$. Another way of phrasing the expected value function above is:
+
+$$E(Y) = \beta_0 + \beta_2 Z + \psi_1 X$$
+
+where $\psi_1 = \beta_1 + \beta_3 Z$ is a "quasi-coefficient" for the marginal impact of $X$ on $Y$. Likewise with respect to $Z$:
+
+$$
+\begin{split}
+E(Y) & = \beta_0 + \beta_1 X + (\beta_2 + \beta_3 X) Z \\
+     & = \beta_0 + \beta_2 Z + \psi_2 Z
+\end{split}
+$$
+
+In this type of interactive model, each interacted covariate's influence on $Y$ is now conditional on the values of the other explanatory variable(s) with which it is interacted.
+
+* The direct effects $\beta_1$ and $\beta_2$ represent the *conditional* impact of $X$ and $Z$ on $Y$ *conditional on the value of the other interacted variable being zero*.
+    * If $Z = 0$, then:
+    
+        $$
+\begin{split}
+E(Y) & = \beta_0 + \beta_1 X + \beta_2 (0) + \beta_3 X (0) \\
+     & = \beta_0 + \beta_1 X
+\end{split}
+        $$
+        
+    * If $X = 0$, then:
+    
+        $$
+\begin{split}
+E(Y) & = \beta_0 + \beta_1 (0) + \beta_2 Z + \beta_3 (0) Z \\
+     & = \beta_0 + \beta_2 Z
+\end{split}
+        $$
+    * Under these circumstances, $\psi_1 = \beta_1$ and $\psi_2 = \beta_2$
+    * $\hat{\beta}_1$ and $\hat{\beta}_2$ are relevant, but only in the specific circumstance where the interacted variable is zero.
+* The interaction coefficient $\beta_3$ indicates whether or not the effect of $X$ on $Y$ is systematically (and monotonically/linearly) different over different values of $Z$, and vice-versa
+    * $+\beta_3$ means the impact of $X$ on $Y$ grows more positive/less negative at larger values of $Z$, and less positive/more negative at lower values of $Z$
+    * $-\beta_3$ means the impact of $X$ on $Y$ grows less positive/more negative at larger values of $Z$, and more positive/less negative at lower values of $Z$
+* In truth, what we care most about are not $\beta_1$, $\beta_2$, and $\beta_3$, but instead $\psi_1$ and $\psi_2$
+
+> In an interactive model, all influences of interacted variables are now necessarily conditional on the value(s) of the variable(s) with which they are interacted.
+
+### Conducting inference
+
+That said, a multiplicative interaction model is still a standard linear regression model, so the same principles of OLS apply. That means we can obtain estimates of the $\beta$s in the standard way, and we can estimate standard errors for those coefficient estimates in the usual way (as the square roots of the diagonal elements of the variance-covariance matrix $\hat{\sigma}^2 (\mathbf{X}' \mathbf{X})^{-1}$).
+
+The problem is that we don't care about these quantities - we care about the marginal effects, that is $\psi_1$ and $\psi_2$. Calculating point estimates for these is trivial:
+
+$$\hat{\psi}_1 = \hat{\beta}_1 + \hat{\beta}_3 Z$$
+$$\hat{\psi}_2 = \hat{\beta}_2 + \hat{\beta}_3 X$$
+
+But in order to conduct inference, we need to know if these values are statistically distinguishable from zero. For that, we need estimate the **variance** for these parameters. Three key rules help us define the equation for their variance. Where $X$ and $Y$ are random variables and $a$ is a constant:
+
+1. $\text{Var}(aX) = a^2 \text{Var}(X)$
+1. $\text{Var}(X+Y) = \text{Var}(X) + \text{Var}(Y) + 2 \text{Cov}(X,Y)$
+1. $\text{Cov}(X, aY) = a \text{Cov}(X,Y)$
+
+So if we are interested in $\text{Var} (\hat{\psi}_1)$:
+
+$$\widehat{\text{Var}(\hat{\psi}_1}) = \widehat{\text{Var} (\hat{\beta}_1)} +Z^2  \widehat{\text{Var} (\hat{\beta}_3)} + 2 Z \widehat{\text{Cov} (\hat{\beta}_1, \hat{\beta}_3)}$$
+
+Likewise for $\text{Var} (\hat{\psi}_2)$:
+
+$$\widehat{\text{Var}(\hat{\psi}_2}) = \widehat{\text{Var} (\hat{\beta}_2)} + X^2  \widehat{\text{Var} (\hat{\beta}_3)} + 2 X \widehat{\text{Cov} (\hat{\beta}_2, \hat{\beta}_3)}$$
+
+* Both depend on - but are not the same as - the estimated variances for the direct effects $\beta_1$ and $\beta_2$, and/or the interaction term $\beta_3$.
+* Both also depend on the level/value of the interacted variable. This means that just as the slope of $X$ on $Y$ depends on $Z$, so too does the estimated variability around that slope estimate also depend on $Z$.
+
+# Types of interactions
+
+There are several major types of interaction terms that can occur within regression models. Here I present examples of these major types using simulated data.
+
+## Two dichtomous covariates
+
+
+
+
+## One dichotomous and one continuous covariate
+
+
+## Two continuous covariates
+
+
+## Quadratic, cubic, and other polynomial effects
+
+
+## Higher-order interaction terms
+
+
+# Key rules for estimating and interpreting interaction terms
+
+
+# Estimating models with multiplicative interactions
+
+
+## Model estimation
+
+
+## Calculating standard errors
+
+
+## Hypothesis testing
+
+
+## Predicted values plots
+
+
+## Marginal effects plots
+
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
