@@ -1048,6 +1048,265 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 </div>
 </div>
 </div>
+<div id="interaction-terms-in-glms" class="section level1">
+<h1>Interaction terms in GLMs</h1>
+</div>
+<div id="interaction-terms-in-nonparametric-regressiondecision-treessvms" class="section level1">
+<h1>Interaction terms in nonparametric regression/decision trees/SVMs</h1>
+<div id="nonparametric-regression" class="section level2">
+<h2>Nonparametric regression</h2>
+<p><a href="persp007_nonlinear.html">Nonlinear methods of regression</a> explictly relaxes the linearity assumption of linear regression, but not the additivity assumption;<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> for example, a GAM still assumes each variable provides a separate additive component to the model which when all the components are added together identify the estimated <span class="math inline">\(Y\)</span>. However we can incorporate interactive components through the use of splines by explicitly identifying the interaction terms within a spline function. For instance, consider a GAM of the form:</p>
+<p><span class="math display">\[
+\begin{align}
+\text{Obama thermometer} = \beta_0 &amp;+ f_1 (\text{Respondent conservatism}) + f_2 (\text{Obama conservatism}) + e
+\end{align}
+\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(mgcv)
+
+obama_gam &lt;-<span class="st"> </span><span class="kw">gam</span>(ObamaTherm ~<span class="st"> </span><span class="kw">s</span>(RConserv, <span class="dt">k =</span> <span class="dv">2</span>) +<span class="st"> </span><span class="kw">s</span>(ObamaConserv, <span class="dt">k =</span> <span class="dv">4</span>),
+                 <span class="dt">data =</span> nes)
+<span class="kw">summary</span>(obama_gam)</code></pre></div>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## ObamaTherm ~ s(RConserv, k = 2) + s(ObamaConserv, k = 4)
+## 
+## Parametric coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   69.628      0.595     117   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                  edf Ref.df   F p-value    
+## s(RConserv)     1.00      1 372  &lt;2e-16 ***
+## s(ObamaConserv) 2.95      3 133  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.371   Deviance explained = 37.3%
+## GCV = 496.74  Scale est. = 494.98    n = 1397</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 3d plot</span>
+nes %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(RConserv, ObamaConserv) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(obama_gam)  %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(ObamaConserv, pred) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-RConserv) %&gt;%
+<span class="st">  </span>as.matrix %&gt;%
+<span class="st">  </span><span class="kw">plot_ly</span>(<span class="dt">x =</span> ~<span class="st"> </span><span class="dv">1</span>:<span class="dv">7</span>, <span class="dt">y =</span> ~<span class="st"> </span><span class="dv">1</span>:<span class="dv">7</span>, <span class="dt">z =</span> .) %&gt;%
+<span class="st">  </span><span class="kw">add_surface</span>() %&gt;%
+<span class="st">  </span><span class="kw">layout</span>(<span class="dt">title =</span> <span class="st">&quot;Predicted values for Obama feeling thermometer&quot;</span>,
+         <span class="dt">scene =</span> <span class="kw">list</span>(
+           <span class="dt">xaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Respondent conservatism&quot;</span>
+           ),
+           <span class="dt">yaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Obama conservatism&quot;</span>
+           ),
+           <span class="dt">zaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Predictions&quot;</span>
+           )
+         )
+  )</code></pre></div>
+<div id="c797606fee4e" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="c797606fee4e">{"x":{"visdat":{"c797932b691":["function () ","plotlyVisDat"]},"cur_data":"c797932b691","attrs":{"c797932b691":{"x":{},"y":{},"z":[[72.6492983806387,86.613903963227,95.1425087893591,97.7302464851538,99.6668653945555,106.429106285455,118.008601685171],[66.1662614901209,80.1308670727092,88.6594718988413,91.247209594636,93.1838285040377,99.9460693949368,111.525564794653],[59.6832245997126,73.6478301823009,82.176435008433,84.7641727042277,86.7007916136293,93.4630325045284,105.042527904244],[53.2001877095014,67.1647932920897,75.6933981182218,78.2811358140165,80.2177547234182,86.9799956143173,98.5594910140333],[46.7171508195204,60.6817564021088,69.2103612282409,71.7980989240356,73.7347178334372,80.4969587243363,92.0764541240523],[40.2341139297367,54.198719512325,62.7273243384571,65.3150620342518,67.2516809436534,74.0139218345525,85.5934172342685],[33.7510770400623,47.7156826226506,56.2442874487827,58.8320251445774,60.7686440539791,67.5308849448782,79.1103803445941]],"alpha":1,"sizes":[10,100],"type":"surface"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Predicted values for Obama feeling thermometer","scene":{"xaxis":{"title":"Respondent conservatism"},"yaxis":{"title":"Obama conservatism"},"zaxis":{"title":"Predictions"}},"xaxis":{"domain":[0,1]},"yaxis":{"domain":[0,1]},"hovermode":"closest","showlegend":false,"legend":{"y":0.5,"yanchor":"top"}},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"colorbar":{"title":"","ticklen":2,"len":0.5,"y":1,"lenmode":"fraction","yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.153886241425572","rgba(69,54,127,1)"],["0.230829362141346","rgba(61,76,137,1)"],["0.266957883031356","rgba(58,86,139,1)"],["0.307772482859854","rgba(53,97,141,1)"],["0.320654649275711","rgba(51,101,141,1)"],["0.374613248218918","rgba(46,114,142,1)"],["0.396566554652129","rgba(44,119,142,1)"],["0.400911468110368","rgba(44,120,142,1)"],["0.451556368932353","rgba(38,132,142,1)"],["0.473509675370636","rgba(38,137,141,1)"],["0.477854588822505","rgba(38,138,141,1)"],["0.528499489648128","rgba(34,151,138,1)"],["0.550452796091484","rgba(32,157,137,1)"],["0.55479770953594","rgba(31,158,137,1)"],["0.605442610366635","rgba(43,169,130,1)"],["0.62739591681363","rgba(47,174,127,1)"],["0.631740830251714","rgba(48,175,126,1)"],["0.682385731087482","rgba(64,186,117,1)"],["0.705370252856413","rgba(77,191,111,1)"],["0.728616607334203","rgba(89,195,104,1)"],["0.769170637838499","rgba(106,203,92,1)"],["0.78562707169107","rgba(115,206,87,1)"],["0.862570192413215","rgba(165,218,58,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[1,2,3,4,5,6,7],"y":[1,2,3,4,5,6,7],"z":[[72.6492983806387,86.613903963227,95.1425087893591,97.7302464851538,99.6668653945555,106.429106285455,118.008601685171],[66.1662614901209,80.1308670727092,88.6594718988413,91.247209594636,93.1838285040377,99.9460693949368,111.525564794653],[59.6832245997126,73.6478301823009,82.176435008433,84.7641727042277,86.7007916136293,93.4630325045284,105.042527904244],[53.2001877095014,67.1647932920897,75.6933981182218,78.2811358140165,80.2177547234182,86.9799956143173,98.5594910140333],[46.7171508195204,60.6817564021088,69.2103612282409,71.7980989240356,73.7347178334372,80.4969587243363,92.0764541240523],[40.2341139297367,54.198719512325,62.7273243384571,65.3150620342518,67.2516809436534,74.0139218345525,85.5934172342685],[33.7510770400623,47.7156826226506,56.2442874487827,58.8320251445774,60.7686440539791,67.5308849448782,79.1103803445941]],"type":"surface","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1}},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":{"render":[{"code":"function(el, x) { var ctConfig = crosstalk.var('plotlyCrosstalkOpts').set({\"on\":\"plotly_click\",\"persistent\":false,\"dynamic\":false,\"selectize\":false,\"opacityDim\":0.2,\"selected\":{\"opacity\":1}}); }","data":null}]}}</script>
+<p>Now compare this to an interactive GAM of the form:</p>
+<p><span class="math display">\[
+\begin{align}
+\text{Obama thermometer} = \beta_0 &amp;+ f_1 (\text{Respondent conservatism}) + f_2 (\text{Obama conservatism})\\
+&amp; + f_3 (\text{Respondent conservatism} \times \text{Obama conservatism}) + e
+\end{align}
+\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">obama_gam_x &lt;-<span class="st"> </span><span class="kw">gam</span>(ObamaTherm ~<span class="st"> </span><span class="kw">s</span>(RConserv, ObamaConserv, <span class="dt">k =</span> <span class="dv">5</span>),
+                 <span class="dt">data =</span> nes)
+<span class="kw">summary</span>(obama_gam_x)</code></pre></div>
+<pre><code>## 
+## Family: gaussian 
+## Link function: identity 
+## 
+## Formula:
+## ObamaTherm ~ s(RConserv, ObamaConserv, k = 5)
+## 
+## Parametric coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)   69.628      0.555     125   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Approximate significance of smooth terms:
+##                           edf Ref.df   F p-value    
+## s(RConserv,ObamaConserv) 3.98      4 290  &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## R-sq.(adj) =  0.453   Deviance explained = 45.5%
+## GCV = 432.19  Scale est. = 430.65    n = 1397</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># 3d plot</span>
+nes %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(RConserv, ObamaConserv) %&gt;%
+<span class="st">  </span><span class="kw">add_predictions</span>(obama_gam_x)  %&gt;%
+<span class="st">  </span><span class="kw">spread</span>(ObamaConserv, pred) %&gt;%
+<span class="st">  </span><span class="kw">select</span>(-RConserv) %&gt;%
+<span class="st">  </span>as.matrix %&gt;%
+<span class="st">  </span><span class="kw">plot_ly</span>(<span class="dt">x =</span> ~<span class="st"> </span><span class="dv">1</span>:<span class="dv">7</span>, <span class="dt">y =</span> ~<span class="st"> </span><span class="dv">1</span>:<span class="dv">7</span>, <span class="dt">z =</span> .) %&gt;%
+<span class="st">  </span><span class="kw">add_surface</span>() %&gt;%
+<span class="st">  </span><span class="kw">layout</span>(<span class="dt">title =</span> <span class="st">&quot;Predicted values for Obama feeling thermometer&quot;</span>,
+         <span class="dt">scene =</span> <span class="kw">list</span>(
+           <span class="dt">xaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Respondent conservatism&quot;</span>
+           ),
+           <span class="dt">yaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Obama conservatism&quot;</span>
+           ),
+           <span class="dt">zaxis =</span> <span class="kw">list</span>(
+             <span class="dt">title =</span> <span class="st">&quot;Predictions&quot;</span>
+           )
+         )
+  )</code></pre></div>
+<div id="c7975b523f25" style="width:672px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="c7975b523f25">{"x":{"visdat":{"c79747fb151":["function () ","plotlyVisDat"]},"cur_data":"c79747fb151","attrs":{"c79747fb151":{"x":{},"y":{},"z":[[87.6298612372854,89.8199827778324,88.4993074095834,84.3132385421891,78.9383339707782,74.3778522743843,71.9844791675835],[82.014463094218,85.7389607461902,86.0951250825805,83.4506996798324,79.2319775204376,75.3562302603369,73.658560960782],[72.9645668607368,78.4426791129581,81.56264402374,82.1316366342015,80.8424529546596,79.0641625658892,78.409957476772],[61.1239699257463,68.3386434047624,74.8321519950262,79.6914499389107,82.571246359886,83.8778121718865,84.6137374491657],[48.1519646675879,56.8410877810693,66.5819648760265,75.7651792811858,82.9979435397896,87.6511361580803,90.0396332231707],[36.1901269740259,45.9202753842159,58.0387957115981,70.4858549736767,81.1563695690615,88.6673719040037,92.7844146262997],[27.1161620570367,37.4171837969315,50.5492986744218,64.4647794350915,76.9159609909695,86.2572373228712,91.962547516406]],"alpha":1,"sizes":[10,100],"type":"surface"}},"layout":{"margin":{"b":40,"l":60,"t":25,"r":10},"title":"Predicted values for Obama feeling thermometer","scene":{"xaxis":{"title":"Respondent conservatism"},"yaxis":{"title":"Obama conservatism"},"zaxis":{"title":"Predictions"}},"xaxis":{"domain":[0,1]},"yaxis":{"domain":[0,1]},"hovermode":"closest","showlegend":false,"legend":{"y":0.5,"yanchor":"top"}},"source":"A","config":{"modeBarButtonsToAdd":[{"name":"Collaborate","icon":{"width":1000,"ascent":500,"descent":-50,"path":"M487 375c7-10 9-23 5-36l-79-259c-3-12-11-23-22-31-11-8-22-12-35-12l-263 0c-15 0-29 5-43 15-13 10-23 23-28 37-5 13-5 25-1 37 0 0 0 3 1 7 1 5 1 8 1 11 0 2 0 4-1 6 0 3-1 5-1 6 1 2 2 4 3 6 1 2 2 4 4 6 2 3 4 5 5 7 5 7 9 16 13 26 4 10 7 19 9 26 0 2 0 5 0 9-1 4-1 6 0 8 0 2 2 5 4 8 3 3 5 5 5 7 4 6 8 15 12 26 4 11 7 19 7 26 1 1 0 4 0 9-1 4-1 7 0 8 1 2 3 5 6 8 4 4 6 6 6 7 4 5 8 13 13 24 4 11 7 20 7 28 1 1 0 4 0 7-1 3-1 6-1 7 0 2 1 4 3 6 1 1 3 4 5 6 2 3 3 5 5 6 1 2 3 5 4 9 2 3 3 7 5 10 1 3 2 6 4 10 2 4 4 7 6 9 2 3 4 5 7 7 3 2 7 3 11 3 3 0 8 0 13-1l0-1c7 2 12 2 14 2l218 0c14 0 25-5 32-16 8-10 10-23 6-37l-79-259c-7-22-13-37-20-43-7-7-19-10-37-10l-248 0c-5 0-9-2-11-5-2-3-2-7 0-12 4-13 18-20 41-20l264 0c5 0 10 2 16 5 5 3 8 6 10 11l85 282c2 5 2 10 2 17 7-3 13-7 17-13z m-304 0c-1-3-1-5 0-7 1-1 3-2 6-2l174 0c2 0 4 1 7 2 2 2 4 4 5 7l6 18c0 3 0 5-1 7-1 1-3 2-6 2l-173 0c-3 0-5-1-8-2-2-2-4-4-4-7z m-24-73c-1-3-1-5 0-7 2-2 3-2 6-2l174 0c2 0 5 0 7 2 3 2 4 4 5 7l6 18c1 2 0 5-1 6-1 2-3 3-5 3l-174 0c-3 0-5-1-7-3-3-1-4-4-5-6z"},"click":"function(gd) { \n        // is this being viewed in RStudio?\n        if (location.search == '?viewer_pane=1') {\n          alert('To learn about plotly for collaboration, visit:\\n https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html');\n        } else {\n          window.open('https://cpsievert.github.io/plotly_book/plot-ly-for-collaboration.html', '_blank');\n        }\n      }"}],"cloud":false},"data":[{"colorbar":{"title":"","ticklen":2,"len":0.5,"y":1,"lenmode":"fraction","yanchor":"top"},"colorscale":[["0","rgba(68,1,84,1)"],["0.156864562964119","rgba(69,55,127,1)"],["0.320334435401092","rgba(51,101,141,1)"],["0.452652911582816","rgba(38,132,142,1)"],["0.517872891970746","rgba(35,148,139,1)"],["0.600987559054713","rgba(43,168,131,1)"],["0.660436226331684","rgba(52,182,122,1)"],["0.698182196265111","rgba(73,189,113,1)"],["0.719703789399585","rgba(85,193,107,1)"],["0.734602586728183","rgba(91,196,102,1)"],["0.758354257735226","rgba(101,201,95,1)"],["0.781603210802438","rgba(112,206,88,1)"],["0.79106719725884","rgba(119,207,85,1)"],["0.80061956615064","rgba(126,209,82,1)"],["0.82292744816114","rgba(141,212,74,1)"],["0.835994546668922","rgba(149,214,69,1)"],["0.844473274880561","rgba(154,215,66,1)"],["0.857865641595646","rgba(162,217,60,1)"],["0.871000433958925","rgba(170,219,54,1)"],["0.892711415266024","rgba(183,222,44,1)"],["0.900603761360271","rgba(188,223,43,1)"],["0.921830134541724","rgba(202,225,42,1)"],["0.93730543205861","rgba(213,226,41,1)"],["0.95820230787725","rgba(226,228,40,1)"],["1","rgba(253,231,37,1)"]],"showscale":true,"x":[1,2,3,4,5,6,7],"y":[1,2,3,4,5,6,7],"z":[[87.6298612372854,89.8199827778324,88.4993074095834,84.3132385421891,78.9383339707782,74.3778522743843,71.9844791675835],[82.014463094218,85.7389607461902,86.0951250825805,83.4506996798324,79.2319775204376,75.3562302603369,73.658560960782],[72.9645668607368,78.4426791129581,81.56264402374,82.1316366342015,80.8424529546596,79.0641625658892,78.409957476772],[61.1239699257463,68.3386434047624,74.8321519950262,79.6914499389107,82.571246359886,83.8778121718865,84.6137374491657],[48.1519646675879,56.8410877810693,66.5819648760265,75.7651792811858,82.9979435397896,87.6511361580803,90.0396332231707],[36.1901269740259,45.9202753842159,58.0387957115981,70.4858549736767,81.1563695690615,88.6673719040037,92.7844146262997],[27.1161620570367,37.4171837969315,50.5492986744218,64.4647794350915,76.9159609909695,86.2572373228712,91.962547516406]],"type":"surface","frame":null}],"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.2,"selected":{"opacity":1}},"base_url":"https://plot.ly"},"evals":["config.modeBarButtonsToAdd.0.click"],"jsHooks":{"render":[{"code":"function(el, x) { var ctConfig = crosstalk.var('plotlyCrosstalkOpts').set({\"on\":\"plotly_click\",\"persistent\":false,\"dynamic\":false,\"selectize\":false,\"opacityDim\":0.2,\"selected\":{\"opacity\":1}}); }","data":null}]}}</script>
+</div>
+<div id="decision-trees" class="section level2">
+<h2>Decision trees</h2>
+<p>Interaction terms are not necessary in <a href="persp008_tree_methods.html">decision trees</a>; because of their functional form, they are explicitly interactive.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tree)
+<span class="kw">library</span>(ggdendro)
+
+<span class="co"># hackish function to get line segment coordinates for ggplot</span>
+partition.tree.data &lt;-<span class="st"> </span>function (tree, <span class="dt">label =</span> <span class="st">&quot;yval&quot;</span>, <span class="dt">add =</span> <span class="ot">FALSE</span>, ordvars, ...) 
+{
+  ptXlines &lt;-<span class="st"> </span>function(x, v, xrange, <span class="dt">xcoord =</span> <span class="ot">NULL</span>, <span class="dt">ycoord =</span> <span class="ot">NULL</span>, 
+                       tvar, <span class="dt">i =</span> 1L) {
+    if (v[i] ==<span class="st"> &quot;&lt;leaf&gt;&quot;</span>) {
+      y1 &lt;-<span class="st"> </span>(xrange[1L] +<span class="st"> </span>xrange[3L])/<span class="dv">2</span>
+      y2 &lt;-<span class="st"> </span>(xrange[2L] +<span class="st"> </span>xrange[4L])/<span class="dv">2</span>
+      <span class="kw">return</span>(<span class="kw">list</span>(<span class="dt">xcoord =</span> xcoord, <span class="dt">ycoord =</span> <span class="kw">c</span>(ycoord, y1, 
+                                              y2), <span class="dt">i =</span> i))
+    }
+    if (v[i] ==<span class="st"> </span>tvar[1L]) {
+      xcoord &lt;-<span class="st"> </span><span class="kw">c</span>(xcoord, x[i], xrange[2L], x[i], xrange[4L])
+      xr &lt;-<span class="st"> </span>xrange
+      xr[3L] &lt;-<span class="st"> </span>x[i]
+      ll2 &lt;-<span class="st"> </span><span class="kw">Recall</span>(x, v, xr, xcoord, ycoord, tvar, i +<span class="st"> </span>
+<span class="st">                      </span>1L)
+      xr &lt;-<span class="st"> </span>xrange
+      xr[1L] &lt;-<span class="st"> </span>x[i]
+      <span class="kw">return</span>(<span class="kw">Recall</span>(x, v, xr, ll2$xcoord, ll2$ycoord, tvar, 
+                    ll2$i +<span class="st"> </span>1L))
+    }
+    else if (v[i] ==<span class="st"> </span>tvar[2L]) {
+      xcoord &lt;-<span class="st"> </span><span class="kw">c</span>(xcoord, xrange[1L], x[i], xrange[3L], 
+                  x[i])
+      xr &lt;-<span class="st"> </span>xrange
+      xr[4L] &lt;-<span class="st"> </span>x[i]
+      ll2 &lt;-<span class="st"> </span><span class="kw">Recall</span>(x, v, xr, xcoord, ycoord, tvar, i +<span class="st"> </span>
+<span class="st">                      </span>1L)
+      xr &lt;-<span class="st"> </span>xrange
+      xr[2L] &lt;-<span class="st"> </span>x[i]
+      <span class="kw">return</span>(<span class="kw">Recall</span>(x, v, xr, ll2$xcoord, ll2$ycoord, tvar, 
+                    ll2$i +<span class="st"> </span>1L))
+    }
+    else <span class="kw">stop</span>(<span class="st">&quot;wrong variable numbers in tree.&quot;</span>)
+  }
+  if (<span class="kw">inherits</span>(tree, <span class="st">&quot;singlenode&quot;</span>)) 
+    <span class="kw">stop</span>(<span class="st">&quot;cannot plot singlenode tree&quot;</span>)
+  if (!<span class="kw">inherits</span>(tree, <span class="st">&quot;tree&quot;</span>)) 
+    <span class="kw">stop</span>(<span class="st">&quot;not legitimate tree&quot;</span>)
+  frame &lt;-<span class="st"> </span>tree$frame
+  leaves &lt;-<span class="st"> </span>frame$var ==<span class="st"> &quot;&lt;leaf&gt;&quot;</span>
+  var &lt;-<span class="st"> </span><span class="kw">unique</span>(<span class="kw">as.character</span>(frame$var[!leaves]))
+  if (<span class="kw">length</span>(var) &gt;<span class="st"> </span>2L ||<span class="st"> </span><span class="kw">length</span>(var) &lt;<span class="st"> </span>1L) 
+    <span class="kw">stop</span>(<span class="st">&quot;tree can only have one or two predictors&quot;</span>)
+  nlevels &lt;-<span class="st"> </span><span class="kw">sapply</span>(<span class="kw">attr</span>(tree, <span class="st">&quot;xlevels&quot;</span>), length)
+  if (<span class="kw">any</span>(nlevels[var] &gt;<span class="st"> </span>0L)) 
+    <span class="kw">stop</span>(<span class="st">&quot;tree can only have continuous predictors&quot;</span>)
+  x &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="ot">NA</span>, <span class="kw">length</span>(leaves))
+  x[!leaves] &lt;-<span class="st"> </span><span class="kw">as.double</span>(<span class="kw">substring</span>(frame$splits[!leaves, <span class="st">&quot;cutleft&quot;</span>], 
+                                    2L, 100L))
+  m &lt;-<span class="st"> </span><span class="kw">model.frame</span>(tree)
+  if (<span class="kw">length</span>(var) ==<span class="st"> </span>1L) {
+    x &lt;-<span class="st"> </span><span class="kw">sort</span>(<span class="kw">c</span>(<span class="kw">range</span>(m[[var]]), x[!leaves]))
+    if (<span class="kw">is.null</span>(<span class="kw">attr</span>(tree, <span class="st">&quot;ylevels&quot;</span>))) 
+      y &lt;-<span class="st"> </span>frame$yval[leaves]
+    else y &lt;-<span class="st"> </span>frame$yprob[, 1L]
+    y &lt;-<span class="st"> </span><span class="kw">c</span>(y, y[<span class="kw">length</span>(y)])
+    if (add) {
+      <span class="co"># lines(x, y, type = &quot;s&quot;, ...)</span>
+    }
+    else {
+      a &lt;-<span class="st"> </span><span class="kw">attributes</span>(<span class="kw">attr</span>(m, <span class="st">&quot;terms&quot;</span>))
+      yvar &lt;-<span class="st"> </span><span class="kw">as.character</span>(a$variables[<span class="dv">1</span> +<span class="st"> </span>a$response])
+      xo &lt;-<span class="st"> </span>m[[yvar]]
+      if (<span class="kw">is.factor</span>(xo)) 
+        ylim &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)
+      else ylim &lt;-<span class="st"> </span><span class="kw">range</span>(xo)
+      <span class="co"># plot(x, y, ylab = yvar, xlab = var, type = &quot;s&quot;, ylim = ylim,</span>
+      <span class="co">#      xaxs = &quot;i&quot;, ...)</span>
+    }
+    <span class="kw">data_frame</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y)
+  }
+  else {
+    if (!<span class="kw">missing</span>(ordvars)) {
+      ind &lt;-<span class="st"> </span><span class="kw">match</span>(var, ordvars)
+      if (<span class="kw">any</span>(<span class="kw">is.na</span>(ind))) 
+        <span class="kw">stop</span>(<span class="st">&quot;unmatched names in vars&quot;</span>)
+      var &lt;-<span class="st"> </span>ordvars[<span class="kw">sort</span>(ind)]
+    }
+    lab &lt;-<span class="st"> </span>frame$yval[leaves]
+    if (<span class="kw">is.null</span>(frame$yprob)) 
+      lab &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">signif</span>(lab, 3L))
+    else if (<span class="kw">match</span>(label, <span class="kw">attr</span>(tree, <span class="st">&quot;ylevels&quot;</span>), <span class="dt">nomatch =</span> 0L)) 
+      lab &lt;-<span class="st"> </span><span class="kw">format</span>(<span class="kw">signif</span>(frame$yprob[leaves, label], 
+                           3L))
+    rx &lt;-<span class="st"> </span><span class="kw">range</span>(m[[var[1L]]])
+    rx &lt;-<span class="st"> </span>rx +<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.025</span>, <span class="fl">0.025</span>) *<span class="st"> </span><span class="kw">diff</span>(rx)
+    rz &lt;-<span class="st"> </span><span class="kw">range</span>(m[[var[2L]]])
+    rz &lt;-<span class="st"> </span>rz +<span class="st"> </span><span class="kw">c</span>(-<span class="fl">0.025</span>, <span class="fl">0.025</span>) *<span class="st"> </span><span class="kw">diff</span>(rz)
+    xrange &lt;-<span class="st"> </span><span class="kw">c</span>(rx, rz)[<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">4</span>)]
+    xcoord &lt;-<span class="st"> </span><span class="ot">NULL</span>
+    ycoord &lt;-<span class="st"> </span><span class="ot">NULL</span>
+    xy &lt;-<span class="st"> </span><span class="kw">ptXlines</span>(x, frame$var, xrange, xcoord, ycoord, 
+                   var)
+    xx &lt;-<span class="st"> </span><span class="kw">matrix</span>(xy$xcoord, <span class="dt">nrow =</span> 4L)
+    yy &lt;-<span class="st"> </span><span class="kw">matrix</span>(xy$ycoord, <span class="dt">nrow =</span> 2L)
+
+    <span class="kw">return</span>(<span class="kw">list</span>(<span class="kw">data_frame</span>(<span class="dt">xmin =</span> xx[1L,],
+                           <span class="dt">ymin =</span> xx[2L,],
+                           <span class="dt">xmax =</span> xx[3L,],
+                           <span class="dt">ymax =</span> xx[4L,]),
+                <span class="kw">data_frame</span>(<span class="dt">x =</span> yy[1L,],
+                           <span class="dt">y =</span> yy[2L,],
+                           <span class="dt">label =</span> lab)))
+    <span class="co"># if (!add) </span>
+    <span class="co">#   plot(rx, rz, xlab = var[1L], ylab = var[2L], type = &quot;n&quot;, </span>
+    <span class="co">#        xaxs = &quot;i&quot;, yaxs = &quot;i&quot;, ...)</span>
+    <span class="co"># segments(xx[1L, ], xx[2L, ], xx[3L, ], xx[4L, ])</span>
+    <span class="co"># text(yy[1L, ], yy[2L, ], as.character(lab), ...)</span>
+  }
+}
+
+obama_tree &lt;-<span class="st"> </span><span class="kw">tree</span>(ObamaTherm ~<span class="st"> </span>RConserv +<span class="st"> </span>GOP, <span class="dt">data =</span> nes)
+
+tree_data &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(obama_tree)
+ptree &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="kw">segment</span>(tree_data)) +
+<span class="st">  </span><span class="kw">geom_segment</span>(<span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">xend =</span> xend, <span class="dt">yend =</span> yend), 
+               <span class="dt">alpha =</span> <span class="fl">0.5</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label_full), <span class="dt">vjust =</span> -<span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> <span class="kw">leaf_label</span>(tree_data), 
+            <span class="kw">aes</span>(<span class="dt">x =</span> x, <span class="dt">y =</span> y, <span class="dt">label =</span> label), <span class="dt">vjust =</span> <span class="fl">0.5</span>, <span class="dt">size =</span> <span class="dv">3</span>) +
+<span class="st">  </span><span class="kw">theme_dendro</span>()
+ptree</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/tree-interact-1.png" width="672" /></p>
+<p>If <code>GOP &lt; 0.5</code> (i.e. if the respondent is not a Republican), then <code>RConserv</code> has one effect. If <code>GOP &gt; 0.5</code> (i.e. if the respondent is a Republican), then `RConserv1 has a different effect.</p>
+</div>
+<div id="support-vector-machines" class="section level2">
+<h2>Support vector machines</h2>
+<p><a href="persp009_svm.html">Support vector machines</a> also naturally allow for interactivity <strong>as long as you use a non-linear decision boundary</strong>. That is, as long as you use a non-linear kernel you can model nonlinearity and interactivity. So basically don’t use a <a href="persp009_svm.html#support_vector_classifier">support vector classifier</a> - use a <a href="persp009_svm.html#support_vector_machines11">support vector machine</a>.</p>
+</div>
+</div>
 <div id="acknowledgments" class="section level1 toc-ignore">
 <h1>Acknowledgments</h1>
 <ul>
@@ -1064,14 +1323,13 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-05-04                  
+##  date     2017-05-05                  
 ## 
 ##  package      * version    date      
 ##  assertthat     0.2.0      2017-04-11
 ##  backports      1.0.5      2017-01-18
 ##  broom        * 0.4.2      2017-02-13
 ##  car          * 2.1-4      2016-12-02
-##  codetools      0.2-15     2016-10-05
 ##  coefplot     * 1.2.4.9000 2017-04-25
 ##  colorspace     1.3-2      2016-12-14
 ##  DBI            0.6        2017-03-09
@@ -1090,7 +1348,6 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 ##  httr           1.2.1      2016-07-03
 ##  jsonlite       1.4        2017-04-08
 ##  knitr          1.15.1     2016-11-22
-##  labeling       0.3        2014-08-23
 ##  lattice        0.20-34    2016-09-06
 ##  lazyeval       0.2.0      2016-06-12
 ##  lme4           1.1-12     2016-04-16
@@ -1142,7 +1399,6 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
-##  CRAN (R 3.3.3)                       
 ##  Github (jaredlander/coefplot@0755a00)
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.3)                       
@@ -1161,7 +1417,6 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 ##  CRAN (R 3.3.0)                       
 ##  cran (@1.4)                          
 ##  cran (@1.15.1)                       
-##  CRAN (R 3.3.0)                       
 ##  CRAN (R 3.3.3)                       
 ##  CRAN (R 3.3.0)                       
 ##  cran (@1.1-12)                       
@@ -1214,6 +1469,7 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 <ol>
 <li id="fn1"><p>Likewise for <span class="math inline">\(\beta_2\)</span>.<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>Brambor et. al. define <span class="math inline">\(X\)</span> and <span class="math inline">\(Z\)</span> as the <strong>constitutive terms</strong><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>With the exception of <a href="persp007_nonlinear.html#polynomial_regressions">polynomial regression</a>.<a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
 

@@ -752,6 +752,232 @@ nes %>%
   )
 ```
 
+# Interaction terms in GLMs
+
+
+# Interaction terms in nonparametric regression/decision trees/SVMs
+
+## Nonparametric regression
+
+[Nonlinear methods of regression](persp007_nonlinear.html) explictly relaxes the linearity assumption of linear regression, but not the additivity assumption;^[With the exception of [polynomial regression](persp007_nonlinear.html#polynomial_regressions).] for example, a GAM still assumes each variable provides a separate additive component to the model which when all the components are added together identify the estimated $Y$. However we can incorporate interactive components through the use of splines by explicitly identifying the interaction terms within a spline function. For instance, consider a GAM of the form:
+
+$$
+\begin{align}
+\text{Obama thermometer} = \beta_0 &+ f_1 (\text{Respondent conservatism}) + f_2 (\text{Obama conservatism}) + e
+\end{align}
+$$
+
+```{r gam}
+library(mgcv)
+
+obama_gam <- gam(ObamaTherm ~ s(RConserv, k = 2) + s(ObamaConserv, k = 4),
+                 data = nes)
+summary(obama_gam)
+
+# 3d plot
+nes %>%
+  data_grid(RConserv, ObamaConserv) %>%
+  add_predictions(obama_gam)  %>%
+  spread(ObamaConserv, pred) %>%
+  select(-RConserv) %>%
+  as.matrix %>%
+  plot_ly(x = ~ 1:7, y = ~ 1:7, z = .) %>%
+  add_surface() %>%
+  layout(title = "Predicted values for Obama feeling thermometer",
+         scene = list(
+           xaxis = list(
+             title = "Respondent conservatism"
+           ),
+           yaxis = list(
+             title = "Obama conservatism"
+           ),
+           zaxis = list(
+             title = "Predictions"
+           )
+         )
+  )
+```
+
+Now compare this to an interactive GAM of the form:
+
+$$
+\begin{align}
+\text{Obama thermometer} = \beta_0 &+ f_1 (\text{Respondent conservatism}) + f_2 (\text{Obama conservatism})\\
+& + f_3 (\text{Respondent conservatism} \times \text{Obama conservatism}) + e
+\end{align}
+$$
+
+```{r gam-interact}
+obama_gam_x <- gam(ObamaTherm ~ s(RConserv, ObamaConserv, k = 5),
+                 data = nes)
+summary(obama_gam_x)
+
+# 3d plot
+nes %>%
+  data_grid(RConserv, ObamaConserv) %>%
+  add_predictions(obama_gam_x)  %>%
+  spread(ObamaConserv, pred) %>%
+  select(-RConserv) %>%
+  as.matrix %>%
+  plot_ly(x = ~ 1:7, y = ~ 1:7, z = .) %>%
+  add_surface() %>%
+  layout(title = "Predicted values for Obama feeling thermometer",
+         scene = list(
+           xaxis = list(
+             title = "Respondent conservatism"
+           ),
+           yaxis = list(
+             title = "Obama conservatism"
+           ),
+           zaxis = list(
+             title = "Predictions"
+           )
+         )
+  )
+```
+
+
+## Decision trees
+
+Interaction terms are not necessary in [decision trees](persp008_tree_methods.html); because of their functional form, they are explicitly interactive.
+
+```{r tree-interact}
+library(tree)
+library(ggdendro)
+
+# hackish function to get line segment coordinates for ggplot
+partition.tree.data <- function (tree, label = "yval", add = FALSE, ordvars, ...) 
+{
+  ptXlines <- function(x, v, xrange, xcoord = NULL, ycoord = NULL, 
+                       tvar, i = 1L) {
+    if (v[i] == "<leaf>") {
+      y1 <- (xrange[1L] + xrange[3L])/2
+      y2 <- (xrange[2L] + xrange[4L])/2
+      return(list(xcoord = xcoord, ycoord = c(ycoord, y1, 
+                                              y2), i = i))
+    }
+    if (v[i] == tvar[1L]) {
+      xcoord <- c(xcoord, x[i], xrange[2L], x[i], xrange[4L])
+      xr <- xrange
+      xr[3L] <- x[i]
+      ll2 <- Recall(x, v, xr, xcoord, ycoord, tvar, i + 
+                      1L)
+      xr <- xrange
+      xr[1L] <- x[i]
+      return(Recall(x, v, xr, ll2$xcoord, ll2$ycoord, tvar, 
+                    ll2$i + 1L))
+    }
+    else if (v[i] == tvar[2L]) {
+      xcoord <- c(xcoord, xrange[1L], x[i], xrange[3L], 
+                  x[i])
+      xr <- xrange
+      xr[4L] <- x[i]
+      ll2 <- Recall(x, v, xr, xcoord, ycoord, tvar, i + 
+                      1L)
+      xr <- xrange
+      xr[2L] <- x[i]
+      return(Recall(x, v, xr, ll2$xcoord, ll2$ycoord, tvar, 
+                    ll2$i + 1L))
+    }
+    else stop("wrong variable numbers in tree.")
+  }
+  if (inherits(tree, "singlenode")) 
+    stop("cannot plot singlenode tree")
+  if (!inherits(tree, "tree")) 
+    stop("not legitimate tree")
+  frame <- tree$frame
+  leaves <- frame$var == "<leaf>"
+  var <- unique(as.character(frame$var[!leaves]))
+  if (length(var) > 2L || length(var) < 1L) 
+    stop("tree can only have one or two predictors")
+  nlevels <- sapply(attr(tree, "xlevels"), length)
+  if (any(nlevels[var] > 0L)) 
+    stop("tree can only have continuous predictors")
+  x <- rep(NA, length(leaves))
+  x[!leaves] <- as.double(substring(frame$splits[!leaves, "cutleft"], 
+                                    2L, 100L))
+  m <- model.frame(tree)
+  if (length(var) == 1L) {
+    x <- sort(c(range(m[[var]]), x[!leaves]))
+    if (is.null(attr(tree, "ylevels"))) 
+      y <- frame$yval[leaves]
+    else y <- frame$yprob[, 1L]
+    y <- c(y, y[length(y)])
+    if (add) {
+      # lines(x, y, type = "s", ...)
+    }
+    else {
+      a <- attributes(attr(m, "terms"))
+      yvar <- as.character(a$variables[1 + a$response])
+      xo <- m[[yvar]]
+      if (is.factor(xo)) 
+        ylim <- c(0, 1)
+      else ylim <- range(xo)
+      # plot(x, y, ylab = yvar, xlab = var, type = "s", ylim = ylim,
+      #      xaxs = "i", ...)
+    }
+    data_frame(x = x, y = y)
+  }
+  else {
+    if (!missing(ordvars)) {
+      ind <- match(var, ordvars)
+      if (any(is.na(ind))) 
+        stop("unmatched names in vars")
+      var <- ordvars[sort(ind)]
+    }
+    lab <- frame$yval[leaves]
+    if (is.null(frame$yprob)) 
+      lab <- format(signif(lab, 3L))
+    else if (match(label, attr(tree, "ylevels"), nomatch = 0L)) 
+      lab <- format(signif(frame$yprob[leaves, label], 
+                           3L))
+    rx <- range(m[[var[1L]]])
+    rx <- rx + c(-0.025, 0.025) * diff(rx)
+    rz <- range(m[[var[2L]]])
+    rz <- rz + c(-0.025, 0.025) * diff(rz)
+    xrange <- c(rx, rz)[c(1, 3, 2, 4)]
+    xcoord <- NULL
+    ycoord <- NULL
+    xy <- ptXlines(x, frame$var, xrange, xcoord, ycoord, 
+                   var)
+    xx <- matrix(xy$xcoord, nrow = 4L)
+    yy <- matrix(xy$ycoord, nrow = 2L)
+
+    return(list(data_frame(xmin = xx[1L,],
+                           ymin = xx[2L,],
+                           xmax = xx[3L,],
+                           ymax = xx[4L,]),
+                data_frame(x = yy[1L,],
+                           y = yy[2L,],
+                           label = lab)))
+    # if (!add) 
+    #   plot(rx, rz, xlab = var[1L], ylab = var[2L], type = "n", 
+    #        xaxs = "i", yaxs = "i", ...)
+    # segments(xx[1L, ], xx[2L, ], xx[3L, ], xx[4L, ])
+    # text(yy[1L, ], yy[2L, ], as.character(lab), ...)
+  }
+}
+
+obama_tree <- tree(ObamaTherm ~ RConserv + GOP, data = nes)
+
+tree_data <- dendro_data(obama_tree)
+ptree <- ggplot(segment(tree_data)) +
+  geom_segment(aes(x = x, y = y, xend = xend, yend = yend), 
+               alpha = 0.5) +
+  geom_text(data = label(tree_data), 
+            aes(x = x, y = y, label = label_full), vjust = -0.5, size = 3) +
+  geom_text(data = leaf_label(tree_data), 
+            aes(x = x, y = y, label = label), vjust = 0.5, size = 3) +
+  theme_dendro()
+ptree
+```
+
+If `GOP < 0.5` (i.e. if the respondent is not a Republican), then `RConserv` has one effect. If `GOP > 0.5` (i.e. if the respondent is a Republican), then `RConserv1 has a different effect.
+
+## Support vector machines
+
+[Support vector machines](persp009_svm.html) also naturally allow for interactivity **as long as you use a non-linear decision boundary**. That is, as long as you use a non-linear kernel you can model nonlinearity and interactivity. So basically don't use a [support vector classifier](persp009_svm.html#support_vector_classifier) - use a [support vector machine](persp009_svm.html#support_vector_machines11).
+
 
 # Acknowledgments {.toc-ignore}
 
