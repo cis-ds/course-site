@@ -608,7 +608,11 @@ instant_effect <- function(model, mod_var){
   cov <- vcov(model)
   
   # possible set of values for mod_var
-  z <- seq(min(model$model[[mod_var]]), max(model$model[[mod_var]]))
+  if(class(model)[[1]] == "lm"){
+    z <- seq(min(model$model[[mod_var]]), max(model$model[[mod_var]]))
+  } else {
+    z <- seq(min(model$data[[mod_var]]), max(model$data[[mod_var]]))
+  }
   
   # calculate instantaneous effect
   dy.dx <- beta.hat[[marg_var]] + beta.hat[[int.name]] * z
@@ -754,6 +758,102 @@ nes %>%
 
 # Interaction terms in GLMs
 
+Interaction terms are also common in generalized linear models (GLMs) such as [logistic regression](persp004_logistic_regression.html). While these types of models implicitly force the effect of each independent variable to be dependent on the values of the other explanatory variables, we still must explicitly add an interaction term to test a hypothesis about interactivity. Let us return to our usual dichotomous statistical learning example, survival on the Titanic.
+
+$$p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex}}}$$
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble() %>%
+  # remove missing values
+  na.omit() %>%
+  # convert sex to a binary 0/1 variable for the instant_effects function
+  mutate(Male = ifelse(Sex == "male", 1, 0))
+
+titanic %>%
+  head() %>%
+  knitr::kable()
+```
+
+```{r survive_age_woman}
+survive_age_woman <- glm(Survived ~ Age + Male, data = titanic,
+                         family = binomial)
+tidy(survive_age_woman)
+glance(survive_age_woman)
+
+titanic %>%
+  data_grid(Age, Male) %>%
+  augment(survive_age_woman, newdata = .) %>%
+  # convert to probabilities
+  mutate(.fitted.lwr = .fitted - 1.96 * .se.fit,
+         .fitted.upr = .fitted + 1.96 * .se.fit) %>%
+  mutate_at(vars(starts_with(".fitted")), logit2prob) %>%
+  mutate(Sex = ifelse(Male == 1, "Male", "Female")) %>%
+  ggplot(aes(Age, .fitted, ymin = .fitted.lwr, ymax = .fitted.upr,
+             color = Sex, fill = Sex)) +
+  geom_ribbon(alpha = .2, color = NA) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Probability of surviving the Titanic",
+       subtitle = "Age + Sex",
+       y = "Predicted probability of survival",
+       color = "Sex",
+       fill = "Sex")
+```
+
+Compared to:
+
+$$p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_3 (\text{Age} \times \text{Sex})}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_3 (\text{Age} \times \text{Sex})}}$$
+
+```{r survive_age_woman_x}
+survive_age_woman_x <- glm(Survived ~ Age * Male, data = titanic,
+                         family = binomial)
+tidy(survive_age_woman_x)
+glance(survive_age_woman_x)
+
+titanic %>%
+  data_grid(Age, Male) %>%
+  augment(survive_age_woman_x, newdata = .) %>%
+  # convert to probabilities
+  mutate(.fitted.lwr = .fitted - 1.96 * .se.fit,
+         .fitted.upr = .fitted + 1.96 * .se.fit) %>%
+  mutate_at(vars(starts_with(".fitted")), logit2prob) %>%
+  mutate(Sex = ifelse(Male == 1, "Male", "Female")) %>%
+  ggplot(aes(Age, .fitted, ymin = .fitted.lwr, ymax = .fitted.upr,
+             color = Sex, fill = Sex)) +
+  geom_ribbon(alpha = .2, color = NA) +
+  geom_line() +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(title = "Probability of surviving the Titanic",
+       subtitle = "Age x Sex",
+       y = "Predicted probability of survival",
+       color = "Sex",
+       fill = "Sex")
+
+instant_effect(survive_age_woman_x, "Age") %>%
+  ggplot(aes(z, dy.dx)) +
+  geom_line() +
+  geom_line(aes(y = dy.dx - 1.96 * se), linetype = 2) +
+  geom_line(aes(y = dy.dx + 1.96 * se), linetype = 2) +
+  geom_hline(yintercept = 0) +
+  labs(title = "Marginal effect of sex",
+       subtitle = "By age",
+       x = "Age",
+       y = "Estimated marginal effect")
+
+instant_effect(survive_age_woman_x, "Male") %>%
+  mutate(z = factor(z, levels = 0:1, labels = c("Female", "Male"))) %>%
+  ggplot(aes(z, dy.dx,
+             ymin = dy.dx - 1.96 * se,
+             ymax = dy.dx + 1.96 * se)) +
+  geom_pointrange() +
+  geom_hline(yintercept = 0, linetype = 2) +
+  labs(title = "Marginal effect of age",
+       subtitle = "By sex",
+       x = NULL,
+       y = "Estimated marginal effect")
+```
 
 # Interaction terms in nonparametric regression/decision trees/SVMs
 
@@ -835,7 +935,6 @@ nes %>%
          )
   )
 ```
-
 
 ## Decision trees
 
@@ -978,6 +1077,21 @@ If `GOP < 0.5` (i.e. if the respondent is not a Republican), then `RConserv` has
 
 [Support vector machines](persp009_svm.html) also naturally allow for interactivity **as long as you use a non-linear decision boundary**. That is, as long as you use a non-linear kernel you can model nonlinearity and interactivity. So basically don't use a [support vector classifier](persp009_svm.html#support_vector_classifier) - use a [support vector machine](persp009_svm.html#support_vector_machines11).
 
+```{r svm-linear}
+library(e1071)
+
+# convert titanic$Survived to factor
+titanic <- titanic %>%
+  mutate(Survived = as.factor(Survived))
+
+# estimate and plot the linear model
+titanic_svm <- svm(Survived ~ Age + Male, data = titanic, kernel = "linear")
+plot(titanic_svm, titanic, Age ~ Male)
+
+# estimate and plot the interactive model
+titanic_svm_x <- svm(Survived ~ Age + Male, data = titanic, kernel = "radial")
+plot(titanic_svm_x, titanic, Age ~ Male)
+```
 
 # Acknowledgments {.toc-ignore}
 

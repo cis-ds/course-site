@@ -887,7 +887,11 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
   cov &lt;-<span class="st"> </span><span class="kw">vcov</span>(model)
   
   <span class="co"># possible set of values for mod_var</span>
-  z &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="kw">min</span>(model$model[[mod_var]]), <span class="kw">max</span>(model$model[[mod_var]]))
+  if(<span class="kw">class</span>(model)[[<span class="dv">1</span>]] ==<span class="st"> &quot;lm&quot;</span>){
+    z &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="kw">min</span>(model$model[[mod_var]]), <span class="kw">max</span>(model$model[[mod_var]]))
+  } else {
+    z &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="kw">min</span>(model$data[[mod_var]]), <span class="kw">max</span>(model$data[[mod_var]]))
+  }
   
   <span class="co"># calculate instantaneous effect</span>
   dy.dx &lt;-<span class="st"> </span>beta.hat[[marg_var]] +<span class="st"> </span>beta.hat[[int.name]] *<span class="st"> </span>z
@@ -1050,6 +1054,214 @@ instant_effect &lt;-<span class="st"> </span>function(model, mod_var){
 </div>
 <div id="interaction-terms-in-glms" class="section level1">
 <h1>Interaction terms in GLMs</h1>
+<p>Interaction terms are also common in generalized linear models (GLMs) such as <a href="persp004_logistic_regression.html">logistic regression</a>. While these types of models implicitly force the effect of each independent variable to be dependent on the values of the other explanatory variables, we still must explicitly add an interaction term to test a hypothesis about interactivity. Let us return to our usual dichotomous statistical learning example, survival on the Titanic.</p>
+<p><span class="math display">\[p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex}}}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
+titanic &lt;-<span class="st"> </span>titanic_train %&gt;%
+<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+<span class="st">  </span><span class="co"># remove missing values</span>
+<span class="st">  </span><span class="kw">na.omit</span>() %&gt;%
+<span class="st">  </span><span class="co"># convert sex to a binary 0/1 variable for the instant_effects function</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Male =</span> <span class="kw">ifelse</span>(Sex ==<span class="st"> &quot;male&quot;</span>, <span class="dv">1</span>, <span class="dv">0</span>))
+
+titanic %&gt;%
+<span class="st">  </span><span class="kw">head</span>() %&gt;%
+<span class="st">  </span>knitr::<span class="kw">kable</span>()</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">PassengerId</th>
+<th align="right">Survived</th>
+<th align="right">Pclass</th>
+<th align="left">Name</th>
+<th align="left">Sex</th>
+<th align="right">Age</th>
+<th align="right">SibSp</th>
+<th align="right">Parch</th>
+<th align="left">Ticket</th>
+<th align="right">Fare</th>
+<th align="left">Cabin</th>
+<th align="left">Embarked</th>
+<th align="right">Male</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Braund, Mr. Owen Harris</td>
+<td align="left">male</td>
+<td align="right">22</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">A/5 21171</td>
+<td align="right">7.25</td>
+<td align="left"></td>
+<td align="left">S</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Cumings, Mrs. John Bradley (Florence Briggs Thayer)</td>
+<td align="left">female</td>
+<td align="right">38</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">PC 17599</td>
+<td align="right">71.28</td>
+<td align="left">C85</td>
+<td align="left">C</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="right">1</td>
+<td align="right">3</td>
+<td align="left">Heikkinen, Miss. Laina</td>
+<td align="left">female</td>
+<td align="right">26</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">STON/O2. 3101282</td>
+<td align="right">7.92</td>
+<td align="left"></td>
+<td align="left">S</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="right">1</td>
+<td align="right">1</td>
+<td align="left">Futrelle, Mrs. Jacques Heath (Lily May Peel)</td>
+<td align="left">female</td>
+<td align="right">35</td>
+<td align="right">1</td>
+<td align="right">0</td>
+<td align="left">113803</td>
+<td align="right">53.10</td>
+<td align="left">C123</td>
+<td align="left">S</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="right">0</td>
+<td align="right">3</td>
+<td align="left">Allen, Mr. William Henry</td>
+<td align="left">male</td>
+<td align="right">35</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">373450</td>
+<td align="right">8.05</td>
+<td align="left"></td>
+<td align="left">S</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="right">1</td>
+<td align="left">McCarthy, Mr. Timothy J</td>
+<td align="left">male</td>
+<td align="right">54</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td align="left">17463</td>
+<td align="right">51.86</td>
+<td align="left">E46</td>
+<td align="left">S</td>
+<td align="right">1</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_woman &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Male, <span class="dt">data =</span> titanic,
+                         <span class="dt">family =</span> binomial)
+<span class="kw">tidy</span>(survive_age_woman)</code></pre></div>
+<pre><code>##          term estimate std.error statistic  p.value
+## 1 (Intercept)  1.27727   0.23017      5.55 2.87e-08
+## 2         Age -0.00543   0.00631     -0.86 3.90e-01
+## 3        Male -2.46592   0.18538    -13.30 2.26e-40</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(survive_age_woman)</code></pre></div>
+<pre><code>##   null.deviance df.null logLik AIC BIC deviance df.residual
+## 1           965     713   -375 756 770      750         711</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(Age, Male) %&gt;%
+<span class="st">  </span><span class="kw">augment</span>(survive_age_woman, <span class="dt">newdata =</span> .) %&gt;%
+<span class="st">  </span><span class="co"># convert to probabilities</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.fitted.lwr =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+         <span class="dt">.fitted.upr =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(<span class="kw">starts_with</span>(<span class="st">&quot;.fitted&quot;</span>)), logit2prob) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sex =</span> <span class="kw">ifelse</span>(Male ==<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(Age, .fitted, <span class="dt">ymin =</span> .fitted.lwr, <span class="dt">ymax =</span> .fitted.upr,
+             <span class="dt">color =</span> Sex, <span class="dt">fill =</span> Sex)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>, <span class="dt">color =</span> <span class="ot">NA</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Probability of surviving the Titanic&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age + Sex&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Sex&quot;</span>,
+       <span class="dt">fill =</span> <span class="st">&quot;Sex&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/survive_age_woman-1.png" width="672" /></p>
+<p>Compared to:</p>
+<p><span class="math display">\[p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_3 (\text{Age} \times \text{Sex})}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_3 (\text{Age} \times \text{Sex})}}\]</span></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_woman_x &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age *<span class="st"> </span>Male, <span class="dt">data =</span> titanic,
+                         <span class="dt">family =</span> binomial)
+<span class="kw">tidy</span>(survive_age_woman_x)</code></pre></div>
+<pre><code>##          term estimate std.error statistic p.value
+## 1 (Intercept)   0.5938    0.3103      1.91 0.05569
+## 2         Age   0.0197    0.0106      1.86 0.06240
+## 3        Male  -1.3178    0.4084     -3.23 0.00125
+## 4    Age:Male  -0.0411    0.0136     -3.03 0.00241</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glance</span>(survive_age_woman_x)</code></pre></div>
+<pre><code>##   null.deviance df.null logLik AIC BIC deviance df.residual
+## 1           965     713   -370 748 767      740         710</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic %&gt;%
+<span class="st">  </span><span class="kw">data_grid</span>(Age, Male) %&gt;%
+<span class="st">  </span><span class="kw">augment</span>(survive_age_woman_x, <span class="dt">newdata =</span> .) %&gt;%
+<span class="st">  </span><span class="co"># convert to probabilities</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">.fitted.lwr =</span> .fitted -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit,
+         <span class="dt">.fitted.upr =</span> .fitted +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>.se.fit) %&gt;%
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(<span class="kw">starts_with</span>(<span class="st">&quot;.fitted&quot;</span>)), logit2prob) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Sex =</span> <span class="kw">ifelse</span>(Male ==<span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(Age, .fitted, <span class="dt">ymin =</span> .fitted.lwr, <span class="dt">ymax =</span> .fitted.upr,
+             <span class="dt">color =</span> Sex, <span class="dt">fill =</span> Sex)) +
+<span class="st">  </span><span class="kw">geom_ribbon</span>(<span class="dt">alpha =</span> .<span class="dv">2</span>, <span class="dt">color =</span> <span class="ot">NA</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Probability of surviving the Titanic&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Age x Sex&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Sex&quot;</span>,
+       <span class="dt">fill =</span> <span class="st">&quot;Sex&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/survive_age_woman_x-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">instant_effect</span>(survive_age_woman_x, <span class="st">&quot;Age&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(z, dy.dx)) +
+<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> dy.dx -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> dy.dx +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se), <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Marginal effect of sex&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;By age&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated marginal effect&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/survive_age_woman_x-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">instant_effect</span>(survive_age_woman_x, <span class="st">&quot;Male&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">z =</span> <span class="kw">factor</span>(z, <span class="dt">levels =</span> <span class="dv">0</span>:<span class="dv">1</span>, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Female&quot;</span>, <span class="st">&quot;Male&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(z, dy.dx,
+             <span class="dt">ymin =</span> dy.dx -<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se,
+             <span class="dt">ymax =</span> dy.dx +<span class="st"> </span><span class="fl">1.96</span> *<span class="st"> </span>se)) +
+<span class="st">  </span><span class="kw">geom_pointrange</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Marginal effect of age&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;By sex&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated marginal effect&quot;</span>)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/survive_age_woman_x-3.png" width="672" /></p>
 </div>
 <div id="interaction-terms-in-nonparametric-regressiondecision-treessvms" class="section level1">
 <h1>Interaction terms in nonparametric regression/decision trees/SVMs</h1>
@@ -1305,6 +1517,20 @@ ptree</code></pre></div>
 <div id="support-vector-machines" class="section level2">
 <h2>Support vector machines</h2>
 <p><a href="persp009_svm.html">Support vector machines</a> also naturally allow for interactivity <strong>as long as you use a non-linear decision boundary</strong>. That is, as long as you use a non-linear kernel you can model nonlinearity and interactivity. So basically don’t use a <a href="persp009_svm.html#support_vector_classifier">support vector classifier</a> - use a <a href="persp009_svm.html#support_vector_machines11">support vector machine</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(e1071)
+
+<span class="co"># convert titanic$Survived to factor</span>
+titanic &lt;-<span class="st"> </span>titanic %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">as.factor</span>(Survived))
+
+<span class="co"># estimate and plot the linear model</span>
+titanic_svm &lt;-<span class="st"> </span><span class="kw">svm</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Male, <span class="dt">data =</span> titanic, <span class="dt">kernel =</span> <span class="st">&quot;linear&quot;</span>)
+<span class="kw">plot</span>(titanic_svm, titanic, Age ~<span class="st"> </span>Male)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/svm-linear-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate and plot the interactive model</span>
+titanic_svm_x &lt;-<span class="st"> </span><span class="kw">svm</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Male, <span class="dt">data =</span> titanic, <span class="dt">kernel =</span> <span class="st">&quot;radial&quot;</span>)
+<span class="kw">plot</span>(titanic_svm_x, titanic, Age ~<span class="st"> </span>Male)</code></pre></div>
+<p><img src="persp013_interaction_terms_files/figure-html/svm-linear-2.png" width="672" /></p>
 </div>
 </div>
 <div id="acknowledgments" class="section level1 toc-ignore">
@@ -1330,15 +1556,19 @@ ptree</code></pre></div>
 ##  backports      1.0.5      2017-01-18
 ##  broom        * 0.4.2      2017-02-13
 ##  car          * 2.1-4      2016-12-02
+##  class          7.3-14     2015-08-30
+##  codetools      0.2-15     2016-10-05
 ##  coefplot     * 1.2.4.9000 2017-04-25
 ##  colorspace     1.3-2      2016-12-14
 ##  DBI            0.6        2017-03-09
 ##  devtools       1.12.0     2016-06-24
 ##  digest         0.6.12     2017-01-27
 ##  dplyr        * 0.5.0      2016-06-24
+##  e1071        * 1.6-8      2017-02-02
 ##  evaluate       0.10       2016-10-11
 ##  forcats      * 0.2.0      2017-01-23
 ##  foreign        0.8-67     2016-09-13
+##  ggdendro     * 0.1-20     2017-02-27
 ##  ggplot2      * 2.2.1.9000 2017-05-01
 ##  gtable         0.2.0      2016-02-26
 ##  haven        * 1.0.0      2016-09-23
@@ -1357,12 +1587,12 @@ ptree</code></pre></div>
 ##  Matrix         1.2-8      2017-01-20
 ##  MatrixModels   0.4-1      2015-08-22
 ##  memoise        1.0.0      2016-01-29
-##  mgcv           1.8-17     2017-02-08
+##  mgcv         * 1.8-17     2017-02-08
 ##  minqa          1.2.4      2014-10-09
 ##  mnormt         1.5-5      2016-10-15
 ##  modelr       * 0.1.0      2016-08-31
 ##  munsell        0.4.3      2016-02-13
-##  nlme           3.1-131    2017-02-06
+##  nlme         * 3.1-131    2017-02-06
 ##  nloptr         1.0.4      2014-08-04
 ##  nnet           7.3-12     2016-02-02
 ##  pbkrtest       0.4-6      2016-01-27
@@ -1389,6 +1619,7 @@ ptree</code></pre></div>
 ##  tidyr        * 0.6.1      2017-01-10
 ##  tidyverse    * 1.1.1      2017-01-27
 ##  titanic      * 0.1.0      2015-08-31
+##  tree         * 1.0-37     2016-01-21
 ##  useful         1.2.1      2016-06-29
 ##  viridisLite    0.2.0      2017-03-24
 ##  withr          1.0.2      2016-06-20
@@ -1399,15 +1630,19 @@ ptree</code></pre></div>
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.3)                       
+##  CRAN (R 3.3.3)                       
 ##  Github (jaredlander/coefplot@0755a00)
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.3)                       
 ##  CRAN (R 3.3.0)                       
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.0)                       
+##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.0)                       
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.3)                       
+##  local                                
 ##  Github (hadley/ggplot2@f4398b6)      
 ##  CRAN (R 3.3.0)                       
 ##  cran (@1.0.0)                        
@@ -1457,6 +1692,7 @@ ptree</code></pre></div>
 ##  Github (tidyverse/tibble@08af6b0)    
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.0)                       
 ##  CRAN (R 3.3.0)                       
 ##  CRAN (R 3.3.0)                       
 ##  cran (@0.2.0)                        
