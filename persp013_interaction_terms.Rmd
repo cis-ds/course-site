@@ -111,7 +111,7 @@ where $\psi_1 = \beta_1 + \beta_3 Z$ is a "quasi-coefficient" for the marginal i
 $$
 \begin{split}
 E(Y) & = \beta_0 + \beta_1 X + (\beta_2 + \beta_3 X) Z \\
-     & = \beta_0 + \beta_2 Z + \psi_2 Z
+     & = \beta_0 + \beta_2 X + \psi_2 Z
 \end{split}
 $$
 
@@ -388,11 +388,21 @@ data_frame(x = runif(n_sim, -2, 2)) %>%
 
 We could expand on this process and adopt higher-order interaction models:
 
-$$Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_1 X_2 + \beta_5 X_1 X_3 + \beta_6 X_2 X_3 + \beta_7 X_1 X_2 X_3 + e$$
+$$
+\begin{align}
+Y = \beta_0 &+ \beta_1 X_1 + \beta_2 X_2 + \beta_3 X_3 + \beta_4 X_1 X_2 \\
+& + \beta_5 X_1 X_3 + \beta_6 X_2 X_3 + \beta_7 X_1 X_2 X_3 + e
+\end{align}
+$$
 
 The various $X$s could be continuous or dichotomous, with corresponding interpretations. In this model, each of the three $X$s conditions the influence of the other. This can be become very complex and confusing. In the simplest case with two dichotmous variables and one continuous $X$:
 
-$$Y = \beta_0 + \beta_1 X + \beta_2 D_1 + \beta_3 D_2 + \beta_4 X D_1 + \beta_5 X D_2 + \beta_6 D_1 D_2 + \beta_7 X D_1 D_2 + e$$
+$$
+\begin{align}
+Y = \beta_0 &+ \beta_1 X + \beta_2 D_1 + \beta_3 D_2 + \beta_4 X D_1 \\
+& + \beta_5 X D_2 + \beta_6 D_1 D_2 + \beta_7 X D_1 D_2 + e
+\end{align}
+$$
 
 ```{r three-way}
 data_frame(x = runif(n_sim, -2, 2),
@@ -555,7 +565,7 @@ $$
 \end{align}
 $$
 
-Consistent with our theory, the differences (between Republicans and non-Republicans) in opinions about Obama are largest among those who are very conservative, and smallest among those who are most liberal
+Consistent with our theory, the differences (between Republicans and non-Republicans) in opinions about Obama are largest among those who are very conservative, and smallest among those who are most liberal.
 
 ## Calculating standard errors
 
@@ -565,7 +575,7 @@ $$
 \begin{align}
 \text{Obama thermometer} = &\beta_0 + (\beta_1 + \beta_3 \text{GOP}) (\text{Respondent conservatism}) + \\
 & \beta_2 (\text{GOP respondent}) + e \\
- = &\beta_0 + \psi_1 \text{Respondent conservatism}) + \beta_2 (\text{GOP respondent}) + e
+ = &\beta_0 + \psi_1 (\text{Respondent conservatism}) + \beta_2 (\text{GOP respondent}) + e
 \end{align}
 $$
 
@@ -721,7 +731,7 @@ nes %>%
   data_grid(RConserv, ObamaConserv) %>%
   add_predictions(obama_ideo2) %>%
   ggplot(aes(RConserv, ObamaConserv, z = pred, fill = pred)) +
-  geom_raster() +
+  geom_raster(interpolate = TRUE) +
   scale_fill_gradient2(midpoint = 50) +
   geom_contour() +
   labs(title = "Expected Obama thermometer score",
@@ -870,7 +880,7 @@ $$
 ```{r gam}
 library(mgcv)
 
-obama_gam <- gam(ObamaTherm ~ s(RConserv, k = 2) + s(ObamaConserv, k = 4),
+obama_gam <- gam(ObamaTherm ~ s(RConserv, k = 5) + s(ObamaConserv, k = 5),
                  data = nes)
 summary(obama_gam)
 
