@@ -1,0 +1,265 @@
+---
+title: "Missing data and multiple imputation"
+author: "MACS 30200 - Perspectives on Computational Research"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define missing data and patterns of missingness
+* Identify traditional approaches to missing data
+* Define imputation and multiple imputation
+* Summarize maximum-likelihood estimation for MAR data
+* Define Bayesian multiple imputation
+* Demonstrate how to conduct inference on MI datasets
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(broom)
+library(modelr)
+library(stringr)
+library(car)
+library(rcfss)
+library(MASS)
+library(RColorBrewer)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Missing data
+
+## Causes of missingness
+
+* Surveys
+    * **Global or unit non-response** - individuals refuse to participate in or answer questions in a survey
+    * **Item non-response** - individual may not know the answer to or refuses to answer a specific question on the survey
+* Errors in data collection
+* Intentionally built into the research design (e.g. survey experiments)
+* **Censored values**
+    * Data values in the study are censored
+    * Survival analysis aka duration analysis aka event-history analysis
+    * Follow individuals for a fixed period of time waiting for an event to happen
+    * When the event occurs, record the time elapsed
+    * If the event never occurs, the outcome is censored (i.e. missing)
+
+## Patterns of missingness
+
+### Missing completely at random (MCAR)
+
+Data are **missing completely at random** if the missing data can be regarded as a simple ranom sample of the complete data. The probability that a data value is missing is unrelated to the data value itself or any other value, missing or observed, in the data set.
+
+### Missing at random (MAR)
+
+Data are **missing at random** if the missingness is related to the observed data *but not the missing data*. That is, conditional on the observed data, missingness is as if random. Consider a survey where certain individuals refuse to report their income, and these people differ systematically in income from the sample as a whole.^[It is common in survey research that wealthier individuals are more likely to refuse to answer questions about income compared to poorer individuals.] However, if the observations are independently sampled so that one respondent's decision to withhold information about income is independent of other respondents' decision to withhold information about income, and if conditional on the information that the respondent does provide (e.g. education, occupation, political affiliation) failure to provide information on income is independent of income itself, the the data is MAR.
+
+> MCAR is a special case of MAR.
+
+### Missing not at random (MNAR)
+
+If missingness is related to the missing values themselves *even when the information in the observed data is taken into account*, then the missing data is **missing not at random**. So if conditional on all the observed data, individuals with higher incomes are more likely to withhold information about their incomes, then the missing income data is MNAR.
+
+## Why we should care about missingness patterns
+
+If data are MCAR or MAR, then we don't need to model the process that generates the missing data in order to accomodate the missing data. This means that when data are MCAR or MAR, the **mechanism** that produces the missing data is **ignorable**. But when data are MNAR, the mechanism is **non-ignorable** and it becomes necessary to model this mechanism in order to deal with the missingness in a valid way.
+
+Even more depressingly, you rarely if ever can test to see if your data are MCAR, MAR, or MNAR **because the information needed to make that determination is missing**.
+
+## Simulated examples of missingness patterns
+
+```{r sim-data}
+n_sim <- 250 # Number of random samples
+
+# Target parameters for univariate normal distributions
+rho <- 2 / 3
+
+mu1 <- 10
+mu2 <- 20
+
+s1 <- 9
+s2 <- 16
+s1s2 <- sqrt(s1) * sqrt(s2) * rho
+
+# Parameters for bivariate normal distribution
+mu <- c(mu1, mu2) # Mean 
+sigma <- matrix(c(s1, s1s2, s1s2, s2), 2) # Covariance matrix
+data_sim <- mvrnorm(n_sim, mu, sigma) %>%
+  as_tibble %>%
+  rename(x1 = V1,
+         x2 = V2)
+```
+
+```{r sim-mod}
+# correlation coefficient
+cor(data_sim)
+
+# regression models
+lm(x2 ~ x1, data = data_sim)
+lm(x1 ~ x2, data = data_sim)
+
+# plot of data
+ggplot(data_sim, aes(x1, x2)) +
+  geom_point() +
+  labs(x = expression(X[1]),
+       y = expression(X[2]))
+```
+
+What happens to the data under the three mechanisms for generating missing data?
+
+```{r sim-mcar}
+mcar <- data_sim %>%
+  mutate(na = ifelse(row_number(x2) %in% sample(seq_len(n_sim), 100), TRUE, FALSE))
+
+pal <- brewer.pal(2, "Dark2")
+
+ggplot(mcar, aes(x1, x2)) +
+  geom_point(aes(color = na, alpha = na)) +
+  geom_smooth(data = filter(mcar, na), method = "lm",
+              se = FALSE, fullrange = TRUE, linetype = 2,
+              color = pal[[2]]) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_color_brewer(palette = "Dark2") +
+  scale_alpha_manual(values = c(.5, 1)) +
+  labs(title = "Missing completely at random",
+       x = expression(X[1]),
+       y = expression(X[2]),
+       color = "Missing",
+       alpha = "Missing")
+```
+
+100 observations on $X_2$ are selected at random and set to missing. Here the missing values of $X_2$ are MCAR and the subset of valid observations is a simple random sample of the full data set. The regression line with and without the missing values is relatively similar, though slightly different due to the lower sample size needed to calculate the parameter estimates and the standard errors.
+
+```{r sim-mar}
+mar <- data_sim %>%
+  mutate(na = .5 + (2 / 3) * (x1 - 10) + rnorm(n_sim, sd = 2),
+         na = logit2prob(na),
+         na = as.logical(round(na)))
+
+ggplot(mar, aes(x1, x2)) +
+  geom_point(aes(color = na, alpha = na)) +
+  geom_smooth(data = filter(mar, na), method = "lm",
+              se = FALSE, fullrange = TRUE, linetype = 2,
+              color = pal[[2]]) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_color_brewer(palette = "Dark2") +
+  scale_alpha_manual(values = c(.5, 1)) +
+  labs(title = "Missing at random",
+       x = expression(X[1]),
+       y = expression(X[2]),
+       color = "Missing",
+       alpha = "Missing")
+```
+
+Here an observation's missingness on $X_2$ is related to its observed value of $X_1$ in the logistic regression functional form:
+
+$$\Pr(X_{i2} \text{is missing}) = \frac{1}{1 + \exp[\frac{1}{2} + \frac{2}{3}(X_{i1} - 10)]}$$
+
+As $X_1$ increases, the probability that $X_2$ is missing increases. In the resulting dataset, `r sum(mar$na)` observations are missing. Because $X_1$ and $X_2$ are positively correlated, there are relatively fewer small values of $X_2$ in the observed data versus the complete data. If we only look at observations with valid data on both $X_1$ and $X_2$, then this subset of observations also has relatively few small values of $X_1$. But because $X_1$ is fully observed, the missing data on $X_2$ are MAR.
+
+```{r sim-mnar}
+mnar <- data_sim %>%
+  mutate(na = .5 + (1 / 2) * (x2 - 20) + rnorm(n_sim, sd = 2),
+         na = logit2prob(na),
+         na = as.logical(round(na)))
+
+ggplot(mnar, aes(x1, x2)) +
+  geom_point(aes(color = na, alpha = na)) +
+  geom_smooth(data = filter(mnar, na), method = "lm",
+              se = FALSE, fullrange = TRUE, linetype = 2,
+              color = pal[[2]]) +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
+  scale_color_brewer(palette = "Dark2") +
+  scale_alpha_manual(values = c(.5, 1)) +
+  labs(title = "Missing not at random",
+       x = expression(X[1]),
+       y = expression(X[2]),
+       color = "Missing",
+       alpha = "Missing")
+```
+
+Finally, here an observation's missingness on $X_2$ is related to the (potentially) unobserved value of $X_2$ itself:
+
+$$\Pr(X_{i2} \text{is missing}) = \frac{1}{1 + \exp[\frac{1}{2} + \frac{1}{2}(X_{i2} - 20)]}$$
+
+As $X_2$ increases, the probability that $X_2$ is missing increases. In the resulting dataset, `r sum(mar$na)` observations are missing. Here too there are relatively few small values of $X_2$. Because missingness on $X_2$ depends on the value of $X_2$, the missing data are MNAR. But again, we only know this because we generated the missingness ourselves; in the real world, you rarely can verify this pattern of missingness.
+
+# Traditional approaches to missing data
+
+In deciding how to handle missingness, we should consider three questions:
+
+1. Does the method provide **consistent estimates** of the population parameters?
+1. Does the method provide **valid statistical inferences**?
+1. Does the method use the observed data **efficiently** or does it recklessly discard information?
+
+## Discarding data
+
+### Complete-case analysis
+
+**Complete-case analysis** (or **listwise** or **casewise** deletion) is probably the most common approach for handling missing data. In this method, you ignore any observations with missing values on variables necessary to estimate the model.
+
+The advantages of this method are that it:
+
+* Is simple
+* Provides consistent estimates and valid inferences **when the data is missing completely at random**
+* Provides consistent estimates of regression coefficients and valid inferences when missingness on all the variables in a regression does not depend on the response variable (even if the data is not MCAR)
+
+The disadvantages of this method are that it:
+
+* Discards valuable information, decreasing efficiency
+* Becomes less efficient as missingness occurs in multiple variables. Even if missingness is only 5% for each individual variable, for a dataset with 10 variables we would expect only $100 \times .95^10 = 60%$ of the observations to be usable
+* When data is MAR or MNAR, listwise deletion provides biased results and invalid inferences
+
+### Available-case analysis
+
+**Available-case analysis** (or **pairwise deletion**) uses all nonmissing observations to compute each statistic of interest. In OLS, this means estimating the regression coefficients from the means, variances, and covariances of the variables rather than directly from the observations. While this appears to use more information than complete-case analysis, it can sometimes be *less efficient*. And by basing each statistic of interest on different subsets of the data, results can become nonsensical (e.g. correlations outside of the $[-1, +1]$ range). Finally, this method is much more difficult to implement outside of OLS to other GLMs.
+
+## Imputation
+
+**Imputation** refers to filling in missing data with plausible **imputed** values. The completed data set is then analyzed using traditional methods.
+
+### Unconditional mean imputation
+
+**Unconditional mean imputation** replaces the missing value with the arithmetic mean of the observed values for the variable in question. Doing so preserves the mean of the variable, but decreases its variance and its covariance with other variables. This can lead to biased regression coefficients and invalid inferences even if the data is MCAR.
+
+### Conditional-mean imputation
+
+**Conditional-mean imputation** replaces missing data with predicted values obtained from a statistical learning model, typically a regression model. Using the available data, regress each variable with missing data on the other variables in the data set. Then use the regression model to generate predicted values for the missing data in the regressed variable. However this still leaves two problems:
+
+1. Imputed values still tend to be less variable than the real data because they lack **residual variation**
+1. We still fail to account for uncertainty in the estimates of the regression coefficients used to obtain the imputed values
+
+How do all of these methods stack up?
+
+```{r compare-imputation}
+n_sim <- 1000 # Number of random samples
+
+data_comp <- mvrnorm(n_sim, mu, sigma) %>%
+  as_tibble %>%
+  rename(x1 = V1,
+         x2 = V2)
+```
+
+
+# Acknowledgments {.toc-ignore}
+
+* [Fox, John. *Applied Regression Analysis and Generalized Linear Models*. 3rd edition. 2016.](http://socserv.socsci.mcmaster.ca/jfox/Books/Applied-Regression-3E/index.html)
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
