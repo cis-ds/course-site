@@ -26,11 +26,11 @@ knitr::opts_chunk$set(cache = TRUE,
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(broom)
+library(forcats)
 library(modelr)
 library(stringr)
 library(car)
 library(rcfss)
-library(MASS)
 library(RColorBrewer)
 
 options(digits = 3)
@@ -94,7 +94,7 @@ s1s2 <- sqrt(s1) * sqrt(s2) * rho
 # Parameters for bivariate normal distribution
 mu <- c(mu1, mu2) # Mean 
 sigma <- matrix(c(s1, s1s2, s1s2, s2), 2) # Covariance matrix
-data_sim <- mvrnorm(n_sim, mu, sigma) %>%
+data_sim <- MASS::mvrnorm(n_sim, mu, sigma) %>%
   as_tibble %>%
   rename(x1 = V1,
          x2 = V2)
@@ -249,13 +249,13 @@ data_miss <- list(
            na = logit2prob(na),
            na = as.logical(round(na)),
            x2 = replace(x2, na, NA)) %>%
-    dplyr::select(-na),
+    select(-na),
   mnar = data_sim %>%
     mutate(na = .5 + (1 / 2) * (x2 - 20) + rnorm(n_sim, sd = 2),
            na = logit2prob(na),
            na = as.logical(round(na)),
            x2 = replace(x2, na, NA)) %>%
-    dplyr::select(-na)
+    select(-na)
 )
 
 # complete cases
@@ -382,8 +382,235 @@ The MI method is typically implemented assuming the complete data follows a mult
 * **Transform variables to approximately normal.** After the imputed data are obtained, you can transform them back to their original scales prior to analyzing the completed datasets.
 * **Adjust the imputed data to resemble the original data.** So if you have a dichotomous variable with imputed values of $.3$ or $.785$, round them to $0$ and $1$.
 * **Make sure the imputation model captures relevant features of the data.** Again, consider how the data will eventually be analyzed. The multivariate normal distribution ensures that regressions of one variable on others are linear and additive. If you are estimating a **nonlinear** relationship (either polynomial or interactive), then provide for that in the imputation model (explicitly add the polynomial or interaction term).
+* **$g$ doesn't need to be large.** For most situations, $g=5$ or $g=10$ is actually suitable for statistical inference.
 
 # Regression model of infant mortality with MI
+
+```{r import-un}
+un <- read_delim("data/UnitedNations.txt", delim = " ")
+```
+
+```{r plot-infant-gdp}
+ggplot(un, aes(GDPperCapita, infantMortality)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_continuous(labels = scales::dollar) +
+  labs(x = "GDP per capita (in USD)",
+       y = "Infant mortality rate (per 1,000)")
+```
+
+The above figure shows the relationship between GDP per capita and infant mortality in `r nrow(filter(un, !is.na(GDPperCapita), !is.na(infantMortality)))` countries, part of a larger dataset of `r nrow(un)` countries compiled by the United Nations. The amount of missingness in the figure is therefore small, approximately `r formatC((1 - nrow(filter(un, !is.na(GDPperCapita), !is.na(infantMortality))) / nrow(un)) * 100, digits = 1)`% of the cases.
+
+Let's now estimate a linear regression model of infant mortality not only on GDP per capita but also the percentage of married women practicing contraception and the average number of years of education for women. To linearize the model, we log-transform both infant mortality and GDP.
+
+```{r log-log}
+ggplot(un, aes(GDPperCapita, infantMortality)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_log10(labels = scales::dollar) +
+  scale_y_log10() +
+  labs(x = "GDP per capita (in USD)",
+       y = "Infant mortality rate (per 1,000)")
+
+mortal_mod <- lm(log(infantMortality) ~ log(GDPperCapita) +
+                   contraception + educationFemale,
+                 data = un)
+tidy(mortal_mod)
+```
+
+With listwise deletion, we are left with just `r nrow(mortal_mod$model)` observations. The missingness for each variable is:
+
+```{r miss-pattern}
+un %>%
+  select(infantMortality, GDPperCapita, contraception, educationFemale) %>%
+  summarize_all(funs(sum(is.na(.)))) %>%
+  knitr::kable()
+```
+
+## `Amelia`
+
+[`Amelia`](https://gking.harvard.edu/Amelia) is a package for R that provides a Bayesian EM-based algorithm for multiple imputation.^[Technical details of the algorithm's implementation can be read [here](https://gking.harvard.edu/files/gking/files/amelia_jss.pdf).] To create multiple imputations in Amelia, we use `amelia()`:
+
+```{r un-amelia}
+library(Amelia)
+un.out <- amelia(as.data.frame(un), m = 5, idvars = c("country", "region"))
+```
+
+> If your data frame is a `tibble`, you need to turn back into a plain data frame using `as.data.frame()` in order to successfully impute the data.
+
+Here we specify `country` and `region` are id variables (text strings) and we don't want to use them to generate imputed values. By default, `amelia()` uses all the variables in their raw forms to impute missing values for each variable. Clearly we still want to tune this approach, but for now let's run with it. The list of imputed data frames is stored in the `imputations` element:
+
+```{r amelia-result}
+str(un.out$imputations, max.level = 2)
+```
+
+Each of these imputed datasets is a complete data frame. So for example, we could plot the same scatterplot of GDP vs. infant mortality with the imputed values for the `r nrow(filter(un, is.na(GDPperCapita) | is.na(infantMortality)))` countries with missing values.
+
+```{r plot-imput}
+un.out$imputations %>%
+  map(~ ggplot(.x, aes(GDPperCapita, infantMortality)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_x_continuous(labels = scales::dollar) +
+  labs(x = "GDP per capita (in USD)",
+       y = "Infant mortality rate (per 1,000)"))
+```
+
+Notice that for some of the imputed datasets, the imputed values are nonsensical; for instance, you cannot have a negative GDP or infant mortality rate. But again, let's just run with it.
+
+We can use `purrr::map()` to estimate the linear model from before on the new imputed datasets and extract the coefficients and standard errors with `broom::tidy()`:
+
+```{r amelia-purrr}
+models_imp <- data_frame(data = un.out$imputations) %>%
+  mutate(model = map(data, ~ lm(log(infantMortality) ~ log(GDPperCapita) +
+                                  contraception + educationFemale,
+                                data = .x)),
+         coef = map(model, tidy)) %>%
+  unnest(coef, .id = "id")
+models_imp
+```
+
+To conduct inference, we need to average the estimates of the coefficients and the standard errors. `mi.meld()` from `Amelia` does the work for us:
+
+```{r mi-meld}
+mi.meld.plus <- function(df_tidy){
+  # transform data into appropriate matrix shape
+  coef.out <- df_tidy %>%
+    select(id:estimate) %>%
+    spread(term, estimate) %>%
+    select(-id)
+  
+  se.out <- df_tidy %>%
+    select(id, term, std.error) %>%
+    spread(term, std.error) %>%
+    select(-id)
+  
+  combined.results <- mi.meld(q = coef.out, se = se.out)
+  
+  data_frame(term = colnames(combined.results$q.mi),
+             estimate.mi = combined.results$q.mi[1, ],
+             std.error.mi = combined.results$se.mi[1, ])
+}
+
+# compare results
+tidy(mortal_mod) %>%
+  left_join(mi.meld.plus(models_imp)) %>%
+  select(-statistic, -p.value)
+```
+
+We see some differences in our estimated coefficients and standard errors.
+
+### Missingness map
+
+`missmap()` is a useful function in Amelia that visualizes the missingness in the data:
+
+```{r miss-map}
+missmap(un.out)
+```
+
+### Transforming variables
+
+Let's think more carefully about what variables to include in the imputation model and how to specify them. First, which variables are highly correlated with contraception and female education?
+
+```{r heatmap}
+GGally::ggpairs(select_if(un, is.numeric))
+```
+
+Variables such as total fertility rate and the illiteracy rate for women are strongly correlated with our issing variables. Let's now limit our imputation model to just the four variables in the original regression model plus the total fertility rate, expectation of life for women, percentage of women engaged in economic activity outside the home, and the illiteracy rate for women.
+
+```{r select-un}
+un_lite <- un %>%
+  select(infantMortality, GDPperCapita, contraception, educationFemale,
+         tfr, lifeFemale, economicActivityFemale, illiteracyFemale)
+
+GGally::ggpairs(un_lite)
+```
+
+Several of these variables are clearly not normally distributed; transforming these variables will also help make the dataset more multivariate normal, so we can transform them before imputation. We could manually transform them using `mutate()`, but `amelia()` includes options for transforming variables as part of the imputation process. This allows us to retain the original values for the statistical modeling.
+
+```{r amelia-transform}
+un_lite.out <- amelia(un_lite, m = 5,
+                      logs = c("infantMortality", "GDPperCapita"),
+                      sqrt = c("tfr"))
+```
+
+> `amelia()` also includes support for nominal and ordinal variables and cross-sectional time-series data, as well as pure time series data and accounting for leads and lags. See the help file for more details.
+
+What does the resulting model look like now?
+
+```{r amelia-trans-mod}
+models_trans_imp <- data_frame(data = un_lite.out$imputations) %>%
+  mutate(model = map(data, ~ lm(log(infantMortality) ~ log(GDPperCapita) +
+                                  contraception + educationFemale,
+                                data = .x)),
+         coef = map(model, tidy)) %>%
+  unnest(coef, .id = "id")
+models_trans_imp
+
+# compare results
+tidy(mortal_mod) %>%
+  left_join(mi.meld.plus(models_trans_imp)) %>%
+  select(-statistic, -p.value)
+
+# cheating on my confidence intervals for this plot
+bind_rows(orig = tidy(mortal_mod),
+          full_imp = mi.meld.plus(models_imp) %>%
+            rename(estimate = estimate.mi,
+                   std.error = std.error.mi),
+          trans_imp = mi.meld.plus(models_trans_imp) %>%
+            rename(estimate = estimate.mi,
+                   std.error = std.error.mi),
+          .id = "method") %>%
+  mutate(method = factor(method, levels = c("orig", "full_imp", "trans_imp"),
+                         labels = c("Listwise deletion", "Full imputation",
+                                    "Transformed imputation")),
+         term = factor(term, levels = c("(Intercept)", "contraception",
+                                        "educationFemale", "log(GDPperCapita)"),
+                       labels = c("Intercept", "Contraception", "Female education",
+                                  "GDP per capita (log)"))) %>%
+  ggplot(aes(fct_rev(term), estimate, color = fct_rev(method),
+             ymin = estimate - 1.96 * std.error,
+             ymax = estimate + 1.96 * std.error)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_pointrange(position = position_dodge(.75)) +
+  coord_flip() +
+  scale_color_discrete(guide = guide_legend(reverse = TRUE)) +
+  labs(title = "Comparing regression results",
+       x = NULL,
+       y = "Estimated parameter",
+       color = NULL) +
+  theme(legend.position = "bottom")
+
+bind_rows(orig = tidy(mortal_mod),
+          full_imp = mi.meld.plus(models_imp) %>%
+            rename(estimate = estimate.mi,
+                   std.error = std.error.mi),
+          trans_imp = mi.meld.plus(models_trans_imp) %>%
+            rename(estimate = estimate.mi,
+                   std.error = std.error.mi),
+          .id = "method") %>%
+  mutate(method = factor(method, levels = c("orig", "full_imp", "trans_imp"),
+                         labels = c("Listwise deletion", "Full imputation",
+                                    "Transformed imputation")),
+         term = factor(term, levels = c("(Intercept)", "contraception",
+                                        "educationFemale", "log(GDPperCapita)"),
+                       labels = c("Intercept", "Contraception", "Female education",
+                                  "GDP per capita (log)"))) %>%
+  filter(term != "Intercept") %>%
+  ggplot(aes(fct_rev(term), estimate, color = fct_rev(method),
+             ymin = estimate - 1.96 * std.error,
+             ymax = estimate + 1.96 * std.error)) +
+  geom_hline(yintercept = 0, linetype = 2) +
+  geom_pointrange(position = position_dodge(.75)) +
+  coord_flip() +
+  scale_color_discrete(guide = guide_legend(reverse = TRUE)) +
+  labs(title = "Comparing regression results",
+       subtitle = "Omitting intercept from plot",
+       x = NULL,
+       y = "Estimated parameter",
+       color = NULL) +
+  theme(legend.position = "bottom")
+```
 
 
 
