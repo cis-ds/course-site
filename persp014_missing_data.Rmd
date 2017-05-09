@@ -322,6 +322,57 @@ bind_rows(
   geom_point()
 ```
 
+# Maximum-likelihood estimation for data MAR
+
+When data are MAR (or MCAR), we can use maximum-likelihood estimation to estimate the parameters of interest and generate imputed values for the missing data. This requires several assumptions about the missingness mechanism and the distribution of the complete data.
+
+Let $p(\mathbf{X}, \theta) = p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)$ represent the joint probability density for the complete data $\mathbf{X}$, which is composed of the observed and missing components denoted by $\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}$. The vector $\theta$ contains the unknown parameters on which the complete-data distribution depends. For example, if the variables in $\mathbf{X}$ are multivariately normally distributed, then $\theta$ includes the population means and covariances among the variables.
+
+If data is MAR, then the ML estimate $\hat{\theta}$ of $\theta$ can be obtained from the marginal distribution of the observed data by integrating over the missing data:
+
+$$p(\mathbf{X}_\text{obs}; \theta) = \int{p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)} d\mathbf{X}_{\text{mis}}$$
+
+We'll skip the math for all of this^[See Fox ch 20.3 for the gory details], but the important thing to note is that the ML estimate only has a closed-form solution when missingness follows an arbitrary pattern (i.e. MAR). We can use iterative processes such as an **expectation-maximization (EM) algorithm** to find the ML estimates in the absence of arbitrary patterns of missingness. The algorithm is a two-step process, the **expectation** step and the **maximization** step:
+
+1. Find the expectation of the complete-data log-likelihood, integrating over the missing data given the observed data and the current estimates of the parameters
+
+    $$E[\log_eL(\theta; \mathbf{X})| \theta^(l)] = \int{\log_e L(\theta; \mathbf{X} p(\mathbf{X}_\text{mis} | \mathbf{X}_\text{obs}, \theta^{(l)})) d \mathbf{X}_\text{mis}}$$
+1. Find the values $\theta^{(l+1)}$ of $\theta$ that maximize the expected log-likelihood
+$E[\log_eL(\theta; \mathbf{X})| \theta^(l)]$. These become the parameter estimates for the next iteration.
+
+When the parameter estimates stop changing from one iteration to the next, they converge to the ML estimates $\hat{\theta}$.
+
+# Bayesian multiple imputation
+
+**Bayesian multiple imputation** (MI) is a flexible method for dealing with missing data MAR. It starts by specifying the distribution of the complete data. The key difference is that this method reflects uncertainty associated with missing data by imputing multiple values for each missing data value (i.e. multiple imputation), producing several complete datasets. Each dataset is then analyzed independently and in parallel, estimating parameters of interest and standard errors for each imputed dataset. The estimated parameters are then averaged together across the imputed datasets. Standard errors are also combined, taking into account the variation among the estimates in the several datasets and capturing the added uncertainty due to having to deal with missing data.
+
+The method is **Bayesian** because each estimate of the parameters and standard errors is drawn from the **posterior distribution** of the parameters, typically assuming a non-informative (flat) prior distribution. We will discuss Bayesian inference techniques in a couple weeks, but the important thing to note is that this method directly accounts for our uncertainty associated with both the sampling variance of the coefficients used in the imputation model as well as the uncertainty derived from the missingness itself.
+
+## Inference for individual coefficients
+
+We use this method to produce $g$ complete datasets. MI estimates of population parameters of interest (such as a regression coefficient) are obtained by averaging over the imputed datasets:
+
+$$\tilde{\beta}_j \equiv \frac{\sum_{l=1}^g B_j^{(l)}}{g}$$
+
+> This averaging method applies to any type of parameter that for the separate estimates is approximately normally distributed. This applies to OLS regression estimates, GLM coefficient estimates, or by any parametric method of regression analysis.
+
+Standard errors of the estimated coefficients are obtained by combining information about within- and between-imputation variation in the coefficients:
+
+$$\tilde{\text{SE}}(\tilde{\beta}_j) = \sqrt{V_j^{(W)} + \frac{g + 1}{g} V_j^{(B)}}$$
+
+where the within-imputation component is:
+
+$$V_j^{(W)} = \frac{\sum_{l=1}^g \text{SE}^2(B_j^{(l)})}{g}$$
+
+and the between-imputation component is:
+
+$$V_j^{(B)} = \frac{\sum_{l=1}^g (B_j^{(l)} - \tilde{B}_j)^2}{g-1}$$
+
+$\text{SE}^2(B_j^{(l)})$ is the standard error of $B_j$, computed in the usual manner for the $l$th imputed dataset.
+
+Inference based on $\tilde{\text{SE}}(\tilde{\beta}_j)$ and $\tilde{\text{SE}}(\tilde{\beta}_j)$ follows the $t$-distribution with degrees of freedom:
+
+$$df_j = (g-1) \left ( 1 + \frac{g}{g+1} \times \frac{V_j^{(W)}}{V_j^{(B)}} \right)^2$$
 
 # Acknowledgments {.toc-ignore}
 
