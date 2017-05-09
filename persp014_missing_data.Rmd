@@ -297,7 +297,7 @@ reg_imp <- data_miss %>%
                x2 = ifelse(is.na(x2), x2_imp, x2))) %>%
   map_df(get_miss_stat, .id = "id")
 
-bind_rows(
+sum_stats <- bind_rows(
   `Population parameters` = data_frame(
     mu_1 = 10,
     mu_2 = 20,
@@ -317,9 +317,31 @@ bind_rows(
   mutate(id = ifelse(method == "Population parameters", "Parameter", id),
          id = ifelse(method == "Complete data", "Complete data", id)) %>%
   gather(param, value, -method, -id) %>%
-  ggplot(aes(param, value)) +
-  facet_grid(. ~ id) +
-  geom_point()
+  mutate(param = ifelse(param == "mu_1", "mu[1]", param),
+         param = ifelse(param == "mu_2", "mu[2]", param),
+         param = ifelse(param == "sigma_1", "sigma[1]^2", param),
+         param = ifelse(param == "sigma_2", "sigma[2]^2", param),
+         param = ifelse(param == "sigma_12", "sigma[12]", param),
+         param = ifelse(param == "beta_12", "beta[12]", param),
+         param = ifelse(param == "beta_21", "beta[21]", param))
+
+sum_stats %>%
+  filter(id %in% c("mcar", "mar", "mnar")) %>%
+  mutate(id = factor(id, levels = c("mcar", "mar", "mnar"),
+                     labels = c("MCAR", "MAR", "MNAR"))) %>%
+  ggplot(aes(id, value, color = method)) +
+  facet_wrap( ~ param, nrow = 2, scales = "free_y",
+              labeller = "label_parsed") +
+  geom_point() +
+  geom_hline(data = filter(sum_stats, id == "Parameter"),
+             aes(yintercept = value)) +
+  scale_color_brewer(type = "qual", palette = "Dark2", 
+                     guide = guide_legend(nrow = 2)) +
+  labs(x = NULL,
+       y = "Estimated parameter value",
+       color = NULL) +
+  theme(axis.text.x = element_text(angle = 30),
+        legend.position = "bottom")
 ```
 
 # Maximum-likelihood estimation for data MAR

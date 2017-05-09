@@ -643,7 +643,7 @@ reg_imp &lt;-<span class="st"> </span>data_miss %&gt;%
                <span class="dt">x2 =</span> <span class="kw">ifelse</span>(<span class="kw">is.na</span>(x2), x2_imp, x2))) %&gt;%
 <span class="st">  </span><span class="kw">map_df</span>(get_miss_stat, <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>)
 
-<span class="kw">bind_rows</span>(
+sum_stats &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(
   <span class="st">`</span><span class="dt">Population parameters</span><span class="st">`</span> =<span class="st"> </span><span class="kw">data_frame</span>(
     <span class="dt">mu_1 =</span> <span class="dv">10</span>,
     <span class="dt">mu_2 =</span> <span class="dv">20</span>,
@@ -663,9 +663,31 @@ reg_imp &lt;-<span class="st"> </span>data_miss %&gt;%
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">id =</span> <span class="kw">ifelse</span>(method ==<span class="st"> &quot;Population parameters&quot;</span>, <span class="st">&quot;Parameter&quot;</span>, id),
          <span class="dt">id =</span> <span class="kw">ifelse</span>(method ==<span class="st"> &quot;Complete data&quot;</span>, <span class="st">&quot;Complete data&quot;</span>, id)) %&gt;%
 <span class="st">  </span><span class="kw">gather</span>(param, value, -method, -id) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(param, value)) +
-<span class="st">  </span><span class="kw">facet_grid</span>(. ~<span class="st"> </span>id) +
-<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;mu_1&quot;</span>, <span class="st">&quot;mu[1]&quot;</span>, param),
+         <span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;mu_2&quot;</span>, <span class="st">&quot;mu[2]&quot;</span>, param),
+         <span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;sigma_1&quot;</span>, <span class="st">&quot;sigma[1]^2&quot;</span>, param),
+         <span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;sigma_2&quot;</span>, <span class="st">&quot;sigma[2]^2&quot;</span>, param),
+         <span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;sigma_12&quot;</span>, <span class="st">&quot;sigma[12]&quot;</span>, param),
+         <span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;beta_12&quot;</span>, <span class="st">&quot;beta[12]&quot;</span>, param),
+         <span class="dt">param =</span> <span class="kw">ifelse</span>(param ==<span class="st"> &quot;beta_21&quot;</span>, <span class="st">&quot;beta[21]&quot;</span>, param))
+
+sum_stats %&gt;%
+<span class="st">  </span><span class="kw">filter</span>(id %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;mcar&quot;</span>, <span class="st">&quot;mar&quot;</span>, <span class="st">&quot;mnar&quot;</span>)) %&gt;%
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">id =</span> <span class="kw">factor</span>(id, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;mcar&quot;</span>, <span class="st">&quot;mar&quot;</span>, <span class="st">&quot;mnar&quot;</span>),
+                     <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;MCAR&quot;</span>, <span class="st">&quot;MAR&quot;</span>, <span class="st">&quot;MNAR&quot;</span>))) %&gt;%
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(id, value, <span class="dt">color =</span> method)) +
+<span class="st">  </span><span class="kw">facet_wrap</span>( ~<span class="st"> </span>param, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">scales =</span> <span class="st">&quot;free_y&quot;</span>,
+              <span class="dt">labeller =</span> <span class="st">&quot;label_parsed&quot;</span>) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">data =</span> <span class="kw">filter</span>(sum_stats, id ==<span class="st"> &quot;Parameter&quot;</span>),
+             <span class="kw">aes</span>(<span class="dt">yintercept =</span> value)) +
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>, 
+                     <span class="dt">guide =</span> <span class="kw">guide_legend</span>(<span class="dt">nrow =</span> <span class="dv">2</span>)) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Estimated parameter value&quot;</span>,
+       <span class="dt">color =</span> <span class="ot">NULL</span>) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">30</span>),
+        <span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
 </div>
 </div>
 </div>
@@ -1163,10 +1185,12 @@ models_trans_imp</code></pre></div>
 ##  date     2017-05-09                  
 ## 
 ##  package      * version    date       source                           
+##  Amelia       * 1.7.4      2015-12-06 CRAN (R 3.3.0)                   
 ##  assertthat     0.2.0      2017-04-11 cran (@0.2.0)                    
 ##  backports      1.0.5      2017-01-18 CRAN (R 3.3.2)                   
 ##  broom        * 0.4.2      2017-02-13 CRAN (R 3.3.2)                   
 ##  car          * 2.1-4      2016-12-02 CRAN (R 3.3.2)                   
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.3)                   
 ##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                   
 ##  DBI            0.6        2017-03-09 CRAN (R 3.3.3)                   
 ##  devtools       1.12.0     2016-06-24 CRAN (R 3.3.0)                   
@@ -1183,6 +1207,7 @@ models_trans_imp</code></pre></div>
 ##  httr           1.2.1      2016-07-03 CRAN (R 3.3.0)                   
 ##  jsonlite       1.4        2017-04-08 cran (@1.4)                      
 ##  knitr          1.15.1     2016-11-22 cran (@1.15.1)                   
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                   
 ##  lattice        0.20-34    2016-09-06 CRAN (R 3.3.3)                   
 ##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                   
 ##  lme4           1.1-12     2016-04-16 cran (@1.1-12)                   
@@ -1208,7 +1233,7 @@ models_trans_imp</code></pre></div>
 ##  R6             2.2.0      2016-10-05 CRAN (R 3.3.0)                   
 ##  rcfss        * 0.1.4      2017-02-28 local                            
 ##  RColorBrewer * 1.1-2      2014-12-07 CRAN (R 3.3.0)                   
-##  Rcpp           0.12.10    2017-03-19 cran (@0.12.10)                  
+##  Rcpp         * 0.12.10    2017-03-19 cran (@0.12.10)                  
 ##  readr        * 1.1.0      2017-03-22 cran (@1.1.0)                    
 ##  readxl         0.1.1      2016-03-28 CRAN (R 3.3.0)                   
 ##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                   
