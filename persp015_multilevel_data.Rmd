@@ -118,7 +118,7 @@ y_{i} &\sim N(\alpha_{j[i]} + \beta x_{i},\sigma^2_y), &\text{for } i=1,\dotsc,n
 \end{align}
 $$
 
-```{r sim-vary-int}
+```{r sim-pool}
 obs <- 60
 group.obs <- 6
 groups <- rep(1:group.obs, times = obs / group.obs)
@@ -268,7 +268,11 @@ What many social scientists refer to as **random effects**, [Gelman and Hill](ht
 
 Multilevel regression can be thought of as a method for compromising between the two extremes of excluding a categorical predictor from a model (**complete pooling**), or estimating separate models within each level of the categorical predictor (**no pooling**). The former ignores within-unit variation, while the latter ignores between-unit variation. Additionally, the no pooling approach prevents the researcher from conducting inference using categorical predictors.^[This is the fixed effects approach and any categorical covariates would need to be excluded due to perfect collinearity with the indicator variable or being a constant within the separate model.]
 
-Instead, multilevel modeling uses a compromise between these two approaches. A **soft constraint** is applied to the coefficients: they are assigned a probability distribution. A varying intercept model could take the following form:
+Instead, multilevel modeling uses a compromise between these two approaches. A **soft constraint** is applied to the coefficients: they are assigned a probability distribution.
+
+## Varying intercepts
+
+A varying intercept model could take the following form:
 
 $$
 \begin{align}
@@ -281,7 +285,26 @@ $\alpha_{j}$ is now assumed to be distributed normally with a mean $\mu_{\alpha}
 
 This approach also reduces the number of parameters needing to be estimated. For example, a fixed effects approach with 20 groups would require estimating $J-1$ parameters (19). Introducing a soft-constraint and modeling $\alpha$ as a random draw from a single distribution, all we need to estimate is the parameters for this distribution. Typically we assume that the distribution is normal, so we only need to estimate two parameters (the mean $\mu$ and the variance $\sigma^2$). This increases our degrees of freedom (which could be an issue if we have lots of groups in the dataset). As seen below, this also allows us to introduce group-level predictors into the model.
 
-## Adding group-level predictors
+```{r sim-vary-int}
+#draw x and c from random normal distribution, adjusting for group differences
+x <- runif(obs, 0, 3) + groups
+c <- rep(rnorm(group.obs, 2, 1), times = obs / group.obs) * groups
+beta <- 2		#set beta
+y <- beta*(x) - c #+ rnorm(obs,0,1)		#generate y from x, c, beta, and random noise
+
+sim_data_mlm <- data_frame(x, y, groups)
+
+# plot data
+ggplot(sim_data_mlm, aes(x, y)) +
+  geom_point(aes(color = factor(groups), shape = factor(groups))) +
+  geom_smooth(method = "lm") +
+  labs(title = "Simulated data with varying intercepts",
+       x = expression(X),
+       y = expression(Y)) +
+  theme(legend.position = "none")
+```
+
+### Adding group-level predictors
 
 Perhaps we believe certain group-level variables systematically influence the baseline level of $y_{ij}$. Using this flexible framework, we can simply include them directly in the model as predictors of $\alpha_{J}$:
 
@@ -317,7 +340,42 @@ y_i &\sim N(\alpha_{j[i]} + \beta_{j[i]} x_{i}, \sigma^2_{y}), \: \text{for} \: 
 \end{align}
 $$
 
-with variation in the $\alpha_{j}$'s and the $\beta_{j}$'s and also a between-group correlation parameter. We can also include group-level predictors:
+with variation in the $\alpha_{j}$'s and the $\beta_{j}$'s and also a between-group correlation parameter.
+
+```{r sim-vary-slope}
+# constant intercept
+alpha <- 0
+beta <- rnorm(group.obs, 2, 1)
+y <- alpha + beta * x
+
+sim_data_mlm <- data_frame(x, y, groups)
+
+# plot data
+ggplot(sim_data_mlm, aes(x, y)) +
+  geom_point(aes(color = factor(groups), shape = factor(groups))) +
+  geom_smooth(method = "lm") +
+  labs(title = "Simulated data with varying slopes",
+       x = expression(X),
+       y = expression(Y)) +
+  theme(legend.position = "none")
+
+# varying intercept
+alpha <- rnorm(group.obs,2,2)
+y <- alpha + beta * x
+
+sim_data_mlm <- data_frame(x, y, groups)
+
+# plot data
+ggplot(sim_data_mlm, aes(x, y)) +
+  geom_point(aes(color = factor(groups), shape = factor(groups))) +
+  geom_smooth(method = "lm") +
+  labs(title = "Simulated data with varying intercepts and slopes",
+       x = expression(X),
+       y = expression(Y)) +
+  theme(legend.position = "none")
+```
+
+We can also include group-level predictors:
 
 $$
 \begin{align}
@@ -351,33 +409,6 @@ Multilevel modeling is an extremely flexible framework which allows researchers 
 * Bayesian estimation procedures
 * Measuring sample size and power calculations
 * Multilevel regression, imputation, and post-stratification (MRP)
-
-```{r sim-mlm}
-#draw x and c from random normal distribution, adjusting for group differences
-x <- runif(obs, 0, 3) + groups
-c <- rep(rnorm(group.obs, 2, 1), times = obs / group.obs) * groups
-beta <- 2		#set beta
-y <- beta*(x) - c #+ rnorm(obs,0,1)		#generate y from x, c, beta, and random noise
-
-#estimate models
-sim_data_mlm <- data_frame(x, y, groups)
-ols <- lm(y ~ x, data = sim_data_mlm)
-mlm <- lmer(y ~ x + (1|groups), data = sim_data_mlm)
-
-# plot data
-p <- ggplot(sim_data_mlm, aes(x, y)) +
-  geom_point(aes(color = factor(groups), shape = factor(groups))) +
-  labs(title = "Simulated data with varying intercepts",
-       x = expression(X),
-       y = expression(Y)) +
-  theme(legend.position = "none")
-p
-
-# ols
-p +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_line(data = add_predictions(sim_data_mlm, mlm), aes(x, pred, color = factor(groups)))
-```
 
 # Implementing MLM for partisan defection
 

@@ -471,11 +471,11 @@ p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(vary_int, <span c
        <span class="dt">y =</span> <span class="kw">expression</span>(Y)) +
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)
 p</code></pre></div>
-<p><img src="persp015_multilevel_data_files/figure-html/sim-vary-int-1.png" width="672" /></p>
+<p><img src="persp015_multilevel_data_files/figure-html/sim-pool-1.png" width="672" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">p +
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">subtitle =</span> <span class="st">&quot;OLS&quot;</span>)</code></pre></div>
-<p><img src="persp015_multilevel_data_files/figure-html/sim-vary-int-2.png" width="672" /></p>
+<p><img src="persp015_multilevel_data_files/figure-html/sim-pool-2.png" width="672" /></p>
 </div>
 <div id="partisan-defection-and-pooling-issues" class="section level2">
 <h2>Partisan defection and pooling issues</h2>
@@ -575,7 +575,10 @@ anes %&gt;%
 <h1>Multilevel Modeling</h1>
 <p>What many social scientists refer to as <strong>random effects</strong>, <a href="http://www.stat.columbia.edu/~gelman/arm/">Gelman and Hill</a> simply call <strong>multilevel modeling</strong>. <strong>Fixed effects</strong> are usually defined as varying coefficients that are not themselves modeled. For example, a classical regression including <span class="math inline">\(J-1\)</span> unit indicators as regression predictors is sometimes called a <strong>fixed-effects model</strong>. As we will see, fixed effects are a subtype of random effects; I (and others) recommend always using random effects and focusing on the description of the model itself (for example, varying intercepts and constant slopes), with the understanding that batches of coefficients (for example, <span class="math inline">\(\alpha_1,\dotsc,\alpha_J\)</span>) will themselves be modeled.</p>
 <p>Multilevel regression can be thought of as a method for compromising between the two extremes of excluding a categorical predictor from a model (<strong>complete pooling</strong>), or estimating separate models within each level of the categorical predictor (<strong>no pooling</strong>). The former ignores within-unit variation, while the latter ignores between-unit variation. Additionally, the no pooling approach prevents the researcher from conducting inference using categorical predictors.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-<p>Instead, multilevel modeling uses a compromise between these two approaches. A <strong>soft constraint</strong> is applied to the coefficients: they are assigned a probability distribution. A varying intercept model could take the following form:</p>
+<p>Instead, multilevel modeling uses a compromise between these two approaches. A <strong>soft constraint</strong> is applied to the coefficients: they are assigned a probability distribution.</p>
+<div id="varying-intercepts" class="section level2">
+<h2>Varying intercepts</h2>
+<p>A varying intercept model could take the following form:</p>
 <p><span class="math display">\[
 \begin{align}
 y_i &amp;\sim N(\alpha_{j[i]} + \beta x_{i}, \sigma^2_{y}), \: \text{for} \: i=1,\dotsc,n, \nonumber \\
@@ -584,8 +587,25 @@ y_i &amp;\sim N(\alpha_{j[i]} + \beta x_{i}, \sigma^2_{y}), \: \text{for} \: i=1
 \]</span></p>
 <p><span class="math inline">\(\alpha_{j}\)</span> is now assumed to be distributed normally with a mean <span class="math inline">\(\mu_{\alpha}\)</span> and variance <span class="math inline">\(\sigma^2_{\alpha}\)</span> estimated from the data. This pools the estimates of <span class="math inline">\(\alpha_{j}\)</span> toward the mean level <span class="math inline">\(\mu_{\alpha}\)</span>, but not all the way; thus, group-level estimates are the result of a <strong>partial-pooling</strong> compromise. In the limit of <span class="math inline">\(\sigma_{\alpha} \to \infty\)</span>, the soft constraints do nothing, and there is no pooling; as <span class="math inline">\(\sigma_{\alpha} \to 0\)</span>, they pull the estimates all the way to zero, yielding the complete-pooling estimate. This demonstrates that even if there is no dependence in the errors between groups, multilevel regression will still produce accurate point estimates and standard errors. <strong>Instead of making an assumption about independence, we can directly model it and let the data tell us if any exists.</strong></p>
 <p>This approach also reduces the number of parameters needing to be estimated. For example, a fixed effects approach with 20 groups would require estimating <span class="math inline">\(J-1\)</span> parameters (19). Introducing a soft-constraint and modeling <span class="math inline">\(\alpha\)</span> as a random draw from a single distribution, all we need to estimate is the parameters for this distribution. Typically we assume that the distribution is normal, so we only need to estimate two parameters (the mean <span class="math inline">\(\mu\)</span> and the variance <span class="math inline">\(\sigma^2\)</span>). This increases our degrees of freedom (which could be an issue if we have lots of groups in the dataset). As seen below, this also allows us to introduce group-level predictors into the model.</p>
-<div id="adding-group-level-predictors" class="section level2">
-<h2>Adding group-level predictors</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#draw x and c from random normal distribution, adjusting for group differences</span>
+x &lt;-<span class="st"> </span><span class="kw">runif</span>(obs, <span class="dv">0</span>, <span class="dv">3</span>) +<span class="st"> </span>groups
+c &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="kw">rnorm</span>(group.obs, <span class="dv">2</span>, <span class="dv">1</span>), <span class="dt">times =</span> obs /<span class="st"> </span>group.obs) *<span class="st"> </span>groups
+beta &lt;-<span class="st"> </span><span class="dv">2</span>       <span class="co">#set beta</span>
+y &lt;-<span class="st"> </span>beta*(x) -<span class="st"> </span>c <span class="co">#+ rnorm(obs,0,1)     #generate y from x, c, beta, and random noise</span>
+
+sim_data_mlm &lt;-<span class="st"> </span><span class="kw">data_frame</span>(x, y, groups)
+
+<span class="co"># plot data</span>
+<span class="kw">ggplot</span>(sim_data_mlm, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw">factor</span>(groups), <span class="dt">shape =</span> <span class="kw">factor</span>(groups))) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated data with varying intercepts&quot;</span>,
+       <span class="dt">x =</span> <span class="kw">expression</span>(X),
+       <span class="dt">y =</span> <span class="kw">expression</span>(Y)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp015_multilevel_data_files/figure-html/sim-vary-int-1.png" width="672" /></p>
+<div id="adding-group-level-predictors" class="section level3">
+<h3>Adding group-level predictors</h3>
 <p>Perhaps we believe certain group-level variables systematically influence the baseline level of <span class="math inline">\(y_{ij}\)</span>. Using this flexible framework, we can simply include them directly in the model as predictors of <span class="math inline">\(\alpha_{J}\)</span>:</p>
 <p><span class="math display">\[
 \begin{align}
@@ -598,6 +618,7 @@ y_i &amp;\sim N(\alpha_{j[i]} + \beta x_{i}, \sigma^2_{y}), \: \text{for} \: i=1
 <li>For linear regression: a one-unit increase on <span class="math inline">\(u_{j}\)</span> is associated with a <span class="math inline">\(\gamma\)</span> increase in <span class="math inline">\(y_{ij}\)</span></li>
 <li>For logistic regression: a one-unit increase on <span class="math inline">\(u_{j}\)</span> is associated with a <span class="math inline">\(\gamma\)</span> increase in the log-odds of the <span class="math inline">\(Pr(y_{ij}=1)\)</span>).</li>
 </ul>
+</div>
 </div>
 <div id="varying-slopes" class="section level2">
 <h2>Varying slopes</h2>
@@ -617,7 +638,39 @@ y_i &amp;\sim N(\alpha_{j[i]} + \beta_{j[i]} x_{i}, \sigma^2_{y}), \: \text{for}
  \end{pmatrix}\right), \: \text{for} \: j=1,\dotsc,J,
 \end{align}
 \]</span></p>
-<p>with variation in the <span class="math inline">\(\alpha_{j}\)</span>’s and the <span class="math inline">\(\beta_{j}\)</span>’s and also a between-group correlation parameter. We can also include group-level predictors:</p>
+<p>with variation in the <span class="math inline">\(\alpha_{j}\)</span>’s and the <span class="math inline">\(\beta_{j}\)</span>’s and also a between-group correlation parameter.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># constant intercept</span>
+alpha &lt;-<span class="st"> </span><span class="dv">0</span>
+beta &lt;-<span class="st"> </span><span class="kw">rnorm</span>(group.obs, <span class="dv">2</span>, <span class="dv">1</span>)
+y &lt;-<span class="st"> </span>alpha +<span class="st"> </span>beta *<span class="st"> </span>x
+
+sim_data_mlm &lt;-<span class="st"> </span><span class="kw">data_frame</span>(x, y, groups)
+
+<span class="co"># plot data</span>
+<span class="kw">ggplot</span>(sim_data_mlm, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw">factor</span>(groups), <span class="dt">shape =</span> <span class="kw">factor</span>(groups))) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated data with varying slopes&quot;</span>,
+       <span class="dt">x =</span> <span class="kw">expression</span>(X),
+       <span class="dt">y =</span> <span class="kw">expression</span>(Y)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp015_multilevel_data_files/figure-html/sim-vary-slope-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># varying intercept</span>
+alpha &lt;-<span class="st"> </span><span class="kw">rnorm</span>(group.obs,<span class="dv">2</span>,<span class="dv">2</span>)
+y &lt;-<span class="st"> </span>alpha +<span class="st"> </span>beta *<span class="st"> </span>x
+
+sim_data_mlm &lt;-<span class="st"> </span><span class="kw">data_frame</span>(x, y, groups)
+
+<span class="co"># plot data</span>
+<span class="kw">ggplot</span>(sim_data_mlm, <span class="kw">aes</span>(x, y)) +
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw">factor</span>(groups), <span class="dt">shape =</span> <span class="kw">factor</span>(groups))) +
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) +
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated data with varying intercepts and slopes&quot;</span>,
+       <span class="dt">x =</span> <span class="kw">expression</span>(X),
+       <span class="dt">y =</span> <span class="kw">expression</span>(Y)) +
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
+<p><img src="persp015_multilevel_data_files/figure-html/sim-vary-slope-2.png" width="672" /></p>
+<p>We can also include group-level predictors:</p>
 <p><span class="math display">\[
 \begin{align}
 y_i &amp;\sim N(\alpha_{j[i]} + \beta_{j[i]} x_{i}, \sigma^2_{y}), \: \text{for} \: i=1,\dotsc,n, \nonumber \\
@@ -650,31 +703,6 @@ y_i &amp;\sim N(\alpha_{j[i]} + \beta_{j[i]} x_{i}, \sigma^2_{y}), \: \text{for}
 <li>Measuring sample size and power calculations</li>
 <li>Multilevel regression, imputation, and post-stratification (MRP)</li>
 </ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#draw x and c from random normal distribution, adjusting for group differences</span>
-x &lt;-<span class="st"> </span><span class="kw">runif</span>(obs, <span class="dv">0</span>, <span class="dv">3</span>) +<span class="st"> </span>groups
-c &lt;-<span class="st"> </span><span class="kw">rep</span>(<span class="kw">rnorm</span>(group.obs, <span class="dv">2</span>, <span class="dv">1</span>), <span class="dt">times =</span> obs /<span class="st"> </span>group.obs) *<span class="st"> </span>groups
-beta &lt;-<span class="st"> </span><span class="dv">2</span>       <span class="co">#set beta</span>
-y &lt;-<span class="st"> </span>beta*(x) -<span class="st"> </span>c <span class="co">#+ rnorm(obs,0,1)     #generate y from x, c, beta, and random noise</span>
-
-<span class="co">#estimate models</span>
-sim_data_mlm &lt;-<span class="st"> </span><span class="kw">data_frame</span>(x, y, groups)
-ols &lt;-<span class="st"> </span><span class="kw">lm</span>(y ~<span class="st"> </span>x, <span class="dt">data =</span> sim_data_mlm)
-mlm &lt;-<span class="st"> </span><span class="kw">lmer</span>(y ~<span class="st"> </span>x +<span class="st"> </span>(<span class="dv">1</span>|groups), <span class="dt">data =</span> sim_data_mlm)
-
-<span class="co"># plot data</span>
-p &lt;-<span class="st"> </span><span class="kw">ggplot</span>(sim_data_mlm, <span class="kw">aes</span>(x, y)) +
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="kw">factor</span>(groups), <span class="dt">shape =</span> <span class="kw">factor</span>(groups))) +
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated data with varying intercepts&quot;</span>,
-       <span class="dt">x =</span> <span class="kw">expression</span>(X),
-       <span class="dt">y =</span> <span class="kw">expression</span>(Y)) +
-<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)
-p</code></pre></div>
-<p><img src="persp015_multilevel_data_files/figure-html/sim-mlm-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># ols</span>
-p +
-<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">data =</span> <span class="kw">add_predictions</span>(sim_data_mlm, mlm), <span class="kw">aes</span>(x, pred, <span class="dt">color =</span> <span class="kw">factor</span>(groups)))</code></pre></div>
-<p><img src="persp015_multilevel_data_files/figure-html/sim-mlm-2.png" width="672" /></p>
 </div>
 </div>
 <div id="implementing-mlm-for-partisan-defection" class="section level1">
@@ -1008,6 +1036,7 @@ glm_feel_def &lt;-<span class="st"> </span>final_year %&gt;%
 ##  backports      1.0.5      2017-01-18
 ##  broom        * 0.4.2      2017-02-13
 ##  car          * 2.1-4      2016-12-02
+##  codetools      0.2-15     2016-10-05
 ##  coefplot     * 1.2.4.9000 2017-04-25
 ##  colorspace     1.3-2      2016-12-14
 ##  DBI            0.6        2017-03-09
@@ -1019,12 +1048,13 @@ glm_feel_def &lt;-<span class="st"> </span>final_year %&gt;%
 ##  foreign        0.8-67     2016-09-13
 ##  ggplot2      * 2.2.1      2016-12-30
 ##  gtable         0.2.0      2016-02-26
-##  haven          1.0.0      2016-09-23
+##  haven        * 1.0.0      2016-09-23
 ##  hms            0.3        2016-11-22
 ##  htmltools      0.3.6      2017-04-28
 ##  httr           1.2.1      2016-07-03
 ##  jsonlite       1.4        2017-04-08
 ##  knitr          1.15.1     2016-11-22
+##  labeling       0.3        2014-08-23
 ##  lattice        0.20-34    2016-09-06
 ##  lazyeval       0.2.0      2016-06-12
 ##  lme4         * 1.1-13     2017-04-19
@@ -1074,6 +1104,7 @@ glm_feel_def &lt;-<span class="st"> </span>final_year %&gt;%
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.2)                       
+##  CRAN (R 3.3.3)                       
 ##  Github (jaredlander/coefplot@0755a00)
 ##  CRAN (R 3.3.2)                       
 ##  CRAN (R 3.3.3)                       
@@ -1091,6 +1122,7 @@ glm_feel_def &lt;-<span class="st"> </span>final_year %&gt;%
 ##  CRAN (R 3.3.0)                       
 ##  cran (@1.4)                          
 ##  cran (@1.15.1)                       
+##  CRAN (R 3.3.0)                       
 ##  CRAN (R 3.3.3)                       
 ##  CRAN (R 3.3.0)                       
 ##  cran (@1.1-13)                       
