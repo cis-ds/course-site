@@ -16,12 +16,6 @@ knitr::opts_chunk$set(cache = TRUE,
 
 # Objectives
 
-* Define missing data and patterns of missingness
-* Identify traditional approaches to missing data
-* Define imputation and multiple imputation
-* Summarize maximum-likelihood estimation for MAR data
-* Define Bayesian multiple imputation
-* Demonstrate how to conduct inference on MI datasets
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
@@ -33,15 +27,14 @@ library(car)
 library(rcfss)
 library(coefplot)
 library(RColorBrewer)
-library(Zelig)
-library(ZeligMultilevel)
+library(lme4)
 
 options(digits = 3)
 set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-# What Influences Partisan Defection in Voters?
+# What influences partisan defection in voters?
 
 What motivates partisan individuals to cross party lines and vote for a presidential candidate from the opposition? In an era of heightened partisan polarization Democrats and Republicans are increasingly reluctant to cast ballots for their partisan opponents, making these individuals even stronger of outliers. While only a relatively small number of self-identified partisan individuals cast a defecting vote in the United States, the outcome of closely contested elections may be decided by these actions. Understanding individual motivations to cast aside partisanship improves our understanding of how deeply PID influences individual political behavior.
 
@@ -52,12 +45,11 @@ Based upon previous studies of partisan defection, I formed several hypotheses f
 * **Correct is defect** - if an individual's correct vote decision requires him to defect, then the probability of defection increases. Correct voting decision factors include policy preferences, evaluation's of candidates' traits, and social group identification. As such, correct voting should be, and in fact is, closely associated with actual voting decisions. If an individual's correct vote decision requires the voter to defect, that individual should have a higher probability of actually defecting relative to voters whose correct vote decisions match their partisan preference. This influence should be relevant to all voters in any election.
 * **Incumbency** - when the incumbent is a candidate for election, voters who identify with the opposition party have a higher probability of defecting. When an election occurs and the incumbent does not participate, incumbency advantage will have no effect (the candidate from the incumbent's party is not expected to receive any advantage). When the incumbent does participate, the probability of defection should only increase for voters who identify with the opposition's party. Incumbents are unlikely to consistently cause voters from their own party to defect, so under this hypothesis the probability of defection differs across parties. There should be no effect on voters affiliated with the incumbent's party (e.g. Republicans and Reagan in 1984), but the effect should be positive for opposition party members (Democrats in '84).
 
-
-## Traditional GLM: Issues Related to Pooling
+# Traditional GLM: issues related to pooling
 
 **Pooling** is nothing more than combining data, either across units or time. In this instance, I am pooling [American National Election Studies (ANES)](http://www.electionstudies.org/) observations over time. The key to pooling is exchangability: the notion that, conditional on the values of the covariates, any two observations within the data are considered to be the same (exchangable).
 
-### Why Pool?
+## Why Pool?
 
 Several reasons:
 
@@ -67,9 +59,9 @@ Several reasons:
 
 In this study, I want to understand how partisan defection has occurred over time, not in a single election. Instead of having 752 observations from 2004, I can utilize over 10,000 data points from 10 different elections. I'd rather estimate and report a single model than have to report results from 10 different models. Pooling the data will also produce more generalizable results and only require interpretation of a single model.
 
-### Issues with Pooling
+## Issues with pooling
 
-Implicit in this analysis, then, is the idea that the coefficients $\beta$ do not vary over subsets of the data defined along $\E \in \{1972 ,\dotsc, 2008 \}$. In (say) the general, restrictive model:
+Implicit in this analysis, then, is the idea that the coefficients $\beta$ do not vary over subsets of the data defined along $\mathbf{E} \in \{1972 ,\dotsc, 2008 \}$. In (say) the general, restrictive model:
 
 $$
 \begin{align}
@@ -89,9 +81,9 @@ If any of these assumptions are not true, the pooled estimator $\hat{\beta}_P$ w
 
 * the larger $N$,
 * the larger values of the coefficients, and/or
-* the smaller standard errors of $\bhat$
+* the smaller standard errors of $\hat{\beta}$
 
-### The Error Term
+## The error term
 
 Note as well that, throughout all this discussion, we've been assuming that the error term $u_{it}$ is homoscedastic and uncorrelated, both within and across $i$ and $t$. Formally, that means we need to have:
 
@@ -107,7 +99,7 @@ Cov(u_{ab},u_{cd}) &= 0 \: \forall \: a \neq c,\: \forall \: b \neq d \text{ (i.
 \end{align}
 $$
 
-Remember: Residuals are (among other things) just an indicator of how good a job the model does of explaining $Y$ with $\X$. In that light, these assumptions are violated if (for example):
+Remember: Residuals are (among other things) just an indicator of how good a job the model does of explaining $Y$ with $\mathbf{X}$. In that light, these assumptions are violated if (for example):
 
 * Cross-unit differences mean that the model does a better job of explaining some units than others,
 * Time effects (such as socialization, institutionalization, learning, or other such dynamics) cause the model to do a better or worse job of explaining $Y$ over time,
@@ -117,7 +109,7 @@ While in a linear model, at least, problems with the error term don't bias coeff
 
 Additionally, pooling can lead to biased standard errors. This is due to the assumption of GLMs that the errors for each observation are independent of one another. Formally, $E(u_i*u_j)=0 \: \forall \: i,j \: \text{combinations}$. If this assumption is violated and errors in some observations are related to the errors in other observations (likely within election year), the model appears to have more power than it otherwise should. This will create artificially deflated standard errors and make point estimates appear more precise.
 
-### Fake data
+## Simulation of bad pooling
 
 $$
 \begin{align}
@@ -152,7 +144,7 @@ p +
   labs(subtitle = "OLS")
 ```
 
-## Partisan Voting: Pooling Issues
+## Partisan defection and pooling issues
 
 Am I likely to violate any of these assumptions using this pooled dataset? Yes. The mean probability of partisan defection differs significantly across elections.
 
@@ -211,7 +203,7 @@ anes %>%
 
 Unless the composition of the electorate is changing significantly from year-to-year in a specific way, this assumption will not hold. Regardless, this assumption should be tested and explored, which is not possible under a standard GLM approach.
 
-## Multilevel Data Structures & Problems With Classical Regression
+# Multilevel data structures
 
 Consider the classical linear model:
 
@@ -230,8 +222,7 @@ Note that this model assumes the same things as the earlier ones, especially abo
 
 In **any** regression context, the two assumptions mentioned are critical; violating them leads to a form of specification bias. In the panel context, these two assumptions are often going to be problematic. This is because, since we're observing multiple units over time or across groups, there's often (in fact, usually) some reason to believe that there may be differences in either $\alpha$ or $\beta$ over either $i$ or $j$. How could we correct for these possibilities?
 
-
-### Variable Intercepts
+## Variable intercepts
 
 One possible violation of the above assumptions is that the intercepts vary. The most common way this occurs is for different units to have varying intercepts:
 
@@ -243,7 +234,7 @@ $$y_{ij} \sim N(\alpha_t + \beta x_{ij}, \sigma^2_{y}), \: for\: i=1,\dotsc,n$$
 
 If we have data that corresponds to the first formula, but estimate a model like the second formula, we can get biased coefficients.
 
-### Variable Slopes
+## Variable slopes
 
 The other obvious possibility is that we have a constant intercept, but the effects of $X$ on $Y$ differs across either units or (less likely) time:
 
@@ -253,7 +244,7 @@ We could also have variation in $\beta$ over time, or even over both units and t
 
 A model like above assumes that the regression lines all pass through the same point on the $Y$-axis, but that their slopes differ. The idea of a common intercept, however, is a bit strange (at least to social scientists). Instead what is more likely...
 
-### Variable Slopes and Intercepts
+## Variable slopes and intercepts
 
 This is when things really start to get difficult. We might, for example, have variable slopes and intercepts for each unit $i$:
 
@@ -271,7 +262,7 @@ Using the incorrect model specification for the data can lead to odd, even nonse
 
 All of this leads to...
 
-## Multilevel Modeling
+# Multilevel Modeling
 
 What many social scientists refer to as **random effects**, [Gelman and Hill](http://www.stat.columbia.edu/~gelman/arm/) simply call **multilevel modeling**. **Fixed effects** are usually defined as varying coefficients that are not themselves modeled. For example, a classical regression including $J-1$ unit indicators as regression predictors is sometimes called a **fixed-effects model**. As we will see, fixed effects are a subtype of random effects; I (and others) recommend always using random effects and focusing on the description of the model itself (for example, varying intercepts and constant slopes), with the understanding that batches of coefficients (for example, $\alpha_1,\dotsc,\alpha_J$) will themselves be modeled.
 
@@ -290,7 +281,7 @@ $\alpha_{j}$ is now assumed to be distributed normally with a mean $\mu_{\alpha}
 
 This approach also reduces the number of parameters needing to be estimated. For example, a fixed effects approach with 20 groups would require estimating $J-1$ parameters (19). Introducing a soft-constraint and modeling $\alpha$ as a random draw from a single distribution, all we need to estimate is the parameters for this distribution. Typically we assume that the distribution is normal, so we only need to estimate two parameters (the mean $\mu$ and the variance $\sigma^2$). This increases our degrees of freedom (which could be an issue if we have lots of groups in the dataset). As seen below, this also allows us to introduce group-level predictors into the model.
 
-### Adding group-level predictors
+## Adding group-level predictors
 
 Perhaps we believe certain group-level variables systematically influence the baseline level of $y_{ij}$. Using this flexible framework, we can simply include them directly in the model as predictors of $\alpha_{J}$:
 
@@ -306,7 +297,7 @@ where $x_{i}$ is a unit-specific indicator and $u_{j}$ is a group-level measure.
 * For linear regression: a one-unit increase on $u_{j}$ is associated with a $\gamma$ increase in $y_{ij}$
 * For logistic regression: a one-unit increase on $u_{j}$ is associated with a $\gamma$ increase in the log-odds of the $Pr(y_{ij}=1)$).
 
-### Varying slopes
+## Varying slopes
 
 Now what if we believe the effects of $\beta$ vary by group? We can treat this the same as we did with the varying intercept; thus,
 
@@ -346,7 +337,7 @@ $$
 
 In this formulation, we believe the same group-level variable explains both the intercept and the observation-specific covariate. This does not have to be true; we can include any combination of group-specific covariates in the separate models for unit-specific effects. Note that we should not use unit-specific variables in the models for $\alpha$ and $\beta$. If we believe such a relationship exists, we should specify it as an interaction in the model specific to $y_{ij}$.
 
-### Other specifications of MLM
+## Other specifications of MLM
 
 Multilevel modeling is an extremely flexible framework which allows researchers to introduce all sorts of interesting specifications of models. Different types of data structures and specifications include:
 
@@ -388,7 +379,7 @@ p +
   geom_line(data = add_predictions(sim_data_mlm, mlm), aes(x, pred, color = factor(groups)))
 ```
 
-## Implementing MLM for Partisan Defection
+# Implementing MLM for partisan defection
 
 Let the classical model be specified as
 
@@ -400,9 +391,9 @@ $$
 \end{align}
 $$
 
-\where $Y_{ei}$ is a dichotomous variable coded one if the respondent reports voting for a presidential candidate from a different party other than his/her own, $\alpha$ is a constant, $\beta$s represent the log-odds association of the covariates with the probability of defection, and observations are pooled over elections ($e \in \{1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008\}$). This is different from a traditional time series-cross sectional design in that respondents $i$ are not repeatedly interviewed: each election consists of a different representative sample of U.S. citizens. Therefore, the primary focus of the multilevel model should be on independence between elections. Will the baseline probability of defection differ across elections? Will the effects of partisan intensity or the other unit-specific measures differ across elections?
+where $Y_{ei}$ is a dichotomous variable coded one if the respondent reports voting for a presidential candidate from a different party other than his/her own, $\alpha$ is a constant, $\beta$s represent the log-odds association of the covariates with the probability of defection, and observations are pooled over elections ($e \in \{1976, 1980, 1984, 1988, 1992, 1996, 2000, 2004, 2008\}$). This is different from a traditional time series-cross sectional design in that respondents $i$ are not repeatedly interviewed: each election consists of a different representative sample of U.S. citizens. Therefore, the primary focus of the multilevel model should be on independence between elections. Will the baseline probability of defection differ across elections? Will the effects of partisan intensity or the other unit-specific measures differ across elections?
 
-### Classical Logistic Regression
+## Classical logistic regression
 
 Let's first examine the results of a classical logit model, without controlling for dependence within elections:
 
@@ -421,7 +412,7 @@ coefplot(basic,
 
 These results indicate when the covariates equal zero, individuals are more likely to vote for a candidate from their own party rather than defect ($\alpha=-0.83$). PID intensity is also negatively associated with partisan defection (consistent with the hypothesized direction), while relative favorability, defect is correct, and incumbent candidate are all positive. Importantly, the standard errors for each coefficient are low with $\textit{p-value} < 0.01$. A classical logistic regression model suggests our coefficient estimates are very precise, and effects do not vary across election years (because we did not allow them to vary).
 
-### Varying Intercept
+## Varying intercept
 
 What if we relax the assumption that the baseline probability of defection is constant for all observations? Let us model $\alpha$ directly from the data, specifying the model as:
 
@@ -466,7 +457,7 @@ coef(vary.int)
 
 In every year, respondents on average have a low baseline log-odds of defecting (holding all covariates equal to zero). As suggested by $\sigma^2_{\alpha}$, the magnitude of this coefficient varies significantly, ranging from a low of $`r min(coef(vary.int)$year[1])`$ to a high of $`r max(coef(vary.int)$year[1])`$.
 
-### Varying slope(s) and intercept
+## Varying slope(s) and intercept
 
 Now let us consider potential varying slopes. While we could estimate the model with a varying slope for each coefficient, unless we have hundreds of thousands of observations we will quickly run into issues maximizing the log-likelihood (this will be covered shortly under the limitations section). First and foremost we should use theory to guide our selection of varying slopes. However if it seems plausible that any of the covariates should need a varying slope, we need a method to determine which coefficients should receive one in the final model.
 
@@ -631,9 +622,9 @@ bind_rows(glm_feel_def,
   theme(legend.position = "bottom")
 ```
 
-## Limitations of MLM for this application
+# Limitations of MLM
 
-### Likelihood maximization
+## Likelihood maximization
 
 Multilevel modeling is not without its drawbacks. Perhaps the most important in this application is the requirement of approximations for the likelihood. MLE for a linear multi-level model works because the portions of the likelihood function which need maximizing are (relatively) easily calculated by optimizers. Specifically, all the variance components are additive combinations of several normally distributed variables which themselves have a normal distribution. The variance is the same for all possible predicted values of $Y_{ei}$. This would also be true for a logistic regression with no multilevel component.
 
@@ -643,7 +634,7 @@ The `lme4` package uses an approximation of the likelihood through the Laplace a
 
 One could potentially optimize the full MLE, but this may be difficult to do and would require a significant amount of time to maximize the likelihood function if it is even possible. Alternatively we could use Bayesian estimation methods to simulate election-specific effects, but again these methods are computationally intensive and require an understanding of Bayesian approaches to inference.
 
-### Determining which coefficients should have varying slopes
+## Determining which coefficients should have varying slopes
 
 We would like to have a theoretical guide to determining which coefficients should be allowed to vary. Ideally, we could apply soft constraints to each coefficient and allow the data to tell us whether or not there is significant variance between years. The more observations one has in the data, the more parameters that can be estimated (more data $=$ more information about the likelihood the model fits the data). However even with the reduced number of parameters compared to a fixed effects approach, estimating approximate likelihoods with more than two or three varying slopes becomes extremely lengthy and laborious. We would need hundreds of thousands of observations to estimate even a half-dozen varying slopes.
 
