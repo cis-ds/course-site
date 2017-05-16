@@ -246,7 +246,7 @@ ggplot(pvals_full, aes(p.value, fill = sig)) +
 
 As expected, only approximately 5% of the time do we make a false discovery. What happens if we use forward stepwise selection to choose the "best" model? How often will we reject the null hypothesis for each of the variables in the model?
 
-```{r sim-step-mult}
+```{r sim-step-mult, eval = FALSE}
 step_mod_sim <- function(n_obs){
   x <- replicate(10, rnorm(n_obs)) %>%
     as_tibble()
@@ -264,7 +264,29 @@ step_mod_sim <- function(n_obs){
 
 pvals_step <- 1000 %>%
   rerun(step_mod_sim(n_obs))
+```
 
+```{r sim-step-mult-real, include = FALSE}
+step_mod_sim <- function(n_obs){
+  x <- replicate(10, rnorm(n_obs)) %>%
+    as_tibble()
+  y <- rnorm(n_obs)
+  
+  sim_data <- x %>%
+    mutate(y = y)
+  
+  # estimate full model
+  mod <- lm(y ~ ., data = sim_data)
+  
+  # pick model with lowest aic based on forward stepwise selection
+  invisible(MASS::stepAIC(mod))
+}
+
+pvals_step <- 1000 %>%
+  rerun(step_mod_sim(n_obs))
+```
+
+```{r sim-step-mult-plot}
 # tidy
 pvals_step_tidy <- pvals_step %>%
   map_df(tidy, .id = "sim") %>%
