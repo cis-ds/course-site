@@ -1,0 +1,112 @@
+---
+title: "p-hacking"
+author: "MACS 30200 - Perspectives on Computational Research"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define a p-value
+* Identify methods for obtaining a statistically significant p-value
+* Critique the "women wearing pink" article for potential p-hacking
+* Identify approaches to reduce the chance of p-hacking
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(broom)
+library(forcats)
+library(modelr)
+library(stringr)
+library(car)
+library(rcfss)
+library(coefplot)
+library(RColorBrewer)
+library(lme4)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# What is a p-value?
+
+
+# Searching for a significant p-value
+
+```{r pval-sim}
+n_obs <- 1000
+
+pval_dist <- function(n_obs){
+  x <- replicate(10, rnorm(n_obs))
+  y <- rnorm(n_obs)
+  
+  mod <- lm(y ~ x[, sample(1:10, 1)])
+  pval <- summary(mod)$coefficients[2, 4]
+  
+  return(data_frame(pval = pval))
+}
+
+pvals <- 1000 %>%
+  rerun(pval_dist(n_obs)) %>%
+  bind_rows %>%
+  mutate(sig = pval < .05)
+
+ggplot(pvals, aes(pval, fill = sig)) +
+  geom_histogram(binwidth = .025, boundary = 0) +
+  labs(title = "Distribution of p-values when null is true",
+       x = expression(P),
+       y = NULL) +
+  theme(legend.position = "none")
+```
+
+```{r pval-sim-mult-test}
+pval_dist_mult <- function(n_obs){
+  # generate simulated data
+  x <- replicate(10, rnorm(n_obs))
+  y <- rnorm(n_obs)
+  
+  # estimate a linear model for each column in x and record the pvalue
+  pvals <- vector("double", ncol(x))
+  
+  for(i in seq_len(ncol(x))) {
+    mod <- lm(y ~ x[, i])
+    pvals[[i]] <- summary(mod)$coefficients[2, 4]
+  }
+  
+  # keep mimimum pvalue
+  return(data_frame(pval = min(pvals)))
+}
+
+pvals_mult <- 1000 %>%
+  rerun(pval_dist_mult(n_obs)) %>%
+  bind_rows %>%
+  mutate(sig = pval < .05)
+
+ggplot(pvals_mult, aes(pval, fill = sig)) +
+  geom_histogram(binwidth = .025, boundary = 0) +
+  labs(title = "Distribution of minimmum p-values for 10 test when null is true",
+       x = expression(P),
+       y = NULL) +
+  theme(legend.position = "none")
+```
+
+# Acknowledgments {.toc-ignore}
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
