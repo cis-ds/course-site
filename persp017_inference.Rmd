@@ -1,0 +1,129 @@
+---
+title: "Frequentist vs. Bayesian inference"
+author: "MACS 30200 - Perspectives on Computational Research"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: hide
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+# Objectives
+
+* Define Bayes' theorem
+    * False-positive example in disease detection (p. 33 in Bertsekas)
+    * 9/11 hijacking example from *Signal and the Noise*
+* Define frequentist inference
+* Define Bayesian inference
+* Demonstrate basic Bayesian inference compared to frequentist inference
+* Identify computational methods for estimating Bayesian models
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(broom)
+library(forcats)
+library(modelr)
+library(stringr)
+library(car)
+library(rcfss)
+library(coefplot)
+library(RColorBrewer)
+library(lme4)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Bayes' theorem
+
+**Bayes' theorem** is a fundamental component of both probability and statistics and is central to understanding the differences between frequentist and Bayesian inference. For two events $A$ and $B$, Bayes' theorem states that:
+
+$$P(B|A) = \frac{P(A|B) \cdot P(B)}{P(A)}$$
+
+Bayes' rule tells us how to **invert** conditional probabilities. That is, to find $P(B|A)$ from $P(A|B)$. Let's walk through this with a few examples.
+
+## Coin tossing
+
+Toss a coin 5 times. Let $H_1 = $ "first toss is heads" and let $H_A = $ "all 5 tosses are heads". Therefore $P(H_1 | H_A) = 1$ (if all five tosses are heads, then the first one must by definition also be heads) and $P(H_A | H_1) = \frac{1}{16}$ ($\frac{1}{2^4} = \frac{1}{16}$).
+
+However we can also use Bayes' theorem to calculate $P(H_1 | H_A)$ using $P(H_A | H_1)$. The terms we need are:
+
+* $P(H_A | H_1) = \frac{1}{16}$
+* $P(H_1) = \frac{1}{2}$
+* $P(H_A) = \frac{1}{32}$
+
+So,
+
+$$P(H_A | H_1) = \frac{P(H_A | H_1) \cdot P(H_1)}{P(H_A)} = \frac{\frac{1}{16} \cdot \frac{1}{2}}{\frac{1}{32}} = 1$$
+
+## Radar detection problem
+
+If an aircraft is present in a certain area, a radar correctly registers its presence with probability $0.99$. If it is not present, the radar falsely registers an aircraft presence with probability $0.10$. We assume that an aircraft is present with probability $0.05$. What is the probability that an airplane is present and the radar correctly detects it?
+
+* $A = {\text{an aircraft is present}}$
+* $B = {\text{the radar registers an aircraft presence}}$
+* $P(A = 1) = 0.05$
+* $P(B = 1 | A = 1) = 0.99$
+* $P(B = 1 | A = 0) = 0.1$
+
+$$
+\begin{align}
+P(\text{aircraft present} | \text{radar registers} &= P(A|B) \\
+& = \frac{P(A) \cdot P(B|A)}{P(B)} \\
+& = \frac{P(A) \cdot P(B|A)}{P(A) \cdot P(B|A) + P(A = 0) \cdot(B | A = 0)} \\
+& = \frac{0.05 \cdot 0.99}{0.05 \cdot 0.99 + 0.95 \cdot 0.1} \\
+& \approx 0.3426
+\end{align}
+$$
+
+Notice that we never were given the $P(A|B)$ (probability an airplane is present and the radar detects it), but we could calculate it based on the $P(B|A)$ (probability the radar detects something and an airplane is present). Also note that $P(A|B) \neq P(B|A)$.
+
+## False positive fallacy
+
+A test for a certain rare disease is assumed to be correct 95% of the time:
+
+* If a person has the disease, then the test results are positive with probability 0.95
+* If the person does not have the disease, then the test results are negative with probability 0.95
+
+A random person drawn from a certain population has probability 0.001 of having the disease. Given that the person just tested positive, what is the probabiltiy of having the disease?
+
+* $A = {\text{person has the disease}}$
+* $B = {\text{test result is positive for the disease}}$
+* $P(A) = 0.001$
+* $P(B | A) = 0.95$
+* $P(B | A = 0) = 0.05$
+
+$$
+\begin{align}
+P(\text{person has the disease} | \text{test is positive} &= P(A|B) \\
+& = \frac{P(A) \cdot P(B|A)}{P(B)} \\
+& = \frac{P(A) \cdot P(B|A)}{P(A) \cdot P(B|A) + P(A = 0) \cdot(B | A = 0)} \\
+& = \frac{0.001 \cdot 0.95}{0.001 \cdot 0.95 + 0.999 \cdot 0.05} \\
+& = 0.0187
+\end{align}
+$$
+
+Even though the test is fairly accurate, a person who has tested positive is still very unlikely (less than 2%) to have the disease. Because the base rate of the disease in the population is so low, the vast majority of people taking the test are healthy and even with an accurate test most of the positives will be healthy people.^[Even worse, many physicians substantially miss the correct answer to this question.]
+
+# Frequentist inference
+
+
+# Acknowledgments {.toc-ignore}
+
+* p-value distribution simulation from [Altman, Naomi, and Martin Krzywinski. "Points of significance: P values and the search for significance." *Nature Methods* 14.1 (2017): 3-4.](http://www.nature.com/nmeth/journal/v14/n1/full/nmeth.4120.html)
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
