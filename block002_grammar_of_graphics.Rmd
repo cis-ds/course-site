@@ -4,7 +4,6 @@ output:
   html_document:
     toc: true
     toc_float: true
-bibliography: references.bib
 ---
 
 ```{r setup, include = FALSE}
@@ -20,88 +19,121 @@ options(digits = 3)
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
+library(forcats)
 library(knitr)
 library(broom)
 library(stringr)
+library(tweenr)
+library(gganimate)
+```
+
+```{r animation-options, include = FALSE}
+animation::ani.options(
+  autobrowse = FALSE,
+  interval = 0.2
+)
+
+knitr::opts_knit$set(animation.fun = function(x, options, format = "gif") {
+  x = c(knitr:::sans_ext(x), knitr:::file_ext(x))
+  fig.num = options$fig.num
+  format = sub("^[.]", "", format)
+  fig.fname = paste0(sub(paste0(fig.num, "$"), "*", x[1]),
+                     ".", x[2])
+  mov.fname = paste0(sub(paste0(fig.num, "$"), "", x[1]), ".",
+                     format)
+
+  # order correctly
+  figs <- Sys.glob(fig.fname)
+  figs <- figs[order(as.numeric(stringr::str_match(figs,
+    paste0("(\\d+)\\.", x[2]))[, 2]))]
+
+  animation::im.convert(figs, output = mov.fname)
+
+  # For Github output
+  # sprintf("![%s](%s)", options$label, paste0(opts_knit$get("base.url"),
+  #   mov.fname))
+  
+  # For HTML output
+  sprintf('<div class="figure %s"><img src="%s"></div>', options$fig.align,
+    mov.fname)
+})
 ```
 
 # Identify the importance of graphics in communicating information
 
-Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.^[Example drawn from [*The Visual Display of Quantitative Information* by Edward Tufte](https://www.edwardtufte.com/tufte/books_vdqi)]
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.^[Example drawn from [*The Datasaurus Dozen* by Justin Matejka and George Fitzmaurice](https://www.autodeskresearch.com/publications/samestats).]
 
-Consider the following data sets:
+Consider the following 13 data sets. What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
 
-```{r misleading, echo = FALSE}
-# input data
-dat1 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
-               y = c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68))
-dat2 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
-               y = c(9.14, 8.14, 8.74, 8.77, 9.26, 8.10, 6.13, 3.1, 9.13, 7.26, 4.74))
-dat3 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
-               y = c(7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73))
-dat4 <- tibble(x = c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8),
-               y = c(6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89))
-
-# combine data
-dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
+```{r datasaurus-import, echo = FALSE, message = FALSE}
+datasaurus <- read_tsv("data/DatasaurusDozen.tsv") %>%
+  mutate(dataset = as_factor(dataset))
 ```
 
-```{r misleading_print, dependson = 'misleading', echo = FALSE, results='asis'}
-dat_print <- dat %>%
-  group_by(id) %>%
-  nest(x, y)
-
-for(i in seq_len(nrow(dat_print))){
-  dat_print$data[[i]] %>%
-    kable(caption = str_c("Dataset", i, sep = " ")) %>%
-    print
-}
+```{r datasaurus-sum-stats, echo = FALSE, dependson = "datasaurus-import"}
+datasaurus %>%
+  group_by(dataset) %>%
+  summarize(n = n(),
+            x_mean = mean(x),
+            y_mean = mean(y),
+            x_sd = sd(x),
+            y_sd = sd(y),
+            r2 = cor(x, y)) %>%
+  mutate(id = row_number()) %>%
+  select(id, everything()) %>%
+  select(-dataset) %>%
+  kable(caption = "Summary statistics of 12 datasets",
+        col.names = c("ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$",
+                      "$\\sigma_{X}$", "$\\sigma_{Y}$", "$R$"))
 ```
 
-What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
+$X$ and $Y$ have the same mean and standard deviation in each dataset, and the correlation coefficient (Pearson's $r$) is virtually identical. If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
 
-```{r mislead_stats, dependson = 'misleading', echo = FALSE, results='asis'}
-for(i in seq_len(nrow(dat_print))){
-  dat_print$data[[i]] %>%
-    summarize(n = n(),
-           mean_x = mean(x),
-           mean_y = mean(y),
-           cor = cor(x, y)) %>%
-  kable(col.names = c("$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"),
-        caption = str_c("Dataset", i, sep = " ")) %>%
-  print
-}
-```
-
-If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
-
-```{r mislead_model, dependson = 'misleading', results = 'asis', echo = FALSE}
+```{r datasaurus-lm, echo = FALSE, results = "asis", dependson = "import-datasaurus"}
 # estimate linear model
-dat_model <- dat %>%
-  split(.$id) %>%
-  map(~ lm(y ~ x, data = .x)) %>%
-  map(tidy)
+datasaurus_model <- datasaurus %>%
+  group_by(dataset) %>%
+  nest() %>%
+  mutate(model = map(data, ~ lm(y ~ x, data = .x)),
+         results = map(model, tidy)) %>%
+  unnest(results)
 
-for(i in seq_along(dat_model)){
-  print(kable(dat_model[i],
-              caption = str_c("Dataset", i, sep = " "),
-              col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic", "p-value")))
-}
+# plot model estimates
+datasaurus_model %>%
+  mutate(dataset = as.factor(as.numeric(dataset))) %>%
+  ggplot(aes(fct_rev(term), estimate, color = dataset)) +
+  geom_pointrange(aes(ymin = estimate - 1.96 * std.error,
+                      ymax = estimate + 1.96 * std.error),
+                  position = position_dodge(width = 1)) +
+  labs(title = "Linear regression models",
+       subtitle = "With 95% confidence intervals",
+       x = NULL,
+       y = "Estimated parameter") +
+  coord_flip() +
+  theme(legend.position = "none")
 ```
 
-But what happens if we draw a picture?
+But what happens if we draw a picture?^[Source code from [Recreating the Datasaurus Dozen Using `tweenr` and `ggplot2`](https://wjakethompson.github.io/post/datasaurus-dozen/).]
 
-```{r mislead_plot, dependson = 'misleading', echo = FALSE}
-# now draw a graph
-dat %>%
-  mutate(id = str_c("Dataset", id, sep = " ")) %>%
-  ggplot(aes(x, y)) +
-  facet_wrap(~id) +
-  geom_point() +
-  theme_bw()
+```{r datasaurus-graph, dependson = c('datasaurus-import', 'animation-options'), echo = FALSE, fig.show = "animate", warning = FALSE}
+n_datasaurus <- datasaurus %>%
+  group_by(dataset) %>%
+  nest() %>%
+  add_row(dataset = "dino", data = list(.$data[[1]]))
+
+tween_datasaurus <- tween_states(n_datasaurus$data, tweenlength = 1,
+  statelength = 0.5, ease = "sine-out", nframe = 200) %>%
+  as.tibble()
+
+p <- ggplot(tween_datasaurus, aes(x = x, y = y)) +
+  geom_point(aes(frame = .frame)) +
+  theme_minimal()
+
+animation::ani.options(interval = 1 / 15)
+gganimate(p, title_frame = FALSE)
 ```
 
-A good picture tells the reader much more than any table or text can provide.
+Remarkably each of the datasets have the same summary statistics and linear relationships, yet they are drastically different in appearance! A good picture tells the reader much more than any table or text can provide.
 
 # The layered grammar of graphics
 
