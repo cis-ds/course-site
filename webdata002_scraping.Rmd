@@ -192,7 +192,7 @@ HTTP is the foundation for APIs; understanding how it works is the key to intera
 
 `httr` also facilitates a variety of **authentication** protocols.
 
-`httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`).They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output:
+`httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`). They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output:
 
 ```{r}
 interstellar_json <- omdb("Interstellar", "2014", "short", "json")
@@ -242,6 +242,90 @@ The documentation for `httr` includes two useful vignettes:
 
 * [`httr` quickstart guide](https://cran.r-project.org/web/packages/httr/vignettes/quickstart.html) - summarizes all the basic `httr` functions like above
 * [Best practices for writing an API package](https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html) - document outlining the key issues involved in writing API wrappers in R
+
+## Applying `httr` to the Microsoft Emotion API
+
+APIs can be used in conjunction with cloud computing and deep learning platforms that cannot be deployed on a local machine. Consider the [Microsoft Emotion API](https://azure.microsoft.com/en-us/services/cognitive-services/emotion/):
+
+> The Emotion API takes a facial expression in an image as an input, and returns the confidence across a set of emotions for each face in the image, as well as bounding box for the face, using the Face API. If a user has already called the Face API, they can submit the face rectangle as an optional input.
+    The emotions detected are anger, contempt, disgust, fear, happiness, neutral, sadness, and surprise. These emotions are understood to be cross-culturally and universally communicated with particular facial expressions.
+
+Here is how we can use R and the `httr` package to send a request to the Microsoft Emotion API to analyze a video and retrieve the results.^[Based on [Analyzing Emotions using Facial Expressions in Video with Microsoft AI and R](https://blog.exploratory.io/analyzing-emotions-using-facial-expressions-in-video-with-microsoft-ai-and-r-8f7585dd0780), which is itself based on the original post [How to apply face recognition API technology to data journalism with R and python](https://benheubl.github.io/data%20analysis/fr/), which served as the basis for [The many debate faces of Donald Trump and Hillary Clinton](http://www.economist.com/blogs/graphicdetail/2016/10/daily-chart-12).] As our sample video, we'll use 
+
+```{r emotion-api, eval = FALSE}
+# Set an endpoint for Emotion in Video API with "perFrame" output
+apiUrl <- "https://api.projectoxford.ai/emotion/v1.0/recognizeInVideo?outputStyle=perFrame"
+
+# Set URL for accessing the video
+urlVideo <- 'https://www.dropbox.com/s/zfmaswf8s9c58om/blog2.mp4?dl=1'
+
+# Request Microsoft AI start processing the video via POST
+faceEMO <- httr::POST(
+  url = apiUrl,
+  content_type('application/json'),
+  add_headers(.headers = c('Ocp-Apim-Subscription-Key' = getOption("emotion_api"))),
+  body = list(url = urlVideo),
+  encode = 'json'
+)
+
+# url to access the operation
+operationLocation <- headers(faceEMO)[["operation-location"]]
+
+# it can take awhile to process a long video
+# use a while loop to wait for the processing to finish and retrieve the results
+while(TRUE){
+  # retrieve results and extract content
+  ret <- GET(operationLocation,
+             add_headers(.headers = c('Ocp-Apim-Subscription-Key' = getOption("emotion_api"))))
+  
+  con <- content(ret)
+  
+  # if the process is still running, print the progress and continue waiting
+  if(is.null(con$status)){
+    warning("Connection Error, retry after 1 minute")
+    Sys.sleep(60)
+  } else if (con$status == "Running" | con$status == "Uploading"){
+    cat(paste0("status ", con$status, "\n"))
+    cat(paste0("progress ", con$progress, "\n"))
+    Sys.sleep(60)
+  } else {
+    # once the process is done, exit the loop
+    cat(paste0("status ", con$status, "\n"))
+    break()
+  }
+}
+
+# extract data from the results
+data <- (con$processingResult %>%
+           fromJSON())$fragments
+
+# data$events is list of events that has a data.frame column,
+# so it has to be flattened using a series of map functions
+data$events <- map(data$events, ~ .x %>%
+    map(flatten) %>%
+    bind_rows()
+)
+
+# print results
+data
+
+# clean up and save
+emotion <- data_from_api.func_copy_1() %>%
+  exploratory::clean_data_frame() %>%
+  mutate(n_elements = list_n(events)) %>%
+  unnest(events) %>%
+  filter(id != 2) %>%
+  mutate(row_id = row_number()) %>%
+  gather(key, value, starts_with("scores")) %>%
+  mutate(key = str_replace(key, "scores.", ""), id = recode(id, `0`="Trump", `1`="Clinton")) %>%
+  filter(key != "neutral") %>%
+  write_csv("data/debate_emotion.csv")
+```
+
+```{r get-emotion-data}
+# already run the API and stored the data frame in the rcfss package
+data("emotion", package = "rcfss")
+```
 
 # Scraping
 
