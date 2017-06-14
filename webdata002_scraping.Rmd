@@ -27,6 +27,8 @@ library(XML)
 library(httr)
 library(rvest)
 library(ggmap)
+
+theme_set(theme_minimal())
 ```
 
 # Interacting with an API
@@ -250,33 +252,34 @@ APIs can be used in conjunction with cloud computing and deep learning platforms
 > The Emotion API takes a facial expression in an image as an input, and returns the confidence across a set of emotions for each face in the image, as well as bounding box for the face, using the Face API. If a user has already called the Face API, they can submit the face rectangle as an optional input.
     The emotions detected are anger, contempt, disgust, fear, happiness, neutral, sadness, and surprise. These emotions are understood to be cross-culturally and universally communicated with particular facial expressions.
 
-Here is how we can use R and the `httr` package to send a request to the Microsoft Emotion API to analyze a video and retrieve the results.^[Based on [Analyzing Emotions using Facial Expressions in Video with Microsoft AI and R](https://blog.exploratory.io/analyzing-emotions-using-facial-expressions-in-video-with-microsoft-ai-and-r-8f7585dd0780), which is itself based on the original post [How to apply face recognition API technology to data journalism with R and python](https://benheubl.github.io/data%20analysis/fr/), which served as the basis for [The many debate faces of Donald Trump and Hillary Clinton](http://www.economist.com/blogs/graphicdetail/2016/10/daily-chart-12).] As our sample video, we'll use 
+Here is how we can use R and the `httr` package to send a request to the Microsoft Emotion API to analyze a video and retrieve the results.^[Based on [Analyzing Emotions using Facial Expressions in Video with Microsoft AI and R](https://blog.exploratory.io/analyzing-emotions-using-facial-expressions-in-video-with-microsoft-ai-and-r-8f7585dd0780), which is itself based on the original post [How to apply face recognition API technology to data journalism with R and python](https://benheubl.github.io/data%20analysis/fr/), which served as the basis for [The many debate faces of Donald Trump and Hillary Clinton](http://www.economist.com/blogs/graphicdetail/2016/10/daily-chart-12).] As our sample video, we'll use [a sample five minute video clip](https://www.dropbox.com/s/zfmaswf8s9c58om/blog2.mp4?dl=1%27) from the third 2016 U.S. presidential debate between Donald J. Trump and Hillary Clinton.
 
 ```{r emotion-api, eval = FALSE}
 # Set an endpoint for Emotion in Video API with "perFrame" output
 apiUrl <- "https://api.projectoxford.ai/emotion/v1.0/recognizeInVideo?outputStyle=perFrame"
 
 # Set URL for accessing the video
-urlVideo <- 'https://www.dropbox.com/s/zfmaswf8s9c58om/blog2.mp4?dl=1'
+urlVideo <- "https://www.dropbox.com/s/zfmaswf8s9c58om/blog2.mp4?dl=1"
 
 # Request Microsoft AI start processing the video via POST
 faceEMO <- httr::POST(
   url = apiUrl,
-  content_type('application/json'),
-  add_headers(.headers = c('Ocp-Apim-Subscription-Key' = getOption("emotion_api"))),
+  content_type("application/json"),
+  add_headers(.headers = c("Ocp-Apim-Subscription-Key" = getOption("emotion_api"))),
   body = list(url = urlVideo),
-  encode = 'json'
+  encode = "json"
 )
 
 # url to access the operation
 operationLocation <- headers(faceEMO)[["operation-location"]]
 
 # it can take awhile to process a long video
-# use a while loop to wait for the processing to finish and retrieve the results
+# use a while loop to wait for the processing to finish
+# and retrieve the results
 while(TRUE){
   # retrieve results and extract content
   ret <- GET(operationLocation,
-             add_headers(.headers = c('Ocp-Apim-Subscription-Key' = getOption("emotion_api"))))
+             add_headers(.headers = c("Ocp-Apim-Subscription-Key" = getOption("emotion_api"))))
   
   con <- content(ret)
   
@@ -310,22 +313,49 @@ data$events <- map(data$events, ~ .x %>%
 data
 
 # clean up and save
-emotion <- data_from_api.func_copy_1() %>%
-  exploratory::clean_data_frame() %>%
-  mutate(n_elements = list_n(events)) %>%
+emotion <- data %>%
+  as_tibble %>%
+  # unnest the list of data frames
   unnest(events) %>%
+  # remove the moderator
   filter(id != 2) %>%
-  mutate(row_id = row_number()) %>%
+  # create a row id variable, use same row id for each set of speakers
+  mutate(row_id = ceiling(row_number() / 2)) %>%
+  # convert from wide to long, one row for each id-emotion
   gather(key, value, starts_with("scores")) %>%
-  mutate(key = str_replace(key, "scores.", ""), id = recode(id, `0`="Trump", `1`="Clinton")) %>%
+  mutate(key = str_replace(key, "scores.", ""),
+         id = recode(id, `0` = "Trump",
+                     `1` = "Clinton")) %>%
+  # remove neutral expressions and write to disk
   filter(key != "neutral") %>%
-  write_csv("data/debate_emotion.csv")
+  write_rds("data/debate_emotion.rds")
 ```
+
+This script requires you to [create your own API key](https://azure.microsoft.com/en-us/try/cognitive-services/my-apis/) for the Microsoft Emotion API and would take about an hour to process the video and retrieve the results. Instead, you can just use the prepped data frame stored in the `rcfss` package.
 
 ```{r get-emotion-data}
 # already run the API and stored the data frame in the rcfss package
 data("emotion", package = "rcfss")
+emotion
 ```
+
+> See `?emotion` for more documentation on the variables.
+
+What could we do with this information? A simple analysis would be to visualize the emotions of each candidate over time:
+
+```{r emotion-viz}
+ggplot(emotion, aes(row_id, value, color = key)) +
+  facet_wrap(~ id, nrow = 2) +
+  geom_smooth(se = FALSE) +
+  scale_color_brewer(type = "qual") +
+  labs(title = "Candidate emotions during final 2016 U.S. presidential debate",
+       subtitle = "Five-minute sample",
+       x = "Frame",
+       y = "Probability of emotion",
+       color = "Emotion")
+```
+
+Hillary Clinton's facial expressions are marked predominantly by happiness, whereas Donald Trump's facial expressions are mostly sad.^[Not exactly predictive of the election results.]
 
 # Scraping
 
