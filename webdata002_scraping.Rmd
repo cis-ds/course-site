@@ -43,49 +43,55 @@ You can play around with the parameters on the OMDB website, and look at the res
 
 ![](images/ombd.png)
 
-Let's experiment with different values of the `title` and `year` fields. Notice the pattern in the request. For example for Title = Interstellar and Year = 2014, we get:
+Let's experiment with different values of the `title` and `year` fields. Notice the pattern in the request. For example for Title = Sharknado and Year = 2013, we get:
 
 ``` http
-http://www.omdbapi.com/?t=Interstellar&y=2014&plot=short&r=xml
+http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013&plot=short&r=xml
 ```
 
-Try pasting this link into the browser. Also experiment with `json` and `xml`
+Try pasting this link into the browser. Also experiment with `json` and `xml`.
+
+> The OMDB API used to be free, however in the past year shifted to a private API key due to overwhelming traffic. See in class for a demo API key you can use.
 
 How can we create this request in R?
 
-```{r}
-request <- str_c("http://www.omdbapi.com/?t=", "Interstellar", "&", "y=", "2014", "&", "plot=", "short", "&", "r=", "xml")
+```{r omdb-key}
+# retrieve API key from .RProfile
+omdb_key <- getOption("omdb_key")
+
+# create url
+request <- str_c("http://www.omdbapi.com/?apikey=", omdb_key, "&", "t=", "Sharknado", "&", "y=", "2013", "&", "plot=", "short", "&", "r=", "xml")
 request
 ```
 
 It works, but it's a bit ungainly. Lets try to abstract that into a function:
 
-```{r}
-omdb <- function(Title, Year, Plot, Format){
+```{r omdb-function, dependson = "omdb-key"}
+omdb <- function(Key, Title, Year, Plot, Format){
   baseurl <- "http://www.omdbapi.com/?"
-  params <- c("t=", "y=", "plot=", "r=")
-  values <- c(Title, Year, Plot, Format)
+  params <- c("apikey=", "t=", "y=", "plot=", "r=")
+  values <- c(Key, Title, Year, Plot, Format)
   param_values <- map2_chr(params, values, str_c)
   args <- str_c(param_values, collapse = "&")
   str_c(baseurl, args)
 }
 
-omdb("Interstellar", "2014", "short", "xml")
+omdb("omdb_key", "Sharknado", "2013", "short", "xml")
 ```
 
 Now we have a handy function that returns the API query. We can paste in the link, but we can also obtain data from within R:
 
-```{r}
-request_interstellar <- omdb("Interstellar", "2014", "short", "xml")
-con <- curl(request_interstellar)
+```{r omdb-xml, dependson = "omdb-key"}
+request_sharknado <- omdb(omdb_key, "Sharknado", "2013", "short", "xml")
+con <- curl(request_sharknado)
 answer_xml <- readLines(con)
 close(con)
 answer_xml
 ```
 
-```{r warning = FALSE}
-request_interstellar <- omdb("Interstellar", "2014", "short", "json")
-con <- curl(request_interstellar)
+```{r omdb-json, dependson = "omdb-key", warning = FALSE}
+request_sharknado <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
+con <- curl(request_sharknado)
 answer_json <- readLines(con)
 close(con)
 answer_json %>% 
@@ -129,22 +135,24 @@ You can see that both of these data structures are quite easy to read. They are 
 
 There are easy means of taking these data types and creating R objects. Our JSON response above can be parsed using `jsonlite::fromJSON()`:
 
-```{r}
+```{r parse-json, dependson = "omdb-json"}
 answer_json %>% 
   fromJSON()
 ```
 
-The output is a named list! A familiar and friendly R structure. Because data frames are lists, and because this list has no nested lists-within-lists, we can coerce it very simply:
+The output is a named list! A familiar and friendly R structure. Because data frames are lists, and because this list has no nested lists-within-lists,^[Because I strip it out. We'll see shortly how to handle nested lists-within-lists.] we can coerce it very simply:
 
-```{r}
+```{r json-df, dependson = "omdb-json"}
 answer_json %>% 
   fromJSON() %>% 
+  # remove ratings element for now
+  list_update(Ratings = NULL) %>%
   as_tibble()
 ```
 
 A similar process exists for XML formats:
 
-```{r}
+```{r xml-parse, dependson = "omdb-xml"}
 ans_xml_parsed <- xmlParse(answer_xml)
 ans_xml_parsed
 ```
@@ -168,14 +176,14 @@ attributes, children and value, which we access with the methods xmlName(), xmlA
 | value    | `xmlValue()`
 
 
-```{r}
+```{r xml-root-attrs, dependson = "xml-parse"}
 ans_xml_parsed_root <- xmlRoot(ans_xml_parsed)[["movie"]]  # could also use [[1]]
 ans_xml_parsed_root
 ans_xml_attrs <- xmlAttrs(ans_xml_parsed_root)
 ans_xml_attrs
 ```
 
-```{r}
+```{r xml-df, dependson = "xml-root-attrs"}
 ans_xml_attrs %>%
   t() %>%
   as_tibble()
@@ -196,27 +204,27 @@ HTTP is the foundation for APIs; understanding how it works is the key to intera
 
 `httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`). They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output:
 
-```{r}
-interstellar_json <- omdb("Interstellar", "2014", "short", "json")
-response_json <- GET(interstellar_json)
+```{r httr-json}
+sharknado_json <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
+response_json <- GET(sharknado_json)
 content(response_json, as = "parsed", type = "application/json")
 ```
 
-```{r}
-interstellar_xml <- omdb("Interstellar", "2014", "short", "xml")
-response_xml <- GET(interstellar_xml)
+```{r httr-xml}
+sharknado_xml <- omdb(omdb_key, "Sharknado", "2013", "short", "xml")
+response_xml <- GET(sharknado_xml)
 content(response_xml, as = "parsed")
 ```
 
 In addition, `httr` gives us access to lots of useful information about the quality of our response. For example, the header:
 
-```{r}
+```{r httr-headers, dependson = "httr-xml"}
 headers(response_xml)
 ```
 
 And also a handy means to extract specifically the HTTP status code:
 
-```{r}
+```{r httr-status, dependson = "httr-xml"}
 status_code(response_xml)
 ```
 
@@ -232,10 +240,10 @@ Code^[[HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html)] 
 
 In fact, we didn't need to create `omdb()` at all! `httr` provides a straightforward means of making an http request:
 
-```{r}
-the_martian <- GET("http://www.omdbapi.com/?", query = list(t = "The Martian", y = 2015, plot = "short", r = "json"))
+```{r httr-get-only}
+sharknado_2 <- GET("http://www.omdbapi.com/?", query = list(t = "Sharknado 2: The Second One", y = 2014, plot = "short", r = "json", apikey = omdb_key))
 
-content(the_martian)
+content(sharknado_2)
 ```
 
 We get the same answer as before! With `httr`, we are able to pass in the named arguments to the API call as a named list. We are also able to use spaces in movie names - `httr` encodes these in the URL before making the GET request.
