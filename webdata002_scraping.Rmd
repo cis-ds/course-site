@@ -25,6 +25,7 @@ library(curl)
 library(jsonlite)
 library(XML)
 library(httr)
+library(xml2)
 library(rvest)
 library(ggmap)
 
@@ -556,6 +557,8 @@ none   | tag
 .      | class
 #      | id
 
+> [CSS diner](http://flukeout.github.io) is a JavaScript-based interactive game for learning and practicing CSS selectors. Take some time to play and learn more about CSS selector combinations.
+
 #### Find the CSS selector
 
 Which CSS identifiers are associated with Kristen Bell's name in the *Frozen* page? Write a CSS selector that targets them.
@@ -569,84 +572,147 @@ Therefore the CSS selector would be `span.itemprop`.
 
 ## `rvest`
 
+`rvest` is a package that contains functions to easily extract information from a webpage. The basic workflow is:
 
-## selectorGadget
+1. Download the HTML and turn it into an XML file with `read_html()`
+1. Extract specific nodes with `html_nodes()`
+1. Extract content from nodes with various functions
 
+### Download the HTML
 
-
-## Example of HTML code
-
-Source: [Example of a simple HTML page](http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm)
-
-```html
-<HTML>
-<HEAD>
-  <TITLE>Your Title Here</TITLE>
-</HEAD>
-
-<BODY BGCOLOR="FFFFFF">
-<CENTER><IMG SRC="clouds.jpg" ALIGN="BOTTOM"> </CENTER>
-<HR>
-<a href="http://somegreatsite.com">Link Name</a> is a link to another nifty site
-<H1>This is a Header</H1>
-<H2>This is a Medium Header</H2>
-Send me mail at <a href="mailto:support@yourcompany.com"> support@yourcompany.com</a>.
-<P> This is a new paragraph!
-<P> <B>This is a new paragraph!</B>
-<BR> <B><I>This is a new sentence without a paragraph break, in bold italics.</I></B>
-<HR>
-</BODY>
-</HTML>
+```{r frozen-dl}
+library(rvest)
+frozen <- read_html("http://www.imdb.com/title/tt2294629/")
+frozen
 ```
 
-![Rendered example HTML](images/example_html.jpg)
+> It is always a good practice when web scraping to store the output of `read_html()` in an object immediately, then apply further functions to the stored HTML file. Otherwise you send a request to the server every time you extract information from the HTML. For longer-term projects, you can store `read_html()` objects locally on your computer using `readr::write_rds()` and retrieve them using `readr::read_rds()`. This caches a local copy of the file so you always have a copy preserved, in case the webpage's underlying HTML code is modified (or the website is taken offline).
 
-## Install your equipment
+### Extract nodes
 
-* `rvest` - `devtools::install_github("hadley/rvest")`
-* SelectorGadget - [Install in your browser](http://selectorgadget.com/)
-
-## Practice CSS selectors
-
-Before we go any further, [let's play a game together!](http://flukeout.github.io)
-
-## Obtain a table
-
-Let's make a simple HTML table and then parse it! 
-
-* make a new, empty project
-* make a totally empty .Rmd file called `GapminderHead.Rmd`
-* copy this into the body:
-
-```{r echo = FALSE, comment = ""}
-cat(htmltools::includeText("extras/GapminderHead.Rmd"))
+```{r frozen-nodes, dependson = "frozen-dl"}
+itals <- html_nodes(frozen, "em")
+itals
 ```
 
-**remember to delete the comment**
+* The first argument to `html_nodes()` is the HTML document or a node previously extracted from the document
+* The second argument is a CSS selector to identify which nodes to select
 
-Then knit the document and click "View in Browser". It should look like this:
+### Extract content from nodes
 
-![gm](webdata-supp/gapminderhead.png)
-
-We have created a simple html table with the head of gapminder in it! We can get our data back by parsing this table into a dataframe again. Extracting data from html is called "scraping", and it is done with the R package `rvest`:
-
-```{r}
-read_html("GapminderHead.html") %>%
-  html_table()
+```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes")}
+itals
+html_text(itals)
+html_name(itals)
+html_children(itals)
+html_attr(itals, "class")
+html_attrs(itals)
 ```
 
-# Random observations on scraping
+### Extract content
 
-* Make sure you've obtained ONLY what you want! Scroll over the whole page to ensure that selectorgadget hasn't found too many things
-* If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking (i.e. being more precise)
-* **MOST IMPORTANT** - confirm that there is NO R package and NO API before you spend hours scraping when the API was right here
+Now it's your turn to practice.
+
+1. Read in the *Frozen* HTML
+1. Select the nodes that are both `span`s and `class = "itemprop"`
+1. Extract the text from the nodes
+
+```{r frozen-extract}
+library(rvest)
+frozen <- read_html("http://www.imdb.com/title/tt2294629/")
+cast <- html_nodes(frozen, "span.itemprop")
+html_text(cast)
+```
+
+Do you collect the cast names and only the cast names? We've scraped too much. The problem is that our CSS selector is not specific enough for our needs. We need an easy way to identify CSS selector combinations to extract only the content we want, and nothing more.
+
+## SelectorGadget
+
+**SelectorGadget** is a GUI tool used to identify CSS selector combinations from a webpage.
+
+### Install SelectorGadget
+
+1. Run `vignette("selectorgadget")`
+1. Drag **SelectorGadget** link into your browser's bookmark bar
+
+### Using SelectorGadget
+
+1. Navigate to a webpage
+1. Open the SelectorGadget bookmark
+1. Click on the item to scrape
+1. Click on yellow items you do not want to scrape
+1. Click on additional items that you do want to scrape
+1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
+1. Copy the selector to use with `html_nodes()`
+
+> When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.
+
+### Practice using SelectorGadget
+
+1. Install SelectorGadget in your browser
+1. Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
+
+```{r frozen-selectorgadget, dependson = "frozen-extract"}
+cast2 <- html_nodes(frozen, "#titleCast span.itemprop")
+html_text(cast2)
+
+cast3 <- html_nodes(frozen, ".itemprop .itemprop")
+html_text(cast3)
+```
+
+## Practice scraping data
+
+Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_nodes()` and `html_text()`.
+
+```{r sterling}
+sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
+
+col <- html_nodes(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+html_text(col)
+
+# or use a piped operation
+sterling %>%
+  html_nodes(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
+  html_text()
+```
+
+## Tables
+
+Use `html_table()` to scrape whole tables of data as a data frame.
+
+```{r sterling-table, dependson = "sterling"}
+tables <- html_nodes(sterling, css = "table")
+
+tables %>%
+  # get the second table
+  nth(2) %>%
+  # convert to data frame
+  html_table(header = TRUE)
+```
+
+### Extract climate statistics
+
+Visit the climate tab for your home town. Extract the climate statistics of your hometown as a data frame with useful column names.
+
+```{r sterling-climate}
+sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
+
+climate <- html_nodes(sterling_climate, css = "table")
+html_table(climate, header = TRUE, fill = TRUE)[[2]]
+
+sterling_climate %>%
+  html_nodes(css = "table") %>%
+  nth(2) %>%
+  html_table(header = TRUE)
+```
 
 # Acknowledgments {.toc-ignore}
 
 ```{r child='_ack_stat545.Rmd'}
 ```
-* [HTML| MDN](https://developer.mozilla.org/en-US/docs/Web/HTML)
 * Web scraping lesson drawn from [Extracting data from the web APIs and beyond](https://github.com/ropensci/user2016-tutorial)
+* [HTML| Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/HTML)
+* [CSS | Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
 # Session Info {.toc-ignore}
 

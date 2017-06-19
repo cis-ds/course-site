@@ -352,6 +352,7 @@ div.tocify {
 <span class="kw">library</span>(jsonlite)
 <span class="kw">library</span>(XML)
 <span class="kw">library</span>(httr)
+<span class="kw">library</span>(xml2)
 <span class="kw">library</span>(rvest)
 <span class="kw">library</span>(ggmap)
 
@@ -778,7 +779,7 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(sharknado
 <p>In addition, <code>httr</code> gives us access to lots of useful information about the quality of our response. For example, the header:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">headers</span>(response_xml)</code></pre></div>
 <pre><code>## $date
-## [1] &quot;Sun, 18 Jun 2017 16:08:24 GMT&quot;
+## [1] &quot;Mon, 19 Jun 2017 16:58:02 GMT&quot;
 ## 
 ## $`content-type`
 ## [1] &quot;text/xml; charset=utf-8&quot;
@@ -793,7 +794,7 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(sharknado
 ## [1] &quot;public, max-age=86400&quot;
 ## 
 ## $expires
-## [1] &quot;Mon, 19 Jun 2017 16:08:24 GMT&quot;
+## [1] &quot;Tue, 20 Jun 2017 16:58:02 GMT&quot;
 ## 
 ## $`last-modified`
 ## [1] &quot;Sun, 18 Jun 2017 15:40:52 GMT&quot;
@@ -817,7 +818,7 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(sharknado
 ## [1] &quot;cloudflare-nginx&quot;
 ## 
 ## $`cf-ray`
-## [1] &quot;370f81d1e5e52531-ORD&quot;
+## [1] &quot;371807e6e53f7167-ORD&quot;
 ## 
 ## $`content-encoding`
 ## [1] &quot;gzip&quot;
@@ -1298,6 +1299,9 @@ table<span class="fl">.data</span> <span class="kw">{</span>
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p><a href="http://flukeout.github.io">CSS diner</a> is a JavaScript-based interactive game for learning and practicing CSS selectors. Take some time to play and learn more about CSS selector combinations.</p>
+</blockquote>
 <div id="find-the-css-selector" class="section level4">
 <h4>Find the CSS selector</h4>
 <p>Which CSS identifiers are associated with Kristen Bell’s name in the <em>Frozen</em> page? Write a CSS selector that targets them.</p>
@@ -1315,96 +1319,206 @@ table<span class="fl">.data</span> <span class="kw">{</span>
 </div>
 <div id="rvest" class="section level2">
 <h2><code>rvest</code></h2>
+<p><code>rvest</code> is a package that contains functions to easily extract information from a webpage. The basic workflow is:</p>
+<ol style="list-style-type: decimal">
+<li>Download the HTML and turn it into an XML file with <code>read_html()</code></li>
+<li>Extract specific nodes with <code>html_nodes()</code></li>
+<li>Extract content from nodes with various functions</li>
+</ol>
+<div id="download-the-html" class="section level3">
+<h3>Download the HTML</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rvest)
+frozen &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.imdb.com/title/tt2294629/&quot;</span>)
+frozen</code></pre></div>
+<pre><code>## {xml_document}
+## &lt;html xmlns:og=&quot;http://ogp.me/ns#&quot; xmlns:fb=&quot;http://www.facebook.com/2008/fbml&quot;&gt;
+## [1] &lt;head&gt;\n&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset= ...
+## [2] &lt;body id=&quot;styleguide-v2&quot; class=&quot;fixed&quot;&gt;\n&lt;script&gt;\n    if (typeof ue ...</code></pre>
+<blockquote>
+<p>It is always a good practice when web scraping to store the output of <code>read_html()</code> in an object immediately, then apply further functions to the stored HTML file. Otherwise you send a request to the server every time you extract information from the HTML. For longer-term projects, you can store <code>read_html()</code> objects locally on your computer using <code>readr::write_rds()</code> and retrieve them using <code>readr::read_rds()</code>. This caches a local copy of the file so you always have a copy preserved, in case the webpage’s underlying HTML code is modified (or the website is taken offline).</p>
+</blockquote>
+</div>
+<div id="extract-nodes" class="section level3">
+<h3>Extract nodes</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">itals &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(frozen, <span class="st">&quot;em&quot;</span>)
+itals</code></pre></div>
+<pre><code>## {xml_nodeset (1)}
+## [1] &lt;em class=&quot;nobr&quot;&gt;Written by\n&lt;a href=&quot;/search/title?plot_author=DeAl ...</code></pre>
+<ul>
+<li>The first argument to <code>html_nodes()</code> is the HTML document or a node previously extracted from the document</li>
+<li>The second argument is a CSS selector to identify which nodes to select</li>
+</ul>
+</div>
+<div id="extract-content-from-nodes" class="section level3">
+<h3>Extract content from nodes</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">itals</code></pre></div>
+<pre><code>## {xml_nodeset (1)}
+## [1] &lt;em class=&quot;nobr&quot;&gt;Written by\n&lt;a href=&quot;/search/title?plot_author=DeAl ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">html_text</span>(itals)</code></pre></div>
+<pre><code>## [1] &quot;Written by\nDeAlan Wilson for ComedyE.com&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">html_name</span>(itals)</code></pre></div>
+<pre><code>## [1] &quot;em&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">html_children</span>(itals)</code></pre></div>
+<pre><code>## {xml_nodeset (1)}
+## [1] &lt;a href=&quot;/search/title?plot_author=DeAlan%20Wilson%20for%20ComedyE.c ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">html_attr</span>(itals, <span class="st">&quot;class&quot;</span>)</code></pre></div>
+<pre><code>## [1] &quot;nobr&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">html_attrs</span>(itals)</code></pre></div>
+<pre><code>## [[1]]
+##  class 
+## &quot;nobr&quot;</code></pre>
+</div>
+<div id="extract-content" class="section level3">
+<h3>Extract content</h3>
+<p>Now it’s your turn to practice.</p>
+<ol style="list-style-type: decimal">
+<li>Read in the <em>Frozen</em> HTML</li>
+<li>Select the nodes that are both <code>span</code>s and <code>class = &quot;itemprop&quot;</code></li>
+<li>Extract the text from the nodes</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rvest)
+frozen &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.imdb.com/title/tt2294629/&quot;</span>)
+cast &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(frozen, <span class="st">&quot;span.itemprop&quot;</span>)
+<span class="kw">html_text</span>(cast)</code></pre></div>
+<pre><code>##  [1] &quot;Animation&quot;                     &quot;Adventure&quot;                    
+##  [3] &quot;Comedy&quot;                        &quot;Chris Buck&quot;                   
+##  [5] &quot;Jennifer Lee&quot;                  &quot;Jennifer Lee&quot;                 
+##  [7] &quot;Hans Christian Andersen&quot;       &quot;Kristen Bell&quot;                 
+##  [9] &quot;Idina Menzel&quot;                  &quot;Jonathan Groff&quot;               
+## [11] &quot;Kristen Bell&quot;                  &quot;Idina Menzel&quot;                 
+## [13] &quot;Jonathan Groff&quot;                &quot;Josh Gad&quot;                     
+## [15] &quot;Santino Fontana&quot;               &quot;Alan Tudyk&quot;                   
+## [17] &quot;Ciarán Hinds&quot;                  &quot;Chris Williams&quot;               
+## [19] &quot;Stephen J. Anderson&quot;           &quot;Maia Wilson&quot;                  
+## [21] &quot;Edie McClurg&quot;                  &quot;Robert Pine&quot;                  
+## [23] &quot;Maurice LaMarche&quot;              &quot;Livvy Stubenrauch&quot;            
+## [25] &quot;Eva Bella&quot;                     &quot;female protagonist&quot;           
+## [27] &quot;snowman&quot;                       &quot;sister sister relationship&quot;   
+## [29] &quot;magic&quot;                         &quot;sister love&quot;                  
+## [31] &quot;Walt Disney Animation Studios&quot; &quot;Walt Disney Pictures&quot;</code></pre>
+<p>Do you collect the cast names and only the cast names? We’ve scraped too much. The problem is that our CSS selector is not specific enough for our needs. We need an easy way to identify CSS selector combinations to extract only the content we want, and nothing more.</p>
+</div>
 </div>
 <div id="selectorgadget" class="section level2">
-<h2>selectorGadget</h2>
+<h2>SelectorGadget</h2>
+<p><strong>SelectorGadget</strong> is a GUI tool used to identify CSS selector combinations from a webpage.</p>
+<div id="install-selectorgadget" class="section level3">
+<h3>Install SelectorGadget</h3>
+<ol style="list-style-type: decimal">
+<li>Run <code>vignette(&quot;selectorgadget&quot;)</code></li>
+<li>Drag <strong>SelectorGadget</strong> link into your browser’s bookmark bar</li>
+</ol>
 </div>
-<div id="example-of-html-code" class="section level2">
-<h2>Example of HTML code</h2>
-<p>Source: <a href="http://help.websiteos.com/websiteos/example_of_a_simple_html_page.htm">Example of a simple HTML page</a></p>
-<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;HTML&gt;</span>
-<span class="kw">&lt;HEAD&gt;</span>
-  <span class="kw">&lt;TITLE&gt;</span>Your Title Here<span class="kw">&lt;/TITLE&gt;</span>
-<span class="kw">&lt;/HEAD&gt;</span>
+<div id="using-selectorgadget" class="section level3">
+<h3>Using SelectorGadget</h3>
+<ol style="list-style-type: decimal">
+<li>Navigate to a webpage</li>
+<li>Open the SelectorGadget bookmark</li>
+<li>Click on the item to scrape</li>
+<li>Click on yellow items you do not want to scrape</li>
+<li>Click on additional items that you do want to scrape</li>
+<li>Rinse and repeat until only the items you want to scrape are highlighted in yellow</li>
+<li>Copy the selector to use with <code>html_nodes()</code></li>
+</ol>
+<blockquote>
+<p>When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.</p>
+</blockquote>
+</div>
+<div id="practice-using-selectorgadget" class="section level3">
+<h3>Practice using SelectorGadget</h3>
+<ol style="list-style-type: decimal">
+<li>Install SelectorGadget in your browser</li>
+<li>Use SelectorGadget to find a CSS selector combination that identifies just the cast member names</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cast2 &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(frozen, <span class="st">&quot;#titleCast span.itemprop&quot;</span>)
+<span class="kw">html_text</span>(cast2)</code></pre></div>
+<pre><code>##  [1] &quot;Kristen Bell&quot;        &quot;Idina Menzel&quot;        &quot;Jonathan Groff&quot;     
+##  [4] &quot;Josh Gad&quot;            &quot;Santino Fontana&quot;     &quot;Alan Tudyk&quot;         
+##  [7] &quot;Ciarán Hinds&quot;        &quot;Chris Williams&quot;      &quot;Stephen J. Anderson&quot;
+## [10] &quot;Maia Wilson&quot;         &quot;Edie McClurg&quot;        &quot;Robert Pine&quot;        
+## [13] &quot;Maurice LaMarche&quot;    &quot;Livvy Stubenrauch&quot;   &quot;Eva Bella&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cast3 &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(frozen, <span class="st">&quot;.itemprop .itemprop&quot;</span>)
+<span class="kw">html_text</span>(cast3)</code></pre></div>
+<pre><code>##  [1] &quot;Kristen Bell&quot;        &quot;Idina Menzel&quot;        &quot;Jonathan Groff&quot;     
+##  [4] &quot;Josh Gad&quot;            &quot;Santino Fontana&quot;     &quot;Alan Tudyk&quot;         
+##  [7] &quot;Ciarán Hinds&quot;        &quot;Chris Williams&quot;      &quot;Stephen J. Anderson&quot;
+## [10] &quot;Maia Wilson&quot;         &quot;Edie McClurg&quot;        &quot;Robert Pine&quot;        
+## [13] &quot;Maurice LaMarche&quot;    &quot;Livvy Stubenrauch&quot;   &quot;Eva Bella&quot;</code></pre>
+</div>
+</div>
+<div id="practice-scraping-data" class="section level2">
+<h2>Practice scraping data</h2>
+<p>Look up the cost of living for your hometown on <a href="http://www.bestplaces.net/">Sperling’s Best Places</a>. Then extract it with <code>html_nodes()</code> and <code>html_text()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sterling &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.bestplaces.net/cost_of_living/city/virginia/sterling&quot;</span>)
 
-<span class="kw">&lt;BODY</span><span class="ot"> BGCOLOR=</span><span class="st">&quot;FFFFFF&quot;</span><span class="kw">&gt;</span>
-<span class="kw">&lt;CENTER&gt;&lt;IMG</span><span class="ot"> SRC=</span><span class="st">&quot;clouds.jpg&quot;</span><span class="ot"> ALIGN=</span><span class="st">&quot;BOTTOM&quot;</span><span class="kw">&gt;</span> <span class="kw">&lt;/CENTER&gt;</span>
-<span class="kw">&lt;HR&gt;</span>
-<span class="kw">&lt;a</span><span class="ot"> href=</span><span class="st">&quot;http://somegreatsite.com&quot;</span><span class="kw">&gt;</span>Link Name<span class="kw">&lt;/a&gt;</span> is a link to another nifty site
-<span class="kw">&lt;H1&gt;</span>This is a Header<span class="kw">&lt;/H1&gt;</span>
-<span class="kw">&lt;H2&gt;</span>This is a Medium Header<span class="kw">&lt;/H2&gt;</span>
-Send me mail at <span class="kw">&lt;a</span><span class="ot"> href=</span><span class="st">&quot;mailto:support@yourcompany.com&quot;</span><span class="kw">&gt;</span> support@yourcompany.com<span class="kw">&lt;/a&gt;</span>.
-<span class="kw">&lt;P&gt;</span> This is a new paragraph!
-<span class="kw">&lt;P&gt;</span> <span class="kw">&lt;B&gt;</span>This is a new paragraph!<span class="kw">&lt;/B&gt;</span>
-<span class="kw">&lt;BR&gt;</span> <span class="kw">&lt;B&gt;&lt;I&gt;</span>This is a new sentence without a paragraph break, in bold italics.<span class="kw">&lt;/I&gt;&lt;/B&gt;</span>
-<span class="kw">&lt;HR&gt;</span>
-<span class="kw">&lt;/BODY&gt;</span>
-<span class="kw">&lt;/HTML&gt;</span></code></pre></div>
-<div class="figure">
-<img src="images/example_html.jpg" alt="Rendered example HTML" />
-<p class="caption">Rendered example HTML</p>
+col &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(sterling, <span class="dt">css =</span> <span class="st">&quot;#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)&quot;</span>)
+<span class="kw">html_text</span>(col)</code></pre></div>
+<pre><code>## [1] &quot;136&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># or use a piped operation</span>
+sterling %&gt;%
+<span class="st">  </span><span class="kw">html_nodes</span>(<span class="dt">css =</span> <span class="st">&quot;#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">html_text</span>()</code></pre></div>
+<pre><code>## [1] &quot;136&quot;</code></pre>
 </div>
-</div>
-<div id="install-your-equipment" class="section level2">
-<h2>Install your equipment</h2>
-<ul>
-<li><code>rvest</code> - <code>devtools::install_github(&quot;hadley/rvest&quot;)</code></li>
-<li>SelectorGadget - <a href="http://selectorgadget.com/">Install in your browser</a></li>
-</ul>
-</div>
-<div id="practice-css-selectors" class="section level2">
-<h2>Practice CSS selectors</h2>
-<p>Before we go any further, <a href="http://flukeout.github.io">let’s play a game together!</a></p>
-</div>
-<div id="obtain-a-table" class="section level2">
-<h2>Obtain a table</h2>
-<p>Let’s make a simple HTML table and then parse it!</p>
-<ul>
-<li>make a new, empty project</li>
-<li>make a totally empty .Rmd file called <code>GapminderHead.Rmd</code></li>
-<li>copy this into the body:</li>
-</ul>
-<pre><code>---
-output: html_document
----
+<div id="tables" class="section level2">
+<h2>Tables</h2>
+<p>Use <code>html_table()</code> to scrape whole tables of data as a data frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tables &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(sterling, <span class="dt">css =</span> <span class="st">&quot;table&quot;</span>)
 
-```{r echo=FALSE, results=&#39;asis&#39;}
-library(gapminder)
-knitr::kable(head(gapminder))
-```</code></pre>
-<p><strong>remember to delete the comment</strong></p>
-<p>Then knit the document and click “View in Browser”. It should look like this:</p>
-<div class="figure">
-<img src="webdata-supp/gapminderhead.png" alt="gm" />
-<p class="caption">gm</p>
+tables %&gt;%
+<span class="st">  </span><span class="co"># get the second table</span>
+<span class="st">  </span><span class="kw">nth</span>(<span class="dv">2</span>) %&gt;%
+<span class="st">  </span><span class="co"># convert to data frame</span>
+<span class="st">  </span><span class="kw">html_table</span>(<span class="dt">header =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>##   COST OF LIVING Sterling, Virginia United States
+## 1        Overall              136.0           100
+## 2        Grocery              113.9           100
+## 3         Health              101.0           100
+## 4        Housing              203.0           100
+## 5      Utilities              107.0           100
+## 6 Transportation              108.0           100
+## 7  Miscellaneous               98.0           100</code></pre>
+<div id="extract-climate-statistics" class="section level3">
+<h3>Extract climate statistics</h3>
+<p>Visit the climate tab for your home town. Extract the climate statistics of your hometown as a data frame with useful column names.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sterling_climate &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.bestplaces.net/climate/city/virginia/sterling&quot;</span>)
+
+climate &lt;-<span class="st"> </span><span class="kw">html_nodes</span>(sterling_climate, <span class="dt">css =</span> <span class="st">&quot;table&quot;</span>)
+<span class="kw">html_table</span>(climate, <span class="dt">header =</span> <span class="ot">TRUE</span>, <span class="dt">fill =</span> <span class="ot">TRUE</span>)[[<span class="dv">2</span>]]</code></pre></div>
+<pre><code>##                         CLIMATE Sterling, Virginia United States
+## 1                Rainfall (in.)            42.0447          39.2
+## 2                Snowfall (in.)            21.5351          25.8
+## 3            Precipitation Days            74.1000           102
+## 4                    Sunny Days           197.0000           205
+## 5                Avg. July High            87.4170          86.1
+## 6                 Avg. Jan. Low            23.9660          22.6
+## 7 Comfort Index (higher=better)            47.0000            54
+## 8                      UV Index             4.0000           4.3
+## 9                 Elevation ft.           457.0000         1,443</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sterling_climate %&gt;%
+<span class="st">  </span><span class="kw">html_nodes</span>(<span class="dt">css =</span> <span class="st">&quot;table&quot;</span>) %&gt;%
+<span class="st">  </span><span class="kw">nth</span>(<span class="dv">2</span>) %&gt;%
+<span class="st">  </span><span class="kw">html_table</span>(<span class="dt">header =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>##                         CLIMATE Sterling, Virginia United States
+## 1                Rainfall (in.)            42.0447          39.2
+## 2                Snowfall (in.)            21.5351          25.8
+## 3            Precipitation Days            74.1000           102
+## 4                    Sunny Days           197.0000           205
+## 5                Avg. July High            87.4170          86.1
+## 6                 Avg. Jan. Low            23.9660          22.6
+## 7 Comfort Index (higher=better)            47.0000            54
+## 8                      UV Index             4.0000           4.3
+## 9                 Elevation ft.           457.0000         1,443</code></pre>
 </div>
-<p>We have created a simple html table with the head of gapminder in it! We can get our data back by parsing this table into a dataframe again. Extracting data from html is called “scraping”, and it is done with the R package <code>rvest</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">read_html</span>(<span class="st">&quot;GapminderHead.html&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">html_table</span>()</code></pre></div>
-<pre><code>## [[1]]
-##       country continent year lifeExp      pop gdpPercap
-## 1 Afghanistan      Asia 1952  28.801  8425333  779.4453
-## 2 Afghanistan      Asia 1957  30.332  9240934  820.8530
-## 3 Afghanistan      Asia 1962  31.997 10267083  853.1007
-## 4 Afghanistan      Asia 1967  34.020 11537966  836.1971
-## 5 Afghanistan      Asia 1972  36.088 13079460  739.9811
-## 6 Afghanistan      Asia 1977  38.438 14880372  786.1134</code></pre>
 </div>
-</div>
-<div id="random-observations-on-scraping" class="section level1">
-<h1>Random observations on scraping</h1>
-<ul>
-<li>Make sure you’ve obtained ONLY what you want! Scroll over the whole page to ensure that selectorgadget hasn’t found too many things</li>
-<li>If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking (i.e. being more precise)</li>
-<li><strong>MOST IMPORTANT</strong> - confirm that there is NO R package and NO API before you spend hours scraping when the API was right here</li>
-</ul>
 </div>
 <div id="acknowledgments" class="section level1 toc-ignore">
 <h1>Acknowledgments</h1>
 <ul>
 <li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
-<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML">HTML| MDN</a></li>
 <li>Web scraping lesson drawn from <a href="https://github.com/ropensci/user2016-tutorial">Extracting data from the web APIs and beyond</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML">HTML| Mozilla Developer Network</a></li>
+<li><a href="https://developer.mozilla.org/en-US/docs/Web/CSS">CSS | Mozilla Developer Network</a></li>
 </ul>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
@@ -1420,80 +1534,86 @@ knitr::kable(head(gapminder))
 ##  tz       America/Chicago             
 ##  date     2017-06-19</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
-<pre><code>##  package     * version    date       source                            
-##  assertthat    0.2.0      2017-04-11 cran (@0.2.0)                     
-##  backports     1.1.0      2017-05-22 CRAN (R 3.3.2)                    
-##  base        * 3.3.3      2017-03-07 local                             
-##  bitops        1.0-6      2013-08-17 CRAN (R 3.3.0)                    
-##  broom         0.4.2      2017-02-13 CRAN (R 3.3.2)                    
-##  cellranger    1.1.0      2016-07-27 CRAN (R 3.3.0)                    
-##  colorspace    1.3-2      2016-12-14 CRAN (R 3.3.2)                    
-##  curl        * 2.6        2017-04-27 CRAN (R 3.3.2)                    
-##  datasets    * 3.3.3      2017-03-07 local                             
-##  devtools      1.13.2     2017-06-02 CRAN (R 3.3.2)                    
-##  digest        0.6.12     2017-01-27 CRAN (R 3.3.2)                    
-##  dplyr       * 0.7.0      2017-06-09 cran (@0.7.0)                     
-##  evaluate      0.10       2016-10-11 CRAN (R 3.3.0)                    
-##  forcats       0.2.0      2017-01-23 CRAN (R 3.3.2)                    
-##  foreign       0.8-68     2017-04-24 CRAN (R 3.3.2)                    
-##  geosphere     1.5-5      2016-06-15 CRAN (R 3.3.0)                    
-##  ggmap       * 2.7        2016-12-07 Github (dkahle/ggmap@c6b7579)     
-##  ggplot2     * 2.2.1.9000 2017-06-13 Github (tidyverse/ggplot2@eedaa81)
-##  glue          1.0.0      2017-04-17 cran (@1.0.0)                     
-##  graphics    * 3.3.3      2017-03-07 local                             
-##  grDevices   * 3.3.3      2017-03-07 local                             
-##  grid          3.3.3      2017-03-07 local                             
-##  gtable        0.2.0      2016-02-26 CRAN (R 3.3.0)                    
-##  haven         1.0.0      2016-09-23 cran (@1.0.0)                     
-##  hms           0.3        2016-11-22 CRAN (R 3.3.2)                    
-##  htmltools     0.3.6      2017-04-28 cran (@0.3.6)                     
-##  httr        * 1.2.1      2016-07-03 CRAN (R 3.3.0)                    
-##  jpeg          0.1-8      2014-01-23 cran (@0.1-8)                     
-##  jsonlite    * 1.5        2017-06-01 cran (@1.5)                       
-##  knitr       * 1.16       2017-05-18 CRAN (R 3.3.2)                    
-##  lattice       0.20-35    2017-03-25 CRAN (R 3.3.2)                    
-##  lazyeval      0.2.0      2016-06-12 CRAN (R 3.3.0)                    
-##  lubridate     1.6.0      2016-09-13 CRAN (R 3.3.0)                    
-##  magrittr      1.5        2014-11-22 CRAN (R 3.3.0)                    
-##  mapproj       1.2-5      2017-06-08 CRAN (R 3.3.2)                    
-##  maps          3.2.0      2017-06-08 CRAN (R 3.3.2)                    
-##  memoise       1.1.0      2017-04-21 CRAN (R 3.3.2)                    
-##  methods     * 3.3.3      2017-03-07 local                             
-##  mnormt        1.5-5      2016-10-15 CRAN (R 3.3.0)                    
-##  modelr        0.1.0      2016-08-31 CRAN (R 3.3.0)                    
-##  munsell       0.4.3      2016-02-13 CRAN (R 3.3.0)                    
-##  nlme          3.1-131    2017-02-06 CRAN (R 3.3.3)                    
-##  parallel      3.3.3      2017-03-07 local                             
-##  plyr          1.8.4      2016-06-08 CRAN (R 3.3.0)                    
-##  png           0.1-7      2013-12-03 cran (@0.1-7)                     
-##  proto         1.0.0      2016-10-29 CRAN (R 3.3.0)                    
-##  psych         1.7.5      2017-05-03 CRAN (R 3.3.3)                    
-##  purrr       * 0.2.2.9000 2017-06-18 Github (tidyverse/purrr@3061014)  
-##  R6            2.2.1      2017-05-10 CRAN (R 3.3.2)                    
-##  Rcpp          0.12.11    2017-05-22 CRAN (R 3.3.2)                    
-##  readr       * 1.1.1      2017-05-16 CRAN (R 3.3.2)                    
-##  readxl        1.0.0      2017-04-18 CRAN (R 3.3.2)                    
-##  reshape2      1.4.2      2016-10-22 CRAN (R 3.3.0)                    
-##  RgoogleMaps   1.4.1      2016-09-18 cran (@1.4.1)                     
-##  rjson         0.2.15     2014-11-03 cran (@0.2.15)                    
-##  rlang         0.1.1.9000 2017-06-13 Github (hadley/rlang@7f53e56)     
-##  rmarkdown     1.5        2017-04-26 CRAN (R 3.3.2)                    
-##  rprojroot     1.2        2017-01-16 CRAN (R 3.3.2)                    
-##  rvest       * 0.3.2      2016-06-17 CRAN (R 3.3.0)                    
-##  scales        0.4.1      2016-11-09 CRAN (R 3.3.1)                    
-##  sp            1.2-4      2016-12-22 CRAN (R 3.3.2)                    
-##  stats       * 3.3.3      2017-03-07 local                             
-##  stringi       1.1.5      2017-04-07 CRAN (R 3.3.2)                    
-##  stringr     * 1.2.0      2017-02-18 CRAN (R 3.3.2)                    
-##  tibble      * 1.3.3      2017-05-28 cran (@1.3.3)                     
-##  tidyr       * 0.6.3      2017-05-15 CRAN (R 3.3.2)                    
-##  tidyverse   * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
-##  tools         3.3.3      2017-03-07 local                             
-##  utils       * 3.3.3      2017-03-07 local                             
-##  withr         1.0.2      2016-06-20 CRAN (R 3.3.0)                    
-##  XML         * 3.98-1.7   2017-05-03 CRAN (R 3.3.2)                    
-##  xml2        * 1.1.1      2017-01-24 CRAN (R 3.3.2)                    
-##  yaml          2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+<pre><code>##  package      * version    date       source                            
+##  assertthat     0.2.0      2017-04-11 cran (@0.2.0)                     
+##  backports      1.1.0      2017-05-22 CRAN (R 3.3.2)                    
+##  base         * 3.3.3      2017-03-07 local                             
+##  bitops         1.0-6      2013-08-17 CRAN (R 3.3.0)                    
+##  broom          0.4.2      2017-02-13 CRAN (R 3.3.2)                    
+##  cellranger     1.1.0      2016-07-27 CRAN (R 3.3.0)                    
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.3.3)                    
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.3.2)                    
+##  curl         * 2.6        2017-04-27 CRAN (R 3.3.2)                    
+##  datasets     * 3.3.3      2017-03-07 local                             
+##  devtools       1.13.2     2017-06-02 CRAN (R 3.3.2)                    
+##  digest         0.6.12     2017-01-27 CRAN (R 3.3.2)                    
+##  dplyr        * 0.7.0      2017-06-09 cran (@0.7.0)                     
+##  evaluate       0.10       2016-10-11 CRAN (R 3.3.0)                    
+##  forcats        0.2.0      2017-01-23 CRAN (R 3.3.2)                    
+##  foreign        0.8-68     2017-04-24 CRAN (R 3.3.2)                    
+##  geosphere      1.5-5      2016-06-15 CRAN (R 3.3.0)                    
+##  ggmap        * 2.7        2016-12-07 Github (dkahle/ggmap@c6b7579)     
+##  ggplot2      * 2.2.1.9000 2017-06-13 Github (tidyverse/ggplot2@eedaa81)
+##  glue           1.0.0      2017-04-17 cran (@1.0.0)                     
+##  graphics     * 3.3.3      2017-03-07 local                             
+##  grDevices    * 3.3.3      2017-03-07 local                             
+##  grid           3.3.3      2017-03-07 local                             
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.3.0)                    
+##  haven          1.0.0      2016-09-23 cran (@1.0.0)                     
+##  hms            0.3        2016-11-22 CRAN (R 3.3.2)                    
+##  htmltools      0.3.6      2017-04-28 cran (@0.3.6)                     
+##  httr         * 1.2.1      2016-07-03 CRAN (R 3.3.0)                    
+##  jpeg           0.1-8      2014-01-23 cran (@0.1-8)                     
+##  jsonlite     * 1.5        2017-06-01 cran (@1.5)                       
+##  knitr        * 1.16       2017-05-18 CRAN (R 3.3.2)                    
+##  labeling       0.3        2014-08-23 CRAN (R 3.3.0)                    
+##  lattice        0.20-35    2017-03-25 CRAN (R 3.3.2)                    
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.3.0)                    
+##  lubridate      1.6.0      2016-09-13 CRAN (R 3.3.0)                    
+##  magrittr       1.5        2014-11-22 CRAN (R 3.3.0)                    
+##  mapproj        1.2-5      2017-06-08 CRAN (R 3.3.2)                    
+##  maps           3.2.0      2017-06-08 CRAN (R 3.3.2)                    
+##  Matrix         1.2-10     2017-04-28 CRAN (R 3.3.2)                    
+##  memoise        1.1.0      2017-04-21 CRAN (R 3.3.2)                    
+##  methods      * 3.3.3      2017-03-07 local                             
+##  mgcv           1.8-17     2017-02-08 CRAN (R 3.3.3)                    
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.3.0)                    
+##  modelr         0.1.0      2016-08-31 CRAN (R 3.3.0)                    
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.3.0)                    
+##  nlme           3.1-131    2017-02-06 CRAN (R 3.3.3)                    
+##  parallel       3.3.3      2017-03-07 local                             
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.3.0)                    
+##  png            0.1-7      2013-12-03 cran (@0.1-7)                     
+##  proto          1.0.0      2016-10-29 CRAN (R 3.3.0)                    
+##  psych          1.7.5      2017-05-03 CRAN (R 3.3.3)                    
+##  purrr        * 0.2.2.9000 2017-06-18 Github (tidyverse/purrr@3061014)  
+##  R6             2.2.1      2017-05-10 CRAN (R 3.3.2)                    
+##  RColorBrewer   1.1-2      2014-12-07 CRAN (R 3.3.0)                    
+##  Rcpp           0.12.11    2017-05-22 CRAN (R 3.3.2)                    
+##  readr        * 1.1.1      2017-05-16 CRAN (R 3.3.2)                    
+##  readxl         1.0.0      2017-04-18 CRAN (R 3.3.2)                    
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.3.0)                    
+##  RgoogleMaps    1.4.1      2016-09-18 cran (@1.4.1)                     
+##  rjson          0.2.15     2014-11-03 cran (@0.2.15)                    
+##  rlang          0.1.1.9000 2017-06-13 Github (hadley/rlang@7f53e56)     
+##  rmarkdown      1.5        2017-04-26 CRAN (R 3.3.2)                    
+##  rprojroot      1.2        2017-01-16 CRAN (R 3.3.2)                    
+##  rvest        * 0.3.2      2016-06-17 CRAN (R 3.3.0)                    
+##  scales         0.4.1      2016-11-09 CRAN (R 3.3.1)                    
+##  selectr        0.3-1      2016-12-19 CRAN (R 3.3.2)                    
+##  sp             1.2-4      2016-12-22 CRAN (R 3.3.2)                    
+##  stats        * 3.3.3      2017-03-07 local                             
+##  stringi        1.1.5      2017-04-07 CRAN (R 3.3.2)                    
+##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.3.2)                    
+##  tibble       * 1.3.3      2017-05-28 cran (@1.3.3)                     
+##  tidyr        * 0.6.3      2017-05-15 CRAN (R 3.3.2)                    
+##  tidyverse    * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
+##  tools          3.3.3      2017-03-07 local                             
+##  utils        * 3.3.3      2017-03-07 local                             
+##  withr          1.0.2      2016-06-20 CRAN (R 3.3.0)                    
+##  XML          * 3.98-1.7   2017-05-03 CRAN (R 3.3.2)                    
+##  xml2         * 1.1.1      2017-06-19 Github (r-lib/xml2@4be4590)       
+##  yaml           2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
