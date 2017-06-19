@@ -368,60 +368,81 @@ div.tocify {
 <img src="images/ombd.png" />
 
 </div>
-<p>Let’s experiment with different values of the <code>title</code> and <code>year</code> fields. Notice the pattern in the request. For example for Title = Interstellar and Year = 2014, we get:</p>
-<pre class="http"><code>http://www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml</code></pre>
-<p>Try pasting this link into the browser. Also experiment with <code>json</code> and <code>xml</code></p>
+<p>Let’s experiment with different values of the <code>title</code> and <code>year</code> fields. Notice the pattern in the request. For example for Title = Sharknado and Year = 2013, we get:</p>
+<pre class="http"><code>http://www.omdbapi.com/?apikey=[apikey]&amp;t=Sharknado&amp;y=2013&amp;plot=short&amp;r=xml</code></pre>
+<p>Try pasting this link into the browser. Also experiment with <code>json</code> and <code>xml</code>.</p>
+<blockquote>
+<p>The OMDB API used to be free, however in the past year shifted to a private API key due to overwhelming traffic. See in class for a demo API key you can use.</p>
+</blockquote>
 <p>How can we create this request in R?</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="st">&quot;http://www.omdbapi.com/?t=&quot;</span>, <span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;y=&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;plot=&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;r=&quot;</span>, <span class="st">&quot;xml&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># retrieve API key from .RProfile</span>
+omdb_key &lt;-<span class="st"> </span><span class="kw">getOption</span>(<span class="st">&quot;omdb_key&quot;</span>)
+
+<span class="co"># create url</span>
+request &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="st">&quot;http://www.omdbapi.com/?apikey=&quot;</span>, omdb_key, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;t=&quot;</span>, <span class="st">&quot;Sharknado&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;y=&quot;</span>, <span class="st">&quot;2013&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;plot=&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;&amp;&quot;</span>, <span class="st">&quot;r=&quot;</span>, <span class="st">&quot;xml&quot;</span>)
 request</code></pre></div>
-<pre><code>## [1] &quot;http://www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml&quot;</code></pre>
+<pre><code>## [1] &quot;http://www.omdbapi.com/?apikey=775e324f&amp;t=Sharknado&amp;y=2013&amp;plot=short&amp;r=xml&quot;</code></pre>
 <p>It works, but it’s a bit ungainly. Lets try to abstract that into a function:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">omdb &lt;-<span class="st"> </span>function(Title, Year, Plot, Format){
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">omdb &lt;-<span class="st"> </span>function(Key, Title, Year, Plot, Format){
   baseurl &lt;-<span class="st"> &quot;http://www.omdbapi.com/?&quot;</span>
-  params &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;t=&quot;</span>, <span class="st">&quot;y=&quot;</span>, <span class="st">&quot;plot=&quot;</span>, <span class="st">&quot;r=&quot;</span>)
-  values &lt;-<span class="st"> </span><span class="kw">c</span>(Title, Year, Plot, Format)
+  params &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;apikey=&quot;</span>, <span class="st">&quot;t=&quot;</span>, <span class="st">&quot;y=&quot;</span>, <span class="st">&quot;plot=&quot;</span>, <span class="st">&quot;r=&quot;</span>)
+  values &lt;-<span class="st"> </span><span class="kw">c</span>(Key, Title, Year, Plot, Format)
   param_values &lt;-<span class="st"> </span><span class="kw">map2_chr</span>(params, values, str_c)
   args &lt;-<span class="st"> </span><span class="kw">str_c</span>(param_values, <span class="dt">collapse =</span> <span class="st">&quot;&amp;&quot;</span>)
   <span class="kw">str_c</span>(baseurl, args)
 }
 
-<span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)</code></pre></div>
-<pre><code>## [1] &quot;http://www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml&quot;</code></pre>
+<span class="kw">omdb</span>(<span class="st">&quot;omdb_key&quot;</span>, <span class="st">&quot;Sharknado&quot;</span>, <span class="st">&quot;2013&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)</code></pre></div>
+<pre><code>## [1] &quot;http://www.omdbapi.com/?apikey=omdb_key&amp;t=Sharknado&amp;y=2013&amp;plot=short&amp;r=xml&quot;</code></pre>
 <p>Now we have a handy function that returns the API query. We can paste in the link, but we can also obtain data from within R:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request_interstellar &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)
-con &lt;-<span class="st"> </span><span class="kw">curl</span>(request_interstellar)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request_sharknado &lt;-<span class="st"> </span><span class="kw">omdb</span>(omdb_key, <span class="st">&quot;Sharknado&quot;</span>, <span class="st">&quot;2013&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)
+con &lt;-<span class="st"> </span><span class="kw">curl</span>(request_sharknado)
 answer_xml &lt;-<span class="st"> </span><span class="kw">readLines</span>(con)</code></pre></div>
 <pre><code>## Warning in readLines(con): incomplete final line found on &#39;http://
-## www.omdbapi.com/?t=Interstellar&amp;y=2014&amp;plot=short&amp;r=xml&#39;</code></pre>
+## www.omdbapi.com/?apikey=775e324f&amp;t=Sharknado&amp;y=2013&amp;plot=short&amp;r=xml&#39;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">close</span>(con)
 answer_xml</code></pre></div>
-<pre><code>## [1] &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;&lt;root response=\&quot;True\&quot;&gt;&lt;movie title=\&quot;Interstellar\&quot; year=\&quot;2014\&quot; rated=\&quot;PG-13\&quot; released=\&quot;07 Nov 2014\&quot; runtime=\&quot;169 min\&quot; genre=\&quot;Adventure, Drama, Sci-Fi\&quot; director=\&quot;Christopher Nolan\&quot; writer=\&quot;Jonathan Nolan, Christopher Nolan\&quot; actors=\&quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow\&quot; plot=\&quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.\&quot; language=\&quot;English\&quot; country=\&quot;USA, UK\&quot; awards=\&quot;Won 1 Oscar. Another 40 wins &amp;amp; 135 nominations.\&quot; poster=\&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg\&quot; metascore=\&quot;74\&quot; imdbRating=\&quot;8.6\&quot; imdbVotes=\&quot;1,006,066\&quot; imdbID=\&quot;tt0816692\&quot; type=\&quot;movie\&quot;/&gt;&lt;/root&gt;&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request_interstellar &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;json&quot;</span>)
-con &lt;-<span class="st"> </span><span class="kw">curl</span>(request_interstellar)
+<pre><code>## [1] &quot;&lt;?xml version=\&quot;1.0\&quot; encoding=\&quot;UTF-8\&quot;?&gt;&lt;root response=\&quot;True\&quot;&gt;&lt;movie title=\&quot;Sharknado\&quot; year=\&quot;2013\&quot; rated=\&quot;TV-14\&quot; released=\&quot;11 Jul 2013\&quot; runtime=\&quot;86 min\&quot; genre=\&quot;Comedy, Horror, Sci-Fi\&quot; director=\&quot;Anthony C. Ferrante\&quot; writer=\&quot;Thunder Levin\&quot; actors=\&quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo\&quot; plot=\&quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.\&quot; language=\&quot;English\&quot; country=\&quot;USA\&quot; awards=\&quot;1 win &amp;amp; 2 nominations.\&quot; poster=\&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg\&quot; metascore=\&quot;N/A\&quot; imdbRating=\&quot;3.3\&quot; imdbVotes=\&quot;37,326\&quot; imdbID=\&quot;tt2724064\&quot; type=\&quot;movie\&quot;/&gt;&lt;/root&gt;&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">request_sharknado &lt;-<span class="st"> </span><span class="kw">omdb</span>(omdb_key, <span class="st">&quot;Sharknado&quot;</span>, <span class="st">&quot;2013&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;json&quot;</span>)
+con &lt;-<span class="st"> </span><span class="kw">curl</span>(request_sharknado)
 answer_json &lt;-<span class="st"> </span><span class="kw">readLines</span>(con)
 <span class="kw">close</span>(con)
 answer_json %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">prettify</span>()</code></pre></div>
 <pre><code>## {
-##     &quot;Title&quot;: &quot;Interstellar&quot;,
-##     &quot;Year&quot;: &quot;2014&quot;,
-##     &quot;Rated&quot;: &quot;PG-13&quot;,
-##     &quot;Released&quot;: &quot;07 Nov 2014&quot;,
-##     &quot;Runtime&quot;: &quot;169 min&quot;,
-##     &quot;Genre&quot;: &quot;Adventure, Drama, Sci-Fi&quot;,
-##     &quot;Director&quot;: &quot;Christopher Nolan&quot;,
-##     &quot;Writer&quot;: &quot;Jonathan Nolan, Christopher Nolan&quot;,
-##     &quot;Actors&quot;: &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot;,
-##     &quot;Plot&quot;: &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot;,
+##     &quot;Title&quot;: &quot;Sharknado&quot;,
+##     &quot;Year&quot;: &quot;2013&quot;,
+##     &quot;Rated&quot;: &quot;TV-14&quot;,
+##     &quot;Released&quot;: &quot;11 Jul 2013&quot;,
+##     &quot;Runtime&quot;: &quot;86 min&quot;,
+##     &quot;Genre&quot;: &quot;Comedy, Horror, Sci-Fi&quot;,
+##     &quot;Director&quot;: &quot;Anthony C. Ferrante&quot;,
+##     &quot;Writer&quot;: &quot;Thunder Levin&quot;,
+##     &quot;Actors&quot;: &quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo&quot;,
+##     &quot;Plot&quot;: &quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.&quot;,
 ##     &quot;Language&quot;: &quot;English&quot;,
-##     &quot;Country&quot;: &quot;USA, UK&quot;,
-##     &quot;Awards&quot;: &quot;Won 1 Oscar. Another 40 wins &amp; 135 nominations.&quot;,
-##     &quot;Poster&quot;: &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot;,
-##     &quot;Metascore&quot;: &quot;74&quot;,
-##     &quot;imdbRating&quot;: &quot;8.6&quot;,
-##     &quot;imdbVotes&quot;: &quot;1,006,066&quot;,
-##     &quot;imdbID&quot;: &quot;tt0816692&quot;,
+##     &quot;Country&quot;: &quot;USA&quot;,
+##     &quot;Awards&quot;: &quot;1 win &amp; 2 nominations.&quot;,
+##     &quot;Poster&quot;: &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg&quot;,
+##     &quot;Ratings&quot;: [
+##         {
+##             &quot;Source&quot;: &quot;Internet Movie Database&quot;,
+##             &quot;Value&quot;: &quot;3.3/10&quot;
+##         },
+##         {
+##             &quot;Source&quot;: &quot;Rotten Tomatoes&quot;,
+##             &quot;Value&quot;: &quot;82%&quot;
+##         }
+##     ],
+##     &quot;Metascore&quot;: &quot;N/A&quot;,
+##     &quot;imdbRating&quot;: &quot;3.3&quot;,
+##     &quot;imdbVotes&quot;: &quot;37,326&quot;,
+##     &quot;imdbID&quot;: &quot;tt2724064&quot;,
 ##     &quot;Type&quot;: &quot;movie&quot;,
+##     &quot;DVD&quot;: &quot;03 Sep 2013&quot;,
+##     &quot;BoxOffice&quot;: &quot;N/A&quot;,
+##     &quot;Production&quot;: &quot;NCM Fathom&quot;,
+##     &quot;Website&quot;: &quot;http://www.mtivideo.com/TitleView.aspx?TITLE_ID=728&quot;,
 ##     &quot;Response&quot;: &quot;True&quot;
 ## }
 ## </code></pre>
@@ -456,82 +477,102 @@ answer_json %&gt;%<span class="st"> </span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">answer_json %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">fromJSON</span>()</code></pre></div>
 <pre><code>## $Title
-## [1] &quot;Interstellar&quot;
+## [1] &quot;Sharknado&quot;
 ## 
 ## $Year
-## [1] &quot;2014&quot;
+## [1] &quot;2013&quot;
 ## 
 ## $Rated
-## [1] &quot;PG-13&quot;
+## [1] &quot;TV-14&quot;
 ## 
 ## $Released
-## [1] &quot;07 Nov 2014&quot;
+## [1] &quot;11 Jul 2013&quot;
 ## 
 ## $Runtime
-## [1] &quot;169 min&quot;
+## [1] &quot;86 min&quot;
 ## 
 ## $Genre
-## [1] &quot;Adventure, Drama, Sci-Fi&quot;
+## [1] &quot;Comedy, Horror, Sci-Fi&quot;
 ## 
 ## $Director
-## [1] &quot;Christopher Nolan&quot;
+## [1] &quot;Anthony C. Ferrante&quot;
 ## 
 ## $Writer
-## [1] &quot;Jonathan Nolan, Christopher Nolan&quot;
+## [1] &quot;Thunder Levin&quot;
 ## 
 ## $Actors
-## [1] &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot;
+## [1] &quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo&quot;
 ## 
 ## $Plot
-## [1] &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot;
+## [1] &quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.&quot;
 ## 
 ## $Language
 ## [1] &quot;English&quot;
 ## 
 ## $Country
-## [1] &quot;USA, UK&quot;
+## [1] &quot;USA&quot;
 ## 
 ## $Awards
-## [1] &quot;Won 1 Oscar. Another 40 wins &amp; 135 nominations.&quot;
+## [1] &quot;1 win &amp; 2 nominations.&quot;
 ## 
 ## $Poster
-## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot;
+## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg&quot;
+## 
+## $Ratings
+##                    Source  Value
+## 1 Internet Movie Database 3.3/10
+## 2         Rotten Tomatoes    82%
 ## 
 ## $Metascore
-## [1] &quot;74&quot;
+## [1] &quot;N/A&quot;
 ## 
 ## $imdbRating
-## [1] &quot;8.6&quot;
+## [1] &quot;3.3&quot;
 ## 
 ## $imdbVotes
-## [1] &quot;1,006,066&quot;
+## [1] &quot;37,326&quot;
 ## 
 ## $imdbID
-## [1] &quot;tt0816692&quot;
+## [1] &quot;tt2724064&quot;
 ## 
 ## $Type
 ## [1] &quot;movie&quot;
 ## 
+## $DVD
+## [1] &quot;03 Sep 2013&quot;
+## 
+## $BoxOffice
+## [1] &quot;N/A&quot;
+## 
+## $Production
+## [1] &quot;NCM Fathom&quot;
+## 
+## $Website
+## [1] &quot;http://www.mtivideo.com/TitleView.aspx?TITLE_ID=728&quot;
+## 
 ## $Response
 ## [1] &quot;True&quot;</code></pre>
-<p>The output is a named list! A familiar and friendly R structure. Because data frames are lists, and because this list has no nested lists-within-lists, we can coerce it very simply:</p>
+<p>The output is a named list! A familiar and friendly R structure. Because data frames are lists, and because this list has no nested lists-within-lists,<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> we can coerce it very simply:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">answer_json %&gt;%<span class="st"> </span>
 <span class="st">  </span><span class="kw">fromJSON</span>() %&gt;%<span class="st"> </span>
+<span class="st">  </span><span class="co"># remove ratings element for now</span>
+<span class="st">  </span><span class="kw">list_update</span>(<span class="dt">Ratings =</span> <span class="ot">NULL</span>) %&gt;%
 <span class="st">  </span><span class="kw">as_tibble</span>()</code></pre></div>
-<pre><code>## # A tibble: 1 × 20
-##          Title  Year Rated    Released Runtime                    Genre
-##          &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;                    &lt;chr&gt;
-## 1 Interstellar  2014 PG-13 07 Nov 2014 169 min Adventure, Drama, Sci-Fi
-## # ... with 14 more variables: Director &lt;chr&gt;, Writer &lt;chr&gt;, Actors &lt;chr&gt;,
+<pre><code>## # A tibble: 1 x 24
+##       Title  Year Rated    Released Runtime                  Genre
+##       &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;
+## 1 Sharknado  2013 TV-14 11 Jul 2013  86 min Comedy, Horror, Sci-Fi
+## # ... with 18 more variables: Director &lt;chr&gt;, Writer &lt;chr&gt;, Actors &lt;chr&gt;,
 ## #   Plot &lt;chr&gt;, Language &lt;chr&gt;, Country &lt;chr&gt;, Awards &lt;chr&gt;, Poster &lt;chr&gt;,
 ## #   Metascore &lt;chr&gt;, imdbRating &lt;chr&gt;, imdbVotes &lt;chr&gt;, imdbID &lt;chr&gt;,
-## #   Type &lt;chr&gt;, Response &lt;chr&gt;</code></pre>
+## #   Type &lt;chr&gt;, DVD &lt;chr&gt;, BoxOffice &lt;chr&gt;, Production &lt;chr&gt;,
+## #   Website &lt;chr&gt;, Response &lt;chr&gt;</code></pre>
 <p>A similar process exists for XML formats:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_parsed &lt;-<span class="st"> </span><span class="kw">xmlParse</span>(answer_xml)
 ans_xml_parsed</code></pre></div>
 <pre><code>## &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 ## &lt;root response=&quot;True&quot;&gt;
-##   &lt;movie title=&quot;Interstellar&quot; year=&quot;2014&quot; rated=&quot;PG-13&quot; released=&quot;07 Nov 2014&quot; runtime=&quot;169 min&quot; genre=&quot;Adventure, Drama, Sci-Fi&quot; director=&quot;Christopher Nolan&quot; writer=&quot;Jonathan Nolan, Christopher Nolan&quot; actors=&quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot; plot=&quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot; language=&quot;English&quot; country=&quot;USA, UK&quot; awards=&quot;Won 1 Oscar. Another 40 wins &amp;amp; 135 nominations.&quot; poster=&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot; metascore=&quot;74&quot; imdbRating=&quot;8.6&quot; imdbVotes=&quot;1,006,066&quot; imdbID=&quot;tt0816692&quot; type=&quot;movie&quot;/&gt;
+##   &lt;movie title=&quot;Sharknado&quot; year=&quot;2013&quot; rated=&quot;TV-14&quot; released=&quot;11 Jul 2013&quot; runtime=&quot;86 min&quot; genre=&quot;Comedy, Horror, Sci-Fi&quot; director=&quot;Anthony C. Ferrante&quot; writer=&quot;Thunder Levin&quot; actors=&quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo&quot; plot=&quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.&quot; language=&quot;English&quot; country=&quot;USA&quot; awards=&quot;1 win &amp;amp; 2 nominations.&quot; poster=&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg&quot; metascore=&quot;N/A&quot; imdbRating=&quot;3.3&quot; imdbVotes=&quot;37,326&quot; imdbID=&quot;tt2724064&quot; type=&quot;movie&quot;/&gt;
 ## &lt;/root&gt;
 ## </code></pre>
 <p>Not exactly the response we were hoping for! This shows us some of the XML document’s structure:</p>
@@ -571,54 +612,54 @@ ans_xml_parsed</code></pre></div>
 </table>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_parsed_root &lt;-<span class="st"> </span><span class="kw">xmlRoot</span>(ans_xml_parsed)[[<span class="st">&quot;movie&quot;</span>]]  <span class="co"># could also use [[1]]</span>
 ans_xml_parsed_root</code></pre></div>
-<pre><code>## &lt;movie title=&quot;Interstellar&quot; year=&quot;2014&quot; rated=&quot;PG-13&quot; released=&quot;07 Nov 2014&quot; runtime=&quot;169 min&quot; genre=&quot;Adventure, Drama, Sci-Fi&quot; director=&quot;Christopher Nolan&quot; writer=&quot;Jonathan Nolan, Christopher Nolan&quot; actors=&quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot; plot=&quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot; language=&quot;English&quot; country=&quot;USA, UK&quot; awards=&quot;Won 1 Oscar. Another 40 wins &amp;amp; 135 nominations.&quot; poster=&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot; metascore=&quot;74&quot; imdbRating=&quot;8.6&quot; imdbVotes=&quot;1,006,066&quot; imdbID=&quot;tt0816692&quot; type=&quot;movie&quot;/&gt;</code></pre>
+<pre><code>## &lt;movie title=&quot;Sharknado&quot; year=&quot;2013&quot; rated=&quot;TV-14&quot; released=&quot;11 Jul 2013&quot; runtime=&quot;86 min&quot; genre=&quot;Comedy, Horror, Sci-Fi&quot; director=&quot;Anthony C. Ferrante&quot; writer=&quot;Thunder Levin&quot; actors=&quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo&quot; plot=&quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.&quot; language=&quot;English&quot; country=&quot;USA&quot; awards=&quot;1 win &amp;amp; 2 nominations.&quot; poster=&quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg&quot; metascore=&quot;N/A&quot; imdbRating=&quot;3.3&quot; imdbVotes=&quot;37,326&quot; imdbID=&quot;tt2724064&quot; type=&quot;movie&quot;/&gt;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_attrs &lt;-<span class="st"> </span><span class="kw">xmlAttrs</span>(ans_xml_parsed_root)
 ans_xml_attrs</code></pre></div>
-<pre><code>##                                                                                                             title 
-##                                                                                                    &quot;Interstellar&quot; 
-##                                                                                                              year 
-##                                                                                                            &quot;2014&quot; 
-##                                                                                                             rated 
-##                                                                                                           &quot;PG-13&quot; 
-##                                                                                                          released 
-##                                                                                                     &quot;07 Nov 2014&quot; 
-##                                                                                                           runtime 
-##                                                                                                         &quot;169 min&quot; 
-##                                                                                                             genre 
-##                                                                                        &quot;Adventure, Drama, Sci-Fi&quot; 
-##                                                                                                          director 
-##                                                                                               &quot;Christopher Nolan&quot; 
-##                                                                                                            writer 
-##                                                                               &quot;Jonathan Nolan, Christopher Nolan&quot; 
-##                                                                                                            actors 
-##                                                 &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot; 
-##                                                                                                              plot 
-##             &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot; 
-##                                                                                                          language 
-##                                                                                                         &quot;English&quot; 
-##                                                                                                           country 
-##                                                                                                         &quot;USA, UK&quot; 
-##                                                                                                            awards 
-##                                                                 &quot;Won 1 Oscar. Another 40 wins &amp; 135 nominations.&quot; 
-##                                                                                                            poster 
-## &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot; 
-##                                                                                                         metascore 
-##                                                                                                              &quot;74&quot; 
-##                                                                                                        imdbRating 
-##                                                                                                             &quot;8.6&quot; 
-##                                                                                                         imdbVotes 
-##                                                                                                       &quot;1,006,066&quot; 
-##                                                                                                            imdbID 
-##                                                                                                       &quot;tt0816692&quot; 
-##                                                                                                              type 
-##                                                                                                           &quot;movie&quot;</code></pre>
+<pre><code>##                                                                                                                                                      title 
+##                                                                                                                                                &quot;Sharknado&quot; 
+##                                                                                                                                                       year 
+##                                                                                                                                                     &quot;2013&quot; 
+##                                                                                                                                                      rated 
+##                                                                                                                                                    &quot;TV-14&quot; 
+##                                                                                                                                                   released 
+##                                                                                                                                              &quot;11 Jul 2013&quot; 
+##                                                                                                                                                    runtime 
+##                                                                                                                                                   &quot;86 min&quot; 
+##                                                                                                                                                      genre 
+##                                                                                                                                   &quot;Comedy, Horror, Sci-Fi&quot; 
+##                                                                                                                                                   director 
+##                                                                                                                                      &quot;Anthony C. Ferrante&quot; 
+##                                                                                                                                                     writer 
+##                                                                                                                                            &quot;Thunder Levin&quot; 
+##                                                                                                                                                     actors 
+##                                                                                                     &quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo&quot; 
+##                                                                                                                                                       plot 
+## &quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.&quot; 
+##                                                                                                                                                   language 
+##                                                                                                                                                  &quot;English&quot; 
+##                                                                                                                                                    country 
+##                                                                                                                                                      &quot;USA&quot; 
+##                                                                                                                                                     awards 
+##                                                                                                                                   &quot;1 win &amp; 2 nominations.&quot; 
+##                                                                                                                                                     poster 
+##                                          &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg&quot; 
+##                                                                                                                                                  metascore 
+##                                                                                                                                                      &quot;N/A&quot; 
+##                                                                                                                                                 imdbRating 
+##                                                                                                                                                      &quot;3.3&quot; 
+##                                                                                                                                                  imdbVotes 
+##                                                                                                                                                   &quot;37,326&quot; 
+##                                                                                                                                                     imdbID 
+##                                                                                                                                                &quot;tt2724064&quot; 
+##                                                                                                                                                       type 
+##                                                                                                                                                    &quot;movie&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ans_xml_attrs %&gt;%
 <span class="st">  </span><span class="kw">t</span>() %&gt;%
 <span class="st">  </span><span class="kw">as_tibble</span>()</code></pre></div>
-<pre><code>## # A tibble: 1 × 19
-##          title  year rated    released runtime                    genre
-##          &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;                    &lt;chr&gt;
-## 1 Interstellar  2014 PG-13 07 Nov 2014 169 min Adventure, Drama, Sci-Fi
+<pre><code>## # A tibble: 1 x 19
+##       title  year rated    released runtime                  genre
+##       &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;       &lt;chr&gt;   &lt;chr&gt;                  &lt;chr&gt;
+## 1 Sharknado  2013 TV-14 11 Jul 2013  86 min Comedy, Horror, Sci-Fi
 ## # ... with 13 more variables: director &lt;chr&gt;, writer &lt;chr&gt;, actors &lt;chr&gt;,
 ## #   plot &lt;chr&gt;, language &lt;chr&gt;, country &lt;chr&gt;, awards &lt;chr&gt;, poster &lt;chr&gt;,
 ## #   metascore &lt;chr&gt;, imdbRating &lt;chr&gt;, imdbVotes &lt;chr&gt;, imdbID &lt;chr&gt;,
@@ -626,7 +667,7 @@ ans_xml_attrs</code></pre></div>
 </div>
 <div id="introducing-the-easy-way-httr" class="section level1">
 <h1>Introducing the easy way: <code>httr</code></h1>
-<p><code>httr</code> is yet another star in the hadleyverse, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, which are:<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p><code>httr</code> is yet another star in the hadleyverse, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, which are:<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <ul>
 <li><strong>GET</strong>: fetch an existing resource. The URL contains all the necessary information the server needs to locate and return the resource.</li>
 <li><strong>POST</strong>: create a new resource. POST requests usually carry a payload that specifies the data for the new resource.</li>
@@ -636,78 +677,108 @@ ans_xml_attrs</code></pre></div>
 <p>HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there. An excellent beginning resource for APIs (including HTTP basics) is <a href="https://zapier.com/learn/apis/">this simple guide</a></p>
 <p><code>httr</code> also facilitates a variety of <strong>authentication</strong> protocols.</p>
 <p><code>httr</code> contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. <code>GET()</code>, <code>POST()</code>). They have more informative outputs than simply using <code>curl</code>, and come with some nice convenience functions for working with the output:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">interstellar_json &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;json&quot;</span>)
-response_json &lt;-<span class="st"> </span><span class="kw">GET</span>(interstellar_json)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sharknado_json &lt;-<span class="st"> </span><span class="kw">omdb</span>(omdb_key, <span class="st">&quot;Sharknado&quot;</span>, <span class="st">&quot;2013&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;json&quot;</span>)
+response_json &lt;-<span class="st"> </span><span class="kw">GET</span>(sharknado_json)
 <span class="kw">content</span>(response_json, <span class="dt">as =</span> <span class="st">&quot;parsed&quot;</span>, <span class="dt">type =</span> <span class="st">&quot;application/json&quot;</span>)</code></pre></div>
 <pre><code>## $Title
-## [1] &quot;Interstellar&quot;
+## [1] &quot;Sharknado&quot;
 ## 
 ## $Year
-## [1] &quot;2014&quot;
+## [1] &quot;2013&quot;
 ## 
 ## $Rated
-## [1] &quot;PG-13&quot;
+## [1] &quot;TV-14&quot;
 ## 
 ## $Released
-## [1] &quot;07 Nov 2014&quot;
+## [1] &quot;11 Jul 2013&quot;
 ## 
 ## $Runtime
-## [1] &quot;169 min&quot;
+## [1] &quot;86 min&quot;
 ## 
 ## $Genre
-## [1] &quot;Adventure, Drama, Sci-Fi&quot;
+## [1] &quot;Comedy, Horror, Sci-Fi&quot;
 ## 
 ## $Director
-## [1] &quot;Christopher Nolan&quot;
+## [1] &quot;Anthony C. Ferrante&quot;
 ## 
 ## $Writer
-## [1] &quot;Jonathan Nolan, Christopher Nolan&quot;
+## [1] &quot;Thunder Levin&quot;
 ## 
 ## $Actors
-## [1] &quot;Ellen Burstyn, Matthew McConaughey, Mackenzie Foy, John Lithgow&quot;
+## [1] &quot;Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo&quot;
 ## 
 ## $Plot
-## [1] &quot;A team of explorers travel through a wormhole in space in an attempt to ensure humanity&#39;s survival.&quot;
+## [1] &quot;When a freak hurricane swamps Los Angeles, nature&#39;s deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.&quot;
 ## 
 ## $Language
 ## [1] &quot;English&quot;
 ## 
 ## $Country
-## [1] &quot;USA, UK&quot;
+## [1] &quot;USA&quot;
 ## 
 ## $Awards
-## [1] &quot;Won 1 Oscar. Another 40 wins &amp; 135 nominations.&quot;
+## [1] &quot;1 win &amp; 2 nominations.&quot;
 ## 
 ## $Poster
-## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjIxNTU4MzY4MF5BMl5BanBnXkFtZTgwMzM4ODI3MjE@._V1_SX300.jpg&quot;
+## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg&quot;
+## 
+## $Ratings
+## $Ratings[[1]]
+## $Ratings[[1]]$Source
+## [1] &quot;Internet Movie Database&quot;
+## 
+## $Ratings[[1]]$Value
+## [1] &quot;3.3/10&quot;
+## 
+## 
+## $Ratings[[2]]
+## $Ratings[[2]]$Source
+## [1] &quot;Rotten Tomatoes&quot;
+## 
+## $Ratings[[2]]$Value
+## [1] &quot;82%&quot;
+## 
+## 
 ## 
 ## $Metascore
-## [1] &quot;74&quot;
+## [1] &quot;N/A&quot;
 ## 
 ## $imdbRating
-## [1] &quot;8.6&quot;
+## [1] &quot;3.3&quot;
 ## 
 ## $imdbVotes
-## [1] &quot;1,006,066&quot;
+## [1] &quot;37,326&quot;
 ## 
 ## $imdbID
-## [1] &quot;tt0816692&quot;
+## [1] &quot;tt2724064&quot;
 ## 
 ## $Type
 ## [1] &quot;movie&quot;
 ## 
+## $DVD
+## [1] &quot;03 Sep 2013&quot;
+## 
+## $BoxOffice
+## [1] &quot;N/A&quot;
+## 
+## $Production
+## [1] &quot;NCM Fathom&quot;
+## 
+## $Website
+## [1] &quot;http://www.mtivideo.com/TitleView.aspx?TITLE_ID=728&quot;
+## 
 ## $Response
 ## [1] &quot;True&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">interstellar_xml &lt;-<span class="st"> </span><span class="kw">omdb</span>(<span class="st">&quot;Interstellar&quot;</span>, <span class="st">&quot;2014&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)
-response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstellar_xml)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sharknado_xml &lt;-<span class="st"> </span><span class="kw">omdb</span>(omdb_key, <span class="st">&quot;Sharknado&quot;</span>, <span class="st">&quot;2013&quot;</span>, <span class="st">&quot;short&quot;</span>, <span class="st">&quot;xml&quot;</span>)
+response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(sharknado_xml)
 <span class="kw">content</span>(response_xml, <span class="dt">as =</span> <span class="st">&quot;parsed&quot;</span>)</code></pre></div>
 <pre><code>## {xml_document}
 ## &lt;root response=&quot;True&quot;&gt;
-## [1] &lt;movie title=&quot;Interstellar&quot; year=&quot;2014&quot; rated=&quot;PG-13&quot; released=&quot;07 N ...</code></pre>
+## [1] &lt;movie title=&quot;Sharknado&quot; year=&quot;2013&quot; rated=&quot;TV-14&quot; released=&quot;11 Jul  ...</code></pre>
 <p>In addition, <code>httr</code> gives us access to lots of useful information about the quality of our response. For example, the header:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">headers</span>(response_xml)</code></pre></div>
 <pre><code>## $date
-## [1] &quot;Thu, 16 Feb 2017 22:37:52 GMT&quot;
+## [1] &quot;Sun, 18 Jun 2017 16:08:24 GMT&quot;
 ## 
 ## $`content-type`
 ## [1] &quot;text/xml; charset=utf-8&quot;
@@ -722,10 +793,10 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstel
 ## [1] &quot;public, max-age=86400&quot;
 ## 
 ## $expires
-## [1] &quot;Fri, 17 Feb 2017 22:37:52 GMT&quot;
+## [1] &quot;Mon, 19 Jun 2017 16:08:24 GMT&quot;
 ## 
 ## $`last-modified`
-## [1] &quot;Thu, 16 Feb 2017 22:34:47 GMT&quot;
+## [1] &quot;Sun, 18 Jun 2017 15:40:52 GMT&quot;
 ## 
 ## $vary
 ## [1] &quot;Accept-Encoding&quot;
@@ -746,7 +817,7 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstel
 ## [1] &quot;cloudflare-nginx&quot;
 ## 
 ## $`cf-ray`
-## [1] &quot;33247c9287e75570-ORD&quot;
+## [1] &quot;370f81d1e5e52531-ORD&quot;
 ## 
 ## $`content-encoding`
 ## [1] &quot;gzip&quot;
@@ -759,7 +830,7 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstel
 <table>
 <thead>
 <tr class="header">
-<th>Code<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></th>
+<th>Code<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></th>
 <th>Status</th>
 </tr>
 </thead>
@@ -790,65 +861,95 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstel
 <li><a href="https://www.flickr.com/photos/girliemac/sets/72157628409467125">(Perhaps a more intuitive, cat-based explanation of error codes)</a></li>
 </ul>
 <p>In fact, we didn’t need to create <code>omdb()</code> at all! <code>httr</code> provides a straightforward means of making an http request:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">the_martian &lt;-<span class="st"> </span><span class="kw">GET</span>(<span class="st">&quot;http://www.omdbapi.com/?&quot;</span>, <span class="dt">query =</span> <span class="kw">list</span>(<span class="dt">t =</span> <span class="st">&quot;The Martian&quot;</span>, <span class="dt">y =</span> <span class="dv">2015</span>, <span class="dt">plot =</span> <span class="st">&quot;short&quot;</span>, <span class="dt">r =</span> <span class="st">&quot;json&quot;</span>))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sharknado_2 &lt;-<span class="st"> </span><span class="kw">GET</span>(<span class="st">&quot;http://www.omdbapi.com/?&quot;</span>, <span class="dt">query =</span> <span class="kw">list</span>(<span class="dt">t =</span> <span class="st">&quot;Sharknado 2: The Second One&quot;</span>, <span class="dt">y =</span> <span class="dv">2014</span>, <span class="dt">plot =</span> <span class="st">&quot;short&quot;</span>, <span class="dt">r =</span> <span class="st">&quot;json&quot;</span>, <span class="dt">apikey =</span> omdb_key))
 
-<span class="kw">content</span>(the_martian)</code></pre></div>
+<span class="kw">content</span>(sharknado_2)</code></pre></div>
 <pre><code>## $Title
-## [1] &quot;The Martian&quot;
+## [1] &quot;Sharknado 2: The Second One&quot;
 ## 
 ## $Year
-## [1] &quot;2015&quot;
+## [1] &quot;2014&quot;
 ## 
 ## $Rated
-## [1] &quot;PG-13&quot;
+## [1] &quot;TV-14&quot;
 ## 
 ## $Released
-## [1] &quot;02 Oct 2015&quot;
+## [1] &quot;30 Jul 2014&quot;
 ## 
 ## $Runtime
-## [1] &quot;144 min&quot;
+## [1] &quot;95 min&quot;
 ## 
 ## $Genre
-## [1] &quot;Adventure, Drama, Sci-Fi&quot;
+## [1] &quot;Horror, Sci-Fi&quot;
 ## 
 ## $Director
-## [1] &quot;Ridley Scott&quot;
+## [1] &quot;Anthony C. Ferrante&quot;
 ## 
 ## $Writer
-## [1] &quot;Drew Goddard (screenplay), Andy Weir (book)&quot;
+## [1] &quot;Thunder Levin&quot;
 ## 
 ## $Actors
-## [1] &quot;Matt Damon, Jessica Chastain, Kristen Wiig, Jeff Daniels&quot;
+## [1] &quot;Ian Ziering, Tara Reid, Vivica A. Fox, Mark McGrath&quot;
 ## 
 ## $Plot
-## [1] &quot;An astronaut becomes stranded on Mars after his team assume him dead, and must rely on his ingenuity to find a way to signal to Earth that he is alive.&quot;
+## [1] &quot;Fin and April are on their way to New York, until a Category 7 Hurricane spawns heavy rain, storm surges and deadly Sharknadoes.&quot;
 ## 
 ## $Language
-## [1] &quot;English, Mandarin&quot;
+## [1] &quot;English&quot;
 ## 
 ## $Country
-## [1] &quot;USA, UK&quot;
+## [1] &quot;USA&quot;
 ## 
 ## $Awards
-## [1] &quot;Nominated for 7 Oscars. Another 34 wins &amp; 180 nominations.&quot;
+## [1] &quot;N/A&quot;
 ## 
 ## $Poster
-## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMTc2MTQ3MDA1Nl5BMl5BanBnXkFtZTgwODA3OTI4NjE@._V1_SX300.jpg&quot;
+## [1] &quot;https://images-na.ssl-images-amazon.com/images/M/MV5BMjA0MTIxMDEwNF5BMl5BanBnXkFtZTgwMDk3ODIxMjE@._V1_SX300.jpg&quot;
+## 
+## $Ratings
+## $Ratings[[1]]
+## $Ratings[[1]]$Source
+## [1] &quot;Internet Movie Database&quot;
+## 
+## $Ratings[[1]]$Value
+## [1] &quot;4.1/10&quot;
+## 
+## 
+## $Ratings[[2]]
+## $Ratings[[2]]$Source
+## [1] &quot;Rotten Tomatoes&quot;
+## 
+## $Ratings[[2]]$Value
+## [1] &quot;61%&quot;
+## 
+## 
 ## 
 ## $Metascore
-## [1] &quot;80&quot;
+## [1] &quot;N/A&quot;
 ## 
 ## $imdbRating
-## [1] &quot;8.0&quot;
+## [1] &quot;4.1&quot;
 ## 
 ## $imdbVotes
-## [1] &quot;534,183&quot;
+## [1] &quot;13,762&quot;
 ## 
 ## $imdbID
-## [1] &quot;tt3659388&quot;
+## [1] &quot;tt3062074&quot;
 ## 
 ## $Type
 ## [1] &quot;movie&quot;
+## 
+## $DVD
+## [1] &quot;07 Oct 2014&quot;
+## 
+## $BoxOffice
+## [1] &quot;N/A&quot;
+## 
+## $Production
+## [1] &quot;NCM Fathom&quot;
+## 
+## $Website
+## [1] &quot;N/A&quot;
 ## 
 ## $Response
 ## [1] &quot;True&quot;</code></pre>
@@ -864,7 +965,7 @@ response_xml &lt;-<span class="st"> </span><span class="kw">GET</span>(interstel
 <blockquote>
 <p>The Emotion API takes a facial expression in an image as an input, and returns the confidence across a set of emotions for each face in the image, as well as bounding box for the face, using the Face API. If a user has already called the Face API, they can submit the face rectangle as an optional input. The emotions detected are anger, contempt, disgust, fear, happiness, neutral, sadness, and surprise. These emotions are understood to be cross-culturally and universally communicated with particular facial expressions.</p>
 </blockquote>
-<p>Here is how we can use R and the <code>httr</code> package to send a request to the Microsoft Emotion API to analyze a video and retrieve the results.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> As our sample video, we’ll use <a href="https://www.dropbox.com/s/zfmaswf8s9c58om/blog2.mp4?dl=1%27">a sample five minute video clip</a> from the third 2016 U.S. presidential debate between Donald J. Trump and Hillary Clinton.</p>
+<p>Here is how we can use R and the <code>httr</code> package to send a request to the Microsoft Emotion API to analyze a video and retrieve the results.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> As our sample video, we’ll use <a href="https://www.dropbox.com/s/zfmaswf8s9c58om/blog2.mp4?dl=1%27">a sample five minute video clip</a> from the third 2016 U.S. presidential debate between Donald J. Trump and Hillary Clinton.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Set an endpoint for Emotion in Video API with &quot;perFrame&quot; output</span>
 apiUrl &lt;-<span class="st"> &quot;https://api.projectoxford.ai/emotion/v1.0/recognizeInVideo?outputStyle=perFrame&quot;</span>
 
@@ -973,16 +1074,165 @@ emotion</code></pre></div>
        <span class="dt">color =</span> <span class="st">&quot;Emotion&quot;</span>)</code></pre></div>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
 <p><img src="webdata002_scraping_files/figure-html/emotion-viz-1.png" width="672" /></p>
-<p>Hillary Clinton’s facial expressions are marked predominantly by happiness, whereas Donald Trump’s facial expressions are mostly sad.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
+<p>Hillary Clinton’s facial expressions are marked predominantly by happiness, whereas Donald Trump’s facial expressions are mostly sad.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
 </div>
 </div>
 <div id="scraping" class="section level1">
 <h1>Scraping</h1>
 <p>What if data is present on a website, but isn’t provided in an API at all? It is possible to grab that information too. How easy that is to do depends a lot on the quality of the website that we are using.</p>
+<div id="html" class="section level2">
+<h2>HTML</h2>
 <p>HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, <a href="http://www.w3.org/TR/html5/the-xhtml-syntax.html">which is also valid XML</a>)</p>
 <div class="figure">
 <img src="http://imgs.xkcd.com/comics/tags.png" alt="tags" />
 <p class="caption"><a href="https://xkcd.com/1144/">tags</a></p>
+</div>
+<div id="process" class="section level3">
+<h3>Process</h3>
+<p><strong>HyperText Markup Language</strong> (HTML) is the basic building block of the World Wide Web. It defines the structure and format of content on web pages. The HTML code is stored on a server and retrieved by your computer when you visit a web page.</p>
+<ol style="list-style-type: decimal">
+<li>The web browser sends a request to the server that hosts the website.</li>
+<li>The server sends the browser an HTML document.</li>
+<li>The browser uses instructions in the HTML to render the website.</li>
+</ol>
+</div>
+<div id="components-of-html-code" class="section level3">
+<h3>Components of HTML code</h3>
+<p>HTML code looks something like this:</p>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;html&gt;</span>
+  <span class="kw">&lt;head&gt;</span>
+    <span class="kw">&lt;title&gt;</span>Title<span class="kw">&lt;/title&gt;</span>
+    <span class="kw">&lt;link</span><span class="ot"> rel=</span><span class="st">&quot;icon&quot;</span><span class="ot"> type=</span><span class="st">&quot;icon&quot;</span><span class="ot"> href=</span><span class="st">&quot;http://a&quot;</span> <span class="kw">/&gt;</span>
+    <span class="kw">&lt;link</span><span class="ot"> rel=</span><span class="st">&quot;icon&quot;</span><span class="ot"> type=</span><span class="st">&quot;icon&quot;</span><span class="ot"> href=</span><span class="st">&quot;http://b&quot;</span> <span class="kw">/&gt;</span>
+    <span class="kw">&lt;script</span><span class="ot"> src=</span><span class="st">&quot;https://c.js&quot;</span><span class="kw">&gt;&lt;/script&gt;</span>
+  <span class="kw">&lt;/head&gt;</span>
+  <span class="kw">&lt;body&gt;</span>
+    <span class="kw">&lt;div&gt;</span>
+      <span class="kw">&lt;p&gt;</span>Click <span class="kw">&lt;b&gt;</span>here<span class="kw">&lt;/b&gt;</span> now.<span class="kw">&lt;/p&gt;</span>
+      <span class="kw">&lt;span&gt;</span>Frozen<span class="kw">&lt;/span&gt;</span>
+    <span class="kw">&lt;/div&gt;</span>
+    <span class="kw">&lt;table</span><span class="ot"> style=</span><span class="st">&quot;width:100%&quot;</span><span class="kw">&gt;</span>
+      <span class="kw">&lt;tr&gt;</span>
+        <span class="kw">&lt;td&gt;</span>Kristen<span class="kw">&lt;/td&gt;</span>
+        <span class="kw">&lt;td&gt;</span>Bell<span class="kw">&lt;/td&gt;</span>
+      <span class="kw">&lt;/tr&gt;</span>
+      <span class="kw">&lt;tr&gt;</span>
+        <span class="kw">&lt;td&gt;</span>Idina<span class="kw">&lt;/td&gt;</span>
+        <span class="kw">&lt;td&gt;</span>Menzel<span class="kw">&lt;/td&gt;</span>
+      <span class="kw">&lt;/tr&gt;</span>
+    <span class="kw">&lt;/table&gt;</span>
+  <span class="kw">&lt;img</span><span class="ot"> src=</span><span class="st">&quot;http://ia.media-imdb.com/images.png&quot;</span><span class="kw">/&gt;</span>
+  <span class="kw">&lt;/body&gt;</span>
+<span class="kw">&lt;/html&gt;</span></code></pre></div>
+<p>HTML code consists of <strong>markup</strong> code used to annotate text, images, and other content for display in a web browswer. As you can see, the code above consists of HTML <strong>elements</strong> which are created by a tag <code>&lt;&gt;</code>. Elements can also have <strong>attributes</strong> that configure the elements or adjust their behavior.</p>
+<blockquote>
+<p>You can think of elements as R functions, and attributes are the arguments to functions. Not all functions require arguments, or they use default arguments.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode html"><code class="sourceCode html"><span class="kw">&lt;a</span><span class="ot"> href=</span><span class="st">&quot;http://github.com&quot;</span><span class="kw">&gt;</span>GitHub<span class="kw">&lt;/a&gt;</span></code></pre></div>
+<ul>
+<li><code>&lt;a&gt;&lt;/a&gt;</code> - tag name</li>
+<li><code>href</code> - attribute (name)</li>
+<li><code>&quot;http://github.com&quot;</code> - attribute (value)</li>
+<li><code>GitHub</code> - content</li>
+</ul>
+<p>HTML code utilizes a nested structure. The above tags can be represented as:</p>
+<ul>
+<li><code>html</code>
+<ul>
+<li><code>head</code>
+<ul>
+<li><code>title</code></li>
+<li><code>link</code></li>
+<li><code>link</code></li>
+<li><code>script</code></li>
+</ul></li>
+<li><code>body</code>
+<ul>
+<li><code>div</code>
+<ul>
+<li><code>p</code>
+<ul>
+<li><code>b</code></li>
+</ul></li>
+<li><code>span</code></li>
+</ul></li>
+<li><code>table</code>
+<ul>
+<li><code>tr</code>
+<ul>
+<li><code>td</code></li>
+<li><code>td</code></li>
+</ul></li>
+<li><code>tr</code>
+<ul>
+<li><code>td</code></li>
+<li><code>td</code></li>
+</ul></li>
+</ul></li>
+<li><code>img</code></li>
+</ul></li>
+</ul></li>
+</ul>
+<p>Let’s say we want to find the content “here”. Which tag in our sample HTML code contains that content?</p>
+<ul>
+<li><code>html</code>
+<ul>
+<li><code>head</code>
+<ul>
+<li><code>title</code></li>
+<li><code>link</code></li>
+<li><code>link</code></li>
+<li><code>script</code></li>
+</ul></li>
+<li><code>body</code>
+<ul>
+<li><code>div</code>
+<ul>
+<li><code>p</code>
+<ul>
+<li><span style="color:red"><strong><code>b</code></strong></span></li>
+</ul></li>
+<li><code>span</code></li>
+</ul></li>
+<li><code>table</code>
+<ul>
+<li><code>tr</code>
+<ul>
+<li><code>td</code></li>
+<li><code>td</code></li>
+</ul></li>
+<li><code>tr</code>
+<ul>
+<li><code>td</code></li>
+<li><code>td</code></li>
+</ul></li>
+</ul></li>
+<li><code>img</code></li>
+</ul></li>
+</ul></li>
+</ul>
+<div id="find-the-source-code" class="section level4">
+<h4>Find the source code</h4>
+<p>Navigate to <a href="http://www.imdb.com/title/tt2294629/">the IMDB page for <em>Frozen</em></a> and open the source code. Locate the piece of HTML that inserts “Kristen Bell” into the cast section. Which HTML tag surrounds her name?</p>
+<div class="figure">
+<img src="images/frozen_bell.png" alt="IMDB page for Frozen" />
+<p class="caption">IMDB page for <em>Frozen</em></p>
+</div>
+<div class="figure">
+<img src="images/frozen_span.png" alt="HTML tag for Kristen Bell" />
+<p class="caption">HTML tag for “Kristen Bell”</p>
+</div>
+</div>
+</div>
+</div>
+<div id="css-selectors" class="section level2">
+<h2>CSS selectors</h2>
+</div>
+<div id="rvest" class="section level2">
+<h2><code>rvest</code></h2>
+</div>
+<div id="selectorgadget" class="section level2">
+<h2>selectorGadget</h2>
 </div>
 <div id="example-of-html-code" class="section level2">
 <h2>Example of HTML code</h2>
@@ -1033,7 +1283,7 @@ Send me mail at <span class="kw">&lt;a</span><span class="ot"> href=</span><span
 output: html_document
 ---
 
-```{r echo=FALSE, results=&#39;asis&#39;} #delete this comment
+```{r echo=FALSE, results=&#39;asis&#39;}
 library(gapminder)
 knitr::kable(head(gapminder))
 ```</code></pre>
@@ -1054,265 +1304,6 @@ knitr::kable(head(gapminder))
 ## 4 Afghanistan      Asia 1967  34.020 11537966  836.1971
 ## 5 Afghanistan      Asia 1972  36.088 13079460  739.9811
 ## 6 Afghanistan      Asia 1977  38.438 14880372  786.1134</code></pre>
-</div>
-<div id="scraping-via-css-selectors" class="section level2">
-<h2>Scraping via CSS selectors</h2>
-<p>Let’s practice scraping websites using our newfound abilities! Here is a <a href="http://www.visitithaca.com/attractions/wineries.html">list of wineries in Ithaca, NY</a>.</p>
-<div id="extract-names" class="section level3">
-<h3>Extract names</h3>
-<p>First let’s download and store the HTML content.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wineries &lt;-<span class="st"> </span><span class="kw">read_html</span>(<span class="st">&quot;http://www.visitithaca.com/attractions/wineries.html&quot;</span>)</code></pre></div>
-<p>Now let’s extract the names and store them. To pick out the names, scroll down to the list of wineries and use the Selector Gadget to click on one of the winery names on the main page. Once you only have the winery names selected, you should see that the names are embedded in hyperlink tags (<code>&lt;a href...</code>) and it has a class of <code>indSearchListingTitle</code>. We can use <code>html_nodes</code> to extract this information and <code>html_text</code> to remove the extraneous HTML tags.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fnames &lt;-<span class="st"> </span>wineries %&gt;%
-<span class="st">  </span><span class="kw">html_nodes</span>(<span class="st">&quot;.indSearchListingTitle a&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">html_text</span>()
-<span class="kw">head</span>(fnames)</code></pre></div>
-<pre><code>## [1] &quot;Izzo White Barn Winery&quot;                  
-## [2] &quot;Ports of New York&quot;                       
-## [3] &quot;Swedish Hill Vineyard&quot;                   
-## [4] &quot;Frontenac Point Vineyard &amp; Estate Winery&quot;
-## [5] &quot;Six Mile Creek Vineyards&quot;                
-## [6] &quot;Americana Vineyards &amp; Crystal Lake Cafe&quot;</code></pre>
-</div>
-<div id="extract-addresses" class="section level3">
-<h3>Extract addresses</h3>
-<p>The address is trickier. Using the select tool you’ll see that the details are stored in the <code>indMetaInfoWrapper</code> class, but also includes things like phone numbers. We just want the addresses, so use the Selector Gadget to only include addresses.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">faddress &lt;-<span class="st"> </span>wineries %&gt;%
-<span class="st">  </span><span class="kw">html_nodes</span>(<span class="st">&quot;.indMetaWrapper:nth-child(1) .indMetaInfoWrapper&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">html_text</span>()
-<span class="kw">head</span>(faddress)</code></pre></div>
-<pre><code>## [1] &quot;\r\n              6634 Cayuga Rd., Cayuga, NY 13034\r\n              \r\n            &quot;               
-## [2] &quot;\r\n              815 Taber St, Ithaca, NY 14850\r\n              \r\n            &quot;                  
-## [3] &quot;\r\n              on the Cayuga Lake Wine Trail, Romulus, NY 14541\r\n              \r\n            &quot;
-## [4] &quot;\r\n              9501 Rt. 89, Trumansburg, NY 14886\r\n              \r\n            &quot;              
-## [5] &quot;\r\n              on the Cayuga Lake Wine Trail, Ithaca, NY 14850\r\n              \r\n            &quot; 
-## [6] &quot;\r\n              4367 E. Covert Rd., Interlaken, NY 14847\r\n              \r\n            &quot;</code></pre>
-<div id="clean-up-the-addresses" class="section level4">
-<h4>Clean up the addresses</h4>
-<p>The code on this website is a little inconsistent – sometimes the winery name is first and sometimes it’s preceded by something like “on the Cayuga Lake Wine Trail” so let’s do a little final cleanup.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">to_remove &lt;-<span class="st"> </span><span class="kw">str_c</span>(<span class="kw">c</span>(<span class="st">&quot;</span><span class="ch">\n</span><span class="st">&quot;</span>, <span class="st">&quot;^</span><span class="ch">\\</span><span class="st">s+|</span><span class="ch">\\</span><span class="st">s+$&quot;</span>, <span class="st">&quot;on the Cayuga Lake Wine Trail, &quot;</span>, <span class="st">&quot;Cayuga Lake Wine Trail, &quot;</span>, <span class="st">&quot;on the Cayuga Wine Trail, &quot;</span>,  <span class="st">&quot;on the Finger Lakes Beer Trail, &quot;</span>), <span class="dt">collapse =</span> <span class="st">&quot;|&quot;</span>)
-
-faddress &lt;-<span class="st"> </span><span class="kw">str_replace_all</span>(faddress, to_remove, <span class="st">&quot;&quot;</span>)
-
-<span class="kw">head</span>(faddress)</code></pre></div>
-<pre><code>## [1] &quot;6634 Cayuga Rd., Cayuga, NY 13034&quot;       
-## [2] &quot;815 Taber St, Ithaca, NY 14850&quot;          
-## [3] &quot;Romulus, NY 14541&quot;                       
-## [4] &quot;9501 Rt. 89, Trumansburg, NY 14886&quot;      
-## [5] &quot;Ithaca, NY 14850&quot;                        
-## [6] &quot;4367 E. Covert Rd., Interlaken, NY 14847&quot;</code></pre>
-</div>
-</div>
-<div id="combine-with-an-api-to-geocode-the-addresses" class="section level3">
-<h3>Combine with an API to geocode the addresses</h3>
-<p>The package <code>ggmap</code> has a nice geocode function that we’ll use to extract coordinates.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">geocodes &lt;-<span class="st"> </span><span class="kw">geocode</span>(faddress, <span class="dt">output =</span> <span class="st">&quot;latlona&quot;</span>)
-<span class="kw">head</span>(geocodes)</code></pre></div>
-<pre><code>##         lon      lat                                     address
-## 1 -76.70582 42.94002       6634 cayuga rd, cayuga, ny 13034, usa
-## 2 -76.51510 42.43866         815 taber st, ithaca, ny 14850, usa
-## 3 -76.83404 42.75255                      romulus, ny 14541, usa
-## 4 -76.64552 42.56580      9501 ny-89, trumansburg, ny 14886, usa
-## 5 -76.50188 42.44396                             ithaca, ny, usa
-## 6 -76.67485 42.57722 4367 e covert rd, interlaken, ny 14847, usa</code></pre>
-</div>
-<div id="pull-it-all-together" class="section level3">
-<h3>Pull it all together</h3>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">full &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">name =</span> fnames) %&gt;%
-<span class="st">  </span><span class="kw">bind_cols</span>(geocodes) %&gt;%
-<span class="st">  </span><span class="co"># is it a winery or cidery?</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">category =</span> <span class="kw">ifelse</span>(<span class="kw">str_detect</span>(name, <span class="st">&quot;Winery&quot;</span>), <span class="st">&quot;Winery&quot;</span>, <span class="st">&quot;Cidery&quot;</span>))
-
-<span class="kw">kable</span>(full)</code></pre></div>
-<table>
-<thead>
-<tr class="header">
-<th align="left">name</th>
-<th align="right">lon</th>
-<th align="right">lat</th>
-<th align="left">address</th>
-<th align="left">category</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Izzo White Barn Winery</td>
-<td align="right">-76.70582</td>
-<td align="right">42.94002</td>
-<td align="left">6634 cayuga rd, cayuga, ny 13034, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Ports of New York</td>
-<td align="right">-76.51510</td>
-<td align="right">42.43866</td>
-<td align="left">815 taber st, ithaca, ny 14850, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="odd">
-<td align="left">Swedish Hill Vineyard</td>
-<td align="right">-76.83404</td>
-<td align="right">42.75255</td>
-<td align="left">romulus, ny 14541, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="even">
-<td align="left">Frontenac Point Vineyard &amp; Estate Winery</td>
-<td align="right">-76.64552</td>
-<td align="right">42.56580</td>
-<td align="left">9501 ny-89, trumansburg, ny 14886, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Six Mile Creek Vineyards</td>
-<td align="right">-76.50188</td>
-<td align="right">42.44396</td>
-<td align="left">ithaca, ny, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="even">
-<td align="left">Americana Vineyards &amp; Crystal Lake Cafe</td>
-<td align="right">-76.67485</td>
-<td align="right">42.57722</td>
-<td align="left">4367 e covert rd, interlaken, ny 14847, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="odd">
-<td align="left">Knapp Winery &amp; Vineyard Restaurant</td>
-<td align="right">-76.83404</td>
-<td align="right">42.75255</td>
-<td align="left">romulus, ny 14541, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Finger Lakes Cider House</td>
-<td align="right">-76.70140</td>
-<td align="right">42.60650</td>
-<td align="left">4017 hickok rd, interlaken, ny 14847, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="odd">
-<td align="left">Treleaven by King Ferry Winery</td>
-<td align="right">-76.63443</td>
-<td align="right">42.65034</td>
-<td align="left">658 lake rd, king ferry, ny 13081, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Eleven Lakes Winery</td>
-<td align="right">-76.74876</td>
-<td align="right">42.85320</td>
-<td align="left">3550 ny-89, seneca falls, ny 13148, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Montezuma Winery &amp; Hidden Marsh Distillery</td>
-<td align="right">-76.79662</td>
-<td align="right">42.91062</td>
-<td align="left">seneca falls, ny 13148, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Buttonwood Grove Winery</td>
-<td align="right">-76.83404</td>
-<td align="right">42.75255</td>
-<td align="left">romulus, ny 14541, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Varick Winery &amp; Vineyard</td>
-<td align="right">-76.83404</td>
-<td align="right">42.75255</td>
-<td align="left">romulus, ny 14541, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Goose Watch Winery</td>
-<td align="right">-76.83404</td>
-<td align="right">42.75255</td>
-<td align="left">romulus, ny 14541, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Cayuga Ridge Estates Winery</td>
-<td align="right">-76.82301</td>
-<td align="right">42.67646</td>
-<td align="left">ovid, ny 14521, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Heart and Hands Winery</td>
-<td align="right">-76.69293</td>
-<td align="right">42.83970</td>
-<td align="left">ny-90, new york, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Bellwether Hard Cider / Bellwether Wine Cellars</td>
-<td align="right">-76.66606</td>
-<td align="right">42.54229</td>
-<td align="left">trumansburg, ny 14886, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="even">
-<td align="left">Lucas Vineyards</td>
-<td align="right">-76.71015</td>
-<td align="right">42.62787</td>
-<td align="left">3862 county rd 150, interlaken, ny 14847, usa</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="odd">
-<td align="left">Long Point Winery</td>
-<td align="right">-76.70245</td>
-<td align="right">42.75396</td>
-<td align="left">aurora, ny 13026, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Chateau Dusseau Winery</td>
-<td align="right">-76.46788</td>
-<td align="right">42.63096</td>
-<td align="left">locke, ny 13092, usa</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Dills Run Winery</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="even">
-<td align="left">Hosmer Winery</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">Winery</td>
-</tr>
-<tr class="odd">
-<td align="left">Sheldrake Point Vineyard</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="even">
-<td align="left">Cayuga Lake Wine Trail</td>
-<td align="right">NA</td>
-<td align="right">NA</td>
-<td align="left">NA</td>
-<td align="left">Cidery</td>
-</tr>
-<tr class="odd">
-<td align="left">Thirsty Owl Wine Company</td>
-<td align="right">-76.82301</td>
-<td align="right">42.67646</td>
-<td align="left">ovid, ny 14521, usa</td>
-<td align="left">Cidery</td>
-</tr>
-</tbody>
-</table>
-</div>
 </div>
 </div>
 <div id="random-observations-on-scraping" class="section level1">
@@ -1341,7 +1332,7 @@ faddress &lt;-<span class="st"> </span><span class="kw">str_replace_all</span>(f
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-06-14</code></pre>
+##  date     2017-06-19</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
 <pre><code>##  package     * version    date       source                            
 ##  assertthat    0.2.0      2017-04-11 cran (@0.2.0)                     
@@ -1391,7 +1382,7 @@ faddress &lt;-<span class="st"> </span><span class="kw">str_replace_all</span>(f
 ##  png           0.1-7      2013-12-03 cran (@0.1-7)                     
 ##  proto         1.0.0      2016-10-29 CRAN (R 3.3.0)                    
 ##  psych         1.7.5      2017-05-03 CRAN (R 3.3.3)                    
-##  purrr       * 0.2.2.2    2017-05-11 CRAN (R 3.3.3)                    
+##  purrr       * 0.2.2.9000 2017-06-18 Github (tidyverse/purrr@3061014)  
 ##  R6            2.2.1      2017-05-10 CRAN (R 3.3.2)                    
 ##  Rcpp          0.12.11    2017-05-22 CRAN (R 3.3.2)                    
 ##  readr       * 1.1.1      2017-05-16 CRAN (R 3.3.2)                    
@@ -1421,10 +1412,11 @@ faddress &lt;-<span class="st"> </span><span class="kw">str_replace_all</span>(f
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="http://www.jmarshall.com/easy/http/">Source: HTTP made really easy</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p><a href="http://www.restapitutorial.com/httpstatuscodes.html">HTTP Status Codes</a><a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>Based on <a href="https://blog.exploratory.io/analyzing-emotions-using-facial-expressions-in-video-with-microsoft-ai-and-r-8f7585dd0780">Analyzing Emotions using Facial Expressions in Video with Microsoft AI and R</a>, which is itself based on the original post <a href="https://benheubl.github.io/data%20analysis/fr/">How to apply face recognition API technology to data journalism with R and python</a>, which served as the basis for <a href="http://www.economist.com/blogs/graphicdetail/2016/10/daily-chart-12">The many debate faces of Donald Trump and Hillary Clinton</a>.<a href="#fnref3">↩</a></p></li>
-<li id="fn4"><p>Not exactly predictive of the election results.<a href="#fnref4">↩</a></p></li>
+<li id="fn1"><p>Because I strip it out. We’ll see shortly how to handle nested lists-within-lists.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p><a href="http://www.jmarshall.com/easy/http/">Source: HTTP made really easy</a><a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p><a href="http://www.restapitutorial.com/httpstatuscodes.html">HTTP Status Codes</a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Based on <a href="https://blog.exploratory.io/analyzing-emotions-using-facial-expressions-in-video-with-microsoft-ai-and-r-8f7585dd0780">Analyzing Emotions using Facial Expressions in Video with Microsoft AI and R</a>, which is itself based on the original post <a href="https://benheubl.github.io/data%20analysis/fr/">How to apply face recognition API technology to data journalism with R and python</a>, which served as the basis for <a href="http://www.economist.com/blogs/graphicdetail/2016/10/daily-chart-12">The many debate faces of Donald Trump and Hillary Clinton</a>.<a href="#fnref4">↩</a></p></li>
+<li id="fn5"><p>Not exactly predictive of the election results.<a href="#fnref5">↩</a></p></li>
 </ol>
 </div>
 

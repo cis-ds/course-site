@@ -369,9 +369,128 @@ Hillary Clinton's facial expressions are marked predominantly by happiness, wher
 
 What if data is present on a website, but isn't provided in an API at all? It is possible to grab that information too. How easy that is to do depends a lot on the quality of the website that we are using.
 
+## HTML
+
 HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, [which is also valid XML](http://www.w3.org/TR/html5/the-xhtml-syntax.html))
 
 ![[tags](https://xkcd.com/1144/)](http://imgs.xkcd.com/comics/tags.png)
+
+### Process
+
+**HyperText Markup Language** (HTML) is the basic building block of the World Wide Web. It defines the structure and format of content on web pages. The HTML code is stored on a server and retrieved by your computer when you visit a web page.
+
+1. The web browser sends a request to the server that hosts the website.
+1. The server sends the browser an HTML document.
+1. The browser uses instructions in the HTML to render the website.
+
+### Components of HTML code
+
+HTML code looks something like this:
+
+```html
+<html>
+  <head>
+    <title>Title</title>
+    <link rel="icon" type="icon" href="http://a" />
+    <link rel="icon" type="icon" href="http://b" />
+    <script src="https://c.js"></script>
+  </head>
+  <body>
+    <div>
+      <p>Click <b>here</b> now.</p>
+      <span>Frozen</span>
+    </div>
+    <table style="width:100%">
+      <tr>
+        <td>Kristen</td>
+        <td>Bell</td>
+      </tr>
+      <tr>
+        <td>Idina</td>
+        <td>Menzel</td>
+      </tr>
+    </table>
+  <img src="http://ia.media-imdb.com/images.png"/>
+  </body>
+</html>
+```
+
+HTML code consists of **markup** code used to annotate text, images, and other content for display in a web browswer. As you can see, the code above consists of HTML **elements** which are created by a tag `<>`. Elements can also have **attributes** that configure the elements or adjust their behavior.
+
+> You can think of elements as R functions, and attributes are the arguments to functions. Not all functions require arguments, or they use default arguments.
+
+```html
+<a href="http://github.com">GitHub</a>
+```
+
+* `<a></a>` - tag name
+* `href` - attribute (name)
+* `"http://github.com"` - attribute (value)
+* `GitHub` - content
+
+HTML code utilizes a nested structure. The above tags can be represented as:
+
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * `b`
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
+
+Let's say we want to find the content "here". Which tag in our sample HTML code contains that content?
+
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * <span style="color:red">**`b`**</span>
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
+
+#### Find the source code
+
+Navigate to [the IMDB page for *Frozen*](http://www.imdb.com/title/tt2294629/) and open the source code. Locate the piece of HTML that inserts "Kristen Bell" into the cast section. Which HTML tag surrounds her name?
+
+![IMDB page for *Frozen*](images/frozen_bell.png)
+
+![HTML tag for "Kristen Bell"](images/frozen_span.png)
+
+"Kristen Bell" is enclosed in the `span` tag. But look through the some of the other source code. `span` is used many times throughout the page. How can we select just the element containing "Kristen Bell", or all the cast member names but nothing else?
+
+## CSS selectors
+
+
+## `rvest`
+
+
+## selectorGadget
+
+
 
 ## Example of HTML code
 
@@ -432,70 +551,6 @@ We have created a simple html table with the head of gapminder in it! We can get
 ```{r}
 read_html("GapminderHead.html") %>%
   html_table()
-```
-
-## Scraping via CSS selectors
-
-Let's practice scraping websites using our newfound abilities! Here is a [list of wineries in Ithaca, NY](http://www.visitithaca.com/attractions/wineries.html).
-
-### Extract names
-
-First let's download and store the HTML content.
-
-```{r}
-wineries <- read_html("http://www.visitithaca.com/attractions/wineries.html")
-```
-
-Now let's extract the names and store them. To pick out the names, scroll down to the list of wineries and use the Selector Gadget to click on one of the winery names on the main page. Once you only have the winery names selected, you should see that the names are embedded in hyperlink tags (`<a href...`) and it has a class of `indSearchListingTitle`. We can use `html_nodes` to extract this information and `html_text` to remove the extraneous HTML tags.
-
-```{r}
-fnames <- wineries %>%
-  html_nodes(".indSearchListingTitle a") %>%
-  html_text()
-head(fnames)
-```
-
-### Extract addresses
-
-The address is trickier. Using the select tool you'll see that the details are stored in the `indMetaInfoWrapper` class, but also includes things like phone numbers. We just want the addresses, so use the Selector Gadget to only include addresses.
-
-```{r}
-faddress <- wineries %>%
-  html_nodes(".indMetaWrapper:nth-child(1) .indMetaInfoWrapper") %>%
-  html_text()
-head(faddress)
-```
-
-#### Clean up the addresses
-
-The code on this website is a little inconsistent – sometimes the winery name is first and sometimes it's preceded by something like “on the Cayuga Lake Wine Trail” so let's do a little final cleanup.
-
-```{r}
-to_remove <- str_c(c("\n", "^\\s+|\\s+$", "on the Cayuga Lake Wine Trail, ", "Cayuga Lake Wine Trail, ", "on the Cayuga Wine Trail, ",  "on the Finger Lakes Beer Trail, "), collapse = "|")
-
-faddress <- str_replace_all(faddress, to_remove, "")
-
-head(faddress)
-```
-
-### Combine with an API to geocode the addresses
-
-The package `ggmap` has a nice geocode function that we'll use to extract coordinates.
-
-```{r, message = FALSE}
-geocodes <- geocode(faddress, output = "latlona")
-head(geocodes)
-```
-
-### Pull it all together
-
-```{r}
-full <- data_frame(name = fnames) %>%
-  bind_cols(geocodes) %>%
-  # is it a winery or cidery?
-  mutate(category = ifelse(str_detect(name, "Winery"), "Winery", "Cidery"))
-
-kable(full)
 ```
 
 # Random observations on scraping
