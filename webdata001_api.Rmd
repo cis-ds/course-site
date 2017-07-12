@@ -18,9 +18,12 @@ knitr::opts_chunk$set(cache = TRUE)
 * Demonstrate how to use canned packages in R to access APIs
 * Practice gathering data from Twitter API using the `twitteR` package in R
 
-```{r packages, cache = FALSE, messages = FALSE}
+```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
+library(forcats)
 library(knitr)
+
+theme_set(theme_minimal())
 ```
 
 # Methods for obtaining data online
@@ -62,11 +65,11 @@ Why do we want this?
 
 [`rebird`](https://github.com/ropensci/rebird) is an R interface for the [ebird](http://ebird.org/content/ebird/) database. e-Bird lets birders upload sightings of birds, and allows everyone access to those data.
 
-```{r eval=FALSE}
+```{r rebird-install, eval = FALSE}
 install.packages("rebird")
 ```
 
-```{r message=FALSE}
+```{r rebird, message = FALSE}
 library(rebird)
 ```
 
@@ -78,16 +81,18 @@ At that link, you can see a page like this:
 
 ![Lincoln Park Zoo](images/lincoln_park_zoo.png)
 
-The data already look to be organized in a data frame! `rebird` allows us to read these data directly into R. (The ID code for Lincoln Park Zoo is **"L1573785**)
+The data already look to be organized in a data frame! `rebird` allows us to read these data directly into R.
 
-```{r}
+> The ID code for Lincoln Park Zoo is **L1573785**
+
+```{r rebird-lincoln-park}
 ebirdhotspot(locID = "L1573785") %>%
   as_tibble()
 ```
 
 We can use the function `ebirdgeo` to get a list for an area. (Note that South and West are negative):
 
-```{r}
+```{r rebird-location}
 chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298)
 chibirds %>%
   as_tibble() %>%
@@ -98,7 +103,7 @@ chibirds %>%
 
 We can also search by "region", which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters **FR**
 
-```{r}
+```{r rebird-france}
 frenchbirds <- ebirdregion("FR")
 
 frenchbirds %>%
@@ -108,7 +113,7 @@ frenchbirds %>%
 
 Find out *WHEN* a bird has been seen in a certain place! Choosing a name from `chibirds` above (the Bald Eagle):
 
-```{r}
+```{r rebird-warbler}
 warbler <- ebirdgeo(species = 'Setophaga coronata', lat = 41.8781, lng = -87.6298)
 
 warbler %>%
@@ -118,7 +123,7 @@ warbler %>%
 
 `rebird` **knows where you are**:
 
-```{r}
+```{r rebird-where-am-i}
 ebirdgeo(species = 'Setophaga coronata') %>%
   as_tibble() %>%
   kable()
@@ -126,7 +131,7 @@ ebirdgeo(species = 'Setophaga coronata') %>%
 
 # Searching geographic info: `geonames`
 
-```{r message=FALSE}
+```{r geonames, message = FALSE}
 # install.packages(geonames)
 library(geonames)
 ```
@@ -161,7 +166,7 @@ to that file.
 * Spelling is important when you set the option in your `.Rprofile`
 * You can do a similar process for an arbitrary package or key. For example:
 
-```{r eval = FALSE}
+```{r rprofile, eval = FALSE}
 # in .Rprofile
 options("this_is_my_key" = XXXX)
 
@@ -175,11 +180,11 @@ This is a simple means to keep your keys private, especially if you are sharing 
 
 What can we do? Get access to lots of geographical information via the various ["web services"](http://www.geonames.org/export/ws-overview.html)
 
-```{r}
+```{r geonames-country-info}
 countryInfo <- GNcountryInfo()
 ```
 
-```{r}
+```{r geonames-str}
 countryInfo %>%
   as_tibble() %>%
   str()
@@ -187,49 +192,67 @@ countryInfo %>%
 
 This country info dataset is very helpful for accessing the rest of the data, because it gives us the standardized codes for country and language.  
 
-# Searching the Public Library of Science: `rplos`
+# The Manifesto Project: `manifestoR`
 
-PLOS ONE is an open-access journal. They allow access to an impressive range of search tools, and allow you to obtain the full text of their articles. Unlike `geonames`, `rplos` no longer requires an individual key to access the API.
+[The Manifesto Project](https://manifesto-project.wzb.eu/) collects and organizes political party manifestos from around the world. It currently covers over 1000 parties from 1945 until today in over 50 countries on five continents. We can use the [`manifestoR` package](https://github.com/ManifestoProject/manifestoR) to access the API and download those manifestos for analysis in R.
 
-```{r eval=FALSE}
-install.packages("rplos")
+## Load library and set API key
+
+Accessing data from the Manifesto Project API requires an authentication key. You can create an account and key [here](https://manifesto-project.wzb.eu/signup). Here I store my key in `.Rprofile` and retrieve it using `mp_setapikey()`.
+
+```{r manifestor-load, message = FALSE, cache = FALSE}
+library(manifestoR)
+
+# retrieve API key stored in .Rprofile
+mp_setapikey(key = getOption("manifesto_key"))
 ```
 
-```{r}
-library(rplos)
+## Retrieve the database
+
+```{r manifestor-db}
+(mpds <- mp_maindataset())
 ```
 
-Let's do some searches:
+`mp_maindataset()` includes a data frame describing each manifesto included in the database. For instance, how many manifestos have been published by each political party in Sweden?
 
-```{r}
-searchplos(q = "alcohol", fl = "id,title", limit = 10) %>%
-  kable()
+```{r manifesto-dist}
+mpds %>%
+  filter(countryname == "Sweden") %>%
+  count(partyname) %>%
+  ggplot(aes(fct_reorder(partyname, n), n)) +
+  geom_col() +
+  labs(title = "Political manifestos published in Sweden",
+       x = NULL,
+       y = "Total (1948-present)") +
+  coord_flip()
 ```
 
-## Relative frequency plot
+## Party positions over time
 
-```{r}
-out <- plosword(list("alcohol", "heroin", "marijuana"),
-    vis = "TRUE")
-out$table
-out$plot
-```
+Using the downloaded database, we can use **scaling functions** to identify each party manifesto on an ideological dimension. For example, how have the Democratic and Republican Parties in the United States changed ideologically over time?
 
-Here is a list of [options for the search](http://api.plos.org/solr/search-fields/).
-
-## Plots over time
-
-```{r}
-plot_throughtime(terms = c("alcohol", "heroin", "marijuana"), limit = 200)
+```{r manifestor-usa}
+mpds %>%
+  filter(party == 61320 | party == 61620) %>%
+  mutate(ideo = mp_scale(.)) %>%
+  select(partyname, edate, ideo) %>%
+  ggplot(aes(edate, ideo, color = partyname)) +
+  geom_line() +
+  scale_color_manual(values = c("blue", "red")) +
+  labs(title = "Ideological scaling of major US political parties",
+       x = "Year",
+       y = "Ideological position",
+       color = NULL) +
+  theme(legend.position = "bottom")
 ```
 
 # Scraping Twitter
 
-```{r eval=FALSE}
+```{r twitter-install, eval=FALSE}
 install.packages("twitteR")
 ```
 
-```{r}
+```{r twitter}
 library(twitteR)
 ```
 
@@ -253,7 +276,7 @@ OAuth is an open standard for authorization, commonly used as a way for Internet
 
 1. Store your API key and token using the `.Rprofile` method. Edit `.Rprofile` and add
 
-    ```{r eval = FALSE}
+    ```{r twitter-oauth-rprofile, eval = FALSE}
     options(twitter_api_key = "Your API key")
     options(twitter_api_token = "Your API secret")
     ```
@@ -262,7 +285,7 @@ OAuth is an open standard for authorization, commonly used as a way for Internet
     
 1. Run from the console:
 
-    ```{r, eval = FALSE}
+    ```{r twitter-oauth-interact, eval = FALSE}
     setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
                         consumer_secret = getOption("twitter_api_token"))
     ```
@@ -275,12 +298,12 @@ OAuth is an open standard for authorization, commonly used as a way for Internet
 
 ## Searching tweets
 
-```{r echo = FALSE}
+```{r twitter-setup, echo = FALSE}
 setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
                     consumer_secret = getOption("twitter_api_token"))
 ```
 
-```{r}
+```{r twitter-rstats}
 tweets <- searchTwitter('#rstats', n = 5)
 tweets
 ```
@@ -289,7 +312,7 @@ tweets
 
 Use `getUser()` which returns a `user` object that you can perform additional functions on. This only works for users with public profiles or those that have authorized your app.
 
-```{r}
+```{r twitter-clinton}
 clinton <- getUser("hillaryclinton")
 clinton$getDescription()
 clinton$getFriends(n = 5)
@@ -299,13 +322,13 @@ clinton$getFriends(n = 5)
 
 By default `twitteR` returns tweets in complex lists.
 
-```{r}
+```{r twitter-list}
 str(tweets)
 ```
 
 To get the data into a data frame, use
 
-```{r}
+```{r twitter-df}
 df <- twListToDF(tweets) %>%
   as_tibble()
 df
@@ -324,7 +347,7 @@ df
   <summary>Click for the solution</summary>
   <p>
 
-```{r}
+```{r twitter-donald}
 setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
                     consumer_secret = getOption("twitter_api_token"))
 
