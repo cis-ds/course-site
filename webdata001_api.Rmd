@@ -22,7 +22,11 @@ knitr::opts_chunk$set(cache = TRUE)
 library(tidyverse)
 library(forcats)
 library(knitr)
+library(broom)
+library(wordcloud)
+library(tidytext)
 
+set.seed(1234)
 theme_set(theme_minimal())
 ```
 
@@ -213,7 +217,7 @@ mp_setapikey(key = getOption("manifesto_key"))
 (mpds <- mp_maindataset())
 ```
 
-`mp_maindataset()` includes a data frame describing each manifesto included in the database. For instance, how many manifestos have been published by each political party in Sweden?
+`mp_maindataset()` includes a data frame describing each manifesto included in the database. You can use this database for some exploratory data analysis. For instance, how many manifestos have been published by each political party in Sweden?
 
 ```{r manifesto-dist}
 mpds %>%
@@ -227,9 +231,7 @@ mpds %>%
   coord_flip()
 ```
 
-## Party positions over time
-
-Using the downloaded database, we can use **scaling functions** to identify each party manifesto on an ideological dimension. For example, how have the Democratic and Republican Parties in the United States changed ideologically over time?
+Or we can use **scaling functions** to identify each party manifesto on an ideological dimension. For example, how have the Democratic and Republican Party manifestos in the United States changed over time?
 
 ```{r manifestor-usa}
 mpds %>%
@@ -244,6 +246,27 @@ mpds %>%
        y = "Ideological position",
        color = NULL) +
   theme(legend.position = "bottom")
+```
+
+## Download manifestos
+
+`mp_corpus()` can be used to download the original manifestos as full text documents stored as a [**corpus**](text001_tidytext.html#extract_documents_and_move_into_a_corpus). Once you obtain the corpus, you can perform [text](cm017.html) [analysis](cm018.html). As an example, let's compare the most common words in the Democratic and Republican Party manifestos from the 2012 U.S. presidential election:
+
+```{r manifestor-corpus, message = FALSE, warning = FALSE}
+# download documents
+docs <- mp_corpus(countryname == "United States" & edate > as.Date("2012-01-01"))
+
+# generate wordcloud of most common terms
+docs %>%
+  tidy %>%
+  mutate(party = factor(party, levels = c(61320, 61620),
+                        labels = c("Democratic Party", "Republican Party"))) %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words) %>%
+  count(party, word, sort = TRUE) %>%
+  na.omit %>%
+  reshape2::acast(word ~ party, value.var = "n", fill = 0) %>%
+  comparison.cloud(max.words = 200)
 ```
 
 # Scraping Twitter
