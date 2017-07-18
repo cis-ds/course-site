@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Practice generating layered graphics using ggplot2</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Practice generating layered graphics using <code>ggplot2</code></h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)</code></pre></div>
+<p>Given your preparation for today’s class, now let’s practice generating layered graphics in R using data from <a href="https://www.gapminder.org/data/">Gapminder World</a>, which compiles country-level data on quality-of-life measures.</p>
+<div id="load-the-gapminder-dataset" class="section level1">
+<h1>Load the <code>gapminder</code> dataset</h1>
+<p>If you have not already installed the <code>gapminder</code> package and you try to load it using the following code, you will get an error:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gapminder)</code></pre></div>
+<pre><code>Error in library(gapminder) : there is no package called ‘gapminder’</code></pre>
+<p>If this happens, install the gapminder package by running <code>install.packages(&quot;gapminder&quot;)</code> in your console.</p>
+<p>Once you’ve done this, run the following code to load the gapminder dataset, the <code>ggplot2</code> library, and a helper library for printing the contents of <code>gapminder</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(gapminder)
+<span class="kw">library</span>(ggplot2)
+<span class="kw">library</span>(tibble)
+
+<span class="kw">str</span>(gapminder)</code></pre></div>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    1704 obs. of  6 variables:
+##  $ country  : Factor w/ 142 levels &quot;Afghanistan&quot;,..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ continent: Factor w/ 5 levels &quot;Africa&quot;,&quot;Americas&quot;,..: 3 3 3 3 3 3 3 3 3 3 ...
+##  $ year     : int  1952 1957 1962 1967 1972 1977 1982 1987 1992 1997 ...
+##  $ lifeExp  : num  28.8 30.3 32 34 36.1 ...
+##  $ pop      : int  8425333 9240934 10267083 11537966 13079460 14880372 12881816 13867957 16317921 22227415 ...
+##  $ gdpPercap: num  779 821 853 836 740 ...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">gapminder</code></pre></div>
+<pre><code>## # A tibble: 1,704 x 6
+##        country continent  year lifeExp      pop gdpPercap
+##         &lt;fctr&gt;    &lt;fctr&gt; &lt;int&gt;   &lt;dbl&gt;    &lt;int&gt;     &lt;dbl&gt;
+##  1 Afghanistan      Asia  1952    28.8  8425333       779
+##  2 Afghanistan      Asia  1957    30.3  9240934       821
+##  3 Afghanistan      Asia  1962    32.0 10267083       853
+##  4 Afghanistan      Asia  1967    34.0 11537966       836
+##  5 Afghanistan      Asia  1972    36.1 13079460       740
+##  6 Afghanistan      Asia  1977    38.4 14880372       786
+##  7 Afghanistan      Asia  1982    39.9 12881816       978
+##  8 Afghanistan      Asia  1987    40.8 13867957       852
+##  9 Afghanistan      Asia  1992    41.7 16317921       649
+## 10 Afghanistan      Asia  1997    41.8 22227415       635
+## # ... with 1,694 more rows</code></pre>
+<blockquote>
+<p>Run <code>?gapminder</code> in the console to open the help file for the data and definitions for each of the columns.</p>
+</blockquote>
+<p>Using the grammar of graphics and your knowledge of the <code>ggplot2</code> library, generate a series of graphs that explore the relationships between specific variables.</p>
+</div>
+<div id="exercises" class="section level1">
+<h1>Exercises</h1>
+<div id="generate-a-histogram-of-life-expectancy" class="section level2">
+<h2>Generate a histogram of life expectancy</h2>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(lifeExp)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>()</code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<img src="dataviz_gapminder_files/figure-html/histo-1.png" width="672" />
+</p>
+<p></details></p>
+<div id="generate-separate-histograms-of-life-expectancy-for-each-continent" class="section level3">
+<h3>Generate separate histograms of life expectancy for each continent</h3>
+<p><strong>Hint: think about how to <a href="http://r4ds.had.co.nz/data-visualisation.html#facets">split your plots to shore different subsets of data.</a></strong></p>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(lifeExp)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>continent)</code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<img src="dataviz_gapminder_files/figure-html/histo-facet-1.png" width="672" />
+</p>
+<p></details></p>
+</div>
+</div>
+<div id="compare-the-distribution-of-life-expectancy-by-continent-by-generating-a-boxplot" class="section level2">
+<h2>Compare the distribution of life expectancy, by continent by generating a boxplot</h2>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(continent, lifeExp)) +
+<span class="st">  </span><span class="kw">geom_boxplot</span>()</code></pre></div>
+<img src="dataviz_gapminder_files/figure-html/boxplot-1.png" width="672" />
+</p>
+<p></details></p>
+<div id="redraw-the-plot-but-this-time-use-a-violin-plot" class="section level3">
+<h3>Redraw the plot, but this time use a violin plot</h3>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(continent, lifeExp)) +
+<span class="st">  </span><span class="kw">geom_violin</span>()</code></pre></div>
+<img src="dataviz_gapminder_files/figure-html/violin-plot-1.png" width="672" />
+</p>
+<p></details></p>
+</div>
+</div>
+<div id="generate-a-scatterplot-of-the-relationship-between-per-capita-gdp-and-life-expectancy" class="section level2">
+<h2>Generate a scatterplot of the relationship between per capita GDP and life expectancy</h2>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(gdpPercap, lifeExp)) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<img src="dataviz_gapminder_files/figure-html/scatter-1.png" width="672" />
+</p>
+<p></details></p>
+<div id="add-a-smoothing-line-to-the-scatterplot" class="section level3">
+<h3>Add a smoothing line to the scatterplot</h3>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(gdpPercap, lifeExp)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<img src="dataviz_gapminder_files/figure-html/scatter-smooth-1.png" width="672" />
+</p>
+<p></details></p>
+</div>
+<div id="identify-whether-this-relationship-differs-by-continent" class="section level3">
+<h3>Identify whether this relationship differs by continent</h3>
+<div id="use-the-color-aesthetic-to-identify-differences" class="section level4">
+<h4>Use the color aesthetic to identify differences</h4>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(gdpPercap, lifeExp, <span class="dt">color =</span> continent)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="dataviz_gapminder_files/figure-html/scatter-color-1.png" width="672" /></p>
+</p>
+<p></details></p>
+</div>
+<div id="use-faceting-to-identify-differences" class="section level4">
+<h4>Use faceting to identify differences</h4>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(gdpPercap, lifeExp, <span class="dt">color =</span> continent)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">geom_smooth</span>() +
+<span class="st">  </span><span class="kw">facet_grid</span>(. ~<span class="st"> </span>continent)</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<img src="dataviz_gapminder_files/figure-html/scatter-facet-1.png" width="672" />
+</p>
+<p></details></p>
+</div>
+</div>
+</div>
+<div id="bonus-identify-the-outlying-countries-on-the-right-side-of-the-graph-by-labeling-each-observation-with-the-country-name" class="section level2">
+<h2>Bonus: Identify the outlying countries on the right-side of the graph by labeling each observation with the country name</h2>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(gapminder, <span class="kw">aes</span>(gdpPercap, lifeExp, <span class="dt">label =</span> country)) +
+<span class="st">  </span><span class="kw">geom_smooth</span>() +
+<span class="st">  </span><span class="kw">geom_text</span>()</code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39; and formula &#39;y ~ s(x, bs = &quot;cs&quot;)&#39;</code></pre>
+<img src="dataviz_gapminder_files/figure-html/text-1.png" width="672" />
+</p>
+<p></details></p>
+</div>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## Session info -------------------------------------------------------------</code></pre>
+<pre><code>##  setting  value                       
+##  version  R version 3.3.3 (2017-03-06)
+##  system   x86_64, darwin13.4.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-07-18</code></pre>
+<pre><code>## Packages -----------------------------------------------------------------</code></pre>
+<pre><code>##  package    * version    date       source                            
+##  assertthat   0.2.0      2017-04-11 cran (@0.2.0)                     
+##  backports    1.1.0      2017-05-22 CRAN (R 3.3.2)                    
+##  base       * 3.3.3      2017-03-07 local                             
+##  bindr        0.1        2016-11-13 cran (@0.1)                       
+##  bindrcpp     0.2        2017-06-17 CRAN (R 3.3.2)                    
+##  broom        0.4.2      2017-02-13 CRAN (R 3.3.2)                    
+##  cellranger   1.1.0      2016-07-27 CRAN (R 3.3.0)                    
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.3.3)                    
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.3.2)                    
+##  datasets   * 3.3.3      2017-03-07 local                             
+##  devtools     1.13.2     2017-06-02 CRAN (R 3.3.2)                    
+##  digest       0.6.12     2017-01-27 CRAN (R 3.3.2)                    
+##  dplyr      * 0.7.1      2017-06-22 CRAN (R 3.3.2)                    
+##  evaluate     0.10.1     2017-06-24 CRAN (R 3.3.2)                    
+##  forcats      0.2.0      2017-01-23 CRAN (R 3.3.2)                    
+##  foreign      0.8-69     2017-06-21 CRAN (R 3.3.2)                    
+##  gapminder  * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
+##  ggplot2    * 2.2.1.9000 2017-06-13 Github (tidyverse/ggplot2@eedaa81)
+##  glue         1.1.1      2017-06-21 CRAN (R 3.3.2)                    
+##  graphics   * 3.3.3      2017-03-07 local                             
+##  grDevices  * 3.3.3      2017-03-07 local                             
+##  grid         3.3.3      2017-03-07 local                             
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.3.0)                    
+##  haven        1.0.0      2016-09-23 cran (@1.0.0)                     
+##  hms          0.3        2016-11-22 CRAN (R 3.3.2)                    
+##  htmltools    0.3.6      2017-04-28 cran (@0.3.6)                     
+##  httr         1.2.1      2016-07-03 CRAN (R 3.3.0)                    
+##  jsonlite     1.5        2017-06-01 cran (@1.5)                       
+##  knitr        1.16       2017-05-18 CRAN (R 3.3.2)                    
+##  labeling     0.3        2014-08-23 CRAN (R 3.3.0)                    
+##  lattice      0.20-35    2017-03-25 CRAN (R 3.3.2)                    
+##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.3.0)                    
+##  lubridate    1.6.0      2016-09-13 CRAN (R 3.3.0)                    
+##  magrittr     1.5        2014-11-22 CRAN (R 3.3.0)                    
+##  Matrix       1.2-10     2017-04-28 CRAN (R 3.3.2)                    
+##  memoise      1.1.0      2017-04-21 CRAN (R 3.3.2)                    
+##  methods    * 3.3.3      2017-03-07 local                             
+##  mgcv         1.8-17     2017-02-08 CRAN (R 3.3.3)                    
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.3.0)                    
+##  modelr       0.1.0      2016-08-31 CRAN (R 3.3.0)                    
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.3.0)                    
+##  nlme         3.1-131    2017-02-06 CRAN (R 3.3.3)                    
+##  parallel     3.3.3      2017-03-07 local                             
+##  pkgconfig    2.0.1      2017-03-21 cran (@2.0.1)                     
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.3.0)                    
+##  psych        1.7.5      2017-05-03 CRAN (R 3.3.3)                    
+##  purrr      * 0.2.2.9000 2017-06-18 Github (tidyverse/purrr@3061014)  
+##  R6           2.2.2      2017-06-17 CRAN (R 3.3.2)                    
+##  Rcpp         0.12.11    2017-05-22 CRAN (R 3.3.2)                    
+##  readr      * 1.1.1      2017-05-16 CRAN (R 3.3.2)                    
+##  readxl       1.0.0      2017-04-18 CRAN (R 3.3.2)                    
+##  reshape2     1.4.2      2016-10-22 CRAN (R 3.3.0)                    
+##  rlang        0.1.1.9000 2017-06-13 Github (hadley/rlang@7f53e56)     
+##  rmarkdown    1.6        2017-06-15 CRAN (R 3.3.2)                    
+##  rprojroot    1.2        2017-01-16 CRAN (R 3.3.2)                    
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.3.0)                    
+##  scales       0.4.1      2016-11-09 CRAN (R 3.3.1)                    
+##  stats      * 3.3.3      2017-03-07 local                             
+##  stringi      1.1.5      2017-04-07 CRAN (R 3.3.2)                    
+##  stringr      1.2.0      2017-02-18 CRAN (R 3.3.2)                    
+##  tibble     * 1.3.3      2017-05-28 cran (@1.3.3)                     
+##  tidyr      * 0.6.3      2017-05-15 CRAN (R 3.3.2)                    
+##  tidyverse  * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
+##  tools        3.3.3      2017-03-07 local                             
+##  utils      * 3.3.3      2017-03-07 local                             
+##  withr        1.0.2      2016-06-20 CRAN (R 3.3.0)                    
+##  xml2         1.1.1      2017-06-19 Github (r-lib/xml2@4be4590)       
+##  yaml         2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
