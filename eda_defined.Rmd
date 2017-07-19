@@ -1,0 +1,134 @@
+---
+title: "Exploratory data analysis"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+**Exploratory data analysis** (EDA) is often the first step to visualizing and transforming your data.^[After any necessary data importation and wrangling.] Hadley Wickham [defines EDA as an iterative cycle](http://r4ds.had.co.nz/exploratory-data-analysis.html):
+
+1. Generate questions about your data
+1. Search for answers by visualising, transforming, and modeling your data
+1. Use what you learn to refine your questions and or generate new questions
+* Rinse and repeat until you publish a paper
+
+EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. At the most basic level, it involves answering two questions
+
+1. What type of *variation* occurs *within* my variables?
+2. What type of *covariation* occurs *between* my variables?
+
+EDA relies heavily on visualizations and graphical interpretations of data. While statistical modeling provides a "simple" low-dimensional representation of relationships between variables, they generally require advanced knowledge of statistical techniques and mathematical principles. Visualizations and graphs are typically much more interpretable and easy to generate, so you can rapidly explore many different aspects of a dataset. The ultimate goal is to generate simple summaries of the data that inform your question(s). It is not the final stop in the data science pipeline, but still an important one.
+
+# Characteristics of exploratory graphs
+
+Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to [explore how the price of a diamond varies with it's carat size](http://r4ds.had.co.nz/exploratory-data-analysis.html#two-continuous-variables). An appropriate technique would be a scatterplot:
+
+```{r diamonds-eda}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point() +
+  geom_smooth()
+```
+
+This is a great exploratory graph: it took just three lines of code and clearly establishes an exponential relationship between the carat size and price of a diamond. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
+
+```{r diamonds-final}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(alpha = .01) +
+  geom_smooth(se = FALSE) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(title = "Exponential relationship between carat size and price",
+       subtitle = "Sample of 54,000 diamonds",
+       x = "Carat size",
+       y = "Price") +
+  theme_minimal()
+```
+
+These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
+
+# Air pollution in the United States
+
+The U.S. Environmental Protection Agency (EPA) sets national air quality standards for outdoor air pollution.^[This example is drawn from Roger Peng's [*Exploratory Data Analysis with R*](https://bookdown.org/rdpeng/exdata/exploratory-graphs.html)] One standard concerns the long-term average level of fine particle pollution, also known as PM2.5. The standard requires that the "annual mean, averaged over 3 years" cannot exceed 12 micrograms per cubic meter. Data on daily PM2.5 are available from the [EPA](https://www.epa.gov/outdoor-air-quality-data).
+
+Let's use EDA to answer the following question: **are there any counties in the U.S. that exceed the national standard for fine particle pollution?**
+
+## Import the data
+
+The dataset contains the annual mean PM2.5 for each U.S. county averaged over 2008-2010.
+
+```{r epa-data}
+(pollution <- read_csv("data/avgpm25.csv"))
+str(pollution)
+```
+
+Each row contains the average PM2.5 level, the five-digit code indicating the county (`fips`), the region of the country where the county is located, and the longitude and latitude of the centroid for that county.
+
+# 1 dimension summary
+
+One-dimensional summaries look at variation within a specific variable. Here, let's examine variation in PM2.5 using a few different graphical techniques.
+
+## Histogram
+
+```{r histogram}
+ggplot(pollution, aes(pm25)) +
+  geom_histogram()
+```
+
+It appears there is a high concentration of counties within the 9-12 micrograms per cubic meter range. To view the actual data points, we use `geom_rug()`:
+
+```{r rug}
+ggplot(pollution, aes(pm25)) +
+  geom_histogram() +
+  geom_rug()
+```
+
+Given the associated penalties for exceeding the pollution standard, it makes sense most observations will be close to or under 12 micrograms per cubic meter. That said, there are still a fair number of counties exceeding the level of 12. What causes this? That could be a new question generated during your EDA.
+
+By default, `geom_histogram()` bins the observations into 30 intervals of equal width. You can adjust this using the `bins` parameter:
+
+```{r histogram-bins}
+ggplot(pollution, aes(pm25)) +
+  geom_histogram(bins = 100) +
+  geom_rug()
+```
+
+Notice the spike at 9 micrograms per cubic meter. We cannot immediately tell what causes this spike. but it could be worth exploring later.
+
+## Bar chart
+
+```{r barplot}
+ggplot(pollution, aes(region)) +
+  geom_bar()
+```
+
+Clearly there are more counties in the eastern U.S. in this dataset than in the western U.S.
+
+# 2 dimensions
+
+Visualizing data in two dimensions allows us to assess covariation and differences in variation across groups. There are two major approaches to visualizing two dimensions:
+
+1. Multiple window plots
+1. Two-dimensional graphs
+
+## Multiple window plots
+
+
+
+
+# 3+ dimensions
+
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
