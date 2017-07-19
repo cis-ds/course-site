@@ -1,0 +1,119 @@
+---
+title: "Practice transforming college education (data)"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+> If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+```{r scorecard}
+library(rcfss)
+data("scorecard")
+str(scorecard)
+```
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of the `dplyr` functions to perform the following tasks.
+
+# Generate a data frame of schools with a greater than 40% share of first-generation students
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r filter}
+filter(scorecard, firstgen > .40)
+```
+  </p>
+</details>
+
+# Generate a data frame with the 10 most expensive colleges in 2013
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r top-10}
+# arrange the data frame by cost from highest to lowest and slice the first 10 rows
+arrange(scorecard, desc(cost)) %>%
+  slice(1:10)
+
+# use the top_n function
+top_n(scorecard, 10, wt = cost)
+```
+  </p>
+</details>
+
+# Generate a data frame with the average SAT score for each type of college
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r highest-sat}
+scorecard %>%
+  group_by(type) %>%
+  summarize(mean_sat = mean(satavg, na.rm = TRUE))
+```
+  </p>
+</details>
+
+# Calculate for each school how many students it takes to pay the average faculty member's salary and generate a data frame with the school's name and the calculated value
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r avg-sal}
+scorecard %>%
+  mutate(ratio = avgfacsal / cost) %>%
+  select(name, ratio)
+```
+  </p>
+</details>
+
+# Calculate how many private, nonprofit schools have a smaller cost than the University of Chicago
+
+Hint: the result should be a data frame with one row for the University of Chicago, and a column containing the requested value.
+
+## Report the number as the total number of schools
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r uchicago-raw}
+scorecard %>%
+  filter(type == "Private, nonprofit") %>%
+  arrange(cost) %>%
+  mutate(school_cheaper = row_number()) %>%
+  filter(name == "University of Chicago")
+```
+  </p>
+</details>
+
+## Report the number as the percentage of schools
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+```{r uchicago-pct}
+scorecard %>%
+  filter(type == "Private, nonprofit") %>%
+  mutate(cost_rank = percent_rank(cost)) %>%
+  filter(name == "University of Chicago")
+```
+  </p>
+</details>
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
