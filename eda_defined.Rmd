@@ -23,8 +23,8 @@ library(tidyverse)
 
 EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. At the most basic level, it involves answering two questions
 
-1. What type of *variation* occurs *within* my variables?
-2. What type of *covariation* occurs *between* my variables?
+1. What type of **variation** occurs **within** my variables?
+2. What type of **covariation** occurs **between** my variables?
 
 EDA relies heavily on visualizations and graphical interpretations of data. While statistical modeling provides a "simple" low-dimensional representation of relationships between variables, they generally require advanced knowledge of statistical techniques and mathematical principles. Visualizations and graphs are typically much more interpretable and easy to generate, so you can rapidly explore many different aspects of a dataset. The ultimate goal is to generate simple summaries of the data that inform your question(s). It is not the final stop in the data science pipeline, but still an important one.
 
@@ -71,9 +71,9 @@ str(pollution)
 
 Each row contains the average PM2.5 level, the five-digit code indicating the county (`fips`), the region of the country where the county is located, and the longitude and latitude of the centroid for that county.
 
-# 1 dimension summary
+# Assessing variation
 
-One-dimensional summaries look at variation within a specific variable. Here, let's examine variation in PM2.5 using a few different graphical techniques.
+Assessing **variation** requires examining the values of a variable as they change from measurement to measurement. Here, let's examine variation in PM2.5 using a few different graphical techniques.
 
 ## Histogram
 
@@ -109,21 +109,69 @@ ggplot(pollution, aes(region)) +
   geom_bar()
 ```
 
-Clearly there are more counties in the eastern U.S. in this dataset than in the western U.S.
+To examine the distribution of a categorical variable, we can use a **bar chart**. Clearly there are more counties in the eastern U.S. in this dataset than in the western U.S.
 
-# 2 dimensions
+# Covariation
 
-Visualizing data in two dimensions allows us to assess covariation and differences in variation across groups. There are two major approaches to visualizing two dimensions:
+**Covariation** is the tendency for the values of two or more variables to vary together in a related way. Visualizing data in two or more dimensions allows us to assess covariation and differences in variation across groups. There are a few major approaches to visualizing two dimensions:
 
-1. Multiple window plots
 1. Two-dimensional graphs
+1. Multiple window plots
+1. Utilizing additional channels
+
+## Two-dimensional graphs
+
+**Two-dimensional graphs** are visualizations that are naturally designed to visualize two variables. For instance, if you have a discrete variable and a continuous variable, you could use a **box plot** to visualize the distribution of the values of the continuous variable for each category in the discrete variable:
+
+```{r boxplot}
+ggplot(pollution, aes(region, pm25)) +
+  geom_boxplot()
+```
+
+Here we see that on average counties in the western U.S. have lower rates of particle pollution, but also contains some counties with the highest rates of PM2.5. Why do these counties stick out? What causes them to have higher than expected rates of pollution? An interesting question to explore later.
+
+If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between a county's latitude and its particle pollution:
+
+```{r scatterplot}
+ggplot(pollution, aes(latitude, pm25)) +
+  geom_point()
+```
+
+As you go from south to north in the United States, the highest levels of PM2.5 tend to occur in the middle region of the country.
 
 ## Multiple window plots
 
+Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine the distribution PM2.5 separately for the eastern and western United States, we could draw a graph like this:
 
+```{r histogram-facet}
+ggplot(pollution, aes(pm25)) +
+  geom_histogram() +
+  facet_wrap(~ region)
+```
 
+PM2.5 in the western United States tends to be right-skewed with some outlying counties with very high levels, whereas PM2.5 in the eastern U.S. tends to be left skewed with some counties having very low levels.
 
-# 3+ dimensions
+You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between latitude and PM2.5 by region:
+
+```{r scatterplot-facet}
+ggplot(pollution, aes(latitude, pm25)) +
+  geom_point() +
+  facet_wrap(~ region)
+```
+
+## Utilizing additional channels
+
+If you want to visualize three or more dimensions of data without resorting to 3D animations^[Though with the growth of virtual reality technology and 3D printing, perhaps this isn't a bad idea.] or window plots, the best approach is to incorporate additional **channels** into the visualization. Channels are used to encode variables inside of a graphic. For instance, a scatterplot uses vertical and horizontal spatial position channels to encode the values for two variables in a visually intuitive manner.
+
+Depending on the type of graph and variables you wish to encode, there are several different channels you can use to encode additional information. For instance, **color** can be used to distinguish between classes in a categorical variable.
+
+```{r scatterplot-color}
+ggplot(pollution, aes(latitude, pm25, color = region)) +
+  geom_point()
+
+ggplot(pollution, aes(pm25, color = region)) +
+  geom_freqpoly()
+```
 
 
 

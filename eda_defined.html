@@ -351,8 +351,8 @@ div.tocify {
 </ul>
 <p>EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. At the most basic level, it involves answering two questions</p>
 <ol style="list-style-type: decimal">
-<li>What type of <em>variation</em> occurs <em>within</em> my variables?</li>
-<li>What type of <em>covariation</em> occurs <em>between</em> my variables?</li>
+<li>What type of <strong>variation</strong> occurs <strong>within</strong> my variables?</li>
+<li>What type of <strong>covariation</strong> occurs <strong>between</strong> my variables?</li>
 </ol>
 <p>EDA relies heavily on visualizations and graphical interpretations of data. While statistical modeling provides a “simple” low-dimensional representation of relationships between variables, they generally require advanced knowledge of statistical techniques and mathematical principles. Visualizations and graphs are typically much more interpretable and easy to generate, so you can rapidly explore many different aspects of a dataset. The ultimate goal is to generate simple summaries of the data that inform your question(s). It is not the final stop in the data science pipeline, but still an important one.</p>
 <div id="characteristics-of-exploratory-graphs" class="section level1">
@@ -432,9 +432,9 @@ div.tocify {
 <p>Each row contains the average PM2.5 level, the five-digit code indicating the county (<code>fips</code>), the region of the country where the county is located, and the longitude and latitude of the centroid for that county.</p>
 </div>
 </div>
-<div id="dimension-summary" class="section level1">
-<h1>1 dimension summary</h1>
-<p>One-dimensional summaries look at variation within a specific variable. Here, let’s examine variation in PM2.5 using a few different graphical techniques.</p>
+<div id="assessing-variation" class="section level1">
+<h1>Assessing variation</h1>
+<p>Assessing <strong>variation</strong> requires examining the values of a variable as they change from measurement to measurement. Here, let’s examine variation in PM2.5 using a few different graphical techniques.</p>
 <div id="histogram" class="section level2">
 <h2>Histogram</h2>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(pm25)) +
@@ -460,22 +460,57 @@ div.tocify {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(region)) +
 <span class="st">  </span><span class="kw">geom_bar</span>()</code></pre></div>
 <p><img src="eda_defined_files/figure-html/barplot-1.png" width="672" /></p>
-<p>Clearly there are more counties in the eastern U.S. in this dataset than in the western U.S.</p>
+<p>To examine the distribution of a categorical variable, we can use a <strong>bar chart</strong>. Clearly there are more counties in the eastern U.S. in this dataset than in the western U.S.</p>
 </div>
 </div>
-<div id="dimensions" class="section level1">
-<h1>2 dimensions</h1>
-<p>Visualizing data in two dimensions allows us to assess covariation and differences in variation across groups. There are two major approaches to visualizing two dimensions:</p>
+<div id="covariation" class="section level1">
+<h1>Covariation</h1>
+<p><strong>Covariation</strong> is the tendency for the values of two or more variables to vary together in a related way. Visualizing data in two or more dimensions allows us to assess covariation and differences in variation across groups. There are a few major approaches to visualizing two dimensions:</p>
 <ol style="list-style-type: decimal">
-<li>Multiple window plots</li>
 <li>Two-dimensional graphs</li>
+<li>Multiple window plots</li>
+<li>Utilizing additional channels</li>
 </ol>
+<div id="two-dimensional-graphs" class="section level2">
+<h2>Two-dimensional graphs</h2>
+<p><strong>Two-dimensional graphs</strong> are visualizations that are naturally designed to visualize two variables. For instance, if you have a discrete variable and a continuous variable, you could use a <strong>box plot</strong> to visualize the distribution of the values of the continuous variable for each category in the discrete variable:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(region, pm25)) +
+<span class="st">  </span><span class="kw">geom_boxplot</span>()</code></pre></div>
+<p><img src="eda_defined_files/figure-html/boxplot-1.png" width="672" /></p>
+<p>Here we see that on average counties in the western U.S. have lower rates of particle pollution, but also contains some counties with the highest rates of PM2.5. Why do these counties stick out? What causes them to have higher than expected rates of pollution? An interesting question to explore later.</p>
+<p>If you have two continuous variables, you may use a <strong>scatterplot</strong> which maps each variable to an <span class="math inline">\(x\)</span> or <span class="math inline">\(y\)</span>-axis coordinate. Here we visualize the relationship between a county’s latitude and its particle pollution:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(latitude, pm25)) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="eda_defined_files/figure-html/scatterplot-1.png" width="672" /></p>
+<p>As you go from south to north in the United States, the highest levels of PM2.5 tend to occur in the middle region of the country.</p>
+</div>
 <div id="multiple-window-plots" class="section level2">
 <h2>Multiple window plots</h2>
+<p>Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a <strong>multiple window plot</strong> (also known as a <strong>trellis</strong> or <strong>facet</strong> graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine the distribution PM2.5 separately for the eastern and western United States, we could draw a graph like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(pm25)) +
+<span class="st">  </span><span class="kw">geom_histogram</span>() +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>region)</code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="eda_defined_files/figure-html/histogram-facet-1.png" width="672" /></p>
+<p>PM2.5 in the western United States tends to be right-skewed with some outlying counties with very high levels, whereas PM2.5 in the eastern U.S. tends to be left skewed with some counties having very low levels.</p>
+<p>You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between latitude and PM2.5 by region:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(latitude, pm25)) +
+<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>region)</code></pre></div>
+<p><img src="eda_defined_files/figure-html/scatterplot-facet-1.png" width="672" /></p>
 </div>
+<div id="utilizing-additional-channels" class="section level2">
+<h2>Utilizing additional channels</h2>
+<p>If you want to visualize three or more dimensions of data without resorting to 3D animations<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> or window plots, the best approach is to incorporate additional <strong>channels</strong> into the visualization. Channels are used to encode variables inside of a graphic. For instance, a scatterplot uses vertical and horizontal spatial position channels to encode the values for two variables in a visually intuitive manner.</p>
+<p>Depending on the type of graph and variables you wish to encode, there are several different channels you can use to encode additional information. For instance, <strong>color</strong> can be used to distinguish between classes in a categorical variable.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(latitude, pm25, <span class="dt">color =</span> region)) +
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="eda_defined_files/figure-html/scatterplot-color-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(pollution, <span class="kw">aes</span>(pm25, <span class="dt">color =</span> region)) +
+<span class="st">  </span><span class="kw">geom_freqpoly</span>()</code></pre></div>
+<pre><code>## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="eda_defined_files/figure-html/scatterplot-color-2.png" width="672" /></p>
 </div>
-<div id="dimensions-1" class="section level1">
-<h1>3+ dimensions</h1>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
@@ -488,7 +523,7 @@ div.tocify {
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-07-19</code></pre>
+##  date     2017-07-20</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
 <pre><code>##  package    * version    date       source                              
 ##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
@@ -528,10 +563,8 @@ div.tocify {
 ##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
 ##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
 ##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                      
-##  Matrix       1.2-10     2017-05-03 CRAN (R 3.4.1)                      
 ##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
 ##  methods    * 3.4.1      2017-07-07 local                               
-##  mgcv         1.8-17     2017-02-08 CRAN (R 3.4.1)                      
 ##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
 ##  modelr       0.1.0      2016-08-31 CRAN (R 3.4.0)                      
 ##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
@@ -570,6 +603,7 @@ div.tocify {
 <li id="fn1"><p>After any necessary data importation and wrangling.<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>In perhaps an academic journal, or maybe a homework submission.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>This example is drawn from Roger Peng’s <a href="https://bookdown.org/rdpeng/exdata/exploratory-graphs.html"><em>Exploratory Data Analysis with R</em></a><a href="#fnref3">↩</a></p></li>
+<li id="fn4"><p>Though with the growth of virtual reality technology and 3D printing, perhaps this isn’t a bad idea.<a href="#fnref4">↩</a></p></li>
 </ol>
 </div>
 
