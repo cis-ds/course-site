@@ -54,49 +54,54 @@ ggplot(diamonds, aes(carat, price)) +
 
 These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
 
-# Air pollution in the United States
+# Fuel economy data
 
-The U.S. Environmental Protection Agency (EPA) sets national air quality standards for outdoor air pollution.^[This example is drawn from Roger Peng's [*Exploratory Data Analysis with R*](https://bookdown.org/rdpeng/exdata/exploratory-graphs.html)] One standard concerns the long-term average level of fine particle pollution, also known as PM2.5. The standard requires that the "annual mean, averaged over 3 years" cannot exceed 12 micrograms per cubic meter. Data on daily PM2.5 are available from the [EPA](https://www.epa.gov/outdoor-air-quality-data).
-
-Let's use EDA to answer the following question: **are there any counties in the U.S. that exceed the national standard for fine particle pollution?**
+The U.S. Environmental Protection Agency (EPA) [collects fuel economy data](http://fueleconomy.gov/) on all vehicles sold in the United States. Here let's examine a subset of that data for 38 popular models of cars sold between 1999 and 2008 to answer the following question: **how does highway fuel efficiency vary across cars?**
 
 ## Import the data
 
-The dataset contains the annual mean PM2.5 for each U.S. county averaged over 2008-2010.
+The `mpg` dataset is included as part of the `ggplot2` library:
 
 ```{r epa-data}
-(pollution <- read_csv("data/avgpm25.csv"))
-str(pollution)
+library(ggplot2)
+data("mpg")
+
+mpg
+str(mpg)
 ```
 
-Each row contains the average PM2.5 level, the five-digit code indicating the county (`fips`), the region of the country where the county is located, and the longitude and latitude of the centroid for that county.
+Each row represents a model of car sold in a given year.^[The data is a panel structure, so the same model car appears multiple times.] `hwy` identifies the highway miles per gallon for the vehicle.
 
 # Assessing variation
 
-Assessing **variation** requires examining the values of a variable as they change from measurement to measurement. Here, let's examine variation in PM2.5 using a few different graphical techniques.
+Assessing **variation** requires examining the values of a variable as they change from measurement to measurement. Here, let's examine variation in highway fuel efficiency and related variables using a few different graphical techniques.
 
 ## Histogram
 
 ```{r histogram}
-ggplot(pollution, aes(pm25)) +
+ggplot(mpg, aes(hwy)) +
   geom_histogram()
 ```
 
-It appears there is a high concentration of counties within the 9-12 micrograms per cubic meter range. To view the actual data points, we use `geom_rug()`:
+It appears there is a high concentration of vehicles with highway fuel efficiency between 20 and 30 mpg, with a smaller number of vehicles between 15-20 and some outliers with high fuel efficiency (larger values indicate more efficient vehicles). To view the actual data points, we use `geom_rug()`:
 
 ```{r rug}
-ggplot(pollution, aes(pm25)) +
+ggplot(mpg, aes(hwy)) +
   geom_histogram() +
   geom_rug()
 ```
 
-Given the associated penalties for exceeding the pollution standard, it makes sense most observations will be close to or under 12 micrograms per cubic meter. That said, there are still a fair number of counties exceeding the level of 12. What causes this? That could be a new question generated during your EDA.
+One thing `geom_rug()` does is illustrate that while `hwy` is a continuous variable, it is measured in integer units - that is, there are no fractional values in the dataset. 26 miles per gallon on the highway is the most common mpg rate in the dataset. Why is that? Something perhaps to investigate further.
 
 By default, `geom_histogram()` bins the observations into 30 intervals of equal width. You can adjust this using the `bins` parameter:
 
 ```{r histogram-bins}
-ggplot(pollution, aes(pm25)) +
-  geom_histogram(bins = 100) +
+ggplot(mpg, aes(hwy)) +
+  geom_histogram(bins = 50) +
+  geom_rug()
+
+ggplot(mpg, aes(hwy)) +
+  geom_histogram(bins = 10) +
   geom_rug()
 ```
 
@@ -105,11 +110,11 @@ Notice the spike at 9 micrograms per cubic meter. We cannot immediately tell wha
 ## Bar chart
 
 ```{r barplot}
-ggplot(pollution, aes(region)) +
+ggplot(mpg, aes(class)) +
   geom_bar()
 ```
 
-To examine the distribution of a categorical variable, we can use a **bar chart**. Clearly there are more counties in the eastern U.S. in this dataset than in the western U.S.
+To examine the distribution of a categorical variable, we can use a **bar chart**. Here we see the most common type of vehicle in the dataset is an SUV, not surprising given Americans' car culture.
 
 # Covariation
 
@@ -124,39 +129,39 @@ To examine the distribution of a categorical variable, we can use a **bar chart*
 **Two-dimensional graphs** are visualizations that are naturally designed to visualize two variables. For instance, if you have a discrete variable and a continuous variable, you could use a **box plot** to visualize the distribution of the values of the continuous variable for each category in the discrete variable:
 
 ```{r boxplot}
-ggplot(pollution, aes(region, pm25)) +
+ggplot(mpg, aes(class, hwy)) +
   geom_boxplot()
 ```
 
-Here we see that on average counties in the western U.S. have lower rates of particle pollution, but also contains some counties with the highest rates of PM2.5. Why do these counties stick out? What causes them to have higher than expected rates of pollution? An interesting question to explore later.
+Here we see that on average, compact and midsize vehicles have the highest highway fuel efficiency whereas pickups and SUVs have the lowest fuel efficiency. What might explain these differences? Another question you could explore after viewing this visualization.
 
-If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between a county's latitude and its particle pollution:
+If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between engine displacement (the physical size of the engine) and highway fuel efficiency:
 
 ```{r scatterplot}
-ggplot(pollution, aes(latitude, pm25)) +
+ggplot(mpg, aes(displ, hwy)) +
   geom_point()
 ```
 
-As you go from south to north in the United States, the highest levels of PM2.5 tend to occur in the middle region of the country.
+As engines get larger, highway fuel efficiency declines.
 
 ## Multiple window plots
 
-Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine the distribution PM2.5 separately for the eastern and western United States, we could draw a graph like this:
+Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine variation in highway fuel efficiency separately for type of drive (front wheel, rear wheel, or 4 wheel), we could draw a graph like this:
 
 ```{r histogram-facet}
-ggplot(pollution, aes(pm25)) +
+ggplot(mpg, aes(hwy)) +
   geom_histogram() +
-  facet_wrap(~ region)
+  facet_wrap(~ drv)
 ```
 
-PM2.5 in the western United States tends to be right-skewed with some outlying counties with very high levels, whereas PM2.5 in the eastern U.S. tends to be left skewed with some counties having very low levels.
+Highway fuel efficiency is right-skewed for 4 and rear wheel drive vehicles, whereas front wheel drive vehicles are generally unskewed with a couple outliers of 40+ mpg.
 
-You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between latitude and PM2.5 by region:
+You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between engine displacement and highway fuel efficiency by drive type:
 
 ```{r scatterplot-facet}
-ggplot(pollution, aes(latitude, pm25)) +
+ggplot(mpg, aes(displ, hwy)) +
   geom_point() +
-  facet_wrap(~ region)
+  facet_wrap(~ drv)
 ```
 
 ## Utilizing additional channels
@@ -166,14 +171,25 @@ If you want to visualize three or more dimensions of data without resorting to 3
 Depending on the type of graph and variables you wish to encode, there are several different channels you can use to encode additional information. For instance, **color** can be used to distinguish between classes in a categorical variable.
 
 ```{r scatterplot-color}
-ggplot(pollution, aes(latitude, pm25, color = region)) +
+ggplot(mpg, aes(displ, hwy, color = class)) +
   geom_point()
-
-ggplot(pollution, aes(pm25, color = region)) +
-  geom_freqpoly()
 ```
 
+We can even use a fourth channel to communicate another variable (number of cylinders) by making use of the size channel:
 
+```{r scatterplot-color-size}
+ggplot(mpg, aes(displ, hwy, color = class, size = cyl)) +
+  geom_point()
+```
+
+Note that some channels are not always appropriate, even if they can technically be implemented. For example, instead of using a color channel to visualize `class`, why not distinguish each type of car using the point's shape?
+
+```{r scatterplot-shape}
+ggplot(mpg, aes(displ, hwy, shape = class)) +
+  geom_point()
+```
+
+With this many categories, shape is not very useful in visually distinguishing between each car's class.
 
 # Session Info {.toc-ignore}
 
