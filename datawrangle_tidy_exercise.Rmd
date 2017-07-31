@@ -1,5 +1,5 @@
 ---
-title: "Tidy data"
+title: "Practice tidying data"
 output:
   html_document:
     toc: true
@@ -10,127 +10,15 @@ output:
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-# Objectives
-
-* Define tidy data and its characteristics
-* Practice tidying data
-
 ```{r packages, cache = FALSE}
 library(tidyverse)
 ```
 
-# Tidy data
-
-**Tidy data** is a specific way of organizing data into a consistent format which plugs into the `tidyverse` set of packages for R. It is not the only way to store data and there are reasons why you might not store data in this format, but eventually you will probably need to convert your data to a tidy format in order to efficiently analyze it.
-
-There are three rules which make a dataset tidy:
-
-1. Each variable must have its own column.
-2. Each observation must have its own row.
-3. Each value must have its own cell.
-
-![Figure 12.1 from [*R for Data Science*](r4ds.had.co.nz)](http://r4ds.had.co.nz/images/tidy-1.png)
-
-# Most common tasks for tidying data
-
-Let's review the different tasks for tidying data using the R for Data Science `gapminder` subset. This is the data in a tidy format:
-
-```{r}
-table1
-```
-
-Note that in this data frame, each variable is in its own column (`country`, `year`, `cases`, and `population`), each observation is in its own row (i.e. each row is a different country-year pairing), and each value has its own cell.
-
-## Gathering
-
-**Gathering** entails bringing a variable spread across multiple columns into a single column. For example, this version of `table1` is not tidy because the `year` variable is spread across multiple columns:
-
-```{r}
-table4a
-```
-
-We can use the `gather()` function from the `tidyr` package to reshape the data frame and make this tidy. To do this we need three pieces of information:
-
-1. The names of the columns that represent the values, not variables. Here, those are `1999` and `2000`.
-1. The `key`, or the name of the variable whose values form the column names. Here that is `year`.
-1. The `value`, or the name of the variable whose values are spread over the cells. Here that is `cases`. 
-
-> Notice that we create the names for `key` and `value` - they do not already exist in the data frame.
-
-We implement this using the `gather()` function:
-
-```{r}
-table4a %>% 
-  gather(`1999`, `2000`, key = "year", value = "cases")
-```
-
-> In Stata and other statistics software, this operation would be called reshaping data wide to long.
-
-## Spreading
-
-**Spreading** brings an observation spread across multiple rows into a single row. It is the reverse of gathering. For instance, take `table2`:
-
-```{r}
-table2
-```
-
-It violates the tidy data principle because each observation (unit of analysis is a country-year pairing) is split across multiple rows. To tidy the data frame, we need to know:
-
-1. The `key` column, or the column that contains variable names. Here, it is `type`.
-1. The `value` column, or the column that contains values for multiple variables. Here it is `count`.
-
-> Notice that unlike for gathering, when spreading the `key` and `value` columns are already defined in the data frame. We do not create the names ourselves, only identify them in the existing data frame.
-
-```{r}
-table2 %>%
-  spread(key = type, value = count)
-```
-
-> In Stata and other statistics software, this operation would be called reshaping data long to wide.
-
-## Separating
-
-**Separating** splits multiple variables stored in a single column into multiple columns. For example in `table3`, the `rate` column contains both `cases` and `population`:
-
-```{r}
-table3
-```
-
-**This is a no-no**. Tidy data principles require each column to contain a single variable. We can use the `separate()` function to split the column into two new columns:
-
-```{r}
-table3 %>% 
-  separate(rate, into = c("cases", "population"))
-```
-
-## Uniting
-
-**Uniting** is the inverse of separating - when a variable is stored in multiple columns, uniting brings the variable back into a single column. `table5` splits the year variable into two columns:
-
-```{r}
-table5
-```
-
-To bring them back together, use the `unite()` function:
-
-```{r}
-table5 %>% 
-  unite(new, century, year)
-
-# remove underscore
-table5 %>% 
-  unite(new, century, year, sep = "")
-```
-
-# Practice tidying data
-
-> Before you begin the exercises, update your `rcfss` library by running `devtools::install_github("uc-cfss/rcfss")` in the console.
-
 For each exercise, tidy the data frame. Before you write any code examine the structure of the data frame and mentally (or with pen-and-paper) sketch out what you think the tidy data structure should be.
 
-## Race data
+# Race data
 
-```{r}
+```{r race}
 library(rcfss)
 race
 ```
@@ -147,7 +35,7 @@ Important info:
   
 **Tidy data structure**
 
-```{r, echo = FALSE}
+```{r race-hint, echo = FALSE}
 race %>%
   gather(Time, Score, -Name, convert = TRUE) %>%
   arrange(Name, Time)
@@ -162,7 +50,7 @@ race %>%
 
 This is essentially a gathering operation. Except for the `Name` column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns' values are another variable. We want to gather these columns. The `key` will tell us the original column name, and the `value` will give us the values in the cells. Because the column names are actually numeric values, we set `convert = TRUE` to coerce the new `Time` column into a numeric column (or vector). (The last line isn't necessary, but sorts the data frame in a consistent manner.)
 
-```{r}
+```{r race-solution}
 race %>%
   gather(Time, Score, -Name, convert = TRUE) %>%
   arrange(Name, Time)
@@ -173,9 +61,15 @@ race %>%
 
 ## Clinical trials
 
-```{r}
+```{r results}
 results
 ```
+
+Important info:
+
+* `Ind` - individual participating in the experiment
+* `Treatment` - trial type (`Treat` or `Cont`)
+* `value` - result of experiment
 
 <details> 
   <summary>Click for a hint</summary>
@@ -183,7 +77,7 @@ results
   
 **Tidy data structure**
 
-```{r, echo = FALSE}
+```{r results-hint, echo = FALSE}
 results %>%
   spread(Treatment, value)
 ```
@@ -197,7 +91,7 @@ results %>%
 
 This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
 
-```{r}
+```{r results-solution}
 results %>%
   spread(Treatment, value)
 ```
@@ -207,7 +101,7 @@ results %>%
 
 ## Grades
 
-```{r}
+```{r grades}
 grades
 ```
 
@@ -222,7 +116,7 @@ This one is a bit tougher. Important info:
 
 **Tidy data structure**
 
-```{r, echo = FALSE}
+```{r grades-hint, echo = FALSE}
 grades %>%
   gather(Quarter, Score, Fall:Winter) %>%
   mutate(Test = paste0("Test", Test)) %>%
@@ -241,14 +135,14 @@ In this example, the basic unit of observation is the test. Each individual take
 
 Let's start with the gathering operation: we want to gather `Fall`, `Winter`, and `Spring` into a single column (we can use the inclusive select function `:` to gather these three columns):
 
-```{r}
+```{r grades-gather}
 grades %>%
   gather(key = Quarter, value = Score, Fall:Winter)
 ```
 
 Good, but now we spread observations across multiple rows. Remember that we want each test to be a separate variable. To do that, we can spread those values across two columns.
 
-```{r}
+```{r grades-spread}
 grades %>%
   gather(Quarter, Score, Fall:Winter) %>%
   spread(Test, Score)
@@ -256,7 +150,7 @@ grades %>%
 
 This is an acceptable solution, but look what happened to the column names for each test: they're labeled as numbers (`1` and `2`). We'd rather give columns text labels, since those are easier to reference in our code. We can use a function called `str_c()` from the `stringr` library to add text to the `Test` column before we spread it. `str_c()` combines two or more values together to create a single value:[^unite]
 
-```{r}
+```{r grades-mutate}
 library(stringr)
 
 grades %>%
@@ -271,7 +165,7 @@ grades %>%
 
 If we're cleaning up the data frame, let's also arrange it in a logical order:
 
-```{r}
+```{r grades-arrange}
 grades %>%
   gather(Quarter, Score, Fall:Winter) %>%
   mutate(Test = str_c("Test", Test)) %>%
@@ -281,14 +175,82 @@ grades %>%
 
 [^unite]: You might think to use the `unite()` function here, but it won't work unless you first create a column which only contains the value `Test`, like so:
 
-    ```{r}
+    ```{r grades-unite}
     grades %>%
       gather(Quarter, Score, Fall:Winter) %>%
       mutate(test_label = "Test") %>%
       unite(col = Test, test_label, Test)
     ```
+    
     This works, but requires two lines of code instead of one.
     
+  </p>
+</details>
+
+## Activities
+
+```{r activities}
+activities
+```
+
+This one is also pretty difficult, but if you think it through conceptually it is doable. The unit of analysis is a single individual (identified by `id`) observed at two different times (`T1` and `T2`) performing different actions (`work`, `play`, `talk`, and `total` - note that `total` is not merely the sum of the first three values). Individuals in this experiment were assigned to either treatment or control (`trt`) and this information should be preserved in the final data frame.
+
+<details> 
+  <summary>Click for a hint</summary>
+  <p>
+  
+**Tidy data structure**
+
+```{r activities-hint, echo = FALSE}
+activities %>%
+  gather(key, value, -id, -trt) %>%
+  separate(key, into = c("location", "time")) %>%
+  arrange(id, trt, time) %>%
+  spread(location, value)
+```
+
+  </p>
+</details>
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+This is a more complex operation. The basic problem is that we have variables stored in multiple columns (location, with possible values of `work`, `play`, and `talk`). We need to gather these columns into a single column for each variable. But what happens if we just gather them?
+
+```{r activities-gather}
+activities %>%
+  gather(key, value, -id, -trt)
+```
+
+We've created a new problem! Actually, two problems:
+
+1. We have a single observation stored across multiple rows: we want a single row for each `id` x `trt` pairing
+2. We have two variables stored in a single column: `key` contains the information on both location (`work`, `play`, and `talk`) as well as when the measurement was taken (`T1` or `T2`)
+
+The best approach is to fix the second problem by separating the columns, then spreading the different types of measurements back into their own columns.
+
+```{r activities-separate-spread}
+activities %>%
+  gather(key, value, -id, -trt) %>%
+  separate(key, into = c("location", "time"))
+
+activities %>%
+  gather(key, value, -id, -trt) %>%
+  separate(key, into = c("location", "time")) %>%
+  spread(location, value)
+```
+
+The whole operation in a single chain (with an `arrange()` thrown in to sort the data frame):
+
+```{r activities-solution}
+activities %>%
+  gather(key, value, -id, -trt) %>%
+  separate(key, into = c("location", "time")) %>%
+  arrange(id, trt, time) %>%
+  spread(location, value)
+```
+
   </p>
 </details>
 
