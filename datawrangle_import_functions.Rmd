@@ -21,8 +21,8 @@ set.seed(1234)
 
 # `readr` vs. base R
 
-```{r data-gen, include = FALSE, cache.extra = c(file.info("data/sim-data-small.csv"), file.info("data/sim-data-large.csv"))}
-n_row_s <- 500000
+```{r data-gen, include = FALSE}
+n_row_s <- 50000
 
 data_small <- data_frame(x = sample(1:4, n_row_s, replace = TRUE),
            y = sample(letters, n_row_s, replace = TRUE),
@@ -50,8 +50,11 @@ results_small <- microbenchmark(
   read.csv = read.csv("data/sim-data-small.csv"),
   read_csv = read_csv("data/sim-data-small.csv")
 )
+```
 
-autoplot(results_small)
+```{r compare-speed-small-plot, dependson = "compare-speed-small", message = FALSE}
+autoplot(results_small) +
+  scale_y_log10(breaks = c(25, 50, 100, 200))
 ```
 
 `read_csv()` is over 5 times faster than `read.csv()`. Of course with relatively small data files, this isn't a large difference in absolute terms (a difference of 100 milliseconds is only .1 second). However, as the data file increases in size the performance savings will be much larger. Consider the same test with a CSV file with `r prettyNum(n_row_l, scientific = FALSE, big.mark = ",")` rows:
@@ -63,8 +66,11 @@ results_large <- microbenchmark(
   read.csv = read.csv("data/sim-data-large.csv"),
   read_csv = read_csv("data/sim-data-large.csv")
 )
+```
 
-autoplot(results_large)
+```{r compare-speed-large-plot, dependson = "compare-speed-large", message = FALSE}
+autoplot(results_large) +
+  scale_y_log10(breaks = c(2.5, 5, 10, 20, 40))
 ```
 
 Here `read_csv()` is far superior to `read.csv()`.
@@ -145,7 +151,7 @@ microbenchmark(
   autoplot
 ```
 
-`feather` is generally faster than RDS and `read_csv()`.^[Notice that the x-axis is logarithmically scaled.]
+`feather` is generally faster than RDS and `read_csv()`.^[Notice that the x-axis is logarithmically scaled.] Furthermore, [it has native support for Python, R, and Julia.](https://github.com/wesm/feather), so if you develop an analytics pipeline that switches between R and Python, you can import/export data files in `.feather` without any loss of information.
 
 ## `readxl`
 
