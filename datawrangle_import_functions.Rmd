@@ -1,0 +1,205 @@
+---
+title: "Importing data into R"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+
+theme_set(theme_minimal())
+
+# set seed for reproducibility
+set.seed(1234)
+```
+
+# `readr` vs. base R
+
+```{r data-gen, include = FALSE, cache.extra = c(file.info("data/sim-data-small.csv"), file.info("data/sim-data-large.csv"))}
+n_row_s <- 500000
+
+data_small <- data_frame(x = sample(1:4, n_row_s, replace = TRUE),
+           y = sample(letters, n_row_s, replace = TRUE),
+           z = str_c(sample(letters, n_row_s, replace = TRUE),
+                     sample(1:4, n_row_s, replace = TRUE)),
+           value = rnorm(n_row_s)) %>%
+  write_csv("data/sim-data-small.csv")
+
+n_row_l <- 5000000
+
+data_large <- data_frame(x = sample(1:4, n_row_l, replace = TRUE),
+           y = sample(letters, n_row_l, replace = TRUE),
+           z = str_c(sample(letters, n_row_l, replace = TRUE),
+                     sample(1:4, n_row_l, replace = TRUE)),
+           value = rnorm(n_row_l)) %>%
+  write_csv("data/sim-data-large.csv")
+```
+
+One of the main advantages of `readr` functions over base R functions is that [they are typically much faster](http://r4ds.had.co.nz/data-import.html#compared-to-base-r). For example, let's import a randomly generated CSV file with `r prettyNum(n_row_s, scientific = FALSE, big.mark = ",")` rows and `ncol(data_small)` columns. How long does it take `read.csv()` to import this file vs. `readr::read_csv()`? To assess the differences, we use the [`microbenchmark`](https://cran.r-project.org/web/packages/microbenchmark/) to run each function 100 times and compare the distributions of the time it takes to complete the data import:
+
+```{r compare-speed-small, dependson = "data-gen", message = FALSE}
+library(microbenchmark)
+
+results_small <- microbenchmark(
+  read.csv = read.csv("data/sim-data-small.csv"),
+  read_csv = read_csv("data/sim-data-small.csv")
+)
+
+autoplot(results_small)
+```
+
+`read_csv()` is over 5 times faster than `read.csv()`. Of course with relatively small data files, this isn't a large difference in absolute terms (a difference of 100 milliseconds is only .1 second). However, as the data file increases in size the performance savings will be much larger. Consider the same test with a CSV file with `r prettyNum(n_row_l, scientific = FALSE, big.mark = ",")` rows:
+
+```{r compare-speed-large, dependson = "data-gen", message = FALSE}
+library(microbenchmark)
+
+results_large <- microbenchmark(
+  read.csv = read.csv("data/sim-data-large.csv"),
+  read_csv = read_csv("data/sim-data-large.csv")
+)
+
+autoplot(results_large)
+```
+
+Here `read_csv()` is far superior to `read.csv()`.
+
+# Alternative file formats
+
+CSV files, while common, are not the only type of data storage format you will encounter in the wild. Here is a quick primer on other file formats you may encounter and how to import/export them using R. We'll use the `challenge` dataset in `readr` to demonstrate some of these formats.
+
+```{r challenge}
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+
+challenge
+```
+
+## RDS
+
+**RDS** is a custom binary format used exclusively by R to store data objects.
+
+```{r rds, dependson = "challenge", message = FALSE}
+# write to csv
+write_csv(challenge, "data/challenge.csv")
+
+# write to/read from rds
+write_rds(challenge, "data/challenge.rds")
+read_rds("data/challenge.rds")
+
+# compare file size
+file.info("data/challenge.csv")$size %>%
+  utils:::format.object_size("auto")
+
+file.info("data/challenge.rds")$size %>%
+  utils:::format.object_size("auto")
+
+# compare read speeds
+microbenchmark(
+  read_csv = read_csv(
+    readr_example("challenge.csv"), 
+    col_types = cols(
+      x = col_double(),
+      y = col_date()
+    )
+  ),
+  read_rds = read_rds("data/challenge.rds")
+) %>%
+  autoplot
+```
+
+By default, `write_rds()` does not compress the `.rds` file; use the `compress` argument to implement one of several different compression algorithms. `read_rds()` is noticably faster than `read_csv()`, and also has the benefit of [preserving column types](http://r4ds.had.co.nz/data-import.html#writing-to-a-file). The downside is that RDS is only implemented by R; it is not used by any other program so if you need to import/export data files into other languages like Python (or open in Excel), RDS is not a good storage format.
+
+## `feather`
+
+The `feather` package implements a binary file format that is cross-compatible with many different programming languages:
+
+```{r feather, dependson = "challenge", message = FALSE}
+library(feather)
+
+write_feather(challenge, "data/challenge.feather")
+read_feather("data/challenge.feather")
+
+# compare read speeds
+microbenchmark(
+  read_csv = read_csv(
+    readr_example("challenge.csv"), 
+    col_types = cols(
+      x = col_double(),
+      y = col_date()
+    )
+  ),
+  read_rds = read_rds("data/challenge.rds"),
+  read_feather = read_feather("data/challenge.feather")
+) %>%
+  autoplot
+```
+
+`feather` is generally faster than RDS and `read_csv()`.^[Notice that the x-axis is logarithmically scaled.]
+
+## `readxl`
+
+[`readxl`](http://readxl.tidyverse.org/) enables you to read (but not write) Excel files (`.xls` and `xlsx`).^[If you need to export data into Excel, use `readr::write_csv_excel()`.]
+
+```{r readxl}
+library(readxl)
+
+xlsx_example <- readxl_example("datasets.xlsx")
+read_excel(xlsx_example)
+```
+
+The nice thing about `readxl` is that you can access multiple sheets from the workbook. List the sheet names with `excel_sheets()`:
+
+```{r readxl-sheets, dependson = "readxl"}
+excel_sheets(xlsx_example)
+```
+
+Then specify which worksheet you want by name or number:
+
+```{r readxl-select-sheet, dependson = "readxl"}
+read_excel(xlsx_example, sheet = "chickwts")
+read_excel(xlsx_example, sheet = 2)
+```
+
+## `haven`
+
+[`haven`](http://haven.tidyverse.org/) allows you to read and write data from other statistical packages such as SAS (`.sas7bdat` + `.sas7bcat`), SPSS (`.sav` + `.por`), and Stata (`.dta`).
+
+```{r haven}
+library(haven)
+
+# SAS
+read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
+write_sas(mtcars, "data/mtcars.sas7bdat")
+
+# SPSS
+read_sav(system.file("examples", "iris.sav", package = "haven"))
+write_sav(mtcars, "data/mtcars.sav")
+
+# Stata
+read_dta(system.file("examples", "iris.dta", package = "haven"))
+write_dta(mtcars, "data/mtcars.dta")
+```
+
+That said, if you can obtain your data file in a plain `.csv` or `.tsv` file format, **I strongly recommend it**. SAS, SPSS, and Stata files represent labeled data and missing values differently from R. `haven` attempts to bridge the gap and preserve as much information as possible, but I frequently find myself stripping out all the label information and rebuilding it using `dplyr` functions and the codebook for the data file.
+
+> Need to import a SAS, SPSS, or Stata data file? Read [the documentation](http://haven.tidyverse.org/articles/semantics.html) to learn how to best handle value labels and missing values.
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+
