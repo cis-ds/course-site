@@ -11,7 +11,7 @@
 
 
 
-<title>Relational data: a fly by the seat of your pants introduction</title>
+<title>Relational data: a quick review</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -332,43 +332,34 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Relational data: a fly by the seat of your pants introduction</h1>
+<h1 class="title toc-ignore">Relational data: a quick review</h1>
 
 </div>
 
 
-<div id="objectives" class="section level1">
-<h1>Objectives</h1>
-<ul>
-<li>Introduce relational data</li>
-<li>Demonstrate how tables are linked to one another</li>
-<li>Demonstrate methods in <code>dplyr</code> for linking and merging related tables</li>
-</ul>
-</div>
 <div id="working-with-relational-data" class="section level1">
 <h1>Working with relational data</h1>
-<p>I leave much of the introductory material for this module to <a href="http://r4ds.had.co.nz/relational-data.html">R for Data Science</a>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> Here I want to demonstrate in practical terms how relational joins work.</p>
-<ul>
-<li><strong>Relational data</strong> - multiple tables of data that when combined together answer research questions</li>
-<li>Relations define the important element, not just the individual tables</li>
-<li>Relations are defined between a pair of tables
-<ul>
-<li>More complex structures can be built up with more than 2 tables</li>
-</ul></li>
-</ul>
-<p>This data structure requires <em>relational verbs</em> to combine data across stables. Two major verbs are:</p>
-<ul>
-<li><em>Mutating joins</em> - add new variables to one data frame from matching observations in another</li>
-<li><em>Filtering joins</em> - filter observations from one data frame based on whether or not they match an observation in the other table</li>
-</ul>
+<p><strong>Relational data</strong> is multiple tables of data that when combined together answer research questions. Relations define the important element, not just the individual tables. Relations are defined between a pair of tables, or potentially complex structures can be built up with more than 2 tables. In many situations, data is stored in a relational format because to do otherwise would introduce redundancy and use unnecessary storage space.</p>
+<p>This data structure requires <strong>relational verbs</strong> to combine data across tables. <strong>Mutating joins</strong> add new variables to one data frame from matching observations in another, whereas <strong>filtering joins</strong> filter observations from one data frame based on whether or not they match an observation in the other table.</p>
 <div id="superheroes-and-publishers" class="section level2">
 <h2><code>superheroes</code> and <code>publishers</code></h2>
-<p>Load the <code>rcfss</code> library<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> There are two data frames which contain data on comic books.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
-<span class="kw">library</span>(rcfss)
+<p>Let’s review how these different types of joining operations work with relational data on comic books. Load the <code>rcfss</code> library. There are two data frames which contain data on comic books.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)</code></pre></div>
+<pre><code>## + ggplot2 2.2.1          Date: 2017-08-01
+## + tibble  1.3.3             R: 3.4.1
+## + tidyr   0.6.3            OS: macOS Sierra 10.12.6
+## + readr   1.1.1           GUI: X11
+## + purrr   0.2.2.2      Locale: en_US.UTF-8
+## + dplyr   0.7.2            TZ: America/Chicago
+## + stringr 1.2.0        
+## + forcats 0.2.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────</code></pre>
+<pre><code>## * filter(),  from dplyr, masks stats::filter()
+## * lag(),     from dplyr, masks stats::lag()</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rcfss)
 
 superheroes</code></pre></div>
-<pre><code>## # A tibble: 7 × 4
+<pre><code>## # A tibble: 7 x 4
 ##       name alignment gender         publisher
 ##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;             &lt;chr&gt;
 ## 1  Magneto       bad   male            Marvel
@@ -379,7 +370,7 @@ superheroes</code></pre></div>
 ## 6 Catwoman       bad female                DC
 ## 7  Hellboy      good   male Dark Horse Comics</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">publishers</code></pre></div>
-<pre><code>## # A tibble: 3 × 2
+<pre><code>## # A tibble: 3 x 2
 ##   publisher yr_founded
 ##       &lt;chr&gt;      &lt;int&gt;
 ## 1        DC       1934
@@ -390,17 +381,19 @@ superheroes</code></pre></div>
 <li><code>superheroes</code> contains data on superheroes</li>
 <li><code>publishers</code> contains data on publishers</li>
 </ul>
-<p>The units of analysis are completely different. Just as it made sense to split <a href="block002_grammar_of_graphics.html#building_minard’s_map_in_r">Minard’s data into two separate data frames</a>, it also makes sense to store them separately here. That said, depending on the type of analysis you seek to perform, it makes sense to join the data frames together temporarily. How should we join them? Well it depends on how you plan to ask your question. Let’s look at the result of several different join operations.</p>
+<p>The units of analysis are completely different. Just as it made sense to split <a href="dataviz_minard.html">Minard’s data into two separate data frames</a>, it also makes sense to store them separately here. That said, depending on the type of analysis you seek to perform, it makes sense to join the data frames together temporarily. How should we join them? Well it depends on how you plan to ask your question. Let’s look at the result of several different join operations.</p>
 </div>
 </div>
-<div id="inner-join" class="section level1">
-<h1>Inner join</h1>
+<div id="mutating-joins" class="section level1">
+<h1>Mutating joins</h1>
+<div id="inner-join" class="section level2">
+<h2>Inner join</h2>
 <blockquote>
-<p><code>inner_join(x, y)</code>: Return all rows from x where there are matching values in y, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.</p>
+<p><code>inner_join(x, y)</code>: Return all rows from <code>x</code> where there are matching values in <code>y</code>, and all columns from <code>x</code> and <code>y</code>. If there are multiple matches between <code>x</code> and <code>y</code>, all combination of the matches are returned. This is a mutating join.</p>
 </blockquote>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(ijsp &lt;-<span class="st"> </span><span class="kw">inner_join</span>(superheroes, publishers))</code></pre></div>
 <pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
-<pre><code>## # A tibble: 6 × 5
+<pre><code>## # A tibble: 6 x 5
 ##       name alignment gender publisher yr_founded
 ##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;      &lt;int&gt;
 ## 1  Magneto       bad   male    Marvel       1939
@@ -555,169 +548,14 @@ superheroes</code></pre></div>
 </tr>
 </table>
 </div>
-<div id="semi-join" class="section level1">
-<h1>Semi join</h1>
+<div id="left-join" class="section level2">
+<h2>Left join</h2>
 <blockquote>
-<p><code>semi_join(x, y)</code>: Return all rows from x where there are matching values in y, keeping just columns from x. A semi join differs from an inner join because an inner join will return one row of x for each matching row of y, where a semi join will never duplicate rows of x. This is a filtering join.</p>
-</blockquote>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(sjsp &lt;-<span class="st"> </span><span class="kw">semi_join</span>(superheroes, publishers))</code></pre></div>
-<pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
-<pre><code>## # A tibble: 6 × 4
-##       name alignment gender publisher
-##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;
-## 1   Batman      good   male        DC
-## 2    Joker       bad   male        DC
-## 3 Catwoman       bad female        DC
-## 4  Magneto       bad   male    Marvel
-## 5    Storm      good female    Marvel
-## 6 Mystique       bad female    Marvel</code></pre>
-<p>We get a similar result as with <code>inner_join()</code> but the join result contains only the variables originally found in <code>x = superheroes</code>. But note the row order has changed.</p>
-<table border="1">
-<tr>
-<td valign="top">
-<p><code>superheroes</code></p>
-<table>
-<thead>
-<tr class="header">
-<th align="left">name</th>
-<th align="left">alignment</th>
-<th align="left">gender</th>
-<th align="left">publisher</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Magneto</td>
-<td align="left">bad</td>
-<td align="left">male</td>
-<td align="left">Marvel</td>
-</tr>
-<tr class="even">
-<td align="left">Storm</td>
-<td align="left">good</td>
-<td align="left">female</td>
-<td align="left">Marvel</td>
-</tr>
-<tr class="odd">
-<td align="left">Mystique</td>
-<td align="left">bad</td>
-<td align="left">female</td>
-<td align="left">Marvel</td>
-</tr>
-<tr class="even">
-<td align="left">Batman</td>
-<td align="left">good</td>
-<td align="left">male</td>
-<td align="left">DC</td>
-</tr>
-<tr class="odd">
-<td align="left">Joker</td>
-<td align="left">bad</td>
-<td align="left">male</td>
-<td align="left">DC</td>
-</tr>
-<tr class="even">
-<td align="left">Catwoman</td>
-<td align="left">bad</td>
-<td align="left">female</td>
-<td align="left">DC</td>
-</tr>
-<tr class="odd">
-<td align="left">Hellboy</td>
-<td align="left">good</td>
-<td align="left">male</td>
-<td align="left">Dark Horse Comics</td>
-</tr>
-</tbody>
-</table>
-</td>
-<td valign="top">
-<p><code>publishers</code></p>
-<table>
-<thead>
-<tr class="header">
-<th align="left">publisher</th>
-<th align="right">yr_founded</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">DC</td>
-<td align="right">1934</td>
-</tr>
-<tr class="even">
-<td align="left">Marvel</td>
-<td align="right">1939</td>
-</tr>
-<tr class="odd">
-<td align="left">Image</td>
-<td align="right">1992</td>
-</tr>
-</tbody>
-</table>
-</td>
-<td valign="top">
-<p><code>semi-join(x = superheroes, y = publishers)</code></p>
-<table>
-<thead>
-<tr class="header">
-<th align="left">name</th>
-<th align="left">alignment</th>
-<th align="left">gender</th>
-<th align="left">publisher</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">Batman</td>
-<td align="left">good</td>
-<td align="left">male</td>
-<td align="left">DC</td>
-</tr>
-<tr class="even">
-<td align="left">Joker</td>
-<td align="left">bad</td>
-<td align="left">male</td>
-<td align="left">DC</td>
-</tr>
-<tr class="odd">
-<td align="left">Catwoman</td>
-<td align="left">bad</td>
-<td align="left">female</td>
-<td align="left">DC</td>
-</tr>
-<tr class="even">
-<td align="left">Magneto</td>
-<td align="left">bad</td>
-<td align="left">male</td>
-<td align="left">Marvel</td>
-</tr>
-<tr class="odd">
-<td align="left">Storm</td>
-<td align="left">good</td>
-<td align="left">female</td>
-<td align="left">Marvel</td>
-</tr>
-<tr class="even">
-<td align="left">Mystique</td>
-<td align="left">bad</td>
-<td align="left">female</td>
-<td align="left">Marvel</td>
-</tr>
-</tbody>
-</table>
-</td>
-</tr>
-</table>
-</div>
-<div id="left-join" class="section level1">
-<h1>Left join</h1>
-<blockquote>
-<p><code>left_join(x, y)</code>: Return all rows from x, and all columns from x and y. If there are multiple matches between x and y, all combination of the matches are returned. This is a mutating join.</p>
+<p><code>left_join(x, y)</code>: Return all rows from <code>x</code>, and all columns from <code>x</code> and <code>y</code>. If there are multiple matches between <code>x</code> and <code>y</code>, all combination of the matches are returned. This is a mutating join.</p>
 </blockquote>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(ljsp &lt;-<span class="st"> </span><span class="kw">left_join</span>(superheroes, publishers))</code></pre></div>
 <pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
-<pre><code>## # A tibble: 7 × 5
+<pre><code>## # A tibble: 7 x 5
 ##       name alignment gender         publisher yr_founded
 ##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;             &lt;chr&gt;      &lt;int&gt;
 ## 1  Magneto       bad   male            Marvel       1939
@@ -880,18 +718,38 @@ superheroes</code></pre></div>
 </tr>
 </table>
 </div>
-<div id="anti-join" class="section level1">
-<h1>Anti join</h1>
+<div id="right-join" class="section level2">
+<h2>Right join</h2>
 <blockquote>
-<p>anti_join(x, y): Return all rows from x where there are not matching values in y, keeping just columns from x. This is a filtering join.</p>
+<p><code>right_join(x, y)</code>: Return all rows from <code>y</code>, and all columns from <code>x</code> and <code>y</code>. If there are multiple matches between <code>x</code> and <code>y</code>, all combination of the matches are returned. This is a mutating join.</p>
 </blockquote>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(ajsp &lt;-<span class="st"> </span><span class="kw">anti_join</span>(superheroes, publishers))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(rjsp &lt;-<span class="st"> </span><span class="kw">right_join</span>(superheroes, publishers))</code></pre></div>
 <pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
-<pre><code>## # A tibble: 1 × 4
-##      name alignment gender         publisher
-##     &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;             &lt;chr&gt;
-## 1 Hellboy      good   male Dark Horse Comics</code></pre>
-<p>We keep <strong>only</strong> Hellboy now (and do not get <code>yr_founded</code>).</p>
+<pre><code>## # A tibble: 7 x 5
+##       name alignment gender publisher yr_founded
+##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;      &lt;int&gt;
+## 1   Batman      good   male        DC       1934
+## 2    Joker       bad   male        DC       1934
+## 3 Catwoman       bad female        DC       1934
+## 4  Magneto       bad   male    Marvel       1939
+## 5    Storm      good female    Marvel       1939
+## 6 Mystique       bad female    Marvel       1939
+## 7     &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;     Image       1992</code></pre>
+<p>We basically get <code>y = publishers</code> back, but with the addition of variables <code>name</code>, <code>alignment</code>, and <code>gender</code>, which is unique to <code>x = superheroes</code>. Image, who did not publish any of the characters in <code>superheroes</code>, has an <code>NA</code> for the new variables.</p>
+<p>We could also accomplish virtually the same thing using <code>left_join()</code> by reversing the order of the data frames in the function:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">left_join</span>(publishers, superheroes)</code></pre></div>
+<pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
+<pre><code>## # A tibble: 7 x 5
+##   publisher yr_founded     name alignment gender
+##       &lt;chr&gt;      &lt;int&gt;    &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;
+## 1        DC       1934   Batman      good   male
+## 2        DC       1934    Joker       bad   male
+## 3        DC       1934 Catwoman       bad female
+## 4    Marvel       1939  Magneto       bad   male
+## 5    Marvel       1939    Storm      good female
+## 6    Marvel       1939 Mystique       bad female
+## 7     Image       1992     &lt;NA&gt;      &lt;NA&gt;   &lt;NA&gt;</code></pre>
+<p>Doing so returns the same basic data frame, with the column orders reversed. <code>right_join()</code> is not used as commonly as <code>left_join()</code>, but works well in a piped operation when you perform several functions on <code>x</code> but then want to join it with <code>y</code> and only keep rows that appear in <code>y</code>.</p>
 <table border="1">
 <tr>
 <td valign="top">
@@ -977,7 +835,7 @@ superheroes</code></pre></div>
 </table>
 </td>
 <td valign="top">
-<p><code>anti_join(x = superheroes, y = publishers)</code></p>
+<p><code>right_join(x = superheroes, y = publishers)</code></p>
 <table>
 <thead>
 <tr class="header">
@@ -985,14 +843,58 @@ superheroes</code></pre></div>
 <th align="left">alignment</th>
 <th align="left">gender</th>
 <th align="left">publisher</th>
+<th align="right">yr_founded</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">Hellboy</td>
+<td align="left">Batman</td>
 <td align="left">good</td>
 <td align="left">male</td>
-<td align="left">Dark Horse Comics</td>
+<td align="left">DC</td>
+<td align="right">1934</td>
+</tr>
+<tr class="even">
+<td align="left">Joker</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+<td align="right">1934</td>
+</tr>
+<tr class="odd">
+<td align="left">Catwoman</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">DC</td>
+<td align="right">1934</td>
+</tr>
+<tr class="even">
+<td align="left">Magneto</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">Marvel</td>
+<td align="right">1939</td>
+</tr>
+<tr class="odd">
+<td align="left">Storm</td>
+<td align="left">good</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+<td align="right">1939</td>
+</tr>
+<tr class="even">
+<td align="left">Mystique</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+<td align="right">1939</td>
+</tr>
+<tr class="odd">
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">NA</td>
+<td align="left">Image</td>
+<td align="right">1992</td>
 </tr>
 </tbody>
 </table>
@@ -1000,14 +902,14 @@ superheroes</code></pre></div>
 </tr>
 </table>
 </div>
-<div id="full-join" class="section level1">
-<h1>Full join</h1>
+<div id="full-join" class="section level2">
+<h2>Full join</h2>
 <blockquote>
-<p><code>full_join(x, y)</code>: Return all rows and all columns from both x and y. Where there are not matching values, returns NA for the one missing. This is a mutating join.</p>
+<p><code>full_join(x, y)</code>: Return all rows and all columns from both <code>x</code> and <code>y</code>. Where there are not matching values, returns <code>NA</code> for the one missing. This is a mutating join.</p>
 </blockquote>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(fjsp &lt;-<span class="st"> </span><span class="kw">full_join</span>(superheroes, publishers))</code></pre></div>
 <pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
-<pre><code>## # A tibble: 8 × 5
+<pre><code>## # A tibble: 8 x 5
 ##       name alignment gender         publisher yr_founded
 ##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;             &lt;chr&gt;      &lt;int&gt;
 ## 1  Magneto       bad   male            Marvel       1939
@@ -1178,6 +1080,285 @@ superheroes</code></pre></div>
 </tr>
 </table>
 </div>
+</div>
+<div id="filtering-joins" class="section level1">
+<h1>Filtering joins</h1>
+<div id="semi-join" class="section level2">
+<h2>Semi join</h2>
+<blockquote>
+<p><code>semi_join(x, y)</code>: Return all rows from <code>x</code> where there are matching values in <code>y</code>, keeping just columns from <code>x</code>. A semi join differs from an inner join because an inner join will return one row of <code>x</code> for each matching row of <code>y</code> (potentially duplicating rows in <code>x</code>), whereas a semi join will never duplicate rows of <code>x</code>. This is a filtering join.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(sjsp &lt;-<span class="st"> </span><span class="kw">semi_join</span>(superheroes, publishers))</code></pre></div>
+<pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
+<pre><code>## # A tibble: 6 x 4
+##       name alignment gender publisher
+##      &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;     &lt;chr&gt;
+## 1   Batman      good   male        DC
+## 2    Joker       bad   male        DC
+## 3 Catwoman       bad female        DC
+## 4  Magneto       bad   male    Marvel
+## 5    Storm      good female    Marvel
+## 6 Mystique       bad female    Marvel</code></pre>
+<p>We get a similar result as with <code>inner_join()</code> but the join result contains only the variables originally found in <code>x = superheroes</code>. But note the row order has changed.</p>
+<table border="1">
+<tr>
+<td valign="top">
+<p><code>superheroes</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="left">alignment</th>
+<th align="left">gender</th>
+<th align="left">publisher</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Magneto</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="even">
+<td align="left">Storm</td>
+<td align="left">good</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="odd">
+<td align="left">Mystique</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="even">
+<td align="left">Batman</td>
+<td align="left">good</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+</tr>
+<tr class="odd">
+<td align="left">Joker</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+</tr>
+<tr class="even">
+<td align="left">Catwoman</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">DC</td>
+</tr>
+<tr class="odd">
+<td align="left">Hellboy</td>
+<td align="left">good</td>
+<td align="left">male</td>
+<td align="left">Dark Horse Comics</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="top">
+<p><code>publishers</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">publisher</th>
+<th align="right">yr_founded</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DC</td>
+<td align="right">1934</td>
+</tr>
+<tr class="even">
+<td align="left">Marvel</td>
+<td align="right">1939</td>
+</tr>
+<tr class="odd">
+<td align="left">Image</td>
+<td align="right">1992</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="top">
+<p><code>semi-join(x = superheroes, y = publishers)</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="left">alignment</th>
+<th align="left">gender</th>
+<th align="left">publisher</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Batman</td>
+<td align="left">good</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+</tr>
+<tr class="even">
+<td align="left">Joker</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+</tr>
+<tr class="odd">
+<td align="left">Catwoman</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">DC</td>
+</tr>
+<tr class="even">
+<td align="left">Magneto</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="odd">
+<td align="left">Storm</td>
+<td align="left">good</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="even">
+<td align="left">Mystique</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</table>
+</div>
+<div id="anti-join" class="section level2">
+<h2>Anti join</h2>
+<blockquote>
+<p>anti_join(x, y): Return all rows from <code>x</code> where there are not matching values in <code>y</code>, keeping just columns from <code>x</code>. This is a filtering join.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(ajsp &lt;-<span class="st"> </span><span class="kw">anti_join</span>(superheroes, publishers))</code></pre></div>
+<pre><code>## Joining, by = &quot;publisher&quot;</code></pre>
+<pre><code>## # A tibble: 1 x 4
+##      name alignment gender         publisher
+##     &lt;chr&gt;     &lt;chr&gt;  &lt;chr&gt;             &lt;chr&gt;
+## 1 Hellboy      good   male Dark Horse Comics</code></pre>
+<p>We keep <strong>only</strong> Hellboy now (and do not get <code>yr_founded</code>).</p>
+<table border="1">
+<tr>
+<td valign="top">
+<p><code>superheroes</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="left">alignment</th>
+<th align="left">gender</th>
+<th align="left">publisher</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Magneto</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="even">
+<td align="left">Storm</td>
+<td align="left">good</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="odd">
+<td align="left">Mystique</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">Marvel</td>
+</tr>
+<tr class="even">
+<td align="left">Batman</td>
+<td align="left">good</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+</tr>
+<tr class="odd">
+<td align="left">Joker</td>
+<td align="left">bad</td>
+<td align="left">male</td>
+<td align="left">DC</td>
+</tr>
+<tr class="even">
+<td align="left">Catwoman</td>
+<td align="left">bad</td>
+<td align="left">female</td>
+<td align="left">DC</td>
+</tr>
+<tr class="odd">
+<td align="left">Hellboy</td>
+<td align="left">good</td>
+<td align="left">male</td>
+<td align="left">Dark Horse Comics</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="top">
+<p><code>publishers</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">publisher</th>
+<th align="right">yr_founded</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">DC</td>
+<td align="right">1934</td>
+</tr>
+<tr class="even">
+<td align="left">Marvel</td>
+<td align="right">1939</td>
+</tr>
+<tr class="odd">
+<td align="left">Image</td>
+<td align="right">1992</td>
+</tr>
+</tbody>
+</table>
+</td>
+<td valign="top">
+<p><code>anti_join(x = superheroes, y = publishers)</code></p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">name</th>
+<th align="left">alignment</th>
+<th align="left">gender</th>
+<th align="left">publisher</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Hellboy</td>
+<td align="left">good</td>
+<td align="left">male</td>
+<td align="left">Dark Horse Comics</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</table>
+</div>
+</div>
 <div id="acknowledgments" class="section level1 toc-ignore">
 <h1>Acknowledgments</h1>
 <ul>
@@ -1197,39 +1378,78 @@ superheroes</code></pre></div>
 ##  tz       America/Chicago             
 ##  date     2017-08-01</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
-<pre><code>##  package    * version date       source        
-##  backports    1.1.0   2017-05-22 CRAN (R 3.4.0)
-##  base       * 3.4.1   2017-07-07 local         
-##  compiler     3.4.1   2017-07-07 local         
-##  datasets   * 3.4.1   2017-07-07 local         
-##  devtools     1.13.2  2017-06-02 CRAN (R 3.4.0)
-##  digest       0.6.12  2017-01-27 CRAN (R 3.4.0)
-##  evaluate     0.10.1  2017-06-24 CRAN (R 3.4.1)
-##  graphics   * 3.4.1   2017-07-07 local         
-##  grDevices  * 3.4.1   2017-07-07 local         
-##  htmltools    0.3.6   2017-04-28 CRAN (R 3.4.0)
-##  knitr        1.16    2017-05-18 CRAN (R 3.4.0)
-##  magrittr     1.5     2014-11-22 CRAN (R 3.4.0)
-##  memoise      1.1.0   2017-04-21 CRAN (R 3.4.0)
-##  methods      3.4.1   2017-07-07 local         
-##  Rcpp         0.12.12 2017-07-15 CRAN (R 3.4.1)
-##  rmarkdown    1.6     2017-06-15 CRAN (R 3.4.0)
-##  rprojroot    1.2     2017-01-16 CRAN (R 3.4.0)
-##  rstudioapi   0.6     2016-06-27 CRAN (R 3.4.0)
-##  stats      * 3.4.1   2017-07-07 local         
-##  stringi      1.1.5   2017-04-07 CRAN (R 3.4.0)
-##  stringr      1.2.0   2017-02-18 CRAN (R 3.4.0)
-##  tools        3.4.1   2017-07-07 local         
-##  utils      * 3.4.1   2017-07-07 local         
-##  withr        2.0.0   2017-07-28 CRAN (R 3.4.1)
-##  yaml         2.1.14  2016-11-12 CRAN (R 3.4.0)</code></pre>
-</div>
-<div class="footnotes">
-<hr />
-<ol>
-<li id="fn1"><p>I was traveling, then I was sick, so I could not finish this section in time. Sometimes life happens :(<a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>Run <code>devtools::install_github(&quot;uc-cfss/rcfss&quot;)</code> if you cannot load the data frames as you might have an older version of the package which doesn’t include the data frames.<a href="#fnref2">↩</a></p></li>
-</ol>
+<pre><code>##  package    * version    date       source                              
+##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
+##  backports    1.1.0      2017-05-22 CRAN (R 3.4.0)                      
+##  base       * 3.4.1      2017-07-07 local                               
+##  bindr        0.1        2016-11-13 CRAN (R 3.4.0)                      
+##  bindrcpp     0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  boxes        0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
+##  broom        0.4.2      2017-02-13 CRAN (R 3.4.0)                      
+##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                      
+##  clisymbols   1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.4.1)                      
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                      
+##  compiler     3.4.1      2017-07-07 local                               
+##  crayon       1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  datasets   * 3.4.1      2017-07-07 local                               
+##  devtools     1.13.2     2017-06-02 CRAN (R 3.4.0)                      
+##  digest       0.6.12     2017-01-27 CRAN (R 3.4.0)                      
+##  dplyr      * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
+##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                      
+##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
+##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.1)                      
+##  ggplot2    * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
+##  glue         1.1.1      2017-06-21 CRAN (R 3.4.1)                      
+##  graphics   * 3.4.1      2017-07-07 local                               
+##  grDevices  * 3.4.1      2017-07-07 local                               
+##  grid         3.4.1      2017-07-07 local                               
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.4.0)                      
+##  haven        1.1.0      2017-07-09 CRAN (R 3.4.1)                      
+##  highr        0.6        2016-05-09 CRAN (R 3.4.0)                      
+##  hms          0.3        2016-11-22 CRAN (R 3.4.0)                      
+##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                      
+##  httr         1.2.1      2016-07-03 CRAN (R 3.4.0)                      
+##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                      
+##  knitr        1.16       2017-05-18 CRAN (R 3.4.0)                      
+##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.1)                      
+##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
+##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
+##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                      
+##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
+##  methods    * 3.4.1      2017-07-07 local                               
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
+##  modelr       0.1.1      2017-07-24 CRAN (R 3.4.1)                      
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
+##  nlme         3.1-131    2017-02-06 CRAN (R 3.4.1)                      
+##  parallel     3.4.1      2017-07-07 local                               
+##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                      
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                      
+##  psych        1.7.5      2017-05-03 CRAN (R 3.4.1)                      
+##  purrr      * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
+##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                      
+##  rcfss      * 0.1.5      2017-07-31 local                               
+##  Rcpp         0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
+##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                      
+##  reshape2     1.4.2      2016-10-22 CRAN (R 3.4.0)                      
+##  rlang        0.1.1      2017-05-18 CRAN (R 3.4.0)                      
+##  rmarkdown    1.6        2017-06-15 CRAN (R 3.4.0)                      
+##  rprojroot    1.2        2017-01-16 CRAN (R 3.4.0)                      
+##  rstudioapi   0.6        2016-06-27 CRAN (R 3.4.0)                      
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.4.0)                      
+##  scales       0.4.1      2016-11-09 CRAN (R 3.4.0)                      
+##  stats      * 3.4.1      2017-07-07 local                               
+##  stringi      1.1.5      2017-04-07 CRAN (R 3.4.0)                      
+##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
+##  tibble     * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
+##  tidyr      * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
+##  tidyverse  * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
+##  tools        3.4.1      2017-07-07 local                               
+##  utils      * 3.4.1      2017-07-07 local                               
+##  withr        2.0.0      2017-07-28 CRAN (R 3.4.1)                      
+##  xml2         1.1.1      2017-01-24 CRAN (R 3.4.0)                      
+##  yaml         2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
