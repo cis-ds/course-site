@@ -402,23 +402,23 @@ div.tocify {
 <h2><span class="math inline">\(K\)</span>-means clustering</h2>
 <p><span class="math inline">\(K\)</span>-means clustering is one approach to identifying distinct clusters within data. First we specify the number of <span class="math inline">\(K\)</span> clusters we want to estimate in the data, then assign each observation to precisely one of those <span class="math inline">\(K\)</span> clusters.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate data</span>
-x &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">150</span>) +<span class="st"> </span><span class="dv">3</span>,
-                <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">150</span>) -<span class="st"> </span><span class="dv">4</span>)
+x &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">150</span>) <span class="op">+</span><span class="st"> </span><span class="dv">3</span>,
+                <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">150</span>) <span class="op">-</span><span class="st"> </span><span class="dv">4</span>)
 
 <span class="co"># estimate k clusters</span>
-x.out &lt;-<span class="st"> </span>x %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">k2 =</span> <span class="kw">kmeans</span>(x, <span class="dv">2</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)$cluster,
-         <span class="dt">k3 =</span> <span class="kw">kmeans</span>(x, <span class="dv">3</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)$cluster,
-         <span class="dt">k4 =</span> <span class="kw">kmeans</span>(x, <span class="dv">4</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)$cluster)
+x.out &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">k2 =</span> <span class="kw">kmeans</span>(x, <span class="dv">2</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)<span class="op">$</span>cluster,
+         <span class="dt">k3 =</span> <span class="kw">kmeans</span>(x, <span class="dv">3</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)<span class="op">$</span>cluster,
+         <span class="dt">k4 =</span> <span class="kw">kmeans</span>(x, <span class="dv">4</span>, <span class="dt">nstart =</span> <span class="dv">20</span>)<span class="op">$</span>cluster)
 
 <span class="co"># plot clusters</span>
-x.out %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(K, pred, k2:k4) %&gt;%
+x.out <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">gather</span>(K, pred, k2<span class="op">:</span>k4) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">K =</span> <span class="kw">parse_numeric</span>(K),
-         <span class="dt">pred =</span> <span class="kw">factor</span>(pred)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> pred)) +
-<span class="st">  </span><span class="kw">facet_grid</span>(. ~<span class="st"> </span>K, <span class="dt">labeller =</span> label_both) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
+         <span class="dt">pred =</span> <span class="kw">factor</span>(pred)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> pred)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_grid</span>(. <span class="op">~</span><span class="st"> </span>K, <span class="dt">labeller =</span> label_both) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/kmeans-1.png" width="672" /></p>
 <p>Let <span class="math inline">\(C_1, C_2, \dots, C_K\)</span> denote sets containing the indicies of the observations in each cluster. <span class="math inline">\(K\)</span>-means clustering defines a good cluster as one for which within-cluster variation is as small as possible. So we want to minimize the within-cluster variation defined by some function <span class="math inline">\(W(C_K)\)</span> that identifies variation:</p>
@@ -434,14 +434,14 @@ x.out %&gt;%
 <p>Each time we do this observations will move around and join different clusters because the initial assignments were made entirely at random. As we iterate over this process, the cluster assignments will become more stable and eventually stop entirely. This is when we reach the local optimum. Since the local optimum is based on the initial (random) assignments, we run this algorithm multiple times from different random starting configurations and select the best solution (the one with the lowest total within-cluster variation).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">kmean.out &lt;-<span class="st"> </span><span class="kw">rerun</span>(<span class="dv">6</span>, <span class="kw">kmeans</span>(x, <span class="dv">3</span>, <span class="dt">nstart =</span> <span class="dv">1</span>))
 
-kmean.out %&gt;%
-<span class="st">  </span><span class="kw">map_df</span>(~<span class="st"> </span><span class="kw">as_tibble</span>(.$cluster), <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) %&gt;%
-<span class="st">  </span><span class="kw">bind_cols</span>(<span class="kw">bind_rows</span>(x,x,x,x,x,x)) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">withinss =</span> <span class="kw">rep</span>(<span class="kw">map_chr</span>(kmean.out, ~<span class="st"> </span>.$tot.withinss), <span class="dt">each =</span> <span class="kw">nrow</span>(x)),
-         <span class="dt">value =</span> <span class="kw">factor</span>(value)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> value)) +
-<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>id +<span class="st"> </span>withinss, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">labeller =</span> <span class="kw">label_wrap_gen</span>(<span class="dt">multi_line =</span> <span class="ot">FALSE</span>)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
+kmean.out <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">map_df</span>(<span class="op">~</span><span class="st"> </span><span class="kw">as_tibble</span>(.<span class="op">$</span>cluster), <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">bind_cols</span>(<span class="kw">bind_rows</span>(x,x,x,x,x,x)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">withinss =</span> <span class="kw">rep</span>(<span class="kw">map_chr</span>(kmean.out, <span class="op">~</span><span class="st"> </span>.<span class="op">$</span>tot.withinss), <span class="dt">each =</span> <span class="kw">nrow</span>(x)),
+         <span class="dt">value =</span> <span class="kw">factor</span>(value)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>id <span class="op">+</span><span class="st"> </span>withinss, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">labeller =</span> <span class="kw">label_wrap_gen</span>(<span class="dt">multi_line =</span> <span class="ot">FALSE</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/kmeans-sim-start-1.png" width="672" /></p>
 <p>This is basically like starting the algorithm with a different random seed each time. In the above example I ran $K-mean clustering with <span class="math inline">\(K=4\)</span> six times with different starting seed values. In four of the iterations, the algorithm converged on the same local optimum solution, while the other two times the algorithm converged on a local optimum with a larger sum of within-cluster variation.</p>
@@ -455,16 +455,16 @@ kmean.out %&gt;%
 <h2>Interpreting dendrograms</h2>
 <p>Here we plot a dendrogram using simulated data, consisting of 150 observations in two-dimensional space. We simulate three natural classes in the data, but in the real-world you would not know that.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate data</span>
-x &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">50</span>) +<span class="st"> </span><span class="dv">3</span>,
-                <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">50</span>) -<span class="st"> </span><span class="dv">4</span>,
-                <span class="dt">y =</span> <span class="kw">ifelse</span>(x1 &lt;<span class="st"> </span><span class="dv">3</span>, <span class="st">&quot;1&quot;</span>,
-                           <span class="kw">ifelse</span>(x2 &gt;<span class="st"> </span>-<span class="dv">4</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;3&quot;</span>)))
+x &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">50</span>) <span class="op">+</span><span class="st"> </span><span class="dv">3</span>,
+                <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">50</span>) <span class="op">-</span><span class="st"> </span><span class="dv">4</span>,
+                <span class="dt">y =</span> <span class="kw">ifelse</span>(x1 <span class="op">&lt;</span><span class="st"> </span><span class="dv">3</span>, <span class="st">&quot;1&quot;</span>,
+                           <span class="kw">ifelse</span>(x2 <span class="op">&gt;</span><span class="st"> </span><span class="op">-</span><span class="dv">4</span>, <span class="st">&quot;2&quot;</span>, <span class="st">&quot;3&quot;</span>)))
 
-<span class="kw">ggplot</span>(x, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
+<span class="kw">ggplot</span>(x, <span class="kw">aes</span>(x1, x2, <span class="dt">color =</span> y)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated data&quot;</span>,
        <span class="dt">x =</span> <span class="kw">expression</span>(X[<span class="dv">1</span>]),
-       <span class="dt">y =</span> <span class="kw">expression</span>(X[<span class="dv">2</span>])) +
+       <span class="dt">y =</span> <span class="kw">expression</span>(X[<span class="dv">2</span>])) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/dendro-sim-1.png" width="672" /></p>
 <p>Suppose that we observe the data without class labels and want to perform hierarchical clustering on the data. The result is plotted below.</p>
@@ -479,16 +479,16 @@ hc.complete &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span c
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">h &lt;-<span class="st"> </span><span class="dv">4</span>
 <span class="co"># extract dendro data</span>
 hcdata &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(hc.complete)
-hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) %&gt;%
+hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">left_join</span>(<span class="kw">data_frame</span>(<span class="dt">label =</span> <span class="kw">as.factor</span>(<span class="kw">seq.int</span>(<span class="kw">nrow</span>(x))),
                        <span class="dt">cl =</span> <span class="kw">as.factor</span>(<span class="kw">cutree</span>(hc.complete, <span class="dt">h =</span> h))))
 
 <span class="co"># plot dendrogram</span>
-<span class="kw">ggdendrogram</span>(hc.complete, <span class="dt">labels =</span> <span class="ot">FALSE</span>) +
+<span class="kw">ggdendrogram</span>(hc.complete, <span class="dt">labels =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> hclabs,
             <span class="kw">aes</span>(<span class="dt">label =</span> label, <span class="dt">x =</span> x, <span class="dt">y =</span> <span class="dv">0</span>, <span class="dt">color =</span> cl),
-            <span class="dt">vjust =</span> .<span class="dv">5</span>, <span class="dt">angle =</span> <span class="dv">90</span>) +
-<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> h, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+            <span class="dt">vjust =</span> .<span class="dv">5</span>, <span class="dt">angle =</span> <span class="dv">90</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> h, <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
         <span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/dendro-cut-4-1.png" width="672" /></p>
@@ -496,16 +496,16 @@ hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) %&gt;
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">h &lt;-<span class="st"> </span><span class="dv">3</span>
 <span class="co"># extract dendro data</span>
 hcdata &lt;-<span class="st"> </span><span class="kw">dendro_data</span>(hc.complete)
-hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) %&gt;%
+hclabs &lt;-<span class="st"> </span><span class="kw">label</span>(hcdata) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">left_join</span>(<span class="kw">data_frame</span>(<span class="dt">label =</span> <span class="kw">as.factor</span>(<span class="kw">seq.int</span>(<span class="kw">nrow</span>(x))),
                        <span class="dt">cl =</span> <span class="kw">as.factor</span>(<span class="kw">cutree</span>(hc.complete, <span class="dt">h =</span> h))))
 
 <span class="co"># plot dendrogram</span>
-<span class="kw">ggdendrogram</span>(hc.complete, <span class="dt">labels =</span> <span class="ot">FALSE</span>) +
+<span class="kw">ggdendrogram</span>(hc.complete, <span class="dt">labels =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_text</span>(<span class="dt">data =</span> hclabs,
             <span class="kw">aes</span>(<span class="dt">label =</span> label, <span class="dt">x =</span> x, <span class="dt">y =</span> <span class="dv">0</span>, <span class="dt">color =</span> cl),
-            <span class="dt">vjust =</span> .<span class="dv">5</span>, <span class="dt">angle =</span> <span class="dv">90</span>) +
-<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> h, <span class="dt">linetype =</span> <span class="dv">2</span>) +
+            <span class="dt">vjust =</span> .<span class="dv">5</span>, <span class="dt">angle =</span> <span class="dv">90</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_hline</span>(<span class="dt">yintercept =</span> h, <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_blank</span>(),
         <span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/dendro-cut-3-1.png" width="672" /></p>
@@ -535,13 +535,13 @@ hc.single &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span cla
 hc.average &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span class="kw">dist</span>(x), <span class="dt">method =</span> <span class="st">&quot;average&quot;</span>)
 
 <span class="co"># plot</span>
-<span class="kw">ggdendrogram</span>(hc.complete) +
+<span class="kw">ggdendrogram</span>(hc.complete) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Complete linkage&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/dendro-compare-linkage-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggdendrogram</span>(hc.single) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggdendrogram</span>(hc.single) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Single linkage&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/dendro-compare-linkage-2.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggdendrogram</span>(hc.average) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggdendrogram</span>(hc.average) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Average linkage&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/dendro-compare-linkage-3.png" width="672" /></p>
 </div>
@@ -595,7 +595,7 @@ hc.average &lt;-<span class="st"> </span><span class="kw">hclust</span>(<span cl
 <p>The total number of principal components for a given <span class="math inline">\(n \times p\)</span> data set is <span class="math inline">\(\min(n,p)\)</span>, either the number of observations in the data or the number of variables in the data (whichever is smaller). Once we estimate the principal components, we can plot them against each other in order to produce a low-dimensional visualization of the data. Let’s look at the use of PCA on the <code>USArrests</code> dataset, reproduced from <strong>An Introduction to Statistical Learning</strong>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pr.out &lt;-<span class="st"> </span><span class="kw">prcomp</span>(USArrests, <span class="dt">scale =</span> <span class="ot">TRUE</span>)
 
-pr.out$rotation</code></pre></div>
+pr.out<span class="op">$</span>rotation</code></pre></div>
 <pre><code>##             PC1    PC2    PC3    PC4
 ## Murder   -0.536  0.418 -0.341  0.649
 ## Assault  -0.583  0.188 -0.268 -0.743
@@ -634,54 +634,54 @@ pr.out$rotation</code></pre></div>
 ## [26] &quot;starts&quot;    &quot;familiar&quot;  &quot;window&quot;    &quot;thats&quot;     &quot;broker&quot;</code></pre>
 <p>We can estimate the LSA using the standard PCA procedure:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Omit the first column of class labels</span>
-nyt.pca &lt;-<span class="st"> </span><span class="kw">prcomp</span>(nyt.frame[,-<span class="dv">1</span>])
+nyt.pca &lt;-<span class="st"> </span><span class="kw">prcomp</span>(nyt.frame[,<span class="op">-</span><span class="dv">1</span>])
 
 <span class="co"># Extract the actual component directions/weights for ease of reference</span>
-nyt.latent.sem &lt;-<span class="st"> </span>nyt.pca$rotation
+nyt.latent.sem &lt;-<span class="st"> </span>nyt.pca<span class="op">$</span>rotation
 
 <span class="co"># convert to data frame</span>
-nyt.latent.sem &lt;-<span class="st"> </span>nyt.latent.sem %&gt;%
-<span class="st">  </span>as_tibble %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">word =</span> <span class="kw">names</span>(nyt.latent.sem[,<span class="dv">1</span>])) %&gt;%
+nyt.latent.sem &lt;-<span class="st"> </span>nyt.latent.sem <span class="op">%&gt;%</span>
+<span class="st">  </span>as_tibble <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">word =</span> <span class="kw">names</span>(nyt.latent.sem[,<span class="dv">1</span>])) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">select</span>(word, <span class="kw">everything</span>())</code></pre></div>
 <p>Let’s extract the biggest components for the first principal component:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyt.latent.sem %&gt;%
-<span class="st">  </span><span class="kw">select</span>(word, PC1) %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(PC1) %&gt;%
-<span class="st">  </span><span class="kw">slice</span>(<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">10</span>, (<span class="kw">n</span>() -<span class="st"> </span><span class="dv">10</span>):<span class="kw">n</span>())) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pos =</span> <span class="kw">ifelse</span>(PC1 &gt;<span class="st"> </span><span class="dv">0</span>, <span class="ot">TRUE</span>, <span class="ot">FALSE</span>),
-         <span class="dt">word =</span> <span class="kw">fct_reorder</span>(word, PC1)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word, PC1, <span class="dt">fill =</span> pos)) +
-<span class="st">  </span><span class="kw">geom_col</span>() +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyt.latent.sem <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(word, PC1) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(PC1) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">slice</span>(<span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, (<span class="kw">n</span>() <span class="op">-</span><span class="st"> </span><span class="dv">10</span>)<span class="op">:</span><span class="kw">n</span>())) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pos =</span> <span class="kw">ifelse</span>(PC1 <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>, <span class="ot">TRUE</span>, <span class="ot">FALSE</span>),
+         <span class="dt">word =</span> <span class="kw">fct_reorder</span>(word, PC1)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word, PC1, <span class="dt">fill =</span> pos)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_col</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;LSA analysis of NYTimes articles&quot;</span>,
        <span class="dt">x =</span> <span class="ot">NULL</span>,
-       <span class="dt">y =</span> <span class="st">&quot;PC1 scores&quot;</span>) +
-<span class="st">  </span><span class="kw">coord_flip</span>() +
+       <span class="dt">y =</span> <span class="st">&quot;PC1 scores&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/nytimes-PC1-1.png" width="672" /></p>
 <p>These are the 10 words with the largest positive and negative loadings on the first principal component. The words on the positive loading seem associated with music, whereas the words on the negative loading are more strongly associated with art.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyt.latent.sem %&gt;%
-<span class="st">  </span><span class="kw">select</span>(word, PC2) %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(PC2) %&gt;%
-<span class="st">  </span><span class="kw">slice</span>(<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">10</span>, (<span class="kw">n</span>() -<span class="st"> </span><span class="dv">10</span>):<span class="kw">n</span>())) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pos =</span> <span class="kw">ifelse</span>(PC2 &gt;<span class="st"> </span><span class="dv">0</span>, <span class="ot">TRUE</span>, <span class="ot">FALSE</span>),
-         <span class="dt">word =</span> <span class="kw">fct_reorder</span>(word, PC2)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word, PC2, <span class="dt">fill =</span> pos)) +
-<span class="st">  </span><span class="kw">geom_col</span>() +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nyt.latent.sem <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(word, PC2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(PC2) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">slice</span>(<span class="kw">c</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">10</span>, (<span class="kw">n</span>() <span class="op">-</span><span class="st"> </span><span class="dv">10</span>)<span class="op">:</span><span class="kw">n</span>())) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pos =</span> <span class="kw">ifelse</span>(PC2 <span class="op">&gt;</span><span class="st"> </span><span class="dv">0</span>, <span class="ot">TRUE</span>, <span class="ot">FALSE</span>),
+         <span class="dt">word =</span> <span class="kw">fct_reorder</span>(word, PC2)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(word, PC2, <span class="dt">fill =</span> pos)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_col</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;LSA analysis of NYTimes articles&quot;</span>,
        <span class="dt">x =</span> <span class="ot">NULL</span>,
-       <span class="dt">y =</span> <span class="st">&quot;PC2 scores&quot;</span>) +
-<span class="st">  </span><span class="kw">coord_flip</span>() +
+       <span class="dt">y =</span> <span class="st">&quot;PC2 scores&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/nytimes-PC2-1.png" width="672" /></p>
 <p>Here the positive words are about art, but more focused on acquiring and trading (“donations”, “tax”). We could perform similar analysis on each of the 103 principal components, but if the point of LSA/PCA is to reduce the dimensionality of the data, let’s just focus on the first two for now.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">biplot</span>(nyt.pca, <span class="dt">scale =</span> <span class="dv">0</span>, <span class="dt">cex =</span> .<span class="dv">6</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/nytimes-biplot-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cbind</span>(<span class="dt">type =</span> nyt.frame$class.labels, <span class="kw">as_tibble</span>(nyt.pca$x[,<span class="dv">1</span>:<span class="dv">2</span>])) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">cbind</span>(<span class="dt">type =</span> nyt.frame<span class="op">$</span>class.labels, <span class="kw">as_tibble</span>(nyt.pca<span class="op">$</span>x[,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>])) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">type =</span> <span class="kw">factor</span>(type, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;art&quot;</span>, <span class="st">&quot;music&quot;</span>),
-                       <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;M&quot;</span>))) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(PC1, PC2, <span class="dt">label =</span> type, <span class="dt">color =</span> type)) +
-<span class="st">  </span><span class="kw">geom_text</span>() +
+                       <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;A&quot;</span>, <span class="st">&quot;M&quot;</span>))) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(PC1, PC2, <span class="dt">label =</span> type, <span class="dt">color =</span> type)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_text</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;&quot;</span>)</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/nytimes-plot-dim-1.png" width="672" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>)</code></pre></div>
@@ -786,8 +786,8 @@ nyt.latent.sem &lt;-<span class="st"> </span>nyt.latent.sem %&gt;%
 
 <span class="co"># tidy and remove stop words</span>
 ap_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(AssociatedPress)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_dtm &lt;-<span class="st"> </span>ap_td %&gt;%
-<span class="st">  </span><span class="kw">anti_join</span>(stop_words, <span class="dt">by =</span> <span class="kw">c</span>(<span class="dt">term =</span> <span class="st">&quot;word&quot;</span>)) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_dtm &lt;-<span class="st"> </span>ap_td <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">anti_join</span>(stop_words, <span class="dt">by =</span> <span class="kw">c</span>(<span class="dt">term =</span> <span class="st">&quot;word&quot;</span>)) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">cast_dtm</span>(document, term, count)
 ap_dtm</code></pre></div>
 <pre><code>## &lt;&lt;DocumentTermMatrix (documents: 2246, terms: 10134)&gt;&gt;
@@ -808,11 +808,11 @@ ap_lda</code></pre></div>
 <p>What do the top terms for each of these topics look like?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(ap_lda)
 
-top_terms &lt;-<span class="st"> </span>ap_lda_td %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(topic) %&gt;%
-<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) %&gt;%
-<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(topic, -beta)
+top_terms &lt;-<span class="st"> </span>ap_lda_td <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(topic, <span class="op">-</span>beta)
 top_terms</code></pre></div>
 <pre><code>## # A tibble: 20 × 3
 ##    topic       term    beta
@@ -837,11 +837,11 @@ top_terms</code></pre></div>
 ## 18     4     people 0.00639
 ## 19     4     police 0.00616
 ## 20     4     united 0.00602</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) +
-<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) +
-<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">2</span>) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">2</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/ap_4_topn-1.png" width="672" /></p>
 <p>Fair enough. The four topics generally look to describe:</p>
@@ -860,11 +860,11 @@ ap_lda</code></pre></div>
 <pre><code>## A LDA_VEM topic model with 12 topics.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(ap_lda)
 
-top_terms &lt;-<span class="st"> </span>ap_lda_td %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(topic) %&gt;%
-<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) %&gt;%
-<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(topic, -beta)
+top_terms &lt;-<span class="st"> </span>ap_lda_td <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(topic, <span class="op">-</span>beta)
 top_terms</code></pre></div>
 <pre><code>## # A tibble: 60 × 3
 ##    topic       term    beta
@@ -880,11 +880,11 @@ top_terms</code></pre></div>
 ## 9      2  president 0.00990
 ## 10     2 democratic 0.00841
 ## # ... with 50 more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) +
-<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) +
-<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/ap_12_topn-1.png" width="672" /></p>
 <p>Hmm. Well, these topics appear to be more specific, yet not as easily decodeable.</p>
@@ -915,18 +915,18 @@ top_terms</code></pre></div>
 <p>Let’s estimate a series of LDA models on the Associated Press dataset. Here I make use of <code>purrr</code> and the <code>map()</code> functions to iteratively generate a series of LDA models for the AP corpus, using a different number of topics in each model.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">n_topics &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dv">2</span>, <span class="dv">4</span>, <span class="dv">10</span>, <span class="dv">20</span>, <span class="dv">50</span>, <span class="dv">100</span>)
 
-if(<span class="kw">file.exists</span>(<span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)){
+<span class="cf">if</span>(<span class="kw">file.exists</span>(<span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)){
   <span class="kw">load</span>(<span class="dt">file =</span> <span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)
-} else{
-  ap_lda_compare &lt;-<span class="st"> </span>n_topics %&gt;%
+} <span class="cf">else</span>{
+  ap_lda_compare &lt;-<span class="st"> </span>n_topics <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">map</span>(LDA, <span class="dt">x =</span> ap_dtm, <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">seed =</span> <span class="dv">1234</span>))
   <span class="kw">save</span>(ap_lda_compare, <span class="dt">file =</span> <span class="st">&quot;extras/ap_lda_compare.Rdata&quot;</span>)
 }</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">data_frame</span>(<span class="dt">k =</span> n_topics,
-           <span class="dt">perplex =</span> <span class="kw">map_dbl</span>(ap_lda_compare, perplexity)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(k, perplex)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+           <span class="dt">perplex =</span> <span class="kw">map_dbl</span>(ap_lda_compare, perplexity)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(k, perplex)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Evaluating LDA topic models&quot;</span>,
        <span class="dt">subtitle =</span> <span class="st">&quot;Optimal number of topics (smaller is better)&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Number of topics&quot;</span>,
@@ -935,11 +935,11 @@ if(<span class="kw">file.exists</span>(<span class="st">&quot;extras/ap_lda_comp
 <p>It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let’s look just at the first 12 topics produced by the model (<code>ggplot2</code> has difficulty rendering a graph for 100 separate facets):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ap_lda_td &lt;-<span class="st"> </span><span class="kw">tidy</span>(ap_lda_compare[[<span class="dv">6</span>]])
 
-top_terms &lt;-<span class="st"> </span>ap_lda_td %&gt;%
-<span class="st">  </span><span class="kw">group_by</span>(topic) %&gt;%
-<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) %&gt;%
-<span class="st">  </span><span class="kw">ungroup</span>() %&gt;%
-<span class="st">  </span><span class="kw">arrange</span>(topic, -beta)
+top_terms &lt;-<span class="st"> </span>ap_lda_td <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(topic) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">top_n</span>(<span class="dv">5</span>, beta) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">arrange</span>(topic, <span class="op">-</span>beta)
 top_terms</code></pre></div>
 <pre><code>## # A tibble: 500 × 3
 ##    topic       term    beta
@@ -955,12 +955,12 @@ top_terms</code></pre></div>
 ## 9      2   national 0.00693
 ## 10     2    jackson 0.00647
 ## # ... with 490 more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms %&gt;%
-<span class="st">  </span><span class="kw">filter</span>(topic &lt;=<span class="st"> </span><span class="dv">12</span>) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) +
-<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) +
-<span class="st">  </span><span class="kw">facet_wrap</span>(~<span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">top_terms <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(topic <span class="op">&lt;=</span><span class="st"> </span><span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">term =</span> <span class="kw">reorder</span>(term, beta)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(term, beta, <span class="dt">fill =</span> <span class="kw">factor</span>(topic))) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bar</span>(<span class="dt">alpha =</span> <span class="fl">0.8</span>, <span class="dt">stat =</span> <span class="st">&quot;identity&quot;</span>, <span class="dt">show.legend =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>topic, <span class="dt">scales =</span> <span class="st">&quot;free&quot;</span>, <span class="dt">ncol =</span> <span class="dv">3</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
 <p><img src="persp011_unsupervised_files/figure-html/ap_100_topn-1.png" width="672" /></p>
 <p>We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at <span class="math inline">\(k=100\)</span> - would <span class="math inline">\(k=200\)</span> generate an even lower perplexity score?<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
@@ -969,163 +969,149 @@ top_terms</code></pre></div>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>##  setting  value                       
-##  version  R version 3.3.3 (2017-03-06)
-##  system   x86_64, darwin13.4.0        
-##  ui       RStudio (1.0.136)           
+##  version  R version 3.4.1 (2017-06-30)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-05-30                  
+##  date     2017-08-01                  
 ## 
-##  package        * version    date       source                            
-##  animation        2.5        2017-03-30 CRAN (R 3.3.2)                    
-##  assertthat       0.2.0      2017-04-11 cran (@0.2.0)                     
-##  backports        1.1.0      2017-05-22 CRAN (R 3.3.2)                    
-##  base           * 3.3.3      2017-03-07 local                             
-##  base64enc        0.1-3      2015-07-28 CRAN (R 3.3.0)                    
-##  bigrquery      * 0.3.0      2016-06-28 CRAN (R 3.3.0)                    
-##  bitops           1.0-6      2013-08-17 CRAN (R 3.3.0)                    
-##  boot           * 1.3-19     2017-04-21 CRAN (R 3.3.2)                    
-##  broom          * 0.4.2      2017-02-13 CRAN (R 3.3.2)                    
-##  car              2.1-4      2016-12-02 CRAN (R 3.3.2)                    
-##  caret          * 6.0-76     2017-04-18 CRAN (R 3.3.2)                    
-##  cellranger       1.1.0      2016-07-27 CRAN (R 3.3.0)                    
-##  class            7.3-14     2015-08-30 CRAN (R 3.3.3)                    
-##  codetools        0.2-15     2016-10-05 CRAN (R 3.3.3)                    
-##  colorspace       1.3-2      2016-12-14 CRAN (R 3.3.2)                    
-##  config           0.2        2016-08-02 CRAN (R 3.3.0)                    
-##  curl           * 2.6        2017-04-27 CRAN (R 3.3.2)                    
-##  datasets       * 3.3.3      2017-03-07 local                             
-##  DBI              0.6-1      2017-04-01 CRAN (R 3.3.2)                    
-##  devtools         1.13.1     2017-05-13 CRAN (R 3.3.2)                    
-##  digest           0.6.12     2017-01-27 CRAN (R 3.3.2)                    
-##  dplyr          * 0.5.0      2016-06-24 CRAN (R 3.3.0)                    
-##  e1071          * 1.6-8      2017-02-02 CRAN (R 3.3.2)                    
-##  evaluate         0.10       2016-10-11 CRAN (R 3.3.0)                    
-##  FNN            * 1.1        2013-07-31 CRAN (R 3.3.0)                    
-##  forcats        * 0.2.0      2017-01-23 CRAN (R 3.3.2)                    
-##  foreach        * 1.4.3      2015-10-13 CRAN (R 3.3.0)                    
-##  foreign          0.8-68     2017-04-24 CRAN (R 3.3.2)                    
-##  gam            * 1.14-4     2017-04-25 CRAN (R 3.3.2)                    
-##  gapminder      * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
-##  gbm            * 2.1.3      2017-03-21 CRAN (R 3.3.2)                    
-##  geosphere        1.5-5      2016-06-15 CRAN (R 3.3.0)                    
-##  gganimate      * 0.1.0.9000 2017-05-26 Github (dgrtwo/gganimate@bf82002) 
-##  ggdendro       * 0.1-20     2017-02-27 local                             
-##  ggmap          * 2.7        2016-12-07 Github (dkahle/ggmap@c6b7579)     
-##  ggplot2        * 2.2.1.9000 2017-05-12 Github (tidyverse/ggplot2@f4398b6)
-##  ggrepel        * 0.6.5      2016-11-24 CRAN (R 3.3.2)                    
-##  ggstance       * 0.3        2016-11-16 CRAN (R 3.3.2)                    
-##  graphics       * 3.3.3      2017-03-07 local                             
-##  grDevices      * 3.3.3      2017-03-07 local                             
-##  grid           * 3.3.3      2017-03-07 local                             
-##  gridExtra      * 2.2.1      2016-02-29 cran (@2.2.1)                     
-##  gtable           0.2.0      2016-02-26 CRAN (R 3.3.0)                    
-##  haven          * 1.0.0      2016-09-23 cran (@1.0.0)                     
-##  here           * 0.0-6      2017-02-04 Github (krlmlr/here@007bfd9)      
-##  hexbin         * 1.27.1     2015-08-19 CRAN (R 3.3.0)                    
-##  highr            0.6        2016-05-09 CRAN (R 3.3.0)                    
-##  hms              0.3        2016-11-22 CRAN (R 3.3.2)                    
-##  htmltools        0.3.6      2017-04-28 cran (@0.3.6)                     
-##  htmlwidgets      0.8        2016-11-09 CRAN (R 3.3.1)                    
-##  httpuv           1.3.3      2015-08-04 CRAN (R 3.3.0)                    
-##  httr           * 1.2.1      2016-07-03 CRAN (R 3.3.0)                    
-##  igraph           1.0.1      2015-06-26 CRAN (R 3.3.0)                    
-##  ISLR           * 1.0        2013-06-11 CRAN (R 3.3.0)                    
-##  iterators        1.0.8      2015-10-13 CRAN (R 3.3.0)                    
-##  janeaustenr      0.1.4      2016-10-26 CRAN (R 3.3.0)                    
-##  jpeg             0.1-8      2014-01-23 cran (@0.1-8)                     
-##  jsonlite       * 1.4        2017-04-08 cran (@1.4)                       
-##  kknn           * 1.3.1      2016-03-26 CRAN (R 3.3.0)                    
-##  knitr          * 1.16       2017-05-18 CRAN (R 3.3.2)                    
-##  labeling         0.3        2014-08-23 CRAN (R 3.3.0)                    
-##  lattice        * 0.20-35    2017-03-25 CRAN (R 3.3.2)                    
-##  lazyeval         0.2.0      2016-06-12 CRAN (R 3.3.0)                    
-##  lme4             1.1-13     2017-04-19 cran (@1.1-13)                    
-##  lubridate      * 1.6.0      2016-09-13 CRAN (R 3.3.0)                    
-##  lvplot         * 0.2.0.9000 2017-01-06 Github (hadley/lvplot@8ce61c7)    
-##  magrittr         1.5        2014-11-22 CRAN (R 3.3.0)                    
-##  mapproj          1.2-4      2015-08-03 CRAN (R 3.3.0)                    
-##  maps           * 3.1.1      2016-07-27 CRAN (R 3.3.0)                    
-##  MASS             7.3-47     2017-04-21 CRAN (R 3.3.2)                    
-##  Matrix           1.2-10     2017-04-28 CRAN (R 3.3.2)                    
-##  MatrixModels   * 0.4-1      2015-08-22 CRAN (R 3.3.0)                    
-##  memoise          1.1.0      2017-04-21 CRAN (R 3.3.2)                    
-##  methods        * 3.3.3      2017-03-07 local                             
-##  mgcv             1.8-17     2017-02-08 CRAN (R 3.3.3)                    
-##  microbenchmark * 1.4-2.1    2015-11-25 CRAN (R 3.3.0)                    
-##  mime             0.5        2016-07-07 CRAN (R 3.3.0)                    
-##  minqa            1.2.4      2014-10-09 cran (@1.2.4)                     
-##  mnormt           1.5-5      2016-10-15 CRAN (R 3.3.0)                    
-##  ModelMetrics     1.1.0      2016-08-26 CRAN (R 3.3.0)                    
-##  modelr         * 0.1.0      2016-08-31 CRAN (R 3.3.0)                    
-##  modeltools       0.2-21     2013-09-02 CRAN (R 3.3.0)                    
-##  munsell          0.4.3      2016-02-13 CRAN (R 3.3.0)                    
-##  nlme             3.1-131    2017-02-06 CRAN (R 3.3.3)                    
-##  nloptr           1.0.4      2014-08-04 cran (@1.0.4)                     
-##  NLP            * 0.1-10     2017-02-21 CRAN (R 3.3.2)                    
-##  nnet           * 7.3-12     2016-02-02 CRAN (R 3.3.3)                    
-##  nycflights13   * 0.2.2      2017-01-27 CRAN (R 3.3.2)                    
-##  parallel       * 3.3.3      2017-03-07 local                             
-##  pbkrtest         0.4-7      2017-03-15 CRAN (R 3.3.2)                    
-##  plyr             1.8.4      2016-06-08 CRAN (R 3.3.0)                    
-##  png              0.1-7      2013-12-03 cran (@0.1-7)                     
-##  pROC           * 1.9.1      2017-02-05 CRAN (R 3.3.2)                    
-##  profvis        * 0.3.3      2017-01-14 CRAN (R 3.3.2)                    
-##  proto            1.0.0      2016-10-29 CRAN (R 3.3.0)                    
-##  psych            1.7.5      2017-05-03 CRAN (R 3.3.3)                    
-##  purrr          * 0.2.2.2    2017-05-11 CRAN (R 3.3.3)                    
-##  quantreg       * 5.33       2017-04-18 CRAN (R 3.3.2)                    
-##  R6               2.2.1      2017-05-10 CRAN (R 3.3.2)                    
-##  randomForest   * 4.6-12     2015-10-07 CRAN (R 3.3.0)                    
-##  rappdirs         0.3.1      2016-03-28 CRAN (R 3.3.0)                    
-##  rcfss          * 0.1.4      2017-02-28 local                             
-##  Rcpp             0.12.11    2017-05-22 CRAN (R 3.3.2)                    
-##  readr          * 1.1.1      2017-05-16 CRAN (R 3.3.2)                    
-##  readxl         * 1.0.0      2017-04-18 CRAN (R 3.3.2)                    
-##  rebird         * 0.4.0      2017-04-26 CRAN (R 3.3.2)                    
-##  reshape2         1.4.2      2016-10-22 CRAN (R 3.3.0)                    
-##  RgoogleMaps      1.4.1      2016-09-18 cran (@1.4.1)                     
-##  rjson            0.2.15     2014-11-03 cran (@0.2.15)                    
-##  rlang            0.1.9000   2017-05-12 Github (hadley/rlang@c17568e)     
-##  rmarkdown        1.5        2017-04-26 CRAN (R 3.3.2)                    
-##  rprojroot        1.2        2017-01-16 CRAN (R 3.3.2)                    
-##  rsconnect        0.8        2017-05-08 CRAN (R 3.3.2)                    
-##  RSQLite        * 1.1-2      2017-01-08 CRAN (R 3.3.2)                    
-##  rstudioapi       0.6        2016-06-27 CRAN (R 3.3.0)                    
-##  rvest          * 0.3.2      2016-06-17 CRAN (R 3.3.0)                    
-##  scales         * 0.4.1      2016-11-09 CRAN (R 3.3.1)                    
-##  shiny          * 1.0.3      2017-04-26 CRAN (R 3.3.2)                    
-##  slam             0.1-40     2016-12-01 CRAN (R 3.3.2)                    
-##  SnowballC        0.5.1      2014-08-09 cran (@0.5.1)                     
-##  sp               1.2-4      2016-12-22 CRAN (R 3.3.2)                    
-##  sparklyr       * 0.5.5      2017-05-26 CRAN (R 3.3.3)                    
-##  SparseM        * 1.77       2017-04-23 CRAN (R 3.3.2)                    
-##  splines        * 3.3.3      2017-03-07 local                             
-##  stats          * 3.3.3      2017-03-07 local                             
-##  stats4           3.3.3      2017-03-07 local                             
-##  stringi          1.1.5      2017-04-07 CRAN (R 3.3.2)                    
-##  stringr        * 1.2.0      2017-02-18 CRAN (R 3.3.2)                    
-##  survival       * 2.41-3     2017-04-04 CRAN (R 3.3.2)                    
-##  tibble         * 1.3.1      2017-05-17 CRAN (R 3.3.2)                    
-##  tidyr          * 0.6.3      2017-05-15 CRAN (R 3.3.2)                    
-##  tidytext       * 0.1.2      2016-10-28 CRAN (R 3.3.0)                    
-##  tidyverse      * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
-##  titanic        * 0.1.0      2015-08-31 CRAN (R 3.3.0)                    
-##  tm             * 0.7-1      2017-03-02 CRAN (R 3.3.2)                    
-##  tokenizers       0.1.4      2016-08-29 CRAN (R 3.3.0)                    
-##  tools            3.3.3      2017-03-07 local                             
-##  topicmodels    * 0.2-6      2017-04-18 CRAN (R 3.3.2)                    
-##  tree           * 1.0-37     2016-01-21 CRAN (R 3.3.0)                    
-##  tweenr         * 0.1.5      2016-10-10 CRAN (R 3.3.0)                    
-##  utils          * 3.3.3      2017-03-07 local                             
-##  withr            1.0.2      2016-06-20 CRAN (R 3.3.0)                    
-##  XML            * 3.98-1.7   2017-05-03 CRAN (R 3.3.2)                    
-##  xml2           * 1.1.1      2017-01-24 CRAN (R 3.3.2)                    
-##  xtable           1.8-2      2016-02-05 CRAN (R 3.3.0)                    
-##  yaml             2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version    date       source                              
+##  assertthat     0.2.0      2017-04-11 CRAN (R 3.4.0)                      
+##  backports      1.1.0      2017-05-22 CRAN (R 3.4.0)                      
+##  base         * 3.4.1      2017-07-07 local                               
+##  base64enc      0.1-3      2015-07-28 CRAN (R 3.4.0)                      
+##  bindr          0.1        2016-11-13 CRAN (R 3.4.0)                      
+##  bindrcpp     * 0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  bit            1.1-12     2014-04-09 CRAN (R 3.4.0)                      
+##  bit64          0.9-7      2017-05-08 CRAN (R 3.4.0)                      
+##  blob           1.1.0      2017-06-17 CRAN (R 3.4.0)                      
+##  boxes          0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
+##  broom        * 0.4.2      2017-02-13 CRAN (R 3.4.0)                      
+##  car            2.1-5      2017-07-04 CRAN (R 3.4.1)                      
+##  caret        * 6.0-76     2017-04-18 CRAN (R 3.4.0)                      
+##  cellranger     1.1.0      2016-07-27 CRAN (R 3.4.0)                      
+##  class          7.3-14     2015-08-30 CRAN (R 3.4.1)                      
+##  clisymbols     1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.4.1)                      
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.4.0)                      
+##  compiler       3.4.1      2017-07-07 local                               
+##  config         0.2        2016-08-02 CRAN (R 3.4.0)                      
+##  crayon         1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  datasets     * 3.4.1      2017-07-07 local                               
+##  DBI            0.7        2017-06-18 CRAN (R 3.4.0)                      
+##  dbplyr         1.1.0      2017-06-27 CRAN (R 3.4.1)                      
+##  devtools       1.13.2     2017-06-02 CRAN (R 3.4.0)                      
+##  digest         0.6.12     2017-01-27 CRAN (R 3.4.0)                      
+##  dplyr        * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
+##  e1071        * 1.6-8      2017-02-02 CRAN (R 3.4.0)                      
+##  evaluate       0.10.1     2017-06-24 CRAN (R 3.4.1)                      
+##  FNN          * 1.1        2013-07-31 CRAN (R 3.4.0)                      
+##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
+##  foreach      * 1.4.3      2015-10-13 CRAN (R 3.4.0)                      
+##  foreign        0.8-69     2017-06-22 CRAN (R 3.4.1)                      
+##  gam          * 1.14-4     2017-04-25 CRAN (R 3.4.0)                      
+##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.4.0)                      
+##  gbm          * 2.1.3      2017-03-21 CRAN (R 3.4.0)                      
+##  gganimate    * 0.1.0.9000 2017-05-26 Github (dgrtwo/gganimate@bf82002)   
+##  ggdendro     * 0.1-20     2016-04-27 CRAN (R 3.4.0)                      
+##  ggplot2      * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
+##  glue           1.1.1      2017-06-21 CRAN (R 3.4.1)                      
+##  graphics     * 3.4.1      2017-07-07 local                               
+##  grDevices    * 3.4.1      2017-07-07 local                               
+##  grid         * 3.4.1      2017-07-07 local                               
+##  gridExtra    * 2.2.1      2016-02-29 CRAN (R 3.4.0)                      
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.4.0)                      
+##  haven        * 1.1.0      2017-07-09 CRAN (R 3.4.1)                      
+##  highr          0.6        2016-05-09 CRAN (R 3.4.0)                      
+##  hms            0.3        2016-11-22 CRAN (R 3.4.0)                      
+##  htmltools      0.3.6      2017-04-28 CRAN (R 3.4.0)                      
+##  httpuv         1.3.5      2017-07-04 CRAN (R 3.4.1)                      
+##  httr           1.2.1      2016-07-03 CRAN (R 3.4.0)                      
+##  igraph         1.1.2      2017-07-21 CRAN (R 3.4.1)                      
+##  ISLR         * 1.0        2013-06-11 CRAN (R 3.4.0)                      
+##  iterators      1.0.8      2015-10-13 CRAN (R 3.4.0)                      
+##  janeaustenr    0.1.5      2017-06-10 CRAN (R 3.4.0)                      
+##  jsonlite       1.5        2017-06-01 CRAN (R 3.4.0)                      
+##  kknn         * 1.3.1      2016-03-26 CRAN (R 3.4.0)                      
+##  knitr        * 1.16       2017-05-18 CRAN (R 3.4.0)                      
+##  labeling       0.3        2014-08-23 CRAN (R 3.4.0)                      
+##  lattice      * 0.20-35    2017-03-25 CRAN (R 3.4.1)                      
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.4.0)                      
+##  lme4           1.1-13     2017-04-19 CRAN (R 3.4.0)                      
+##  lubridate      1.6.0      2016-09-13 CRAN (R 3.4.0)                      
+##  magrittr       1.5        2014-11-22 CRAN (R 3.4.0)                      
+##  MASS           7.3-47     2017-02-26 CRAN (R 3.4.1)                      
+##  Matrix         1.2-10     2017-05-03 CRAN (R 3.4.1)                      
+##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.4.0)                      
+##  memoise        1.1.0      2017-04-21 CRAN (R 3.4.0)                      
+##  methods        3.4.1      2017-07-07 local                               
+##  mgcv           1.8-18     2017-07-28 CRAN (R 3.4.1)                      
+##  mime           0.5        2016-07-07 CRAN (R 3.4.0)                      
+##  minqa          1.2.4      2014-10-09 CRAN (R 3.4.0)                      
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.4.0)                      
+##  ModelMetrics   1.1.0      2016-08-26 CRAN (R 3.4.0)                      
+##  modelr       * 0.1.1      2017-07-24 CRAN (R 3.4.1)                      
+##  modeltools     0.2-21     2013-09-02 CRAN (R 3.4.0)                      
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.4.0)                      
+##  nlme           3.1-131    2017-02-06 CRAN (R 3.4.1)                      
+##  nloptr         1.0.4      2014-08-04 CRAN (R 3.4.0)                      
+##  NLP          * 0.1-10     2017-02-21 CRAN (R 3.4.0)                      
+##  nnet         * 7.3-12     2016-02-02 CRAN (R 3.4.1)                      
+##  nycflights13   0.2.2      2017-01-27 CRAN (R 3.4.0)                      
+##  parallel     * 3.4.1      2017-07-07 local                               
+##  pbkrtest       0.4-7      2017-03-15 CRAN (R 3.4.0)                      
+##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.4.0)                      
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.4.0)                      
+##  pROC         * 1.10.0     2017-06-10 CRAN (R 3.4.0)                      
+##  psych          1.7.5      2017-05-03 CRAN (R 3.4.1)                      
+##  purrr        * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
+##  quantreg       5.33       2017-04-18 CRAN (R 3.4.0)                      
+##  R6             2.2.2      2017-06-17 CRAN (R 3.4.0)                      
+##  randomForest * 4.6-12     2015-10-07 CRAN (R 3.4.0)                      
+##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.4.0)                      
+##  rcfss        * 0.1.5      2017-07-31 local                               
+##  Rcpp           0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  readr        * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
+##  readxl         1.0.0      2017-04-18 CRAN (R 3.4.0)                      
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.4.0)                      
+##  rlang          0.1.1      2017-05-18 CRAN (R 3.4.0)                      
+##  rmarkdown      1.6        2017-06-15 CRAN (R 3.4.0)                      
+##  rprojroot      1.2        2017-01-16 CRAN (R 3.4.0)                      
+##  RSQLite      * 2.0        2017-06-19 CRAN (R 3.4.1)                      
+##  rstudioapi     0.6        2016-06-27 CRAN (R 3.4.0)                      
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.4.0)                      
+##  scales         0.4.1      2016-11-09 CRAN (R 3.4.0)                      
+##  shiny          1.0.3      2017-04-26 CRAN (R 3.4.0)                      
+##  slam           0.1-40     2016-12-01 CRAN (R 3.4.0)                      
+##  SnowballC      0.5.1      2014-08-09 CRAN (R 3.4.0)                      
+##  sparklyr     * 0.6.0      2017-07-29 CRAN (R 3.4.1)                      
+##  SparseM        1.77       2017-04-23 CRAN (R 3.4.0)                      
+##  splines      * 3.4.1      2017-07-07 local                               
+##  stats        * 3.4.1      2017-07-07 local                               
+##  stats4         3.4.1      2017-07-07 local                               
+##  stringi        1.1.5      2017-04-07 CRAN (R 3.4.0)                      
+##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
+##  survival     * 2.41-3     2017-04-04 CRAN (R 3.4.1)                      
+##  tibble       * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
+##  tidyr        * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
+##  tidytext     * 0.1.3      2017-06-19 CRAN (R 3.4.1)                      
+##  tidyverse    * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.4.0)                      
+##  tm           * 0.7-1      2017-03-02 CRAN (R 3.4.0)                      
+##  tokenizers     0.1.4      2016-08-29 CRAN (R 3.4.0)                      
+##  tools          3.4.1      2017-07-07 local                               
+##  topicmodels  * 0.2-6      2017-04-18 CRAN (R 3.4.0)                      
+##  tree         * 1.0-37     2016-01-21 CRAN (R 3.4.0)                      
+##  tweenr       * 0.1.5      2016-10-10 CRAN (R 3.4.0)                      
+##  utils        * 3.4.1      2017-07-07 local                               
+##  withr          2.0.0      2017-07-28 CRAN (R 3.4.1)                      
+##  xml2           1.1.1      2017-01-24 CRAN (R 3.4.0)                      
+##  xtable         1.8-2      2016-02-05 CRAN (R 3.4.0)                      
+##  yaml           2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
 </div>
 <div class="footnotes">
 <hr />

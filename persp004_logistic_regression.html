@@ -397,14 +397,14 @@ div.tocify {
 <p>In essence, we have a <strong>classification</strong> problem. The response is a <strong>qualitative variable</strong>, in this case a binary variable indicating whether a specific passenger survived. This differs from a <strong>regression</strong> problem. In a regression problem, the response variable is <strong>quantitative</strong> and could take on potentially an infinite range of values. In classification problems, we want to develop a model that assigns observations to <strong>categories</strong> or <strong>classes</strong> of the response variable. Given our knowledge of survivors and diers on the Titanic, if we combine this with predictors that describe each passenger we might be able to estimate a general model of survival.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
 <p>Kaggle is an online platform for predictive modeling and analytics. They run regular competitions where they provide the public with a question and data, and anyone can estimate a predictive model to answer the question. They’ve run a popular contest based on a <a href="https://www.kaggle.com/c/titanic/data">dataset of passengers from the Titanic</a>. The datasets have been conveniently stored in a package called <code>titanic</code>. Let’s load the package and convert the desired data frame to a tibble.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
-titanic &lt;-<span class="st"> </span>titanic_train %&gt;%
-<span class="st">  </span><span class="kw">as_tibble</span>() %&gt;%
+titanic &lt;-<span class="st"> </span>titanic_train <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="co"># remove missing values</span>
 <span class="st">  </span><span class="kw">na.omit</span>()
 
-titanic %&gt;%
-<span class="st">  </span><span class="kw">head</span>() %&gt;%
-<span class="st">  </span>knitr::<span class="kw">kable</span>()</code></pre></div>
+titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">head</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>()</code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -552,18 +552,18 @@ the definitions do not support such relations.</code></pre>
 <h2>A linear regression approach</h2>
 <p>Let’s concentrate first on the relationship between age and survival. Using the methods we previously learned, we could estimate a linear regression model:</p>
 <p><span class="math display">\[Y = \beta_0 + \beta_{1}X\]</span></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic, <span class="kw">aes</span>(Age, Survived)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
-<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic, <span class="kw">aes</span>(Age, Survived)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;???&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/titanic_ols-1.png" width="672" /></p>
 <p>Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for <code>Survival</code> are <span class="math inline">\(0\)</span> and <span class="math inline">\(1\)</span>. Yet the linear regression model gives us predicted values such as <span class="math inline">\(.4\)</span> and <span class="math inline">\(.25\)</span>. How should we interpret those?</p>
 <p>One possibility is that these values are <strong>predicted probabilities</strong>. That is, the estimated probability a passenger will survive given their age. So someone with a predicted probability of <span class="math inline">\(.4\)</span> has a 40% chance of surviving. Okay, but notice that because the line is linear and continuous, it extends infinitely in both directions of age.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic, <span class="kw">aes</span>(Age, Survived)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
-<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) +
-<span class="st">  </span><span class="kw">xlim</span>(<span class="dv">0</span>, <span class="dv">200</span>) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic, <span class="kw">aes</span>(Age, Survived)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">xlim</span>(<span class="dv">0</span>, <span class="dv">200</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;???&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/titanic_ols_old-1.png" width="672" /></p>
@@ -649,27 +649,27 @@ the definitions do not support such relations.</code></pre>
 <p>The linear regression model above attempted to predict or explain <span class="math inline">\(p(X)\)</span> using the functional form</p>
 <p><span class="math display">\[p(X) = \beta_0 + \beta_{1}X\]</span></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate fake binary data</span>
-sim_logit &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">1000</span>, -<span class="dv">5</span>, <span class="dv">5</span>),
-                        <span class="dt">y =</span> <span class="dv">0</span> +<span class="st"> </span><span class="dv">1</span> *<span class="st"> </span>x)
+sim_logit &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">runif</span>(<span class="dv">1000</span>, <span class="op">-</span><span class="dv">5</span>, <span class="dv">5</span>),
+                        <span class="dt">y =</span> <span class="dv">0</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">*</span><span class="st"> </span>x)
 
 <span class="co"># graph it</span>
-<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, y)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, y)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;The linear function&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;p(X)&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/linear-demo-1.png" width="672" /></p>
 <p>But we now know that by using this functional form, we will always have for at least some subset of <span class="math inline">\(\text{age}\)</span> predicted values outside the <span class="math inline">\([0,1]\)</span> range. Instead, we need to model the functional form to prevent values from exceeding this range. One such function is the <strong>logistic function</strong>:<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a></p>
 <p><span class="math display">\[p(X) = \frac{e^{\beta_0 + \beta_{1}X}}{1 + e^{\beta_0 + \beta_{1}X}}\]</span></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2prob &lt;-<span class="st"> </span>function(x){
-  <span class="kw">exp</span>(x) /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span><span class="kw">exp</span>(x))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2prob &lt;-<span class="st"> </span><span class="cf">function</span>(x){
+  <span class="kw">exp</span>(x) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(x))
 }</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">logit2prob</span>(y))
 
 <span class="co"># graph it</span>
-<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, prob)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, prob)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;The logistic function&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Prob(X)&quot;</span>)</code></pre></div>
@@ -680,7 +680,7 @@ sim_logit &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span
 <p><span class="math display">\[p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age}}}{1 + e^{\beta_0 + \beta_{1}\text{Age}}}\]</span></p>
 <p>The values of <span class="math inline">\(P(\text{survival} = \text{Yes} | \text{age})\)</span> (or simply <span class="math inline">\(p(\text{survival})\)</span> will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom <span class="math inline">\(p(\text{survival}) &gt; .5\)</span> will survive the sinking, and anyone else will die.<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
 <p>We can estimate the logistic regression model using the <code>glm()</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age, <span class="dt">data =</span> titanic, <span class="dt">family =</span> binomial)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age, <span class="dt">data =</span> titanic, <span class="dt">family =</span> binomial)
 <span class="kw">summary</span>(survive_age)</code></pre></div>
 <pre><code>## 
 ## Call:
@@ -706,24 +706,24 @@ sim_logit &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <p>Which produces a line that looks like this:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate predicted values</span>
-survive_age_pred &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age) %&gt;%
+survive_age_pred &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="co"># predicted values are in the log-odds form - convert to probabilities</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">logit2prob</span>(pred))
 
-<span class="kw">ggplot</span>(survive_age_pred, <span class="kw">aes</span>(Age)) +
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> Survived)) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> prob), <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="kw">ggplot</span>(survive_age_pred, <span class="kw">aes</span>(Age)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">y =</span> Survived)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="kw">aes</span>(<span class="dt">y =</span> prob), <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Probability of surviving the Titanic&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/titanic_age_glm_plot-1.png" width="672" /></p>
 <p>It’s hard to tell, but the line is not perfectly linear. Let’s expand the range of the x-axis to prove this:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic, <span class="kw">aes</span>(Age, Survived)) +
-<span class="st">  </span><span class="kw">geom_point</span>() +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic, <span class="kw">aes</span>(Age, Survived)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="co"># use geom_smooth for out-of-sample range plotting</span>
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;glm&quot;</span>, <span class="dt">method.args =</span> <span class="kw">list</span>(<span class="dt">family =</span> <span class="st">&quot;binomial&quot;</span>),
-              <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>, <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
-<span class="st">  </span><span class="kw">xlim</span>(<span class="dv">0</span>,<span class="dv">200</span>) +
+              <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>, <span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">xlim</span>(<span class="dv">0</span>,<span class="dv">200</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Probability of surviving the Titanic&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/titanic_age_glm_plot_wide-1.png" width="672" /></p>
@@ -742,15 +742,15 @@ survive_age_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p>We can rewrite the probability function in the alternative form</p>
 <p><span class="math display">\[\frac{p(X)}{1 - p(x)} = e^{\beta_0 + \beta_{1}X}\]</span></p>
 <p>This quantity is called the <strong>odds</strong> and its range is <span class="math inline">\([0,\infty]\)</span>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prob2odds &lt;-<span class="st"> </span>function(x){
-  x /<span class="st"> </span>(<span class="dv">1</span> -<span class="st"> </span>x)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prob2odds &lt;-<span class="st"> </span><span class="cf">function</span>(x){
+  x <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>x)
 }</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">odds =</span> <span class="kw">prob2odds</span>(prob))
 
 <span class="co"># graph it</span>
-<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, odds)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, odds)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;The logistic function&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Odds(X)&quot;</span>)</code></pre></div>
@@ -764,11 +764,11 @@ survive_age_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p>We can convert the probability of surviving the Titanic to the odds of surviving the Titanic.</p>
 <p><span class="math display">\[\frac{p(\text{Survival})}{1 - p(\text{Survival})} = e^{\beta_0 + \beta_{1}\text{Age}}\]</span></p>
 <p>The resulting graph is:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_pred &lt;-<span class="st"> </span>survive_age_pred %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_pred &lt;-<span class="st"> </span>survive_age_pred <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">odds =</span> <span class="kw">prob2odds</span>(prob))
 
-<span class="kw">ggplot</span>(survive_age_pred, <span class="kw">aes</span>(Age, odds)) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<span class="kw">ggplot</span>(survive_age_pred, <span class="kw">aes</span>(Age, odds)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Odds of surviving the Titanic&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/titanic-odds-plot-1.png" width="672" /></p>
@@ -780,15 +780,15 @@ survive_age_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p>By taking the logarithm of both sides of the odds function, we get</p>
 <p><span class="math display">\[\log\left(\frac{p(X)}{1 - p(x)}\right) = \beta_0 + \beta_{1}X\]</span></p>
 <p>The result is the <strong>log-odds</strong> or <strong>logit</strong>. Notice that this function now imposes a linear relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(p(X)\)</span>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prob2logodds &lt;-<span class="st"> </span>function(x){
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">prob2logodds &lt;-<span class="st"> </span><span class="cf">function</span>(x){
   <span class="kw">log</span>(<span class="kw">prob2odds</span>(x))
 }</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">sim_logit &lt;-<span class="st"> </span>sim_logit <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">logodds =</span> <span class="kw">prob2logodds</span>(prob))
 
 <span class="co"># graph it</span>
-<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, logodds)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="kw">ggplot</span>(sim_logit, <span class="kw">aes</span>(x, logodds)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;The logistic function&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;X&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Log-Odds(X)&quot;</span>)</code></pre></div>
@@ -806,8 +806,8 @@ survive_age_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p>are actually expressed in terms of log-odds – <strong>for every one-unit increase in age, we expect the log-odds of survival to decrease by 0.011</strong>.</p>
 <p><span class="math display">\[\log\left(\frac{p(\text{Survival})}{1 - p(\text{Survival})}\right) = -0.057 + -0.011 x \text{Age}\]</span></p>
 <p>Generating predicted values from logistic regression models using <code>add_predictions()</code> always returns the log-odds of the outcome, so we can plot that directly to see the relationship between age and the log-odds of survival.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(survive_age_pred, <span class="kw">aes</span>(Age, pred)) +
-<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(survive_age_pred, <span class="kw">aes</span>(Age, pred)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>(<span class="dt">color =</span> <span class="st">&quot;blue&quot;</span>, <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Log-odds of surviving the Titanic&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/log-odds-plot-1.png" width="672" /></p>
@@ -835,7 +835,7 @@ survive_age_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <div id="generating-predicted-probabilities-using-add_predictions" class="section level2">
 <h2>Generating predicted probabilities using <code>add_predictions()</code></h2>
 <p>To visualise the predictions from a model, we start by generating an evenly spaced grid of values that covers the region where our data lies. First we use <code>data_grid()</code> from the <code>modelr</code> package to create a cleaned data frame of potential values:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_age &lt;-<span class="st"> </span>titanic %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_age &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">data_grid</span>(Age)
 titanic_age</code></pre></div>
 <pre><code>## # A tibble: 88 × 1
@@ -853,13 +853,13 @@ titanic_age</code></pre></div>
 ## 10  5.00
 ## # ... with 78 more rows</code></pre>
 <p>Next we use the <code>add_predictions()</code> function to produce the predicted probabilities. This worked very well for linear models; unfortunately it is not perfect for logistic regression because as you I mentioned above, logistic regression directly estimates the <a href="https://wiki.lesswrong.com/wiki/Log_odds"><strong>log-odds</strong></a> for the outcome. Instead, we want the plain old predicted probability. To do this, we use this custom function to convert from log-odds to predicted probabilties:<a href="#fn7" class="footnoteRef" id="fnref7"><sup>7</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2prob &lt;-<span class="st"> </span>function(x){
-  <span class="kw">exp</span>(x) /<span class="st"> </span>(<span class="dv">1</span> +<span class="st"> </span><span class="kw">exp</span>(x))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2prob &lt;-<span class="st"> </span><span class="cf">function</span>(x){
+  <span class="kw">exp</span>(x) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(x))
 }</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(modelr)
 
-titanic_age &lt;-<span class="st"> </span>titanic_age %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age) %&gt;%
+titanic_age &lt;-<span class="st"> </span>titanic_age <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred))
 titanic_age</code></pre></div>
 <pre><code>## # A tibble: 88 × 2
@@ -877,9 +877,9 @@ titanic_age</code></pre></div>
 ## 10  5.00 0.4721436
 ## # ... with 78 more rows</code></pre>
 <p>With this information, we can now plot the logistic regression line using the estimated model:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age, <span class="kw">aes</span>(Age, pred)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age, <span class="kw">aes</span>(Age, pred)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Relationship between age and surviving the Titanic&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/plot_pred-1.png" width="672" /></p>
@@ -890,7 +890,7 @@ titanic_age</code></pre></div>
 <p><span class="math display">\[p(X) = \frac{e^{\beta_0 + \beta_{1}X_1 + \dots + \beta_{p}X_{p}}}{1 + e^{\beta_0 + \beta_{1}X_1 + \dots + \beta_{p}X_{p}}}\]</span></p>
 <p>In our next model, let’s consider the relationship between age, sex, and survival. The logistic function takes the form:</p>
 <p><span class="math display">\[p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex}}}\]</span></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_woman &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Sex, <span class="dt">data =</span> titanic,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_woman &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Sex, <span class="dt">data =</span> titanic,
                          <span class="dt">family =</span> binomial)
 <span class="kw">summary</span>(survive_age_woman)</code></pre></div>
 <pre><code>## 
@@ -917,9 +917,9 @@ titanic_age</code></pre></div>
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <p>The parameters essentially tell us the relationship between each individual predictor and the response, <strong>independent of other predictors</strong>. So this model tells us the relationship between age and survival, after controlling for the effects of gender. Likewise, it also tells us the relationship between gender and survival, after controlling for the effects of age. To get a better visualization of this, let’s use <code>data_grid()</code> and <code>add_predictions()</code> again:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_age_sex &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">data_grid</span>(Age, Sex) %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_age_sex &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">data_grid</span>(Age, Sex) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred))
 titanic_age_sex</code></pre></div>
 <pre><code>## # A tibble: 176 × 3
@@ -937,9 +937,9 @@ titanic_age_sex</code></pre></div>
 ## 10  0.92   male 0.2326088
 ## # ... with 166 more rows</code></pre>
 <p>With these predicted probabilities, we can now plot the separate effects of age and gender:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age_sex, <span class="kw">aes</span>(Age, pred, <span class="dt">color =</span> Sex)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age_sex, <span class="kw">aes</span>(Age, pred, <span class="dt">color =</span> Sex)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Probability of surviving the Titanic&quot;</span>,
        <span class="dt">subtitle =</span> <span class="st">&quot;Age + Sex&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
@@ -954,7 +954,7 @@ titanic_age_sex</code></pre></div>
 <p><span class="math display">\[p(X) = \frac{e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}{1 + e^{\beta_0 + \beta_{1}X_1 + \beta_{2}X_2}}\]</span></p>
 <p>Because of the exponential transformation, <span class="math inline">\(\beta_2\)</span> now has a non-linear impact on the predicted probabilities. For clarity, let’s estimate a logistic regression model of the effect of age and fare on survival:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate logistic regression model of age and fare</span>
-age_fare &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age +<span class="st"> </span>Fare, <span class="dt">data =</span> titanic, <span class="dt">family =</span> binomial)
+age_fare &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Fare, <span class="dt">data =</span> titanic, <span class="dt">family =</span> binomial)
 <span class="kw">tidy</span>(age_fare)</code></pre></div>
 <pre><code>##          term    estimate   std.error statistic      p.value
 ## 1 (Intercept) -0.41705506 0.185975550 -2.242526 2.492738e-02
@@ -962,9 +962,9 @@ age_fare &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<sp
 ## 3        Fare  0.01725837 0.002616589  6.595751 4.231096e-11</code></pre>
 <p>And generate predicted log-odds and probabilities of survival for a series of hypothetical passengers, varying the fare amount paid.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate predicted values</span>
-age_fare_pred &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">data_grid</span>(Age, <span class="dt">Fare =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">max</span>(Fare), <span class="dt">by =</span> <span class="dv">100</span>)) %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(age_fare) %&gt;%
+age_fare_pred &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">data_grid</span>(Age, <span class="dt">Fare =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">max</span>(Fare), <span class="dt">by =</span> <span class="dv">100</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(age_fare) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">Fare =</span> <span class="kw">factor</span>(Fare, <span class="dt">levels =</span> <span class="kw">rev</span>(<span class="kw">seq</span>(<span class="dv">0</span>, <span class="kw">max</span>(Fare), <span class="dt">by =</span> <span class="dv">100</span>))))</code></pre></div>
 <p>Below is the plot of the log-odds for this regression model. To draw the line, all we did was draw the line for the relationship between age and expected log-odds of survival, holding fare constant at different levels.</p>
@@ -972,8 +972,8 @@ age_fare_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p><span class="math display">\[\log\left(\frac{p(\text{Survival})}{1 - p(\text{Survival})}\right) = (\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}\]</span></p>
 <p>Notice that each line is parallel to each other, because all that <span class="math inline">\(\hat{\beta}_{2}\)</span> did was change the intercept for the controlled relationship between age and log-odds of survival.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the new log-odds lines</span>
-<span class="kw">ggplot</span>(age_fare_pred, <span class="kw">aes</span>(Age, pred, <span class="dt">group =</span> Fare, <span class="dt">color =</span> Fare)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="kw">ggplot</span>(age_fare_pred, <span class="kw">aes</span>(Age, pred, <span class="dt">group =</span> Fare, <span class="dt">color =</span> Fare)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Log-odds of survival&quot;</span>,
        <span class="dt">subtitle =</span> <span class="st">&quot;Age + Fare model&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
@@ -984,8 +984,8 @@ age_fare_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p><span class="math display">\[p(\text{Survival}) = \frac{e^{(\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}}}{1 + e^{(\beta_0 + \beta_{2}\text{Fare}) + \beta_{1}\text{Age}}}\]</span></p>
 <p>Because of the exponential transformation, even if we hold fare constant, <strong>the resulting probability curve will non-linearly change for different fare values</strong>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the new probability lines</span>
-<span class="kw">ggplot</span>(age_fare_pred, <span class="kw">aes</span>(Age, prob, <span class="dt">group =</span> Fare, <span class="dt">color =</span> Fare)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<span class="kw">ggplot</span>(age_fare_pred, <span class="kw">aes</span>(Age, prob, <span class="dt">group =</span> Fare, <span class="dt">color =</span> Fare)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
        <span class="dt">subtitle =</span> <span class="st">&quot;Age + Fare model&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
@@ -1000,7 +1000,7 @@ age_fare_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p>However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? That is, the parameter for age is different for men and women? This possibility would take the functional form:</p>
 <p><span class="math display">\[p(\text{Survival}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_{3} \times \text{Age} \times \text{Sex}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{2}\text{Sex} + \beta_{3} \times \text{Age} \times \text{Sex}}}\]</span></p>
 <p>This is considered an <strong>interaction</strong> between age and gender. To estimate this in R, we simply specify <code>Age * Sex</code> in our formula for the <code>glm()</code> function:<a href="#fn8" class="footnoteRef" id="fnref8"><sup>8</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_woman_x &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived ~<span class="st"> </span>Age *<span class="st"> </span>Sex, <span class="dt">data =</span> titanic,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">survive_age_woman_x &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age <span class="op">*</span><span class="st"> </span>Sex, <span class="dt">data =</span> titanic,
                            <span class="dt">family =</span> binomial)
 <span class="kw">summary</span>(survive_age_woman_x)</code></pre></div>
 <pre><code>## 
@@ -1037,9 +1037,9 @@ age_fare_pred &lt;-<span class="st"> </span>titanic %&gt;%
 <p><span class="math display">\[p(\text{Survival}_{male}) = \frac{e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age}}}{1 + e^{\beta_0 + \beta_{1}\text{Age} + \beta_{3} \times \text{Age}}}\]</span></p>
 <p><span class="math display">\[p(\text{Survival}_{male}) = \frac{e^{\beta_0 + (\beta_{1} + \beta_{3})\text{Age}}}{1 + e^{\beta_0 + (\beta_{1} + \beta_{3})\text{Age}}}\]</span></p>
 <p>Let’s plot the interactive effects of age and gender by estimating the log-odds and predicted probability of survival.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_age_sex_x &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">data_grid</span>(Age, Sex) %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_age_sex_x &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">data_grid</span>(Age, Sex) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">prob =</span> <span class="kw">logit2prob</span>(pred))
 titanic_age_sex_x</code></pre></div>
 <pre><code>## # A tibble: 176 × 4
@@ -1056,8 +1056,8 @@ titanic_age_sex_x</code></pre></div>
 ## 9   0.92 female  0.6119268 0.6483802
 ## 10  0.92   male -0.7436533 0.3222058
 ## # ... with 166 more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age_sex_x, <span class="kw">aes</span>(Age, pred, <span class="dt">color =</span> Sex)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age_sex_x, <span class="kw">aes</span>(Age, pred, <span class="dt">color =</span> Sex)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Log-odds of surviving the Titanic&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Log-odds of survival&quot;</span>,
@@ -1065,13 +1065,13 @@ titanic_age_sex_x</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/age_woman_plot_logodds-1.png" width="672" /></p>
 <p>For the log-odds (i.e. based directly on the parameter values), we can see that the interactive term changes the <strong>slope</strong> of the line for age. For women the slope of the line is positive (0.594), whereas for men the slope is negative (-0.724).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># join data frames of interactive and non-interactive model</span>
-<span class="kw">bind_rows</span>(<span class="kw">list</span>(<span class="st">&quot;Age + Sex&quot;</span> =<span class="st"> </span>titanic_age_sex %&gt;%
+<span class="kw">bind_rows</span>(<span class="kw">list</span>(<span class="st">&quot;Age + Sex&quot;</span> =<span class="st"> </span>titanic_age_sex <span class="op">%&gt;%</span>
 <span class="st">                 </span><span class="kw">rename</span>(<span class="dt">prob =</span> pred),
-               <span class="st">&quot;Age x Sex&quot;</span> =<span class="st"> </span>titanic_age_sex_x), <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) %&gt;%
+               <span class="st">&quot;Age x Sex&quot;</span> =<span class="st"> </span>titanic_age_sex_x), <span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="co"># plot the two models</span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(Age, prob, <span class="dt">color =</span> Sex, <span class="dt">linetype =</span> id)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) +
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(Age, prob, <span class="dt">color =</span> Sex, <span class="dt">linetype =</span> id)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Probability of surviving the Titanic&quot;</span>,
        <span class="dt">x =</span> <span class="st">&quot;Age&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>,
@@ -1093,34 +1093,34 @@ titanic_age_sex_x</code></pre></div>
 <div id="accuracy-of-predictions" class="section level2">
 <h2>Accuracy of predictions</h2>
 <p>One evalation criteria simply asks: how accurate are the predictions? For instance, how often did our basic model just using age correctly predict who survived and died? First we need to get the predicted probabilities for each individual in the original dataset and convert the probability to a prediction - that is, classify the individual as either a <strong>survivor</strong> or <strong>dead</strong>. The standard threshold for binary classification problems is <span class="math inline">\(.5\)</span>; any individual with a predicted probability greater than or equal to <span class="math inline">\(.5\)</span> would be classified as a 1 (or survivor), and any predicted probability less than <span class="math inline">\(.5\)</span> would be classified as a 0 (or dead).<a href="#fn10" class="footnoteRef" id="fnref10"><sup>10</sup></a> Once we make our predictions, then we calculate what percentage of predictions were correct.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_accuracy &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_accuracy &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
-         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
+         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-<span class="kw">mean</span>(age_accuracy$Survived ==<span class="st"> </span>age_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<span class="kw">mean</span>(age_accuracy<span class="op">$</span>Survived <span class="op">==</span><span class="st"> </span>age_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## [1] 0.5938375</code></pre>
 <p><span class="math inline">\(59.4\%\)</span> of the predictions based on age only were correct. Is this good or bad? Well, that depends on what you consider your <strong>baseline</strong>. It’s certainly better than an accuracy rate of <span class="math inline">\(0\%\)</span>, but is that what we should compare it to?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create a function to calculate the modal value of a vector</span>
-getmode &lt;-<span class="st"> </span>function(v) {
+getmode &lt;-<span class="st"> </span><span class="cf">function</span>(v) {
    uniqv &lt;-<span class="st"> </span><span class="kw">unique</span>(v)
    uniqv[<span class="kw">which.max</span>(<span class="kw">tabulate</span>(<span class="kw">match</span>(v, uniqv)))]
 }</code></pre></div>
 <p>Instead we should compare the model’s accuracy rate to a simple but useless classifier that says predicts <strong>no individuals will survive the sinking of the Titanic</strong>. Because death is the <a href="https://en.wikipedia.org/wiki/Mode_(statistics)">modal</a> category, if we predict that every single person will die we would achieve an accuracy rate of <span class="math inline">\(59.4\%\)</span>. Which coincidentially is exactly the accuracy rate for our age-only model. What gives?</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age, <span class="kw">aes</span>(Age, pred)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(titanic_age, <span class="kw">aes</span>(Age, pred)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">limits =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Relationship between age and surviving the Titanic&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Predicted probability of survival&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/plot-pred2-1.png" width="672" /></p>
 <p>Oh yeah. If you look at the graph, the predicted probability curve for age is always below <span class="math inline">\(.5\)</span> for the potential age range, so the model actually does act like a modal model - it always predicts death. So our fancy logistic regression model does no better than the useless classifier. What about our interactive age and gender model?</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_accuracy &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_accuracy &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">prob =</span> pred,
-         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">5</span>))
+         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-<span class="kw">mean</span>(x_accuracy$Survived ==<span class="st"> </span>x_accuracy$pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<span class="kw">mean</span>(x_accuracy<span class="op">$</span>Survived <span class="op">==</span><span class="st"> </span>x_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## [1] 0.780112</code></pre>
 <p>This model is much better. Just by knowing an individual’s age and gender, we can predict with 78% whether he/she lives or dies.</p>
 </div>
@@ -1130,19 +1130,19 @@ getmode &lt;-<span class="st"> </span>function(v) {
 <p><span class="math display">\[PRE = \frac{E_1 - E_2}{E_1}\]</span></p>
 <p>where <span class="math inline">\(E_1\)</span> is the number of prediction errors in the null model (i.e. useless classifier) and <span class="math inline">\(E_2\)</span> is the number of prediction errors in the statistical learning model. It will range in value between <span class="math inline">\([0,1]\)</span> or <span class="math inline">\([0\%,100\%]\)</span>. <span class="math inline">\(0\%\)</span> means the statistical model reduced none of the prediction error, and <span class="math inline">\(100\%\)</span> means the statistical model eliminated all of the prediction error.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># function to calculate PRE for a logistic regression model</span>
-PRE &lt;-<span class="st"> </span>function(model){
+PRE &lt;-<span class="st"> </span><span class="cf">function</span>(model){
   <span class="co"># get the actual values for y from the data</span>
-  y &lt;-<span class="st"> </span>model$y
+  y &lt;-<span class="st"> </span>model<span class="op">$</span>y
   
   <span class="co"># get the predicted values for y from the model</span>
-  y.hat &lt;-<span class="st"> </span><span class="kw">round</span>(model$fitted.values)
+  y.hat &lt;-<span class="st"> </span><span class="kw">round</span>(model<span class="op">$</span>fitted.values)
   
   <span class="co"># calculate the errors for the null model and your model</span>
-  E1 &lt;-<span class="st"> </span><span class="kw">sum</span>(y !=<span class="st"> </span><span class="kw">median</span>(y))
-  E2 &lt;-<span class="st"> </span><span class="kw">sum</span>(y !=<span class="st"> </span>y.hat)
+  E1 &lt;-<span class="st"> </span><span class="kw">sum</span>(y <span class="op">!=</span><span class="st"> </span><span class="kw">median</span>(y))
+  E2 &lt;-<span class="st"> </span><span class="kw">sum</span>(y <span class="op">!=</span><span class="st"> </span>y.hat)
   
   <span class="co"># calculate the proportional reduction in error</span>
-  PRE &lt;-<span class="st"> </span>(E1 -<span class="st"> </span>E2) /<span class="st"> </span>E1
+  PRE &lt;-<span class="st"> </span>(E1 <span class="op">-</span><span class="st"> </span>E2) <span class="op">/</span><span class="st"> </span>E1
   <span class="kw">return</span>(PRE)
 }</code></pre></div>
 <p>So for the age-only model, the PRE is</p>
@@ -1175,8 +1175,8 @@ PRE &lt;-<span class="st"> </span>function(model){
 <h3>Confusion matrix</h3>
 <p>Previously all we cared about was the overall accuracy rate of the model, but we may also care about the accuracy or error rate for both types of errors. To do that, we generate a <strong>confusion matrix</strong> using the <code>confusionMatrix()</code> function from the <code>caret</code> library.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(caret)  <span class="co"># load the caret package to use the confusionMatrix function</span>
-cm_5 &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(x_accuracy$pred, x_accuracy$Survived)
-cm_5</code></pre></div>
+cm_<span class="dv">5</span> &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(x_accuracy<span class="op">$</span>pred, x_accuracy<span class="op">$</span>Survived)
+cm_<span class="dv">5</span></code></pre></div>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
@@ -1212,13 +1212,13 @@ cm_5</code></pre></div>
 <p>However if we are concerned with increasing <strong>specificity</strong> we need to increase the true negative rate (TNR):</p>
 <p><span class="math display">\[TNR = \frac{\text{Number of actual negatives correctly predicted}}{\text{Number of actual negatives}}\]</span></p>
 <p>While the only way to achieve higher sensitivity <strong>and</strong> specificity is to estimate a better model, we can use our existing model to meet one of these goals. We do this by adjusting our <strong>threshold</strong>, or the cut-off point for classifying individuals as survivors or dead. The confusion matrix above also calculates the sensitivity and specificity of the predictive model. For the original threshold of <span class="math inline">\(.5\)</span>, our true positive rate (or sensitivity) was 0.849. What about for a threshold of <span class="math inline">\(.8\)</span>?</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">threshold_8 &lt;-<span class="st"> </span>titanic %&gt;%
-<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) %&gt;%
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">threshold_<span class="dv">8</span> &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
-         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>.<span class="dv">8</span>))
+         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">8</span>))
 
-cm_8 &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(threshold_8$pred, threshold_8$Survived)
-cm_8</code></pre></div>
+cm_<span class="dv">8</span> &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(threshold_<span class="dv">8</span><span class="op">$</span>pred, threshold_<span class="dv">8</span><span class="op">$</span>Survived)
+cm_<span class="dv">8</span></code></pre></div>
 <pre><code>## Confusion Matrix and Statistics
 ## 
 ##           Reference
@@ -1247,31 +1247,31 @@ cm_8</code></pre></div>
 ## </code></pre>
 <p>With a threshold of <span class="math inline">\(.8\)</span>, sensitivity increases to 0.974, but notice the trade-off: overall accuracy has decreased from 0.78 to 0.63, and specificity has also declined substantially. This reveals the trade-off we have to make between sensitivity and specificity.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># function to calculate key stats for the Titanic data</span>
-threshold_compare &lt;-<span class="st"> </span>function(threshold, data, model){
+threshold_compare &lt;-<span class="st"> </span><span class="cf">function</span>(threshold, data, model){
   <span class="co"># generate predictions</span>
-  pred &lt;-<span class="st"> </span>data %&gt;%
-<span class="st">    </span><span class="kw">add_predictions</span>(model) %&gt;%
+  pred &lt;-<span class="st"> </span>data <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">add_predictions</span>(model) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
-           <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred &gt;<span class="st"> </span>threshold))
+           <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>threshold))
   
   <span class="co"># get confusion matrix</span>
-  cm &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(pred$pred, pred$Survived)
+  cm &lt;-<span class="st"> </span><span class="kw">confusionMatrix</span>(pred<span class="op">$</span>pred, pred<span class="op">$</span>Survived)
   
   <span class="co"># extract sensitivity and threshold to data_frame</span>
   <span class="kw">data_frame</span>(<span class="dt">threshold =</span> threshold,
-             <span class="dt">sensitivity =</span> cm$byClass[[<span class="st">&quot;Sensitivity&quot;</span>]],
-             <span class="dt">specificity =</span> cm$byClass[[<span class="st">&quot;Specificity&quot;</span>]],
-             <span class="dt">accuracy =</span> cm$overall[[<span class="st">&quot;Accuracy&quot;</span>]])
+             <span class="dt">sensitivity =</span> cm<span class="op">$</span>byClass[[<span class="st">&quot;Sensitivity&quot;</span>]],
+             <span class="dt">specificity =</span> cm<span class="op">$</span>byClass[[<span class="st">&quot;Specificity&quot;</span>]],
+             <span class="dt">accuracy =</span> cm<span class="op">$</span>overall[[<span class="st">&quot;Accuracy&quot;</span>]])
 }
 
-threshold_x &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">001</span>) %&gt;%
+threshold_x &lt;-<span class="st"> </span><span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">by =</span> .<span class="dv">001</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">map_df</span>(threshold_compare, titanic, survive_age_woman_x) 
 
-threshold_x %&gt;%
-<span class="st">  </span><span class="kw">gather</span>(measure, value, -threshold) %&gt;%
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">measure =</span> <span class="kw">factor</span>(measure, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Accuracy&quot;</span>, <span class="st">&quot;Sensitivity&quot;</span>, <span class="st">&quot;Specificity&quot;</span>))) %&gt;%
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(threshold, value, <span class="dt">color =</span> measure, <span class="dt">linetype =</span> measure)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+threshold_x <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">gather</span>(measure, value, <span class="op">-</span>threshold) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">measure =</span> <span class="kw">factor</span>(measure, <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Accuracy&quot;</span>, <span class="st">&quot;Sensitivity&quot;</span>, <span class="st">&quot;Specificity&quot;</span>))) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(threshold, value, <span class="dt">color =</span> measure, <span class="dt">linetype =</span> measure)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Threshold&quot;</span>,
        <span class="dt">y =</span> <span class="st">&quot;Accuracy rate&quot;</span>,
        <span class="dt">color =</span> <span class="st">&quot;Measure&quot;</span>,
@@ -1282,17 +1282,17 @@ threshold_x %&gt;%
 <div id="roc-curve" class="section level3">
 <h3>ROC curve</h3>
 <p>A receiver operating characteristic (ROC) curve is an alternative graphical method for comparing the types of errors for differing thresholds. In this graph, you plot the false positive rate vs. the true positive rate (i.e. 1- specificity vs. sensitivity).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(threshold_x, <span class="kw">aes</span>(<span class="dv">1</span> -<span class="st"> </span>specificity, sensitivity)) +
-<span class="st">  </span><span class="kw">geom_line</span>() +
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(threshold_x, <span class="kw">aes</span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>specificity, sensitivity)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_abline</span>(<span class="dt">slope =</span> <span class="dv">1</span>, <span class="dt">linetype =</span> <span class="dv">2</span>, <span class="dt">color =</span> <span class="st">&quot;grey&quot;</span>)</code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/roc-ggplot-1.png" width="672" /></p>
 <p>The overall performance of the classifier across all potential thresholds is the <strong>area under the (ROC) curve</strong> (AUC). The ideal AUC curve hugs the top left corner of the graph, so a larger AUC indicates a better classifier. An AUC of <span class="math inline">\(1\)</span> means perfect prediction for any threshold value. The dashed line represents the null model where we randomly guess whether individuals are survivors or dead (i.e. flipped a coin) and would have an AUC of <span class="math inline">\(.5\)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(pROC)
-roc_x &lt;-<span class="st"> </span><span class="kw">roc</span>(x_accuracy$Survived, x_accuracy$prob)
+roc_x &lt;-<span class="st"> </span><span class="kw">roc</span>(x_accuracy<span class="op">$</span>Survived, x_accuracy<span class="op">$</span>prob)
 <span class="kw">plot</span>(roc_x)   <span class="co"># use pROC to draw the ROC curve</span></code></pre></div>
 <p><img src="persp004_logistic_regression_files/figure-html/roc-auc-1.png" width="672" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate the AUC</span>
-auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy$Survived, x_accuracy$prob)
+auc_x &lt;-<span class="st"> </span><span class="kw">auc</span>(x_accuracy<span class="op">$</span>Survived, x_accuracy<span class="op">$</span>prob)
 auc_x</code></pre></div>
 <pre><code>## Area under the curve: 0.787</code></pre>
 <p>With an AUC of 0.787, this model performs decently.</p>
@@ -1301,162 +1301,129 @@ auc_x</code></pre></div>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">session_info</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>##  setting  value                       
-##  version  R version 3.3.3 (2017-03-06)
-##  system   x86_64, darwin13.4.0        
-##  ui       RStudio (1.0.136)           
+##  version  R version 3.4.1 (2017-06-30)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-05-30                  
+##  date     2017-08-01                  
 ## 
-##  package        * version    date       source                            
-##  animation        2.5        2017-03-30 CRAN (R 3.3.2)                    
-##  assertthat       0.2.0      2017-04-11 cran (@0.2.0)                     
-##  backports        1.1.0      2017-05-22 CRAN (R 3.3.2)                    
-##  base           * 3.3.3      2017-03-07 local                             
-##  base64enc        0.1-3      2015-07-28 CRAN (R 3.3.0)                    
-##  bigrquery      * 0.3.0      2016-06-28 CRAN (R 3.3.0)                    
-##  bitops           1.0-6      2013-08-17 CRAN (R 3.3.0)                    
-##  boot           * 1.3-19     2017-04-21 CRAN (R 3.3.2)                    
-##  broom          * 0.4.2      2017-02-13 CRAN (R 3.3.2)                    
-##  car              2.1-4      2016-12-02 CRAN (R 3.3.2)                    
-##  caret          * 6.0-76     2017-04-18 CRAN (R 3.3.2)                    
-##  cellranger       1.1.0      2016-07-27 CRAN (R 3.3.0)                    
-##  class            7.3-14     2015-08-30 CRAN (R 3.3.3)                    
-##  codetools        0.2-15     2016-10-05 CRAN (R 3.3.3)                    
-##  colorspace       1.3-2      2016-12-14 CRAN (R 3.3.2)                    
-##  config           0.2        2016-08-02 CRAN (R 3.3.0)                    
-##  curl           * 2.6        2017-04-27 CRAN (R 3.3.2)                    
-##  datasets       * 3.3.3      2017-03-07 local                             
-##  DBI              0.6-1      2017-04-01 CRAN (R 3.3.2)                    
-##  devtools         1.13.1     2017-05-13 CRAN (R 3.3.2)                    
-##  digest           0.6.12     2017-01-27 CRAN (R 3.3.2)                    
-##  dplyr          * 0.5.0      2016-06-24 CRAN (R 3.3.0)                    
-##  e1071          * 1.6-8      2017-02-02 CRAN (R 3.3.2)                    
-##  evaluate         0.10       2016-10-11 CRAN (R 3.3.0)                    
-##  FNN            * 1.1        2013-07-31 CRAN (R 3.3.0)                    
-##  forcats        * 0.2.0      2017-01-23 CRAN (R 3.3.2)                    
-##  foreach        * 1.4.3      2015-10-13 CRAN (R 3.3.0)                    
-##  foreign          0.8-68     2017-04-24 CRAN (R 3.3.2)                    
-##  gam            * 1.14-4     2017-04-25 CRAN (R 3.3.2)                    
-##  gapminder      * 0.2.0      2015-12-31 CRAN (R 3.3.0)                    
-##  gbm            * 2.1.3      2017-03-21 CRAN (R 3.3.2)                    
-##  geosphere        1.5-5      2016-06-15 CRAN (R 3.3.0)                    
-##  gganimate      * 0.1.0.9000 2017-05-26 Github (dgrtwo/gganimate@bf82002) 
-##  ggmap          * 2.7        2016-12-07 Github (dkahle/ggmap@c6b7579)     
-##  ggplot2        * 2.2.1.9000 2017-05-12 Github (tidyverse/ggplot2@f4398b6)
-##  ggrepel        * 0.6.5      2016-11-24 CRAN (R 3.3.2)                    
-##  ggstance       * 0.3        2016-11-16 CRAN (R 3.3.2)                    
-##  graphics       * 3.3.3      2017-03-07 local                             
-##  grDevices      * 3.3.3      2017-03-07 local                             
-##  grid             3.3.3      2017-03-07 local                             
-##  gridExtra      * 2.2.1      2016-02-29 cran (@2.2.1)                     
-##  gtable           0.2.0      2016-02-26 CRAN (R 3.3.0)                    
-##  haven          * 1.0.0      2016-09-23 cran (@1.0.0)                     
-##  here           * 0.0-6      2017-02-04 Github (krlmlr/here@007bfd9)      
-##  hexbin         * 1.27.1     2015-08-19 CRAN (R 3.3.0)                    
-##  highr            0.6        2016-05-09 CRAN (R 3.3.0)                    
-##  hms              0.3        2016-11-22 CRAN (R 3.3.2)                    
-##  htmltools        0.3.6      2017-04-28 cran (@0.3.6)                     
-##  htmlwidgets      0.8        2016-11-09 CRAN (R 3.3.1)                    
-##  httpuv           1.3.3      2015-08-04 CRAN (R 3.3.0)                    
-##  httr           * 1.2.1      2016-07-03 CRAN (R 3.3.0)                    
-##  igraph           1.0.1      2015-06-26 CRAN (R 3.3.0)                    
-##  ISLR           * 1.0        2013-06-11 CRAN (R 3.3.0)                    
-##  iterators        1.0.8      2015-10-13 CRAN (R 3.3.0)                    
-##  janeaustenr      0.1.4      2016-10-26 CRAN (R 3.3.0)                    
-##  jpeg             0.1-8      2014-01-23 cran (@0.1-8)                     
-##  jsonlite       * 1.4        2017-04-08 cran (@1.4)                       
-##  kknn           * 1.3.1      2016-03-26 CRAN (R 3.3.0)                    
-##  knitr          * 1.16       2017-05-18 CRAN (R 3.3.2)                    
-##  labeling         0.3        2014-08-23 CRAN (R 3.3.0)                    
-##  lattice        * 0.20-35    2017-03-25 CRAN (R 3.3.2)                    
-##  lazyeval         0.2.0      2016-06-12 CRAN (R 3.3.0)                    
-##  lme4             1.1-13     2017-04-19 cran (@1.1-13)                    
-##  lubridate      * 1.6.0      2016-09-13 CRAN (R 3.3.0)                    
-##  lvplot         * 0.2.0.9000 2017-01-06 Github (hadley/lvplot@8ce61c7)    
-##  magrittr         1.5        2014-11-22 CRAN (R 3.3.0)                    
-##  mapproj          1.2-4      2015-08-03 CRAN (R 3.3.0)                    
-##  maps           * 3.1.1      2016-07-27 CRAN (R 3.3.0)                    
-##  MASS             7.3-47     2017-04-21 CRAN (R 3.3.2)                    
-##  Matrix           1.2-10     2017-04-28 CRAN (R 3.3.2)                    
-##  MatrixModels   * 0.4-1      2015-08-22 CRAN (R 3.3.0)                    
-##  memoise          1.1.0      2017-04-21 CRAN (R 3.3.2)                    
-##  methods        * 3.3.3      2017-03-07 local                             
-##  mgcv             1.8-17     2017-02-08 CRAN (R 3.3.3)                    
-##  microbenchmark * 1.4-2.1    2015-11-25 CRAN (R 3.3.0)                    
-##  mime             0.5        2016-07-07 CRAN (R 3.3.0)                    
-##  minqa            1.2.4      2014-10-09 cran (@1.2.4)                     
-##  mnormt           1.5-5      2016-10-15 CRAN (R 3.3.0)                    
-##  ModelMetrics     1.1.0      2016-08-26 CRAN (R 3.3.0)                    
-##  modelr         * 0.1.0      2016-08-31 CRAN (R 3.3.0)                    
-##  modeltools       0.2-21     2013-09-02 CRAN (R 3.3.0)                    
-##  munsell          0.4.3      2016-02-13 CRAN (R 3.3.0)                    
-##  nlme             3.1-131    2017-02-06 CRAN (R 3.3.3)                    
-##  nloptr           1.0.4      2014-08-04 cran (@1.0.4)                     
-##  NLP              0.1-10     2017-02-21 CRAN (R 3.3.2)                    
-##  nnet           * 7.3-12     2016-02-02 CRAN (R 3.3.3)                    
-##  nycflights13   * 0.2.2      2017-01-27 CRAN (R 3.3.2)                    
-##  parallel       * 3.3.3      2017-03-07 local                             
-##  pbkrtest         0.4-7      2017-03-15 CRAN (R 3.3.2)                    
-##  plyr             1.8.4      2016-06-08 CRAN (R 3.3.0)                    
-##  png              0.1-7      2013-12-03 cran (@0.1-7)                     
-##  pROC           * 1.9.1      2017-02-05 CRAN (R 3.3.2)                    
-##  profvis        * 0.3.3      2017-01-14 CRAN (R 3.3.2)                    
-##  proto            1.0.0      2016-10-29 CRAN (R 3.3.0)                    
-##  psych            1.7.5      2017-05-03 CRAN (R 3.3.3)                    
-##  purrr          * 0.2.2.2    2017-05-11 CRAN (R 3.3.3)                    
-##  quantreg       * 5.33       2017-04-18 CRAN (R 3.3.2)                    
-##  R6               2.2.1      2017-05-10 CRAN (R 3.3.2)                    
-##  randomForest   * 4.6-12     2015-10-07 CRAN (R 3.3.0)                    
-##  rappdirs         0.3.1      2016-03-28 CRAN (R 3.3.0)                    
-##  rcfss          * 0.1.4      2017-02-28 local                             
-##  Rcpp             0.12.11    2017-05-22 CRAN (R 3.3.2)                    
-##  readr          * 1.1.1      2017-05-16 CRAN (R 3.3.2)                    
-##  readxl         * 1.0.0      2017-04-18 CRAN (R 3.3.2)                    
-##  rebird         * 0.4.0      2017-04-26 CRAN (R 3.3.2)                    
-##  reshape2         1.4.2      2016-10-22 CRAN (R 3.3.0)                    
-##  RgoogleMaps      1.4.1      2016-09-18 cran (@1.4.1)                     
-##  rjson            0.2.15     2014-11-03 cran (@0.2.15)                    
-##  rlang            0.1.9000   2017-05-12 Github (hadley/rlang@c17568e)     
-##  rmarkdown        1.5        2017-04-26 CRAN (R 3.3.2)                    
-##  rprojroot        1.2        2017-01-16 CRAN (R 3.3.2)                    
-##  rsconnect        0.8        2017-05-08 CRAN (R 3.3.2)                    
-##  RSQLite        * 1.1-2      2017-01-08 CRAN (R 3.3.2)                    
-##  rstudioapi       0.6        2016-06-27 CRAN (R 3.3.0)                    
-##  rvest          * 0.3.2      2016-06-17 CRAN (R 3.3.0)                    
-##  scales         * 0.4.1      2016-11-09 CRAN (R 3.3.1)                    
-##  shiny          * 1.0.3      2017-04-26 CRAN (R 3.3.2)                    
-##  slam             0.1-40     2016-12-01 CRAN (R 3.3.2)                    
-##  SnowballC        0.5.1      2014-08-09 cran (@0.5.1)                     
-##  sp               1.2-4      2016-12-22 CRAN (R 3.3.2)                    
-##  sparklyr       * 0.5.5      2017-05-26 CRAN (R 3.3.3)                    
-##  SparseM        * 1.77       2017-04-23 CRAN (R 3.3.2)                    
-##  splines        * 3.3.3      2017-03-07 local                             
-##  stats          * 3.3.3      2017-03-07 local                             
-##  stats4           3.3.3      2017-03-07 local                             
-##  stringi          1.1.5      2017-04-07 CRAN (R 3.3.2)                    
-##  stringr        * 1.2.0      2017-02-18 CRAN (R 3.3.2)                    
-##  survival       * 2.41-3     2017-04-04 CRAN (R 3.3.2)                    
-##  tibble         * 1.3.1      2017-05-17 CRAN (R 3.3.2)                    
-##  tidyr          * 0.6.3      2017-05-15 CRAN (R 3.3.2)                    
-##  tidytext       * 0.1.2      2016-10-28 CRAN (R 3.3.0)                    
-##  tidyverse      * 1.1.1      2017-01-27 CRAN (R 3.3.2)                    
-##  titanic        * 0.1.0      2015-08-31 CRAN (R 3.3.0)                    
-##  tm               0.7-1      2017-03-02 CRAN (R 3.3.2)                    
-##  tokenizers       0.1.4      2016-08-29 CRAN (R 3.3.0)                    
-##  tools            3.3.3      2017-03-07 local                             
-##  topicmodels    * 0.2-6      2017-04-18 CRAN (R 3.3.2)                    
-##  tree           * 1.0-37     2016-01-21 CRAN (R 3.3.0)                    
-##  tweenr         * 0.1.5      2016-10-10 CRAN (R 3.3.0)                    
-##  utils          * 3.3.3      2017-03-07 local                             
-##  withr            1.0.2      2016-06-20 CRAN (R 3.3.0)                    
-##  XML            * 3.98-1.7   2017-05-03 CRAN (R 3.3.2)                    
-##  xml2           * 1.1.1      2017-01-24 CRAN (R 3.3.2)                    
-##  xtable           1.8-2      2016-02-05 CRAN (R 3.3.0)                    
-##  yaml             2.1.14     2016-11-12 cran (@2.1.14)</code></pre>
+##  package      * version    date       source                              
+##  assertthat     0.2.0      2017-04-11 CRAN (R 3.4.0)                      
+##  backports      1.1.0      2017-05-22 CRAN (R 3.4.0)                      
+##  base         * 3.4.1      2017-07-07 local                               
+##  base64enc      0.1-3      2015-07-28 CRAN (R 3.4.0)                      
+##  bindr          0.1        2016-11-13 CRAN (R 3.4.0)                      
+##  bindrcpp     * 0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  bit            1.1-12     2014-04-09 CRAN (R 3.4.0)                      
+##  bit64          0.9-7      2017-05-08 CRAN (R 3.4.0)                      
+##  blob           1.1.0      2017-06-17 CRAN (R 3.4.0)                      
+##  boxes          0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
+##  broom        * 0.4.2      2017-02-13 CRAN (R 3.4.0)                      
+##  car            2.1-5      2017-07-04 CRAN (R 3.4.1)                      
+##  caret        * 6.0-76     2017-04-18 CRAN (R 3.4.0)                      
+##  cellranger     1.1.0      2016-07-27 CRAN (R 3.4.0)                      
+##  class          7.3-14     2015-08-30 CRAN (R 3.4.1)                      
+##  clisymbols     1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.4.1)                      
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.4.0)                      
+##  compiler       3.4.1      2017-07-07 local                               
+##  config         0.2        2016-08-02 CRAN (R 3.4.0)                      
+##  crayon         1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  datasets     * 3.4.1      2017-07-07 local                               
+##  DBI            0.7        2017-06-18 CRAN (R 3.4.0)                      
+##  dbplyr         1.1.0      2017-06-27 CRAN (R 3.4.1)                      
+##  devtools       1.13.2     2017-06-02 CRAN (R 3.4.0)                      
+##  digest         0.6.12     2017-01-27 CRAN (R 3.4.0)                      
+##  dplyr        * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
+##  e1071          1.6-8      2017-02-02 CRAN (R 3.4.0)                      
+##  evaluate       0.10.1     2017-06-24 CRAN (R 3.4.1)                      
+##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
+##  foreach        1.4.3      2015-10-13 CRAN (R 3.4.0)                      
+##  foreign        0.8-69     2017-06-22 CRAN (R 3.4.1)                      
+##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.4.0)                      
+##  gganimate    * 0.1.0.9000 2017-05-26 Github (dgrtwo/gganimate@bf82002)   
+##  ggplot2      * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
+##  glue           1.1.1      2017-06-21 CRAN (R 3.4.1)                      
+##  graphics     * 3.4.1      2017-07-07 local                               
+##  grDevices    * 3.4.1      2017-07-07 local                               
+##  grid           3.4.1      2017-07-07 local                               
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.4.0)                      
+##  haven          1.1.0      2017-07-09 CRAN (R 3.4.1)                      
+##  highr          0.6        2016-05-09 CRAN (R 3.4.0)                      
+##  hms            0.3        2016-11-22 CRAN (R 3.4.0)                      
+##  htmltools      0.3.6      2017-04-28 CRAN (R 3.4.0)                      
+##  httpuv         1.3.5      2017-07-04 CRAN (R 3.4.1)                      
+##  httr           1.2.1      2016-07-03 CRAN (R 3.4.0)                      
+##  iterators      1.0.8      2015-10-13 CRAN (R 3.4.0)                      
+##  jsonlite       1.5        2017-06-01 CRAN (R 3.4.0)                      
+##  knitr        * 1.16       2017-05-18 CRAN (R 3.4.0)                      
+##  labeling       0.3        2014-08-23 CRAN (R 3.4.0)                      
+##  lattice      * 0.20-35    2017-03-25 CRAN (R 3.4.1)                      
+##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.4.0)                      
+##  lme4           1.1-13     2017-04-19 CRAN (R 3.4.0)                      
+##  lubridate      1.6.0      2016-09-13 CRAN (R 3.4.0)                      
+##  magrittr       1.5        2014-11-22 CRAN (R 3.4.0)                      
+##  MASS           7.3-47     2017-02-26 CRAN (R 3.4.1)                      
+##  Matrix         1.2-10     2017-05-03 CRAN (R 3.4.1)                      
+##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.4.0)                      
+##  memoise        1.1.0      2017-04-21 CRAN (R 3.4.0)                      
+##  methods        3.4.1      2017-07-07 local                               
+##  mgcv           1.8-18     2017-07-28 CRAN (R 3.4.1)                      
+##  mime           0.5        2016-07-07 CRAN (R 3.4.0)                      
+##  minqa          1.2.4      2014-10-09 CRAN (R 3.4.0)                      
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.4.0)                      
+##  ModelMetrics   1.1.0      2016-08-26 CRAN (R 3.4.0)                      
+##  modelr       * 0.1.1      2017-07-24 CRAN (R 3.4.1)                      
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.4.0)                      
+##  nlme           3.1-131    2017-02-06 CRAN (R 3.4.1)                      
+##  nloptr         1.0.4      2014-08-04 CRAN (R 3.4.0)                      
+##  nnet           7.3-12     2016-02-02 CRAN (R 3.4.1)                      
+##  nycflights13   0.2.2      2017-01-27 CRAN (R 3.4.0)                      
+##  parallel       3.4.1      2017-07-07 local                               
+##  pbkrtest       0.4-7      2017-03-15 CRAN (R 3.4.0)                      
+##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.4.0)                      
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.4.0)                      
+##  pROC         * 1.10.0     2017-06-10 CRAN (R 3.4.0)                      
+##  psych          1.7.5      2017-05-03 CRAN (R 3.4.1)                      
+##  purrr        * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
+##  quantreg       5.33       2017-04-18 CRAN (R 3.4.0)                      
+##  R6             2.2.2      2017-06-17 CRAN (R 3.4.0)                      
+##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.4.0)                      
+##  rcfss        * 0.1.5      2017-07-31 local                               
+##  Rcpp           0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  readr        * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
+##  readxl         1.0.0      2017-04-18 CRAN (R 3.4.0)                      
+##  reshape2       1.4.2      2016-10-22 CRAN (R 3.4.0)                      
+##  rlang          0.1.1      2017-05-18 CRAN (R 3.4.0)                      
+##  rmarkdown      1.6        2017-06-15 CRAN (R 3.4.0)                      
+##  rprojroot      1.2        2017-01-16 CRAN (R 3.4.0)                      
+##  RSQLite      * 2.0        2017-06-19 CRAN (R 3.4.1)                      
+##  rstudioapi     0.6        2016-06-27 CRAN (R 3.4.0)                      
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.4.0)                      
+##  scales         0.4.1      2016-11-09 CRAN (R 3.4.0)                      
+##  shiny          1.0.3      2017-04-26 CRAN (R 3.4.0)                      
+##  sparklyr     * 0.6.0      2017-07-29 CRAN (R 3.4.1)                      
+##  SparseM        1.77       2017-04-23 CRAN (R 3.4.0)                      
+##  splines        3.4.1      2017-07-07 local                               
+##  stats        * 3.4.1      2017-07-07 local                               
+##  stats4         3.4.1      2017-07-07 local                               
+##  stringi        1.1.5      2017-04-07 CRAN (R 3.4.0)                      
+##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
+##  tibble       * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
+##  tidyr        * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
+##  tidyverse    * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.4.0)                      
+##  tools          3.4.1      2017-07-07 local                               
+##  tweenr       * 0.1.5      2016-10-10 CRAN (R 3.4.0)                      
+##  utils        * 3.4.1      2017-07-07 local                               
+##  withr          2.0.0      2017-07-28 CRAN (R 3.4.1)                      
+##  xml2           1.1.1      2017-01-24 CRAN (R 3.4.0)                      
+##  xtable         1.8-2      2016-02-05 CRAN (R 3.4.0)                      
+##  yaml           2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
@@ -1471,7 +1438,7 @@ auc_x</code></pre></div>
 <li id="fn7"><p>Alternatively, we can use <code>broom::augment()</code> to add predicted probabilities for the original dataset:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(broom)
 
-<span class="kw">augment</span>(survive_age, <span class="dt">newdata =</span> titanic, <span class="dt">type.predict =</span> <span class="st">&quot;response&quot;</span>) %&gt;%
+<span class="kw">augment</span>(survive_age, <span class="dt">newdata =</span> titanic, <span class="dt">type.predict =</span> <span class="st">&quot;response&quot;</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">as_tibble</span>()</code></pre></div>
 <pre><code>## # A tibble: 714 x 14
 ##    PassengerId Survived Pclass
