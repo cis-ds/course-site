@@ -10,20 +10,11 @@ output:
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-# Objectives
-
-* Demonstrate how to write an iterative operation using a `for` loop
-* Practice writing a `for` loop
-* Demonstrate how to write an iterative operation using a `map` function
-* Practice writing a `map` function
-
-## Prerequisites
-
-* [Chapter 21: "Iteration" in *R for Data Science*](http://r4ds.had.co.nz/iteration.html)
-
 ```{r packages, cache = FALSE}
 library(tidyverse)
 set.seed(1234)
+
+theme_set(theme_minimal())
 ```
 
 # Writing `for` loops
@@ -32,7 +23,7 @@ Functions are one method of reducing duplication in your code. Another tool for 
 
 ## Example for loop
 
-```{r}
+```{r df-rnorm}
 df <- tibble(
   a = rnorm(10),
   b = rnorm(10),
@@ -43,7 +34,7 @@ df <- tibble(
 
 Let's say we want to compute the median for each column.
 
-```{r}
+```{r median-per-column}
 median(df$a)
 median(df$b)
 median(df$c)
@@ -52,52 +43,52 @@ median(df$d)
 
 Boo! We've copied-and-pasted `median()` three times. We don't want to do that. Instead, we can use a `for` loop:
 
-```{r}
-output <- vector(mode = "double", length = ncol(df))  # 1. output
-for (i in seq_along(df)) {            # 2. sequence
-  output[[i]] <- median(df[[i]])      # 3. body
+```{r for-loop}
+output <- vector(mode = "double", length = ncol(df))
+for (i in seq_along(df)) {
+  output[[i]] <- median(df[[i]])
 }
 output
 ```
 
-Let's review the three components of every `for` loop:
+Let's review the three components of every `for` loop.
 
-1. **Output**
+#### Output
 
-    `output <- vector("double", length(x))`
+`output <- vector("double", length(x))`
     
-    Before you start a loop, you need to create an empty vector to store the output of the loop. Preallocating space for your output is much more efficient than creating space as you move through the loop. The `vector()` function allows you to create an empty vector of any type. The first argument `mode` defines the type of vector ("logical", "integer", "double", "character", etc.) and the second argument `length` defines the length of the vector.
+Before you start a loop, you need to create an empty vector to store the output of the loop. Preallocating space for your output is much more efficient than creating space as you move through the loop. The `vector()` function allows you to create an empty vector of any type. The first argument `mode` defines the type of vector ("logical", "integer", "double", "character", etc.) and the second argument `length` defines the length of the vector.
     
-    Numeric vectors are initialized to `0`, logical vectors are initialized to `FALSE`, character vectors are initialized to `""`, and list elements to `NULL`.
+Numeric vectors are initialized to `0`, logical vectors are initialized to `FALSE`, character vectors are initialized to `""`, and list elements to `NULL`.
     
-    ```{r}
-    vector(mode = "double", length = ncol(df))
-    vector(mode = "logical", length = ncol(df))
-    vector(mode = "character", length = ncol(df))
-    vector(mode = "list", length = ncol(df))
-    ```
+```{r vector}
+vector(mode = "double", length = ncol(df))
+vector(mode = "logical", length = ncol(df))
+vector(mode = "character", length = ncol(df))
+vector(mode = "list", length = ncol(df))
+```
 
-1. **Sequence**
+#### Sequence
 
-    `i in seq_along(df)`
+`i in seq_along(df)`
     
-    This component determines what to loop over. Each iteration through the `for` loop, a new value will be assigned to `i` based on the the defined sequence. Here, the sequence is `seq_along(df)` which creates a numeric vector for a sequence of numbers beginning at 1 and continuing until it reaches the length of `df` (the length here is the number of columns in `df`).
+This component determines what to loop over. During each iteration through the `for` loop, a new value will be assigned to `i` based on the the defined sequence. Here, the sequence is `seq_along(df)` which creates a numeric vector for a sequence of numbers beginning at 1 and continuing until it reaches the length of `df` (the length here is the number of columns in `df`).
     
-    ```{r}
-    seq_along(df)
-    ```
+```{r seq-along}
+seq_along(df)
+```
     
-1. **Body**
+#### Body
 
-    `output[[i]] <- median(df[[i]])`
+`output[[i]] <- median(df[[i]])`
     
-    This is the code that actually performs the desired calculations. It runs multiple times for every value of `i`. We use `[[` notation to reference each column of `df` and store it in the appropriate element in `output`.
+This is the code that actually performs the desired calculations. It runs multiple times for every value of `i`. We use `[[` notation to reference each column of `df` and store it in the appropriate element in `output`.
 
 ## Why we preallocate space for the output
 
 If you don't preallocate space for the output, each time the `for` loop iterates, it makes a copy of the output and appends the new value at the end. Copying data takes time and memory. If the output is preallocated space, the loop simply fills in the slots with the correct values.
 
-```{r}
+```{r preallocate}
 x <- rnorm(1000, mean = 0, sd = 1)
 str(x)
 
@@ -120,7 +111,10 @@ microbenchmark(
     for (i in seq_along(x)) {
       output[[i]] <- x[[i]] + 1
     }
-  })
+  }) %>%
+  autoplot +
+  scale_y_log10(breaks = c(2, 4, 8, 16, 32)) +
+  labs(y = "Time [milliseconds]")
 ```
 
 Here, preallocating space for the vector cuts the computation time by a factor of 3.
@@ -131,7 +125,7 @@ Here, preallocating space for the vector cuts the computation time by a factor o
 
 Write a `for` loop that calculates the arithmetic mean for every column in `mtcars`.
 
-```{r}
+```{r mtcars}
 as_tibble(mtcars)
 ```
 
@@ -149,8 +143,8 @@ Before you write the `for` loop, identify the three components you need:
 * Sequence - `i in seq_along(mtcars)`
 * Body - calculate the `mean()` of the $i$th column, store the new value as the $i$th element of the vector `output`
 
-```{r}
-output <- vector("integer", ncol(mtcars))
+```{r mtcars-for}
+output <- vector("numeric", ncol(mtcars))
 
 for(i in seq_along(mtcars)){
   output[[i]] <- mean(mtcars[[i]], na.rm = TRUE)
@@ -166,7 +160,7 @@ output
 
 Write a `for` loop that calculates the maximum value in each column of `diamonds`.
 
-```{r}
+```{r diamonds}
 diamonds
 ```
 
@@ -184,7 +178,7 @@ Before you write the `for` loop, identify the three components you need:
 * Sequence - `i in seq_along(diamonds)`
 * Body - get the maximum value of the $i$th column of the data frame `diamonds`, store the new value as the $i$th element of the list `output`
 
-```{r}
+```{r diamonds-for}
 output <- vector("numeric", ncol(diamonds))
 
 for(i in seq_along(diamonds)){
@@ -196,7 +190,7 @@ output
 
 To preserve the name attributes from `diamonds`, use the `names()` function to extract the names of each column in `diamonds` and apply them as the names to the `output` vector:
 
-```{r}
+```{r diamonds-for-name}
 # get the names of the columns in diamonds
 names(diamonds)
 
@@ -205,14 +199,16 @@ names(output) <- names(diamonds)
 output
 ```
 
+> Notice that all the columns have a maximum value, even the apparently text-based columns. This is because `cut`, `color`, and `clarity` are all stored as factor columns. Remember that [factor vectors are built on top of integers](http://r4ds.had.co.nz/vectors.html#factors-1), so the underlying values are numeric. As a result we can apply `max()` to a factor vector and still retrieve a (partially) meaningful result.
+
   </p>
 </details>
 
 # Map functions
 
-You will frequently need to iterate over vectors or data frames, perform an operation on each element, and save the results somewhere. `for` loops are not the devil. At first, they may seem more intuitive to use because you are explicitly identifying each component of the process. However the downside is that they focus on a lot of non-essential stuff. You have to track the value on which you are iterating, you need to explicitly create a vector to store the output, you have to assign the output of each iteration to the appropriate element in the output vector, etc. `tidyverse` is all about focusing on **verbs**, not **nouns**. That is, focus on the operation being performed (e.g. `mean()`, `median()`, `max()`), not all the extra code needed to make the operation work.
+You will frequently need to iterate over vectors or data frames, perform an operation on each element, and save the results somewhere. `for` loops are not the devil. At first, they may seem more intuitive to use because you are explicitly identifying each component of the process. However the downside is that they focus on a lot of non-essential stuff. You have to track the value on which you are iterating, you need to explicitly create a vector to store the output, you have to assign the output of each iteration to the appropriate element in the output vector, etc.
 
-The `purrr` library provides a family of functions that mirrors `for` loops. They:
+`tidyverse` is all about focusing on **verbs**, not **nouns**. That is, focus on the operation being performed (e.g. `mean()`, `median()`, `max()`), not all the extra code needed to make the operation work. The `purrr` library provides a family of functions that mirrors `for` loops. They:
 
 * Loop over a vector
 * Do something to each element
@@ -226,7 +222,7 @@ There is one function for each type of output:
 * `map_dbl()` makes a double vector.
 * `map_chr()` makes a character vector.
 
-```{r}
+```{r map}
 map_dbl(df, mean)
 map_dbl(df, median)
 map_dbl(df, sd)
@@ -234,13 +230,13 @@ map_dbl(df, sd)
 
 Just like all of our functions in the `tidyverse`, the first argument is always the data object, and the second argument is the function to be applied. Additional arguments for the function to be applied can be specified like this:
 
-```{r}
+```{r map-args}
 map_dbl(df, mean, na.rm = TRUE)
 ```
 
 Or data can be piped:
 
-```{r}
+```{r map-pipe}
 df %>%
   map_dbl(mean, na.rm = TRUE)
 ```
@@ -251,7 +247,7 @@ df %>%
 
 Write a `map()` function that calculates the arithmetic mean for every column in `mtcars`.
 
-```{r}
+```{r mtcars-again}
 as_tibble(mtcars)
 ```
 
@@ -259,7 +255,7 @@ as_tibble(mtcars)
   <summary>Click for the solution</summary>
   <p>
 
-```{r}
+```{r mtcars-map}
 map_dbl(mtcars, mean)
 ```
     
@@ -270,7 +266,7 @@ map_dbl(mtcars, mean)
 
 Write a `map()` function that calculates the maximum value in each column of `diamonds`.
 
-```{r}
+```{r diamonds-again}
 diamonds
 ```
 
@@ -278,7 +274,7 @@ diamonds
   <summary>Click for the solution</summary>
   <p>
 
-```{r}
+```{r diamonds-map}
 map_dbl(diamonds, max)
 ```
 
