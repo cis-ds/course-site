@@ -11,7 +11,7 @@
 
 
 
-<title>Debugging and defensive programming</title>
+<title>Debugging and condition handling</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -332,474 +332,26 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Debugging and defensive programming</h1>
+<h1 class="title toc-ignore">Debugging and condition handling</h1>
 
 </div>
 
 
-<div id="objectives" class="section level1">
-<h1>Objectives</h1>
-<ul>
-<li>Define a bug</li>
-<li>Review best practices for reading, writing, and styling code</li>
-<li>Distinguish between errors, warnings, and messages</li>
-<li>Introduce <code>traceback()</code> and explain how to read it</li>
-<li>Identify and practice methods for error handling and recovery</li>
-</ul>
-<div id="prerequisites" class="section level2">
-<h2>Prerequisites</h2>
-<ul>
-<li><a href="http://adv-r.had.co.nz/Exceptions-Debugging.html">Debugging, condition handling, and defensive programming in <em>Advanced R</em> by Hadley Wickham</a></li>
-<li><a href="http://r4ds.had.co.nz/iteration.html#dealing-with-failure">21.6 Dealing with failure in <em>R for Data Science</em></a></li>
-</ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
-<span class="kw">set.seed</span>(<span class="dv">1234</span>)</code></pre></div>
-</div>
-</div>
-<div id="bugs" class="section level1">
-<h1>Bugs</h1>
-<div class="figure">
-<img src="images/bugs.jpg" alt="Not the kind of bugs we’re looking for" />
-<p class="caption">Not the kind of bugs we’re looking for</p>
-</div>
-<p>A <strong>software bug</strong> is “an error, flaw, failure or fault in a computer program or system that causes it to produce an incorrect or unexpected result, or to behave in unintended ways.”<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> In an ideal world, the computer will warn you when it encounters a bug. R has the ability to do this in some situations (see our discussion below of errors, warnings, and messages). However bugs also arise because you expect it to do one thing but provide it the ability to perform different from expectations. As I have repeatedly emphasized in class, <strong>computers are powerful tools that are incredibly stupid</strong>. They will do exactly what you tell them to, nothing more and nothing less. If you write your code in a way that allows it to behave in an unintended way, this is your fault. The first goal of debugging should be to prevent unintended behaviors before they strike. However, when such bugs occur we need the tools and knowledge to track down these unintended behaviors and correct them in our code.</p>
-</div>
-<div id="defensive-programming" class="section level1">
-<h1>Defensive programming</h1>
-<p>The most important step to debugging is to prevent bugs in the first place. There are several methods we can employ to do that. Some of them are simple such as styling our code so that we follow consistent practices when writing scripts and programs. Consistency will prevent silly and minor mistakes such as typos. Good styles also make our code more <strong>readable</strong> for the human eye and allow us to isolate and detect errors merely by looking at the screen. Others are more advanced and focus on the concept of <strong>failing fast</strong> - as soon as something goes wrong, stop executing the program and announce an error.</p>
-<div id="writing-code" class="section level2">
-<h2>Writing code</h2>
-<p>Think back to <a href="http://cfss.uchicago.edu/setup00.html#introduction">the analogy of programming languages to human languages</a>. Programming languages adhere to a specific grammar and syntax, they contain a vocabulary, etymology, cultural conventions, word roots (prefixes and suffixes), just like English or any other written or spoken language. We can therefore equate different components of a program to their language counterparts:</p>
-<table>
-<thead>
-<tr class="header">
-<th>Programming</th>
-<th>Language</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Scripts</td>
-<td>Essays</td>
-</tr>
-<tr class="even">
-<td>Sections</td>
-<td>Paragraphs</td>
-</tr>
-<tr class="odd">
-<td>Lines Breaks</td>
-<td>Sentences</td>
-</tr>
-<tr class="even">
-<td>Parentheses</td>
-<td>Punctuation</td>
-</tr>
-<tr class="odd">
-<td>Functions</td>
-<td>Verbs</td>
-</tr>
-<tr class="even">
-<td>Variables</td>
-<td>Nouns</td>
-</tr>
-</tbody>
-</table>
-<p>Now think about how you write a document in English. The United States just recently commemorated the 30th anniversary of <a href="https://en.wikipedia.org/wiki/Space_Shuttle_Challenger_disaster">the explosion of the Challenger space shuttle</a>, when seven crew members were tragically killed just 73 seconds after takeoff. Their deaths were seen live by millions of American schoolchildren watching around the country. A few hours after the tragedy, President Ronald Reagan gave a national address. Here is an excerpt of that address:</p>
-<blockquote>
-<p>weve grown used to wonders in this century its hard to dazzle us but for 25 years the united states space program has been doing just that weve grown used to the idea of space and perhaps we forget that weve only just begun were still pioneers they the members of the Challenger crew were pioneers and i want to say something to the school children of America who were watching the live coverage of the shuttles takeoff i know it is hard to understand but sometimes painful things like this happen its all part of the process of exploration and discovery its all part of taking a chance and expanding mans horizons the future doesnt belong to the fainthearted it belongs to the brave the challenger crew was pulling us into the future and well continue to follow them the crew of the space shuttle challenger honored us by the manner in which they lived their lives we will never forget them nor the last time we saw them this morning as they prepared for the journey and waved goodbye and slipped the surly bonds of earth to touch the face of god</p>
-</blockquote>
-<p>Wait a minute, this doesn’t look right. What happened to the punctuation? The capitalization? Where are all the sentences and paragraph breaks? Isn’t this hard to read and understand? Do you feel any of the emotions of the moment? Probably not, because the normal rules of grammar and syntax have been destroyed. Here’s the same excerpt, but properly styled:</p>
-<blockquote>
-<p>We’ve grown used to wonders in this century. It’s hard to dazzle us. But for 25 years the United States space program has been doing just that. We’ve grown used to the idea of space, and perhaps we forget that we’ve only just begun. We’re still pioneers. They, the members of the Challenger crew, were pioneers.</p>
-</blockquote>
-<blockquote>
-<p>And I want to say something to the school children of America who were watching the live coverage of the shuttle’s takeoff. I know it is hard to understand, but sometimes painful things like this happen. It’s all part of the process of exploration and discovery. It’s all part of taking a chance and expanding man’s horizons. The future doesn’t belong to the fainthearted; it belongs to the brave. The Challenger crew was pulling us into the future, and we’ll continue to follow them….</p>
-</blockquote>
-<blockquote>
-<p>The crew of the space shuttle Challenger honoured us by the manner in which they lived their lives. We will never forget them, nor the last time we saw them, this morning, as they prepared for the journey and waved goodbye and ‘slipped the surly bonds of earth’ to ‘touch the face of God.’</p>
-</blockquote>
-<p>That makes much more sense. Adhering to standard rules of style make the text more legible and interpretable. This is what we should aim for when writing programs in R.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></p>
-</div>
-<div id="style-guide" class="section level2">
-<h2>Style guide</h2>
-<p>Here are some common rules you should adopt when writing code in R, adapted from Hadley Wickham’s <a href="http://adv-r.had.co.nz/Style.html">style guide</a>.</p>
-<div id="notation-and-naming" class="section level3">
-<h3>Notation and naming</h3>
-<div id="file-names" class="section level4">
-<h4>File names</h4>
-<p>Files should have intuitive and meaningful names. Avoid spaces or non-standard characters in your file names. R scripts should always end in <code>.R</code>; R Markdown documents should always end in <code>.Rmd</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-fit<span class="op">-</span>models.R
-utility<span class="op">-</span>functions.R
-gun<span class="op">-</span>deaths.Rmd
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)</code></pre></div>
+<pre><code>## + ggplot2 2.2.1          Date: 2017-08-08
+## + tibble  1.3.3             R: 3.4.1
+## + tidyr   0.6.3            OS: macOS Sierra 10.12.6
+## + readr   1.1.1           GUI: X11
+## + purrr   0.2.2.2      Locale: en_US.UTF-8
+## + dplyr   0.7.2            TZ: America/Chicago
+## + stringr 1.2.0        
+## + forcats 0.2.0</code></pre>
+<pre><code>## ── Conflicts ────────────────────────────────────────────────────</code></pre>
+<pre><code>## * filter(),  from dplyr, masks stats::filter()
+## * lag(),     from dplyr, masks stats::lag()</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1234</span>)
 
-<span class="co"># Bad</span>
-foo.r
-stuff.r
-gun deaths.rmd</code></pre></div>
-</div>
-<div id="object-names" class="section level4">
-<h4>Object names</h4>
-<p>Variables refer to data objects such as vectors, lists, or data frames. Variable and function names should be lowercase. Use an underscore (<code>_</code>) to separate words within a name. Avoid using periods (<code>.</code>). Variable names should generally be nouns and function names should be verbs. Try to pick names that are concise and meaningful.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-day_one
-day_<span class="dv">1</span>
-
-<span class="co"># Bad</span>
-first_day_of_the_month
-DayOne
-dayone
-djm1</code></pre></div>
-<p>Where possible, avoid using names of existing functions and variables. Doing so will cause confusion for the readers of your code, not to mention make it difficult to access the existing functions and variables.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Bad</span>
-T &lt;-<span class="st"> </span><span class="ot">FALSE</span>
-c &lt;-<span class="st"> </span><span class="dv">10</span></code></pre></div>
-<p>For instance, what would happen if I created a new <code>mean()</code> function?</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">:</span><span class="dv">10</span>
-<span class="kw">mean</span>(x)</code></pre></div>
-<pre><code>## [1] 5.5</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create new mean function</span>
-mean &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">sum</span>(x)
-<span class="kw">mean</span>(x)</code></pre></div>
-<pre><code>[1] 55</code></pre>
-<div class="figure">
-<img src="http://i.giphy.com/BxWTWalKTUAdq.gif" />
-
-</div>
-</div>
-</div>
-<div id="syntax" class="section level3">
-<h3>Syntax</h3>
-<div id="spacing" class="section level4">
-<h4>Spacing</h4>
-<p>Place spaces around all <a href="https://www.programiz.com/r-programming/infix-operator">infix</a> operators (=, +, -, &lt;-, etc.). The same rule applies when using <code>=</code> in function calls.</p>
-<blockquote>
-<p>Always put a space after a comma, and never before (just like in regular English).</p>
-</blockquote>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-average &lt;-<span class="st"> </span><span class="kw">mean</span>(feet <span class="op">/</span><span class="st"> </span><span class="dv">12</span> <span class="op">+</span><span class="st"> </span>inches, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
-
-<span class="co"># Bad</span>
-average&lt;-<span class="kw">mean</span>(feet<span class="op">/</span><span class="dv">12</span><span class="op">+</span>inches,<span class="dt">na.rm=</span><span class="ot">TRUE</span>)</code></pre></div>
-<p>Place a space before left parentheses, except in a function call.</p>
-<blockquote>
-<p>Note: I’m terrible at remembering to do this for <code>if-else</code> or <code>for</code> loops. I typically never place a space before left parentheses, but it is supposed to be good practice. Just remember to be consistent whatever approach you choose.</p>
-</blockquote>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-<span class="cf">if</span> (debug) <span class="kw">do</span>(x)
-<span class="kw">plot</span>(x, y)
-
-<span class="co"># Bad</span>
-<span class="cf">if</span>(debug)<span class="kw">do</span>(x)
-<span class="kw">plot</span> (x, y)</code></pre></div>
-<p>Do not place spaces around code in parentheses or square brackets (unless there’s a comma, in which case see above).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-<span class="cf">if</span> (debug) <span class="kw">do</span>(x)
-diamonds[<span class="dv">5</span>, ]
-
-<span class="co"># Bad</span>
-<span class="cf">if</span> ( debug ) <span class="kw">do</span>(x)  <span class="co"># No spaces around debug</span>
-x[<span class="dv">1</span>,]   <span class="co"># Needs a space after the comma</span>
-x[<span class="dv">1</span> ,]  <span class="co"># Space goes after comma not before</span></code></pre></div>
-</div>
-<div id="curly-braces" class="section level4">
-<h4>Curly braces</h4>
-<p>An opening curly brace should never go on its own line and should always be followed by a new line. A closing curly brace should always go on its own line, unless it’s followed by else.</p>
-<p>Always indent the code inside curly braces.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-
-<span class="cf">if</span> (y <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">&amp;&amp;</span><span class="st"> </span>debug) {
-  <span class="kw">message</span>(<span class="st">&quot;Y is negative&quot;</span>)
-}
-
-<span class="cf">if</span> (y <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {
-  <span class="kw">log</span>(x)
-} <span class="cf">else</span> {
-  y <span class="op">^</span><span class="st"> </span>x
-}
-
-<span class="co"># Bad</span>
-
-<span class="cf">if</span> (y <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">&amp;&amp;</span><span class="st"> </span>debug)
-<span class="kw">message</span>(<span class="st">&quot;Y is negative&quot;</span>)
-
-<span class="cf">if</span> (y <span class="op">==</span><span class="st"> </span><span class="dv">0</span>) {
-  <span class="kw">log</span>(x)
-} 
-<span class="cf">else</span> {
-  y <span class="op">^</span><span class="st"> </span>x
-}</code></pre></div>
-<p>It’s ok to leave very short statements on the same line:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="cf">if</span> (y <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">&amp;&amp;</span><span class="st"> </span>debug) <span class="kw">message</span>(<span class="st">&quot;Y is negative&quot;</span>)</code></pre></div>
-</div>
-<div id="line-length" class="section level4">
-<h4>Line length</h4>
-<p>Strive to limit your code to 80 characters per line. This fits comfortably on a printed page with a reasonably sized font. For instance, if I wanted to convert the <code>chief</code> column to an <a href="http://r4ds.had.co.nz/factors.html">ordered factor</a> for building a <a href="https://github.com/uc-cfss/hw03/blob/master/demo/scotus_solution.md#solution-using-facets-and-showing-whole-data-on-each-facet-getting-harder">faceted graph</a>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-scdbv &lt;-<span class="st"> </span><span class="kw">mutate</span>(scdbv,
-                <span class="dt">chief =</span> <span class="kw">factor</span>(chief, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Jay&quot;</span>, <span class="st">&quot;Rutledge&quot;</span>, <span class="st">&quot;Ellsworth&quot;</span>,
-                                                 <span class="st">&quot;Marshall&quot;</span>, <span class="st">&quot;Taney&quot;</span>, <span class="st">&quot;Chase&quot;</span>,
-                                                 <span class="st">&quot;Waite&quot;</span>, <span class="st">&quot;Fuller&quot;</span>, <span class="st">&quot;White&quot;</span>,
-                                                 <span class="st">&quot;Taft&quot;</span>, <span class="st">&quot;Hughes&quot;</span>, <span class="st">&quot;Stone&quot;</span>,
-                                                 <span class="st">&quot;Vinson&quot;</span>, <span class="st">&quot;Warren&quot;</span>, <span class="st">&quot;Burger&quot;</span>,
-                                                 <span class="st">&quot;Rehnquist&quot;</span>, <span class="st">&quot;Roberts&quot;</span>)))
-
-<span class="co"># Bad</span>
-scdbv &lt;-<span class="st"> </span><span class="kw">mutate</span>(scdbv, <span class="dt">chief =</span> <span class="kw">factor</span>(chief, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Jay&quot;</span>, <span class="st">&quot;Rutledge&quot;</span>, <span class="st">&quot;Ellsworth&quot;</span>, <span class="st">&quot;Marshall&quot;</span>, <span class="st">&quot;Taney&quot;</span>, <span class="st">&quot;Chase&quot;</span>, <span class="st">&quot;Waite&quot;</span>, <span class="st">&quot;Fuller&quot;</span>, <span class="st">&quot;White&quot;</span>, <span class="st">&quot;Taft&quot;</span>, <span class="st">&quot;Hughes&quot;</span>, <span class="st">&quot;Stone&quot;</span>, <span class="st">&quot;Vinson&quot;</span>, <span class="st">&quot;Warren&quot;</span>, <span class="st">&quot;Burger&quot;</span>, <span class="st">&quot;Rehnquist&quot;</span>, <span class="st">&quot;Roberts&quot;</span>)))</code></pre></div>
-</div>
-<div id="indentation" class="section level4">
-<h4>Indentation</h4>
-<p>When indenting your code, use two spaces. Never use tabs or mix tabs and spaces.</p>
-<blockquote>
-<p>By default, RStudio automatically converts tabs to two spaces in your code. So if you use the tab button in R Studio, you’re good to go.</p>
-</blockquote>
-<div class="figure">
-<img src="images/tab_indent.png" alt="Insert spaces for tab setting in RStudio" />
-<p class="caption">“Insert spaces for tab” setting in RStudio</p>
-</div>
-<p>The only exception is if a function definition runs over multiple lines. In that case, indent the second line to where the definition starts:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># pure function</span>
-long_function_name &lt;-<span class="st"> </span><span class="cf">function</span>(<span class="dt">a =</span> <span class="st">&quot;a long argument&quot;</span>, 
-                               <span class="dt">b =</span> <span class="st">&quot;another argument&quot;</span>,
-                               <span class="dt">c =</span> <span class="st">&quot;another long argument&quot;</span>) {
-  <span class="co"># As usual code is indented by two spaces.</span>
-}
-
-<span class="co"># in a mutate() function</span>
-scdbv &lt;-<span class="st"> </span>scdbv <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">majority =</span> majority <span class="op">-</span><span class="st"> </span><span class="dv">1</span>,
-         <span class="dt">chief =</span> <span class="kw">factor</span>(chief, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="st">&quot;Jay&quot;</span>, <span class="st">&quot;Rutledge&quot;</span>, <span class="st">&quot;Ellsworth&quot;</span>,
-                                          <span class="st">&quot;Marshall&quot;</span>, <span class="st">&quot;Taney&quot;</span>, <span class="st">&quot;Chase&quot;</span>,
-                                          <span class="st">&quot;Waite&quot;</span>, <span class="st">&quot;Fuller&quot;</span>, <span class="st">&quot;White&quot;</span>,
-                                          <span class="st">&quot;Taft&quot;</span>, <span class="st">&quot;Hughes&quot;</span>, <span class="st">&quot;Stone&quot;</span>,
-                                          <span class="st">&quot;Vinson&quot;</span>, <span class="st">&quot;Warren&quot;</span>, <span class="st">&quot;Burger&quot;</span>,
-                                          <span class="st">&quot;Rehnquist&quot;</span>, <span class="st">&quot;Roberts&quot;</span>)))</code></pre></div>
-</div>
-<div id="assignment" class="section level4">
-<h4>Assignment</h4>
-<p>Use <code>&lt;-</code>, not <code>=</code>, for assignment. Why? Because I said so. <a href="http://stackoverflow.com/a/1742550">Or read more here</a>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Good</span>
-x &lt;-<span class="st"> </span><span class="dv">5</span>
-<span class="co"># Bad</span>
-x =<span class="st"> </span><span class="dv">5</span></code></pre></div>
-</div>
-</div>
-<div id="comments" class="section level3">
-<h3>Comments</h3>
-<p>Comment your code. Each line of a comment should begin with the comment symbol and a single space: <code>#</code>. Comments should explain the why, not the what.</p>
-<p>To take advantage of RStudio’s <a href="https://support.rstudio.com/hc/en-us/articles/200484568-Code-Folding-and-Sections">code folding feature</a>, add at least four trailing dashes (-), equal signs (=), or pound signs (#) after the comment text</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Section One ---------------------------------</span>
- 
-<span class="co"># Section Two =================================</span>
- 
-### Section Three #############################</code></pre></div>
-</div>
-</div>
-<div id="auto-formatting-in-rstudio" class="section level2">
-<h2>Auto-formatting in RStudio</h2>
-<p>There are two built-in methods of using RStudio to automatically format and clean up your code. They are not perfect, but can help in some circumstances.</p>
-<div id="format-code" class="section level3">
-<h3>Format code</h3>
-<p><strong>Code &gt; Reformat Code</strong> (Shift + Cmd/Ctrl + A)</p>
-<div id="bad-code" class="section level5">
-<h5>Bad code</h5>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># comments are retained</span>
-<span class="dv">1</span><span class="op">+</span><span class="dv">1</span>
-
-<span class="cf">if</span>(<span class="ot">TRUE</span>){
-x=<span class="dv">1</span>  <span class="co"># inline comments</span>
-}<span class="cf">else</span>{
-x=<span class="dv">2</span>;<span class="kw">print</span>(<span class="st">&#39;Oh no... ask the right bracket to go away!&#39;</span>)}
-<span class="dv">1</span><span class="op">*</span><span class="dv">3</span> <span class="co"># one space before this comment will become two!</span>
-<span class="dv">2</span><span class="op">+</span><span class="dv">2</span><span class="op">+</span><span class="dv">2</span>    <span class="co"># only &#39;single quotes&#39; are allowed in comments</span>
-
-diamonds <span class="op">%&gt;%</span>
-<span class="kw">filter</span>(color <span class="op">==</span><span class="st"> &quot;I&quot;</span>) <span class="op">%&gt;%</span>
-<span class="kw">group_by</span>(cut) <span class="op">%&gt;%</span>
-<span class="kw">summarize</span>(<span class="dt">price =</span> <span class="kw">mean</span>(price))
-
-<span class="kw">lm</span>(y<span class="op">~</span>x1<span class="op">+</span>x2, <span class="dt">data=</span><span class="kw">data.frame</span>(<span class="dt">y=</span><span class="kw">rnorm</span>(<span class="dv">100</span>),<span class="dt">x1=</span><span class="kw">rnorm</span>(<span class="dv">100</span>),<span class="dt">x2=</span><span class="kw">rnorm</span>(<span class="dv">100</span>)))  ### a linear model
-
-<span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span><span class="op">+</span><span class="dv">1</span>  ## comments after a long line
-## here is a long long long long long long long long long long long long long long long long long long long comment</code></pre></div>
-</div>
-<div id="better-code" class="section level5">
-<h5>Better code</h5>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># comments are retained</span>
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>
-
-<span class="cf">if</span> (<span class="ot">TRUE</span>) {
-x =<span class="st"> </span><span class="dv">1</span>  <span class="co"># inline comments</span>
-} <span class="cf">else</span>{
-x =<span class="st"> </span><span class="dv">2</span>
-<span class="kw">print</span>(<span class="st">&#39;Oh no... ask the right bracket to go away!&#39;</span>)
-}
-<span class="dv">1</span> <span class="op">*</span><span class="st"> </span><span class="dv">3</span> <span class="co"># one space before this comment will become two!</span>
-<span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span>    <span class="co"># only &#39;single quotes&#39; are allowed in comments</span>
-
-diamonds <span class="op">%&gt;%</span>
-<span class="kw">filter</span>(color <span class="op">==</span><span class="st"> &quot;I&quot;</span>) <span class="op">%&gt;%</span>
-<span class="kw">group_by</span>(cut) <span class="op">%&gt;%</span>
-<span class="kw">summarize</span>(<span class="dt">price =</span> <span class="kw">mean</span>(price))
-
-<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2, <span class="dt">data =</span> <span class="kw">data.frame</span>(
-<span class="dt">y =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>),
-<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>),
-<span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>)
-))  ### a linear model
-
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span>
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>  ## comments after a long line
-## here is a long long long long long long long long long long long long long long long long long long long comment</code></pre></div>
-<p><strong>Format code</strong> will attempt to adjust the source code formatting to adhere to the style guide specified above. It doesn’t look perfect, but is more readable than the original. We should still clean up some of this manually, such as the comment on the last line that flows over.</p>
-</div>
-</div>
-<div id="reindent-lines" class="section level3">
-<h3>Reindent lines</h3>
-<p><strong>Code &gt; Reindent Lines</strong> (Cmd/Ctrl + I)</p>
-<div id="bad-code-1" class="section level5">
-<h5>Bad code</h5>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># comments are retained</span>
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>
-
-<span class="cf">if</span> (<span class="ot">TRUE</span>) {
-x =<span class="st"> </span><span class="dv">1</span>  <span class="co"># inline comments</span>
-} <span class="cf">else</span>{
-x =<span class="st"> </span><span class="dv">2</span>
-<span class="kw">print</span>(<span class="st">&#39;Oh no... ask the right bracket to go away!&#39;</span>)
-}
-<span class="dv">1</span> <span class="op">*</span><span class="st"> </span><span class="dv">3</span> <span class="co"># one space before this comment will become two!</span>
-<span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span>    <span class="co"># only &#39;single quotes&#39; are allowed in comments</span>
-
-diamonds <span class="op">%&gt;%</span>
-<span class="kw">filter</span>(color <span class="op">==</span><span class="st"> &quot;I&quot;</span>) <span class="op">%&gt;%</span>
-<span class="kw">group_by</span>(cut) <span class="op">%&gt;%</span>
-<span class="kw">summarize</span>(<span class="dt">price =</span> <span class="kw">mean</span>(price))
-
-<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2, <span class="dt">data =</span> <span class="kw">data.frame</span>(
-<span class="dt">y =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>),
-<span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>),
-<span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>)
-))  ### a linear model
-
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span>
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>  ## comments after a long line
-## here is a long long long long long long long long long long long long long long long long long long long comment</code></pre></div>
-</div>
-<div id="better-code-1" class="section level5">
-<h5>Better code</h5>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># comments are retained</span>
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>
-
-<span class="cf">if</span> (<span class="ot">TRUE</span>) {
-  x =<span class="st"> </span><span class="dv">1</span>  <span class="co"># inline comments</span>
-} <span class="cf">else</span>{
-  x =<span class="st"> </span><span class="dv">2</span>
-  <span class="kw">print</span>(<span class="st">&#39;Oh no... ask the right bracket to go away!&#39;</span>)
-}
-<span class="dv">1</span> <span class="op">*</span><span class="st"> </span><span class="dv">3</span> <span class="co"># one space before this comment will become two!</span>
-<span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span> <span class="op">+</span><span class="st"> </span><span class="dv">2</span>    <span class="co"># only &#39;single quotes&#39; are allowed in comments</span>
-
-diamonds <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(color <span class="op">==</span><span class="st"> &quot;I&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(cut) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">price =</span> <span class="kw">mean</span>(price))
-
-<span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>x1 <span class="op">+</span><span class="st"> </span>x2, <span class="dt">data =</span> <span class="kw">data.frame</span>(
-  <span class="dt">y =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>),
-  <span class="dt">x1 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>),
-  <span class="dt">x2 =</span> <span class="kw">rnorm</span>(<span class="dv">100</span>)
-))  ### a linear model
-
-<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span>
-<span class="st">  </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="dv">1</span>  ## comments after a long line
-## here is a long long long long long long long long long long long long long long long long long long long comment</code></pre></div>
-<p><strong>Reindent lines</strong> will add spacing to conditional expression blocks, multi-line functions, expressions which run over multiple lines, and piped operations. Again, it is not perfect but it does some of the formatting work for us.</p>
-</div>
-</div>
-</div>
-<div id="exercise-style-this-code" class="section level2">
-<h2>Exercise: style this code</h2>
-<p>Here’s a chunk of code from an exercise in another class. It is formatted terribly, but as you can see it does work - the computer can interpret it. Use the style guide to clean it up and make it readable.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
-<span class="kw">set.seed</span>(<span class="dv">1234</span>)
-<span class="co"># function to calculate growth in annual income ####</span>
-annual_income&lt;-<span class="cf">function</span>(base_inc,p,g,sigma,n_years,<span class="dt">start_year=</span><span class="dv">2018</span>){
-errors&lt;-<span class="kw">rnorm</span>(n_years,<span class="dt">mean=</span><span class="dv">0</span>,<span class="dt">sd=</span>sigma)
-annual_income_log&lt;-<span class="kw">vector</span>(<span class="st">&quot;numeric&quot;</span>,n_years)
-<span class="cf">for</span>(year <span class="cf">in</span> <span class="kw">seq_len</span>(n_years)){<span class="cf">if</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">1</span>){annual_income_log[[year]] &lt;-<span class="st"> </span><span class="kw">log</span>(base_inc) <span class="op">+</span><span class="st"> </span>errors[[year]]}
-<span class="cf">else</span>{annual_income_log[[year]]&lt;-(<span class="dv">1</span><span class="op">-</span>p)<span class="op">*</span>(<span class="kw">log</span>(base_inc)<span class="op">+</span>g<span class="op">*</span>(year<span class="op">-</span><span class="dv">1</span>))<span class="op">+</span>p<span class="op">*</span>annual_income_log[[year<span class="op">-</span><span class="dv">1</span>]]<span class="op">+</span>errors[[year]]}
-}
-<span class="kw">data_frame</span>(<span class="dt">inc=</span><span class="kw">exp</span>(annual_income_log),<span class="dt">year=</span><span class="dv">2018</span><span class="op">+</span><span class="kw">seq_len</span>(n_years)<span class="op">-</span><span class="dv">1</span>)}
-<span class="co"># part 1 - simulate 1000 times ####</span>
-n_sims&lt;-<span class="dv">1000</span>
-n_years&lt;-<span class="dv">40</span>
-<span class="co"># simulate the data, then coerce into a data frame ####</span>
-sim_income &lt;-<span class="st"> </span>n_sims <span class="op">%&gt;%</span>
-<span class="kw">rerun</span>(<span class="kw">annual_income</span>(<span class="dt">base_inc =</span> <span class="dv">80000</span>, <span class="dt">p =</span> .<span class="dv">2</span>,<span class="dt">g =</span> .<span class="dv">03</span>, <span class="dt">sigma =</span> .<span class="dv">1</span>,<span class="dt">n_years =</span> n_years, <span class="dt">start_year =</span> <span class="dv">2018</span>)) <span class="op">%&gt;%</span><span class="kw">bind_rows</span>(<span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) <span class="op">%&gt;%</span><span class="kw">select</span>(id, year, inc)
-## plot the first income path ####
-sim_income <span class="op">%&gt;%</span><span class="kw">filter</span>(id <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span>
-<span class="kw">ggplot</span>(<span class="kw">aes</span>(year, inc)) <span class="op">+</span>
-<span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated income growth over time (one simulation)&quot;</span>,<span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,<span class="dt">y =</span> <span class="st">&quot;Annual Income&quot;</span>) <span class="op">+</span><span class="kw">scale_y_continuous</span>(<span class="dt">labels =</span> scales<span class="op">::</span>dollar)</code></pre></div>
-<p><img src="block012_debugging_files/figure-html/exercise_bad-1.png" width="672" /></p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
-<span class="kw">set.seed</span>(<span class="dv">1234</span>)
-
-<span class="co"># function to calculate growth in annual income ####</span>
-annual_income &lt;-<span class="st"> </span><span class="cf">function</span>(base_inc, p, g, sigma, n_years, <span class="dt">start_year =</span> <span class="dv">2018</span>) {
-  errors &lt;-<span class="st"> </span><span class="kw">rnorm</span>(n_years, <span class="dt">mean =</span> <span class="dv">0</span>, <span class="dt">sd =</span> sigma)
-  
-  annual_income_log &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;numeric&quot;</span>, n_years)
-  
-  <span class="cf">for</span> (year <span class="cf">in</span> <span class="kw">seq_len</span>(n_years)) {
-    <span class="cf">if</span> (year <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) {
-      annual_income_log[[year]] &lt;-<span class="st"> </span><span class="kw">log</span>(base_inc) <span class="op">+</span><span class="st"> </span>errors[[year]]
-    } <span class="cf">else</span> {
-      annual_income_log[[year]] &lt;-
-<span class="st">        </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>p) <span class="op">*</span><span class="st"> </span>(<span class="kw">log</span>(base_inc) <span class="op">+</span><span class="st"> </span>g <span class="op">*</span><span class="st"> </span>(year <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)) <span class="op">+</span>
-<span class="st">        </span>p <span class="op">*</span><span class="st"> </span>annual_income_log[[year <span class="op">-</span><span class="st"> </span><span class="dv">1</span>]] <span class="op">+</span><span class="st"> </span>errors[[year]]
-    }
-  }
-  
-  <span class="kw">data_frame</span>(<span class="dt">inc =</span> <span class="kw">exp</span>(annual_income_log),
-             <span class="dt">year =</span> <span class="dv">2018</span> <span class="op">+</span><span class="st"> </span><span class="kw">seq_len</span>(n_years) <span class="op">-</span><span class="st"> </span><span class="dv">1</span>)
-}
-
-<span class="co"># part 1 - simulate 1000 times ####</span>
-n_sims &lt;-<span class="st"> </span><span class="dv">10000</span>
-n_years &lt;-<span class="st"> </span><span class="dv">40</span>
-
-<span class="co"># simulate the data, then coerce into a data frame ####</span>
-sim_income &lt;-<span class="st"> </span>n_sims <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">rerun</span>(
-    <span class="kw">annual_income</span>(
-      <span class="dt">base_inc =</span> <span class="dv">80000</span>,
-      <span class="dt">p =</span> .<span class="dv">2</span>,
-      <span class="dt">g =</span> .<span class="dv">03</span>,
-      <span class="dt">sigma =</span> .<span class="dv">1</span>,
-      <span class="dt">n_years =</span> n_years,
-      <span class="dt">start_year =</span> <span class="dv">2018</span>
-    )
-  ) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">bind_rows</span>(<span class="dt">.id =</span> <span class="st">&quot;id&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(id, year, inc)
-
-## plot the first income path ####
-sim_income <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(id <span class="op">==</span><span class="st"> </span><span class="dv">1</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(year, inc)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Simulated income growth over time (one simulation)&quot;</span>,
-       <span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Annual Income&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels =</span> scales<span class="op">::</span>dollar)</code></pre></div>
-</p>
-<p></details></p>
-</div>
-</div>
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
 <div id="communicating-problems-with-conditions" class="section level1">
 <h1>Communicating problems with conditions</h1>
 <p><strong>Conditions</strong> are a method for communicating to the user when something unanticipated has occurred. Helpfully, many package authors will build these into their functions to explicitly communicate with users when they attempt to use the function improperly. In fact, when you write your own functions you too can use conditions to alert users when something has gone wrong. There are three levels of conditions in R, which each lead to different outcomes.</p>
@@ -819,7 +371,7 @@ sim_income <span class="op">%&gt;%</span>
 </div>
 <div id="warnings" class="section level3">
 <h3>Warnings</h3>
-<p><strong>Warnings</strong> are generated by <code>warning()</code> and used to display potential problems. The function or code will continue to process, but the user will be notified that something undesirable has occurred. For example, the <a href="https://en.wikipedia.org/wiki/Logit"><strong>logit</strong> transformation</a> converts a probability <span class="math inline">\(p\)</span> to the <em>log-odds</em>, or the logarithm of the odds. We can write a function to do this for us, but because probability values must be between 0 and 1, it will fail when <span class="math inline">\(x\)</span> is outside of the range <span class="math inline">\([0,1]\)</span>.</p>
+<p><strong>Warnings</strong> are generated by <code>warning()</code> and used to display potential problems. The function or code will continue to process, but the user will be notified that something undesirable has occurred. For example, the <a href="https://en.wikipedia.org/wiki/Logit"><strong>logit transformation</strong></a> converts a probability <span class="math inline">\(p\)</span> to the <em>log-odds</em>, or the logarithm of the odds. We can write a function to do this for us, but because probability values must be between 0 and 1, it will fail when <span class="math inline">\(x\)</span> is outside of the range <span class="math inline">\([0,1]\)</span>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit &lt;-<span class="st"> </span><span class="cf">function</span>(x){
   <span class="kw">log</span>(x <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>x))
 }
@@ -827,7 +379,7 @@ sim_income <span class="op">%&gt;%</span>
 <span class="kw">logit</span>(<span class="op">-</span><span class="dv">1</span>)</code></pre></div>
 <pre><code>## Warning in log(x/(1 - x)): NaNs produced</code></pre>
 <pre><code>## [1] NaN</code></pre>
-<p>But the message produced is rather opaque. We could add a custom error message to stop the whole function:</p>
+<p>The result of <code>logit(-1)</code> is <code>NaN</code>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> But the message produced is rather opaque. We could add a custom error message to stop the whole function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit &lt;-<span class="st"> </span><span class="cf">function</span>(x){
  <span class="cf">if</span>(x <span class="op">&lt;</span><span class="st"> </span><span class="dv">0</span> <span class="op">|</span><span class="st"> </span>x <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>) <span class="kw">stop</span>(<span class="st">&#39;x not between 0 and 1&#39;</span>)
  <span class="kw">log</span>(x <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">-</span><span class="st"> </span>x))
@@ -853,14 +405,14 @@ sim_income <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39;</code></pre>
-<p><img src="block012_debugging_files/figure-html/message_ggplot-1.png" width="672" /></p>
+<p><img src="program_condition_handle_files/figure-html/message_ggplot-1.png" width="672" /></p>
 <p>Did you see the message?</p>
 <pre><code>## `geom_smooth()` using method = &#39;gam&#39;</code></pre>
-<p>This tells us that <code>geom_smooth()</code> generated the line using the <code>gam()</code> method.<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> Nothing went wrong, there was no unexpected behavior, that is just the default smoothing method for a dataset of this size. But it is helpful because what if you wanted to use a linear smoothing function instead? Now you know it was not the default method, and if you want to use it you need to explicitly set it.</p>
+<p>This tells us that <code>geom_smooth()</code> generated the line using the <code>gam()</code> method.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> Nothing went wrong, there was no unexpected behavior, that is just the default smoothing method for a dataset of this size. But it is helpful because what if you wanted to use a linear smoothing function instead? Now you know it was not the default method, and if you want to use it you need to explicitly set it.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(diamonds, <span class="kw">aes</span>(carat, price)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
-<p><img src="block012_debugging_files/figure-html/message_ggplot_override-1.png" width="672" /></p>
+<p><img src="program_condition_handle_files/figure-html/message_ggplot_override-1.png" width="672" /></p>
 <p>The nice thing about messages is that they can be suppressed using the <code>suppressMessages()</code> function. This way if your function produces dozens or hundreds of messages, you can block them from being printed. A nice feature if you are knitting an R Markdown document. If you were to include messages simply by using the <code>print()</code> function, they could not be ignored.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">demo_message &lt;-<span class="st"> </span><span class="cf">function</span>() <span class="kw">message</span>(<span class="st">&quot;This is a message&quot;</span>)
 <span class="kw">demo_message</span>()</code></pre></div>
@@ -939,7 +491,16 @@ h &lt;-<span class="st"> </span><span class="cf">function</span>(c) <span class=
 i &lt;-<span class="st"> </span><span class="cf">function</span>(d) <span class="st">&quot;a&quot;</span> <span class="op">+</span><span class="st"> </span>d
 <span class="kw">f</span>(<span class="dv">10</span>)</code></pre></div>
 <pre><code>## Error in &quot;a&quot; + d: non-numeric argument to binary operator</code></pre>
-<p>Clearly the error is not generated by <code>f()</code>, yet at first glance all we know is that by executing <code>f()</code> we have generated an error. How could we view the call stack to determine the sequence of functions leading up to the error? Use <code>traceback()</code>:</p>
+<div class="figure">
+<img src="images/traceback-hidden.png" alt="Output of f(10) in RStudio" />
+<p class="caption">Output of <code>f(10)</code> in RStudio</p>
+</div>
+<p>Clearly the error is not generated by <code>f()</code>, yet at first glance all we know is that by executing <code>f()</code> we have generated an error. How could we view the call stack to determine the sequence of functions leading up to the error? By using RStudio, you see an option to “Show Traceback”. If you click on this option you should see the following:</p>
+<div class="figure">
+<img src="images/traceback-shown.png" alt="Traceback of f(10) in RStudio" />
+<p class="caption">Traceback of <code>f(10)</code> in RStudio</p>
+</div>
+<p>Alternatively, run <code>traceback()</code> in the console:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">traceback</span>()</code></pre></div>
 <pre><code># 4: i(c) at exceptions-example.R#3
 # 3: h(b) at exceptions-example.R#2
@@ -950,11 +511,14 @@ i &lt;-<span class="st"> </span><span class="cf">function</span>(d) <span class=
 </div>
 <div id="condition-handling" class="section level1">
 <h1>Condition handling</h1>
-<p>Unexpected errors should be hunted down and destroyed. Well, maybe they just require interactive debugging to figure out what went wrong so you can revise the code to avoid the error. However in other instances you may have <strong>expected errors</strong>, or errors that don’t require interactive debugging, but instead just require automatic handling. This commonly occurs when you are fitting many statistical models to data sets, or iterating over a list or the columns of a data frame. In these situations you don’t want the entire iteration to fail because of a single element; instead, you want to complete the entire operation and then examine errors after the fact. There are three methods for condition handling I want to demonstrate and practice in this lesson:</p>
+<p>Unexpected errors should be hunted down and destroyed. Well, maybe they just require interactive debugging to figure out what went wrong so you can revise the code to avoid the error. However in other instances you may have <strong>expected errors</strong>, or errors that don’t require interactive debugging, but instead just require automatic handling. This commonly occurs when you are fitting many statistical models to data sets, or iterating over a list or the columns of a data frame. In these situations you don’t want the entire iteration to fail because of a single element; instead, you want to complete the entire operation and then examine errors after the fact. There are two methods for condition handling I want to demonstrate and practice in this lesson:</p>
 <ul>
-<li><code>try()</code> allows you to continue execution even if a fatal error occurs</li>
-<li><code>safely()</code> is an <strong>adverb</strong> that modifies functions to never throw an error; instead, any output, messages, warnings, and errors are captured as enhanced output.</li>
+<li><code>base::try()</code> allows you to continue execution even if a fatal error occurs</li>
+<li><code>purrr::safely()</code> is an <strong>adverb</strong> that modifies functions to never throw an error; instead, any output, messages, warnings, and errors are captured as enhanced output.</li>
 </ul>
+<blockquote>
+<p>Compiling an RMarkdown document with an error in a code chunk can be difficult. The information you get when knitting the document may be more cryptic than usual. If there is some reason you want to allow a document to continue knitting even after an error is encountered, set the chunk option <code>error = TRUE</code>. If an error occurs within that code chunk, <code>knitr</code> will ignore it and keep running.</p>
+</blockquote>
 <div id="ignore-errors-with-try" class="section level2">
 <h2>Ignore errors with <code>try()</code></h2>
 <p><code>try()</code> allows a function to continue execution even after a fatal error occurs. Recall that under normal circumstances, a fatal error immediately terminates a function and prevents the function from returning a value:</p>
@@ -964,7 +528,7 @@ i &lt;-<span class="st"> </span><span class="cf">function</span>(d) <span class=
 }
 <span class="kw">f1</span>(<span class="st">&quot;x&quot;</span>)</code></pre></div>
 <pre><code>## Error in log(x): non-numeric argument to mathematical function</code></pre>
-<p>If we wrap the statement that generates the error in <code>try()</code>, the error will be signalled, but execution of the function will continue.</p>
+<p>If we wrap the statement that generates the error in <code>try()</code>, the error will be signaled, but execution of the function will continue.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f2 &lt;-<span class="st"> </span><span class="cf">function</span>(x) {
   <span class="kw">try</span>(<span class="kw">log</span>(x))
   <span class="dv">10</span>
@@ -1007,7 +571,7 @@ i &lt;-<span class="st"> </span><span class="cf">function</span>(d) <span class=
 y &lt;-<span class="st"> </span>x
   <span class="kw">map</span>(sqrt)</code></pre></div>
 <pre><code>## Error in as_function(.f, ...): argument &quot;.f&quot; is missing, with no default</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># safely log</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># safely square root</span>
 y &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">map</span>(<span class="kw">safely</span>(sqrt))
 <span class="kw">str</span>(y)</code></pre></div>
@@ -1031,27 +595,27 @@ y &lt;-<span class="st"> </span>x <span class="op">%&gt;%</span>
 <span class="kw">str</span>(y)</code></pre></div>
 <pre><code>## List of 2
 ##  $ result:List of 3
-##   ..$ : num 0
-##   ..$ : num 2.3
 ##   ..$ : NULL
+##   ..$ : num 2
+##   ..$ : num 2.24
 ##  $ error :List of 3
-##   ..$ : NULL
-##   ..$ : NULL
 ##   ..$ :List of 2
 ##   .. ..$ message: chr &quot;non-numeric argument to mathematical function&quot;
 ##   .. ..$ call   : language .f(...)
-##   .. ..- attr(*, &quot;class&quot;)= chr [1:3] &quot;simpleError&quot; &quot;error&quot; &quot;condition&quot;</code></pre>
+##   .. ..- attr(*, &quot;class&quot;)= chr [1:3] &quot;simpleError&quot; &quot;error&quot; &quot;condition&quot;
+##   ..$ : NULL
+##   ..$ : NULL</code></pre>
 <p>To extract the values of <code>x</code> where <code>y</code> is an error:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">is_ok &lt;-<span class="st"> </span>y<span class="op">$</span>error <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">map_lgl</span>(is_null)
 x[<span class="op">!</span>is_ok]</code></pre></div>
 <pre><code>## [[1]]
-## [1] 5</code></pre>
+## [1] &quot;a&quot;</code></pre>
 <p>To extract the values of <code>y</code> that are ok:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">y<span class="op">$</span>result[is_ok] <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">flatten_dbl</span>()</code></pre></div>
-<pre><code>## [1] 0.000000 2.302585</code></pre>
-<p><code>safely()</code> comes from the <code>purrr</code> package (hence why it plays so nicely with <code>map()</code>). <code>purr</code> also provides two related adverbs for condition handling:</p>
+<pre><code>## [1] 2.000000 2.236068</code></pre>
+<p><code>safely()</code> comes from the <code>purrr</code> package (hence why it plays so nicely with <code>map()</code>). <code>purrr</code> also provides two related adverbs for condition handling:</p>
 <ul>
 <li><p><code>possibly()</code> always returns a result, but the difference is that you specify a default value to return if an error occurs:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x <span class="op">%&gt;%</span>
@@ -1124,7 +688,7 @@ safe_max &lt;-<span class="st"> </span><span class="kw">safely</span>(max) <span
 ##   ..$ result: NULL
 ##   ..$ error :List of 2
 ##   .. ..$ message: chr &quot;&#39;max&#39; not meaningful for factors&quot;
-##   .. ..$ call   : language Summary.factor(structure(c(4L, 3L, 4L, 4L, 2L, 1L, 2L, 2L, 3L, NA,  3L, 2L, 1L, 2L, 2L, 2L, 4L, 2L, 3L, 2L, 2L, 2L, 2L, 3L, 2L, 2L, 2L,  ...
+##   .. ..$ call   : language Summary.factor(c(4L, 3L, 4L, 4L, 2L, 1L, 2L, 2L, 3L, NA, 3L, 2L, 1L,  2L, 2L, 2L, 4L, 2L, 3L, 2L, 2L, 2L, 2L, 3L,| __truncated__ ...
 ##   .. ..- attr(*, &quot;class&quot;)= chr [1:3] &quot;simpleError&quot; &quot;error&quot; &quot;condition&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># map</span>
 gun_deaths <span class="op">%&gt;%</span>
@@ -1316,7 +880,7 @@ gun_deaths <span class="op">%&gt;%</span>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-01</code></pre>
+##  date     2017-08-08</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
 <pre><code>##  package    * version    date       source                              
 ##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
@@ -1328,6 +892,7 @@ gun_deaths <span class="op">%&gt;%</span>
 ##  broom        0.4.2      2017-02-13 CRAN (R 3.4.0)                      
 ##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                      
 ##  clisymbols   1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.4.1)                      
 ##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                      
 ##  compiler     3.4.1      2017-07-07 local                               
 ##  crayon       1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
@@ -1350,12 +915,15 @@ gun_deaths <span class="op">%&gt;%</span>
 ##  httr         1.2.1      2016-07-03 CRAN (R 3.4.0)                      
 ##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                      
 ##  knitr        1.16       2017-05-18 CRAN (R 3.4.0)                      
+##  labeling     0.3        2014-08-23 CRAN (R 3.4.0)                      
 ##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.1)                      
 ##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
 ##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
 ##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                      
+##  Matrix       1.2-10     2017-05-03 CRAN (R 3.4.1)                      
 ##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
-##  methods      3.4.1      2017-07-07 local                               
+##  methods    * 3.4.1      2017-07-07 local                               
+##  mgcv         1.8-18     2017-07-28 CRAN (R 3.4.1)                      
 ##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
 ##  modelr       0.1.1      2017-07-24 CRAN (R 3.4.1)                      
 ##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
@@ -1366,6 +934,7 @@ gun_deaths <span class="op">%&gt;%</span>
 ##  psych        1.7.5      2017-05-03 CRAN (R 3.4.1)                      
 ##  purrr      * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
 ##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                      
+##  rcfss      * 0.1.5      2017-07-31 local                               
 ##  Rcpp         0.12.12    2017-07-15 CRAN (R 3.4.1)                      
 ##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                      
@@ -1391,9 +960,8 @@ gun_deaths <span class="op">%&gt;%</span>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>Source: <a href="https://en.wikipedia.org/wiki/Software_bug">Wikipedia</a><a href="#fnref1">↩</a></p></li>
-<li id="fn2"><p>And for that matter, in any other programming language as well. Note however that these style rules are specific to R; other languages by necessity may use different rules and conventions.<a href="#fnref2">↩</a></p></li>
-<li id="fn3"><p>Use <code>?geom_smooth</code> to see the different methods that can be used.<a href="#fnref3">↩</a></p></li>
+<li id="fn1"><p><code>NaN</code> is distinct from <code>NA</code>. <code>NA</code> refers to a missing value and can take on different forms depending on the vector type (e.g. <code>NA_integer_</code>, <code>NA_real_</code>, <code>NA_complex_</code> and <code>NA_character_</code>). <code>NaN</code> stands for <a href="https://en.wikipedia.org/wiki/NaN">“Not a Number”</a> and represents undefined or unrepresentable values. As in our example, <span class="math inline">\(\frac{-1}{1 - {-1}} = \frac{-1}{0}\)</span> which is indeterminate.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Run <code>?geom_smooth</code> to see the different methods that can be used.<a href="#fnref2">↩</a></p></li>
 </ol>
 </div>
 
