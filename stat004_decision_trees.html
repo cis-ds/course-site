@@ -337,30 +337,21 @@ div.tocify {
 </div>
 
 
-<div id="objectives" class="section level1">
-<h1>Objectives</h1>
-<ul>
-<li>Define a decision tree</li>
-<li>Demonstrate how to estimate a decision tree</li>
-<li>Define and estimate a random forest</li>
-<li>Introduce the <code>caret</code> package for statistical learning in R</li>
-</ul>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
 <span class="kw">library</span>(modelr)
 <span class="kw">library</span>(broom)
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
 
 <span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
-</div>
 <div id="decision-trees" class="section level1">
 <h1>Decision trees</h1>
 <div class="figure">
-<img src="https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700" />
-
+<img src="https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700" alt="Does it move?" />
+<p class="caption">Does it move?</p>
 </div>
 <div class="figure">
-<img src="https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg" />
-
+<img src="https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg" alt="Are you old? A helpful decision tree" />
+<p class="caption">Are you old? A helpful decision tree</p>
 </div>
 <div class="figure">
 <img src="http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif" alt="Should I Have a Cookie?" />
@@ -508,23 +499,22 @@ titanic <span class="op">%&gt;%</span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tree)
 
 titanic_tree_data &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">ifelse</span>(Survived <span class="op">==</span><span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Survived&quot;</span>,
-                           <span class="kw">ifelse</span>(Survived <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Died&quot;</span>, <span class="ot">NA</span>)),
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">if_else</span>(Survived <span class="op">==</span><span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Survived&quot;</span>, <span class="st">&quot;Died&quot;</span>),
          <span class="dt">Survived =</span> <span class="kw">as.factor</span>(Survived),
          <span class="dt">Sex =</span> <span class="kw">as.factor</span>(Sex))
 titanic_tree_data</code></pre></div>
-<pre><code>## # A tibble: 891 × 12
+<pre><code>## # A tibble: 891 x 12
 ##    PassengerId Survived Pclass
 ##          &lt;int&gt;   &lt;fctr&gt;  &lt;int&gt;
-## 1            1     Died      3
-## 2            2 Survived      1
-## 3            3 Survived      3
-## 4            4 Survived      1
-## 5            5     Died      3
-## 6            6     Died      3
-## 7            7     Died      1
-## 8            8     Died      3
-## 9            9 Survived      3
+##  1           1     Died      3
+##  2           2 Survived      1
+##  3           3 Survived      3
+##  4           4 Survived      1
+##  5           5     Died      3
+##  6           6     Died      3
+##  7           7     Died      1
+##  8           8     Died      3
+##  9           9 Survived      3
 ## 10          10 Survived      2
 ## # ... with 881 more rows, and 9 more variables: Name &lt;chr&gt;, Sex &lt;fctr&gt;,
 ## #   Age &lt;dbl&gt;, SibSp &lt;int&gt;, Parch &lt;int&gt;, Ticket &lt;chr&gt;, Fare &lt;dbl&gt;,
@@ -548,14 +538,14 @@ titanic_tree_data</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plot</span>(titanic_tree)
 <span class="kw">text</span>(titanic_tree, <span class="dt">pretty =</span> <span class="dv">0</span>)</code></pre></div>
 <p><img src="stat004_decision_trees_files/figure-html/titanic_tree_plot-1.png" width="672" /></p>
-<p><code>tree</code> does not use <code>ggplot2</code> to graph the results; instead it relies on the base <code>graphics</code> package. <code>plot(titanic_tree)</code> draws the branches and <code>text(titanic_tree, pretty = 0)</code> adds the text labeling each node.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p><code>tree()</code> does not use <code>ggplot2</code> to graph the results; instead it relies on the base <code>graphics</code> package. <code>plot(titanic_tree)</code> draws the branches and <code>text(titanic_tree, pretty = 0)</code> adds the text labeling each node.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
 <div id="build-a-more-complex-tree" class="section level3">
 <h3>Build a more complex tree</h3>
-<p>Since we have a lot of other variables in our Titanic data set, let’s estimate a more complex model that accounts for all the information we have.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> We’ll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use <code>mutate_each()</code> to apply <code>as.factor()</code> to all of these variables in one line of code (another type of iterative operation):</p>
+<p>Since we have a lot of other variables in our Titanic data set, let’s estimate a more complex model that accounts for all the information we have.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> We’ll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use <code>mutate_if()</code> to apply <code>as.factor()</code> to all character columns in one line of code (another type of iterative/conditional operation):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_tree_full_data &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Survived =</span> <span class="kw">ifelse</span>(Survived <span class="op">==</span><span class="st"> </span><span class="dv">1</span>, <span class="st">&quot;Survived&quot;</span>,
                            <span class="kw">ifelse</span>(Survived <span class="op">==</span><span class="st"> </span><span class="dv">0</span>, <span class="st">&quot;Died&quot;</span>, <span class="ot">NA</span>))) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate_each</span>(<span class="kw">funs</span>(as.factor), Survived, Pclass, Sex, Embarked)
+<span class="st">  </span><span class="kw">mutate_if</span>(is.character, as.factor)
 
 titanic_tree_full &lt;-<span class="st"> </span><span class="kw">tree</span>(Survived <span class="op">~</span><span class="st"> </span>Pclass <span class="op">+</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>SibSp <span class="op">+</span>
 <span class="st">                       </span>Parch <span class="op">+</span><span class="st"> </span>Fare <span class="op">+</span><span class="st"> </span>Embarked, <span class="dt">data =</span> titanic_tree_full_data)
@@ -574,10 +564,13 @@ titanic_tree_full &lt;-<span class="st"> </span><span class="kw">tree</span>(Sur
 <p><img src="stat004_decision_trees_files/figure-html/titanic_tree_full-1.png" width="672" /></p>
 <p>Now we’ve built a more complicated decision tree. Fortunately it is still pretty interpretable. Notice that some of the variables we included in the model (<code>Parch</code> and <code>Embarked</code>) ended up being dropped from the final model. This is because to build the tree and ensure it is not overly complicated, the algorithm goes through a process of iteration and <strong>pruning</strong> to remove twigs or branches that result in a complicated model that does not provide significant improvement in overall model accuracy. You can tweak these parameters to ensure the model keeps all the variables, but could result in a nasty looking picture:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_tree_messy &lt;-<span class="st"> </span><span class="kw">tree</span>(Survived <span class="op">~</span><span class="st"> </span>Pclass <span class="op">+</span><span class="st"> </span>Sex <span class="op">+</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>SibSp <span class="op">+</span>
-<span class="st">                       </span>Parch <span class="op">+</span><span class="st"> </span>Fare <span class="op">+</span><span class="st"> </span>Embarked,
-                       <span class="dt">data =</span> titanic_tree_full_data,
-                       <span class="dt">control =</span> <span class="kw">tree.control</span>(<span class="dt">nobs =</span> <span class="kw">nrow</span>(titanic_tree_full_data),
-                                              <span class="dt">mindev =</span> <span class="dv">0</span>, <span class="dt">minsize =</span> <span class="dv">10</span>))
+<span class="st">                             </span>Parch <span class="op">+</span><span class="st"> </span>Fare <span class="op">+</span><span class="st"> </span>Embarked,
+                           <span class="dt">data =</span> titanic_tree_full_data,
+                           <span class="dt">control =</span> <span class="kw">tree.control</span>(
+                             <span class="dt">nobs =</span> <span class="kw">nrow</span>(titanic_tree_full_data),
+                             <span class="dt">mindev =</span> <span class="dv">0</span>,
+                             <span class="dt">minsize =</span> <span class="dv">10</span>)
+)
 <span class="kw">summary</span>(titanic_tree_messy)</code></pre></div>
 <pre><code>## 
 ## Classification tree:
@@ -611,9 +604,10 @@ titanic_tree_full &lt;-<span class="st"> </span><span class="kw">tree</span>(Sur
 </div>
 <div id="random-forests" class="section level1">
 <h1>Random forests</h1>
-<p>One method of aggregating trees is the <strong>random forest</strong> approach. This uses the concept of <strong>bootstrapping</strong> to build a forest of trees using the same underlying data set. Bootstrapping is standard resampling process whereby you repeatedly <strong>sample with replacement</strong> from a data set. So if you have a dataset of 500 observations, you might draw a sample of 500 observations from the data. But by sampling with replacement, some observations may be sampled multiple times and some observations may never be sampled. This essentially treats your data as a population of interest. You repeat this process many times (say <span class="math inline">\(k = 1000\)</span>), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.</p>
+<p>One method of aggregating trees is the <strong>random forest</strong> approach. This uses the concept of <strong>bootstrapping</strong> to build a forest of trees using the same underlying data set. Bootstrapping is a standard resampling process whereby you repeatedly <strong>sample with replacement</strong> from a data set. So if you have a dataset of 500 observations, you might draw a sample of 500 observations from the data. But by sampling with replacement, some observations may be sampled multiple times and some observations may never be sampled. This essentially treats your data as a population of interest. You repeat this process many times (say <span class="math inline">\(k = 1000\)</span>), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.</p>
 <p>As with other resampling methods, each individual sample will have some degree of bias to it. However by averaging across all the bootstrapped samples you cancel out much of this bias. Most importantly, averaging a set of observations reduces <strong>variance</strong> - you achieve stable estimates of the prediction accuracy or overall model error.</p>
-<p>In the context of decision trees, this means we draw repeated samples from the original dataset and estimate a decision tree model on each sample. To make predictions, we estimate the outcome using each tree and average across all of them to obtain the final prediction. Rather than being a binary outcome (<span class="math inline">\([0,1]\)</span>, survived/died), the average prediction will be a probability of the given outcome (i.e. the probability of survival). This process is called <strong>bagging</strong>. Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. <strong>Random forests specifically exclude a portion of the predictor variables when building individual trees</strong>. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say gender in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more <strong>reliable</strong>.</p>
+<p>In the context of decision trees, this means we draw repeated samples from the original dataset and estimate a decision tree model on each sample. To make predictions, we estimate the outcome using each tree and average across all of them to obtain the final prediction. Rather than being a binary outcome (<span class="math inline">\([0,1]\)</span>, survived/died), the average prediction will be a probability of the given outcome (i.e. the probability of survival). This process is called <strong>bagging</strong>.</p>
+<p>Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. <strong>Random forests specifically exclude a portion of the predictor variables when building individual trees</strong>. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say gender in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more <strong>reliable</strong>.</p>
 </div>
 <div id="estimating-statistical-models-using-caret" class="section level1">
 <h1>Estimating statistical models using <code>caret</code></h1>
@@ -687,18 +681,18 @@ caret_glm &lt;-<span class="st"> </span><span class="kw">train</span>(Survived <
 <span class="st">  </span><span class="kw">select</span>(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">na.omit</span>()
 titanic_rf_data</code></pre></div>
-<pre><code>## # A tibble: 714 × 8
+<pre><code>## # A tibble: 714 x 8
 ##    Survived Pclass    Sex   Age SibSp Parch    Fare Embarked
-##      &lt;fctr&gt; &lt;fctr&gt; &lt;fctr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;fctr&gt;
-## 1      Died      3   male    22     1     0  7.2500        S
-## 2  Survived      1 female    38     1     0 71.2833        C
-## 3  Survived      3 female    26     0     0  7.9250        S
-## 4  Survived      1 female    35     1     0 53.1000        S
-## 5      Died      3   male    35     0     0  8.0500        S
-## 6      Died      1   male    54     0     0 51.8625        S
-## 7      Died      3   male     2     3     1 21.0750        S
-## 8  Survived      3 female    27     0     2 11.1333        S
-## 9  Survived      2 female    14     1     0 30.0708        C
+##      &lt;fctr&gt;  &lt;int&gt; &lt;fctr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;fctr&gt;
+##  1     Died      3   male    22     1     0  7.2500        S
+##  2 Survived      1 female    38     1     0 71.2833        C
+##  3 Survived      3 female    26     0     0  7.9250        S
+##  4 Survived      1 female    35     1     0 53.1000        S
+##  5     Died      3   male    35     0     0  8.0500        S
+##  6     Died      1   male    54     0     0 51.8625        S
+##  7     Died      3   male     2     3     1 21.0750        S
+##  8 Survived      3 female    27     0     2 11.1333        S
+##  9 Survived      2 female    14     1     0 30.0708        C
 ## 10 Survived      3 female     4     1     1 16.7000        S
 ## # ... with 704 more rows</code></pre>
 <p>Now that the data is prepped, let’s estimate the model. To start, we’ll estimate a simple model that only uses age and gender. Again we use the <code>train()</code> function but this time we will use the <code>rf</code> method.<a href="#fn4" class="footnoteRef" id="fnref4"><sup>4</sup></a> To start with, I will estimate a forest with 200 trees (the default is 500 trees) and set the <code>trainControl</code> method to <code>&quot;oob&quot;</code> (I will explain this shortly):</p>
@@ -720,8 +714,7 @@ titanic_rf_data</code></pre></div>
 ##   Accuracy   Kappa   
 ##   0.7521008  0.479004
 ## 
-## Tuning parameter &#39;mtry&#39; was held constant at a value of 2
-## </code></pre>
+## Tuning parameter &#39;mtry&#39; was held constant at a value of 2</code></pre>
 <p>Hmm. What have we generated here? How can we analyze the results?</p>
 </div>
 <div id="structure-of-train-object" class="section level2">
@@ -735,11 +728,11 @@ titanic_rf_data</code></pre></div>
 ##  $ results     :&#39;data.frame&#39;:    1 obs. of  3 variables:
 ##  $ pred        : NULL
 ##  $ bestTune    :&#39;data.frame&#39;:    1 obs. of  1 variable:
-##  $ call        : language train.formula(form = Survived ~ Age + Sex, data = titanic_rf_data,      method = &quot;rf&quot;, ntree = 200, trControl = trainControl(method = &quot;oob&quot;))
+##  $ call        : language train.formula(form = Survived ~ Age + Sex, data = titanic_rf_data,      method = &quot;rf&quot;, ntree = 200, trControl = t| __truncated__
 ##  $ dots        :List of 1
 ##  $ metric      : chr &quot;Accuracy&quot;
 ##  $ control     :List of 26
-##  $ finalModel  :List of 22
+##  $ finalModel  :List of 23
 ##   ..- attr(*, &quot;class&quot;)= chr &quot;randomForest&quot;
 ##  $ preProcess  : NULL
 ##  $ trainingData:Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    714 obs. of  3 variables:
@@ -1059,25 +1052,441 @@ rf_full<span class="op">$</span>finalModel</code></pre></div>
 <p><img src="stat004_decision_trees_files/figure-html/rf_validate_imp-1.png" width="672" /></p>
 <p>Note that gender and age are important predictors in the random forest, but so too is the fare an individual paided. This is a proxy for socioeconomic status; recall that <a href="https://www.youtube.com/watch?v=NfDZO9QAiEM">the wealthy had better access to lifeboats</a>.</p>
 <p>To make predictions for the validation set, we use the <code>predict()</code> function. By setting <code>type = &quot;prob&quot;</code> we will get predicted probabilities for each possible outcome, rather than just a raw prediction of “Survived” or “Died”:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_pred &lt;-<span class="st"> </span>titanic_test <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">bind_cols</span>(<span class="kw">predict</span>(rf_full, <span class="dt">newdata =</span> titanic_test, <span class="dt">type =</span> <span class="st">&quot;prob&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">              </span><span class="kw">rename</span>(<span class="dt">prob_dead =</span> Died,
-                     <span class="dt">prob_survive =</span> Survived))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_pred &lt;-<span class="st"> </span><span class="kw">predict</span>(rf_full, <span class="dt">newdata =</span> titanic_test, <span class="dt">type =</span> <span class="st">&quot;prob&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">rename</span>(<span class="dt">prob_dead =</span> Died,
+         <span class="dt">prob_survive =</span> Survived) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">bind_cols</span>(titanic_test)
 titanic_pred</code></pre></div>
-<pre><code>## # A tibble: 214 × 10
-##    Survived Pclass    Sex   Age SibSp Parch    Fare Embarked prob_dead
-##      &lt;fctr&gt; &lt;fctr&gt; &lt;fctr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt;   &lt;dbl&gt;   &lt;fctr&gt;     &lt;dbl&gt;
-## 1      Died      3   male    35     0     0  8.0500        S     0.998
-## 2  Survived      3 female    27     0     2 11.1333        S     0.372
-## 3  Survived      2 female    14     1     0 30.0708        C     0.018
-## 4      Died      3 female    14     0     0  7.8542        S     0.320
-## 5      Died      3   male     2     4     1 29.1250        Q     0.954
-## 6  Survived      2   male    34     0     0 13.0000        S     0.998
-## 7  Survived      3 female    15     0     0  8.0292        Q     0.322
-## 8      Died      1   male    40     0     0 27.7208        C     0.478
-## 9      Died      3 female    18     2     0 18.0000        S     0.724
-## 10 Survived      3 female    14     1     0 11.2417        C     0.218
-## # ... with 204 more rows, and 1 more variables: prob_survive &lt;dbl&gt;</code></pre>
+<pre><code>##     prob_dead prob_survive Survived Pclass    Sex   Age SibSp Parch
+## 1       0.998        0.002     Died      3   male 35.00     0     0
+## 2       0.372        0.628 Survived      3 female 27.00     0     2
+## 3       0.018        0.982 Survived      2 female 14.00     1     0
+## 4       0.320        0.680     Died      3 female 14.00     0     0
+## 5       0.954        0.046     Died      3   male  2.00     4     1
+## 6       0.998        0.002 Survived      2   male 34.00     0     0
+## 7       0.322        0.678 Survived      3 female 15.00     0     0
+## 8       0.478        0.522     Died      1   male 40.00     0     0
+## 9       0.724        0.276     Died      3 female 18.00     2     0
+## 10      0.218        0.782 Survived      3 female 14.00     1     0
+## 11      0.364        0.636 Survived      2 female  3.00     1     2
+## 12      0.104        0.896 Survived      2 female 29.00     1     0
+## 13      0.728        0.272     Died      1   male 65.00     0     1
+## 14      0.604        0.396     Died      3   male 19.00     0     0
+## 15      0.840        0.160     Died      3 female 16.00     5     2
+## 16      0.328        0.672 Survived      3   male 32.00     0     0
+## 17      0.134        0.866 Survived      2   male  0.83     0     2
+## 18      0.860        0.140 Survived      3   male 29.00     0     0
+## 19      0.550        0.450     Died      1   male 28.00     0     0
+## 20      0.984        0.016     Died      3   male 24.00     0     0
+## 21      0.952        0.048     Died      3   male 29.00     0     0
+## 22      0.702        0.298     Died      1   male 46.00     1     0
+## 23      1.000        0.000     Died      2   male 34.00     1     0
+## 24      0.168        0.832     Died      3 female 28.00     0     0
+## 25      0.692        0.308     Died      1   male 21.00     0     1
+## 26      0.980        0.020     Died      3   male 38.00     0     0
+## 27      0.780        0.220     Died      1   male 47.00     0     0
+## 28      0.210        0.790     Died      3 female 14.50     1     0
+## 29      0.442        0.558     Died      3 female 17.00     0     0
+## 30      0.942        0.058     Died      2   male 21.00     2     0
+## 31      0.836        0.164 Survived      3   male 12.00     1     0
+## 32      0.896        0.104     Died      2   male 23.00     0     0
+## 33      0.910        0.090     Died      3   male 16.00     0     0
+## 34      0.844        0.156 Survived      3   male 27.00     0     0
+## 35      0.910        0.090     Died      3   male 40.50     0     2
+## 36      0.374        0.626 Survived      3 female 16.00     0     0
+## 37      0.924        0.076     Died      3   male 44.00     0     1
+## 38      0.298        0.702 Survived      2 female 40.00     0     0
+## 39      0.918        0.082     Died      3   male  1.00     4     1
+## 40      0.538        0.462     Died      1   male 56.00     0     0
+## 41      0.012        0.988     Died      1 female 50.00     0     0
+## 42      0.834        0.166 Survived      3 female  4.00     0     2
+## 43      0.634        0.366 Survived      1   male 45.00     0     0
+## 44      0.006        0.994 Survived      2 female 32.00     0     0
+## 45      0.158        0.842 Survived      2   male  3.00     1     1
+## 46      0.068        0.932 Survived      1 female 58.00     0     0
+## 47      0.006        0.994     Died      2 female 24.00     0     0
+## 48      0.932        0.068     Died      3   male 34.00     0     0
+## 49      0.940        0.060     Died      3   male 32.00     1     0
+## 50      0.880        0.120 Survived      3   male 26.00     0     0
+## 51      0.376        0.624 Survived      3 female 16.00     0     0
+## 52      0.512        0.488 Survived      1   male 40.00     0     0
+## 53      0.996        0.004     Died      2   male 30.00     0     0
+## 54      0.788        0.212     Died      2   male 42.00     1     0
+## 55      0.000        1.000 Survived      1 female 32.00     0     0
+## 56      0.998        0.002     Died      2   male 27.00     0     0
+## 57      0.998        0.002     Died      3   male 22.00     0     0
+## 58      0.000        1.000 Survived      1 female 35.00     1     0
+## 59      0.880        0.120 Survived      3 female  5.00     4     2
+## 60      0.994        0.006     Died      2   male 29.00     0     0
+## 61      0.668        0.332     Died      3   male 22.00     0     0
+## 62      0.682        0.318 Survived      1   male 37.00     1     1
+## 63      0.752        0.248     Died      3 female 29.00     1     1
+## 64      0.000        1.000 Survived      1 female 30.00     0     0
+## 65      0.004        0.996 Survived      1 female 35.00     0     0
+## 66      0.968        0.032 Survived      3   male  3.00     4     2
+## 67      0.670        0.330     Died      1   male 40.00     0     0
+## 68      0.108        0.892 Survived      2 female 41.00     0     1
+## 69      0.606        0.394     Died      1   male 37.00     0     1
+## 70      0.022        0.978 Survived      1 female 63.00     1     0
+## 71      0.672        0.328     Died      3 female 45.00     0     0
+## 72      0.984        0.016     Died      3   male  7.00     4     1
+## 73      0.902        0.098     Died      3   male 33.00     0     0
+## 74      1.000        0.000 Survived      2   male 42.00     0     0
+## 75      0.320        0.680 Survived      3 female 22.00     0     0
+## 76      0.064        0.936 Survived      1 female 26.00     0     0
+## 77      0.010        0.990 Survived      1 female 19.00     1     0
+## 78      0.724        0.276     Died      3   male 23.50     0     0
+## 79      0.008        0.992 Survived      1 female 50.00     0     1
+## 80      0.502        0.498     Died      3   male 19.00     0     0
+## 81      0.010        0.990 Survived      1 female 17.00     1     0
+## 82      0.002        0.998 Survived      1 female 24.00     0     0
+## 83      0.878        0.122     Died      2   male 43.00     1     1
+## 84      0.006        0.994 Survived      1 female 40.00     1     1
+## 85      0.010        0.990 Survived      1 female 16.00     0     1
+## 86      1.000        0.000     Died      2   male 36.00     0     0
+## 87      0.494        0.506 Survived      2 female 40.00     0     0
+## 88      0.268        0.732 Survived      3   male  3.00     1     1
+## 89      0.922        0.078     Died      3   male 42.00     0     0
+## 90      0.998        0.002     Died      3   male 23.00     0     0
+## 91      0.826        0.174     Died      2   male 29.00     1     0
+## 92      0.650        0.350     Died      1   male 22.00     0     0
+## 93      0.410        0.590     Died      3   male 20.00     0     0
+## 94      0.020        0.980 Survived      2 female 36.00     0     0
+## 95      0.004        0.996 Survived      2 female 17.00     0     0
+## 96      0.636        0.364 Survived      1   male 36.00     1     2
+## 97      0.910        0.090     Died      3   male 26.00     0     0
+## 98      0.196        0.804 Survived      2   male  3.00     1     1
+## 99      0.996        0.004     Died      2   male 30.00     0     0
+## 100     0.880        0.120     Died      3   male 29.00     0     0
+## 101     0.930        0.070     Died      3   male 18.00     1     1
+## 102     0.872        0.128 Survived      3   male 32.00     0     0
+## 103     0.222        0.778 Survived      1   male 28.00     0     0
+## 104     0.492        0.508 Survived      2 female 42.00     1     0
+## 105     0.804        0.196     Died      3   male 17.00     0     0
+## 106     0.828        0.172     Died      3 female 21.00     2     2
+## 107     0.728        0.272     Died      1   male 64.00     1     4
+## 108     0.982        0.018     Died      3   male 20.00     0     0
+## 109     0.006        0.994 Survived      2 female 28.00     0     0
+## 110     0.210        0.790 Survived      3 female  5.00     2     1
+## 111     0.398        0.602     Died      1   male 30.00     0     0
+## 112     0.440        0.560 Survived      1   male 49.00     1     0
+## 113     0.138        0.862 Survived      3 female  0.75     2     1
+## 114     1.000        0.000     Died      2   male 34.00     1     0
+## 115     0.440        0.560 Survived      3   male  9.00     1     1
+## 116     0.000        1.000 Survived      1 female 54.00     1     0
+## 117     0.834        0.166     Died      3   male 24.00     0     0
+## 118     0.938        0.062     Died      3   male 17.00     0     0
+## 119     0.332        0.668     Died      3 female 21.00     0     0
+## 120     0.066        0.934 Survived      2 female 33.00     0     2
+## 121     0.874        0.126     Died      3   male 24.00     0     0
+## 122     0.756        0.244     Died      1   male 47.00     0     0
+## 123     0.108        0.892 Survived      2 female 36.00     1     0
+## 124     0.778        0.222     Died      3   male 32.00     0     0
+## 125     0.996        0.004     Died      3   male 22.00     0     0
+## 126     0.008        0.992 Survived      1 female 44.00     0     1
+## 127     0.460        0.540 Survived      2 female  2.00     1     1
+## 128     0.852        0.148     Died      3   male 17.00     1     1
+## 129     0.024        0.976 Survived      2 female  7.00     0     2
+## 130     0.000        1.000 Survived      1 female 30.00     0     0
+## 131     0.964        0.036     Died      3 female  9.00     4     2
+## 132     0.998        0.002 Survived      2   male 32.00     1     0
+## 133     0.550        0.450 Survived      3 female 22.00     0     0
+## 134     1.000        0.000     Died      2   male 28.00     0     0
+## 135     0.976        0.024     Died      3   male 19.00     0     0
+## 136     1.000        0.000 Survived      2   male 62.00     0     0
+## 137     0.694        0.306 Survived      3   male 32.00     0     0
+## 138     0.000        1.000 Survived      1 female 39.00     1     1
+## 139     0.024        0.976 Survived      1 female 18.00     0     2
+## 140     0.002        0.998 Survived      1 female 52.00     1     0
+## 141     0.970        0.030     Died      3   male 47.00     0     0
+## 142     0.792        0.208     Died      3   male 49.00     0     0
+## 143     0.012        0.988 Survived      2 female 24.00     2     1
+## 144     0.666        0.334     Died      3 female 39.00     1     5
+## 145     0.992        0.008     Died      3   male 34.00     1     1
+## 146     0.234        0.766     Died      3 female 26.00     1     0
+## 147     0.140        0.860 Survived      2 female  4.00     2     1
+## 148     0.878        0.122 Survived      3   male 20.00     1     1
+## 149     0.932        0.068     Died      3   male 21.00     0     0
+## 150     0.930        0.070     Died      1   male 61.00     0     0
+## 151     0.998        0.002     Died      3   male 26.00     0     0
+## 152     0.998        0.002     Died      3   male 51.00     0     0
+## 153     0.420        0.580 Survived      1   male 32.00     0     0
+## 154     0.980        0.020     Died      3 female  9.00     3     2
+## 155     0.694        0.306     Died      3   male 32.00     0     0
+## 156     0.976        0.024     Died      3   male 19.00     0     0
+## 157     0.990        0.010     Died      3   male 21.00     0     0
+## 158     0.866        0.134     Died      2   male 24.00     2     0
+## 159     0.750        0.250     Died      1   male 47.00     0     0
+## 160     0.998        0.002     Died      3   male 36.00     0     0
+## 161     1.000        0.000     Died      2   male 25.00     0     0
+## 162     0.994        0.006 Survived      2   male 31.00     0     0
+## 163     0.020        0.980 Survived      1 female 15.00     0     1
+## 164     0.724        0.276 Survived      1   male 31.00     1     0
+## 165     0.290        0.710 Survived      3 female  4.00     0     1
+## 166     0.610        0.390     Died      1   male 49.00     1     1
+## 167     0.996        0.004     Died      3   male 42.00     0     0
+## 168     0.072        0.928 Survived      1   male 35.00     0     0
+## 169     0.000        1.000 Survived      1 female 24.00     0     0
+## 170     0.998        0.002     Died      2   male 34.00     0     0
+## 171     0.014        0.986 Survived      1 female 29.00     0     0
+## 172     1.000        0.000     Died      2   male 23.00     0     0
+## 173     0.840        0.160     Died      3 female 48.00     1     3
+## 174     0.708        0.292     Died      1   male 36.00     1     0
+## 175     0.042        0.958 Survived      1 female 21.00     2     2
+## 176     0.916        0.084     Died      3   male 16.00     1     1
+## 177     0.752        0.248     Died      3   male 31.00     0     0
+## 178     0.336        0.664 Survived      2 female  4.00     1     1
+## 179     0.756        0.244     Died      3   male 33.00     0     0
+## 180     0.176        0.824 Survived      2   male  0.67     1     1
+## 181     0.958        0.042     Died      3   male 41.00     0     0
+## 182     0.538        0.462     Died      3 female 30.50     0     0
+## 183     0.842        0.158     Died      3   male 32.00     0     0
+## 184     0.386        0.614 Survived      2 female 54.00     1     3
+## 185     0.110        0.890 Survived      3 female 13.00     0     0
+## 186     0.962        0.038     Died      3   male 25.00     0     0
+## 187     0.330        0.670 Survived      3   male  1.00     1     2
+## 188     0.954        0.046     Died      2   male 16.00     0     0
+## 189     0.868        0.132     Died      3   male 30.00     0     0
+## 190     0.702        0.298     Died      3 female 30.00     1     1
+## 191     0.998        0.002     Died      2   male 34.00     0     0
+## 192     0.296        0.704 Survived      1   male 11.00     1     2
+## 193     0.258        0.742 Survived      3   male  0.42     0     1
+## 194     0.652        0.348     Died      1   male 39.00     0     0
+## 195     0.000        1.000 Survived      1 female 33.00     1     0
+## 196     0.954        0.046     Died      3 female  6.00     4     2
+## 197     0.958        0.042     Died      3   male 30.50     0     0
+## 198     0.460        0.540     Died      3 female 23.00     0     0
+## 199     0.662        0.338     Died      1   male 38.00     0     0
+## 200     0.368        0.632 Survived      3 female 27.00     0     1
+## 201     0.180        0.820 Survived      2   male  0.83     1     1
+## 202     0.986        0.014     Died      3   male 23.00     0     0
+## 203     0.470        0.530     Died      3   male 18.00     0     0
+## 204     0.772        0.228     Died      3   male 20.00     0     0
+## 205     0.760        0.240     Died      2   male 28.00     0     1
+## 206     0.976        0.024     Died      3   male  4.00     4     2
+## 207     0.216        0.784     Died      3 female  9.00     1     1
+## 208     0.418        0.582 Survived      2 female 27.00     1     0
+## 209     0.010        0.990 Survived      1 female 47.00     1     1
+## 210     0.744        0.256     Died      1   male 33.00     0     0
+## 211     0.746        0.254     Died      3   male 47.00     0     0
+## 212     0.150        0.850 Survived      2 female 28.00     1     0
+## 213     0.096        0.904 Survived      2 female 25.00     0     1
+## 214     0.994        0.006     Died      2   male 28.00     0     0
+##         Fare Embarked
+## 1     8.0500        S
+## 2    11.1333        S
+## 3    30.0708        C
+## 4     7.8542        S
+## 5    29.1250        Q
+## 6    13.0000        S
+## 7     8.0292        Q
+## 8    27.7208        C
+## 9    18.0000        S
+## 10   11.2417        C
+## 11   41.5792        C
+## 12   26.0000        S
+## 13   61.9792        C
+## 14    8.1583        S
+## 15   46.9000        S
+## 16   56.4958        S
+## 17   29.0000        S
+## 18    9.5000        S
+## 19   47.1000        S
+## 20    8.0500        S
+## 21    8.0500        S
+## 22   61.1750        S
+## 23   26.0000        S
+## 24    7.8958        S
+## 25   77.2875        S
+## 26    7.8958        S
+## 27   52.0000        S
+## 28   14.4542        C
+## 29   14.4583        C
+## 30   73.5000        S
+## 31   11.2417        C
+## 32   15.0458        C
+## 33    9.2167        S
+## 34    7.7958        S
+## 35   14.5000        S
+## 36    7.7333        Q
+## 37   16.1000        S
+## 38   15.7500        S
+## 39   39.6875        S
+## 40   30.6958        C
+## 41   28.7125        C
+## 42   22.0250        S
+## 43   26.5500        S
+## 44   13.0000        S
+## 45   26.0000        S
+## 46  146.5208        C
+## 47   13.0000        S
+## 48    6.4958        S
+## 49   15.8500        S
+## 50   18.7875        C
+## 51    7.7500        Q
+## 52   31.0000        C
+## 53   13.0000        S
+## 54   27.0000        S
+## 55   76.2917        C
+## 56   13.0000        S
+## 57    9.3500        S
+## 58   83.4750        S
+## 59   31.3875        S
+## 60   10.5000        S
+## 61    7.1250        S
+## 62   52.5542        S
+## 63   10.4625        S
+## 64   86.5000        S
+## 65  512.3292        C
+## 66   31.3875        S
+## 67    0.0000        S
+## 68   19.5000        S
+## 69   29.7000        C
+## 70   77.9583        S
+## 71    7.7500        S
+## 72   29.1250        Q
+## 73    8.6625        C
+## 74   13.0000        S
+## 75    7.7500        Q
+## 76   78.8500        S
+## 77   91.0792        C
+## 78    7.2292        C
+## 79  247.5208        C
+## 80    0.0000        S
+## 81  108.9000        C
+## 82   83.1583        C
+## 83   26.2500        S
+## 84  134.5000        C
+## 85   57.9792        C
+## 86   13.0000        S
+## 87   13.0000        S
+## 88   15.9000        S
+## 89    8.6625        S
+## 90    9.2250        S
+## 91   27.7208        C
+## 92  135.6333        C
+## 93    4.0125        C
+## 94   13.0000        S
+## 95   12.0000        C
+## 96  120.0000        S
+## 97    8.0500        S
+## 98   18.7500        S
+## 99   13.0000        S
+## 100   7.8750        S
+## 101  20.2125        S
+## 102   8.0500        S
+## 103  26.5500        S
+## 104  26.0000        S
+## 105   7.1250        S
+## 106  34.3750        S
+## 107 263.0000        S
+## 108   9.5000        S
+## 109  13.0000        S
+## 110  19.2583        C
+## 111  27.7500        C
+## 112  89.1042        C
+## 113  19.2583        C
+## 114  21.0000        S
+## 115  15.9000        S
+## 116  78.2667        C
+## 117   7.7958        S
+## 118   8.6625        S
+## 119   7.7500        Q
+## 120  26.0000        S
+## 121   7.4958        S
+## 122  34.0208        S
+## 123  26.0000        S
+## 124   7.8958        S
+## 125   7.8958        S
+## 126  57.9792        C
+## 127  26.0000        S
+## 128   7.2292        C
+## 129  26.2500        S
+## 130 106.4250        C
+## 131  31.2750        S
+## 132  26.0000        S
+## 133   7.7750        S
+## 134  13.5000        S
+## 135   7.8958        S
+## 136  10.5000        S
+## 137   7.9250        S
+## 138 110.8833        C
+## 139  79.6500        S
+## 140  78.2667        C
+## 141   7.2500        S
+## 142   0.0000        S
+## 143  27.0000        S
+## 144  31.2750        S
+## 145  14.4000        S
+## 146  16.1000        S
+## 147  39.0000        S
+## 148  15.7417        C
+## 149   7.8542        S
+## 150  32.3208        S
+## 151   7.8958        S
+## 152   7.0542        S
+## 153  30.5000        C
+## 154  27.9000        S
+## 155   7.9250        S
+## 156   7.8958        S
+## 157   8.4333        S
+## 158  73.5000        S
+## 159  25.5875        S
+## 160   7.4958        S
+## 161  13.0000        S
+## 162  13.0000        S
+## 163 211.3375        S
+## 164  57.0000        S
+## 165  13.4167        C
+## 166 110.8833        C
+## 167   7.6500        S
+## 168  26.2875        S
+## 169  49.5042        C
+## 170  13.0000        S
+## 171 211.3375        S
+## 172  13.0000        S
+## 173  34.3750        S
+## 174  78.8500        S
+## 175 262.3750        C
+## 176  20.2500        S
+## 177   7.7500        Q
+## 178  23.0000        S
+## 179   9.5000        S
+## 180  14.5000        S
+## 181   7.1250        S
+## 182   7.7500        Q
+## 183   8.3625        S
+## 184  23.0000        S
+## 185   7.2292        C
+## 186   7.2500        S
+## 187  20.5750        S
+## 188  26.0000        S
+## 189   7.2292        C
+## 190  24.1500        S
+## 191  13.0000        S
+## 192 120.0000        S
+## 193   8.5167        C
+## 194   0.0000        S
+## 195  53.1000        S
+## 196  31.2750        S
+## 197   8.0500        S
+## 198   7.9250        S
+## 199   0.0000        S
+## 200  12.4750        S
+## 201  18.7500        S
+## 202   7.8542        S
+## 203   8.3000        S
+## 204   7.9250        S
+## 205  33.0000        S
+## 206  31.2750        S
+## 207  15.2458        C
+## 208  13.8583        C
+## 209  52.5542        S
+## 210   5.0000        S
+## 211   9.0000        S
+## 212  24.0000        C
+## 213  26.0000        S
+## 214  10.5000        S</code></pre>
 </div>
 </div>
 <div id="exercise-random-forests-with-mental_health" class="section level1">
@@ -1215,109 +1624,77 @@ mh_rf</code></pre></div>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-01                  
+##  date     2017-08-10                  
 ## 
 ##  package      * version    date       source                              
 ##  assertthat     0.2.0      2017-04-11 CRAN (R 3.4.0)                      
 ##  backports      1.1.0      2017-05-22 CRAN (R 3.4.0)                      
 ##  base         * 3.4.1      2017-07-07 local                               
-##  base64enc      0.1-3      2015-07-28 CRAN (R 3.4.0)                      
 ##  bindr          0.1        2016-11-13 CRAN (R 3.4.0)                      
 ##  bindrcpp     * 0.2        2017-06-17 CRAN (R 3.4.0)                      
-##  bit            1.1-12     2014-04-09 CRAN (R 3.4.0)                      
-##  bit64          0.9-7      2017-05-08 CRAN (R 3.4.0)                      
-##  blob           1.1.0      2017-06-17 CRAN (R 3.4.0)                      
 ##  boxes          0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
-##  broom        * 0.4.2      2017-02-13 CRAN (R 3.4.0)                      
-##  car          * 2.1-5      2017-07-04 CRAN (R 3.4.1)                      
+##  broom        * 0.4.2      2017-08-09 local                               
+##  car            2.1-5      2017-07-04 CRAN (R 3.4.1)                      
 ##  caret        * 6.0-76     2017-04-18 CRAN (R 3.4.0)                      
 ##  cellranger     1.1.0      2016-07-27 CRAN (R 3.4.0)                      
 ##  class          7.3-14     2015-08-30 CRAN (R 3.4.1)                      
 ##  clisymbols     1.2.0      2017-05-21 cran (@1.2.0)                       
 ##  codetools      0.2-15     2016-10-05 CRAN (R 3.4.1)                      
-##  coefplot     * 1.2.4      2016-01-10 CRAN (R 3.4.0)                      
 ##  colorspace     1.3-2      2016-12-14 CRAN (R 3.4.0)                      
 ##  compiler       3.4.1      2017-07-07 local                               
-##  config         0.2        2016-08-02 CRAN (R 3.4.0)                      
 ##  crayon         1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
-##  data.table     1.10.4     2017-02-01 CRAN (R 3.4.0)                      
 ##  datasets     * 3.4.1      2017-07-07 local                               
-##  DBI            0.7        2017-06-18 CRAN (R 3.4.0)                      
-##  dbplyr         1.1.0      2017-06-27 CRAN (R 3.4.1)                      
 ##  devtools       1.13.2     2017-06-02 CRAN (R 3.4.0)                      
 ##  digest         0.6.12     2017-01-27 CRAN (R 3.4.0)                      
 ##  dplyr        * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
-##  e1071        * 1.6-8      2017-02-02 CRAN (R 3.4.0)                      
+##  e1071          1.6-8      2017-02-02 CRAN (R 3.4.0)                      
 ##  evaluate       0.10.1     2017-06-24 CRAN (R 3.4.1)                      
-##  FNN          * 1.1        2013-07-31 CRAN (R 3.4.0)                      
 ##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
-##  foreach      * 1.4.3      2015-10-13 CRAN (R 3.4.0)                      
+##  foreach        1.4.3      2015-10-13 CRAN (R 3.4.0)                      
 ##  foreign        0.8-69     2017-06-22 CRAN (R 3.4.1)                      
-##  gam          * 1.14-4     2017-04-25 CRAN (R 3.4.0)                      
-##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.4.0)                      
-##  gbm          * 2.1.3      2017-03-21 CRAN (R 3.4.0)                      
-##  gganimate    * 0.1.0.9000 2017-05-26 Github (dgrtwo/gganimate@bf82002)   
-##  ggdendro     * 0.1-20     2016-04-27 CRAN (R 3.4.0)                      
 ##  ggplot2      * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
 ##  glue           1.1.1      2017-06-21 CRAN (R 3.4.1)                      
 ##  graphics     * 3.4.1      2017-07-07 local                               
 ##  grDevices    * 3.4.1      2017-07-07 local                               
-##  grid         * 3.4.1      2017-07-07 local                               
-##  gridExtra    * 2.2.1      2016-02-29 CRAN (R 3.4.0)                      
+##  grid           3.4.1      2017-07-07 local                               
 ##  gtable         0.2.0      2016-02-26 CRAN (R 3.4.0)                      
-##  haven        * 1.1.0      2017-07-09 CRAN (R 3.4.1)                      
+##  haven          1.1.0      2017-07-09 CRAN (R 3.4.1)                      
 ##  highr          0.6        2016-05-09 CRAN (R 3.4.0)                      
 ##  hms            0.3        2016-11-22 CRAN (R 3.4.0)                      
 ##  htmltools      0.3.6      2017-04-28 CRAN (R 3.4.0)                      
-##  htmlwidgets    0.9        2017-07-10 CRAN (R 3.4.1)                      
-##  httpuv         1.3.5      2017-07-04 CRAN (R 3.4.1)                      
 ##  httr           1.2.1      2016-07-03 CRAN (R 3.4.0)                      
-##  igraph         1.1.2      2017-07-21 CRAN (R 3.4.1)                      
-##  ISLR         * 1.0        2013-06-11 CRAN (R 3.4.0)                      
 ##  iterators      1.0.8      2015-10-13 CRAN (R 3.4.0)                      
-##  janeaustenr    0.1.5      2017-06-10 CRAN (R 3.4.0)                      
 ##  jsonlite       1.5        2017-06-01 CRAN (R 3.4.0)                      
-##  kknn         * 1.3.1      2016-03-26 CRAN (R 3.4.0)                      
-##  knitr        * 1.16       2017-05-18 CRAN (R 3.4.0)                      
-##  labeling       0.3        2014-08-23 CRAN (R 3.4.0)                      
+##  knitr          1.16       2017-05-18 CRAN (R 3.4.0)                      
 ##  lattice      * 0.20-35    2017-03-25 CRAN (R 3.4.1)                      
 ##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.4.0)                      
-##  lme4         * 1.1-13     2017-04-19 CRAN (R 3.4.0)                      
-##  lmtest       * 0.9-35     2017-02-11 CRAN (R 3.4.0)                      
+##  lme4           1.1-13     2017-04-19 CRAN (R 3.4.0)                      
 ##  lubridate      1.6.0      2016-09-13 CRAN (R 3.4.0)                      
 ##  magrittr       1.5        2014-11-22 CRAN (R 3.4.0)                      
 ##  MASS           7.3-47     2017-02-26 CRAN (R 3.4.1)                      
-##  Matrix       * 1.2-10     2017-05-03 CRAN (R 3.4.1)                      
+##  Matrix         1.2-10     2017-05-03 CRAN (R 3.4.1)                      
 ##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.4.0)                      
 ##  memoise        1.1.0      2017-04-21 CRAN (R 3.4.0)                      
 ##  methods      * 3.4.1      2017-07-07 local                               
 ##  mgcv           1.8-18     2017-07-28 CRAN (R 3.4.1)                      
-##  mime           0.5        2016-07-07 CRAN (R 3.4.0)                      
 ##  minqa          1.2.4      2014-10-09 CRAN (R 3.4.0)                      
 ##  mnormt         1.5-5      2016-10-15 CRAN (R 3.4.0)                      
 ##  ModelMetrics   1.1.0      2016-08-26 CRAN (R 3.4.0)                      
 ##  modelr       * 0.1.1      2017-07-24 CRAN (R 3.4.1)                      
-##  modeltools     0.2-21     2013-09-02 CRAN (R 3.4.0)                      
 ##  munsell        0.4.3      2016-02-13 CRAN (R 3.4.0)                      
 ##  nlme           3.1-131    2017-02-06 CRAN (R 3.4.1)                      
 ##  nloptr         1.0.4      2014-08-04 CRAN (R 3.4.0)                      
-##  NLP          * 0.1-10     2017-02-21 CRAN (R 3.4.0)                      
-##  nnet         * 7.3-12     2016-02-02 CRAN (R 3.4.1)                      
-##  nycflights13   0.2.2      2017-01-27 CRAN (R 3.4.0)                      
-##  parallel     * 3.4.1      2017-07-07 local                               
+##  nnet           7.3-12     2016-02-02 CRAN (R 3.4.1)                      
+##  parallel       3.4.1      2017-07-07 local                               
 ##  pbkrtest       0.4-7      2017-03-15 CRAN (R 3.4.0)                      
 ##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.4.0)                      
-##  plotly       * 4.7.1      2017-07-29 CRAN (R 3.4.1)                      
 ##  plyr           1.8.4      2016-06-08 CRAN (R 3.4.0)                      
-##  pROC         * 1.10.0     2017-06-10 CRAN (R 3.4.0)                      
 ##  psych          1.7.5      2017-05-03 CRAN (R 3.4.1)                      
 ##  purrr        * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
 ##  quantreg       5.33       2017-04-18 CRAN (R 3.4.0)                      
 ##  R6             2.2.2      2017-06-17 CRAN (R 3.4.0)                      
 ##  randomForest * 4.6-12     2015-10-07 CRAN (R 3.4.0)                      
-##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.4.0)                      
 ##  rcfss        * 0.1.5      2017-07-31 local                               
-##  RColorBrewer * 1.1-2      2014-12-07 CRAN (R 3.4.0)                      
 ##  Rcpp           0.12.12    2017-07-15 CRAN (R 3.4.1)                      
 ##  readr        * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl         1.0.0      2017-04-18 CRAN (R 3.4.0)                      
@@ -1325,40 +1702,25 @@ mh_rf</code></pre></div>
 ##  rlang          0.1.1      2017-05-18 CRAN (R 3.4.0)                      
 ##  rmarkdown      1.6        2017-06-15 CRAN (R 3.4.0)                      
 ##  rprojroot      1.2        2017-01-16 CRAN (R 3.4.0)                      
-##  RSQLite      * 2.0        2017-06-19 CRAN (R 3.4.1)                      
 ##  rstudioapi     0.6        2016-06-27 CRAN (R 3.4.0)                      
 ##  rvest          0.3.2      2016-06-17 CRAN (R 3.4.0)                      
 ##  scales         0.4.1      2016-11-09 CRAN (R 3.4.0)                      
-##  shiny        * 1.0.3      2017-04-26 CRAN (R 3.4.0)                      
-##  slam           0.1-40     2016-12-01 CRAN (R 3.4.0)                      
-##  SnowballC      0.5.1      2014-08-09 CRAN (R 3.4.0)                      
-##  sparklyr     * 0.6.0      2017-07-29 CRAN (R 3.4.1)                      
 ##  SparseM        1.77       2017-04-23 CRAN (R 3.4.0)                      
-##  splines      * 3.4.1      2017-07-07 local                               
+##  splines        3.4.1      2017-07-07 local                               
 ##  stats        * 3.4.1      2017-07-07 local                               
 ##  stats4         3.4.1      2017-07-07 local                               
 ##  stringi        1.1.5      2017-04-07 CRAN (R 3.4.0)                      
 ##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
-##  survival     * 2.41-3     2017-04-04 CRAN (R 3.4.1)                      
 ##  tibble       * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
 ##  tidyr        * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
-##  tidytext     * 0.1.3      2017-06-19 CRAN (R 3.4.1)                      
 ##  tidyverse    * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
 ##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.4.0)                      
-##  tm           * 0.7-1      2017-03-02 CRAN (R 3.4.0)                      
-##  tokenizers     0.1.4      2016-08-29 CRAN (R 3.4.0)                      
 ##  tools          3.4.1      2017-07-07 local                               
-##  topicmodels  * 0.2-6      2017-04-18 CRAN (R 3.4.0)                      
 ##  tree         * 1.0-37     2016-01-21 CRAN (R 3.4.0)                      
-##  tweenr       * 0.1.5      2016-10-10 CRAN (R 3.4.0)                      
-##  useful         1.2.3      2017-06-07 CRAN (R 3.4.0)                      
 ##  utils        * 3.4.1      2017-07-07 local                               
-##  viridisLite    0.2.0      2017-03-24 CRAN (R 3.4.0)                      
 ##  withr          2.0.0      2017-07-28 CRAN (R 3.4.1)                      
 ##  xml2           1.1.1      2017-01-24 CRAN (R 3.4.0)                      
-##  xtable         1.8-2      2016-02-05 CRAN (R 3.4.0)                      
-##  yaml           2.1.14     2016-11-12 CRAN (R 3.4.0)                      
-##  zoo          * 1.8-0      2017-04-12 CRAN (R 3.4.0)</code></pre>
+##  yaml           2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
 </div>
 <div class="footnotes">
 <hr />

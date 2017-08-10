@@ -12,13 +12,6 @@ knitr::opts_chunk$set(cache = TRUE,
                       warning = FALSE)
 ```
 
-# Objectives
-
-* Define a decision tree
-* Demonstrate how to estimate a decision tree
-* Define and estimate a random forest
-* Introduce the `caret` package for statistical learning in R
-
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(modelr)
@@ -30,9 +23,9 @@ theme_set(theme_minimal())
 
 # Decision trees
 
-![](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
+![Does it move?](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
 
-![](https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg)
+![Are you old? A helpful decision tree](https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg)
 
 ![[Should I Have a Cookie?](http://iwastesomuchtime.com/58217)](http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif)
 
@@ -96,8 +89,7 @@ First we need to load the `tree` library and prepare the data. `tree` is somewha
 library(tree)
 
 titanic_tree_data <- titanic %>%
-  mutate(Survived = ifelse(Survived == 1, "Survived",
-                           ifelse(Survived == 0, "Died", NA)),
+  mutate(Survived = if_else(Survived == 1, "Survived", "Died"),
          Survived = as.factor(Survived),
          Sex = as.factor(Sex))
 titanic_tree_data
@@ -127,17 +119,17 @@ plot(titanic_tree)
 text(titanic_tree, pretty = 0)
 ```
 
-`tree` does not use `ggplot2` to graph the results; instead it relies on the base `graphics` package. `plot(titanic_tree)` draws the branches and `text(titanic_tree, pretty = 0)` adds the text labeling each node.^[`pretty = 0` cleans up the formatting of the text some.]
+`tree()` does not use `ggplot2` to graph the results; instead it relies on the base `graphics` package. `plot(titanic_tree)` draws the branches and `text(titanic_tree, pretty = 0)` adds the text labeling each node.^[`pretty = 0` cleans up the formatting of the text some.]
 
 ### Build a more complex tree
 
-Since we have a lot of other variables in our Titanic data set, let's estimate a more complex model that accounts for all the information we have.^[Specifically passenger class, gender, age, number of sibling/spouses aboard, number of parents/children aboard, fare, and port of embarkation.] We'll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use `mutate_each()` to apply `as.factor()` to all of these variables in one line of code (another type of iterative operation):
+Since we have a lot of other variables in our Titanic data set, let's estimate a more complex model that accounts for all the information we have.^[Specifically passenger class, gender, age, number of sibling/spouses aboard, number of parents/children aboard, fare, and port of embarkation.] We'll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use `mutate_if()` to apply `as.factor()` to all character columns in one line of code (another type of iterative/conditional operation):
 
 ```{r titanic_tree_full}
 titanic_tree_full_data <- titanic %>%
   mutate(Survived = ifelse(Survived == 1, "Survived",
                            ifelse(Survived == 0, "Died", NA))) %>%
-  mutate_each(funs(as.factor), Survived, Pclass, Sex, Embarked)
+  mutate_if(is.character, as.factor)
 
 titanic_tree_full <- tree(Survived ~ Pclass + Sex + Age + SibSp +
                        Parch + Fare + Embarked, data = titanic_tree_full_data)
@@ -151,10 +143,13 @@ Now we've built a more complicated decision tree. Fortunately it is still pretty
 
 ```{r titanic_tree_complicated, dependson="titanic_tree_full"}
 titanic_tree_messy <- tree(Survived ~ Pclass + Sex + Age + SibSp +
-                       Parch + Fare + Embarked,
-                       data = titanic_tree_full_data,
-                       control = tree.control(nobs = nrow(titanic_tree_full_data),
-                                              mindev = 0, minsize = 10))
+                             Parch + Fare + Embarked,
+                           data = titanic_tree_full_data,
+                           control = tree.control(
+                             nobs = nrow(titanic_tree_full_data),
+                             mindev = 0,
+                             minsize = 10)
+)
 summary(titanic_tree_messy)
 
 plot(titanic_tree_messy)
@@ -180,17 +175,19 @@ Fortuntately, there is an easy way to improve on these poor predictions: by aggr
 
 # Random forests
 
-One method of aggregating trees is the **random forest** approach. This uses the concept of **bootstrapping** to build a forest of trees using the same underlying data set. Bootstrapping is standard resampling process whereby you repeatedly **sample with replacement** from a data set. So if you have a dataset of 500 observations, you might draw a sample of 500 observations from the data. But by sampling with replacement, some observations may be sampled multiple times and some observations may never be sampled. This essentially treats your data as a population of interest. You repeat this process many times (say $k = 1000$), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.
+One method of aggregating trees is the **random forest** approach. This uses the concept of **bootstrapping** to build a forest of trees using the same underlying data set. Bootstrapping is a standard resampling process whereby you repeatedly **sample with replacement** from a data set. So if you have a dataset of 500 observations, you might draw a sample of 500 observations from the data. But by sampling with replacement, some observations may be sampled multiple times and some observations may never be sampled. This essentially treats your data as a population of interest. You repeat this process many times (say $k = 1000$), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.
 
 As with other resampling methods, each individual sample will have some degree of bias to it. However by averaging across all the bootstrapped samples you cancel out much of this bias. Most importantly, averaging a set of observations reduces **variance** - you achieve stable estimates of the prediction accuracy or overall model error.
 
-In the context of decision trees, this means we draw repeated samples from the original dataset and estimate a decision tree model on each sample. To make predictions, we estimate the outcome using each tree and average across all of them to obtain the final prediction. Rather than being a binary outcome ($[0,1]$, survived/died), the average prediction will be a probability of the given outcome (i.e. the probability of survival). This process is called **bagging**. Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. **Random forests specifically exclude a portion of the predictor variables when building individual trees**. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say gender in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more **reliable**.
+In the context of decision trees, this means we draw repeated samples from the original dataset and estimate a decision tree model on each sample. To make predictions, we estimate the outcome using each tree and average across all of them to obtain the final prediction. Rather than being a binary outcome ($[0,1]$, survived/died), the average prediction will be a probability of the given outcome (i.e. the probability of survival). This process is called **bagging**.
+
+Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. **Random forests specifically exclude a portion of the predictor variables when building individual trees**. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say gender in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more **reliable**.
 
 # Estimating statistical models using `caret`
 
 To estimate a random forest, we move outside the world of `tree` and into a new package in R: [`caret`](https://cran.r-project.org/web/packages/caret/index.html). `caret` is a package in R for training and plotting a wide variety of statistical learning models. It is outside of the `tidyverse` so can be a bit more difficult to master. `caret` does not contain the estimation algorithms itself; instead it creates a unified interface to approximately [233 different models](https://topepo.github.io/caret/available-models.html) from various packages in R. To install `caret` and make sure you install all the related packages it relies on, run the following code:
 
-```{r install_caret, eval = FALSE}
+```r
 install.packages("caret", dependencies = TRUE)
 ```
 
@@ -331,10 +328,10 @@ Note that gender and age are important predictors in the random forest, but so t
 To make predictions for the validation set, we use the `predict()` function. By setting `type = "prob"` we will get predicted probabilities for each possible outcome, rather than just a raw prediction of "Survived" or "Died":
 
 ```{r rf_predict, dependson="rf_validate"}
-titanic_pred <- titanic_test %>%
-  bind_cols(predict(rf_full, newdata = titanic_test, type = "prob") %>%
-              rename(prob_dead = Died,
-                     prob_survive = Survived))
+titanic_pred <- predict(rf_full, newdata = titanic_test, type = "prob") %>%
+  rename(prob_dead = Died,
+         prob_survive = Survived) %>%
+  bind_cols(titanic_test)
 titanic_pred
 ```
 
