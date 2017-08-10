@@ -12,12 +12,6 @@ knitr::opts_chunk$set(cache = TRUE,
                       warning = FALSE)
 ```
 
-# Objectives
-
-* Demonstrate the use of logistic regression for classification
-* Implement logistic regression using the `glm()` function
-* Identify methods for assessing classification model accuracy
-
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(modelr)
@@ -96,7 +90,7 @@ travelled with very close friends or neighbors in a village, however,
 the definitions do not support such relations.
 ```
 
-So if this is our data, `Survived` is our **response variable**, and the remaining variables are **predictors**, how can we determine who survives and who dies?
+So if this is our data, `Survived` is our **response variable** and the remaining variables are **predictors**. How can we determine who survives and who dies?
 
 ## A linear regression approach
 
@@ -121,7 +115,7 @@ ggplot(titanic, aes(Age, Survived)) +
 
 What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
 
-Or what if we didn't want to predict survival, but instead predict the port from which an individual departed (Cherbourg, Queenstown, or Southampton). We could try and code this as a numeric response variable:
+Or what if we didn't want to predict survival, but instead predict the port from which an individual departed (Cherbourg, Queenstown, or Southampton)? We could try and code this as a numeric response variable:
 
 Numeric value | Port
 --|---
@@ -153,7 +147,7 @@ Rather than modeling the response $Y$ directly, logistic regression instead mode
 
 $$P(\text{survival} = \text{Yes} | \text{age})$$
 
-The values of $P(\text{survival} = \text{Yes} | \text{age})$ (or simply $p(\text{survival})$ will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $p(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
+The values of $P(\text{survival} = \text{Yes} | \text{age})$ (or simply $p(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $p(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
 
 We can estimate the logistic regression model using the `glm` function.
 
@@ -167,7 +161,8 @@ Which produces a line that looks like this:
 ```{r titanic_age_glm_plot}
 ggplot(titanic, aes(Age, Survived)) +
   geom_point() +
-  geom_smooth(method = "glm", method.args = list(family = "binomial"),
+  geom_smooth(method = "glm",
+              method.args = list(family = "binomial"),
               se = FALSE)
 ```
 
@@ -178,7 +173,7 @@ ggplot(titanic, aes(Age, Survived)) +
   geom_point() +
   geom_smooth(method = "glm", method.args = list(family = "binomial"),
               se = FALSE, fullrange = TRUE) +
-  xlim(0,200)
+  xlim(0, 200)
 ```
 
 No more predictions that a 200 year old has a $-.1$ probability of surviving!
@@ -210,7 +205,7 @@ titanic_age <- titanic_age %>%
 titanic_age
 ```
 
-With this information, we can now plot the logistic regression line using the estimated model (and not just `ggplot2::geom_smooth`):
+With this information, we can now plot the logistic regression line using the estimated model (and not just `ggplot2::geom_smooth()`):
 
 ```{r plot_pred, depends="make_age_pred"}
 ggplot(titanic_age, aes(Age, pred)) +
@@ -253,7 +248,7 @@ This graph illustrates a key fact about surviving the sinking of the Titanic - a
 
 ## Quadratic terms
 
-Logistic regression, like linear regression, assumes each predictor has an independent and linear relationship with the response. That is, it assumes the relationship takes the form $y = \beta_0 + \beta_{1}x$ looks something like this:
+Logistic regression, like linear regression, assumes each predictor has an independent and linear relationship with the response. That is, it assumes the relationship takes the form $y = \beta_0 + \beta_{1}x$ and looks something like this:
 
 ```{r straight_line}
 sim_line <- tibble(x = runif(1000),
@@ -401,7 +396,7 @@ This is reassuring. $`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy
 
 Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
-Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidental election.^[Update `rcfss` using `devtools::install_github("uc-cfss/rcfss")` if you cannot access the data set.]
+Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidental election.
 
 ```{r mental-health}
 library(rcfss)
@@ -463,7 +458,8 @@ mental_health
       mutate(pred = logit2prob(pred),
              pred = as.numeric(pred > .5))
     
-    (mh_model_err <- mean(mh_model_accuracy$vote96 == mh_model_accuracy$pred, na.rm = TRUE))
+    (mh_model_err <- mean(mh_model_accuracy$vote96 == mh_model_accuracy$pred,
+                          na.rm = TRUE))
     ```    
       </p>
     </details>
@@ -487,7 +483,8 @@ mental_health
       mutate(pred = logit2prob(pred),
              pred = as.numeric(pred > .5))
     
-    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 == mh_model_all_accuracy$pred, na.rm = TRUE))
+    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 == mh_model_all_accuracy$pred,
+                              na.rm = TRUE))
     ```
     
     The model with all predictors has a `r formatC((mh_model_all_err - mh_model_err) * 100, digits = 3)`% higher accuracy rate than predictions based only on mental health.
@@ -505,7 +502,9 @@ mental_health
     ```{r augment_broom, depends="make_age_pred"}
     library(broom)
 
-    augment(survive_age, newdata = titanic_age, type.predict = "response") %>%
+    augment(survive_age,
+            newdata = titanic_age,
+            type.predict = "response") %>%
       as_tibble()
     ```
 
