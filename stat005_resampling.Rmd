@@ -12,13 +12,6 @@ knitr::opts_chunk$set(cache = TRUE,
                       warning = FALSE)
 ```
 
-# Objectives
-
-* Define resampling methods
-* Compare and contrast the validation set approach with leave-one-out and $k$-fold cross-validation
-* Define bootstrapping and explain when it can be used in research
-* Demonstrate how to conduct cross-validation and bootstrapping using `modelr`
-
 ```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
 library(tidyverse)
 library(modelr)
@@ -154,9 +147,16 @@ mse(auto_lm, auto_test)
 For a strictly linear model, the MSE for the test set is `r formatC(mse(auto_lm, auto_test), digits = 4)`. How does this compare to a quadratic model? We can use the `poly()` function in conjunction with a `map()` iteration to estimate the MSE for a series of models with higher-order polynomial terms:
 
 ```{r mse_poly, dependson="auto_split"}
+auto_poly_glm <- function(x){
+  glm(mpg ~ poly(horsepower, x), data = auto_train)
+}
+
 auto_poly_results <- data_frame(terms = 1:5,
-           model = map(terms, ~ glm(mpg ~ poly(horsepower, .), data = auto_train)),
-           MSE = map_dbl(model, mse, data = auto_test))
+                                model = map(terms, auto_poly_glm),
+                                MSE = map_dbl(model,
+                                              mse,
+                                              data = auto_test)
+)
 
 ggplot(auto_poly_results, aes(terms, MSE)) +
   geom_line() +
@@ -183,9 +183,7 @@ There are two main problems with validation sets:
         tbl_df()
       
       results <- data_frame(terms = 1:5,
-                            model = map(terms,
-                                        ~ glm(mpg ~ poly(horsepower, .),
-                                              data = auto_train)),
+                            model = map(terms, auto_poly_glm),
                             MSE = map_dbl(model, mse, data = auto_test))
       
       return(results)
@@ -241,13 +239,15 @@ cv_error <- vector("numeric", 5)
 terms <- 1:5
 
 for(i in terms){
-  loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+  loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i),
+                                             data = .)
+  )
   loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
   cv_error[[i]] <- mean(loocv_mse)
 }
 
 cv_mse <- data_frame(terms = terms,
-           cv_MSE = cv_error)
+                     cv_MSE = cv_error)
 cv_mse
 
 ggplot(cv_mse, aes(terms, cv_MSE)) +
@@ -262,12 +262,14 @@ And arrive at a similar conclusion. There may be a very marginal advantage to ad
 
 ## LOOCV in classification
 
-Let's use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom `mse.glm()` function to properly calculate the MSE for binary response variables:^[This function can also be loaded via the [`rcfss`](https://github.com/uc-cfss/rcfss) library. Be sure to update your package to the latest version to make sure the function is available.]
+Let's use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom `mse.glm()` function to properly calculate the MSE for binary response variables:^[This function can also be loaded via the [`rcfss`](https://github.com/uc-cfss/rcfss) library.]
 
 ```{r mse-glm}
 mse.glm <- function (model, data){
   residuals.glm <- function(model, data) {
-    modelr:::response(model, data) - stats::predict(model, data, type = "response")
+    modelr:::response(model, data) - stats::predict(model,
+                                                    data,
+                                                    type = "response")
   }
   
   x <- residuals(model, data)
@@ -277,8 +279,9 @@ mse.glm <- function (model, data){
 
 ```{r titanic_loocv}
 titanic_loocv <- crossv_kfold(titanic, k = nrow(titanic))
-titanic_models <- map(titanic_loocv$train, ~ glm(Survived ~ Age * Sex, data = .,
-                                               family = binomial))
+titanic_models <- map(titanic_loocv$train, ~ glm(Survived ~ Age * Sex,
+                                                 data = .,
+                                                 family = binomial))
 titanic_mse <- map2_dbl(titanic_models, titanic_loocv$test, mse.glm)
 mean(titanic_mse, na.rm = TRUE)
 ```
@@ -351,7 +354,9 @@ cv_error_fold10 <- vector("numeric", 5)
 terms <- 1:5
 
 for(i in terms){
-  cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+  cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i),
+                                           data = .)
+  )
   cv10_mse <- map2_dbl(cv10_models, cv10_data$test, mse)
   cv_error_fold10[[i]] <- mean(cv10_mse)
 }
@@ -398,8 +403,6 @@ profvis({
 ### 10-fold CV
 
 ```{r kfold_time}
-library(profvis)
-
 profvis({
   cv_error_fold10 <- vector("numeric", 5)
   terms <- 1:5
@@ -420,8 +423,9 @@ You've gotten the idea by now, but let's do it one more time on our interactive 
 
 ```{r titanic_kfold}
 titanic_kfold <- crossv_kfold(titanic, k = 10)
-titanic_models <- map(titanic_kfold$train, ~ glm(Survived ~ Age * Sex, data = .,
-                                               family = binomial))
+titanic_models <- map(titanic_kfold$train, ~ glm(Survived ~ Age * Sex,
+                                                 data = .,
+                                                 family = binomial))
 titanic_mse <- map2_dbl(titanic_models, titanic_kfold$test, mse.glm)
 mean(titanic_mse, na.rm = TRUE)
 ```
@@ -531,7 +535,7 @@ ggplot(ice, aes(sim)) +
 
 The mean of this sample is `r mean(ice$sim)`, which we will treat as the population mean $\mu$. Remember that in the real world, we do not know $\mu$ because we have not observed all members of the population. Instead, we use the sample to estimate $\hat{\mu}$ on the assumption that the sample mean approximates the true mean.
 
-The [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) is the most likely population distribution as it describes the count of event over time. The probability mass function of the Poisson distribution is
+The [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) is the most likely population distribution as it describes the count of events over time. The probability mass function of the Poisson distribution is
 
 $$P(k) = \frac{\lambda^{k} e^{-k}}{k!}$$
 
@@ -539,7 +543,7 @@ where $\lambda$ is the event rate (average number of events per interval), $e$ i
 
 Because we are estimating $\mu$ from a sample, we should also estimate the **standard error** of the sample mean. This is necessary because any random sample drawn from a population will not exactly reproduce the population. We need to account for sampling error by estimating how much our sample mean $\hat{\mu}$ might differ from the true mean $\mu$.
 
-The distribution of the mean of a set of samples is approximately [normally distributed](https://en.wikipedia.org/wiki/Normal_distribution).^[As defined by the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).] Therefore the standard error of the sample mean from a Poisson distribution is
+The distribution of the mean of a set of samples is approximately [normal](https://en.wikipedia.org/wiki/Normal_distribution).^[As defined by the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).] Therefore the standard error of the sample mean from a Poisson distribution is
 
 $$\sqrt{\frac{\lambda}{n}}$$
 
@@ -569,19 +573,24 @@ boot_sem <- sd(ice_boot$mean)
 ```{r ice-boot-plot}
 ggplot(ice_boot, aes(mean)) +
   geom_histogram(binwidth = .01) +
-  geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
-  geom_vline(aes(xintercept = lambda_samp, color = "Sample mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda,
+                 color = "Population mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda_samp,
+                 color = "Sample mean"), size = 1) +
   geom_vline(aes(xintercept = mean(ice_boot$mean),
                  color = "Bootstrapped mean"), size = 1) +
   geom_vline(aes(xintercept = mean(ice_boot$mean) + 1.96 * boot_sem,
                  color = "Bootstrapped mean"), linetype = 2) +
   geom_vline(aes(xintercept = mean(ice_boot$mean) - 1.96 * boot_sem,
                  color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = lambda_samp + 1.96 * sem, color = "Sample mean"),
+  geom_vline(aes(xintercept = lambda_samp + 1.96 * sem,
+                 color = "Sample mean"),
              linetype = 2) +
-  geom_vline(aes(xintercept = lambda_samp - 1.96 * sem, color = "Sample mean"),
+  geom_vline(aes(xintercept = lambda_samp - 1.96 * sem,
+                 color = "Sample mean"),
              linetype = 2) +
-  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean",
+  scale_color_manual(name = NULL, breaks = c("Population mean",
+                                             "Sample mean",
                                              "Bootstrapped mean"),
                      values = c("blue", "green", "orange")) +
   labs(x = "Bootstrapped sample mean",
@@ -615,19 +624,24 @@ boot2_sem <- sd(ice2_boot$mean)
 # plot the bootstrapped distribution
 ggplot(ice2_boot, aes(mean)) +
   geom_histogram(binwidth = .01) +
-  geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
-  geom_vline(aes(xintercept = lambda2_samp, color = "Sample mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda,
+                 color = "Population mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda2_samp,
+                 color = "Sample mean"), size = 1) +
   geom_vline(aes(xintercept = mean(ice2_boot$mean),
                  color = "Bootstrapped mean"), size = 1) +
   geom_vline(aes(xintercept = mean(ice2_boot$mean) + 1.96 * boot2_sem,
                  color = "Bootstrapped mean"), linetype = 2) +
   geom_vline(aes(xintercept = mean(ice2_boot$mean) - 1.96 * boot2_sem,
                  color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = lambda2_samp + 1.96 * sem2, color = "Sample mean"),
+  geom_vline(aes(xintercept = lambda2_samp + 1.96 * sem2,
+                 color = "Sample mean"),
              linetype = 2) +
-  geom_vline(aes(xintercept = lambda2_samp - 1.96 * sem2, color = "Sample mean"),
+  geom_vline(aes(xintercept = lambda2_samp - 1.96 * sem2,
+                 color = "Sample mean"),
              linetype = 2) +
-  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean",
+  scale_color_manual(name = NULL, breaks = c("Population mean",
+                                             "Sample mean",
                                              "Bootstrapped mean"),
                      values = c("blue", "green", "orange")) +
   labs(x = "Bootstrapped sample mean",
@@ -640,9 +654,9 @@ The population mean $\mu$ is still defined as 5, but now look what happens to th
 
 In a linear regression model, the standard errors are statistical estimates of the average amount that the estimated parameters $\hat{\beta}$ differ from the true population parameters $\beta$. The formula for estimating standard errors for a linear regression model is:
 
-$$\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\sigma^{2} (X^{T}X)^{-1}_{jj}}$$
+$$\widehat{s.e.}(\mathbf{\hat{\beta}}_j) = \sqrt{\sigma^{2} (\mathbf{X}^{T}\mathbf{X})^{-1}_{jj}}$$
 
-More simply this is the square root of the diagonal of the [variance-covariance matrix](https://en.wikipedia.org/wiki/Ordinary_least_squares#Finite_sample_properties). For the formula to hold, we make certain assumptions, including that our estimate of $\sigma^2$ is accurate and that any variability in the model after we account for $X$ is the result of the errors $\epsilon$. If these assumptions are wrong, then our estimates of the standard errors will also be wrong.
+More simply this is the square root of the diagonal of the [variance-covariance matrix](https://en.wikipedia.org/wiki/Ordinary_least_squares#Finite_sample_properties). For the formula to hold, we make certain assumptions, including that our estimate of the variance $\sigma^2$ is accurate and that any variability in the model after we account for $\mathbf{X}$ is the result of the errors $\epsilon$. If these assumptions are wrong, then our estimates of the standard errors will also be wrong.
 
 Let's revisit our horsepower and highway mileage linear model.
 
@@ -681,7 +695,8 @@ tidy(auto2_lm)
 # bootstrapped estimates of the parameter estimates and standard errors
 auto2_boot <- Auto %>%
   modelr::bootstrap(1000) %>%
-  mutate(model = map(strap, ~ lm(mpg ~ horsepower + I(horsepower^2), data = .)),
+  mutate(model = map(strap, ~ lm(mpg ~ horsepower + I(horsepower^2),
+                                 data = .)),
          coef = map(model, tidy))
 
 auto2_boot %>%
