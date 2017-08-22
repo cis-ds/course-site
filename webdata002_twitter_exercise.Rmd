@@ -1,0 +1,142 @@
+---
+title: "Practice getting data from the Twitter API"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(broom)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+There are several packages for R for accessing and searching Twitter. Twitter actually has two separate APIs:
+
+1. The **REST** API - this allows you programmatic access to read and write Twitter data. For research purposes, this allows you to search the recent history of tweets and look up specific users.
+1. The **Streaming** API - this allows you to access the public data flowing through Twitter in real-time. It requires your R session to be running continuously, but allows you to capture a much larger sample of tweets while avoiding rate limits for the REST API.
+
+* [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html) is the most popular package for R, but it only allows you to access the REST API.
+* [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html) is more complicated, but allows you to query the Streaming API from R.
+
+# Using `twitteR`
+
+Here, we are going to practice using the `twitteR` package to search Twitter.
+
+```r
+install.packages("twitteR")
+```
+
+```{r twitter}
+library(twitteR)
+```
+
+## OAuth authentication
+
+OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.
+
+1. The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (https://apps.twitter.com/app/new) and log in. After filling in the basic info (make sure to set the "Callback URL" to "http://127.0.0.1:1410"), go to the **Permissions** tab and select "Read, Write and Access direct messages". Make sure to click on the save button after doing this. In the **Details** tab, take note of your consumer key and consumer secret.
+
+1. Store your API key and token using the `.Rprofile` method. Edit `.Rprofile` and add
+
+    ```r
+    options(twitter_api_key = "Your API key")
+    options(twitter_api_token = "Your API secret")
+    ```
+
+    Restart RStudio to get the keys loaded into your environment.
+    
+1. Run from the console:
+
+    ```r
+    setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                        consumer_secret = getOption("twitter_api_token"))
+    ```
+    
+    This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.
+    
+1. At this point you should get a message back in RStudio "Authentication complete." You're done setting up the authentication for `twitteR`.
+
+**You must do this in order to query Twitter from within a non-interactive session (i.e. an R Markdown document or using `source()` to run a script).** If you do not, you will get an error because R will not be able to finish the authentication process without your input.
+
+## Searching tweets
+
+```{r twitter-setup, echo = FALSE}
+setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                    consumer_secret = getOption("twitter_api_token"))
+```
+
+```{r twitter-rstats}
+tweets <- searchTwitter('#rstats', n = 5)
+tweets
+```
+
+## Searching users
+
+Use `getUser()` which returns a `user` object that you can perform additional functions on. This only works for users with public profiles or those that have authorized your app.
+
+```{r twitter-clinton}
+clinton <- getUser("hillaryclinton")
+clinton$getDescription()
+clinton$getFriends(n = 5)
+```
+
+## Tidying tweets
+
+By default `twitteR` returns tweets in complex lists.
+
+```{r twitter-list}
+str(tweets)
+```
+
+To get the data into a data frame, use
+
+```{r twitter-df}
+df <- twListToDF(tweets) %>%
+  as_tibble()
+df
+```
+
+# Exercise: Practice using `twitteR`
+
+1. Create a new R project on your computer. You can use Git or not - it is just for practice in class today
+1. Setup your API key with a Twitter app
+1. Authenticate using the `twitteR` package in R
+1. Find the 50 most recent tweets by [President Donald Trump](https://twitter.com/realDonaldTrump) and store them in a data frame
+    * `userTimeline()` can be used to retrieve tweets from individual users
+    * `searchTwitter()` finds tweets from any public account that references the username
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+```{r twitter-donald}
+setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
+                    consumer_secret = getOption("twitter_api_token"))
+
+trump <- userTimeline("realDonaldTrump", n = 50)
+
+trump_df <- twListToDF(trump) %>%
+  as_tibble()
+trump_df
+```
+    
+  </p>
+</details>
+
+# Acknowledgments {.toc-ignore}
+
+```{r child='_ack_stat545.Rmd'}
+```
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```

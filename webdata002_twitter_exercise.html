@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Practice getting data from the Twitter API</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Practice getting data from the Twitter API</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(broom)
+
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<p>There are several packages for R for accessing and searching Twitter. Twitter actually has two separate APIs:</p>
+<ol style="list-style-type: decimal">
+<li>The <strong>REST</strong> API - this allows you programmatic access to read and write Twitter data. For research purposes, this allows you to search the recent history of tweets and look up specific users.</li>
+<li>The <strong>Streaming</strong> API - this allows you to access the public data flowing through Twitter in real-time. It requires your R session to be running continuously, but allows you to capture a much larger sample of tweets while avoiding rate limits for the REST API.</li>
+</ol>
+<ul>
+<li><a href="https://cran.rstudio.com/web/packages/twitteR/index.html"><code>twitteR</code></a> is the most popular package for R, but it only allows you to access the REST API.</li>
+<li><a href="https://cran.rstudio.com/web/packages/streamR/index.html"><code>streamR</code></a> is more complicated, but allows you to query the Streaming API from R.</li>
+</ul>
+<div id="using-twitter" class="section level1">
+<h1>Using <code>twitteR</code></h1>
+<p>Here, we are going to practice using the <code>twitteR</code> package to search Twitter.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;twitteR&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(twitteR)</code></pre></div>
+<pre><code>## 
+## Attaching package: &#39;twitteR&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
+## 
+##     id, location</code></pre>
+<div id="oauth-authentication" class="section level2">
+<h2>OAuth authentication</h2>
+<p>OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.</p>
+<ol style="list-style-type: decimal">
+<li><p>The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (<a href="https://apps.twitter.com/app/new" class="uri">https://apps.twitter.com/app/new</a>) and log in. After filling in the basic info (make sure to set the “Callback URL” to “<a href="http://127.0.0.1:1410" class="uri">http://127.0.0.1:1410</a>”), go to the <strong>Permissions</strong> tab and select “Read, Write and Access direct messages”. Make sure to click on the save button after doing this. In the <strong>Details</strong> tab, take note of your consumer key and consumer secret.</p></li>
+<li><p>Store your API key and token using the <code>.Rprofile</code> method. Edit <code>.Rprofile</code> and add</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">twitter_api_key =</span> <span class="st">&quot;Your API key&quot;</span>)
+<span class="kw">options</span>(<span class="dt">twitter_api_token =</span> <span class="st">&quot;Your API secret&quot;</span>)</code></pre></div>
+<p>Restart RStudio to get the keys loaded into your environment.</p></li>
+<li><p>Run from the console:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setup_twitter_oauth</span>(<span class="dt">consumer_key =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_key&quot;</span>),
+                    <span class="dt">consumer_secret =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_token&quot;</span>))</code></pre></div>
+<p>This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.</p></li>
+<li><p>At this point you should get a message back in RStudio “Authentication complete.” You’re done setting up the authentication for <code>twitteR</code>.</p></li>
+</ol>
+<p><strong>You must do this in order to query Twitter from within a non-interactive session (i.e. an R Markdown document or using <code>source()</code> to run a script).</strong> If you do not, you will get an error because R will not be able to finish the authentication process without your input.</p>
+</div>
+<div id="searching-tweets" class="section level2">
+<h2>Searching tweets</h2>
+<pre><code>## [1] &quot;Using browser based authentication&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tweets &lt;-<span class="st"> </span><span class="kw">searchTwitter</span>(<span class="st">&#39;#rstats&#39;</span>, <span class="dt">n =</span> <span class="dv">5</span>)
+tweets</code></pre></div>
+<pre><code>## [[1]]
+## [1] &quot;giorapac: microPop: Modelling microbial populations and communities in R #rstats @MethodsEcolEvol https://t.co/YrOKCU0BCd&quot;
+## 
+## [[2]]
+## [1] &quot;RLionheart92: Got around to sorting out my personal site, inspired by @Emaasit  using #rstats and @xieyihui blogdown package.… https://t.co/EaiFJj8A2H&quot;
+## 
+## [[3]]
+## [1] &quot;dataframing: Sunk cost fallacy is running a LENGTHY block of #rstats code and not assigning the output to a variable because it&#39;s already running.&quot;
+## 
+## [[4]]
+## [1] &quot;Pvalsfr: RT @Rbloggers: Learning things we already know about stocks https://t.co/cy7kKWz4y6 #rstats #DataScience&quot;
+## 
+## [[5]]
+## [1] &quot;ecuervog: RT @Rbloggers: An Introduction to Stock Market Data Analysis with R (Part 1) https://t.co/gbLfQEI7ZY #rstats #DataScience&quot;</code></pre>
+</div>
+<div id="searching-users" class="section level2">
+<h2>Searching users</h2>
+<p>Use <code>getUser()</code> which returns a <code>user</code> object that you can perform additional functions on. This only works for users with public profiles or those that have authorized your app.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clinton &lt;-<span class="st"> </span><span class="kw">getUser</span>(<span class="st">&quot;hillaryclinton&quot;</span>)
+clinton<span class="op">$</span><span class="kw">getDescription</span>()</code></pre></div>
+<pre><code>## [1] &quot;Wife, mom, grandma, women+kids advocate, FLOTUS, Senator, SecState, hair icon, pantsuit aficionado, 2016 presidential candidate.&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clinton<span class="op">$</span><span class="kw">getFriends</span>(<span class="dt">n =</span> <span class="dv">5</span>)</code></pre></div>
+<pre><code>## $`28185163`
+## [1] &quot;BeauWillimon&quot;
+## 
+## $`800704496246484992`
+## [1] &quot;swingleft&quot;
+## 
+## $`18602100`
+## [1] &quot;PhilippeReines&quot;
+## 
+## $`809420163711909888`
+## [1] &quot;runforsomething&quot;
+## 
+## $`30354991`
+## [1] &quot;KamalaHarris&quot;</code></pre>
+</div>
+<div id="tidying-tweets" class="section level2">
+<h2>Tidying tweets</h2>
+<p>By default <code>twitteR</code> returns tweets in complex lists.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(tweets)</code></pre></div>
+<pre><code>## List of 5
+##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
+##   ..$ text         : chr &quot;microPop: Modelling microbial populations and communities in R #rstats @MethodsEcolEvol https://t.co/YrOKCU0BCd&quot;
+##   ..$ favorited    : logi FALSE
+##   ..$ favoriteCount: num 0
+##   ..$ replyToSN    : chr(0) 
+##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:45:24&quot;
+##   ..$ truncated    : logi FALSE
+##   ..$ replyToSID   : chr(0) 
+##   ..$ id           : chr &quot;900066388693327873&quot;
+##   ..$ replyToUID   : chr(0) 
+##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter Web Client&lt;/a&gt;&quot;
+##   ..$ screenName   : chr &quot;giorapac&quot;
+##   ..$ retweetCount : num 0
+##   ..$ isRetweet    : logi FALSE
+##   ..$ retweeted    : logi FALSE
+##   ..$ longitude    : chr(0) 
+##   ..$ latitude     : chr(0) 
+##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
+##   .. ..$ url         : chr &quot;https://t.co/YrOKCU0BCd&quot;
+##   .. ..$ expanded_url: chr &quot;http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12873/abstract&quot;
+##   .. ..$ display_url : chr &quot;onlinelibrary.wiley.com/doi/10.1111/20…&quot;
+##   .. ..$ start_index : num 88
+##   .. ..$ stop_index  : num 111
+##   ..and 53 methods, of which 39 are  possibly relevant:
+##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
+##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
+##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
+##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
+##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
+##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
+##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
+##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
+##   ..  toDataFrame, toDataFrame#twitterObj
+##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
+##   ..$ text         : chr &quot;Got around to sorting out my personal site, inspired by @Emaasit  using #rstats and @xieyihui blogdown package.&quot;| __truncated__
+##   ..$ favorited    : logi FALSE
+##   ..$ favoriteCount: num 0
+##   ..$ replyToSN    : chr(0) 
+##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:45:13&quot;
+##   ..$ truncated    : logi TRUE
+##   ..$ replyToSID   : chr(0) 
+##   ..$ id           : chr &quot;900066345676664835&quot;
+##   ..$ replyToUID   : chr(0) 
+##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com/download/iphone\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter for iPhone&lt;/a&gt;&quot;
+##   ..$ screenName   : chr &quot;RLionheart92&quot;
+##   ..$ retweetCount : num 0
+##   ..$ isRetweet    : logi FALSE
+##   ..$ retweeted    : logi FALSE
+##   ..$ longitude    : chr(0) 
+##   ..$ latitude     : chr(0) 
+##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
+##   .. ..$ url         : chr &quot;https://t.co/EaiFJj8A2H&quot;
+##   .. ..$ expanded_url: chr &quot;https://twitter.com/i/web/status/900066345676664835&quot;
+##   .. ..$ display_url : chr &quot;twitter.com/i/web/status/9…&quot;
+##   .. ..$ start_index : num 113
+##   .. ..$ stop_index  : num 136
+##   ..and 53 methods, of which 39 are  possibly relevant:
+##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
+##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
+##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
+##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
+##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
+##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
+##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
+##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
+##   ..  toDataFrame, toDataFrame#twitterObj
+##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
+##   ..$ text         : chr &quot;Sunk cost fallacy is running a LENGTHY block of #rstats code and not assigning the output to a variable because&quot;| __truncated__
+##   ..$ favorited    : logi FALSE
+##   ..$ favoriteCount: num 0
+##   ..$ replyToSN    : chr(0) 
+##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:44:50&quot;
+##   ..$ truncated    : logi FALSE
+##   ..$ replyToSID   : chr(0) 
+##   ..$ id           : chr &quot;900066248393990144&quot;
+##   ..$ replyToUID   : chr(0) 
+##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com/download/iphone\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter for iPhone&lt;/a&gt;&quot;
+##   ..$ screenName   : chr &quot;dataframing&quot;
+##   ..$ retweetCount : num 0
+##   ..$ isRetweet    : logi FALSE
+##   ..$ retweeted    : logi FALSE
+##   ..$ longitude    : chr(0) 
+##   ..$ latitude     : chr(0) 
+##   ..$ urls         :&#39;data.frame&#39;:    0 obs. of  4 variables:
+##   .. ..$ url         : chr(0) 
+##   .. ..$ expanded_url: chr(0) 
+##   .. ..$ dispaly_url : chr(0) 
+##   .. ..$ indices     : num(0) 
+##   ..and 53 methods, of which 39 are  possibly relevant:
+##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
+##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
+##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
+##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
+##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
+##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
+##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
+##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
+##   ..  toDataFrame, toDataFrame#twitterObj
+##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
+##   ..$ text         : chr &quot;RT @Rbloggers: Learning things we already know about stocks https://t.co/cy7kKWz4y6 #rstats #DataScience&quot;
+##   ..$ favorited    : logi FALSE
+##   ..$ favoriteCount: num 0
+##   ..$ replyToSN    : chr(0) 
+##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:40:49&quot;
+##   ..$ truncated    : logi FALSE
+##   ..$ replyToSID   : chr(0) 
+##   ..$ id           : chr &quot;900065237105332224&quot;
+##   ..$ replyToUID   : chr(0) 
+##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com/download/android\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter for Android&lt;/a&gt;&quot;
+##   ..$ screenName   : chr &quot;Pvalsfr&quot;
+##   ..$ retweetCount : num 3
+##   ..$ isRetweet    : logi TRUE
+##   ..$ retweeted    : logi FALSE
+##   ..$ longitude    : chr(0) 
+##   ..$ latitude     : chr(0) 
+##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
+##   .. ..$ url         : chr &quot;https://t.co/cy7kKWz4y6&quot;
+##   .. ..$ expanded_url: chr &quot;https://wp.me/pMm6L-E8r&quot;
+##   .. ..$ display_url : chr &quot;wp.me/pMm6L-E8r&quot;
+##   .. ..$ start_index : num 60
+##   .. ..$ stop_index  : num 83
+##   ..and 53 methods, of which 39 are  possibly relevant:
+##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
+##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
+##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
+##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
+##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
+##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
+##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
+##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
+##   ..  toDataFrame, toDataFrame#twitterObj
+##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
+##   ..$ text         : chr &quot;RT @Rbloggers: An Introduction to Stock Market Data Analysis with R (Part 1) https://t.co/gbLfQEI7ZY #rstats #DataScience&quot;
+##   ..$ favorited    : logi FALSE
+##   ..$ favoriteCount: num 0
+##   ..$ replyToSN    : chr(0) 
+##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:40:40&quot;
+##   ..$ truncated    : logi FALSE
+##   ..$ replyToSID   : chr(0) 
+##   ..$ id           : chr &quot;900065198479990784&quot;
+##   ..$ replyToUID   : chr(0) 
+##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter Web Client&lt;/a&gt;&quot;
+##   ..$ screenName   : chr &quot;ecuervog&quot;
+##   ..$ retweetCount : num 57
+##   ..$ isRetweet    : logi TRUE
+##   ..$ retweeted    : logi FALSE
+##   ..$ longitude    : chr(0) 
+##   ..$ latitude     : chr(0) 
+##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
+##   .. ..$ url         : chr &quot;https://t.co/gbLfQEI7ZY&quot;
+##   .. ..$ expanded_url: chr &quot;https://wp.me/pMm6L-CFU&quot;
+##   .. ..$ display_url : chr &quot;wp.me/pMm6L-CFU&quot;
+##   .. ..$ start_index : num 77
+##   .. ..$ stop_index  : num 100
+##   ..and 53 methods, of which 39 are  possibly relevant:
+##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
+##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
+##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
+##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
+##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
+##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
+##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
+##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
+##   ..  toDataFrame, toDataFrame#twitterObj</code></pre>
+<p>To get the data into a data frame, use</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">twListToDF</span>(tweets) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>()
+df</code></pre></div>
+<pre><code>## # A tibble: 5 x 16
+##                                                                          text
+##                                                                         &lt;chr&gt;
+## 1 microPop: Modelling microbial populations and communities in R #rstats @Met
+## 2 Got around to sorting out my personal site, inspired by @Emaasit  using #rs
+## 3 Sunk cost fallacy is running a LENGTHY block of #rstats code and not assign
+## 4 RT @Rbloggers: Learning things we already know about stocks https://t.co/cy
+## 5 RT @Rbloggers: An Introduction to Stock Market Data Analysis with R (Part 1
+## # ... with 15 more variables: favorited &lt;lgl&gt;, favoriteCount &lt;dbl&gt;,
+## #   replyToSN &lt;lgl&gt;, created &lt;dttm&gt;, truncated &lt;lgl&gt;, replyToSID &lt;lgl&gt;,
+## #   id &lt;chr&gt;, replyToUID &lt;lgl&gt;, statusSource &lt;chr&gt;, screenName &lt;chr&gt;,
+## #   retweetCount &lt;dbl&gt;, isRetweet &lt;lgl&gt;, retweeted &lt;lgl&gt;, longitude &lt;lgl&gt;,
+## #   latitude &lt;lgl&gt;</code></pre>
+</div>
+</div>
+<div id="exercise-practice-using-twitter" class="section level1">
+<h1>Exercise: Practice using <code>twitteR</code></h1>
+<ol style="list-style-type: decimal">
+<li>Create a new R project on your computer. You can use Git or not - it is just for practice in class today</li>
+<li>Setup your API key with a Twitter app</li>
+<li>Authenticate using the <code>twitteR</code> package in R</li>
+<li>Find the 50 most recent tweets by <a href="https://twitter.com/realDonaldTrump">President Donald Trump</a> and store them in a data frame
+<ul>
+<li><code>userTimeline()</code> can be used to retrieve tweets from individual users</li>
+<li><code>searchTwitter()</code> finds tweets from any public account that references the username</li>
+</ul></li>
+</ol>
+<details> <summary>Click for the solution</summary>
+<p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setup_twitter_oauth</span>(<span class="dt">consumer_key =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_key&quot;</span>),
+                    <span class="dt">consumer_secret =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_token&quot;</span>))</code></pre></div>
+<pre><code>## [1] &quot;Using browser based authentication&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trump &lt;-<span class="st"> </span><span class="kw">userTimeline</span>(<span class="st">&quot;realDonaldTrump&quot;</span>, <span class="dt">n =</span> <span class="dv">50</span>)
+
+trump_df &lt;-<span class="st"> </span><span class="kw">twListToDF</span>(trump) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>()
+trump_df</code></pre></div>
+<pre><code>## # A tibble: 43 x 16
+##                                                                           text
+##                                                                          &lt;chr&gt;
+##  1 Was with great people last night in Fort Myer, Virginia. The future of our 
+##  2 &quot;Address to the Nation\nFull Video &amp;amp; Transcript:\nhttps://t.co/FELdImTu
+##  3 &quot;Thank you to the men and women of Fort Myer, and every member of the U.S. 
+##  4  &quot;Join me live from Fort Myer in Arlington, Virginia. \n➡️https://t.co/LOV4S
+##  5 Thank you, the very dishonest Fake News Media is out of control! https://t.
+##  6 Jerry Falwell of Liberty University was fantastic on @foxandfriends. The Fa
+##  7 Thoughts &amp;amp; prayers are w/ our @USNavy sailors aboard the #USSJohnSMcCai
+##  8 Heading back to Washington after working hard and watching some of the wors
+##  9 I want to applaud the many protestors in Boston who are speaking out agains
+## 10 Our great country has been divided for decades. Sometimes you need protest 
+## # ... with 33 more rows, and 15 more variables: favorited &lt;lgl&gt;,
+## #   favoriteCount &lt;dbl&gt;, replyToSN &lt;chr&gt;, created &lt;dttm&gt;, truncated &lt;lgl&gt;,
+## #   replyToSID &lt;chr&gt;, id &lt;chr&gt;, replyToUID &lt;chr&gt;, statusSource &lt;chr&gt;,
+## #   screenName &lt;chr&gt;, retweetCount &lt;dbl&gt;, isRetweet &lt;lgl&gt;,
+## #   retweeted &lt;lgl&gt;, longitude &lt;lgl&gt;, latitude &lt;lgl&gt;</code></pre>
+</p>
+<p></details></p>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## Session info -------------------------------------------------------------</code></pre>
+<pre><code>##  setting  value                       
+##  version  R version 3.4.1 (2017-06-30)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2017-08-22</code></pre>
+<pre><code>## Packages -----------------------------------------------------------------</code></pre>
+<pre><code>##  package    * version    date       source                              
+##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
+##  backports    1.1.0      2017-05-22 CRAN (R 3.4.0)                      
+##  base       * 3.4.1      2017-07-07 local                               
+##  bindr        0.1        2016-11-13 CRAN (R 3.4.0)                      
+##  bindrcpp     0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  bit          1.1-12     2014-04-09 CRAN (R 3.4.0)                      
+##  bit64        0.9-7      2017-05-08 CRAN (R 3.4.0)                      
+##  boxes        0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
+##  broom      * 0.4.2      2017-08-09 local                               
+##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                      
+##  clisymbols   1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.4.1)                      
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                      
+##  compiler     3.4.1      2017-07-07 local                               
+##  crayon       1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  curl         2.8.1      2017-07-21 CRAN (R 3.4.1)                      
+##  datasets   * 3.4.1      2017-07-07 local                               
+##  DBI          0.7        2017-06-18 CRAN (R 3.4.0)                      
+##  devtools     1.13.3     2017-08-02 CRAN (R 3.4.1)                      
+##  digest       0.6.12     2017-01-27 CRAN (R 3.4.0)                      
+##  dplyr      * 0.7.2.9000 2017-08-10 Github (tidyverse/dplyr@65db321)    
+##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                      
+##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
+##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.1)                      
+##  ggplot2    * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
+##  glue         1.1.1      2017-06-21 CRAN (R 3.4.1)                      
+##  graphics   * 3.4.1      2017-07-07 local                               
+##  grDevices  * 3.4.1      2017-07-07 local                               
+##  grid         3.4.1      2017-07-07 local                               
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.4.0)                      
+##  haven        1.1.0      2017-07-09 CRAN (R 3.4.1)                      
+##  hms          0.3        2016-11-22 CRAN (R 3.4.0)                      
+##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                      
+##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                      
+##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                      
+##  knitr        1.17       2017-08-10 cran (@1.17)                        
+##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.1)                      
+##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
+##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
+##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                      
+##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
+##  methods    * 3.4.1      2017-07-07 local                               
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
+##  modelr       0.1.1      2017-08-10 local                               
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
+##  nlme         3.1-131    2017-02-06 CRAN (R 3.4.1)                      
+##  openssl      0.9.6      2016-12-31 CRAN (R 3.4.0)                      
+##  parallel     3.4.1      2017-07-07 local                               
+##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                      
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                      
+##  psych        1.7.5      2017-05-03 CRAN (R 3.4.1)                      
+##  purrr      * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
+##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                      
+##  Rcpp         0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
+##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                      
+##  reshape2     1.4.2      2016-10-22 CRAN (R 3.4.0)                      
+##  rjson        0.2.15     2014-11-03 CRAN (R 3.4.0)                      
+##  rlang        0.1.2      2017-08-09 CRAN (R 3.4.1)                      
+##  rmarkdown    1.6        2017-06-15 CRAN (R 3.4.0)                      
+##  rprojroot    1.2        2017-01-16 CRAN (R 3.4.0)                      
+##  rstudioapi   0.6        2016-06-27 CRAN (R 3.4.0)                      
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.4.0)                      
+##  scales       0.4.1      2016-11-09 CRAN (R 3.4.0)                      
+##  stats      * 3.4.1      2017-07-07 local                               
+##  stringi      1.1.5      2017-04-07 CRAN (R 3.4.0)                      
+##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
+##  tibble     * 1.3.4      2017-08-22 CRAN (R 3.4.1)                      
+##  tidyr      * 0.7.0      2017-08-16 CRAN (R 3.4.1)                      
+##  tidyverse  * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
+##  tools        3.4.1      2017-07-07 local                               
+##  twitteR    * 1.1.9      2015-07-29 CRAN (R 3.4.0)                      
+##  utils      * 3.4.1      2017-07-07 local                               
+##  withr        2.0.0      2017-07-28 CRAN (R 3.4.1)                      
+##  xml2         1.1.1      2017-01-24 CRAN (R 3.4.0)                      
+##  yaml         2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
