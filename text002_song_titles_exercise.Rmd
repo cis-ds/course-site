@@ -19,7 +19,11 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-# Downloading Population Data for U.S. States
+Today let's practice our `tidytext` skills with a basic analysis of song titles. That is, how often is each U.S. state mentioned in a popular song? We'll define popular songs as those in *Billboard*'s Year-End Hot 100 from 1958 to the present.
+
+# Download population data for U.S. states
+
+First let's use the `acs` package to access the U.S. Census Bureau API and obtain population numbers for each state in 2014. This will help us later to normalize state mentions based on relative population size.^[For instance, California has a lot more people than Rhode Island so it makes sense that California would be mentioned more often in popular songs. But per capita, are these mentions different?]
 
 ```{r acs-pop}
 # retrieve state populations in 2014 from Census Bureau
@@ -31,6 +35,7 @@ popfetch <- acs.fetch(geography = stategeo,
                       col.names = "pretty",
                       key = getOption("census_key"))
 
+# convert to data frame and keep only relevant columns/rows
 pop_df <- popfetch %>%
   estimate %>%
   reshape2::melt() %>%
@@ -38,16 +43,22 @@ pop_df <- popfetch %>%
   mutate(state_name = tolower(Var1),
          pop2014 = value) %>%
   select(state_name, pop2014) %>%
-  filter(state_name != "puerto rico")
+  filter(state_name != "puerto rico") %>%
+  write_csv("data/pop2014.csv")
 
+# do these results make sense?
 pop_df %>% 
   arrange(desc(pop2014)) %>%
   top_n(10)
 ```
 
-# Song Lyrics
+> To import the data in-class, just use `read_csv("http://cfss.uchicago.edu/data/pop2014.csv")`
 
-```{r lyrics-download, eval = FALSE}
+# Retrieve song lyrics
+
+Next we need to retrieve the song lyrics for all our songs. [Kaylin Walker](http://kaylinwalker.com/50-years-of-pop-music/) provides a [GitHub repo with the necessary files.](https://github.com/walkerkq/musiclyrics)
+
+```{r lyrics-download, include = FALSE, eval = FALSE}
 # download file from GitHub repo
 library(downloader)
 download("https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_1964-2015.csv",
@@ -60,8 +71,20 @@ song_lyrics <- read_csv("data/billboard_lyrics_1964-2015.csv")
 names(song_lyrics)
 ```
 
-# Finding the state names in the song lyrics
+> To import the data in-class, just use `read_csv("http://cfss.uchicago.edu/data/billboard_lyrics_1964-2015.csv")`
 
+# Find and visualize the state names in the song lyrics
+
+Now your work begins!
+
+### Use `tidytext` to create a data frame with one row for each token in each song
+
+Hint: To search for matching state names, this data frame should include both **unigrams** and **bi-grams**.
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
 ```{r lyrics-tidy}
 tidy_lyrics <- bind_rows(song_lyrics %>% 
                            unnest_tokens(state_name, Lyrics),
@@ -73,8 +96,17 @@ tidy_lyrics
 
 The variable `state_name` in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.
 
-Now we can use an inner join to find all the state names that are actually there.
+  </p>
+</details>
 
+### Find all the state names occurring in the song lyrics
+
+First create a data frame that meets this criteria, then save a new data frame that only includes one observation for each matching song. That is, if the song is ["New York, New York"](https://www.youtube.com/watch?v=btFfXgUdIzY), there should only be one row in the resulting table for that song.
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
 ```{r lyrics-state-names}
 inner_join(tidy_lyrics, pop_df)
 ```
@@ -87,8 +119,15 @@ tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
 tidy_lyrics
 ```
 
-# Calculating counts 
+  </p>
+</details>
 
+### Calculate the frequency for each state's mention in a song and create a new column for the frequency adjusted by the state's population
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
 ```{r state-counts}
 (state_counts <- tidy_lyrics %>% 
    group_by(state_name) %>% 
@@ -106,9 +145,14 @@ pop_df %>%
   top_n(10)
 ```
 
-# Making a map
+  </p>
+</details>
 
-```{r state-map, message = FALSE}
+### Make a choropleth map for both the raw frequency counts and relative frequency counts
+
+The [`statebins` package](https://github.com/hrbrmstr/statebins) is a nifty shortcut for making basic U.S. cartogram maps.
+
+```{r state-map, warning = FALSE}
 library(statebins)
 
 pop_df %>%

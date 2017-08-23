@@ -343,8 +343,10 @@ div.tocify {
 
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
 <span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
-<div id="downloading-population-data-for-u.s.-states" class="section level1">
-<h1>Downloading Population Data for U.S. States</h1>
+<p>Today let’s practice our <code>tidytext</code> skills with a basic analysis of song titles. That is, how often is each U.S. state mentioned in a popular song? We’ll define popular songs as those in <em>Billboard</em>’s Year-End Hot 100 from 1958 to the present.</p>
+<div id="download-population-data-for-u.s.-states" class="section level1">
+<h1>Download population data for U.S. states</h1>
+<p>First let’s use the <code>acs</code> package to access the U.S. Census Bureau API and obtain population numbers for each state in 2014. This will help us later to normalize state mentions based on relative population size.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># retrieve state populations in 2014 from Census Bureau</span>
 stategeo &lt;-<span class="st"> </span><span class="kw">geo.make</span>(<span class="dt">state =</span> <span class="st">&quot;*&quot;</span>)
 popfetch &lt;-<span class="st"> </span><span class="kw">acs.fetch</span>(<span class="dt">geography =</span> stategeo, 
@@ -354,6 +356,7 @@ popfetch &lt;-<span class="st"> </span><span class="kw">acs.fetch</span>(<span c
                       <span class="dt">col.names =</span> <span class="st">&quot;pretty&quot;</span>,
                       <span class="dt">key =</span> <span class="kw">getOption</span>(<span class="st">&quot;census_key&quot;</span>))
 
+<span class="co"># convert to data frame and keep only relevant columns/rows</span>
 pop_df &lt;-<span class="st"> </span>popfetch <span class="op">%&gt;%</span>
 <span class="st">  </span>estimate <span class="op">%&gt;%</span>
 <span class="st">  </span>reshape2<span class="op">::</span><span class="kw">melt</span>() <span class="op">%&gt;%</span>
@@ -361,8 +364,10 @@ pop_df &lt;-<span class="st"> </span>popfetch <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">state_name =</span> <span class="kw">tolower</span>(Var1),
          <span class="dt">pop2014 =</span> value) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">select</span>(state_name, pop2014) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(state_name <span class="op">!=</span><span class="st"> &quot;puerto rico&quot;</span>)
+<span class="st">  </span><span class="kw">filter</span>(state_name <span class="op">!=</span><span class="st"> &quot;puerto rico&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">write_csv</span>(<span class="st">&quot;data/pop2014.csv&quot;</span>)
 
+<span class="co"># do these results make sense?</span>
 pop_df <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(pop2014)) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">top_n</span>(<span class="dv">10</span>)</code></pre></div>
@@ -380,13 +385,13 @@ pop_df <span class="op">%&gt;%</span><span class="st"> </span>
 ##  8        georgia  9907756
 ##  9       michigan  9889024
 ## 10 north carolina  9750405</code></pre>
+<blockquote>
+<p>To import the data in-class, just use <code>read_csv(&quot;http://cfss.uchicago.edu/data/pop2014.csv&quot;)</code></p>
+</blockquote>
 </div>
-<div id="song-lyrics" class="section level1">
-<h1>Song Lyrics</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># download file from GitHub repo</span>
-<span class="kw">library</span>(downloader)
-<span class="kw">download</span>(<span class="st">&quot;https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_1964-2015.csv&quot;</span>,
-         <span class="dt">destfile =</span> <span class="st">&quot;data/billboard_lyrics_1964-2015.csv&quot;</span>)</code></pre></div>
+<div id="retrieve-song-lyrics" class="section level1">
+<h1>Retrieve song lyrics</h1>
+<p>Next we need to retrieve the song lyrics for all our songs. <a href="http://kaylinwalker.com/50-years-of-pop-music/">Kaylin Walker</a> provides a <a href="https://github.com/walkerkq/musiclyrics">GitHub repo with the necessary files.</a></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># import into R</span>
 song_lyrics &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/billboard_lyrics_1964-2015.csv&quot;</span>)</code></pre></div>
 <pre><code>## Parsed with column specification:
@@ -400,9 +405,18 @@ song_lyrics &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span
 ## )</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(song_lyrics)</code></pre></div>
 <pre><code>## [1] &quot;Rank&quot;   &quot;Song&quot;   &quot;Artist&quot; &quot;Year&quot;   &quot;Lyrics&quot; &quot;Source&quot;</code></pre>
+<blockquote>
+<p>To import the data in-class, just use <code>read_csv(&quot;http://cfss.uchicago.edu/data/billboard_lyrics_1964-2015.csv&quot;)</code></p>
+</blockquote>
 </div>
-<div id="finding-the-state-names-in-the-song-lyrics" class="section level1">
-<h1>Finding the state names in the song lyrics</h1>
+<div id="find-and-visualize-the-state-names-in-the-song-lyrics" class="section level1">
+<h1>Find and visualize the state names in the song lyrics</h1>
+<p>Now your work begins!</p>
+<div id="use-tidytext-to-create-a-data-frame-with-one-row-for-each-token-in-each-song" class="section level3">
+<h3>Use <code>tidytext</code> to create a data frame with one row for each token in each song</h3>
+<p>Hint: To search for matching state names, this data frame should include both <strong>unigrams</strong> and <strong>bi-grams</strong>.</p>
+<details> <summary>Click for the solution</summary>
+<p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tidy_lyrics &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(song_lyrics <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">                           </span><span class="kw">unnest_tokens</span>(state_name, Lyrics),
                          song_lyrics <span class="op">%&gt;%</span><span class="st"> </span>
@@ -424,7 +438,14 @@ tidy_lyrics</code></pre></div>
 ## 10     1 wooly bully sam the sham and the pharaohs  1965      3
 ## # ... with 3,201,186 more rows, and 1 more variables: state_name &lt;chr&gt;</code></pre>
 <p>The variable <code>state_name</code> in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.</p>
-<p>Now we can use an inner join to find all the state names that are actually there.</p>
+</p>
+<p></details></p>
+</div>
+<div id="find-all-the-state-names-occurring-in-the-song-lyrics" class="section level3">
+<h3>Find all the state names occurring in the song lyrics</h3>
+<p>First create a data frame that meets this criteria, then save a new data frame that only includes one observation for each matching song. That is, if the song is <a href="https://www.youtube.com/watch?v=btFfXgUdIzY">“New York, New York”</a>, there should only be one row in the resulting table for that song.</p>
+<details> <summary>Click for the solution</summary>
+<p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">inner_join</span>(tidy_lyrics, pop_df)</code></pre></div>
 <pre><code>## Joining, by = &quot;state_name&quot;</code></pre>
 <pre><code>## # A tibble: 526 x 7
@@ -461,9 +482,13 @@ tidy_lyrics</code></pre></div>
 ## 10    25                      get back the beatles with billy preston
 ## # ... with 243 more rows, and 4 more variables: Year &lt;int&gt;, Source &lt;int&gt;,
 ## #   state_name &lt;chr&gt;, pop2014 &lt;dbl&gt;</code></pre>
+</p>
+<p></details></p>
 </div>
-<div id="calculating-counts" class="section level1">
-<h1>Calculating counts</h1>
+<div id="calculate-the-frequency-for-each-states-mention-in-a-song-and-create-a-new-column-for-the-frequency-adjusted-by-the-states-population" class="section level3">
+<h3>Calculate the frequency for each state’s mention in a song and create a new column for the frequency adjusted by the state’s population</h3>
+<details> <summary>Click for the solution</summary>
+<p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(state_counts &lt;-<span class="st"> </span>tidy_lyrics <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">   </span><span class="kw">group_by</span>(state_name) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">   </span><span class="kw">summarise</span>(<span class="dt">n =</span> <span class="kw">n</span>()) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -503,9 +528,12 @@ tidy_lyrics</code></pre></div>
 ##  8     montana  1006370     2 1.987341
 ##  9    nebraska  1855617     3 1.616713
 ## 10    kentucky  4383272     7 1.596981</code></pre>
+</p>
+<p></details></p>
 </div>
-<div id="making-a-map" class="section level1">
-<h1>Making a map</h1>
+<div id="make-a-choropleth-map-for-both-the-raw-frequency-counts-and-relative-frequency-counts" class="section level3">
+<h3>Make a choropleth map for both the raw frequency counts and relative frequency counts</h3>
+<p>The <a href="https://github.com/hrbrmstr/statebins"><code>statebins</code> package</a> is a nifty shortcut for making basic U.S. cartogram maps.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(statebins)
 
 pop_df <span class="op">%&gt;%</span>
@@ -516,8 +544,6 @@ pop_df <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Frequency of states mentioned in song lyrics&quot;</span>,
        <span class="dt">subtitle =</span> <span class="st">&quot;Number of mentions&quot;</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
-<pre><code>## Warning: `show_guide` has been deprecated. Please use `show.legend`
-## instead.</code></pre>
 <p><img src="text002_song_titles_exercise_files/figure-html/state-map-1.png" width="672" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">pop_df <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">state_name =</span> stringr<span class="op">::</span><span class="kw">str_to_title</span>(state_name),
@@ -527,9 +553,8 @@ pop_df <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Frequency of states mentioned in song lyrics&quot;</span>,
        <span class="dt">subtitle =</span> <span class="st">&quot;Number of mentions per capita&quot;</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
-<pre><code>## Warning: `show_guide` has been deprecated. Please use `show.legend`
-## instead.</code></pre>
 <p><img src="text002_song_titles_exercise_files/figure-html/state-map-2.png" width="672" /></p>
+</div>
 </div>
 <div id="acknowledgments" class="section level1 toc-ignore">
 <h1>Acknowledgments</h1>
@@ -626,6 +651,12 @@ pop_df <span class="op">%&gt;%</span>
 ##  XML         * 3.98-1.9   2017-06-19 CRAN (R 3.4.1)                      
 ##  xml2          1.1.1      2017-01-24 CRAN (R 3.4.0)                      
 ##  yaml          2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>For instance, California has a lot more people than Rhode Island so it makes sense that California would be mentioned more often in popular songs. But per capita, are these mentions different?<a href="#fnref1">↩</a></p></li>
+</ol>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
