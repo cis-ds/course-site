@@ -1,0 +1,140 @@
+---
+title: "Practicing `tidytext` with song titles"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(acs)
+library(tidytext)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Downloading Population Data for U.S. States
+
+```{r acs-pop}
+# retrieve state populations in 2014 from Census Bureau
+stategeo <- geo.make(state = "*")
+popfetch <- acs.fetch(geography = stategeo, 
+                      endyear = 2014,
+                      span = 5, 
+                      table.number = "B01003",
+                      col.names = "pretty",
+                      key = getOption("census_key"))
+
+pop_df <- popfetch %>%
+  estimate %>%
+  reshape2::melt() %>%
+  as_tibble %>%
+  mutate(state_name = tolower(Var1),
+         pop2014 = value) %>%
+  select(state_name, pop2014) %>%
+  filter(state_name != "puerto rico")
+
+pop_df %>% 
+  arrange(desc(pop2014)) %>%
+  top_n(10)
+```
+
+# Song Lyrics
+
+```{r lyrics-download, eval = FALSE}
+# download file from GitHub repo
+library(downloader)
+download("https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_1964-2015.csv",
+         destfile = "data/billboard_lyrics_1964-2015.csv")
+```
+
+```{r lyrics-import}
+# import into R
+song_lyrics <- read_csv("data/billboard_lyrics_1964-2015.csv")
+names(song_lyrics)
+```
+
+# Finding the state names in the song lyrics
+
+```{r lyrics-tidy}
+tidy_lyrics <- bind_rows(song_lyrics %>% 
+                           unnest_tokens(state_name, Lyrics),
+                         song_lyrics %>% 
+                           unnest_tokens(state_name, Lyrics, 
+                                         token = "ngrams", n = 2))
+tidy_lyrics
+```
+
+The variable `state_name` in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.
+
+Now we can use an inner join to find all the state names that are actually there.
+
+```{r lyrics-state-names}
+inner_join(tidy_lyrics, pop_df)
+```
+
+Let's only count each state once per song that it is mentioned in.
+
+```{r lyrics-state-distinct}
+tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
+  distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE)
+tidy_lyrics
+```
+
+# Calculating counts 
+
+```{r state-counts}
+(state_counts <- tidy_lyrics %>% 
+   group_by(state_name) %>% 
+   summarise(n = n()) %>% 
+   arrange(desc(n)))
+```
+
+```{r state-counts-poprel}
+pop_df <- pop_df %>% 
+  left_join(state_counts) %>% 
+  mutate(rate = n / pop2014 * 1e6)
+
+pop_df %>%
+  arrange(desc(rate)) %>%
+  top_n(10)
+```
+
+# Making a map
+
+```{r state-map, message = FALSE}
+library(statebins)
+
+pop_df %>%
+  mutate(state_name = stringr::str_to_title(state_name),
+         state_name = if_else(state_name == "District Of Columbia",
+                              "District of Columbia", state_name)) %>%
+  statebins_continuous(state_col = "state_name", value_col = "n") +
+  labs(title = "Frequency of states mentioned in song lyrics",
+       subtitle = "Number of mentions") +
+  theme(legend.position = "bottom")
+
+pop_df %>%
+  mutate(state_name = stringr::str_to_title(state_name),
+         state_name = if_else(state_name == "District Of Columbia",
+                              "District of Columbia", state_name)) %>%
+  statebins_continuous(state_col = "state_name", value_col = "rate") +
+  labs(title = "Frequency of states mentioned in song lyrics",
+       subtitle = "Number of mentions per capita") +
+  theme(legend.position = "bottom")
+```
+
+# Acknowledgments {.toc-ignore}
+
+* This page is derived in part from [SONG LYRICS ACROSS THE UNITED STATES](https://juliasilge.com/blog/song-lyrics-across/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
