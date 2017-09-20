@@ -3,7 +3,7 @@ title: "Visualizations and the Grammar of Graphics"
 author: |
   | MACS 30500
   | University of Chicago
-date: "January 9, 2017"
+date: "September 27, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -16,65 +16,84 @@ library(tidyverse)
 library(knitr)
 library(stringr)
 library(broom)
+library(tweenr)
+library(gganimate)
+
 theme_set(theme_gray(base_size = 18))
 ```
 
 ----
 
-```{r, results = 'asis'}
-# input data
-dat1 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
-               y = c(8.04, 6.95, 7.58, 8.81, 8.33, 9.96, 7.24, 4.26, 10.84, 4.82, 5.68))
-dat2 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
-               y = c(9.14, 8.14, 8.74, 8.77, 9.26, 8.10, 6.13, 3.1, 9.13, 7.26, 4.74))
-dat3 <- tibble(x = c(10, 8, 13, 9, 11, 14, 6, 4, 12, 7, 5),
-               y = c(7.46, 6.77, 12.74, 7.11, 7.81, 8.84, 6.08, 5.39, 8.15, 6.42, 5.73))
-dat4 <- tibble(x = c(8, 8, 8, 8, 8, 8, 8, 19, 8, 8, 8),
-               y = c(6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89))
+```{r datasaurus-import, echo = FALSE, message = FALSE}
+datasaurus <- read_tsv("../data/DatasaurusDozen.tsv") %>%
+  mutate(dataset = as_factor(dataset))
+```
 
-# combine data
-dat <- bind_rows(dat1, dat2, dat3, dat4, .id = "id")
-
-# format for printing
-dat_print <- dat %>%
-  group_by(id) %>%
-  nest(x, y)
-
-# get stats
-for(i in seq_len(nrow(dat_print))){
-  dat_print$data[[i]] %>%
-    summarize(n = n(),
-           mean_x = mean(x),
-           mean_y = mean(y),
-           cor = cor(x, y)) %>%
-  kable(col.names = c("$N$", "$\\bar{X}$", "$\\bar{Y}$", "$R^2$"),
-        caption = str_c("Dataset", i, sep = " ")) %>%
-  print
-}
+```{r datasaurus-sum-stats, echo = FALSE, dependson = "datasaurus-import"}
+datasaurus %>%
+  group_by(dataset) %>%
+  summarize(n = n(),
+            x_mean = mean(x),
+            y_mean = mean(y),
+            x_sd = sd(x),
+            y_sd = sd(y),
+            r2 = cor(x, y)) %>%
+  mutate(id = row_number()) %>%
+  select(id, everything()) %>%
+  select(-dataset) %>%
+  kable(col.names = c("ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$",
+                      "$\\sigma_{X}$", "$\\sigma_{Y}$", "$R$"))
 ```
 
 ----
 
-```{r, results = 'asis'}
+```{r datasaurus-lm, echo = FALSE, results = "asis", dependson = "import-datasaurus"}
 # estimate linear model
-dat_model <- dat %>%
-  split(.$id) %>%
-  map(~ lm(y ~ x, data = .x)) %>%
-  map(tidy)
+datasaurus_model <- datasaurus %>%
+  group_by(dataset) %>%
+  nest() %>%
+  mutate(model = map(data, ~ lm(y ~ x, data = .x)),
+         results = map(model, tidy)) %>%
+  unnest(results)
 
-for(i in seq_along(dat_model)){
-  print(kable(dat_model[i],
-              caption = str_c("Dataset", i, sep = " "),
-              col.names = c("Term", "Estimate", "Standard Error", "$T$-statistic", "p-value")))
-}
+# plot model estimates
+datasaurus_model %>%
+  mutate(dataset = as.factor(as.numeric(dataset))) %>%
+  ggplot(aes(fct_rev(term), estimate, color = dataset)) +
+  geom_pointrange(aes(ymin = estimate - 1.96 * std.error,
+                      ymax = estimate + 1.96 * std.error),
+                  position = position_dodge(width = 1)) +
+  labs(title = "Linear regression models",
+       subtitle = "With 95% confidence intervals",
+       x = NULL,
+       y = "Estimated parameter") +
+  coord_flip() +
+  theme(legend.position = "none")
 ```
 
 ----
 
-```{r}
-# now draw a graph
-ggplot(dat, aes(x, y)) +
-  facet_wrap(~id) +
+```{r datasaurus-graph, dependson = 'datasaurus-import', echo = FALSE, fig.show = "animate", warning = FALSE, interval = 0.067}
+n_datasaurus <- datasaurus %>%
+  group_by(dataset) %>%
+  nest() %>%
+  add_row(dataset = "dino", data = list(.$data[[1]]))
+
+tween_datasaurus <- tween_states(n_datasaurus$data, tweenlength = 1,
+  statelength = 0.5, ease = "sine-out", nframe = 200) %>%
+  as.tibble()
+
+p <- ggplot(tween_datasaurus, aes(x = x, y = y)) +
+  geom_point(aes(frame = .frame))
+
+gganimate(p, title_frame = FALSE)
+```
+
+----
+
+```{r datasaurus-graph-static, dependson = 'datasaurus-import', echo = FALSE, fig.height = 8, fig.width = 8}
+ggplot(datasaurus, aes(x, y)) +
+  facet_wrap(~ dataset) +
   geom_point()
 ```
 
@@ -88,285 +107,6 @@ ggplot(dat, aes(x, y)) +
 * A grammar used to describe and create a wide range of statistical graphics
 * Layered grammar of graphics
     * `ggplot2`
-
-## Layered grammar of graphics
-
-* Layer
-    * Data
-    * Mapping
-    * Statistical transformation (stat)
-    * Geometric object (geom)
-    * Position adjustment (position)
-* Scale
-* Coordinate system (coord)
-* Faceting (facet)
-* Defaults
-    * Data
-    * Mapping
-
-## Layer
-
-* Responsible for creating the objects that we perceive on the plot
-* Defined by its subcomponents
-
-----
-
-```{r layers, echo = FALSE}
-set.seed(1234)
-
-data_frame(x = runif(50),
-           y = x + rnorm(50, 0, .2)) %>%
-  ggplot(aes(x, y)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  labs(title = "A plot with two layers",
-       subtitle = "A scatterplot and a smoothing line")
-```
-
-## Data and mapping
-
-* *Data* defines the source of the information to be visualized
-* *Mapping* defines how the variables are applied to the graphic
-
-## Data: `mpg`
-
-```{r mpg}
-mpg
-```
-
-## Data: `mpg`
-
-```{r mapping_cols}
-mpg %>%
-  select(displ, hwy)
-```
-
-## Mapping: `mpg`
-
-```{r mapping}
-mpg %>%
-  select(displ, hwy) %>%
-  rename(x = displ,
-         y = hwy)
-```
-
-## Statistical transformation (stat)
-
-* Transforms the data (typically by summarizing the information)
-
-----
-
-#### Raw data
-
-```{r stat_raw}
-mpg %>%
-  select(cyl)
-```
-
-#### Transformed data
-
-```{r stat_transform}
-mpg %>%
-  count(cyl)
-```
-
-## Transformed data
-
-```{r plot_transform}
-ggplot(mpg, aes(cyl)) +
-  geom_bar()
-```
-
-## Geometric objects (geoms)
-
-* Control the type of plot you create
-    * 0 dimensions - point, text
-    * 1 dimension - path, line
-    * 2 dimensions - polygon, interval
-* Geoms have specific aesthetics
-    * Point geom - position, color, shape, and size
-    * Bar geom - position, height, width, and fill
-
-----
-
-```{r geom_point}
-ggplot(mpg, aes(displ, hwy, color = class)) +
-  geom_point() +
-  ggtitle("A point geom with position and color aesthetics")
-```
-
-----
-
-```{r geom_bar}
-ggplot(mpg, aes(cyl)) +
-  geom_bar() +
-  ggtitle("A bar geom with position and height aesthetics")
-```
-
-## Position adjustment
-
-```{r position_dodge}
-count(mpg, class, cyl) %>%
-  ggplot(aes(cyl, n, fill = class)) +
-  geom_bar(stat = "identity") +
-  ggtitle("A stacked bar chart")
-```
-
-## Position adjustment
-
-```{r position_stack}
-count(mpg, class, cyl) %>%
-  ggplot(aes(cyl, n, fill = class)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  ggtitle("A dodged bar chart")
-```
-
-## Position adjustment
-
-```{r position}
-ggplot(mpg, aes(cyl, hwy)) +
-  geom_point() +
-  ggtitle("A point geom with obscured data points")
-```
-
-## Position adjustment
-
-```{r jitter}
-ggplot(mpg, aes(cyl, hwy)) +
-  geom_jitter() +
-  ggtitle("A point geom with jittered data points")
-```
-
-## Scale
-
-* Controls the mapping from data to aesthetic attributes
-
-## Scale: color
-
-```{r scale_color}
-ggplot(mpg, aes(displ, hwy, color = class)) +
-  geom_point() +
-  guides(color = guide_legend(override.aes = list(size = 4)))
-```
-
-## Scale: color
-
-```{r scale_color_palette}
-ggplot(mpg, aes(displ, hwy, color = class)) +
-  geom_point() +
-  scale_color_brewer(palette = "Dark2") +
-  guides(color = guide_legend(override.aes = list(size = 4)))
-```
-
-## Coordinate system (coord)
-
-* Maps the position of objects onto the plane of the plot
-
-## Cartesian coordinate system
-
-```{r coord}
-x1 <- c(1, 10)
-y1 <- c(1, 5)
-p <- qplot(x1, y1, geom = "blank", xlab = NULL, ylab = NULL) +
-  theme_bw(base_size = 24)
-p
-```
-
-## Semi-log
-
-```{r semi_log}
-p + coord_trans(y = "log10")
-```
-
-## Polar
-
-```{r polar}
-p + coord_polar()
-```
-
-## Faceting
-
-```{r facet}
-ggplot(mpg, aes(displ, hwy)) +
-  geom_point() +
-  facet_wrap(~class)
-```
-
-## Defaults
-
-```{r default, eval = FALSE, echo = TRUE}
-ggplot() +
-  layer(
-    data = mpg, mapping = aes(x = displ, y = hwy),
-    geom = "point", stat = "identity", position = "identity"
-  ) +
-  scale_x_continuous() +
-  scale_y_continuous() +
-  coord_cartesian()
-```
-
-## Defaults
-
-```{r default, eval = FALSE, echo = TRUE}
-```
-
-```{r default2, eval = FALSE, echo = TRUE}
-ggplot() +
-  layer(
-    data = mpg, mapping = aes(x = displ, y = hwy),
-    geom = "point"
-  )
-```
-
-## Defaults
-
-```{r default, eval = FALSE, echo = TRUE}
-```
-
-```{r default2, eval = FALSE, echo = TRUE}
-```
-
-```{r default3, eval = FALSE, echo = TRUE}
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
-  geom_point()
-```
-
-## Defaults
-
-```{r default, eval = FALSE, echo = TRUE}
-```
-
-```{r default2, eval = FALSE, echo = TRUE}
-```
-
-```{r default3, eval = FALSE, echo = TRUE}
-```
-
-```{r default4, eval = FALSE, echo = TRUE}
-ggplot(mpg, aes(displ, hwy)) +
-  geom_point()
-```
-
-## Defaults {.scrollable}
-
-```{r default4, echo = TRUE}
-```
-
-## Defaults {.scrollable}
-
-```{r default5, echo = TRUE, message = FALSE}
-ggplot(mpg, aes(displ, hwy)) +
-  geom_point() +
-  geom_smooth()
-```
-
-## Defaults {.scrollable}
-
-```{r default6, echo = TRUE, error = TRUE, message = FALSE}
-ggplot(mpg) +
-  geom_point(aes(displ, hwy)) +
-  geom_smooth()
-```
 
 ----
 
@@ -450,5 +190,3 @@ plot_polished +
   theme_void() +
   theme(legend.position = "none")
 ```
-
-
