@@ -3,12 +3,12 @@ title: "Data transformation and exploratory data analysis"
 author: |
   | MACS 30500
   | University of Chicago
-date: "January 11, 2017"
+date: "October 2, 2017"
 output: rcfss::cfss_slides
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE)
+knitr::opts_chunk$set(cache = TRUE, message = FALSE)
 
 set.seed(1234)
 
@@ -30,7 +30,7 @@ theme_set(theme_gray(base_size = 24))
 
 ## `diamonds`
 
-```{r}
+```{r diamonds}
 diamonds
 ```
 
@@ -42,7 +42,7 @@ diamonds
 
 ## What is the average price of an ideal cut diamond?
 
-```{r, echo = TRUE}
+```{r avg-price}
 data("diamonds")
 diamonds_ideal <- filter(diamonds, cut == "Ideal")
 summarize(diamonds_ideal, avg_price = mean(price))
@@ -52,7 +52,7 @@ summarize(diamonds_ideal, avg_price = mean(price))
 
 ## What is the average price of a diamond for each cut?
 
-```{r, echo = TRUE}
+```{r by-cut}
 data("diamonds")
 diamonds_cut <- group_by(diamonds, cut)
 summarize(diamonds_cut, avg_price = mean(price))
@@ -62,7 +62,7 @@ summarize(diamonds_cut, avg_price = mean(price))
 
 ## What is the average carat size and price for each cut of "I" colored diamonds?
 
-```{r, echo = TRUE}
+```{r by-cut-i}
 data("diamonds")
 diamonds_i <- filter(diamonds, color == "I")
 diamonds_i_group <- group_by(diamonds_i, cut)
@@ -108,41 +108,41 @@ summarize(
 
 ## American vs. British English
 
+<center>
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">The holy grail: &quot;For consistency, aim to use British (rather than American) spelling.&quot; <a href="https://twitter.com/hashtag/rstats?src=hash">#rstats</a> <a href="http://t.co/7qQSWIowcl">http://t.co/7qQSWIowcl</a>. Colour is right!</p>&mdash; Hadley Wickham (@hadleywickham) <a href="https://twitter.com/hadleywickham/status/405707093770244097">November 27, 2013</a></blockquote>
+<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 <blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">We have to make America great again!</p>&mdash; Donald J. Trump (@realDonaldTrump) <a href="https://twitter.com/realDonaldTrump/status/266254611919282177">November 7, 2012</a></blockquote>
 <script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</center>
 
 * `summarize()` = `summarise()`
 * `color()` = `colour()`
 
 ## Saving transformed data (`<-`) {.scrollable}
 
-```{r, echo = TRUE}
+```{r print}
 # printed, but not saved
 filter(diamonds, cut == "Ideal")
+```
+
+## Saving transformed data (`<-`) {.scrollable}
+
+```{r save}
 # saved, but not printed
 diamonds_ideal <- filter(diamonds, cut == "Ideal")
+```
+
+## Saving transformed data (`<-`) {.scrollable}
+
+```{r print-save}
 # saved and printed
 (diamonds_ideal <- filter(diamonds, cut == "Ideal"))
 ```
 
-## Comparisons
-
-Symbol | Action
--------|--------
-`>`  | greater than
-`>=` | greater than or equal to
-`<`  | less than
-`<=` | less than or equal to
-`!=` | not equal
-**`==`** | **equal**
-
-## Logical operators
-
-![](http://r4ds.had.co.nz/diagrams/transform-logical.png)
-
 ## Missing values
 
-```{r, echo = TRUE}
+```{r na}
 NA > 5
 10 == NA
 NA + 10
@@ -150,14 +150,14 @@ NA + 10
 
 ## `na.rm` argument {.scrollable}
 
-```{r, echo = TRUE}
+```{r na-filter}
 df <- tibble(x = c(1, NA, 3))
 filter(df, x > 1)
 
 filter(df, is.na(x) | x > 1)
 ```
 
-```{r, echo = TRUE}
+```{r na-summary}
 df <- tibble(
   x = c(1, 2, 3, 5, NA)
 )
@@ -168,8 +168,9 @@ summarize(df, meanx = mean(x, na.rm = TRUE))
 
 ## Piping (`%>%`)
 
-```{r, echo = TRUE}
-# No pipes - confusing
+#### No pipes - confusing
+
+```{r no-pipe}
 by_dest <- group_by(flights, dest)
 delay <- summarise(by_dest,
   count = n(),
@@ -177,7 +178,11 @@ delay <- summarise(by_dest,
   delay = mean(arr_delay, na.rm = TRUE)
 )
 delay <- filter(delay, count > 20, dest != "HNL")
+```
 
+#### Pipes - clear
+
+```{r pipe}
 # Pipes - clear
 delays <- flights %>% 
   group_by(dest) %>% 
@@ -191,7 +196,7 @@ delays <- flights %>%
 
 ## Errors to avoid with pipes
 
-```{r eval = FALSE}
+```r
 delays <- flights %>% 
   by_dest <- group_by(dest) %>% 
   delay <- summarize(
@@ -210,7 +215,7 @@ Error: bad assignment:
 
 ## Errors to avoid with pipes
 
-```{r error = TRUE}
+```{r pipe-df, error = TRUE}
 delays <- flights %>% 
   group_by(flights, dest) %>% 
   summarize(flights,
@@ -220,142 +225,3 @@ delays <- flights %>%
   ) %>% 
   filter(flights, count > 20, dest != "HNL")
 ```
-
-## Transforming data exercises
-
-[Complete exercises on data transformation](../block003_transform-data.html#transforming_college_education)
-
-## Exploratory data analysis
-
-1. Generate questions about your data
-1. Search for answers by visualising, transforming, and modeling your data
-1. Use what you learn to refine your questions and or generate new questions
-1. Rinse and repeat until you publish a paper
-
-* Variation
-* Covariation
-
-## Variation: categorical variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_bar(mapping = aes(x = cut))
-```
-
-## Variation: categorical variables
-
-```{r, echo = TRUE}
-diamonds %>% 
-  count(cut)
-```
-
-## Variation: continuous variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_histogram(mapping = aes(x = carat))
-```
-
-## Variation: continuous variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_histogram(mapping = aes(x = carat), binwidth = 0.5)
-
-ggplot(data = diamonds) +
-  geom_histogram(mapping = aes(x = carat), binwidth = 0.1)
-```
-
-## Detecting outliers {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(diamonds) + 
-  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
-```
-
-## Detecting outliers {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(diamonds) + 
-  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
-  coord_cartesian(ylim = c(0, 50))
-```
-
-## Detecting outliers
-
-```{r, echo = TRUE}
-diamonds %>% 
-  filter(y < 3 | y > 20) %>% 
-  arrange(y)
-```
-
-## Covariation: categorical and continuous variable {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds, mapping = aes(x = price)) + 
-  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
-```
-
-## Covariation: categorical and continuous variable {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) + 
-  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
-```
-
-## Covariation: categorical and continuous variable {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
-  geom_boxplot()
-```
-
-## Covariation: two categorical variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_count(mapping = aes(x = cut, y = color))
-```
-
-## Covariation: two categorical variables {.scrollable}
-
-```{r, echo = TRUE}
-diamonds %>% 
-  count(color, cut) %>%  
-  ggplot(mapping = aes(x = color, y = cut)) +
-    geom_tile(mapping = aes(fill = n))
-```
-
-## Covariation: two continuous variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_point(mapping = aes(x = carat, y = price))
-```
-
-## Covariation: two continuous variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_point(mapping = aes(x = carat, y = price), alpha = .2)
-```
-
-## Covariation: two continuous variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds, mapping = aes(x = carat, y = price)) +
-  geom_point() +
-  geom_smooth()
-```
-
-## Covariation: two continuous variables {.scrollable}
-
-```{r, echo = TRUE}
-ggplot(data = diamonds) +
-  geom_bin2d(mapping = aes(x = carat, y = price))
-```
-
-## Exploring data exercises
-
-[Complete exercises on data exploration](../block004_explore-data.html#exploring_college_education)
-
