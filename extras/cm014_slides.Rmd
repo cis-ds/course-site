@@ -1,263 +1,234 @@
 ---
-title: "Getting data from the web: scraping"
+title: "Distributed learning"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 22, 2017"
+date: "February 15, 2017"
 output: rcfss::cfss_slides
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
-                      warning = FALSE)
+                      warning = FALSE,
+                      echo = FALSE)
 
 library(tidyverse)
+library(gapminder)
 library(stringr)
-library(knitr)
-library(curl)
-library(jsonlite)
-library(XML)
-library(httr)
-library(rvest)
-library(ggmap)
 
 set.seed(1234)
+
+theme_set(theme_minimal(base_size = 18))
 ```
 
-## OMDB
+## Distributed computing
 
-[![](../webdata-supp/ombd.png)](http://www.omdbapi.com/?t=Interstellar&y=2014&plot=short&r=xml)
+![](https://tctechcrunch2011.files.wordpress.com/2015/08/clouds.jpg)
 
-``` http
-http://www.omdbapi.com/?t=Interstellar&y=2014&plot=short&r=xml
-```
-## Creating link in R
+## SQL
 
-```{r}
-request <- str_c("http://www.omdbapi.com/?t=", "Interstellar", "&",
-                 "y=", "2014", "&", "plot=",
-                 "short", "&", "r=", "xml")
-request
-```
+* *Structured Query Language*
+* Means of communicating with a relational database management system
+* Different flavors of SQL
+    * SQLite
+    * MySQL
+    * Microsoft SQL
+    * PostgreSQL
+    * BigQuery
+* Hosting platforms
+    * [UChicago Research Computing Center](https://rcc.uchicago.edu/)
+    * [Amazon Web Services](https://aws.amazon.com/)
+    * [Google Cloud Platform](https://cloud.google.com/)
 
-## Better way
+## SQL locally
 
-```{r}
-omdb <- function(Title, Year, Plot, Format){
-  baseurl <- "http://www.omdbapi.com/?"
-  params <- c("t=", "y=", "plot=", "r=")
-  values <- c(Title, Year, Plot, Format)
-  param_values <- map2_chr(params, values, str_c)
-  args <- str_c(param_values, collapse = "&")
-  str_c(baseurl, args)
-}
-
-omdb("Interstellar", "2014", "short", "xml")
+```{r, cache = FALSE}
+library(RSQLite)
+my_db <- src_sqlite("../data/my_db.sqlite3", create = T)
 ```
 
-## Obtain OMDB data
-
-```{r}
-request_interstellar <- omdb("Interstellar", "2014", "short", "xml")
-con <- curl(request_interstellar)
-answer_xml <- readLines(con)
-close(con)
-answer_xml
+```{r eval = FALSE}
+flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+  c("year", "month", "day"), "carrier", "tailnum"))
 ```
 
-## Obtain OMDB data
-
-```{r warning = FALSE}
-request_interstellar <- omdb("Interstellar", "2014", "short", "json")
-con <- curl(request_interstellar)
-answer_json <- readLines(con)
-close(con)
-answer_json %>% 
-  prettify()
-```
-
-## **J**ava**S**cript **O**bject **N**otation
-
-```javascript
-{
-  "crust": "original",
-  "toppings": ["cheese", "pepperoni", "garlic"],
-  "status": "cooking",
-  "customer": {
-    "name": "Brian",
-    "phone": "573-111-1111"
-  }
+```{r, echo = FALSE}
+if(file.exists("my_db.sqlite3")){
+  flights_sqlite <- tbl(my_db, "flights")
+} else{
+  flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
+  c("year", "month", "day"), "carrier", "tailnum"))
 }
 ```
-## e**X**tensible **M**arkup **L**anguage
-
-```XML
-<order>
-    <crust>original</crust>
-    <toppings>
-        <topping>cheese</topping>
-        <topping>pepperoni</topping>
-        <topping>garlic</topping>
-    </toppings>
-    <status>cooking</status>
-</order>
-```
-
-## Parsing JSON {.scrollable}
 
 ```{r}
-answer_json %>% 
-  fromJSON()
+flights_sqlite
 ```
 
+## Basic verbs {.scrollable}
 
-```{r results='asis'}
-answer_json %>% 
-  fromJSON() %>% 
-  as_tibble() %>% 
-  kable()
+```{r echo = TRUE}
+select(flights_sqlite, year:day, dep_delay, arr_delay)
+filter(flights_sqlite, dep_delay > 240)
+arrange(flights_sqlite, year, month, day)
+mutate(flights_sqlite, speed = air_time / distance)
+summarise(flights_sqlite, delay = mean(dep_time))
 ```
 
-## Parsing XML
+## Convert to SQL
+
+```{r, echo = TRUE}
+select(flights_sqlite, year:day, dep_delay, arr_delay) %>%
+  explain()
+```
+
+```sql
+SELECT `year` AS `year`, `month` AS `month`, `day` AS `day`, `dep_delay` AS `dep_delay`, `arr_delay` AS `arr_delay`
+FROM `flights`
+```
+
+## Laziness
 
 ```{r}
-ans_xml_parsed <- xmlParse(answer_xml)
-ans_xml_parsed
+c1 <- filter(flights_sqlite, year == 2013, month == 1, day == 1)
+c2 <- select(c1, year, month, day, carrier, dep_delay, air_time, distance)
+c3 <- mutate(c2, speed = distance / air_time * 60)
+c4 <- arrange(c3, year, month, day, carrier)
 ```
 
-## Parsing XML
-
-| field | method |
-|:-----:|:------:|
-| name  | `xmlName()` |
-| attributes | `xmlAttrs()` |
-| children  | `xmlChildren()` |
-| value    | `xmlValue()`
-
-## Parsing XML {.scrollable}
+## Laziness {.scrollable}
 
 ```{r}
-ans_xml_parsed_root <- xmlRoot(ans_xml_parsed)[["movie"]]  # could also use [[1]]
-ans_xml_parsed_root
-ans_xml_attrs <- xmlAttrs(ans_xml_parsed_root)
-ans_xml_attrs
+c4
 ```
-
-```{r results='asis'}
-ans_xml_attrs %>%
-  t() %>%
-  as_tibble() %>%
-  kable()
-```
-
-## Introducing the easy way: `httr`
-
-* **GET**: fetch an existing resource
-* **POST**: create a new resource
-* **PUT**: update an existing resource
-* **DELETE**: delete an existing resource
-
-## Redo the OMDB example
 
 ```{r}
-interstellar_json <- omdb("Interstellar", "2014", "short", "json")
-response_json <- GET(interstellar_json)
-content(response_json, as = "parsed", type = "application/json")
+collect(c4)
 ```
 
-## Redo the OMDB example
+## Google Bigquery
 
-```{r}
-interstellar_xml <- omdb("Interstellar", "2014", "short", "xml")
-response_xml <- GET(interstellar_xml)
-content(response_xml, as = "parsed")
+* Can scan TB in seconds and PB in minutes
+* Flexible pricing depending on needs
+* Could be as little a pennies, though depending on your computation may cost more
+
+## Interacting with Google Bigquery via `dplyr`
+
+```{r, echo = TRUE}
+library(bigrquery)
+
+taxi <- src_bigquery(project = "nyc-tlc",
+                     dataset = "yellow",
+                     billing = getOption("bigquery_id"))
+taxi
 ```
 
-## Headers
+## Questions {.scrollable}
 
-```{r}
-headers(response_xml)
+How many trips per taken each month in yellow cabs?
+
+```sql
+SELECT
+  LEFT(STRING(pickup_datetime), 7) month,
+  COUNT(*) trips
+FROM
+  [nyc-tlc:yellow.trips]
+WHERE
+  YEAR(pickup_datetime) = 2014
+GROUP BY
+  1
+ORDER BY
+  1
 ```
 
-## Status codes
-
-```{r}
-status_code(response_xml)
+```{r echo = TRUE}
+system.time({
+  trips_by_month <- taxi %>%
+    tbl("trips") %>%
+    filter(year(pickup_datetime) == 2014) %>%
+    mutate(month = month(pickup_datetime)) %>%
+    count(month) %>%
+    arrange(month) %>%
+    collect()
+})
+trips_by_month
 ```
 
-## Status codes
+## Questions {.scrollable}
 
-Code   | Status
--------|--------|
-1xx    | Informational
-2xx    | Success
-3xx    | Redirection
-4xx    | Client error (you did something wrong)
-5xx    | Server error (server did something wrong)
+What about the average speed per hour of day in yellow cabs?
 
-* [Perhaps a more intuitive explanation](https://www.flickr.com/photos/girliemac/sets/72157628409467125)
+```{r echo = TRUE}
+system.time({
+  speed_per_hour <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10) %>%
+    group_by(hour) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(hour) %>%
+    collect()
+})
 
-## Don't need `omdb()`
-
-```{r}
-the_martian <- GET("http://www.omdbapi.com/?",
-                   query = list(t = "The Martian", y = 2015,
-                                plot = "short", r = "json"))
-
-content(the_martian)
+ggplot(speed_per_hour, aes(hour, speed)) +
+  geom_line() +
+  labs(title = "Average Speed of NYC Yellow Taxis",
+       x = "Hour of day",
+       y = "Average speed, in MPH")
 ```
 
-## Scraping
+## Questions {.scrollable}
 
-```html
-<HTML>
-<HEAD>
-  <TITLE>Your Title Here</TITLE>
-</HEAD>
+Finally, what is the average speed by day of the week?
 
-<BODY BGCOLOR="FFFFFF">
-<CENTER><IMG SRC="clouds.jpg" ALIGN="BOTTOM"> </CENTER>
-<HR>
-<a href="http://somegreatsite.com">Link Name</a> is a link to another nifty site
-<H1>This is a Header</H1>
-<H2>This is a Medium Header</H2>
-Send me mail at <a href="mailto:support@yourcompany.com"> support@yourcompany.com</a>.
-<P> This is a new paragraph!
-<P> <B>This is a new paragraph!</B>
-<BR> <B><I>This is a new sentence without a paragraph break, in bold italics.</I></B>
-<HR>
-</BODY>
-</HTML>
+```{r echo = TRUE}
+system.time({
+  speed_per_day <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           day = dayofweek(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10,
+           hour >= 8,
+           hour <= 18) %>%
+    group_by(day) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(day) %>%
+    collect()
+})
+speed_per_day
 ```
 
-## Rendered HTML
+## Parallel computing
 
-![](../images/example_html.jpg)
+![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
 
-## Install your equipment
+## Parallel computing
 
-* `rvest` - `devtools::install_github("hadley/rvest")`
-* SelectorGadget - [Install in your browser](http://selectorgadget.com/)
+* Parallel processing
+* Serial processing
+* Multithreading
 
-## Practice CSS selectors
+## Why use parallel computing
 
-[Let's play a game together!](http://flukeout.github.io)
+* Imitates real life
+* More efficient (maybe)
+* Tackle larger problems
+* Distributed resources
 
-## Obtain a table
+## Why not to use parallel computing
 
-![gm](../webdata-supp/gapminderhead.png)
+![Amdahl's Law from [Wikipedia](https://en.wikipedia.org/wiki/Amdahl's_law)](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png)
+    
+## Why not to use parallel computing
 
-## Read in table
-
-```{r}
-read_html("../GapminderHead.html") %>%
-  html_table()
-```
-
-## Random observations on scraping
-
-* Make sure you've obtained only what you want
-* If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking
-* Confirm that there is no R package and no API
-
+* Limits to efficiency gains
+* Complexity
+* Dependencies
+* Parallel slowdown

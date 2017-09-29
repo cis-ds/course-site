@@ -1,9 +1,18 @@
 ---
-title: "Pipes and functions in R"
+title: "Data wrangling"
 author: |
   | MACS 30500
   | University of Chicago
-date: "January 23, 2017"
+date: "January 18, 2017"
+output: rcfss::cfss_slides
+---
+
+---
+title: "Data wrangling"
+author: |
+  | MACS 30500
+  | University of Chicago
+date: "October 5, 2016"
 output: rcfss::cfss_slides
 ---
 
@@ -12,190 +21,175 @@ knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE)
 
-set.seed(1234)
+set.seed(11091987)
 
 library(tidyverse)
-```
-
-----
-
-> Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
-
-1. Filter `diamonds` to only keep observations where the color is rated as "I"
-1. Group the filtered `diamonds` data frame by cut
-1. Summarize the grouped and filtered `diamonds` data frame by calculating the average carat size and price
-
-## Intermediate steps
-
-```{r intermediate}
-diamonds_1 <- filter(diamonds, color == "I")
-diamonds_2 <- group_by(diamonds_1, cut)
-(diamonds_3 <- summarize(diamonds_2, price = mean(price)))
-```
-
-## Overwrite the original
-
-```{r overwrite}
-diamonds_t <- diamonds    # copy diamonds to diamonds_t just for demonstration purposes
-diamonds_t <- filter(diamonds_t, color == "I")
-diamonds_t <- group_by(diamonds_t, cut)
-(diamonds_t <- summarize(diamonds_t, price = mean(price)))
-```
-
-## Function composition
-
-```{r function_comp}
-summarize(
-  group_by(
-    filter(diamonds, color == "I"),
-    cut
-  ),
-  price = mean(price)
-)
-```
-
-## Piping
-
-```{r pipe}
-diamonds %>%
-  filter(color == "I") %>%
-  group_by(cut) %>%
-  summarize(price = mean(price))
-```
-
-## Exercise on piping
-
-Complete [this exercise](http://cfss.uchicago.edu/block008_pipes.html#practice_piping_alternatives)
-
-## Functions
-
-* Easy to reuse
-* Self-documenting
-* Easy-ier to debug
-* [If you have copied and pasted a block of code more than twice, convert it to a function.](http://r4ds.had.co.nz/functions.html#when-should-you-write-a-function)
-
-## Function components
-
-* Name
-* Arguments
-* Body
-
-## Rescale function
-
-```{r, collapse = TRUE}
-rescale01 <- function(x) {
-  rng <- range(x, na.rm = TRUE)
-  (x - rng[1]) / (rng[2] - rng[1])
-}
-
-rescale01(c(0, 5, 10))
-rescale01(c(-10, 0, 10))
-rescale01(c(1, 2, 3, NA, 5))
-```
-
-* Name
-* Arguments
-* Body
-
-## What is that?
-
-```{r}
-pythagorean <- function(a, b){
-  hypotenuse <- sqrt(a^2 + b^2)
-  return(hypotenuse)
-}
-```
-
-* Name
-* Arguments
-* Body
-
-## How to use a function {.scrollable}
-
-```{r, error = TRUE}
-# print the output of the function
-pythagorean(a = 3, b = 4)
-
-# save the output as a new object
-(tri_c <- pythagorean(a = 3, b = 4))
-
-# what happens to the hypotenuse from inside the function?
-pythagorean(a = 3, b = 4)
-hypotenuse
-```
-
-## Exercise
-
-Stop and go [write a function](http://cfss.uchicago.edu/block009_functions.html#exercise:_calculate_the_sum_of_squares_of_two_variables)
-
-## Conditional execution
-
-```{r eval = FALSE}
-if (condition) {
-  # code executed when condition is TRUE
-} else {
-  # code executed when condition is FALSE
-}
-```
-
-## Conditional execution
-
-```{r eval = FALSE}
-if (this) {
-  # do that
-} else if (that) {
-  # do something else
-} else {
-  # do something completely different
-}
-```
-
-## Conditional execution and `cut()`
-
-```{r}
-diamonds %>%
-  select(carat) %>%
-  mutate(carat_autobin = cut(carat, breaks = 5),
-         carat_manbin = cut(carat,
-                            breaks = c(0, 1, 2, 3, 6),
-                            labels = c("Small", "Medium",
-                                       "Large", "Huge")))
-```
-
-## `if()` versus `ifelse()`
-
-```{r}
 library(rcfss)
-data("gun_deaths")
-
-(educ <- select(gun_deaths, education))
+library(knitr)
+theme_set(theme_gray(base_size = 24))
 ```
 
-## `if()` versus `ifelse()`
+## Vectors
 
-```{r, error = TRUE, collapse = TRUE}
-(educ_if <- educ %>%
-  mutate(hsPlus = if(education == "Less than HS"){
-    "Less than HS"
-  } else{
-    "HS+"
-  }))
+* Basic unit of data storage in R
+* Types of vectors
+    * Logical
+    * Numeric
+    * Character
+    * Factors
+* Certain operations can be performed only on certain types of vectors
 
-count(educ_if, hsPlus)
+## Vectors can only be of one type {.scrollable}
+
+```{r}
+x <- c(1, 2, "abc", TRUE)
+x
+parse_logical(x)
+parse_integer(x)
+parse_character(x)
 ```
 
-## `if()` versus `ifelse()`
+## Parsing vectors
 
-```{r, collapse = TRUE}
-(educ_ifelse <- educ %>%
-  mutate(hsPlus = ifelse(education == "Less than HS", "Less than HS", "HS+")))
-
-count(educ_ifelse, hsPlus)
+```{r, message = TRUE, warning = TRUE}
+challenge <- read_csv(readr_example("challenge.csv"))
 ```
 
-## Exercise
+## Parsing vectors {.scrollable}
 
-Go write a [fizzbuzz function](http://cfss.uchicago.edu/block009_functions.html#exercise:_write_a_fizzbuzz_function)
+```{r}
+challenge_parsed <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+tail(challenge_parsed)
+```
+
+## Tidy data
+
+![Figure 12.1 from [@hadley2016]](http://r4ds.had.co.nz/images/tidy-1.png)
+
+## Common tidying tasks
+
+* Gathering
+* Spreading
+* Separating
+* Uniting
+
+## Gathering
+
+```{r}
+table4a
+```
+
+## Gathering
+
+```{r}
+table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+```
+
+## Spreading
+
+```{r}
+table2
+```
+
+## Spreading
+
+```{r}
+table2 %>%
+  spread(key = type, value = count)
+```
+
+## Separating
+
+```{r}
+table3
+```
+
+## Separating
+
+```{r}
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+```
+
+## Uniting
+
+```{r}
+table5
+```
+
+## Uniting {.scrollable}
+
+```{r}
+table5 %>% 
+  unite(new, century, year)
+
+# remove underscore
+table5 %>% 
+  unite(new, century, year, sep = "")
+```
+
+## Practice tidying
+
+Perform exercises in [notes](block006_tidy_data.html#practice_tidying_data)
+
+## Introduction to relational data
+
+* Multiple tables of data that when combined together answer research questions
+* Relations define the important element, not just the individual tables
+* Relations are defined between a pair of tables
+* Relational verbs
+    * Mutating joins
+    * Filtering joins
+
+## Comics {.scrollable}
+
+```{r, echo = FALSE}
+library(rcfss)
+superheroes_kable <- knitr::kable(superheroes)
+publishers_kable <- knitr::kable(publishers)
+```
+
+```{r}
+superheroes_kable
+publishers_kable
+```
+
+## Inner join
+
+```{r}
+(ijsp <- inner_join(superheroes, publishers))
+```
+  
+## Semi join
+
+```{r}
+(sjsp <- semi_join(superheroes, publishers))
+```
+
+## Left join
+
+```{r}
+(ljsp <- left_join(superheroes, publishers))
+```
+
+## Anti join
+
+```{r}
+(ajsp <- anti_join(superheroes, publishers))
+```
+
+## Full join
+
+```{r}
+(fjsp <- full_join(superheroes, publishers))
+```
 
 
 

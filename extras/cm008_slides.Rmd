@@ -1,0 +1,218 @@
+---
+title: "Vectors and iteration"
+author: |
+  | MACS 30500
+  | University of Chicago
+date: "January 25, 2017"
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+
+set.seed(11234)
+library(tidyverse)
+```
+
+----
+
+![](http://r4ds.had.co.nz/diagrams/data-structures-overview.png)
+
+## Scalars
+
+```{r}
+(x <- sample(10))
+x + c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+x + 100
+```
+
+## Vector recycling
+
+```{r}
+1:10 + 1:2
+```
+
+## Subsetting vectors
+
+```{r}
+x <- c("one", "two", "three", "four", "five")
+```
+
+* With positive integers
+
+    ```{r, collapse = TRUE}
+    x[c(3, 2, 5)]
+    ```
+
+* With negative integers
+
+    ```{r, collapse = TRUE}
+    x[c(-1, -3, -5)]
+    ```
+
+* Don't mix positive and negative
+
+    ```{r, collapse = TRUE, error = TRUE}
+    x[c(-1, 1)]
+    ```
+
+## Subset with a logical vector
+
+```{r}
+x <- c(10, 3, NA, 5, 8, 1, NA)
+
+# All non-missing values of x
+x[!is.na(x)]
+
+# All even (or missing!) values of x
+x[x %% 2 == 0]
+```
+
+## Exercise on subsetting vectors
+
+Complete [this exercise](http://cfss.uchicago.edu/block010_vectors.html#exercise:_subset_the_vector)
+
+## Lists
+
+```{r}
+x <- list(1, 2, 3)
+x
+```
+
+## Lists: `str()`
+
+```{r}
+str(x)
+
+x_named <- list(a = 1, b = 2, c = 3)
+str(x_named)
+```
+
+## Store a mix of objects
+
+```{r}
+y <- list("a", 1L, 1.5, TRUE)
+str(y)
+```
+    
+## Nested lists
+
+```{r}
+z <- list(list(1, 2), list(3, 4))
+str(z)
+```
+
+## Secret lists
+
+```{r}
+str(diamonds)
+```
+
+----
+
+![](http://r4ds.had.co.nz/diagrams/lists-subsetting.png)
+
+## Exercise on subsetting lists
+
+Complete [this exercise](http://cfss.uchicago.edu/block010_vectors.html#exercise:_subset_a_list)
+
+## Iteration
+
+```{r}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+```
+
+```{r, collapse = TRUE}
+median(df$a)
+median(df$b)
+median(df$c)
+median(df$d)
+```
+
+## Iteration with `for` loop
+
+```{r}
+output <- vector("double", ncol(df))  # 1. output
+for (i in seq_along(df)) {            # 2. sequence
+  output[[i]] <- median(df[[i]])      # 3. body
+}
+output
+```
+
+## Preallocation {.scrollable}
+
+```{r}
+x <- rnorm(1000, mean = 0, sd = 1)
+str(x)
+
+# load microbenchmark library to time code
+library(microbenchmark)
+
+microbenchmark(
+  # don't preallocate
+  nopre = {
+    output <- vector("numeric", 0)
+    
+    for (i in seq_along(x)) {
+      output <- c(output, x[[i]] + 1)
+    }
+  },
+  # preallocate
+  pre = {
+    output <- vector("numeric", length(x))
+    
+    for (i in seq_along(x)) {
+      output[[i]] <- x[[i]] + 1
+    }
+  })
+```
+
+## Exercise on writing `for` loops
+
+Complete [this exercise](http://cfss.uchicago.edu/block011_iteration.html#exercise:_write_a_for_loop)
+
+## Map functions
+
+* Why `for` loops are good
+* Why `map()` functions may be better
+* Types of `map()` functions
+    * `map()` makes a list
+    * `map_lgl()` makes a logical vector
+    * `map_int()` makes an integer vector
+    * `map_dbl()` makes a double vector
+    * `map_chr()` makes a character vector
+
+## Map functions
+
+```{r}
+map_dbl(df, mean)
+map_dbl(df, median)
+map_dbl(df, sd)
+```
+
+## Map functions
+
+```{r}
+map_dbl(df, mean, na.rm = TRUE)
+```
+
+## Map functions
+
+```{r}
+df %>%
+  map_dbl(mean, na.rm = TRUE)
+```
+
+## Exercise on writing `map()` functions
+
+Complete [this exercise](block011_iteration.html#exercise:_rewrite_our_for_loops_using_a_map()_function)
+
+
+

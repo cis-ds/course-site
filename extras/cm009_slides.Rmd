@@ -1,287 +1,428 @@
 ---
-title: "Statistical learning: basics and regression problems"
+title: "Debugging and defensive programming"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 6, 2017"
+date: "January 30, 2017"
 output: rcfss::cfss_slides
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE,
-                      echo = FALSE,
-                      interval = .4)
+knitr::opts_chunk$set(cache = TRUE)
 
+set.seed(1234)
 library(tidyverse)
-library(modelr)
-library(here)
-theme_set(theme_bw(base_size = 18))
 ```
 
-## What is statistical learning?
+## Bugs
 
-```{r get_ad, message = FALSE, warning = FALSE}
-# get advertising data
-advertising <- read_csv(here("data/Advertising.csv")) %>%
-  tbl_df() %>%
-  select(-X1)
+![Not the kind of bugs we're looking for](../images/bugs.jpg)
+
+## Bugs
+
+* "An error, flaw, failure or fault in a computer program or system that causes it to produce an incorrect or unexpected result, or to behave in unintended ways."
+* Computers are powerful tools that are incredibly stupid
+* Debugging has two goals:
+    * Fix bugs once they occur
+    * Prevent bugs from occurring in the first place
+
+## Defensive programming
+
+* Style guide
+* Failing fast
+
+## Writing code
+
+Programming |	Language
+------------|----------
+Scripts |	Essays
+Sections | Paragraphs
+Lines Breaks | Sentences
+Parentheses |	Punctuation
+Functions |	Verbs
+Variables |	Nouns
+
+----
+
+<p align = "left" style="font-size:30px">
+weve grown used to wonders in this century its hard to dazzle us but for 25 years the united states space program has been doing just that weve grown used to the idea of space and perhaps we forget that weve only just begun were still pioneers they the members of the Challenger crew were pioneers and i want to say something to the school children of America who were watching the live coverage of the shuttles takeoff i know it is hard to understand but sometimes painful things like this happen its all part of the process of exploration and discovery its all part of taking a chance and expanding mans horizons the future doesnt belong to the fainthearted it belongs to the brave the challenger crew was pulling us into the future and well continue to follow them the crew of the space shuttle challenger honored us by the manner in which they lived their lives we will never forget them nor the last time we saw them this morning as they prepared for the journey and waved goodbye and slipped the surly bonds of earth to touch the face of god
+</p>
+
+----
+
+<p align = "left" style="font-size:25px">
+We've grown used to wonders in this century. It's hard to dazzle us. But for 25 years the United States space program has been doing just that. We've grown used to the idea of space, and perhaps we forget that we've only just begun. We're still pioneers. They, the members of the Challenger crew, were pioneers.
+</p>
+
+<p align = "left" style="font-size:25px">
+And I want to say something to the school children of America who were watching the live coverage of the shuttle's takeoff. I know it is hard to understand, but sometimes painful things like this happen. It's all part of the process of exploration and discovery. It's all part of taking a chance and expanding man's horizons. The future doesn't belong to the fainthearted; it belongs to the brave. The Challenger crew was pulling us into the future, and we'll continue to follow them....
+</p>
+
+<p align = "left" style="font-size:25px">
+The crew of the space shuttle Challenger honoured us by the manner in which they lived their lives. We will never forget them, nor the last time we saw them, this morning, as they prepared for the journey and waved goodbye and 'slipped the surly bonds of earth' to 'touch the face of God.'
+</p>
+
+## File names
+
+```r
+# Good
+fit-models.R
+utility-functions.R
+gun-deaths.Rmd
+
+# Bad
+foo.r
+stuff.r
+gun deaths.rmd
 ```
 
-```{r plot_ad, dependson="get_ad"}
-# plot separate facets for relationship between ad spending and sales
-plot_ad <- advertising %>%
-  gather(method, spend, -Sales) %>%
-  ggplot(aes(spend, Sales)) +
-  facet_wrap(~ method, scales = "free_x") +
-  geom_point() +
-  labs(x = "Spending (in thousands of dollars)")
-plot_ad
+## Object names
+
+```r
+# Good
+day_one
+day_1
+
+# Bad
+first_day_of_the_month
+DayOne
+dayone
+djm1
 ```
 
-## Functional form
+## Overwriting objects
 
-$$Y = f(X) + \epsilon$$
-
-* Statistical learning refers to the set of approaches for estimating $f$
-
-## Linear functional form
-
-```{r plot_ad_fit}
-plot_ad +
-  geom_smooth(method = "lm", se = FALSE)
+```r
+# Bad
+T <- FALSE
+c <- 10
 ```
 
-## Why estimate $f$?
+```{r mean}
+x <- 1:10
+mean(x)
+```
 
-* Prediction
-* Inference
-* How do we estimate $f$?
-    * Parametric methods
-    * Non-parametric methods
+```r
+# create new mean function
+mean <- function(x) sum(x)
+mean(x)
+```
 
-## Parametric methods
+```
+[1] 55
+```
 
-1. First make an assumption about the functional form of $f$
-1. After a model has been selected, **fit** or **train** the model using the actual data
 
-## OLS
+## Spacing
 
-```{r plot_parametric, dependson="get_ad"}
-method_model <- function(df) {
-  lm(Sales ~ spend, data = df)
+```r
+# Good
+average <- mean(feet / 12 + inches, na.rm = TRUE)
+
+# Bad
+average<-mean(feet/12+inches,na.rm=TRUE)
+```
+
+## Curly braces
+
+```r
+# Good
+
+if (y < 0 && debug) {
+  message("Y is negative")
 }
 
-ad_pred <- advertising %>%
-  gather(method, spend, -Sales) %>%
-  group_by(method) %>%
-  nest() %>%
-  mutate(model = map(data, method_model),
-         pred = map(model, broom::augment)) %>%
-  unnest(pred)
+if (y == 0) {
+  log(x)
+} else {
+  y ^ x
+}
 
-plot_ad +
-  geom_smooth(method = "lm", se = FALSE) +
-  geom_linerange(data = ad_pred,
-                 aes(ymin = Sales, ymax = .fitted),
-                 color = "blue",
-                 alpha = .5) 
+# Bad
+
+if (y < 0 && debug)
+message("Y is negative")
+
+if (y == 0) {
+  log(x)
+} 
+else {
+  y ^ x
+}
 ```
 
-## Parametric methods
+It's ok to leave very short statements on the same line:
 
-$$Y = \beta_0 + \beta_{1}X_1$$
+```r
+if (y < 0 && debug) message("Y is negative")
+```
 
-* $Y =$ sales
-* $X_{1} =$ advertising spending in a given medium
-* $\beta_0 =$ intercept
-* $\beta_1 =$ slope
+## Line length
 
-## Non-parametric methods
+```r
+# Good
+scdbv <- mutate(scdbv,
+                chief = factor(chief,
+                               levels = c("Jay", "Rutledge", "Ellsworth",
+                                          "Marshall", "Taney", "Chase",
+                                          "Waite", "Fuller", "White",
+                                          "Taft", "Hughes", "Stone",
+                                          "Vinson", "Warren", "Burger",
+                                          "Rehnquist", "Roberts")))
 
-* No assumptions about functional form
-* Use data to estimate $f$ directly
-    * Get close to data points
-    * Avoid overcomplexity
-* Requires large amount of observations
+# Bad
+scdbv <- mutate(scdbv, chief = factor(chief, levels = c("Jay", "Rutledge", "Ellsworth", "Marshall", "Taney", "Chase", "Waite", "Fuller", "White", "Taft", "Hughes", "Stone", "Vinson", "Warren", "Burger", "Rehnquist", "Roberts")))
+```
 
-## LOESS
+## Indentation
 
-```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
-library(broom)
-library(lattice)
+```r
+# pure function
+long_function_name <- function(a = "a long argument", 
+                               b = "another argument",
+                               c = "another long argument") {
+  # As usual code is indented by two spaces.
+}
 
-mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
-fit <- augment(mod)
+# in a mutate() function
+scdbv <- scdbv %>%
+  mutate(majority = majority - 1,
+         chief = factor(chief, levels = c("Jay", "Rutledge", "Ellsworth",
+                                          "Marshall", "Taney", "Chase",
+                                          "Waite", "Fuller", "White",
+                                          "Taft", "Hughes", "Stone",
+                                          "Vinson", "Warren", "Burger",
+                                          "Rehnquist", "Roberts")))
+```
 
-ggplot(fit, aes(E, NOx)) +
+## Assignment
+
+```r
+# Good
+x <- 5
+# Bad
+x = 5
+```
+
+## Comments
+
+```r
+# Section One ---------------------------------
+ 
+# Section Two =================================
+ 
+### Section Three #############################
+```
+
+## Auto-formatting in RStudio
+
+* **Code > Reformat Code** (Shift + Cmd/Ctrl + A)
+* **Code > Reindent Lines** (Cmd/Ctrl + I)
+
+## Exercise: style this code
+
+Complete [this exercise](http://cfss.uchicago.edu/block012_debugging.html#exercise:_style_this_code).
+
+## Fatal errors
+
+```{r error, error = TRUE}
+addition <- function(x, y){
+  if(!is_numeric(c(x, y))) stop("One of your inputs is not a number.")
+  
+  x + y
+}
+
+addition(3, "abc")
+```
+
+## Warnings
+
+```{r logit, error = TRUE}
+logit <- function(x){
+  log(x / (1 - x))
+}
+
+logit(-1)
+```
+
+## Warnings
+
+```{r logit_error, error = TRUE}
+logit <- function(x){
+ if(x < 0 | x > 1) stop('x not between 0 and 1')
+ log(x / (1 - x))
+}
+
+logit(-1)
+```
+
+## Warnings
+
+```{r logit_warning}
+logit <- function(x){
+  x <- ifelse(x < 0 | x > 1, NA, x)
+  if(is.na(x)) warning('x not between 0 and 1')
+  log(x / (1 - x))
+}
+
+logit(-1)
+```
+
+## Messages
+
+```{r message_ggplot}
+ggplot(diamonds, aes(carat, price)) +
   geom_point() +
-  geom_line(aes(y = .fitted), color = "red") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
+  geom_smooth()
 ```
 
-----
+## Suppressing messages
 
-```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
-dat <- ethanol %>%
-  inflate(center = unique(ethanol$E)) %>%
-  mutate(dist = abs(E - center)) %>%
-  filter(rank(dist) / n() <= .75) %>%
-  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
+```{r message_print}
+demo_message <- function() message("This is a message")
+demo_message()
+suppressMessages(demo_message())  # no output
 
-library(gganimate)
-
-p <- ggplot(dat, aes(E, NOx)) +
-  geom_point(aes(alpha = weight, frame = center)) +
-  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
-  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
-  geom_line(aes(y = .fitted), data = fit, color = "red") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
-gg_animate(p)
+demo_print <- function() print("This is a message")
+demo_print()
+suppressMessages(demo_print())  # still output
 ```
 
-----
+## Exercise: build a function with conditions
 
-```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
-spans <- c(.25, .5, .75, 1)
+Complete [this exercise](http://cfss.uchicago.edu/block012_debugging.html#exercise:_build_a_function_with_conditions)
 
-# create loess fits, one for each span
-fits <- data_frame(span = spans) %>%
-  group_by(span) %>%
-  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
+## The call stack
 
-# calculate weights to reproduce this with local weighted fits
-dat <- ethanol %>%
-  inflate(span = spans, center = unique(ethanol$E)) %>%
-  mutate(dist = abs(E - center)) %>%
-  filter(rank(dist) / n() <= span) %>%
-  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
-
-# create faceted plot with changing points, local linear fits, and vertical lines,
-# and constant hollow points and loess fit
-p <- ggplot(dat, aes(E, NOx)) +
-  geom_point(aes(alpha = weight, frame = center)) +
-  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
-  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
-  geom_point(shape = 1, data = ethanol, alpha = .25) +
-  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
-  facet_wrap(~span) +
-  ylim(0, 5) +
-  ggtitle("x0 = ") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
-
-gg_animate(p)
+```{r callstack, error = TRUE}
+f <- function(a) g(a)
+g <- function(b) h(b)
+h <- function(c) i(c)
+i <- function(d) "a" + d
+f(10)
 ```
 
-## Types of learning
-
-* Supervised
-* Unsupervised
-
-## Statistical learning vs. machine learning
-
-* Statistical learning
-    * Subfield of statistics
-    * Focused predominantly on **inference**
-* Machine learning
-    * Subfield of computer science
-    * Focused predominantly on **prediction**
-
-## Linear models
-
-$$y = \beta_0 + \beta_1 * x$$
-
-```{r sim-plot}
-ggplot(sim1, aes(x, y)) + 
-  geom_point()
+```{r traceback, eval = FALSE}
+traceback()
 ```
 
-## Linear models
-
-```{r sim-random-fit}
-models <- tibble(
-  a1 = runif(250, -20, 40),
-  a2 = runif(250, -5, 5)
-)
-
-ggplot(sim1, aes(x, y)) + 
-  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
-  geom_point()
+```
+# 4: i(c) at exceptions-example.R#3
+# 3: h(b) at exceptions-example.R#2
+# 2: g(a) at exceptions-example.R#1
+# 1: f(10)
 ```
 
-## Least squares regression
+## Condition handling
 
-```{r sim-error, echo = FALSE}
-dist1 <- sim1 %>% 
-  mutate(
-    dodge = rep(c(-1, 0, 1) / 20, 10),
-    x1 = x + dodge,
-    pred = 7 + x1 * 1.5
-  )
+* Unexpected errors
+* Expected errors
+* `try()`
+* `safely()`
 
-ggplot(dist1, aes(x1, y)) + 
-  geom_abline(intercept = 7, slope = 1.5, colour = "grey40") +
-  geom_point(colour = "grey40") +
-  geom_linerange(aes(ymin = y, ymax = pred), colour = "#3366FF")
+## Ignore errors with `try()`
+
+```{r try_error, error = TRUE}
+f1 <- function(x) {
+  log(x)
+  10
+}
+f1("x")
 ```
 
-## Estimating a linear model using `lm()`
+## Ignore errors with `try()`
 
-```{r sim-lm, echo = TRUE}
-sim1_mod <- lm(y ~ x, data = sim1)
-coef(sim1_mod)
+```{r try_error_wrap, error = TRUE}
+f2 <- function(x) {
+  try(log(x))
+  10
+}
+f2("a")
 ```
 
-## `str(lm())`
+## Ignore errors with `try()`
 
-```{r lm-str, echo = TRUE}
-str(sim1_mod)
+```r
+try({
+  a <- 1
+  b <- "x"
+  a + b
+})
 ```
 
-## Predicted values
+## Dealing with failure using `safely()`
 
-```{r add-predict-data}
-grid <- sim1 %>% 
-  data_grid(x) 
+* Adverb
+* Always returns a list with two elements
+    1. `result`
+    1. `error`
+* More predictable than `try()`
+
+## Dealing with failure using `safely()`
+
+```{r sqrt_safely}
+safe_sqrt <- safely(sqrt)
+str(safe_sqrt(9))
+str(safe_sqrt("a"))
 ```
 
-```{r add-predict}
-grid <- grid %>% 
-  add_predictions(sim1_mod) 
+## `safely()` and `map()` {.scrollable}
+
+```{r safely_map, error = TRUE}
+x <- list("a", 4, 5)
+
+# unsafely square root
+y <- x
+  map(sqrt)
+
+# safely log
+y <- x %>%
+  map(safely(sqrt))
+str(y)
 ```
 
-```{r plot-lm-predict}
-ggplot(sim1, aes(x)) +
-  geom_point(aes(y = y)) +
-  geom_line(aes(y = pred), data = grid, color = "red", size = 1) +
-  geom_point(aes(y = pred), data = grid, color = "blue", size = 3)
+## `transpose()`
+
+```{r transpose}
+y <- y %>%
+  transpose()
+str(y)
 ```
 
-## Residuals
+## Extract the values of `x` where `y` is an error
 
-```{r resids}
-sim1 <- sim1 %>% 
-  add_residuals(sim1_mod)
-
-ggplot(sim1, aes(resid)) + 
-  geom_freqpoly(binwidth = 0.5)
+```{r error_x}
+is_ok <- y$error %>%
+  map_lgl(is_null)
+x[!is_ok]
 ```
 
-## Estimating linear models using `gapminder`
+## Extract the values of `y` that are ok
 
-Go [here](stat002_linear_models.html#estimating_a_linear_model(s)_using_gapminder).
+```{r okay_y}
+y$result[is_ok] %>%
+  flatten_dbl()
+```
 
-## Exercise: linear regression with `scorecard`
+## `possibly()`
 
-Complete [this exercise](stat002_linear_models.html#exercise:_linear_regression_with_scorecard)
+```{r possibly}
+x %>%
+  map_dbl(possibly(sqrt, NA))
+```
 
-## Acknowledgments
+## `quietly()`
 
-* This presentation is derived in part from ["Creating a LOESS animation with `gganimate`"](http://varianceexplained.org/files/loess.html) by David Robinson.
-* This presentation is derived in part from ["Machine Learning vs. Statistical Modeling: The Real Difference"](http://www.infogix.com/blog/machine-learning-vs-statistical-modeling-the-real-difference/)
-* For more information on statistical learning and the math behind these methods, see the awesome book [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7)
+```{r quietly}
+x <- list(1, -1)
+x %>%
+  map(quietly(sqrt)) %>%
+  str()
+```
+
+## Exercise: handle conditions using `safely()`
+
+Complete [this exercise](http://cfss.uchicago.edu/block012_debugging.html#exercise:_handle_conditions_using_safely()).
+
 

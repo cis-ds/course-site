@@ -1,9 +1,9 @@
 ---
-title: "Distributed learning"
+title: "Statistical learning: classification problems"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 15, 2017"
+date: "February 8, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -11,224 +11,322 @@ output: rcfss::cfss_slides
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE,
-                      echo = FALSE)
+                      echo = FALSE,
+                      interval = .4)
 
 library(tidyverse)
-library(gapminder)
-library(stringr)
-
-set.seed(1234)
-
-theme_set(theme_minimal(base_size = 18))
+library(modelr)
+library(here)
+theme_set(theme_bw(base_size = 18))
 ```
 
-## Distributed computing
+## Titanic
 
-![](https://tctechcrunch2011.files.wordpress.com/2015/08/clouds.jpg)
+[![Sinking of the *Titanic*](https://static1.squarespace.com/static/5006453fe4b09ef2252ba068/5095eabce4b06cb305058603/5095eabce4b02d37bef4c24c/1352002236895/100_anniversary_titanic_sinking_by_esai8mellows-d4xbme8.jpg)](http://www.ultimatetitanic.com/the-sinking/)
 
-## SQL
+## Titanic
 
-* *Structured Query Language*
-* Means of communicating with a relational database management system
-* Different flavors of SQL
-    * SQLite
-    * MySQL
-    * Microsoft SQL
-    * PostgreSQL
-    * BigQuery
-* Hosting platforms
-    * [UChicago Research Computing Center](https://rcc.uchicago.edu/)
-    * [Amazon Web Services](https://aws.amazon.com/)
-    * [Google Cloud Platform](https://cloud.google.com/)
+<iframe width="560" height="315" src="https://www.youtube.com/embed/WNIPqafd4As" frameborder="0" allowfullscreen></iframe>
 
-## SQL locally
+## Titanic
 
-```{r, cache = FALSE}
-library(RSQLite)
-my_db <- src_sqlite("../data/my_db.sqlite3", create = T)
+![[Titanic (1997)](https://en.wikipedia.org/wiki/Titanic_(1997_film))](http://i.giphy.com/KSeT85Vtym7m.gif)
+    
+## Get data
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble()
+
+str(titanic)
 ```
 
-```{r eval = FALSE}
-flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
-  c("year", "month", "day"), "carrier", "tailnum"))
+## Linear regression
+
+```{r titanic_ols}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
 ```
 
-```{r, echo = FALSE}
-if(file.exists("my_db.sqlite3")){
-  flights_sqlite <- tbl(my_db, "flights")
-} else{
-  flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
-  c("year", "month", "day"), "carrier", "tailnum"))
+## Linear regression
+
+```{r titanic_ols_old}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  xlim(0, 200)
+```
+
+## Logistic regression
+
+$$P(\text{survival} = \text{Yes} | \text{age})$$
+
+* Predicted probability of surviving
+
+## Logistic regression
+
+```{r titanic_age_glm, echo = TRUE}
+survive_age <- glm(Survived ~ Age, data = titanic, family = binomial)
+summary(survive_age)
+```
+
+## Logistic regression
+
+```{r titanic_age_glm_plot}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"),
+              se = FALSE)
+```
+
+## Logistic regression
+
+```{r titanic_age_glm_plot_wide}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"),
+              se = FALSE, fullrange = TRUE) +
+  xlim(0,200)
+```
+
+```{r make_age_pred}
+titanic_age <- titanic %>%
+  data_grid(Age)
+```
+
+```{r logit}
+logit2prob <- function(x){
+  exp(x) / (1 + exp(x))
 }
 ```
 
-```{r}
-flights_sqlite
+```{r extract_modelr, depends="make_age_pred"}
+titanic_age <- titanic_age %>%
+  add_predictions(survive_age) %>%
+  mutate(pred = logit2prob(pred))
 ```
 
-## Basic verbs {.scrollable}
-
-```{r echo = TRUE}
-select(flights_sqlite, year:day, dep_delay, arr_delay)
-filter(flights_sqlite, dep_delay > 240)
-arrange(flights_sqlite, year, month, day)
-mutate(flights_sqlite, speed = air_time / distance)
-summarise(flights_sqlite, delay = mean(dep_time))
-```
-
-## Convert to SQL
-
-```{r, echo = TRUE}
-select(flights_sqlite, year:day, dep_delay, arr_delay) %>%
-  explain()
-```
-
-```sql
-SELECT `year` AS `year`, `month` AS `month`, `day` AS `day`, `dep_delay` AS `dep_delay`, `arr_delay` AS `arr_delay`
-FROM `flights`
-```
-
-## Laziness
-
-```{r}
-c1 <- filter(flights_sqlite, year == 2013, month == 1, day == 1)
-c2 <- select(c1, year, month, day, carrier, dep_delay, air_time, distance)
-c3 <- mutate(c2, speed = distance / air_time * 60)
-c4 <- arrange(c3, year, month, day, carrier)
-```
-
-## Laziness {.scrollable}
-
-```{r}
-c4
-```
-
-```{r}
-collect(c4)
-```
-
-## Google Bigquery
-
-* Can scan TB in seconds and PB in minutes
-* Flexible pricing depending on needs
-* Could be as little a pennies, though depending on your computation may cost more
-
-## Interacting with Google Bigquery via `dplyr`
-
-```{r, echo = TRUE}
-library(bigrquery)
-
-taxi <- src_bigquery(project = "nyc-tlc",
-                     dataset = "yellow",
-                     billing = getOption("bigquery_id"))
-taxi
-```
-
-## Questions {.scrollable}
-
-How many trips per taken each month in yellow cabs?
-
-```sql
-SELECT
-  LEFT(STRING(pickup_datetime), 7) month,
-  COUNT(*) trips
-FROM
-  [nyc-tlc:yellow.trips]
-WHERE
-  YEAR(pickup_datetime) = 2014
-GROUP BY
-  1
-ORDER BY
-  1
-```
-
-```{r echo = TRUE}
-system.time({
-  trips_by_month <- taxi %>%
-    tbl("trips") %>%
-    filter(year(pickup_datetime) == 2014) %>%
-    mutate(month = month(pickup_datetime)) %>%
-    count(month) %>%
-    arrange(month) %>%
-    collect()
-})
-trips_by_month
-```
-
-## Questions {.scrollable}
-
-What about the average speed per hour of day in yellow cabs?
-
-```{r echo = TRUE}
-system.time({
-  speed_per_hour <- taxi %>%
-    tbl("trips") %>%
-    mutate(hour = hour(pickup_datetime),
-           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
-    mutate(speed = trip_distance / trip_duration) %>%
-    filter(fare_amount / trip_distance >= 2,
-           fare_amount / trip_distance <= 10) %>%
-    group_by(hour) %>%
-    summarize(speed = mean(speed)) %>%
-    arrange(hour) %>%
-    collect()
-})
-
-ggplot(speed_per_hour, aes(hour, speed)) +
+```{r plot_pred, depends="make_age_pred", eval = FALSE}
+ggplot(titanic_age, aes(Age, pred)) +
   geom_line() +
-  labs(title = "Average Speed of NYC Yellow Taxis",
-       x = "Hour of day",
-       y = "Average speed, in MPH")
+  labs(title = "Relationship Between Age and Surviving the Titanic",
+       y = "Predicted Probability of Survival")
 ```
 
-## Questions {.scrollable}
+## Multiple predictors
 
-Finally, what is the average speed by day of the week?
-
-```{r echo = TRUE}
-system.time({
-  speed_per_day <- taxi %>%
-    tbl("trips") %>%
-    mutate(hour = hour(pickup_datetime),
-           day = dayofweek(pickup_datetime),
-           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
-    mutate(speed = trip_distance / trip_duration) %>%
-    filter(fare_amount / trip_distance >= 2,
-           fare_amount / trip_distance <= 10,
-           hour >= 8,
-           hour <= 18) %>%
-    group_by(day) %>%
-    summarize(speed = mean(speed)) %>%
-    arrange(day) %>%
-    collect()
-})
-speed_per_day
+```{r survive_age_woman}
+survive_age_woman <- glm(Survived ~ Age + Sex, data = titanic,
+                         family = binomial)
+summary(survive_age_woman)
 ```
 
-## Parallel computing
+## Multiple predictors
 
-![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
+```{r survive_age_woman_pred}
+titanic_age_sex <- titanic %>%
+  data_grid(Age, Sex) %>%
+  add_predictions(survive_age_woman) %>%
+  mutate(pred = logit2prob(pred))
+```
 
-## Parallel computing
+```{r survive_age_woman_plot, dependson="survive_age_woman"}
+ggplot(titanic_age_sex, aes(Age, pred, color = Sex)) +
+  geom_line() +
+  labs(title = "Probability of Surviving the Titanic",
+       y = "Predicted Probability of Survival",
+       color = "Sex")
+```
 
-* Parallel processing
-* Serial processing
-* Multithreading
+## Quadratic terms
 
-## Why use parallel computing
+```{r straight_line}
+sim_line <- tibble(x = runif(1000),
+                   y = x * 1)
 
-* Imitates real life
-* More efficient (maybe)
-* Tackle larger problems
-* Distributed resources
+ggplot(sim_line, aes(x, y)) +
+  geom_line()
+```
 
-## Why not to use parallel computing
+## Quadratic terms
 
-![Amdahl's Law from [Wikipedia](https://en.wikipedia.org/wiki/Amdahl's_law)](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png)
-    
-## Why not to use parallel computing
+```{r parabola}
+sim_line <- tibble(x = runif(1000, -1, 1),
+                   y = x^2 + x)
 
-* Limits to efficiency gains
-* Complexity
-* Dependencies
-* Parallel slowdown
+ggplot(sim_line, aes(x, y)) +
+  geom_line()
+```
+
+## Quadratic terms
+
+```{r quadratic}
+sim_line <- tibble(x = runif(1000, -1, 1),
+                   y = x^3 + x^2 + x)
+
+ggplot(sim_line, aes(x, y)) +
+  geom_line()
+```
+
+## Quadratic terms
+
+```{r}
+survive_age_square <- glm(Survived ~ Age + I(Age^2), data = titanic,
+                          family = binomial)
+
+titanic_age %>%
+  add_predictions(survive_age) %>%
+  mutate(pred = logit2prob(pred)) %>%
+  ggplot(aes(Age, pred)) +
+  geom_line() +
+  labs(title = "Relationship Between Age and Surviving the Titanic",
+       y = "Predicted Probability of Survival")
+```
+
+## Interactive terms
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
+
+## Interactive terms
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
+
+## Interactive terms
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
+
+## Interactive terms
+
+```{r age_woman_cross}
+survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+```
+
+```{r age_woman_cross_pred, dependson="age_woman_cross"}
+titanic_age_sex_x <- titanic %>%
+  data_grid(Age, Sex) %>%
+  add_predictions(survive_age_woman_x) %>%
+  mutate(pred = logit2prob(pred))
+```
+
+```{r age_woman_plot, dependson="age_woman_cross"}
+ggplot(titanic_age_sex_x, aes(Age, pred, color = Sex)) +
+  geom_line() +
+  labs(title = "Probability of Surviving the Titanic",
+       y = "Predicted Probability of Survival",
+       color = "Sex")
+```
+
+## Accuracy of predictions
+
+```{r accuracy_age, dependson="titanic_age_glm", echo = TRUE}
+age_accuracy <- titanic %>%
+  add_predictions(survive_age) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(age_accuracy$Survived == age_accuracy$pred, na.rm = TRUE)
+```
+
+## Accuracy of predictions
+
+```{r accuracy_age_gender_x, dependson="age_woman_cross", echo = TRUE}
+x_accuracy <- titanic %>%
+  add_predictions(survive_age_woman_x) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(x_accuracy$Survived == x_accuracy$pred, na.rm = TRUE)
+```
+
+## Training/test sets
+
+* Training set
+* Test set
+* Why split up?
+
+## Test set for Titanic {.scrollable}
+
+```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE, echo = TRUE}
+titanic_split <- resample_partition(titanic, c(test = 0.3, train = 0.7))
+map(titanic_split, dim)
+
+train_model <- glm(Survived ~ Age * Sex, data = titanic_split$train,
+                   family = binomial)
+summary(train_model)
+
+x_test_accuracy <- titanic_split$test %>%
+  tbl_df() %>%
+  add_predictions(train_model) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE)
+```
+
+## Exercise: depression and voting
+
+Complete [this exercise](http://cfss.uchicago.edu/stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health)
+
+----
+
+![](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
+
+----
+
+![](https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg)
+
+----
+
+![[Should I Have a Cookie?](http://iwastesomuchtime.com/58217)](http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif)
+
+## Interpreting a decision tree
+
+```{r titanic_tree, echo = FALSE}
+library(tree)
+
+titanic_tree_data <- titanic %>%
+  mutate(Survived = ifelse(Survived == 1, "Survived",
+                           ifelse(Survived == 0, "Died", NA)),
+         Survived = as.factor(Survived),
+         Sex = as.factor(Sex))
+
+titanic_tree <- tree(Survived ~ Age + Sex, data = titanic_tree_data)
+
+plot(titanic_tree)
+text(titanic_tree, pretty = 0)
+```
+
+## Benefits/drawbacks to decision trees
+
++ Easy to explain
++ Easy to interpret/visualize
++ Good for qualitative predictors
+- Lower accuracy rates
+- Non-robust
+
+## Random forests
+
+![](http://www.discovertheforest.org/images/hero/home/6.jpg)
+
+## Random forests
+
+* Bootstrapping
+* Reduces variance
+* Bagging
+* Random forest
+    * Reliability
+
+## The `caret` library
+
+[Estimating statistical models using `caret`](http://cfss.uchicago.edu/stat004_decision_trees.html#estimating_statistical_models_using_caret)
+
+## Exercise: depression and voting
+
+Complete [this exercise](stat004_decision_trees.html#exercise:_random_forests_with_mental_health)
+
+

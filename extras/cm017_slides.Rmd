@@ -1,493 +1,546 @@
 ---
-title: "Building Shiny Apps"
+title: "Text analysis: fundamentals and sentiment analysis"
 author: |
   | MACS 30500
   | University of Chicago
-date: "March 6, 2017"
+date: "February 27, 2017"
 output: rcfss::cfss_slides
 ---
 
-```{r setup, include = FALSE, cache = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE,
-                      eval = FALSE)
+                      echo = FALSE)
+```
 
+```{r packages}
 library(tidyverse)
-library(shiny)
+library(lubridate)
+library(stringr)
+library(tidytext)
+library(broom)
+library(scales)
+library(twitteR)
+library(wordcloud)
+library(reshape2)
+
+set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
 ```
 
-## What is Shiny?
+## Basic workflow for text analysis
 
-* R package from RStudio
-* Web application framework for R
-* R code $\rightarrow$ interactive web page
-* No HTML/CSS/Javascript knowledge required
-* Great for sharing R analysis with someone scared of R
+* Obtain your text sources
+* Extract documents and move into a corpus
+* Transformation
+* Extract features
+* Perform analysis
 
-----
+## Obtain your text sources
 
-<iframe width="853" height="480" src="https://www.youtube.com/embed/7dsVYswSfow?rel=0" frameborder="0" allowfullscreen></iframe>
+* Web sites
+    * Twitter
+* Databases
+* PDF documents
+* Digital scans of printed materials
 
-* [My Shiny app](https://bensoltoff.shinyapps.io/cfss-age-rule/)
+## Extract documents and move into a corpus
 
-## What is a Shiny app?
+* Text corpus
+* Typically stores the text as a raw character string with metadata and details stored with the text
 
-* Computer running R
-* Web page
-* Computer performs calculations, sends contents to web page
-* User interacts with web page, sends updates back to computer
-* Rinse and repeat
+## Transformation
 
-## Shiny app template
+* Tag segments of speech for part-of-speech (nouns, verbs, adjectives, etc.) or entity recognition (person, place, company, etc.)
+* Standard text processing
+    * Convert to lower case
+    * Remove punctuation
+    * Remove numbers
+    * Remove stopwords
+    * Remove domain-specific stopwords
+    * Stemming
 
-```{r shiny_template}
-library(shiny)
-ui <- fluidPage()
-server <- function(input, output) {}
-shinyApp(ui = ui, server = server)
-```
+## Extract features
 
-**Important**: Do not place any code after `shinyApp()`
+* Convert the text string into some sort of quantifiable measures
+* Bag-of-words model
+    * Term frequency vector
+    * Term-document matrix
+    * Ignores context
 
-## Run Shiny app in RStudio, method 1
+## Perform analysis
 
-Save file as **app.R** $\rightarrow$ "Run" button turns to "Run App"
+* Basic
+    * Word frequency
+    * Collocation
+    * Dictionary tagging
+* Advanced
+    * Document classification
+        * Supervised
+        * Unsupervised
+    * Corpora comparison
+    * Topic modeling
 
-![](../images/shiny-runapp.png)
+## Sentiment analysis
 
-Good for creating Shiny apps quickly, all code in one file
+> I am happy
 
-## Run Shiny app in RStudio, method 2
-
-Save UI as **ui.R** and server as **server.R** in **same directory**
-
-![](../images/Shiny-run-app-screenshot.png)
-
-Good for complex Shiny apps, separates view vs logic
-
-If using this method, **do not** include a call to `shinyApp(...)`
-
-## Run Shiny app in RStudio, method 3
-
-*File > New File > Shiny Web App...*
-
-![](../images/shiny-add-template.png)
-
-Generates the template for you
-
-## Stop Shiny app in RStudio
-
-Press "Esc" or click the *Stop* icon
-
-![](../images/shiny-stopapp.png)
-
-----
-
-Work through the tutorial until the end of Section 4
-
-## Add elements to app inside `fluidPage()`
+## Dictionaries
 
 ```{r}
-library(shiny)
-ui <- fluidPage("Hello CFSS")
-server <- function(input, output) {}
-shinyApp(ui = ui, server = server)
+get_sentiments("bing")
 ```
 
-![](../images/shiny-basic.png)
-
-## Add elements to app inside `fluidPage()`
+## Dictionaries
 
 ```{r}
-fluidPage(
-	h1("My Shiny app"),
-	"Hello CFSS"
-)
+get_sentiments("afinn")
 ```
 
-![](../images/shiny-add-h1.png)
-
-## Add HTML to `fluidPage()`
-
-* Remember the UI simply creates HTML
-* [Can use any HTML tags](http://shiny.rstudio.com/articles/tag-glossary.html)
-    * `h1()` = header1
-    * `br()` = line break
-    * `strong()` = bold text
-* Any HTML tag can be accessed using `tags` object
-    * `h1` = `tags$h1()`, `br` = `tags$br()`
-* Common tags can be accesed without `tags`
-
-## Add HTML to `fluidPage()`
+## Dictionaries
 
 ```{r}
-fluidPage(
-  h1("My Shiny app"),
-  h3("Subtitle"),
-  "Hello",
-  "CFSS",
-  br(),
-  strong("bold text")
-)
+get_sentiments("nrc")
 ```
 
-![](../images/shiny-tags.png)
-
-## Use a layout
-
-* By default, all elements stack up one after the other
-* [Can use different layouts](http://shiny.rstudio.com/articles/layout-guide.html)
-* We’ll use `sidebarLayout()`
-
-## `sidebarLayout()`
+## Dictionaries
 
 ```{r}
-fluidPage(
-  titlePanel("My Shiny app"),
-  sidebarLayout(
-    sidebarPanel(
-      "This is a side panel"
-    ),
-    mainPanel(
-      "And this is the main stuff"
-    )
-  )
-)
+get_sentiments("nrc") %>%
+  count(sentiment)
 ```
 
-## `sidebarLayout()`
-
-![](../images/shiny-sidebarlayout.png)
-
-----
-
-Work through the tutorial until the end of Section 5
-
-## Inputs and outputs
-
-* For interactivity, app needs inputs and outputs
-* **Inputs** - things user can toggle/adjust
-* **Output** - R objects user can see, often depend on inputs
-
-## Inputs and outputs
-
-![](../images/shiny-addplot.png)
-
-## Inputs
+## Measuring overall sentiment {.scrollable}
 
 ```{r}
-library(shiny)
+library(janeaustenr)
 
-ui <- fluidPage(
-  sliderInput(
-    "num", "Choose a number",
-    min = 0, max = 100,
-    value = 20)
-)
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text,
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
 
-server <- function(input, output) {}
+janeaustensentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
 
-shinyApp(ui = ui, server = server)
+ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
+        geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+        facet_wrap(~book, ncol = 2, scales = "free_x")
 ```
 
-![](../images/shiny-input.png)
+## [`tidytext`](https://github.com/juliasilge/tidytext)
 
-## Inputs
+* Tidy text format
+* Defined as one-term-per-row
+* Differs from the document-term matrix
+    * One-document-per-row and one-term-per-column
+
+## \@realDonaldTrump
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Every non-hyperbolic tweet is from iPhone (his staff). <br><br>Every hyperbolic tweet is from Android (from him). <a href="https://t.co/GWr6D8h5ed">pic.twitter.com/GWr6D8h5ed</a></p>&mdash; Todd Vaziri (\@tvaziri) <a href="https://twitter.com/tvaziri/status/762005541388378112">August 6, 2016</a></blockquote>
+<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+## Obtaining documents
 
 ```{r}
-sliderInput("num", "Choose a number",
-            min = 0, max = 100, value = 20)
-```
-
-```{r eval = TRUE}
-print(sliderInput("num", "Choose a number",
-            min = 0, max = 100, value = 20))
-```
-
-## Inputs
-
-![](../images/shiny-inputs.png)
-
-## Inputs
-
-<div id="left">
-```{r}
-sliderInput("num",
-            "Choose a number",
-            min = 0,
-            max = 0,
-            value = 20)
-```
-</div>
-
-<div id="right">
-* Input name
-* Label to display
-* Input-specific arguments
-</div>
-
-----
-
-Work through the tutorial until the end of Section 6
-
-## Outputs
-
-* Plots, tables, text - anything that R creates and users see
-* Initialize as empty placeholder space until object is created
-
-Function | Outputs
----------|---------
-`plotOutput()` | plot
-`tableOutput()` | table
-`uiOutput()` | Shiny UI element
-`textOutput()` | text
-
-## Outputs
-
-<div id="left">
-```{r}
-sliderInput("num",
-            "Choose a number",
-            min = 0,
-            max = 0,
-            value = 20)
-```
-</div>
-
-<div id="right">
-* Input name
-* Label to display
-* Input-specific arguments
-</div>
-
-## Outputs
-
-```{r}
-library(shiny)
-
-ui <- fluidPage(
-  sliderInput("num", "Choose a number",
-              0, 100, 20),
-  plotOutput("myplot")
-)
-
-server <- function(input, output) {}
-
-shinyApp(ui = ui, server = server)
-```
-
-![](../images/shiny-addplot-placeholder.png)
-
-## Summary
-
-* Begin app with template
-* Add elements as arguments to `fluidPage()`
-* Create inputs with `*Input()` functions
-* Create outputs with `*Output()` functions
-* Use `server` to assemble inputs into outputs
-
-## Why doesn't my app run?
-
-Remember to:
-
-* Comma-separate all the elements
-* Not add comma to the last element
-
-----
-
-Work through the tutorial until the end of Section 8
-
-## Server: assemble input into outputs with 3 rules
-
-```{r}
-server <- function(input, output) {
-    output$myplot <- renderPlot({
-        plot(rnorm(input$num))
-    })
-}
-```
-
-1. Save objects into `output$`
-1. Build objects with `render*()`
-
-## `Output()` $\rightarrow$ `render*()`
-
-Output function | Render function
--------|----------
-`plotOutput()` | `renderPlot({})`
-`tableOutput()` | `renderTable({})`
-`uiOutput()` | `renderUI({})`
-`textOutput()` | `renderText({})`
-
-## `render*()` functions build reactive output to display in UI
-
-```{r}
-renderPlot({
-  plot(rnorm(100))
-})
-```
-
-## Server: assemble input into outputs with 3 rules
-
-```{r}
-server <- function(input, output) {
-    output$myplot <- renderPlot({
-        plot(rnorm(input$num))
-      
-      # in UI:sliderInput("num", ...)
-    })
-}
-```
-
-1. Save objects into `output$`
-1. Build objects with `render*()`
-1. Access input values with `input$`
-
-----
-
-Work through the tutorial until the end of Section 9
-
-## Reactivity
-
-* Shiny uses **reactive programming**
-* Reactive variables
-    * When value of variable `x` changes, anything that relies on `x` is re-evaluated
-    * Contrast with regular R:
-        ```{r}
-        x <- 5
-        y <- x + 1
-        x <- 10
-        # y is still 6
-        ```
-
-## Reactivity
-
-* `input$num` is a **reactive** value
-    ```{r}
-    output$myplot <- renderPlot({
-      plot(rnorm(input$num))
-    })
-    ```
-* `output$myplot` depends on `input$num`
-    * `input$num` changes $\rightarrow$ `output$myplot` **reacts**
-* All inputs are automatically reactive, so if you use any input inside a `render*` function, the output will re-render any time input changes
-
-## Reactive contexts
-
-* You can define your own reactive variables
-* Reactive values can only be used inside **reactive contexts**
-* Any `render*` function is a reactive context
-* Use `reactive({...})`  to assign a reactive variable
-* Use `observe({...})` to access a reactive variable
-* Remember: reactive variable means anything that depends on it gets re-executed automatically
-
-## Reactive contexts
-
-<div id="left">
-<center>Assign variable</center>
-
-```{r}
-server <- function(input, output) {
-	x <- input$num + 1
-}
-# error
+library(twitteR)
 ```
 
 ```{r}
-server <- function(input, output) {
-  x <- reactive({
-    input$num + 1
-  })
-}
-# OK
-```
-</div>
-
-<div id="right">
-<center>Access variable</center>
-
-```{r}
-server <- function(input, output) {
-	print(input$num)
-}
-# error
+# You'd need to set global options with an authenticated app
+setup_twitter_oauth(getOption("twitter_api_key"),
+                    getOption("twitter_api_token"))
 ```
 
-```{r}
-server <- function(input, output) {
-  observe({
-    print(input$num)
-  })
-}
-# OK
+```{r, eval = FALSE}
+# We can request only 3200 tweets at a time; it will return fewer
+# depending on the API
+trump_tweets <- userTimeline("realDonaldTrump", n = 3200)
+trump_tweets_df <- trump_tweets %>%
+  map_df(as.data.frame) %>%
+  tbl_df()
 ```
-</div>
 
-## Simple Shiny app using basic reactivity
+```{r trump_tweets_df}
+# if you want to follow along without setting up Twitter authentication,
+# just use this dataset:
+load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
+str(trump_tweets_df)
+```
+
+## Clean up the data
+
+```{r tweets, dependson = "trump_tweets_df"}
+tweets <- trump_tweets_df %>%
+  select(id, statusSource, text, created) %>%
+  extract(statusSource, "source", "Twitter for (.*?)<") %>%
+  filter(source %in% c("iPhone", "Android"))
+
+tweets %>%
+  head() %>%
+  knitr::kable()
+```
+
+## When does he tweet?
+
+```{r dependson = "tweets"}
+tweets %>%
+  count(source, hour = hour(with_tz(created, "EST"))) %>%
+  mutate(percent = n / sum(n)) %>%
+  ggplot(aes(hour, percent, color = source)) +
+  geom_line() +
+  scale_y_continuous(labels = percent_format()) +
+  labs(x = "Hour of day (EST)",
+       y = "% of tweets",
+       color = "")
+```
+
+## How does he retweet? {.center}
+
+<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">&quot;<a href="https://twitter.com/trumplican2016">\@trumplican2016</a>: <a href="https://twitter.com/realDonaldTrump">\@realDonaldTrump</a> <a href="https://twitter.com/DavidWohl">\@DavidWohl</a> stay the course mr trump your message is resonating with the PEOPLE&quot;</p>&mdash; Donald J. Trump (\@realDonaldTrump) <a href="https://twitter.com/realDonaldTrump/status/758512401629192192">July 28, 2016</a></blockquote>
+<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+## How does he retweet?
+
+```{r dependson = "tweets"}
+tweets %>%
+  count(source,
+        quoted = ifelse(str_detect(text, '^"'), "Quoted", "Not quoted")) %>%
+  ggplot(aes(source, n, fill = quoted)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "", y = "Number of tweets", fill = "") +
+  ggtitle('Whether tweets start with a quotation mark (")')
+```
+
+## Trump tweets
 
 ```{r}
-library(shiny)
-ui <- fluidPage(
-  sliderInput("num", "Choose a number",
-              0, 100, 20),
-  plotOutput("myplot")
-)
+library(tidytext)
 
-server <- function(input, output) {
-  output$myplot <- renderPlot({
-    plot(seq(input$num))
-  })
-  x <- reactive({
-    input$num + 1
-  })
-  observe({
-    print(x())
-  })
+# function to neatly print the first 10 rows using kable
+print_neat <- function(df){
+  df %>%
+    head() %>%
+    knitr::kable()
 }
 
-shinyApp(ui = ui, server = server)
+# tweets data frame
+tweets %>%
+  print_neat()
 ```
 
-----
+## Remove manual retweets
 
-Work through the tutorial until the end of Section 10
+```{r}
+# remove manual retweets
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  print_neat()
+```
 
-## Using buttons in the UI
+## Tokenize
 
-* Different from other inputs: you usually don't care about the "value" of the button, you care when it's clicked
-    ```{r}
-    ui <- fluidPage(
-      actionButton("btn", "Click me")
-    )
-    server <- function(input, output, session) {
-      observe({
-        cat(input$btn)
-      })
-    }
-    shinyApp(ui = ui, server = server) 
-    ```
+```{r}
+# custom regular expression to tokenize tweets
+reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
 
-----
+# unnest into tokens - tidytext format
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  print_neat()
+```
 
-Work through the tutorial until the end of Section 12
+## Remove stop words
 
-## Share your app: shinyapps.io
+```{r}
+# remove stop words
+tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]")) %>%
+  print_neat()
+```
 
-* Go to http://www.shinyapps.io/ and make an account
-* Make sure all your app files are in an isolated folder
-* Click "Publish Application" in RStudio
-    ![](../images/shiny-publish.png)
-    * You might be asked to install a couple packages
-    * Follow instructions from RStudio
+```{r, include = FALSE}
+# store for future use
+tweet_words <- tweets %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+```
 
-----
+## Frequency of tokens
 
-Work through the tutorial until the end of Section 13
+```{r tweet_words_plot, dependson = "tweet_words", fig.height = 6, fig.width = 8, echo = FALSE}
+tweet_words %>%
+  count(word, sort = TRUE) %>%
+  head(20) %>%
+  mutate(word = reorder(word, n)) %>%
+  ggplot(aes(word, n)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Frequency of tokens",
+       subtitle = "@realDonaldTrump",
+       x = "Word",
+       y = "Occurrences") +
+  coord_flip()
+```
+
+## Assessing word importance
+
+* Term frequency (tf)
+* Inverse document frequency (idf)
+* Term frequency-inverse document frequency (tf-idf)
+
+    $$idf(\text{term}) = \ln{\left(\frac{n_{\text{documents}}}{n_{\text{documents containing term}}}\right)}$$
+
+## Calculate tf-idf
+
+```{r}
+tweet_words_count <- tweet_words %>%
+  count(source, word, sort = TRUE) %>%
+  ungroup()
+tweet_words_count
+```
+
+## Calculate tf-idf
+
+```{r}
+total_words <- tweet_words_count %>%
+  group_by(source) %>%
+  summarize(total = sum(n))
+total_words
+```
+
+## Calculate tf-idf
+
+```{r}
+tweet_words_count <- left_join(tweet_words_count, total_words)
+tweet_words_count
+```
+
+## Calculate tf-idf
+
+```{r}
+tweet_words_count <- tweet_words_count %>%
+  bind_tf_idf(word, source, n)
+tweet_words_count
+```
+
+## Which terms have a high tf-idf?
+
+```{r}
+tweet_words_count %>%
+  select(-total) %>%
+  arrange(desc(tf_idf))
+```
+
+## Which terms have a high tf-idf?
+
+```{r}
+tweet_important <- tweet_words_count %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+tweet_important %>%
+  group_by(source) %>%
+  slice(1:15) %>%
+  ggplot(aes(word, tf_idf, fill = source)) +
+  geom_bar(alpha = 0.8, stat = "identity") +
+  labs(title = "Highest tf-idf words",
+       subtitle = "Top 15 for Android and iPhone",
+       x = NULL, y = "tf-idf") +
+  coord_flip()
+```
+
+## Sentiment analysis
+
+```{r nrc}
+nrc <- sentiments %>%
+  filter(lexicon == "nrc") %>%
+  select(word, sentiment)
+nrc
+```
+
+## Sentiment analysis
+
+```{r by_source_sentiment}
+sources <- tweet_words %>%
+  group_by(source) %>%
+  mutate(total_words = n()) %>%
+  ungroup() %>%
+  distinct(id, source, total_words)
+sources
+```
+
+## Sentiment analysis
+
+```{r}
+by_source_sentiment <- tweet_words %>%
+  inner_join(nrc, by = "word") %>%
+  count(sentiment, id) %>%
+  ungroup() %>%
+  complete(sentiment, id, fill = list(n = 0)) %>%
+  inner_join(sources) %>%
+  group_by(source, sentiment, total_words) %>%
+  summarize(words = sum(n)) %>%
+  ungroup()
+
+head(by_source_sentiment)
+```
+
+## Is this significant?
+
+```{r}
+# function to calculate the poisson.test for a given sentiment
+poisson_test <- function(df){
+  poisson.test(df$words, df$total_words)
+}
+
+# use the nest() and map() functions to apply poisson_test to each
+# sentiment and extract results using broom::tidy()
+sentiment_differences <- by_source_sentiment %>%
+  group_by(sentiment) %>%
+  nest() %>%
+  mutate(poisson = map(data, poisson_test),
+         poisson_tidy = map(poisson, tidy)) %>%
+  unnest(poisson_tidy, .drop = TRUE)
+sentiment_differences
+```
+
+## Is this significant?
+
+```{r}
+sentiment_differences %>%
+  ungroup() %>%
+  mutate(sentiment = reorder(sentiment, estimate)) %>%
+  mutate_each(funs(. - 1), estimate, conf.low, conf.high) %>%
+  ggplot(aes(estimate, sentiment)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high)) +
+  scale_x_continuous(labels = percent_format()) +
+  labs(x = "% increase in Android relative to iPhone",
+       y = "Sentiment")
+```
+
+## Most important words
+
+```{r, fig.height = 10}
+tweet_important %>%
+  inner_join(nrc, by = "word") %>%
+  filter(!sentiment %in% c("positive", "negative")) %>%
+  mutate(sentiment = reorder(sentiment, -tf_idf),
+         word = reorder(word, -tf_idf)) %>%
+  group_by(sentiment) %>%
+  top_n(10, tf_idf) %>%
+  ungroup() %>%
+  ggplot(aes(word, tf_idf, fill = source)) +
+  facet_wrap(~ sentiment, scales = "free", nrow = 4) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(x = "",
+       y = "tf-idf") +
+  scale_fill_manual(name = "", labels = c("Android", "iPhone"),
+                    values = c("red", "lightblue"))
+```
+
+## Wordclouds
+
+```{r}
+library(wordcloud)
+
+tweet_words %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100, scale = c(3,.5)))
+```
+
+## `#rstats`
+
+```{r wordcloud-rstats}
+# get tweets
+rstats <- searchTwitter('#rstats', n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+rstats_token <- rstats %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+# plot
+rstats_token %>%
+  count(word) %>%
+  filter(word != "#rstats") %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+## Pope Francis
+
+```{r wordcloud-pope}
+# get tweets
+pope <- userTimeline("Pontifex", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+pope_token <- pope %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+# plot
+pope_token %>%
+  count(word) %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+## Pope Francis vs. President Trump
+
+```{r wordcloud-pope-trump}
+library(reshape2)
+
+# get fresh trump tweets
+trump <- userTimeline("realDonaldTrump", n = 3200) %>%
+  twListToDF %>%
+  as_tibble
+
+# tokenize
+trump_token <- trump %>%
+  filter(!str_detect(text, '^"')) %>%
+  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
+  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
+  filter(!word %in% stop_words$word,
+         str_detect(word, "[a-z]"))
+
+bind_rows(Trump = trump_token, Pope = pope_token, .id = "person") %>%
+  count(word, person) %>%
+  acast(word ~ person, value.var = "n", fill = 0) %>%
+  comparison.cloud(max.words = 100, colors = c("blue", "red"))
+```
 
 ## Acknowledgments {.toc-ignore}
 
-```{r child='../_ack_stat545.Rmd', eval = TRUE}
+```{r child='../_ack_stat545.Rmd'}
 ```
+* This page is derived in part from ["Text analysis of Trump's tweets confirms he writes only the (angrier) Android half"](http://varianceexplained.org/r/trump-tweets/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+* This page is derived in part from ["Tidy Text Mining with R"](http://tidytextmining.com/) and licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States License](https://creativecommons.org/licenses/by-nc-sa/3.0/us/).
+
 

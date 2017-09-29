@@ -1,428 +1,202 @@
 ---
-title: "Debugging and defensive programming"
+title: "Pipes and functions in R"
 author: |
   | MACS 30500
   | University of Chicago
-date: "January 30, 2017"
+date: "January 23, 2017"
 output: rcfss::cfss_slides
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
 
 set.seed(1234)
+
 library(tidyverse)
 ```
 
-## Bugs
-
-![Not the kind of bugs we're looking for](../images/bugs.jpg)
-
-## Bugs
-
-* "An error, flaw, failure or fault in a computer program or system that causes it to produce an incorrect or unexpected result, or to behave in unintended ways."
-* Computers are powerful tools that are incredibly stupid
-* Debugging has two goals:
-    * Fix bugs once they occur
-    * Prevent bugs from occurring in the first place
-
-## Defensive programming
-
-* Style guide
-* Failing fast
-
-## Writing code
-
-Programming |	Language
-------------|----------
-Scripts |	Essays
-Sections | Paragraphs
-Lines Breaks | Sentences
-Parentheses |	Punctuation
-Functions |	Verbs
-Variables |	Nouns
-
 ----
 
-<p align = "left" style="font-size:30px">
-weve grown used to wonders in this century its hard to dazzle us but for 25 years the united states space program has been doing just that weve grown used to the idea of space and perhaps we forget that weve only just begun were still pioneers they the members of the Challenger crew were pioneers and i want to say something to the school children of America who were watching the live coverage of the shuttles takeoff i know it is hard to understand but sometimes painful things like this happen its all part of the process of exploration and discovery its all part of taking a chance and expanding mans horizons the future doesnt belong to the fainthearted it belongs to the brave the challenger crew was pulling us into the future and well continue to follow them the crew of the space shuttle challenger honored us by the manner in which they lived their lives we will never forget them nor the last time we saw them this morning as they prepared for the journey and waved goodbye and slipped the surly bonds of earth to touch the face of god
-</p>
+> Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
 
-----
+1. Filter `diamonds` to only keep observations where the color is rated as "I"
+1. Group the filtered `diamonds` data frame by cut
+1. Summarize the grouped and filtered `diamonds` data frame by calculating the average carat size and price
 
-<p align = "left" style="font-size:25px">
-We've grown used to wonders in this century. It's hard to dazzle us. But for 25 years the United States space program has been doing just that. We've grown used to the idea of space, and perhaps we forget that we've only just begun. We're still pioneers. They, the members of the Challenger crew, were pioneers.
-</p>
+## Intermediate steps
 
-<p align = "left" style="font-size:25px">
-And I want to say something to the school children of America who were watching the live coverage of the shuttle's takeoff. I know it is hard to understand, but sometimes painful things like this happen. It's all part of the process of exploration and discovery. It's all part of taking a chance and expanding man's horizons. The future doesn't belong to the fainthearted; it belongs to the brave. The Challenger crew was pulling us into the future, and we'll continue to follow them....
-</p>
-
-<p align = "left" style="font-size:25px">
-The crew of the space shuttle Challenger honoured us by the manner in which they lived their lives. We will never forget them, nor the last time we saw them, this morning, as they prepared for the journey and waved goodbye and 'slipped the surly bonds of earth' to 'touch the face of God.'
-</p>
-
-## File names
-
-```r
-# Good
-fit-models.R
-utility-functions.R
-gun-deaths.Rmd
-
-# Bad
-foo.r
-stuff.r
-gun deaths.rmd
+```{r intermediate}
+diamonds_1 <- filter(diamonds, color == "I")
+diamonds_2 <- group_by(diamonds_1, cut)
+(diamonds_3 <- summarize(diamonds_2, price = mean(price)))
 ```
 
-## Object names
+## Overwrite the original
 
-```r
-# Good
-day_one
-day_1
-
-# Bad
-first_day_of_the_month
-DayOne
-dayone
-djm1
+```{r overwrite}
+diamonds_t <- diamonds    # copy diamonds to diamonds_t just for demonstration purposes
+diamonds_t <- filter(diamonds_t, color == "I")
+diamonds_t <- group_by(diamonds_t, cut)
+(diamonds_t <- summarize(diamonds_t, price = mean(price)))
 ```
 
-## Overwriting objects
+## Function composition
 
-```r
-# Bad
-T <- FALSE
-c <- 10
+```{r function_comp}
+summarize(
+  group_by(
+    filter(diamonds, color == "I"),
+    cut
+  ),
+  price = mean(price)
+)
 ```
 
-```{r mean}
-x <- 1:10
-mean(x)
+## Piping
+
+```{r pipe}
+diamonds %>%
+  filter(color == "I") %>%
+  group_by(cut) %>%
+  summarize(price = mean(price))
 ```
 
-```r
-# create new mean function
-mean <- function(x) sum(x)
-mean(x)
-```
+## Exercise on piping
 
-```
-[1] 55
-```
+Complete [this exercise](http://cfss.uchicago.edu/block008_pipes.html#practice_piping_alternatives)
 
+## Functions
 
-## Spacing
+* Easy to reuse
+* Self-documenting
+* Easy-ier to debug
+* [If you have copied and pasted a block of code more than twice, convert it to a function.](http://r4ds.had.co.nz/functions.html#when-should-you-write-a-function)
 
-```r
-# Good
-average <- mean(feet / 12 + inches, na.rm = TRUE)
+## Function components
 
-# Bad
-average<-mean(feet/12+inches,na.rm=TRUE)
-```
+* Name
+* Arguments
+* Body
 
-## Curly braces
+## Rescale function
 
-```r
-# Good
-
-if (y < 0 && debug) {
-  message("Y is negative")
+```{r, collapse = TRUE}
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
 }
 
-if (y == 0) {
-  log(x)
+rescale01(c(0, 5, 10))
+rescale01(c(-10, 0, 10))
+rescale01(c(1, 2, 3, NA, 5))
+```
+
+* Name
+* Arguments
+* Body
+
+## What is that?
+
+```{r}
+pythagorean <- function(a, b){
+  hypotenuse <- sqrt(a^2 + b^2)
+  return(hypotenuse)
+}
+```
+
+* Name
+* Arguments
+* Body
+
+## How to use a function {.scrollable}
+
+```{r, error = TRUE}
+# print the output of the function
+pythagorean(a = 3, b = 4)
+
+# save the output as a new object
+(tri_c <- pythagorean(a = 3, b = 4))
+
+# what happens to the hypotenuse from inside the function?
+pythagorean(a = 3, b = 4)
+hypotenuse
+```
+
+## Exercise
+
+Stop and go [write a function](http://cfss.uchicago.edu/block009_functions.html#exercise:_calculate_the_sum_of_squares_of_two_variables)
+
+## Conditional execution
+
+```{r eval = FALSE}
+if (condition) {
+  # code executed when condition is TRUE
 } else {
-  y ^ x
-}
-
-# Bad
-
-if (y < 0 && debug)
-message("Y is negative")
-
-if (y == 0) {
-  log(x)
-} 
-else {
-  y ^ x
+  # code executed when condition is FALSE
 }
 ```
 
-It's ok to leave very short statements on the same line:
+## Conditional execution
 
-```r
-if (y < 0 && debug) message("Y is negative")
-```
-
-## Line length
-
-```r
-# Good
-scdbv <- mutate(scdbv,
-                chief = factor(chief,
-                               levels = c("Jay", "Rutledge", "Ellsworth",
-                                          "Marshall", "Taney", "Chase",
-                                          "Waite", "Fuller", "White",
-                                          "Taft", "Hughes", "Stone",
-                                          "Vinson", "Warren", "Burger",
-                                          "Rehnquist", "Roberts")))
-
-# Bad
-scdbv <- mutate(scdbv, chief = factor(chief, levels = c("Jay", "Rutledge", "Ellsworth", "Marshall", "Taney", "Chase", "Waite", "Fuller", "White", "Taft", "Hughes", "Stone", "Vinson", "Warren", "Burger", "Rehnquist", "Roberts")))
-```
-
-## Indentation
-
-```r
-# pure function
-long_function_name <- function(a = "a long argument", 
-                               b = "another argument",
-                               c = "another long argument") {
-  # As usual code is indented by two spaces.
+```{r eval = FALSE}
+if (this) {
+  # do that
+} else if (that) {
+  # do something else
+} else {
+  # do something completely different
 }
-
-# in a mutate() function
-scdbv <- scdbv %>%
-  mutate(majority = majority - 1,
-         chief = factor(chief, levels = c("Jay", "Rutledge", "Ellsworth",
-                                          "Marshall", "Taney", "Chase",
-                                          "Waite", "Fuller", "White",
-                                          "Taft", "Hughes", "Stone",
-                                          "Vinson", "Warren", "Burger",
-                                          "Rehnquist", "Roberts")))
 ```
 
-## Assignment
+## Conditional execution and `cut()`
 
-```r
-# Good
-x <- 5
-# Bad
-x = 5
+```{r}
+diamonds %>%
+  select(carat) %>%
+  mutate(carat_autobin = cut(carat, breaks = 5),
+         carat_manbin = cut(carat,
+                            breaks = c(0, 1, 2, 3, 6),
+                            labels = c("Small", "Medium",
+                                       "Large", "Huge")))
 ```
 
-## Comments
+## `if()` versus `ifelse()`
 
-```r
-# Section One ---------------------------------
- 
-# Section Two =================================
- 
-### Section Three #############################
+```{r}
+library(rcfss)
+data("gun_deaths")
+
+(educ <- select(gun_deaths, education))
 ```
 
-## Auto-formatting in RStudio
+## `if()` versus `ifelse()`
 
-* **Code > Reformat Code** (Shift + Cmd/Ctrl + A)
-* **Code > Reindent Lines** (Cmd/Ctrl + I)
+```{r, error = TRUE, collapse = TRUE}
+(educ_if <- educ %>%
+  mutate(hsPlus = if(education == "Less than HS"){
+    "Less than HS"
+  } else{
+    "HS+"
+  }))
 
-## Exercise: style this code
-
-Complete [this exercise](http://cfss.uchicago.edu/block012_debugging.html#exercise:_style_this_code).
-
-## Fatal errors
-
-```{r error, error = TRUE}
-addition <- function(x, y){
-  if(!is_numeric(c(x, y))) stop("One of your inputs is not a number.")
-  
-  x + y
-}
-
-addition(3, "abc")
+count(educ_if, hsPlus)
 ```
 
-## Warnings
+## `if()` versus `ifelse()`
 
-```{r logit, error = TRUE}
-logit <- function(x){
-  log(x / (1 - x))
-}
+```{r, collapse = TRUE}
+(educ_ifelse <- educ %>%
+  mutate(hsPlus = ifelse(education == "Less than HS", "Less than HS", "HS+")))
 
-logit(-1)
+count(educ_ifelse, hsPlus)
 ```
 
-## Warnings
+## Exercise
 
-```{r logit_error, error = TRUE}
-logit <- function(x){
- if(x < 0 | x > 1) stop('x not between 0 and 1')
- log(x / (1 - x))
-}
+Go write a [fizzbuzz function](http://cfss.uchicago.edu/block009_functions.html#exercise:_write_a_fizzbuzz_function)
 
-logit(-1)
-```
 
-## Warnings
-
-```{r logit_warning}
-logit <- function(x){
-  x <- ifelse(x < 0 | x > 1, NA, x)
-  if(is.na(x)) warning('x not between 0 and 1')
-  log(x / (1 - x))
-}
-
-logit(-1)
-```
-
-## Messages
-
-```{r message_ggplot}
-ggplot(diamonds, aes(carat, price)) +
-  geom_point() +
-  geom_smooth()
-```
-
-## Suppressing messages
-
-```{r message_print}
-demo_message <- function() message("This is a message")
-demo_message()
-suppressMessages(demo_message())  # no output
-
-demo_print <- function() print("This is a message")
-demo_print()
-suppressMessages(demo_print())  # still output
-```
-
-## Exercise: build a function with conditions
-
-Complete [this exercise](http://cfss.uchicago.edu/block012_debugging.html#exercise:_build_a_function_with_conditions)
-
-## The call stack
-
-```{r callstack, error = TRUE}
-f <- function(a) g(a)
-g <- function(b) h(b)
-h <- function(c) i(c)
-i <- function(d) "a" + d
-f(10)
-```
-
-```{r traceback, eval = FALSE}
-traceback()
-```
-
-```
-# 4: i(c) at exceptions-example.R#3
-# 3: h(b) at exceptions-example.R#2
-# 2: g(a) at exceptions-example.R#1
-# 1: f(10)
-```
-
-## Condition handling
-
-* Unexpected errors
-* Expected errors
-* `try()`
-* `safely()`
-
-## Ignore errors with `try()`
-
-```{r try_error, error = TRUE}
-f1 <- function(x) {
-  log(x)
-  10
-}
-f1("x")
-```
-
-## Ignore errors with `try()`
-
-```{r try_error_wrap, error = TRUE}
-f2 <- function(x) {
-  try(log(x))
-  10
-}
-f2("a")
-```
-
-## Ignore errors with `try()`
-
-```r
-try({
-  a <- 1
-  b <- "x"
-  a + b
-})
-```
-
-## Dealing with failure using `safely()`
-
-* Adverb
-* Always returns a list with two elements
-    1. `result`
-    1. `error`
-* More predictable than `try()`
-
-## Dealing with failure using `safely()`
-
-```{r sqrt_safely}
-safe_sqrt <- safely(sqrt)
-str(safe_sqrt(9))
-str(safe_sqrt("a"))
-```
-
-## `safely()` and `map()` {.scrollable}
-
-```{r safely_map, error = TRUE}
-x <- list("a", 4, 5)
-
-# unsafely square root
-y <- x
-  map(sqrt)
-
-# safely log
-y <- x %>%
-  map(safely(sqrt))
-str(y)
-```
-
-## `transpose()`
-
-```{r transpose}
-y <- y %>%
-  transpose()
-str(y)
-```
-
-## Extract the values of `x` where `y` is an error
-
-```{r error_x}
-is_ok <- y$error %>%
-  map_lgl(is_null)
-x[!is_ok]
-```
-
-## Extract the values of `y` that are ok
-
-```{r okay_y}
-y$result[is_ok] %>%
-  flatten_dbl()
-```
-
-## `possibly()`
-
-```{r possibly}
-x %>%
-  map_dbl(possibly(sqrt, NA))
-```
-
-## `quietly()`
-
-```{r quietly}
-x <- list(1, -1)
-x %>%
-  map(quietly(sqrt)) %>%
-  str()
-```
-
-## Exercise: handle conditions using `safely()`
-
-Complete [this exercise](http://cfss.uchicago.edu/block012_debugging.html#exercise:_handle_conditions_using_safely()).
 
 

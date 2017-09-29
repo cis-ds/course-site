@@ -1,273 +1,489 @@
 ---
-title: "Getting data from the web: API access"
+title: "Statistical learning: resampling methods"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 20, 2017"
+date: "February 13, 2017"
 output: rcfss::cfss_slides
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
-                      warning = FALSE)
+                      warning = FALSE,
+                      echo = FALSE)
 
 library(tidyverse)
-library(knitr)
+library(modelr)
+library(here)
+library(broom)
+theme_set(theme_minimal(base_size = 18))
+```
 
+## Resampling methods
+
+* What it is
+* Why do it
+
+## Validation set {.scrollable}
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble()
+```
+
+```{r age_woman_cross}
+survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+tidy(survive_age_woman_x)
+```
+
+```{r logit}
+logit2prob <- function(x){
+  exp(x) / (1 + exp(x))
+}
+```
+
+```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE, echo = TRUE}
+library(modelr)
+
+titanic_split <- resample_partition(titanic, c(test = 0.3, train = 0.7))
+map(titanic_split, dim)
+
+train_model <- glm(Survived ~ Age + Sex, data = titanic_split$train,
+                   family = binomial)
+tidy(train_model)
+
+x_test_accuracy <- titanic_split$test %>%
+  tbl_df() %>%
+  add_predictions(train_model) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE)
+```
+
+## Regression
+
+```{r auto}
+library(ISLR)
+
+Auto <- Auto %>%
+  tbl_df()
+```
+
+```{r auto_plot, dependson="auto"}
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point()
+```
+
+## Regression
+
+```{r auto_plot_lm, dependson="auto"}
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+## Mean squared error (MSE)
+
+$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
+
+* $y_i =$ the observed response value for the $i$th observation
+* $\hat{f}(x_i) =$ the predicted response value for the $i$th observation given by $\hat{f}$
+* $n =$ the total number of observations
+
+## Validation in regression
+
+```{r auto_split}
 set.seed(1234)
-```
 
-```{r, eval = FALSE, echo = FALSE}
-load("webdata-supp/countryInfo.rds")
-load("webdata-supp/francebirds.rds")
-load("webdata-supp/frenchcities.rds")
-load("webdata-supp/rio_english.rds")
-load("webdata-supp/rio_portuguese.rds")
-```
-
-## How to get data online
-
-* Click-and-download
-* Install-and-play
-* API-query
-* Scraping
-
-## Click-and-Download
-
-* Use `read.csv` or `readr::read_csv` to read the data straight into R
-* Store, then read
-    * Download using `downloader` for R or `curl` from the shell
-    * Then read into R using `read_csv`
-    * Even if the file disappears from the internet, you have a local copy cached
-
-## APIs
-
-* **A**pplication **P**rogramming **I**nterfaces
-* Many websites use APIs to allow programatic access
-    * Clients sends request to server
-    * Server responds by sending data (or an error message)
-* Clients
-    * Phone app
-    * R/Python
-    
-## Install and play packages
-
-* Pre-wrapped packages for APIs
-* Reproducible
-* Updating
-* Ease
-* Scaling
-
-## Sightings of birds: `rebird`
-
-* [`ebird`](http://ebird.org) - online database of bird sightings
-* [`rebird`](https://github.com/ropensci/rebird) - R package to interface with e-Bird
-
-## Search birds by geography
-
-[![Lincoln Park Zoo](../images/lincoln_park_zoo.png)](http://ebird.org/ebird/hotspot/L1573785)
-
-## Search birds by geography
-
-```{r message=FALSE}
-library(rebird)
-```
-
-```{r}
-ebirdhotspot(locID = "L1573785") %>%
+auto_split <- resample_partition(Auto, c(test = 0.5, train = 0.5))
+auto_train <- auto_split$train %>%
+  tbl_df()
+auto_test <- auto_split$test %>%
   tbl_df()
 ```
 
-## Search birds by geographic area
-
-```{r}
-chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298)
-chibirds %>%
-  tbl_df()
+```{r auto_lm, dependson="auto_split"}
+auto_lm <- glm(mpg ~ horsepower, data = auto_train)
 ```
 
-## Search birds by geographic region
-
-```{r}
-frenchbirds <- ebirdregion("FR")
-frenchbirds %>%
-  tbl_df()
+```{r mse-function}
+mse <- function(model, data) {
+  x <- modelr:::residuals(model, data)
+  mean(x ^ 2, na.rm = TRUE)
+}
 ```
 
-## Search birds by species
-
-```{r}
-warbler <- ebirdgeo(species = 'Setophaga coronata', lat = 41.8781, lng = -87.6298)
-warbler %>%
-  tbl_df()
+```{r mse, dependson="auto_split", eval = FALSE}
+mse(auto_lm, auto_test)
 ```
 
-## Use known location
+```{r mse_poly, dependson="auto_split"}
+auto_poly_results <- data_frame(terms = 1:5,
+           model = map(terms, ~ glm(mpg ~ poly(horsepower, .), data = auto_train)),
+           MSE = map_dbl(model, mse, data = auto_test))
 
-```{r}
-ebirdgeo(species = 'Setophaga coronata') %>%
-  tbl_df()
+ggplot(auto_poly_results, aes(terms, MSE)) +
+  geom_line() +
+  labs(title = "Comparing quadratic linear models",
+       subtitle = "Using validation set",
+       x = "Highest-order polynomial",
+       y = "Mean Squared Error")
 ```
 
-## Searching geographic info: `geonames`
+## Drawbacks to validation sets
 
-```{r message=FALSE}
-# install.packages(geonames)
-library(geonames)
+```{r auto_variable_mse}
+mse_variable <- function(Auto){
+  auto_split <- resample_partition(Auto, c(test = 0.5, train = 0.5))
+  auto_train <- auto_split$train %>%
+    tbl_df()
+  auto_test <- auto_split$test %>%
+    tbl_df()
+  
+  results <- data_frame(terms = 1:5,
+                        model = map(terms,
+                                    ~ glm(mpg ~ poly(horsepower, .),
+                                          data = auto_train)),
+                        MSE = map_dbl(model, mse, data = auto_test))
+  
+  return(results)
+}
+
+rerun(10, mse_variable(Auto)) %>%
+  bind_rows(.id = "id") %>%
+  ggplot(aes(terms, MSE, color = id)) +
+  geom_line() +
+  labs(title = "Variability of MSE estimates",
+       subtitle = "Using the validation set approach",
+       x = "Degree of Polynomial",
+       y = "Mean Squared Error") +
+  theme(legend.position = "none")
 ```
 
-## API authentication
+## Leave-one-out cross-validation
 
-* Registering for access
-* API key/token
-* Rate-limiting
+$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$
 
-## Accessing the geonames API
+## LOOCV in linear regression
 
-1. Go to [the geonames site](www.geonames.org/login/) and register an account
-2. Click [here to enable the free web service](http://www.geonames.org/enablefreewebservice)
-3. Tell R your geonames username
-
-## Bad API key storage
-
-```{r, eval = FALSE}
-library(geonames)
-options(geonamesUsername = "my_user_name")
-
-# All my code here
-``` 
-
-## Good API key storage
-
-``` r 
-options(geonamesUsername = "my_user_name")
-``` 
-
-* `.Rprofile`
-* Store in folder with `.Rproj`
-
-## Important details for `.Rprofile`
-
-* Make sure your `.Rprofile` ends with a blank line
-* Make sure `.Rprofile` is included in your `.gitignore` file
-* Restart RStudio after modifying `.Rprofile`
-* Check your spelling
-* You can do a similar process for an arbitrary package or key. For example:
-
-    ```{r eval = FALSE}
-    # in .Rprofile
-    options("this_is_my_key" = XXXX)
-
-    # later, in the R script:
-    key <- getOption("this_is_my_key")
-    ```
-
-## using Geonames
-
-```{r}
-countryInfo <- GNcountryInfo()
-countryInfo %>%
-	tbl_df()
+```{r loocv-data, dependson="Auto"}
+loocv_data <- crossv_kfold(Auto, k = nrow(Auto))
 ```
 
-## `rplos`
-
-```{r}
-library(rplos)
-searchplos(q = "alcohol", fl = "id,title", limit = 10)
+```{r loocv, dependson="Auto"}
+loocv_models <- map(loocv_data$train, ~ lm(mpg ~ horsepower, data = .))
+loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
 ```
 
-## Relative frequency plot {.scrollable}
+```{r loocv_poly, dependson="Auto"}
+cv_error <- vector("numeric", 5)
+terms <- 1:5
 
-```{r}
-out <- plosword(list("alcohol", "heroin", "marijuana"),
-    vis = "TRUE")
-out$table
-out$plot
+for(i in terms){
+  loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+  loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
+  cv_error[[i]] <- mean(loocv_mse)
+}
+
+cv_mse <- data_frame(terms = terms,
+           cv_MSE = cv_error)
+
+ggplot(cv_mse, aes(terms, cv_MSE)) +
+  geom_line() +
+  labs(title = "Comparing quadratic linear models",
+       subtitle = "Using LOOCV",
+       x = "Highest-order polynomial",
+       y = "Mean Squared Error")
 ```
 
-## Plots over time {.scrollable}
+## LOOCV in classification
 
-```{r}
-plot_throughtime(terms = c("alcohol", "heroin", "marijuana"), limit = 200)
+```{r mse-glm}
+mse.glm <- function (model, data){
+  residuals.glm <- function(model, data) {
+    modelr:::response(model, data) - stats::predict(model, data, type = "response")
+  }
+  
+  x <- residuals(model, data)
+  mean(x^2, na.rm = TRUE)
+}
 ```
 
-## Scraping Twitter
-
-1. *REST* API
-1. *Streaming* API
-
-## Packages for Twitter
-
-* [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html)
-* [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html)
-* [`tweepy`](http://www.tweepy.org/)
-
-## OAuth authentication
-
-```{r, include = FALSE}
-library(twitteR)
+```{r titanic_loocv, echo = TRUE}
+titanic_loocv <- crossv_kfold(titanic, k = nrow(titanic))
+titanic_models <- map(titanic_loocv$train, ~ glm(Survived ~ Age * Sex, data = .,
+                                               family = binomial))
+titanic_mse <- map2_dbl(titanic_models, titanic_loocv$test, mse.glm)
+mean(titanic_mse, na.rm = TRUE)
 ```
 
-1. Create a Twitter application for yourself
-1. Store your API key and token using the `.Rprofile` method.
-    ```{r eval = FALSE}
-    options(twitter_api_key = "Your API key")
-    options(twitter_api_token = "Your API secret")
-    ```
-1. Run from the console:
+## k-fold cross-validation
 
-    ```{r, eval = FALSE}
-    library(twitteR)
-    setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
-                        consumer_secret = getOption("twitter_api_token"))
-    ```
-1. At this point you should get a message back in RStudio "Authentication complete."
+$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
-## Searching tweets
+* Folds
+* Number of folds
 
-```{r include = FALSE}
-setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
-                    consumer_secret = getOption("twitter_api_token"))
+## k-fold CV in linear regression
+
+```{r 10_fold_auto}
+cv10_data <- crossv_kfold(Auto, k = 10)
+
+cv_error_fold10 <- vector("numeric", 5)
+terms <- 1:5
+
+for(i in terms){
+  cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+  cv10_mse <- map2_dbl(cv10_models, cv10_data$test, mse)
+  cv_error_fold10[[i]] <- mean(cv10_mse)
+}
 ```
 
-```{r}
-tweets <- searchTwitter('#rstats', n = 5)
-tweets
+```{r 10_fold_auto_loocv, dependson=c("10_fold_auto","loocv_poly")}
+data_frame(terms = terms,
+           loocv = cv_error,
+           fold10 = cv_error_fold10) %>%
+  gather(method, MSE, loocv:fold10) %>%
+  ggplot(aes(terms, MSE, color = method)) +
+  geom_line() +
+  labs(title = "MSE estimates",
+       x = "Degree of Polynomial",
+       y = "Mean Squared Error",
+       color = "CV Method")
 ```
 
-## Searching users
+## LOOCV computation time
 
-```{r}
-clinton <- getUser("hillaryclinton")
-clinton$getDescription()
-clinton$getFriends(n = 5)
+```{r loocv_time}
+library(profvis)
+
+profvis({
+  cv_error <- vector("numeric", 5)
+  terms <- 1:5
+  
+  for(i in terms){
+    loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+    loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
+    cv_error[[i]] <- mean(loocv_mse)
+  }
+}, height = 600, width = 800)
 ```
 
-## Tidying tweets
+## 10-fold CV computation time
 
-```{r}
-str(tweets)
+```{r kfold_time}
+profvis({
+  cv_error_fold10 <- vector("numeric", 5)
+  terms <- 1:5
+  
+  for(i in terms){
+    cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
+    cv10_mse <- map2_dbl(cv10_models, cv10_data$test, mse)
+    cv_error_fold10[[i]] <- mean(cv10_mse)
+  }
+}, height = 600, width = 800)
 ```
 
-## Tidying tweets
+## k-fold CV in logistic regression
 
-```{r}
-df <- twListToDF(tweets) %>%
-  tbl_df()
-df
+```{r titanic_kfold, echo = TRUE}
+titanic_kfold <- crossv_kfold(titanic, k = 10)
+titanic_models <- map(titanic_kfold$train, ~ glm(Survived ~ Age * Sex, data = .,
+                                               family = binomial))
+titanic_mse <- map2_dbl(titanic_models, titanic_kfold$test, mse.glm)
+mean(titanic_mse, na.rm = TRUE)
 ```
 
-## Practice using `twitteR`
+## The bootstrap
 
-1. Create a new R project on your computer
-1. Setup your API key with a Twitter app.
-1. Authenticate using the `twitteR` package in R
-1. Find the 50 most recent tweets by Donald Trump and store them in a data frame.
-    * `userTimeline()` can be used to retrieve tweets from individual users
-    * `searchTwitter()` finds tweets from any public account that references the username
+![](http://izquotes.com/quotes-pictures/quote-i-believe-in-pulling-yourself-up-by-your-own-bootstraps-i-believe-it-is-possible-i-saw-this-stephen-colbert-220557.jpg)
 
+## Sampling with replacement
 
+```{r sim-sample-replace}
+rerun(10, sample.int(10, replace = TRUE)) %>%
+  unlist %>%
+  matrix(ncol = 10, byrow = TRUE)
+```
+
+## Sampling without replacement
+
+```{r sim-sample-noreplace}
+rerun(10, sample.int(10, replace = FALSE)) %>%
+  unlist %>%
+  matrix(ncol = 10, byrow = TRUE)
+```
+
+## Why use the bootstrap?
+
+1. Make **assumptions** about the shape of the population
+1. Use the **information in the sample** to learn about it
+
+----
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Rockyroadicecream.jpg/800px-Rockyroadicecream.jpg)
+
+## Simulated ice cream data
+
+```{r ice-sim}
+# simulate the sample
+set.seed(1234)
+lambda <- 5
+n_obs <- 1000
+ice <- data_frame(sim = rpois(n_obs, lambda = lambda))
+
+ggplot(ice, aes(sim)) +
+  geom_histogram(binwidth = 1)
+```
+
+## Poisson distribution
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Poisson_pmf.svg/960px-Poisson_pmf.svg.png)
+
+## Estimate the mean and standard error
+
+```{r ice-samp-mean}
+lambda_samp <- mean(ice$sim)
+
+sem <- sqrt(lambda_samp / n_obs)
+```
+
+```{r ice-boot}
+ice_boot <- ice %>%
+  modelr::bootstrap(1000) %>%
+  mutate(mean = map_dbl(strap, ~ mean(as_tibble(.)$sim, na.rm = TRUE)))
+boot_sem <- sd(ice_boot$mean)
+```
+
+```{r ice-boot-plot}
+ggplot(ice_boot, aes(mean)) +
+  geom_histogram(binwidth = .01) +
+  geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda_samp, color = "Sample mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice_boot$mean),
+                 color = "Bootstrapped mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice_boot$mean) + 1.96 * boot_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = mean(ice_boot$mean) - 1.96 * boot_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = lambda_samp + 1.96 * sem, color = "Sample mean"),
+             linetype = 2) +
+  geom_vline(aes(xintercept = lambda_samp - 1.96 * sem, color = "Sample mean"),
+             linetype = 2) +
+  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean",
+                                             "Bootstrapped mean"),
+                     values = c("blue", "green", "orange")) +
+  labs(x = "Bootstrapped sample mean",
+       y = "Count")
+```
+
+## New simulation of data
+
+```{r ice-sim2}
+# simulate the sample
+set.seed(113)
+ice2 <- data_frame(sim = c(rpois(n_obs / 2, lambda = lambda),
+                           round(runif(n_obs / 2, min = 0, max = 10))))
+
+# plot the sample distribution
+ggplot(ice2, aes(sim)) +
+  geom_histogram(binwidth = 1)
+```
+
+## New comparison
+
+```{r ice-sim2-2}
+# calculate sample mean and standard error
+lambda2_samp <- mean(ice2$sim)
+sem2 <- sqrt(lambda2_samp / n_obs)
+
+# calculate the bootstrap
+ice2_boot <- ice2 %>%
+  modelr::bootstrap(1000) %>%
+  mutate(mean = map_dbl(strap, ~ mean(as_tibble(.)$sim, na.rm = TRUE)))
+boot2_sem <- sd(ice2_boot$mean)
+
+# plot the bootstrapped distribution
+ggplot(ice2_boot, aes(mean)) +
+  geom_histogram(binwidth = .01) +
+  geom_vline(aes(xintercept = lambda, color = "Population mean"), size = 1) +
+  geom_vline(aes(xintercept = lambda2_samp, color = "Sample mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice2_boot$mean),
+                 color = "Bootstrapped mean"), size = 1) +
+  geom_vline(aes(xintercept = mean(ice2_boot$mean) + 1.96 * boot2_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = mean(ice2_boot$mean) - 1.96 * boot2_sem,
+                 color = "Bootstrapped mean"), linetype = 2) +
+  geom_vline(aes(xintercept = lambda2_samp + 1.96 * sem2, color = "Sample mean"),
+             linetype = 2) +
+  geom_vline(aes(xintercept = lambda2_samp - 1.96 * sem2, color = "Sample mean"),
+             linetype = 2) +
+  scale_color_manual(name = NULL, breaks = c("Population mean", "Sample mean",
+                                             "Bootstrapped mean"),
+                     values = c("blue", "green", "orange")) +
+  labs(x = "Bootstrapped sample mean",
+       y = "Count")
+```
+
+## Estimating the accuracy of a linear regression model
+
+$$\widehat{s.e.}(\hat{\beta}_j) = \sqrt{\sigma^{2} (X^{T}X)^{-1}_{jj}}$$
+
+----
+
+```{r auto-boot}
+# plot the data and model
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+## Comparison of estimates
+
+```{r auto-boot-2}
+# traditional parameter estimates and standard errors
+auto_lm <- lm(mpg ~ horsepower, data = Auto)
+tidy(auto_lm) %>%
+  knitr::kable(caption = "Traditional estimates")
+
+# bootstrapped estimates of the parameter estimates and standard errors
+auto_boot <- Auto %>%
+  modelr::bootstrap(1000) %>%
+  mutate(model = map(strap, ~ lm(mpg ~ horsepower, data = .)),
+         coef = map(model, tidy))
+
+auto_boot %>%
+  unnest(coef) %>%
+  group_by(term) %>%
+  summarize(est.boot = mean(estimate),
+            se.boot = sd(estimate, na.rm = TRUE)) %>%
+  knitr::kable(caption = "Bootstrap estimates")
+```
+
+## Comparison of estimates$^2$
+
+```{r auto-boot-sq}
+# traditional parameter estimates and standard errors
+auto2_lm <- lm(mpg ~ horsepower + I(horsepower^2), data = Auto)
+tidy(auto2_lm) %>%
+  knitr::kable(caption = "Traditional estimates")
+
+# bootstrapped estimates of the parameter estimates and standard errors
+auto2_boot <- Auto %>%
+  modelr::bootstrap(1000) %>%
+  mutate(model = map(strap, ~ lm(mpg ~ horsepower + I(horsepower^2), data = .)),
+         coef = map(model, tidy))
+
+auto2_boot %>%
+  unnest(coef) %>%
+  group_by(term) %>%
+  summarize(est.boot = mean(estimate),
+            se.boot = sd(estimate, na.rm = TRUE)) %>%
+  knitr::kable(caption = "Bootstrap estimates")
+```
 
 
