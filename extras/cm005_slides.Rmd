@@ -3,16 +3,7 @@ title: "Data wrangling"
 author: |
   | MACS 30500
   | University of Chicago
-date: "January 18, 2017"
-output: rcfss::cfss_slides
----
-
----
-title: "Data wrangling"
-author: |
-  | MACS 30500
-  | University of Chicago
-date: "October 5, 2016"
+date: "October 9, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -21,176 +12,164 @@ knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE)
 
-set.seed(11091987)
+set.seed(1234)
 
 library(tidyverse)
-library(rcfss)
-library(knitr)
-theme_set(theme_gray(base_size = 24))
+theme_set(theme_minimal(base_size = 24))
 ```
 
-## Vectors
+## `readr` vs. base R
 
-* Basic unit of data storage in R
-* Types of vectors
-    * Logical
-    * Numeric
-    * Character
-    * Factors
-* Certain operations can be performed only on certain types of vectors
+```{r compare-speed-small, dependson = "data-gen", message = FALSE, echo = FALSE}
+library(microbenchmark)
 
-## Vectors can only be of one type {.scrollable}
-
-```{r}
-x <- c(1, 2, "abc", TRUE)
-x
-parse_logical(x)
-parse_integer(x)
-parse_character(x)
+results_small <- microbenchmark(
+  read.csv = read.csv("../data/sim-data-small.csv"),
+  read_csv = read_csv("../data/sim-data-small.csv")
+)
 ```
 
-## Parsing vectors
-
-```{r, message = TRUE, warning = TRUE}
-challenge <- read_csv(readr_example("challenge.csv"))
+```{r compare-speed-small-plot, dependson = "compare-speed-small", message = FALSE, echo = FALSE}
+autoplot(results_small) +
+  scale_y_log10(breaks = c(25, 50, 100)) +
+  labs(y = "Time [milliseconds], logged",
+       subtitle = "50,000 observations")
 ```
 
-## Parsing vectors {.scrollable}
+## `readr` vs. base R
 
-```{r}
-challenge_parsed <- read_csv(
+```{r compare-speed-large, dependson = "data-gen", message = FALSE, echo = FALSE}
+library(microbenchmark)
+
+results_large <- microbenchmark(
+  read.csv = read.csv("../data/sim-data-large.csv"),
+  read_csv = read_csv("../data/sim-data-large.csv")
+)
+```
+
+```{r compare-speed-large-plot, dependson = "compare-speed-large", message = FALSE, echo = FALSE}
+autoplot(results_large) +
+  scale_y_log10(breaks = c(2.5, 5, 10, 20)) +
+  labs(y = "Time [seconds], logged",
+       subtitle = "5,000,000 observations")
+```
+
+## Alternative file formats
+
+* CSV
+* RDS
+* Feather
+* Excel
+* SPSS/Stata
+
+----
+
+```{r challenge, echo = FALSE}
+challenge <- read_csv(
   readr_example("challenge.csv"), 
   col_types = cols(
     x = col_double(),
     y = col_date()
   )
 )
-tail(challenge_parsed)
+
+challenge
 ```
 
-## Tidy data
+## RDS {.scrollable}
 
-![Figure 12.1 from [@hadley2016]](http://r4ds.had.co.nz/images/tidy-1.png)
+```{r rds, dependson = "challenge", message = FALSE, echo = FALSE}
+# write to csv
+write_csv(challenge, "../data/challenge.csv")
 
-## Common tidying tasks
-
-* Gathering
-* Spreading
-* Separating
-* Uniting
-
-## Gathering
-
-```{r}
-table4a
+# write to/read from rds
+write_rds(challenge, "../data/challenge.rds")
+read_rds("../data/challenge.rds")
 ```
 
-## Gathering
+```{r rds-2, dependson = "challenge", message = FALSE}
+# compare file size
+file.info("../data/challenge.csv")$size %>%
+  utils:::format.object_size("auto")
 
-```{r}
-table4a %>% 
-  gather(`1999`, `2000`, key = "year", value = "cases")
+file.info("../data/challenge.rds")$size %>%
+  utils:::format.object_size("auto")
 ```
 
-## Spreading
-
-```{r}
-table2
+```{r rds-3, dependson = "challenge", echo = FALSE}
+# compare read speeds
+microbenchmark(
+  read_csv = read_csv(
+    readr_example("challenge.csv"), 
+    col_types = cols(
+      x = col_double(),
+      y = col_date()
+    )
+  ),
+  read_rds = read_rds("../data/challenge.rds")
+) %>%
+  autoplot +
+  labs(y = "Time [microseconds], logged")
 ```
 
-## Spreading
+## `feather`
 
-```{r}
-table2 %>%
-  spread(key = type, value = count)
+```{r feather, dependson = "challenge", include = FALSE}
+library(feather)
+
+write_feather(challenge, "../data/challenge.feather")
+read_feather("../data/challenge.feather")
 ```
 
-## Separating
-
-```{r}
-table3
+```{r feather-2, dependson = "challenge", message = FALSE, echo = FALSE}
+# compare read speeds
+microbenchmark(
+  read_csv = read_csv(
+    readr_example("challenge.csv"), 
+    col_types = cols(
+      x = col_double(),
+      y = col_date()
+    )
+  ),
+  read_rds = read_rds("../data/challenge.rds"),
+  read_feather = read_feather("../data/challenge.feather")
+) %>%
+  autoplot +
+  labs(y = "Time [microseconds], logged")
 ```
 
-## Separating
+## `readxl` {.scrollable}
 
-```{r}
-table3 %>% 
-  separate(rate, into = c("cases", "population"))
+```{r readxl}
+library(readxl)
+
+xlsx_example <- readxl_example("datasets.xlsx")
+read_excel(xlsx_example)
 ```
 
-## Uniting
-
-```{r}
-table5
+```{r readxl-sheets, dependson = "readxl"}
+excel_sheets(xlsx_example)
 ```
 
-## Uniting {.scrollable}
-
-```{r}
-table5 %>% 
-  unite(new, century, year)
-
-# remove underscore
-table5 %>% 
-  unite(new, century, year, sep = "")
+```{r readxl-select-sheet, dependson = "readxl"}
+read_excel(xlsx_example, sheet = "chickwts")
+read_excel(xlsx_example, sheet = 2)
 ```
 
-## Practice tidying
+## `haven` {.scrollable}
 
-Perform exercises in [notes](block006_tidy_data.html#practice_tidying_data)
+```{r haven}
+library(haven)
 
-## Introduction to relational data
+# SAS
+read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
+write_sas(mtcars, "../data/mtcars.sas7bdat")
 
-* Multiple tables of data that when combined together answer research questions
-* Relations define the important element, not just the individual tables
-* Relations are defined between a pair of tables
-* Relational verbs
-    * Mutating joins
-    * Filtering joins
+# SPSS
+read_sav(system.file("examples", "iris.sav", package = "haven"))
+write_sav(mtcars, "../data/mtcars.sav")
 
-## Comics {.scrollable}
-
-```{r, echo = FALSE}
-library(rcfss)
-superheroes_kable <- knitr::kable(superheroes)
-publishers_kable <- knitr::kable(publishers)
+# Stata
+read_dta(system.file("examples", "iris.dta", package = "haven"))
+write_dta(mtcars, "../data/mtcars.dta")
 ```
-
-```{r}
-superheroes_kable
-publishers_kable
-```
-
-## Inner join
-
-```{r}
-(ijsp <- inner_join(superheroes, publishers))
-```
-  
-## Semi join
-
-```{r}
-(sjsp <- semi_join(superheroes, publishers))
-```
-
-## Left join
-
-```{r}
-(ljsp <- left_join(superheroes, publishers))
-```
-
-## Anti join
-
-```{r}
-(ajsp <- anti_join(superheroes, publishers))
-```
-
-## Full join
-
-```{r}
-(fjsp <- full_join(superheroes, publishers))
-```
-
-
-
-
