@@ -337,20 +337,8 @@ div.tocify {
 </div>
 
 
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)</code></pre></div>
-<pre><code>## + ggplot2 2.2.1          Date: 2017-08-07
-## + tibble  1.3.3             R: 3.4.1
-## + tidyr   0.6.3            OS: macOS Sierra 10.12.6
-## + readr   1.1.1           GUI: X11
-## + purrr   0.2.2.2      Locale: en_US.UTF-8
-## + dplyr   0.7.2            TZ: America/Chicago
-## + stringr 1.2.0        
-## + forcats 0.2.0</code></pre>
-<pre><code>## ── Conflicts ────────────────────────────────────────────────────</code></pre>
-<pre><code>## * filter(),  from dplyr, masks stats::filter()
-## * lag(),     from dplyr, masks stats::lag()</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1234</span>)
-
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
 <span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
 <div id="writing-for-loops" class="section level1">
 <h1>Writing <code>for</code> loops</h1>
@@ -428,7 +416,7 @@ output</code></pre></div>
 
 <span class="kw">microbenchmark</span>(
   <span class="co"># don&#39;t preallocate</span>
-  <span class="dt">nopre =</span> {
+  <span class="st">`</span><span class="dt">No preallocation</span><span class="st">`</span> =<span class="st"> </span>{
     output &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;numeric&quot;</span>, <span class="dv">0</span>)
     
     <span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">seq_along</span>(x)) {
@@ -436,7 +424,7 @@ output</code></pre></div>
     }
   },
   <span class="co"># preallocate</span>
-  <span class="dt">pre =</span> {
+  <span class="st">`</span><span class="dt">Preallocation</span><span class="st">`</span> =<span class="st"> </span>{
     output &lt;-<span class="st"> </span><span class="kw">vector</span>(<span class="st">&quot;numeric&quot;</span>, <span class="kw">length</span>(x))
     
     <span class="cf">for</span> (i <span class="cf">in</span> <span class="kw">seq_along</span>(x)) {
@@ -651,6 +639,242 @@ output</code></pre></div>
 </div>
 </div>
 </div>
+<div id="scoped-verbs" class="section level1">
+<h1>Scoped verbs</h1>
+<p>Frequently when working with data frames you may wish to apply a specific function to multiple columns. For instance, calculating the average value of each column in <code>mtcars</code>. If we wanted to calculate the average of a single column, it would be pretty simple using just <code>tidyverse</code> functions:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">mpg =</span> <span class="kw">mean</span>(mpg))</code></pre></div>
+<pre><code>##        mpg
+## 1 20.09062</code></pre>
+<p>If we want to calculate the mean for all of them, we’d have to duplicate this code many times over:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">mpg =</span> <span class="kw">mean</span>(mpg),
+            <span class="dt">cyl =</span> <span class="kw">mean</span>(cyl),
+            <span class="dt">disp =</span> <span class="kw">mean</span>(disp),
+            <span class="dt">hp =</span> <span class="kw">mean</span>(hp),
+            <span class="dt">drat =</span> <span class="kw">mean</span>(drat),
+            <span class="dt">wt =</span> <span class="kw">mean</span>(wt),
+            <span class="dt">qsec =</span> <span class="kw">mean</span>(qsec),
+            <span class="dt">vs =</span> <span class="kw">mean</span>(vs),
+            <span class="dt">am =</span> <span class="kw">mean</span>(am),
+            <span class="dt">gear =</span> <span class="kw">mean</span>(gear),
+            <span class="dt">carb =</span> <span class="kw">mean</span>(carb))</code></pre></div>
+<pre><code>##        mpg    cyl     disp       hp     drat      wt     qsec     vs
+## 1 20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375
+##        am   gear   carb
+## 1 0.40625 3.6875 2.8125</code></pre>
+<p>But this is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it. We’ve seen how to use loops and <code>map()</code> functions to solve this task - let’s check out one final method: <strong>scoped verbs</strong>.</p>
+<p>Scoped verbs allow you to use standard <strong>verbs</strong> (or functions) in <code>dplyr</code> that affect multiple variables at once:</p>
+<ul>
+<li><code>_if</code> allows you to pick variables based on a predicate function like <code>is.numeric()</code> or <code>is.character()</code></li>
+<li><code>_at</code> allows you to pick variables using the same syntax as <code>select()</code></li>
+<li><code>_all</code> operates on all variables</li>
+</ul>
+<div id="summarize" class="section level2">
+<h2>summarize</h2>
+<div id="summarize_all" class="section level3">
+<h3><code>summarize_all()</code></h3>
+<p><code>summarize_all()</code> takes a tibble and a function and applies that function to each column:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarize_all</span>(mtcars, mean)</code></pre></div>
+<pre><code>##        mpg    cyl     disp       hp     drat      wt     qsec     vs
+## 1 20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375
+##        am   gear   carb
+## 1 0.40625 3.6875 2.8125</code></pre>
+<p>If you want to apply multiple summaries, use the <code>funs()</code> helper:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarize_all</span>(mtcars, <span class="kw">funs</span>(min, max))</code></pre></div>
+<pre><code>##   mpg_min cyl_min disp_min hp_min drat_min wt_min qsec_min vs_min am_min
+## 1    10.4       4     71.1     52     2.76  1.513     14.5      0      0
+##   gear_min carb_min mpg_max cyl_max disp_max hp_max drat_max wt_max
+## 1        3        1    33.9       8      472    335     4.93  5.424
+##   qsec_max vs_max am_max gear_max carb_max
+## 1     22.9      1      1        5        8</code></pre>
+<p>And as always, you could combine this with <code>group_by()</code> to calculate group-level summary statistics:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mtcars <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(gear) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarize_all</span>(mean)</code></pre></div>
+<pre><code>## # A tibble: 3 x 11
+##    gear      mpg      cyl     disp       hp     drat       wt   qsec
+##   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
+## 1     3 16.10667 7.466667 326.3000 176.1333 3.132667 3.892600 17.692
+## 2     4 24.53333 4.666667 123.0167  89.5000 4.043333 2.616667 18.965
+## 3     5 21.38000 6.000000 202.4800 195.6000 3.916000 2.632600 15.640
+## # ... with 3 more variables: vs &lt;dbl&gt;, am &lt;dbl&gt;, carb &lt;dbl&gt;</code></pre>
+</div>
+<div id="summarize_at" class="section level3">
+<h3><code>summarize_at()</code></h3>
+<p><code>summarize_at()</code> allows you to pick columns in the same way as <code>select()</code>, that is, based on their names. There is one small difference: you need to wrap the complete selection with the <code>vars()</code> helper (this avoids ambiguity).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarize_at</span>(mtcars, <span class="kw">vars</span>(<span class="op">-</span>mpg), mean)</code></pre></div>
+<pre><code>##      cyl     disp       hp     drat      wt     qsec     vs      am   gear
+## 1 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375 0.40625 3.6875
+##     carb
+## 1 2.8125</code></pre>
+<p>By default, the newly created columns have the shortest names needed to uniquely identify the output.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarize_at</span>(mtcars, <span class="kw">vars</span>(mpg), <span class="kw">funs</span>(min, max))</code></pre></div>
+<pre><code>##    min  max
+## 1 10.4 33.9</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarize_at</span>(mtcars, <span class="kw">vars</span>(mpg, wt), min)</code></pre></div>
+<pre><code>##    mpg    wt
+## 1 10.4 1.513</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">summarize_at</span>(mtcars, <span class="kw">vars</span>(<span class="op">-</span>mpg), <span class="kw">funs</span>(min, max))</code></pre></div>
+<pre><code>##   cyl_min disp_min hp_min drat_min wt_min qsec_min vs_min am_min gear_min
+## 1       4     71.1     52     2.76  1.513     14.5      0      0        3
+##   carb_min cyl_max disp_max hp_max drat_max wt_max qsec_max vs_max am_max
+## 1        1       8      472    335     4.93  5.424     22.9      1      1
+##   gear_max carb_max
+## 1        5        8</code></pre>
+</div>
+<div id="summarize_if" class="section level3">
+<h3><code>summarize_if()</code></h3>
+<p><code>summarize_at()</code> allows you to pick variables to summarize based on their name, whereas <code>summarize_if()</code> allows you to pick variables to summarize based on some property of the column. Typically this is their type because you want to (e.g.) apply a numeric summary function only to numeric columns:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">starwars</code></pre></div>
+<pre><code>## # A tibble: 87 x 13
+##                  name height  mass    hair_color  skin_color eye_color
+##                 &lt;chr&gt;  &lt;int&gt; &lt;dbl&gt;         &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt;
+##  1     Luke Skywalker    172    77         blond        fair      blue
+##  2              C-3PO    167    75          &lt;NA&gt;        gold    yellow
+##  3              R2-D2     96    32          &lt;NA&gt; white, blue       red
+##  4        Darth Vader    202   136          none       white    yellow
+##  5        Leia Organa    150    49         brown       light     brown
+##  6          Owen Lars    178   120   brown, grey       light      blue
+##  7 Beru Whitesun lars    165    75         brown       light      blue
+##  8              R5-D4     97    32          &lt;NA&gt;  white, red       red
+##  9  Biggs Darklighter    183    84         black       light     brown
+## 10     Obi-Wan Kenobi    182    77 auburn, white        fair blue-gray
+## # ... with 77 more rows, and 7 more variables: birth_year &lt;dbl&gt;,
+## #   gender &lt;chr&gt;, homeworld &lt;chr&gt;, species &lt;chr&gt;, films &lt;list&gt;,
+## #   vehicles &lt;list&gt;, starships &lt;list&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">starwars <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(species) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarize_if</span>(is.numeric, mean, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## # A tibble: 38 x 4
+##      species   height   mass birth_year
+##        &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;      &lt;dbl&gt;
+##  1    Aleena  79.0000  15.00        NaN
+##  2  Besalisk 198.0000 102.00        NaN
+##  3    Cerean 198.0000  82.00   92.00000
+##  4  Chagrian 196.0000    NaN        NaN
+##  5  Clawdite 168.0000  55.00        NaN
+##  6     Droid 140.0000  69.75   53.33333
+##  7       Dug 112.0000  40.00        NaN
+##  8      Ewok  88.0000  20.00    8.00000
+##  9 Geonosian 183.0000  80.00        NaN
+## 10    Gungan 208.6667  74.00   52.00000
+## # ... with 28 more rows</code></pre>
+<p>(Note that <code>na.rm = TRUE</code> is passed on to <code>mean()</code> in the same way as in <code>purrr::map()</code>.)</p>
+</div>
+</div>
+<div id="mutate" class="section level2">
+<h2>Mutate</h2>
+<p><code>mutate_all()</code>, <code>mutate_if()</code> and <code>mutate_at()</code> work in a similar way to their summarize equivalents.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mutate_all</span>(mtcars, log10)</code></pre></div>
+<pre><code>##         mpg       cyl     disp       hp      drat        wt     qsec   vs
+## 1  1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4183013 1.216430 -Inf
+## 2  1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4586378 1.230960 -Inf
+## 3  1.357935 0.6020600 2.033424 1.968483 0.5854607 0.3654880 1.269746    0
+## 4  1.330414 0.7781513 2.411620 2.041393 0.4885507 0.5071810 1.288696    0
+## 5  1.271842 0.9030900 2.556303 2.243038 0.4983106 0.5365584 1.230960 -Inf
+## 6  1.257679 0.7781513 2.352183 2.021189 0.4409091 0.5390761 1.305781    0
+## 7  1.155336 0.9030900 2.556303 2.389166 0.5065050 0.5526682 1.199755 -Inf
+## 8  1.387390 0.6020600 2.166430 1.792392 0.5670264 0.5037907 1.301030    0
+## 9  1.357935 0.6020600 2.148603 1.977724 0.5932861 0.4983106 1.359835    0
+## 10 1.283301 0.7781513 2.224274 2.089905 0.5932861 0.5365584 1.262451    0
+## 11 1.250420 0.7781513 2.224274 2.089905 0.5932861 0.5365584 1.276462    0
+## 12 1.214844 0.9030900 2.440594 2.255273 0.4871384 0.6095944 1.240549 -Inf
+## 13 1.238046 0.9030900 2.440594 2.255273 0.4871384 0.5717088 1.245513 -Inf
+## 14 1.181844 0.9030900 2.440594 2.255273 0.4871384 0.5774918 1.255273 -Inf
+## 15 1.017033 0.9030900 2.673942 2.311754 0.4668676 0.7201593 1.254790 -Inf
+## 16 1.017033 0.9030900 2.662758 2.332438 0.4771213 0.7343197 1.250908 -Inf
+## 17 1.167317 0.9030900 2.643453 2.361728 0.5092025 0.7279477 1.241048 -Inf
+## 18 1.510545 0.6020600 1.895975 1.819544 0.6106602 0.3424227 1.289366    0
+## 19 1.482874 0.6020600 1.879096 1.716003 0.6928469 0.2081725 1.267641    0
+## 20 1.530200 0.6020600 1.851870 1.812913 0.6253125 0.2636361 1.298853    0
+## 21 1.332438 0.6020600 2.079543 1.986772 0.5682017 0.3918169 1.301247    0
+## 22 1.190332 0.9030900 2.502427 2.176091 0.4409091 0.5465427 1.227115 -Inf
+## 23 1.181844 0.9030900 2.482874 2.176091 0.4983106 0.5359267 1.238046 -Inf
+## 24 1.123852 0.9030900 2.544068 2.389166 0.5717088 0.5843312 1.187803 -Inf
+## 25 1.283301 0.9030900 2.602060 2.243038 0.4885507 0.5848963 1.231724 -Inf
+## 26 1.436163 0.6020600 1.897627 1.819544 0.6106602 0.2866810 1.276462    0
+## 27 1.414973 0.6020600 2.080266 1.959041 0.6464037 0.3304138 1.222716 -Inf
+## 28 1.482874 0.6020600 1.978181 2.053078 0.5763414 0.1798389 1.227887    0
+## 29 1.198657 0.9030900 2.545307 2.421604 0.6253125 0.5010593 1.161368 -Inf
+## 30 1.294466 0.7781513 2.161368 2.243038 0.5587086 0.4424798 1.190332 -Inf
+## 31 1.176091 0.9030900 2.478566 2.525045 0.5490033 0.5526682 1.164353 -Inf
+## 32 1.330414 0.6020600 2.082785 2.037426 0.6138418 0.4440448 1.269513    0
+##      am      gear      carb
+## 1     0 0.6020600 0.6020600
+## 2     0 0.6020600 0.6020600
+## 3     0 0.6020600 0.0000000
+## 4  -Inf 0.4771213 0.0000000
+## 5  -Inf 0.4771213 0.3010300
+## 6  -Inf 0.4771213 0.0000000
+## 7  -Inf 0.4771213 0.6020600
+## 8  -Inf 0.6020600 0.3010300
+## 9  -Inf 0.6020600 0.3010300
+## 10 -Inf 0.6020600 0.6020600
+## 11 -Inf 0.6020600 0.6020600
+## 12 -Inf 0.4771213 0.4771213
+## 13 -Inf 0.4771213 0.4771213
+## 14 -Inf 0.4771213 0.4771213
+## 15 -Inf 0.4771213 0.6020600
+## 16 -Inf 0.4771213 0.6020600
+## 17 -Inf 0.4771213 0.6020600
+## 18    0 0.6020600 0.0000000
+## 19    0 0.6020600 0.3010300
+## 20    0 0.6020600 0.0000000
+## 21 -Inf 0.4771213 0.0000000
+## 22 -Inf 0.4771213 0.3010300
+## 23 -Inf 0.4771213 0.3010300
+## 24 -Inf 0.4771213 0.6020600
+## 25 -Inf 0.4771213 0.3010300
+## 26    0 0.6020600 0.0000000
+## 27    0 0.6989700 0.3010300
+## 28    0 0.6989700 0.3010300
+## 29    0 0.6989700 0.6020600
+## 30    0 0.6989700 0.7781513
+## 31    0 0.6989700 0.9030900
+## 32    0 0.6020600 0.3010300</code></pre>
+</div>
+<div id="filter" class="section level2">
+<h2>Filter</h2>
+<p><code>filter_all()</code> is the most useful of the three <code>filter()</code> variants. You use it conjunction with <code>all_vars()</code> or <code>any_vars()</code> depending on whether or not you want rows where all variables meet the criterion, or where just one variable meets it.</p>
+<p>It’s particularly useful finding missing values:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nycflights13)
+
+<span class="co"># Rows where any value is missing</span>
+<span class="kw">filter_all</span>(weather, <span class="kw">any_vars</span>(<span class="kw">is.na</span>(.)))</code></pre></div>
+<pre><code>## # A tibble: 3,109 x 15
+##    origin  year month   day  hour  temp  dewp humid wind_dir wind_speed
+##     &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;
+##  1    EWR  2013     1     1    17 39.20 28.40 64.93      270   16.11092
+##  2    EWR  2013     1     1    18 39.20 28.40 64.93      330   14.96014
+##  3    EWR  2013     1     3    16 30.92 14.00 49.01       NA    4.60312
+##  4    EWR  2013     1     6    10 33.80 30.20 86.49      210    4.60312
+##  5    EWR  2013     1     6    12 33.80 32.00 93.03      220    9.20624
+##  6    EWR  2013     1     6    13 35.60 32.00 86.59      240    8.05546
+##  7    EWR  2013     1     6    14 35.60 32.00 86.59      230    8.05546
+##  8    EWR  2013     1     6    15 37.40 30.20 74.98      250   11.50780
+##  9    EWR  2013     1    11    17 44.96 35.96 70.52       NA    4.60312
+## 10    EWR  2013     1    11    21 46.40 39.20 75.84       90    4.60312
+## # ... with 3,099 more rows, and 5 more variables: wind_gust &lt;dbl&gt;,
+## #   precip &lt;dbl&gt;, pressure &lt;dbl&gt;, visib &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Rows where all wind variables are missing</span>
+<span class="kw">filter_at</span>(weather, <span class="kw">vars</span>(<span class="kw">starts_with</span>(<span class="st">&quot;wind&quot;</span>)), <span class="kw">all_vars</span>(<span class="kw">is.na</span>(.)))</code></pre></div>
+<pre><code>## # A tibble: 3 x 15
+##   origin  year month   day  hour  temp  dewp humid wind_dir wind_speed
+##    &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;      &lt;dbl&gt;
+## 1    EWR  2013     3    27    21 51.98 19.04 27.02       NA         NA
+## 2    JFK  2013     7     4    10 73.04 71.06 93.52       NA         NA
+## 3    JFK  2013     7    20    10 80.96 71.06 71.92       NA         NA
+## # ... with 5 more variables: wind_gust &lt;dbl&gt;, precip &lt;dbl&gt;,
+## #   pressure &lt;dbl&gt;, visib &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
+</div>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>Scoped verbs based on <a href="https://dcl-2017-04.github.io/curriculum/manip-scoped.html">Scoped verbs by the Data Challenge Lab</a></li>
+</ul>
+</div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
@@ -662,26 +886,26 @@ output</code></pre></div>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-07</code></pre>
+##  date     2017-10-17</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
 <pre><code>##  package        * version    date      
 ##  assertthat       0.2.0      2017-04-11
 ##  backports        1.1.0      2017-05-22
 ##  base           * 3.4.1      2017-07-07
 ##  bindr            0.1        2016-11-13
-##  bindrcpp         0.2        2017-06-17
+##  bindrcpp       * 0.2        2017-06-17
 ##  boxes            0.0.0.9000 2017-07-19
-##  broom            0.4.2      2017-02-13
+##  broom            0.4.2      2017-08-09
 ##  cellranger       1.1.0      2016-07-27
 ##  clisymbols       1.2.0      2017-05-21
 ##  codetools        0.2-15     2016-10-05
 ##  colorspace       1.3-2      2016-12-14
 ##  compiler         3.4.1      2017-07-07
-##  crayon           1.3.2.9000 2017-07-19
+##  crayon           1.3.4      2017-10-03
 ##  datasets       * 3.4.1      2017-07-07
-##  devtools         1.13.2     2017-06-02
+##  devtools         1.13.3     2017-08-02
 ##  digest           0.6.12     2017-01-27
-##  dplyr          * 0.7.2      2017-07-20
+##  dplyr          * 0.7.4.9000 2017-10-03
 ##  evaluate         0.10.1     2017-06-24
 ##  forcats        * 0.2.0      2017-01-23
 ##  foreign          0.8-69     2017-06-22
@@ -694,9 +918,9 @@ output</code></pre></div>
 ##  haven            1.1.0      2017-07-09
 ##  hms              0.3        2016-11-22
 ##  htmltools        0.3.6      2017-04-28
-##  httr             1.2.1      2016-07-03
+##  httr             1.3.1      2017-08-20
 ##  jsonlite         1.5        2017-06-01
-##  knitr            1.16       2017-05-18
+##  knitr            1.17       2017-08-10
 ##  lattice          0.20-35    2017-03-25
 ##  lazyeval         0.2.0      2016-06-12
 ##  lubridate        1.6.0      2016-09-13
@@ -705,20 +929,21 @@ output</code></pre></div>
 ##  methods        * 3.4.1      2017-07-07
 ##  microbenchmark * 1.4-2.1    2015-11-25
 ##  mnormt           1.5-5      2016-10-15
-##  modelr           0.1.1      2017-07-24
+##  modelr           0.1.1      2017-08-10
 ##  munsell          0.4.3      2016-02-13
 ##  nlme             3.1-131    2017-02-06
+##  nycflights13   * 0.2.2      2017-01-27
 ##  parallel         3.4.1      2017-07-07
 ##  pkgconfig        2.0.1      2017-03-21
 ##  plyr             1.8.4      2016-06-08
 ##  psych            1.7.5      2017-05-03
-##  purrr          * 0.2.2.2    2017-05-11
+##  purrr          * 0.2.3      2017-08-02
 ##  R6               2.2.2      2017-06-17
-##  Rcpp             0.12.12    2017-07-15
+##  Rcpp             0.12.13    2017-09-28
 ##  readr          * 1.1.1      2017-05-16
 ##  readxl           1.0.0      2017-04-18
 ##  reshape2         1.4.2      2016-10-22
-##  rlang            0.1.1      2017-05-18
+##  rlang            0.1.2      2017-08-09
 ##  rmarkdown        1.6        2017-06-15
 ##  rprojroot        1.2        2017-01-16
 ##  rstudioapi       0.6        2016-06-27
@@ -727,8 +952,8 @@ output</code></pre></div>
 ##  stats          * 3.4.1      2017-07-07
 ##  stringi          1.1.5      2017-04-07
 ##  stringr        * 1.2.0      2017-02-18
-##  tibble         * 1.3.3      2017-05-28
-##  tidyr          * 0.6.3      2017-05-15
+##  tibble         * 1.3.4      2017-08-22
+##  tidyr          * 0.7.0      2017-08-16
 ##  tidyverse      * 1.1.1.9000 2017-07-19
 ##  tools            3.4.1      2017-07-07
 ##  utils          * 3.4.1      2017-07-07
@@ -742,55 +967,33 @@ output</code></pre></div>
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
 ##  Github (r-pkgs/boxes@03098dc)       
-##  CRAN (R 3.4.0)                      
+##  local                               
 ##  CRAN (R 3.4.0)                      
 ##  cran (@1.2.0)                       
 ##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.0)                      
 ##  local                               
-##  Github (gaborcsardi/crayon@750190f) 
+##  Github (gaborcsardi/crayon@b5221ab) 
 ##  local                               
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.0)                      
+##  Github (tidyverse/dplyr@1a0730a)    
 ##  CRAN (R 3.4.1)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.1)                      
-##  local                               
-##  local                               
-##  local                               
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.1)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.1)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  local                               
-##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.1)                      
 ##  local                               
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.1)                      
-##  CRAN (R 3.4.0)                      
+##  local                               
+##  local                               
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
-##  CRAN (R 3.4.0)                      
+##  cran (@1.17)                        
+##  CRAN (R 3.4.1)                      
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
@@ -798,8 +1001,31 @@ output</code></pre></div>
 ##  local                               
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
+##  local                               
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.1)                      
+##  CRAN (R 3.4.0)                      
+##  local                               
 ##  CRAN (R 3.4.0)                      
 ##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.1)                      
+##  CRAN (R 3.4.1)                      
+##  CRAN (R 3.4.0)                      
+##  cran (@0.12.13)                     
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.1)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  local                               
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.0)                      
+##  CRAN (R 3.4.1)                      
+##  CRAN (R 3.4.1)                      
 ##  Github (tidyverse/tidyverse@a028619)
 ##  local                               
 ##  local                               

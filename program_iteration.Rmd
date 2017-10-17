@@ -10,10 +10,9 @@ output:
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE}
+```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
 set.seed(1234)
-
 theme_set(theme_minimal())
 ```
 
@@ -97,7 +96,7 @@ library(microbenchmark)
 
 microbenchmark(
   # don't preallocate
-  nopre = {
+  `No preallocation` = {
     output <- vector("numeric", 0)
     
     for (i in seq_along(x)) {
@@ -105,7 +104,7 @@ microbenchmark(
     }
   },
   # preallocate
-  pre = {
+  `Preallocation` = {
     output <- vector("numeric", length(x))
     
     for (i in seq_along(x)) {
@@ -281,6 +280,121 @@ map_dbl(diamonds, max)
   </p>
 </details>
 
+# Scoped verbs
+
+Frequently when working with data frames you may wish to apply a specific function to multiple columns. For instance, calculating the average value of each column in `mtcars`. If we wanted to calculate the average of a single column, it would be pretty simple using just `tidyverse` functions:
+
+```{r mtcars-mean-single-column}
+mtcars %>%
+  summarize(mpg = mean(mpg))
+```
+
+If we want to calculate the mean for all of them, we'd have to duplicate this code many times over:
+
+```{r mtcars-mean-all-columns}
+mtcars %>%
+  summarize(mpg = mean(mpg),
+            cyl = mean(cyl),
+            disp = mean(disp),
+            hp = mean(hp),
+            drat = mean(drat),
+            wt = mean(wt),
+            qsec = mean(qsec),
+            vs = mean(vs),
+            am = mean(am),
+            gear = mean(gear),
+            carb = mean(carb))
+```
+
+But this is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it. We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **scoped verbs**.
+
+Scoped verbs allow you to use standard **verbs** (or functions) in `dplyr` that affect multiple variables at once:
+
+* `_if` allows you to pick variables based on a predicate function like `is.numeric()` or `is.character()`
+* `_at` allows you to pick variables using the same syntax as `select()`
+* `_all` operates on all variables
+
+## summarize
+
+### `summarize_all()`
+
+`summarize_all()` takes a tibble and a function and applies that function to each column:
+
+```{r summarize-all}
+summarize_all(mtcars, mean)
+```
+
+If you want to apply multiple summaries, use the `funs()` helper:
+
+```{r summarize-all-funs}
+summarize_all(mtcars, funs(min, max))
+```
+
+And as always, you could combine this with `group_by()` to calculate group-level summary statistics:
+
+```{r summarize-all-group-by}
+mtcars %>%
+  group_by(gear) %>%
+  summarize_all(mean)
+```
+
+### `summarize_at()`
+
+`summarize_at()` allows you to pick columns in the same way as `select()`, that is, based on their names. There is one small difference: you need to wrap the complete selection with the `vars()` helper (this avoids ambiguity).
+
+```{r summarize-at}
+summarize_at(mtcars, vars(-mpg), mean)
+```
+
+By default, the newly created columns have the shortest names needed to uniquely identify the output.
+
+```{r summarize-at-unique}
+summarize_at(mtcars, vars(mpg), funs(min, max))
+summarize_at(mtcars, vars(mpg, wt), min)
+summarize_at(mtcars, vars(-mpg), funs(min, max))
+```
+
+### `summarize_if()`
+
+`summarize_at()` allows you to pick variables to summarize based on their name, whereas `summarize_if()` allows you to pick variables to summarize based on some property of the column. Typically this is their type because you want to (e.g.) apply a numeric summary function only to numeric columns:
+
+```{r summarize-if}
+starwars
+
+starwars %>%
+  group_by(species) %>%
+  summarize_if(is.numeric, mean, na.rm = TRUE)
+```
+
+(Note that `na.rm = TRUE` is passed on to `mean()` in the same way as in `purrr::map()`.)
+
+## Mutate
+
+`mutate_all()`, `mutate_if()` and `mutate_at()` work in a similar way to their summarize equivalents.
+
+```{r mutate-all}
+mutate_all(mtcars, log10)
+```
+
+## Filter
+
+`filter_all()` is the most useful of the three `filter()` variants. You use it conjunction with `all_vars()` or `any_vars()` depending on whether or not you want rows where all variables meet the criterion, or where just one variable meets it.
+
+It's particularly useful finding missing values:
+
+```{r filter-all-at}
+library(nycflights13)
+
+# Rows where any value is missing
+filter_all(weather, any_vars(is.na(.)))
+
+# Rows where all wind variables are missing
+filter_at(weather, vars(starts_with("wind")), all_vars(is.na(.)))
+```
+
+# Acknowledgments {.toc-ignore}
+
+* Scoped verbs based on [Scoped verbs by the Data Challenge Lab](https://dcl-2017-04.github.io/curriculum/manip-scoped.html)
 
 # Session Info {.toc-ignore}
 
