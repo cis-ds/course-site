@@ -111,8 +111,7 @@ map_data("county", "illinois") %>%
 Let's draw a map of the United States. First we need to store the USA map boundaries in a data frame:
 
 ```{r usa-bound}
-usa <- map_data("usa") %>%
-  as_tibble
+usa <- as_tibble(map_data("usa"))
 usa
 ```
 
@@ -178,8 +177,7 @@ Oops. The map doesn't connect the dots in the correct order.
 `maps` also comes with a state boundaries geodatabase:
 
 ```{r states}
-states <- map_data("state") %>%
-  as_tibble()
+states <- as_tibble(map_data("state"))
 states
 ```
 
@@ -231,8 +229,7 @@ il_df <- filter(states, region == "illinois")
 Now let's get the accompanying counties:
 
 ```{r il-counties}
-counties <- map_data("county") %>%
-  as_tibble
+counties <- as_tibble(map_data("county"))
 il_county <- filter(counties, region == "illinois")
 il_county
 ```
@@ -289,8 +286,7 @@ Yup, that doesn't look right. Most maps of the United States place Alaska and Ha
 library(fiftystater)
 
 data("fifty_states")
-fifty_states %>%
-  as_tibble
+as_tibble(fifty_states)
 
 ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
   coord_fixed(1.3) + 
@@ -311,22 +307,20 @@ Let's start with a shapefile for state boundaries in the United States.^[Origina
 library(rgdal)
 
 usa <- readOGR("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
-str(usa, max.level = 2)
+str(usa, max.level = 2) # view structure of object
 ```
 
 This is decidedly not a tidy data frame. Once you import the shapefile, it's best to convert it to a data frame for `ggplot()`. We can do this using `fortify()`:
 
 ```{r states-convert}
-usa %>%
-  fortify() %>%
-  head
+fortify(usa) %>%
+  head()
 ```
 
 Under this approach, the `id` variable is just a number assigned to each region (in this case, each state/territory). However the shapefile contains linked data with attributes for each region. We can access this using the `@data` accessor:
 
 ```{r at-data}
-usa@data %>%
-  as_tibble()
+as_tibble(usa@data)
 ```
 
 We can keep these variables in the new data frame through parameters to `fortify(region = "")`:
@@ -335,17 +329,17 @@ We can keep these variables in the new data frame through parameters to `fortify
 # state name
 usa %>%
   fortify(region = "NAME") %>%
-  head
+  head()
 
 # FIPS code
 usa %>%
   fortify(region = "STATEFP") %>%
-  head
+  head()
 
 # keep it all
 (usa2 <- usa %>%
   fortify(region = "NAME") %>%
-  as_tibble %>%
+  as_tibble() %>%
   left_join(usa@data, by = c("id" = "NAME")))
 ```
 
@@ -390,23 +384,23 @@ get_googlemap("university of chicago", zoom = 12) %>%
 Representing portions of the globe on a flat surface can be challenging. Depending on how you project the map, you can distort or emphasize certain features of the map. Fortunately, `ggplot()` includes the `coord_map()` function which allows us to easily implement different projection methods.^[This function replaces `coord_fixed()`.] Depending on the projection method, you may need to pass additional arguments to `coord_map()` to define the standard parallel lines used in projecting the map:
 
 ```{r projections}
-ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "gray") +
+map_proj_base <- ggplot(data = usa2,
+                        mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray")
+
+map_proj_base +
   coord_map() +
   ggtitle("Mercator projection (default)")
 
-ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "gray") +
+map_proj_base +
   coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
   ggtitle("Albers equal-area projection")
 
-ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "gray") +
+map_proj_base +
   coord_map(projection = "lambert", lat0 = 25, lat1 = 50) +
   ggtitle("Lambert equal-area projection")
 
-ggplot(data = map_data("world"), mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "gray") +
+map_proj_base +
   coord_map(projection = "mollweide", xlim = c(-180, 180)) +
   ggtitle("Mollweide projection")
 ```
@@ -476,6 +470,7 @@ ggplot() +
                color = "black", fill = "white") +
   geom_point(data = airports, aes(x = lon, y = lat, size = alt),
              fill = "grey", color = "black", alpha = .2) +
+  # strip out background junk and remove legend
   theme_void() +
   theme(legend.position = "none")
 ```
@@ -483,9 +478,9 @@ ggplot() +
 Circle area is proportional to the airport's altitude (in feet). Or we could scale it based on the number of arriving flights in `flights`:
 
 ```{r airport-dest}
-airports_n <- flights %>%
+(airports_n <- flights %>%
   count(dest) %>%
-  left_join(airports, by = c("dest" = "faa"))
+  left_join(airports, by = c("dest" = "faa")))
 
 ggplot() + 
   coord_map(xlim = c(-130, -60),
@@ -509,24 +504,28 @@ ggplot() +
 We'll continue to use the `usa2` shapefile. Let's reload it and also load and tidy the county shapefile:
 
 ```{r county-shp}
+# load USA shapefile for map boundaries
 usa <- readOGR("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
 
+# fortify and filter to keep contiguous USA
 usa2 <- usa %>%
   fortify(region = "GEOID") %>%
-  as_tibble %>%
+  as_tibble() %>%
   left_join(usa@data, by = c("id" = "GEOID")) %>%
   # filter out Alaska, Hawaii, Puerto Rico via FIPS codes
   filter(!(STATEFP %in% c("02", "15", "72")))
 
+# do the same thing for the county shapefile
 counties <- readOGR("data/census_bureau/cb_2013_us_county_20m/cb_2013_us_county_20m.shp")
 
 counties2 <- counties %>%
   fortify(region = "GEOID") %>%
-  as_tibble %>%
+  as_tibble() %>%
   left_join(counties@data, by = c("id" = "GEOID")) %>%
   # filter out Alaska, Hawaii, Puerto Rico via FIPS codes
   filter(!(STATEFP %in% c("02", "15", "72")))
 
+# plot county map boundaries
 ggplot(counties2, mapping = aes(x = long, y = lat, group = group)) + 
   geom_polygon(color = "black", fill = "gray") +
   coord_map()
@@ -625,7 +624,7 @@ Selection of your **color palette** is perhaps the most important decision to ma
 
 By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):^[Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process]
 
-```{r color-wheel}
+```{r color-wheel, echo = FALSE}
 # generate simulated data points
 sim_points <- data_frame(x = factor(1:6))
 
@@ -678,10 +677,10 @@ state_data <- data_frame(name = state.name,
   # get id variable into data frame
   left_join(usa2 %>%
               select(id, NAME) %>%
-              distinct,
+              distinct(),
             by = c("name" = "NAME")) %>%
   # remove Alaska and Hawaii
-  na.omit
+  na.omit()
 
 # set region base plot
 region_p <- ggplot(state_data, aes(map_id = id)) +
@@ -728,9 +727,8 @@ If you have geospatial data with a temporal component (i.e. measuring a variable
 ## Get world fertility rate data
 
 ```{r world-shape}
-# Shapefile
+# import and fortify world shapefile
 world <- readOGR("data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp")
-
 world2 <- fortify(world, region = "iso_a3")
  
 # Country-level data
