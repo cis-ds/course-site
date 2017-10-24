@@ -20,45 +20,6 @@ For each exercise, use your knowledge of relational data and joining operations 
 
 > [Review the database structure before you begin the exercises.](http://r4ds.had.co.nz/relational-data.html#nycflights13-relational)
 
-# Add the location of the origin and destination (i.e. the `lat` and `lon`) to `flights`.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
-This is a mutating join, and the basic function you need to use here is `left_join()`. We have to perform the joining operation twice since we want to create new variables based on both the destination airport and the origin airport. And because the name of the key variable differs between the data frames, we need to explicitly define how to join the data frames using the `by` argument:
-
-```{r lat-lon-simple}
-flights %>%
-  left_join(airports, by = c(dest = "faa")) %>%
-  left_join(airports, by = c(origin = "faa"))
-```
-
-Notice that with this approach, we are joining **all** of the columns in `airports`. The instructions just asked for latitude and longitude, so we can create a copy of `airports` that only includes the necessary variables (`lat` and `lon`, plus the primary key variable `faa`) and join `flights` to that data frame:
-
-```{r lat-lon-better}
-airports_lite <- airports %>%
-  select(faa, lat, lon)
-
-flights %>%
-  left_join(airports_lite, by = c(dest = "faa")) %>%
-  left_join(airports_lite, by = c(origin = "faa"))
-```
-
-This is better, but now we have two sets of latitude and longitude variables in the data frame: one for the destination airport, and one for the origin airport. When we perform the second `left_join()` operation, to avoid duplicate variable names the function automatically adds generic `.x` and `.y` suffixes to the output to disambiguate them. This is nice, but we might want something more intuitive to explicitly identify which variables are associated with the destination vs. the origin. To do that, we override the default `suffix` argument with custom suffixes:
-
-```{r lat-lon-solution}
-airports_lite <- airports %>%
-  select(faa, lat, lon)
-
-flights %>%
-  left_join(airports_lite, by = c(dest = "faa")) %>%
-  left_join(airports_lite, by = c(origin = "faa"), suffix = c(".dest", ".origin"))
-```
-
-  </p>
-</details>
-
 # Is there a relationship between the age of a plane and its departure delays?
 
 Hint: all the data is from 2013.
@@ -116,61 +77,44 @@ The important takeaway is that departure delays do not appear to increase with p
   </p>
 </details>
 
-# What does it mean for a flight to have a missing `tailnum`? What do the tail numbers that don’t have a matching record in planes have in common?
-
-Hint: one variable explains ~90% of the problems.
+# Add the location of the origin and destination (i.e. the `lat` and `lon`) to `flights`.
 
 <details> 
   <summary>Click for the solution</summary>
   <p>
+  
+This is a mutating join, and the basic function you need to use here is `left_join()`. We have to perform the joining operation twice since we want to create new variables based on both the destination airport and the origin airport. And because the name of the key variable differs between the data frames, we need to explicitly define how to join the data frames using the `by` argument:
 
-To answer this question, we need to figure out what flights with missing tail numbers have in common. To do this, we need to filter `flights` and remove observations with missing tail numbers. But `tailnum` is stored in `planes`, so we need to join the data frames together first. Because we don't care about the actual value of `tailnum` (just that it is missing), we can use a filtering join to merge the data frames. Specifically, `anti_join()` will filter `flights` and keep only observations where we do not have the plane's tail number.
-
-```{r miss-tailnum}
+```{r lat-lon-simple}
 flights %>%
-  anti_join(planes)
+  left_join(airports, by = c(dest = "faa")) %>%
+  left_join(airports, by = c(origin = "faa"))
 ```
 
-Hmm, did this actually remove all the observations we intended? Actually not. By default `anti_join()` will merge the data frames based on all common column names. Here, both data frames have columns for `year` and `tailnum`. But they represent different variables. In `flights`, `year` indicates the year in which the flight departed. But in `planes`, `year` represents the manufacturing year. So to make `anti_join()` do what we intended, we need to manually specify that it should only match observations based on `tailnum`.
+Notice that with this approach, we are joining **all** of the columns in `airports`. The instructions just asked for latitude and longitude, so we can create a copy of `airports` that only includes the necessary variables (`lat` and `lon`, plus the primary key variable `faa`) and join `flights` to that data frame:
 
-```{r miss-tailnum-match}
+```{r lat-lon-better}
+airports_lite <- airports %>%
+  select(faa, lat, lon)
+
 flights %>%
-  anti_join(planes, by = "tailnum")
+  left_join(airports_lite, by = c(dest = "faa")) %>%
+  left_join(airports_lite, by = c(origin = "faa"))
 ```
 
-At this point, we need to poke around and find that variable that explains 90% of the problematic flights. A little digging using `count()` to summarize different columns in the data frame reveals this:
+This is better, but now we have two sets of latitude and longitude variables in the data frame: one for the destination airport, and one for the origin airport. When we perform the second `left_join()` operation, to avoid duplicate variable names the function automatically adds generic `.x` and `.y` suffixes to the output to disambiguate them. This is nice, but we might want something more intuitive to explicitly identify which variables are associated with the destination vs. the origin. To do that, we override the default `suffix` argument with custom suffixes:
 
-```{r missing-tailnum-solution}
-flights %>%
-  anti_join(planes, by = "tailnum") %>%
-  count(carrier, sort = TRUE)
-```
-
-American Airlines (AA) and Envoy Airlines (MQ) don’t report tail numbers.
-
-  </p>
-</details>
-
-# Filter `flights` to only show flights with planes that have flown at least 100 flights.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-First we need to determine which planes have flown at least 100 flights. This is a simple `count()` function using `flights`, summarizing the number of flights by `tailnum` and filtering the resulting data frame to only keep tail numbers for planes with more than 100 flights. Then because we want to **filter** `flights`, we need a filtering join operation to merge the summarized data frame with the original `flights` object. This calls for a `semi_join()` operation.
-
-```{r flights-100-solution}
-planes_gt100 <- flights %>%
-  count(tailnum) %>%
-  filter(n > 100)
+```{r lat-lon-solution}
+airports_lite <- airports %>%
+  select(faa, lat, lon)
 
 flights %>%
-  semi_join(planes_gt100)
+  left_join(airports_lite, by = c(dest = "faa")) %>%
+  left_join(airports_lite, by = c(origin = "faa"), suffix = c(".dest", ".origin"))
 ```
 
   </p>
 </details>
-
 
 # Acknowledgements {.toc-ignore}
 

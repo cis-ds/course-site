@@ -344,6 +344,61 @@ div.tocify {
 <blockquote>
 <p><a href="http://r4ds.had.co.nz/relational-data.html#nycflights13-relational">Review the database structure before you begin the exercises.</a></p>
 </blockquote>
+<div id="is-there-a-relationship-between-the-age-of-a-plane-and-its-departure-delays" class="section level1">
+<h1>Is there a relationship between the age of a plane and its departure delays?</h1>
+<p>Hint: all the data is from 2013.</p>
+<details> <summary>Click for the solution</summary>
+<p>
+<p>The first step is to calculate the age of each plane. To do that, use <code>planes</code> and the <code>age</code> variable:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plane_ages &lt;-<span class="st"> </span>planes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">age =</span> <span class="dv">2013</span> <span class="op">-</span><span class="st"> </span>year) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(tailnum, age)</code></pre></div>
+<p>The best approach to answering this question is a visualization. There are several different types of visualizations you could implement (e.g. scatterplot with smoothing line, line graph of average delay by age). The important thing is that we need to combine <code>flights</code> with <code>plane_ages</code> to determine for each flight the age of the plane. This is another mutating join. The best choice is <code>inner_join()</code> as this will automatically remove any rows in <code>flights</code> where we don’t have age data on the plane.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># smoothing line</span>
+flights <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">inner_join</span>(plane_ages) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, dep_delay)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
+<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39;</code></pre>
+<pre><code>## Warning: Removed 9374 rows containing non-finite values (stat_smooth).</code></pre>
+<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-solution-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># line graph of average delay by age</span>
+flights <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">inner_join</span>(plane_ages) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(age) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">delay =</span> <span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, delay)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
+<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
+<pre><code>## Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 1 rows containing missing values (geom_path).</code></pre>
+<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-solution-2.png" width="672" /></p>
+<p>In this situation, <code>left_join()</code> could also be used because <code>ggplot()</code> and <code>mean(na.rm = TRUE)</code> drop missing values (remember that <code>left_join()</code> keeps all rows from <code>flights</code>, even if we don’t have information on the plane).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">left_join</span>(plane_ages) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, dep_delay)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
+<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
+<pre><code>## `geom_smooth()` using method = &#39;gam&#39;</code></pre>
+<pre><code>## Warning: Removed 61980 rows containing non-finite values (stat_smooth).</code></pre>
+<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-leftjoin-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">left_join</span>(plane_ages) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(age) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">delay =</span> <span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, delay)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
+<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_point).</code></pre>
+<pre><code>## Warning: Removed 2 rows containing missing values (geom_path).</code></pre>
+<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-leftjoin-2.png" width="672" /></p>
+<p>The important takeaway is that departure delays do not appear to increase with plane age – in fact they seem to decrease slightly (though with an expanding confidence interval). Care to think of a reason why this may be so?</p>
+</p>
+<p></details></p>
+</div>
 <div id="add-the-location-of-the-origin-and-destination-i.e.the-lat-and-lon-to-flights." class="section level1">
 <h1>Add the location of the origin and destination (i.e. the <code>lat</code> and <code>lon</code>) to <code>flights</code>.</h1>
 <details> <summary>Click for the solution</summary>
@@ -425,160 +480,6 @@ flights <span class="op">%&gt;%</span>
 </p>
 <p></details></p>
 </div>
-<div id="is-there-a-relationship-between-the-age-of-a-plane-and-its-departure-delays" class="section level1">
-<h1>Is there a relationship between the age of a plane and its departure delays?</h1>
-<p>Hint: all the data is from 2013.</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<p>The first step is to calculate the age of each plane. To do that, use <code>planes</code> and the <code>age</code> variable:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">plane_ages &lt;-<span class="st"> </span>planes <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">age =</span> <span class="dv">2013</span> <span class="op">-</span><span class="st"> </span>year) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(tailnum, age)</code></pre></div>
-<p>The best approach to answering this question is a visualization. There are several different types of visualizations you could implement (e.g. scatterplot with smoothing line, line graph of average delay by age). The important thing is that we need to combine <code>flights</code> with <code>plane_ages</code> to determine for each flight the age of the plane. This is another mutating join. The best choice is <code>inner_join()</code> as this will automatically remove any rows in <code>flights</code> where we don’t have age data on the plane.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># smoothing line</span>
-flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(plane_ages) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, dep_delay)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
-<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;gam&#39;</code></pre>
-<pre><code>## Warning: Removed 9374 rows containing non-finite values (stat_smooth).</code></pre>
-<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-solution-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># line graph of average delay by age</span>
-flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(plane_ages) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(age) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">delay =</span> <span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, delay)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
-<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
-<pre><code>## Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 1 rows containing missing values (geom_path).</code></pre>
-<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-solution-2.png" width="672" /></p>
-<p>In this situation, <code>left_join()</code> could also be used because <code>ggplot()</code> and <code>mean(na.rm = TRUE)</code> drop missing values (remember that <code>left_join()</code> keeps all rows from <code>flights</code>, even if we don’t have information on the plane).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">left_join</span>(plane_ages) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, dep_delay)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_smooth</span>()</code></pre></div>
-<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
-<pre><code>## `geom_smooth()` using method = &#39;gam&#39;</code></pre>
-<pre><code>## Warning: Removed 61980 rows containing non-finite values (stat_smooth).</code></pre>
-<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-leftjoin-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">left_join</span>(plane_ages) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(age) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarise</span>(<span class="dt">delay =</span> <span class="kw">mean</span>(dep_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(age, delay)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>()</code></pre></div>
-<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
-<pre><code>## Warning: Removed 2 rows containing missing values (geom_point).</code></pre>
-<pre><code>## Warning: Removed 2 rows containing missing values (geom_path).</code></pre>
-<p><img src="datawrangle_relational_data_exercise_files/figure-html/age-delay-leftjoin-2.png" width="672" /></p>
-<p>The important takeaway is that departure delays do not appear to increase with plane age – in fact they seem to decrease slightly (though with an expanding confidence interval). Care to think of a reason why this may be so?</p>
-</p>
-<p></details></p>
-</div>
-<div id="what-does-it-mean-for-a-flight-to-have-a-missing-tailnum-what-do-the-tail-numbers-that-dont-have-a-matching-record-in-planes-have-in-common" class="section level1">
-<h1>What does it mean for a flight to have a missing <code>tailnum</code>? What do the tail numbers that don’t have a matching record in planes have in common?</h1>
-<p>Hint: one variable explains ~90% of the problems.</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<p>To answer this question, we need to figure out what flights with missing tail numbers have in common. To do this, we need to filter <code>flights</code> and remove observations with missing tail numbers. But <code>tailnum</code> is stored in <code>planes</code>, so we need to join the data frames together first. Because we don’t care about the actual value of <code>tailnum</code> (just that it is missing), we can use a filtering join to merge the data frames. Specifically, <code>anti_join()</code> will filter <code>flights</code> and keep only observations where we do not have the plane’s tail number.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">anti_join</span>(planes)</code></pre></div>
-<pre><code>## Joining, by = c(&quot;year&quot;, &quot;tailnum&quot;)</code></pre>
-<pre><code>## # A tibble: 332,146 x 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
-##  1  2013     9    28      712            720        -8      955
-##  2  2013     9    24     1751           1805       -14     1937
-##  3  2013     9    23     1759           1805        -6     1935
-##  4  2013     9    19     1759           1805        -6     1946
-##  5  2013     9    18     1754           1805       -11     1927
-##  6  2013     9    18     1237           1240        -3     1515
-##  7  2013     9    16     1744           1310       274     1944
-##  8  2013     9    15     1756           1805        -9     1929
-##  9  2013     9    13     1656           1545        71     1838
-## 10  2013     9    10     1759           1805        -6     1945
-## # ... with 332,136 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
-## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
-## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
-## #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<p>Hmm, did this actually remove all the observations we intended? Actually not. By default <code>anti_join()</code> will merge the data frames based on all common column names. Here, both data frames have columns for <code>year</code> and <code>tailnum</code>. But they represent different variables. In <code>flights</code>, <code>year</code> indicates the year in which the flight departed. But in <code>planes</code>, <code>year</code> represents the manufacturing year. So to make <code>anti_join()</code> do what we intended, we need to manually specify that it should only match observations based on <code>tailnum</code>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">anti_join</span>(planes, <span class="dt">by =</span> <span class="st">&quot;tailnum&quot;</span>)</code></pre></div>
-<pre><code>## # A tibble: 52,606 x 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
-##  1  2013     8    24     1638           1640        -2     1747
-##  2  2013     9     7     1830           1829         1     1934
-##  3  2013     9    18     1620           1510        70     1845
-##  4  2013     8    15     2019           1915        64     2307
-##  5  2013     8    12     1245           1245         0     1532
-##  6  2013     5     8     1733           1629        64     1958
-##  7  2013     4    11     1456           1500        -4     1638
-##  8  2013     5    30     1018           1020        -2     1152
-##  9  2013     6    23      611            615        -4      805
-## 10  2013     6    29     1821           1829        -8     2005
-## # ... with 52,596 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
-## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
-## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
-## #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-<p>At this point, we need to poke around and find that variable that explains 90% of the problematic flights. A little digging using <code>count()</code> to summarize different columns in the data frame reveals this:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">anti_join</span>(planes, <span class="dt">by =</span> <span class="st">&quot;tailnum&quot;</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">count</span>(carrier, <span class="dt">sort =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## # A tibble: 10 x 2
-##    carrier     n
-##      &lt;chr&gt; &lt;int&gt;
-##  1      MQ 25397
-##  2      AA 22558
-##  3      UA  1693
-##  4      9E  1044
-##  5      B6   830
-##  6      US   699
-##  7      FL   187
-##  8      DL   110
-##  9      F9    50
-## 10      WN    38</code></pre>
-<p>American Airlines (AA) and Envoy Airlines (MQ) don’t report tail numbers.</p>
-</p>
-<p></details></p>
-</div>
-<div id="filter-flights-to-only-show-flights-with-planes-that-have-flown-at-least-100-flights." class="section level1">
-<h1>Filter <code>flights</code> to only show flights with planes that have flown at least 100 flights.</h1>
-<details> <summary>Click for the solution</summary>
-<p>
-<p>First we need to determine which planes have flown at least 100 flights. This is a simple <code>count()</code> function using <code>flights</code>, summarizing the number of flights by <code>tailnum</code> and filtering the resulting data frame to only keep tail numbers for planes with more than 100 flights. Then because we want to <strong>filter</strong> <code>flights</code>, we need a filtering join operation to merge the summarized data frame with the original <code>flights</code> object. This calls for a <code>semi_join()</code> operation.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">planes_gt100 &lt;-<span class="st"> </span>flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">count</span>(tailnum) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(n <span class="op">&gt;</span><span class="st"> </span><span class="dv">100</span>)
-
-flights <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">semi_join</span>(planes_gt100)</code></pre></div>
-<pre><code>## Joining, by = &quot;tailnum&quot;</code></pre>
-<pre><code>## # A tibble: 229,202 x 19
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
-##  1  2013     1     1     1604           1510        54     1817
-##  2  2013     1     1     2100           2100         0     2307
-##  3  2013     1     2      827            835        -8     1059
-##  4  2013     1     2     2014           2020        -6     2256
-##  5  2013     1     4     1621           1625        -4     1853
-##  6  2013     1     5      834            835        -1     1050
-##  7  2013     1     6      832            835        -3     1101
-##  8  2013     1     6     2051           2100        -9     2241
-##  9  2013     1     7      826            835        -9     1057
-## 10  2013     1     7     1444           1445        -1     1659
-## # ... with 229,192 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
-## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
-## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
-## #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre>
-</p>
-<p></details></p>
-</div>
 <div id="acknowledgements" class="section level1 toc-ignore">
 <h1>Acknowledgements</h1>
 <ul>
@@ -596,7 +497,7 @@ flights <span class="op">%&gt;%</span>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-10-10</code></pre>
+##  date     2017-10-24</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
 <pre><code>##  package      * version    date       source                              
 ##  assertthat     0.2.0      2017-04-11 CRAN (R 3.4.0)                      
