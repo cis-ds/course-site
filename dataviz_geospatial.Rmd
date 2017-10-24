@@ -18,7 +18,6 @@ library(stringr)
 library(modelr)
 library(forcats)
 library(ggmap)
-library(plotly)
 
 options(digits = 3)
 set.seed(1234)
@@ -29,7 +28,7 @@ theme_set(theme_minimal())
 
 Geospatial visualizations are some of the oldest data visualization methods in human existence. Data maps were first popularized in the seventeenth century and have grown in complexity and detail since then. Consider [Google Maps](https://www.google.com/maps), the sheer volume of data depicted, and the analytical pathways available to its users.
 
-Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).^[See chapter 10 in **The Truthful Art** for a more detailed introduction to these features.]
+Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).
 
 # Map boundaries
 
@@ -106,6 +105,7 @@ map_data("county", "illinois") %>%
     ```{r michigan}
     map("state", "michigan")
     ```
+    
 ### Drawing the United States
 
 Let's draw a map of the United States. First we need to store the USA map boundaries in a data frame:
@@ -208,10 +208,11 @@ Here, each state is assigned a different color at random. You can start to imagi
 We can use `filter()` to subset the `states` data frame and draw a map with only a subset of the states. For example, if we want to only graph states in the Midwest:
 
 ```{r midwest}
-midwest <- subset(states, region %in% c("illinois", "indiana", "iowa",
-                                        "kansas", "michigan", "minnesota",
-                                        "missouri", "nebraska", "north dakota",
-                                        "ohio", "south dakota", "wisconsin"))
+midwest <- filter(states,
+                  region %in% c("illinois", "indiana", "iowa",
+                                "kansas", "michigan", "minnesota",
+                                "missouri", "nebraska", "north dakota",
+                                "ohio", "south dakota", "wisconsin"))
 
 ggplot(data = midwest) + 
   geom_polygon(aes(x = long, y = lat, group = group),
@@ -239,7 +240,8 @@ il_county
 Plot the state first. This time, lets' remove all the axes gridlines and background junk using `theme_void()`:
 
 ```{r il-map}
-il_base <- ggplot(data = il_df, mapping = aes(x = long, y = lat, group = group)) + 
+il_base <- ggplot(data = il_df,
+                  mapping = aes(x = long, y = lat, group = group)) + 
   coord_fixed(1.3) + 
   geom_polygon(color = "black", fill = "gray")
 
@@ -253,7 +255,8 @@ Now let's plot the county boundaries in white:
 il_base +
   theme_void() + 
   geom_polygon(data = il_county, fill = NA, color = "white") +
-  geom_polygon(color = "black", fill = NA)  # get the state border back on top
+  # get the state border back on top
+  geom_polygon(color = "black", fill = NA)
 ```
 
 ### But what about Alaska and Hawaii?
@@ -323,7 +326,7 @@ Under this approach, the `id` variable is just a number assigned to each region 
 
 ```{r at-data}
 usa@data %>%
-  as_tibble
+  as_tibble()
 ```
 
 We can keep these variables in the new data frame through parameters to `fortify(region = "")`:
@@ -369,22 +372,11 @@ ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) +
 
 ## `ggmap`
 
-Rather than relying on geodatabases or shapefiles which store boundaries as numeric data, we can use `ggmap` to retrieve raster map tiles from online mapping services.
+Rather than relying on geodatabases or shapefiles which store boundaries as numeric data, we can use `ggmap` to retrieve raster map tiles from online mapping services. The most popular provider of these map tiles is [Google Maps](https://www.google.com/maps):
 
 ```{r ggmap}
 library(ggmap)
 ```
-
-* [OpenStreetMap](https://www.openstreetmap.org/#map=5/51.500/-0.100)
-
-```{r openstreetmap, error = TRUE}
-get_openstreetmap(bbox = c(left = -87.6189, bottom = 41.7723, right = -87.5721, top = 41.8107)) %>%
-  ggmap()
-```
-
-> OpenStreetMap API can be flaky. Sometimes you have to come back later and try running `get_openstreetmap()` to properly download the map tiles.
-
-* [Google Maps](https://www.google.com/maps)
 
 ```{r google-maps}
 get_googlemap("university of chicago", zoom = 12) %>%
@@ -393,7 +385,9 @@ get_googlemap("university of chicago", zoom = 12) %>%
 
 ## Changing map projections
 
-As you saw in **The Truthful Art**, representing portions of the globe on a flat surface can be challenging. Depending on how you project the map, you can distort or emphasize certain features of the map. Fortunately, `ggplot()` includes the `coord_map()` function which allows us to easily implement different projection methods.^[This function replaces `coord_fixed()`.] Depending on the projection method, you may need to pass additional arguments to `coord_map()` to define the standard parallel lines used in projecting the map:
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
+
+Representing portions of the globe on a flat surface can be challenging. Depending on how you project the map, you can distort or emphasize certain features of the map. Fortunately, `ggplot()` includes the `coord_map()` function which allows us to easily implement different projection methods.^[This function replaces `coord_fixed()`.] Depending on the projection method, you may need to pass additional arguments to `coord_map()` to define the standard parallel lines used in projecting the map:
 
 ```{r projections}
 ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
@@ -411,26 +405,15 @@ ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) +
   coord_map(projection = "lambert", lat0 = 25, lat1 = 50) +
   ggtitle("Lambert equal-area projection")
 
-ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "gray") +
-  coord_map(projection = "conic", lat0 = 40) +
-  ggtitle("Conic projection")
-
-ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
-  geom_polygon(color = "black", fill = "gray") +
-  coord_map(projection = "mollweide") +
-  ggtitle("Mollweide projection")
-
 ggplot(data = map_data("world"), mapping = aes(x = long, y = lat, group = group)) + 
   geom_polygon(color = "black", fill = "gray") +
   coord_map(projection = "mollweide", xlim = c(-180, 180)) +
   ggtitle("Mollweide projection")
 ```
 
-
 # Adding data to the map
 
-Region boundaries serve as the background in geospatial data visualization - so now we need to add data. Some types of channels (points and symbols) are overlaid on top of the boundaries, whereas other channels (fill) are incorporated into the region layer itself. Let's look at the first set of channels.
+Region boundaries serve as the background in geospatial data visualization - so now we need to add data. Some types of geometric objects (points and symbols) are overlaid on top of the boundaries, whereas other geoms (fill) are incorporated into the region layer itself. Let's look at the first type of object.
 
 ## Points
 
@@ -519,7 +502,7 @@ ggplot() +
 
 # Drawing choropleth maps
 
-**Choropleth maps** encode information by assigning shades of colors to defined areas on a map (e.g. countries, states, counties, zip codes). There are lots of ways to tweak and customize these graphs, which is generally a good idea because remember that color is one of the harder-to-decode channels.
+**Choropleth maps** encode information by assigning shades of colors to defined areas on a map (e.g. countries, states, counties, zip codes). There are lots of ways to tweak and customize these graphs, which is generally a good idea because decoding and interpreting information conveyed via colorshades is notoriously tricky (if the color palette is a bad choice).
 
 ## Loading the data
 
@@ -606,6 +589,8 @@ ggplot(fb_county, aes(map_id = GEO.id2)) +
 
 ### Binning data
 
+> Remember `cut()`? There are some `ggplot2` variants on this function that more explicitly identify how we want to bin the numeric vector (column).
+
 * `cut_interval()` - makes `n` groups with equal range
 
 ```{r cut-interval}
@@ -636,7 +621,7 @@ fb_county %>%
 
 ## Defining colors
 
-Recall that Cleveland and McGill identify the color channel as one of the most difficult channels for humans to properly decode and interpret. Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth.
+Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth.
 
 By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):^[Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process]
 
@@ -661,7 +646,8 @@ gridExtra::marrangeGrob(plots, nrow = 2, ncol = 3, top = NULL)
 #### Sequential
 
 ```{r cb-seq}
-fb_county %>%
+# define ggplot object
+seq_plot <- fb_county %>%
   mutate(rate_cut = cut_number(rate, 6)) %>%
   ggplot(aes(map_id = GEO.id2)) +
   geom_map(aes(fill = rate_cut), map = counties2) +
@@ -669,29 +655,15 @@ fb_county %>%
   labs(title = "Rate of foreign-born individuals in the population",
        fill = NULL) +
   ggthemes::theme_map() +
-  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+
+seq_plot +
   scale_fill_brewer(palette = "BuGn")
 
-fb_county %>%
-  mutate(rate_cut = cut_number(rate, 6)) %>%
-  ggplot(aes(map_id = GEO.id2)) +
-  geom_map(aes(fill = rate_cut), map = counties2) +
-  expand_limits(x = counties2$long, y = counties2$lat) +
-  labs(title = "Rate of foreign-born individuals in the population",
-       fill = NULL) +
-  ggthemes::theme_map() +
-  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+seq_plot +
   scale_fill_brewer(palette = "YlGn")
 
-fb_county %>%
-  mutate(rate_cut = cut_number(rate, 6)) %>%
-  ggplot(aes(map_id = GEO.id2)) +
-  geom_map(aes(fill = rate_cut), map = counties2) +
-  expand_limits(x = counties2$long, y = counties2$lat) +
-  labs(title = "Rate of foreign-born individuals in the population",
-       fill = NULL) +
-  ggthemes::theme_map() +
-  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+seq_plot +
   scale_fill_brewer(palette = "Blues")
 ```
 
@@ -751,6 +723,8 @@ subregion_p +
 
 # Faceting maps
 
+If you have geospatial data with a temporal component (i.e. measuring a variable in a country over a period of time) and want to incorporate the temporal data into your visualization, we have a few different options available. Let's demonstrate using data on world fertility rates and a world map.
+
 ## Get world fertility rate data
 
 ```{r world-shape}
@@ -760,21 +734,24 @@ world <- readOGR("data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_c
 world2 <- fortify(world, region = "iso_a3")
  
 # Country-level data
-fertility <- read_csv("data/API_SP.DYN.TFRT.IN_DS2_en_csv_v2/API_SP.DYN.TFRT.IN_DS2_en_csv_v2.csv") %>%
+(fertility <- read_csv("data/API_SP.DYN.TFRT.IN_DS2_en_csv_v2/API_SP.DYN.TFRT.IN_DS2_en_csv_v2.csv") %>%
   select(-X62) %>%
   # tidy the data frame
   gather(year, fertility, `1960`:`2016`, convert = TRUE) %>%
   filter(year < 2015) %>%
   mutate(fertility = as.numeric(fertility),
          # cut into six intervals
-         fertility_rate = cut_interval(fertility, 6))
+         fertility_rate = cut_interval(fertility, 6)))
 ```
 
-## `For` loop
+## Separate images
+
+If we want each map stored in a separate image, we could write a standard iterative operation using techniques we already know.
+
+### `For` loop
 
 ```{r world-plot-for}
-# use a for loop
-for(year in c(1970, 2010)){
+for(year in seq(from = 1970, to = 2010, by = 5)){
   p <- fertility %>%
     filter(year == year) %>%
     ggplot(aes(map_id = `Country Code`)) +
@@ -782,6 +759,7 @@ for(year in c(1970, 2010)){
     expand_limits(x = world2$long, y = world2$lat) +
     scale_fill_brewer(palette = "BuGn") +
     labs(title = "Fertility rate",
+         subtitle = year,
          fill = NULL) +
     ggthemes::theme_map() +
     coord_map(projection = "mollweide", xlim = c(-180, 180))
@@ -792,19 +770,23 @@ for(year in c(1970, 2010)){
 ## `purrr::map()`
 
 ```{r world-plot-map}
-purrr::map(c(1970, 2010), ~ fertility %>%
+seq(from = 1970, to = 2010, by = 5) %>%
+  purrr::map(~ fertility %>%
     filter(year == .x) %>%
     ggplot(aes(map_id = `Country Code`)) +
     geom_map(aes(fill = fertility_rate), map = world2) +
     expand_limits(x = world2$long, y = world2$lat) +
     scale_fill_brewer(palette = "BuGn") +
     labs(title = "Fertility rate",
+         subtitle = .x,
          fill = NULL) +
     ggthemes::theme_map() +
     coord_map(projection = "mollweide", xlim = c(-180, 180)))
 ```
 
 ## `facet_wrap()`
+
+Or if we want them in a single image, we can use `facet_wrap()` or `facet_grid()` to draw the small multiples plot:
 
 ```{r world-facet-grid-all}
 ggplot(fertility, aes(map_id = `Country Code`)) +
@@ -840,7 +822,7 @@ fertility %>%
 
 ## `gganimate`
 
-Use the `frame` aesthetic.
+Alternatively, we can make an animated visualization using the [`gganimate`](https://github.com/dgrtwo/gganimate) package. The major difference is that we now add a `frame` aesthetic which defines the variable we are using to animate the graph.
 
 ```{r gganimate, fig.show = "animate"}
 library(gganimate)
@@ -857,65 +839,6 @@ p <- ggplot(fertility, aes(map_id = `Country Code`, frame = year)) +
 gganimate(p)
 ```
 
-# Making maps interactive
-
-## `plotly`
-
-### `ggplotly()`
-
-```{r ggplotly}
-p <- ggplot(fb_state, aes(map_id = GEO.id2)) +
-  geom_map(aes(fill = rate), map = usa2) +
-  expand_limits(x = usa2$long, y = usa2$lat) +
-  scale_fill_continuous(labels = scales::percent) +
-  labs(title = "Rate of foreign-born individuals in the population",
-       fill = NULL) +
-  ggthemes::theme_map() +
-  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
-
-ggplotly(p)
-```
-
-Unfortunately you lose the Albers projection.
-
-### `plot_ly()`
-
-```{r plotly}
-# give state boundaries a white border
-l <- list(color = toRGB("white"), width = 2)
-
-# specify some map projection/options
-g <- list(
-  scope = 'usa',
-  projection = list(type = 'albers usa'),
-  showlakes = TRUE,
-  lakecolor = toRGB('white')
-)
-
-p <- fb_state %>%
-  # get state abbrev for matching to geodatabase
-  left_join(state_data, by = c("GEO.display-label" = "name")) %>%
-  mutate(rate = rate * 100,
-         hover = paste("Foreign-born rate:", rate)) %>%
-  plot_geo(locationmode = 'USA-states') %>%
-  add_trace(
-    z = ~rate, text = ~hover, locations = ~abb,
-    color = ~rate, colors = 'Purples'
-  ) %>%
-  colorbar(title = "Percentage") %>%
-  layout(
-    title = "Rate of foreign-born individuals in the population",
-    geo = g
-  )
-p
-```
-
-
-## `leaflet`
-
-See [Leaflet for R](http://rstudio.github.io/leaflet/) for more information.
-
-
 # Acknowledgments {.toc-ignore}
 
 * [Making Maps with R](http://eriqande.github.io/rep-res-web/lectures/making-maps-with-R.html)
@@ -925,6 +848,3 @@ See [Leaflet for R](http://rstudio.github.io/leaflet/) for more information.
 
 ```{r child='_sessioninfo.Rmd'}
 ```
-
-
-
