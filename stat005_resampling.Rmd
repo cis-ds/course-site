@@ -27,62 +27,16 @@ Resampling methods are essential to test and evaluate statistical models. Becaus
 
 # Validation set
 
-We have already seen the **validation set** approach in the [previous class](stat003_logistic_regression.html). By splitting our data into a **training set** and **test set**, we can evaluate the model's effectiveness at predicting the response variable (in the context of either regression or classification) independently of the data used to estimate the model in the first place.
-
-## Classification
-
-Recall how we used this approach to evaluate the accuracy of our [interactive model predicting survival during the sinking of the Titanic](stat003_logistic_regression.html#interactive_terms).
-
-```{r titanic_data, message = FALSE}
-library(titanic)
-titanic <- titanic_train %>%
-  as_tibble()
-
-titanic %>%
-  head() %>%
-  knitr::kable()
-```
-
-```{r age_woman_cross}
-survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
-                           family = binomial)
-summary(survive_age_woman_x)
-```
-
-```{r logit}
-logit2prob <- function(x){
-  exp(x) / (1 + exp(x))
-}
-```
-
-```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE}
-library(modelr)
-
-titanic_split <- resample_partition(titanic, c(test = 0.3, train = 0.7))
-map(titanic_split, dim)
-
-train_model <- glm(Survived ~ Age + Sex, data = titanic_split$train,
-                   family = binomial)
-summary(train_model)
-
-x_test_accuracy <- titanic_split$test %>%
-  tbl_df() %>%
-  add_predictions(train_model) %>%
-  mutate(pred = logit2prob(pred),
-         pred = as.numeric(pred > .5))
-
-mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE)
-```
+One issue with using the same data to both fit and evaluate our model is that we will bias our model towards fitting the data that we have. We may fit our function to create the results we expect or desire, rather than the "true" function. Instead, we can split our data into distinct **training** and **test** sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the test set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.
 
 ## Regression
 
-This method also works for regression analysis. Here we will examine the relationship between horsepower and car mileage in the `Auto` dataset (found in `library(ISLR)`):
+Here we will examine the relationship between horsepower and car mileage in the `Auto` dataset (found in `library(ISLR)`):
 
 ```{r auto}
 library(ISLR)
 
-Auto <- Auto %>%
-  tbl_df()
+Auto <- as_tibble(Auto)
 Auto
 ```
 
@@ -99,7 +53,7 @@ ggplot(Auto, aes(horsepower, mpg)) +
   geom_smooth(method = "lm", se = FALSE)
 ```
 
-Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. Rather than relying on the raw error rate (which makes sense in a classification model), we will instead use **Mean Squared Error** (MSE), defined as
+Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
 
 $$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
 
@@ -120,10 +74,8 @@ For this task, first we can use `modelr::resample_partition()` to create trainin
 set.seed(1234)
 
 auto_split <- resample_partition(Auto, c(test = 0.5, train = 0.5))
-auto_train <- auto_split$train %>%
-  tbl_df()
-auto_test <- auto_split$test %>%
-  tbl_df()
+auto_train <- as_tibble(auto_split$train)
+auto_test <- as_tibble(auto_split$test)
 ```
 
 ```{r auto_lm, dependson="auto_split"}
@@ -168,6 +120,53 @@ ggplot(auto_poly_results, aes(terms, MSE)) +
 
 Based on the MSE for the validation (test) set, a polynomial model with a quadratic term ($\text{horsepower}^2$) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.
 
+## Classification
+
+Recall our efforts to [predict passenger survival during the sinking of the Titanic](stat003_logistic_regression.html#interactive_terms).
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- as_tibble(titanic_train)
+
+titanic %>%
+  head() %>%
+  knitr::kable()
+```
+
+```{r age_woman_cross}
+survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+summary(survive_age_woman_x)
+```
+
+We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the test set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is $0%$).
+
+```{r logit}
+# function to convert log-odds to probabilities
+logit2prob <- function(x){
+  exp(x) / (1 + exp(x))
+}
+```
+
+```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE}
+titanic_split <- resample_partition(titanic, c(test = 0.3, train = 0.7))
+map(titanic_split, dim)
+
+train_model <- glm(Survived ~ Age * Sex, data = titanic_split$train,
+                   family = binomial)
+summary(train_model)
+
+x_test_accuracy <- titanic_split$test %>%
+  as_tibble() %>%
+  add_predictions(train_model) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
+```
+
+This interactive model generates an error rate of `r formatC(mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`%. We could compare this error rate to alternative classification models, either other logistic regression models (using different formulas) or a tree-based method.
+
 ## Drawbacks to validation sets
 
 There are two main problems with validation sets:
@@ -177,10 +176,8 @@ There are two main problems with validation sets:
     ```{r auto_variable_mse}
     mse_variable <- function(Auto){
       auto_split <- resample_partition(Auto, c(test = 0.5, train = 0.5))
-      auto_train <- auto_split$train %>%
-        tbl_df()
-      auto_test <- auto_split$test %>%
-        tbl_df()
+      auto_train <- as_tibble(auto_split$train)
+      auto_test <- as_tibble(auto_split$test)
       
       results <- data_frame(terms = 1:5,
                             model = map(terms, auto_poly_glm),
@@ -286,7 +283,7 @@ titanic_mse <- map2_dbl(titanic_models, titanic_loocv$test, mse.glm)
 mean(titanic_mse, na.rm = TRUE)
 ```
 
-In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(mean(titanic_mse, na.rm = TRUE) * 100, digits = 3)`% error rate, or `r formatC((1 - mean(titanic_mse, na.rm = TRUE)) * 100, digits = 3)`%. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
+In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(mean(titanic_mse, na.rm = TRUE) * 100, digits = 3)`% error rate. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
 
 ## Exercise: LOOCV in linear regression
 
@@ -474,300 +471,6 @@ Not a large difference from the LOOCV approach, but it take much less time to co
     
       </p>
     </details>
-
-
-
-# The bootstrap
-
-The **bootstrap** is a different resampling-based method for quantifying uncertainty associated with a given estimator or statistical method. It is extremely flexible and can be applied to virtually any statistical method.
-
-## Sampling with replacement
-
-Sampling with replacement allows us to potentially draw the same observation multiple times, and ignore other observations entirely.
-
-```{r sim-sample-replace}
-rerun(10, sample.int(10, replace = TRUE)) %>%
-  unlist %>%
-  matrix(ncol = 10, byrow = TRUE)
-```
-
-Here I've drawn 10 random samples with replacement from the vector $`r 1:10`$. Each row contains a different sample. Notice how some rows contain multiples of the same values and exclude others entirely. Compare this to **sampling without replacement**:
-
-```{r sim-sample-noreplace}
-rerun(10, sample.int(10, replace = FALSE)) %>%
-  unlist %>%
-  matrix(ncol = 10, byrow = TRUE)
-```
-
-Sampling without replacement doesn't allow you to draw an observation more than once and would produce the exact same sample every time, just in a different order.
-
-## Why use the bootstrap?
-
-Statistical learning methods are frequently used to draw inferences about a population. Since you cannot directly measure the entire population^[Exception - [the Census](http://www.census.gov/2010census/).], you take a sample and ask a question of it instead. But how do you know your sample answer is close to the population answer? There are two approaches you can take:
-
-1. Make **assumptions** about the shape of the population.
-1. Use the **information in the sample** to learn about it.
-
-Suppose you decide to make assumptions, e.g. that the sample is distributed normally or [Bernoulli](https://en.wikipedia.org/wiki/Bernoulli_distribution) or some other probability distribution. You could learn about how much the answer to your question varies based on the specific sample drawn by repeatedly generating samples of the same size and asking them the same question. If you have a computaionally convenient assumption (such as the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem)), you may even be able to bypass the resampling step and use a known formula to estimate your confidence in the original answer.
-
-Provided you are happy to make the assumptions, this seems like a good idea. If you are not willing to make the assumption, you could instead take the sample you have and sample from it. You can do this because the sample you have **is also a population**, just a very small and discrete one. It is identical to the histogram of your data. Sampling with replacement merely allows you to treat the sample like it's a population and sample from it in a way that reflects its shape.
-
-This is a reasonable thing to do for a couple reasons. First, it's the only information you have about the population. Second, randomly chosen samples should look quite similar to the population from which they came, so as long as you drew a random sample it is likely that your's is also similar.
-
-### Estimating the accuracy of a statistic of interest
-
-Suppose you want to know how often Americans eat ice cream in a given month.
-
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Rockyroadicecream.jpg/800px-Rockyroadicecream.jpg)
-
-We decide to estimate this by tracking a sample of 1000 Americans and counting how many times they eat ice cream over the course of a month.
-
-```{r ice-sim}
-# simulate the sample
-set.seed(1234)
-lambda <- 5
-n_obs <- 1000
-ice <- data_frame(sim = rpois(n_obs, lambda = lambda))
-
-ggplot(ice, aes(sim)) +
-  geom_histogram(binwidth = 1)
-```
-
-The mean of this sample is `r mean(ice$sim)`, which we will treat as the population mean $\mu$. Remember that in the real world, we do not know $\mu$ because we have not observed all members of the population. Instead, we use the sample to estimate $\hat{\mu}$ on the assumption that the sample mean approximates the true mean.
-
-The [Poisson distribution](https://en.wikipedia.org/wiki/Poisson_distribution) is the most likely population distribution as it describes the count of events over time. The probability mass function of the Poisson distribution is
-
-$$P(k) = \frac{\lambda^{k} e^{-k}}{k!}$$
-
-where $\lambda$ is the event rate (average number of events per interval), $e$ is Euler's number, $k$ is an integer with range $[0, \infty]$, and $k!$ is the factorial of $k$. The mean $\mu$ and variance $\sigma$ of a Poisson distribution is defined as $\lambda$.
-
-Because we are estimating $\mu$ from a sample, we should also estimate the **standard error** of the sample mean. This is necessary because any random sample drawn from a population will not exactly reproduce the population. We need to account for sampling error by estimating how much our sample mean $\hat{\mu}$ might differ from the true mean $\mu$.
-
-The distribution of the mean of a set of samples is approximately [normal](https://en.wikipedia.org/wiki/Normal_distribution).^[As defined by the [Central Limit Theorem](https://en.wikipedia.org/wiki/Central_limit_theorem).] Therefore the standard error of the sample mean from a Poisson distribution is
-
-$$\sqrt{\frac{\lambda}{n}}$$
-
-```{r ice-samp-mean}
-lambda_samp <- mean(ice$sim)
-
-(sem <- sqrt(lambda_samp / n_obs))
-```
-
-The standard error of the sample mean is $`r sem`$. This is a good estimate **as long as the data generating process actually followed a Poisson distribution**. The Poisson distribution requires [several assumptions](https://en.wikipedia.org/wiki/Poisson_distribution#Assumptions:_When_is_the_Poisson_distribution_an_appropriate_model.3F). If any of these assumptions are violated, then the formula for estimating the standard error of the sample mean $\lambda$ will not be accurate.
-
-In that situation, we can use the bootstrap to estimate the standard error without making any distributional assumptions. In this approach, we draw $B$ samples with replacement from the original sample. To estimate the population mean $\mu$ we calculate the mean of the bootstrapped sample means $\hat{\mu}_1, \hat{\mu}_2, \dots, \hat{\mu}_B$. To estimate the standard error of the sampling mean $\hat{\mu}$ we use the formula
-
-$$SE_{B}(\hat{\mu}) = \sqrt{\frac{1}{B-1} \sum_{r = 1}^{B} \left( \hat{\mu}_r - \frac{1}{B} \sum_{r' = 1}^{B} \hat{\mu}_{r'} \right)^2}$$
-
-What this boils down to is calculating the **standard deviation** of all the bootstrapped sample means. That gives us our standard error.
-
-Let's bootstrap our standard error of the mean for our simulated ice cream data. We'll use $B = 1000$ to produce 1000 bootstrapped estimates of the mean, then calculate the standard deviation of them:
-
-```{r ice-boot}
-ice_boot <- ice %>%
-  modelr::bootstrap(1000) %>%
-  mutate(mean = map_dbl(strap, ~ mean(as_tibble(.)$sim, na.rm = TRUE)))
-boot_sem <- sd(ice_boot$mean)
-```
-
-```{r ice-boot-plot}
-ggplot(ice_boot, aes(mean)) +
-  geom_histogram(binwidth = .01) +
-  geom_vline(aes(xintercept = lambda,
-                 color = "Population mean"), size = 1) +
-  geom_vline(aes(xintercept = lambda_samp,
-                 color = "Sample mean"), size = 1) +
-  geom_vline(aes(xintercept = mean(ice_boot$mean),
-                 color = "Bootstrapped mean"), size = 1) +
-  geom_vline(aes(xintercept = mean(ice_boot$mean) + 1.96 * boot_sem,
-                 color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = mean(ice_boot$mean) - 1.96 * boot_sem,
-                 color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = lambda_samp + 1.96 * sem,
-                 color = "Sample mean"),
-             linetype = 2) +
-  geom_vline(aes(xintercept = lambda_samp - 1.96 * sem,
-                 color = "Sample mean"),
-             linetype = 2) +
-  scale_color_manual(name = NULL, breaks = c("Population mean",
-                                             "Sample mean",
-                                             "Bootstrapped mean"),
-                     values = c("blue", "green", "orange")) +
-  labs(x = "Bootstrapped sample mean",
-       y = "Count")
-```
-
-The bootstrap estimate of the standard error of the sample mean is `r boot_sem`. Compared to the original estimate of `r sem`, this is slightly closer to the defined population mean, but not by much. Why bother using the bootstrap? Because the bootstrap estimator will be more accurate **when the distributional assumptions are not met**.
-
-Let's simulate the results once again, but draw the observations from a combination of the Poisson distribution and [uniform distribution](https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)).
-
-```{r ice-sim2}
-# simulate the sample
-set.seed(113)
-ice2 <- data_frame(sim = c(rpois(n_obs / 2, lambda = lambda),
-                           round(runif(n_obs / 2, min = 0, max = 10))))
-
-# plot the sample distribution
-ggplot(ice2, aes(sim)) +
-  geom_histogram(binwidth = 1)
-
-# calculate sample mean and standard error
-lambda2_samp <- mean(ice2$sim)
-sem2 <- sqrt(lambda2_samp / n_obs)
-
-# calculate the bootstrap
-ice2_boot <- ice2 %>%
-  modelr::bootstrap(1000) %>%
-  mutate(mean = map_dbl(strap, ~ mean(as_tibble(.)$sim, na.rm = TRUE)))
-boot2_sem <- sd(ice2_boot$mean)
-
-# plot the bootstrapped distribution
-ggplot(ice2_boot, aes(mean)) +
-  geom_histogram(binwidth = .01) +
-  geom_vline(aes(xintercept = lambda,
-                 color = "Population mean"), size = 1) +
-  geom_vline(aes(xintercept = lambda2_samp,
-                 color = "Sample mean"), size = 1) +
-  geom_vline(aes(xintercept = mean(ice2_boot$mean),
-                 color = "Bootstrapped mean"), size = 1) +
-  geom_vline(aes(xintercept = mean(ice2_boot$mean) + 1.96 * boot2_sem,
-                 color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = mean(ice2_boot$mean) - 1.96 * boot2_sem,
-                 color = "Bootstrapped mean"), linetype = 2) +
-  geom_vline(aes(xintercept = lambda2_samp + 1.96 * sem2,
-                 color = "Sample mean"),
-             linetype = 2) +
-  geom_vline(aes(xintercept = lambda2_samp - 1.96 * sem2,
-                 color = "Sample mean"),
-             linetype = 2) +
-  scale_color_manual(name = NULL, breaks = c("Population mean",
-                                             "Sample mean",
-                                             "Bootstrapped mean"),
-                     values = c("blue", "green", "orange")) +
-  labs(x = "Bootstrapped sample mean",
-       y = "Count")
-```
-
-The population mean $\mu$ is still defined as 5, but now look what happens to the standard errors of the estimates. The estimated means are identical under the formula-based or bootstrapped approaches (`r lambda2_samp`), however the standard error for the sample-based approach is $`r sem2`$, compared to `r boot2_sem`. Because the bootstrap approach generates its estimate of the standard error directly from the data, the bootstrapped 95% confidence interval includes the population mean. However the 95% confidence interval under the formula-based method does not include the population mean. In this case we are better off using the bootstrapped standard error rather than using the formula for the Poisson distribution.
-
-### Estimating the accuracy of a linear regression model
-
-In a linear regression model, the standard errors are statistical estimates of the average amount that the estimated parameters $\hat{\beta}$ differ from the true population parameters $\beta$. The formula for estimating standard errors for a linear regression model is:
-
-$$\widehat{s.e.}(\mathbf{\hat{\beta}}_j) = \sqrt{\sigma^{2} (\mathbf{X}^{T}\mathbf{X})^{-1}_{jj}}$$
-
-More simply this is the square root of the diagonal of the [variance-covariance matrix](https://en.wikipedia.org/wiki/Ordinary_least_squares#Finite_sample_properties). For the formula to hold, we make certain assumptions, including that our estimate of the variance $\sigma^2$ is accurate and that any variability in the model after we account for $\mathbf{X}$ is the result of the errors $\epsilon$. If these assumptions are wrong, then our estimates of the standard errors will also be wrong.
-
-Let's revisit our horsepower and highway mileage linear model.
-
-```{r auto-boot}
-# plot the data and model
-ggplot(Auto, aes(horsepower, mpg)) +
-  geom_point() +
-  geom_smooth(method = "lm")
-
-# traditional parameter estimates and standard errors
-auto_lm <- lm(mpg ~ horsepower, data = Auto)
-tidy(auto_lm)
-
-# bootstrapped estimates of the parameter estimates and standard errors
-auto_boot <- Auto %>%
-  modelr::bootstrap(1000) %>%
-  mutate(model = map(strap, ~ lm(mpg ~ horsepower, data = .)),
-         coef = map(model, tidy))
-
-auto_boot %>%
-  unnest(coef) %>%
-  group_by(term) %>%
-  summarize(est.boot = mean(estimate),
-            se.boot = sd(estimate, na.rm = TRUE))
-```
-
-The bootstrapped estimates of parameters are virtually identical, however the standard errors on the bootstrap estimates are slightly larger. This is because they do not rely on any distributional assumptions, whereas the traditional estimates do. Recall from the [demonstration above](#regression) that the relationship between horsepower and mpg is non-linear, so the residuals from a linear model will be inflated, and the residuals are used to estimate $\sigma^2$. The bootstrap method is not biased by these assumptions and gives us a more robust estimate.
-
-If we compare the traditional and bootstrap estimates for the polynomial regression model, we find more similarity in our results:
-
-```{r auto-boot-sq}
-# traditional parameter estimates and standard errors
-auto2_lm <- lm(mpg ~ horsepower + I(horsepower^2), data = Auto)
-tidy(auto2_lm)
-
-# bootstrapped estimates of the parameter estimates and standard errors
-auto2_boot <- Auto %>%
-  modelr::bootstrap(1000) %>%
-  mutate(model = map(strap, ~ lm(mpg ~ horsepower + I(horsepower^2),
-                                 data = .)),
-         coef = map(model, tidy))
-
-auto2_boot %>%
-  unnest(coef) %>%
-  group_by(term) %>%
-  summarize(est.boot = mean(estimate),
-            se.boot = sd(estimate, na.rm = TRUE))
-```
-
-## Exercise: bootstrap standard errors of regression parameters
-
-1. Estimate 1000 bootstrapped standard errors of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](stat002_linear_models.html#exercise:_linear_regression_with_scorecard) and compare them to the original estimates (i.e. the original model with no cross-validation or separate training/test sets).
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-boot}
-    # original model
-    scorecard_lm <- lm(cost ~ admrate, data = scorecard)
-    tidy(scorecard_lm)
-    
-    # bootstrapped model
-    scorecard_boot <- scorecard %>%
-      modelr::bootstrap(1000) %>%
-      mutate(model = map(strap, ~ lm(cost ~ admrate, data = .)),
-             coef = map(model, tidy))
-    
-    scorecard_boot %>%
-      unnest(coef) %>%
-      group_by(term) %>%
-      summarize(est.boot = mean(estimate),
-                se.boot = sd(estimate, na.rm = TRUE))
-    ```
-    
-      </p>
-    </details>
-
-1. Estimate 1000 bootstrapped standard errors of a [logistic regression model of voter turnout](stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health) using all available predictors and compare them to the original estimates (i.e. the original model with no cross-validation or separate training/test sets).
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r mh-boot}
-    # basic model
-    mh_glm <- glm(vote96 ~ mhealth, data = mental_health, family = binomial)
-    tidy(mh_glm)
-    
-    # bootstrapped model
-    mh_boot <- mental_health %>%
-      modelr::bootstrap(1000) %>%
-      mutate(model = map(strap, ~ glm(vote96 ~ mhealth, data = .,
-                                      family = binomial)),
-             coef = map(model, tidy))
-    
-    mh_boot %>%
-      unnest(coef) %>%
-      group_by(term) %>%
-      summarize(est.boot = mean(estimate),
-                se.boot = sd(estimate, na.rm = TRUE))
-    ```
-    
-      </p>
-    </details>
-
-# Acknowledgements {.toc-ignore}
-
-* Bootstrap standard error of the mean example derived from [A gentle introduction to bootstrapping
-](http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html).
-* "Why use the bootstrap?" reproduced from [Explaining to laypeople why bootstrapping works - Stack Overflow](http://stats.stackexchange.com/a/26093), licensed under the [CC BY-SA 3.0 Creative Commons License](https://creativecommons.org/licenses/by-sa/3.0/).
 
 # Session Info {.toc-ignore}
 

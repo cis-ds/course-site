@@ -877,78 +877,25 @@ titanic_age_sex_x</code></pre></div>
 <p>You may think then that it makes sense to throw in interaction terms (and quadratic terms) willy-nilly to all your regression models since we never know for sure if the relationship is strictly linear and independent. You could do that, but once you start adding more predictors (3, 4, 5, etc.) that will get very difficult to keep track of (five-way interactions are extremely difficult to interpret - even three-way get to be problematic). The best advice is to use theory and your domain knowledge as your guide. Do you have a reason to believe the relationship should be interactive? If so, test for it. If not, don’t.</p>
 </div>
 </div>
-<div id="evaluating-model-accuracy" class="section level1">
-<h1>Evaluating model accuracy</h1>
-<div id="accuracy-of-predictions" class="section level2">
-<h2>Accuracy of predictions</h2>
-<p>How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how accurate are the predictions? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a <span class="math inline">\(.5\)</span> cut-point), then see what percentage of predictions were the same as the actual survivals?</p>
+<div id="comparing-models" class="section level1">
+<h1>Comparing models</h1>
+<p>How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a <span class="math inline">\(.5\)</span> cut-point), then see what percentage of predictions were the same as the actual survivals?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">age_accuracy &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">add_predictions</span>(survive_age) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-<span class="kw">mean</span>(age_accuracy<span class="op">$</span>Survived <span class="op">==</span><span class="st"> </span>age_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## [1] 0.5938375</code></pre>
-<p><span class="math inline">\(59.4\%\)</span> of the predictions based on age were correct. If we flipped a coin to make our predictions, we’d be right about 50% of the time. So this is a decent improvement. Of course, we also know that <span class="math inline">\(61.6\%\)</span> of passengers died in the sinking, so if we just guessed that every passenger died we’d still be right more often than our predictive model. Maybe this model isn’t so great after all. What about our interactive age and gender model?</p>
+<span class="kw">mean</span>(age_accuracy<span class="op">$</span>Survived <span class="op">!=</span><span class="st"> </span>age_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## [1] 0.4061625</code></pre>
+<p><span class="math inline">\(40.6\%\)</span> of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we’d be right about 50% of the time. So this is a decent improvement. Of course, we also know that <span class="math inline">\(61.6\%\)</span> of passengers died in the sinking, so if we just guessed that every passenger died we’d still make fewer mistakes than our predictive model. Maybe this model isn’t so great after all. What about our interactive age and gender model?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_accuracy &lt;-<span class="st"> </span>titanic <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">add_predictions</span>(survive_age_woman_x) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-<span class="kw">mean</span>(x_accuracy<span class="op">$</span>Survived <span class="op">==</span><span class="st"> </span>x_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## [1] 0.780112</code></pre>
-<p>This model is much better. Just by knowing an individual’s age and gender, we can predict with 78% whether he/she lives or dies.</p>
-</div>
-<div id="trainingtest-sets" class="section level2">
-<h2>Training/test sets</h2>
-<p>One issue with the previous approach is that we are fitting our model to the data, then using the same data to assess the model’s accuracy. This isn’t very appropriate because we will bias our model towards fitting the data that we have. <strong>We may fit our function to create the results we expect or desire, rather than the “true” function</strong>.</p>
-<p>Instead, we can split our data into distinct <strong>training</strong> and <strong>test</strong> sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the test set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.</p>
-<p>Let’s use this workflow instead. We can use <code>resample_partition()</code> from <code>modelr</code> to split <code>titanic</code> into a training and test set (we’ll allocate 70% of observations to the training set and 30% to the test set), reproduce the interactive model using only the training data, then make predictions on the test set and compare them to the actual, known survivals and deaths.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(titanic, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))
-<span class="kw">map</span>(titanic_split, dim)</code></pre></div>
-<pre><code>## $test
-## [1] 267  12
-## 
-## $train
-## [1] 624  12</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train_model &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age <span class="op">*</span><span class="st"> </span>Sex, <span class="dt">data =</span> titanic_split<span class="op">$</span>train,
-                   <span class="dt">family =</span> binomial)
-<span class="kw">summary</span>(train_model)</code></pre></div>
-<pre><code>## 
-## Call:
-## glm(formula = Survived ~ Age * Sex, family = binomial, data = titanic_split$train)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.8839  -0.7102  -0.5592   0.7408   2.1685  
-## 
-## Coefficients:
-##             Estimate Std. Error z value Pr(&gt;|z|)   
-## (Intercept)  0.68045    0.38278   1.778  0.07546 . 
-## Age          0.01817    0.01308   1.389  0.16492   
-## Sexmale     -1.29635    0.50497  -2.567  0.01025 * 
-## Age:Sexmale -0.04454    0.01688  -2.639  0.00831 **
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 664.23  on 492  degrees of freedom
-## Residual deviance: 501.16  on 489  degrees of freedom
-##   (131 observations deleted due to missingness)
-## AIC: 509.16
-## 
-## Number of Fisher Scoring iterations: 4</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_test_accuracy &lt;-<span class="st"> </span>titanic_split<span class="op">$</span>test <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">add_predictions</span>(train_model) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
-         <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
-
-<span class="kw">mean</span>(x_test_accuracy<span class="op">$</span>Survived <span class="op">==</span><span class="st"> </span>x_test_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## [1] 0.7647059</code></pre>
-<p>This is reassuring. <span class="math inline">\(76.5\%\)</span> of the test set observations were accurately predicted. Remember, we explicitly set this up so that the model never saw the test observations, and they never factored into our decisionmaking process when we generated the model. This tells us that we did a pretty good job estimating the functional form <span class="math inline">\(f\)</span> for the entire dataset, not just the training set.</p>
-</div>
+<span class="kw">mean</span>(x_accuracy<span class="op">$</span>Survived <span class="op">!=</span><span class="st"> </span>x_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## [1] 0.219888</code></pre>
+<p>This model is much better. Just by knowing an individual’s age and gender, our model is incorrect only 22% of the time.</p>
 </div>
 <div id="exercise-logistic-regression-with-mental_health" class="section level1">
 <h1>Exercise: logistic regression with <code>mental_health</code></h1>
@@ -971,25 +918,18 @@ mental_health</code></pre></div>
 ## 10      0    34     7      1       2
 ## # ... with 1,307 more rows</code></pre>
 <ol style="list-style-type: decimal">
-<li><p>Split the data into a training and test set (70/30%).</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mh_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(mental_health, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))</code></pre></div>
-</p>
-<p></details></p></li>
-<li><p>Estimate a logistic regression model of voter turnout using the training set and only <code>mhealth</code> as the predictor. Estimate predicted probabilities and plot the logistic regression line using <code>ggplot</code>.</p>
+<li><p>Estimate a logistic regression model of voter turnout with <code>mhealth</code> as the predictor. Estimate predicted probabilities and plot the logistic regression line using <code>ggplot</code>.</p>
 <details> <summary>Click for the solution</summary>
 <p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
-mh_model &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 <span class="op">~</span><span class="st"> </span>mhealth, <span class="dt">data =</span> mh_split<span class="op">$</span>train,
+mh_model &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 <span class="op">~</span><span class="st"> </span>mhealth, <span class="dt">data =</span> mental_health,
                 <span class="dt">family =</span> binomial)
 <span class="kw">tidy</span>(mh_model)</code></pre></div>
 <pre><code>##          term   estimate  std.error statistic      p.value
-## 1 (Intercept)  1.1751189 0.10555986 11.132252 8.739935e-29
-## 2     mhealth -0.1643858 0.02676128 -6.142672 8.114469e-10</code></pre>
+## 1 (Intercept)  1.2225348 0.08901013 13.734782 6.284476e-43
+## 2     mhealth -0.1766612 0.02217096 -7.968135 1.610862e-15</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate predicted probabilities</span>
-mh_health &lt;-<span class="st"> </span>mh_split<span class="op">$</span>train <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
+mh_health &lt;-<span class="st"> </span>mental_health <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">data_grid</span>(mhealth) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">add_predictions</span>(mh_model) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred))
@@ -997,16 +937,16 @@ mh_health</code></pre></div>
 <pre><code>## # A tibble: 10 x 2
 ##    mhealth      pred
 ##      &lt;dbl&gt;     &lt;dbl&gt;
-##  1       0 0.7640690
-##  2       1 0.7331636
-##  3       2 0.6998003
-##  4       3 0.6641763
-##  5       4 0.6265807
-##  6       5 0.5873909
-##  7       6 0.5470613
-##  8       7 0.5061043
-##  9       8 0.4650652
-## 10       9 0.4244936</code></pre>
+##  1       0 0.7725093
+##  2       1 0.7399817
+##  3       2 0.7045818
+##  4       3 0.6665342
+##  5       4 0.6261862
+##  6       5 0.5840032
+##  7       6 0.5405526
+##  8       7 0.4964767
+##  9       8 0.4524554
+## 10       9 0.4091655</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># graph the line</span>
 <span class="kw">ggplot</span>(mh_health, <span class="kw">aes</span>(mhealth, pred)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
@@ -1016,44 +956,44 @@ mh_health</code></pre></div>
 <img src="stat003_logistic_regression_files/figure-html/mh-model-1.png" width="672" />
 </p>
 <p></details></p></li>
-<li><p>Calculate the accuracy rate of the model using the test set.</p>
+<li><p>Calculate the error rate of the model.</p>
 <details> <summary>Click for the solution</summary>
 <p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mh_model_accuracy &lt;-<span class="st"> </span>mh_split<span class="op">$</span>test <span class="op">%&gt;%</span>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mh_model_accuracy &lt;-<span class="st"> </span>mental_health <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">add_predictions</span>(mh_model) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-(mh_model_err &lt;-<span class="st"> </span><span class="kw">mean</span>(mh_model_accuracy<span class="op">$</span>vote96 <span class="op">==</span><span class="st"> </span>mh_model_accuracy<span class="op">$</span>pred,
+(mh_model_err &lt;-<span class="st"> </span><span class="kw">mean</span>(mh_model_accuracy<span class="op">$</span>vote96 <span class="op">!=</span><span class="st"> </span>mh_model_accuracy<span class="op">$</span>pred,
                       <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
-<pre><code>## [1] 0.6810127</code></pre>
+<pre><code>## [1] 0.317388</code></pre>
 </p>
 <p></details></p></li>
-<li><p>Estimate a second logistic regression model of voter turnout using the training set and all the predictors. Calculate it’s accuracy rate using the test set, and compare it to the original model. Which is better?</p>
+<li><p>Estimate a second logistic regression model of voter turnout using the training set and all the predictors. Calculate it’s error rate using the test set, and compare it to the original model. Which is better?</p>
 <details> <summary>Click for the solution</summary>
 <p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate model</span>
-mh_model_all &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> mh_split<span class="op">$</span>train,
+mh_model_all &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> mental_health,
                 <span class="dt">family =</span> binomial)
 <span class="kw">tidy</span>(mh_model_all)</code></pre></div>
-<pre><code>##          term     estimate   std.error   statistic      p.value
-## 1 (Intercept) -4.699913831 0.576335197 -8.15482702 3.496800e-16
-## 2         age  0.049455788 0.005548328  8.91363810 4.938483e-19
-## 3        educ  0.270743081 0.032428651  8.34888513 6.891031e-17
-## 4      female  0.005247044 0.156142168  0.03360427 9.731927e-01
-## 5     mhealth -0.109861464 0.029476254 -3.72711756 1.936821e-04</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate accuracy rate on test set</span>
-mh_model_all_accuracy &lt;-<span class="st"> </span>mh_split<span class="op">$</span>test <span class="op">%&gt;%</span>
+<pre><code>##          term    estimate   std.error  statistic      p.value
+## 1 (Intercept) -4.25770320 0.469355720 -9.0713781 1.175211e-19
+## 2         age  0.04460727 0.004459019 10.0038302 1.466142e-23
+## 3        educ  0.25764980 0.026574296  9.6954513 3.152409e-22
+## 4      female -0.03882557 0.130087258 -0.2984579 7.653537e-01
+## 5     mhealth -0.11836876 0.024149285 -4.9015430 9.508685e-07</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate error rate</span>
+mh_model_all_accuracy &lt;-<span class="st"> </span>mental_health <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">add_predictions</span>(mh_model_all) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-(mh_model_all_err &lt;-<span class="st"> </span><span class="kw">mean</span>(mh_model_all_accuracy<span class="op">$</span>vote96 <span class="op">==</span><span class="st"> </span>mh_model_all_accuracy<span class="op">$</span>pred,
+(mh_model_all_err &lt;-<span class="st"> </span><span class="kw">mean</span>(mh_model_all_accuracy<span class="op">$</span>vote96 <span class="op">!=</span><span class="st"> </span>mh_model_all_accuracy<span class="op">$</span>pred,
                           <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
-<pre><code>## [1] 0.7037975</code></pre>
-The model with all predictors has a 2.28% higher accuracy rate than predictions based only on mental health.
+<pre><code>## [1] 0.2786636</code></pre>
+The model with all predictors has a 3.87% lower error rate than predictions based only on mental health.
 </p>
 <p></details></p></li>
 </ol>
@@ -1068,25 +1008,26 @@ The model with all predictors has a 2.28% higher accuracy rate than predictions 
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-10                  
+##  date     2017-10-24                  
 ## 
 ##  package    * version    date       source                              
 ##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
 ##  backports    1.1.0      2017-05-22 CRAN (R 3.4.0)                      
 ##  base       * 3.4.1      2017-07-07 local                               
 ##  bindr        0.1        2016-11-13 CRAN (R 3.4.0)                      
-##  bindrcpp     0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  bindrcpp   * 0.2        2017-06-17 CRAN (R 3.4.0)                      
 ##  boxes        0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
 ##  broom      * 0.4.2      2017-08-09 local                               
 ##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                      
 ##  clisymbols   1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.4.1)                      
 ##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                      
 ##  compiler     3.4.1      2017-07-07 local                               
-##  crayon       1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  crayon       1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab) 
 ##  datasets   * 3.4.1      2017-07-07 local                               
-##  devtools     1.13.2     2017-06-02 CRAN (R 3.4.0)                      
+##  devtools     1.13.3     2017-08-02 CRAN (R 3.4.1)                      
 ##  digest       0.6.12     2017-01-27 CRAN (R 3.4.0)                      
-##  dplyr      * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
+##  dplyr      * 0.7.4.9000 2017-10-03 Github (tidyverse/dplyr@1a0730a)    
 ##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                      
 ##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
 ##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.1)                      
@@ -1099,9 +1040,10 @@ The model with all predictors has a 2.28% higher accuracy rate than predictions 
 ##  haven        1.1.0      2017-07-09 CRAN (R 3.4.1)                      
 ##  hms          0.3        2016-11-22 CRAN (R 3.4.0)                      
 ##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                      
-##  httr         1.2.1      2016-07-03 CRAN (R 3.4.0)                      
+##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                      
 ##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                      
-##  knitr        1.16       2017-05-18 CRAN (R 3.4.0)                      
+##  knitr        1.17       2017-08-10 cran (@1.17)                        
+##  labeling     0.3        2014-08-23 CRAN (R 3.4.0)                      
 ##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.1)                      
 ##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
 ##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
@@ -1109,20 +1051,21 @@ The model with all predictors has a 2.28% higher accuracy rate than predictions 
 ##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
 ##  methods    * 3.4.1      2017-07-07 local                               
 ##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
-##  modelr     * 0.1.1      2017-07-24 CRAN (R 3.4.1)                      
+##  modelr     * 0.1.1      2017-08-10 local                               
 ##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
 ##  nlme         3.1-131    2017-02-06 CRAN (R 3.4.1)                      
 ##  parallel     3.4.1      2017-07-07 local                               
 ##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                      
 ##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                      
 ##  psych        1.7.5      2017-05-03 CRAN (R 3.4.1)                      
-##  purrr      * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
+##  purrr      * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
 ##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                      
-##  Rcpp         0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  rcfss      * 0.1.5      2017-07-31 local                               
+##  Rcpp         0.12.13    2017-09-28 cran (@0.12.13)                     
 ##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                      
 ##  reshape2     1.4.2      2016-10-22 CRAN (R 3.4.0)                      
-##  rlang        0.1.1      2017-05-18 CRAN (R 3.4.0)                      
+##  rlang        0.1.2      2017-08-09 CRAN (R 3.4.1)                      
 ##  rmarkdown    1.6        2017-06-15 CRAN (R 3.4.0)                      
 ##  rprojroot    1.2        2017-01-16 CRAN (R 3.4.0)                      
 ##  rstudioapi   0.6        2016-06-27 CRAN (R 3.4.0)                      
@@ -1131,9 +1074,10 @@ The model with all predictors has a 2.28% higher accuracy rate than predictions 
 ##  stats      * 3.4.1      2017-07-07 local                               
 ##  stringi      1.1.5      2017-04-07 CRAN (R 3.4.0)                      
 ##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
-##  tibble     * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
-##  tidyr      * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
+##  tibble     * 1.3.4      2017-08-22 CRAN (R 3.4.1)                      
+##  tidyr      * 0.7.0      2017-08-16 CRAN (R 3.4.1)                      
 ##  tidyverse  * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
+##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.4.0)                      
 ##  tools        3.4.1      2017-07-07 local                               
 ##  utils      * 3.4.1      2017-07-07 local                               
 ##  withr        2.0.0      2017-07-28 CRAN (R 3.4.1)                      

@@ -356,13 +356,112 @@ div.tocify {
 </div>
 <div id="validation-set" class="section level1">
 <h1>Validation set</h1>
-<p>We have already seen the <strong>validation set</strong> approach in the <a href="stat003_logistic_regression.html">previous class</a>. By splitting our data into a <strong>training set</strong> and <strong>test set</strong>, we can evaluate the model’s effectiveness at predicting the response variable (in the context of either regression or classification) independently of the data used to estimate the model in the first place.</p>
+<p>One issue with using the same data to both fit and evaluate our model is that we will bias our model towards fitting the data that we have. We may fit our function to create the results we expect or desire, rather than the “true” function. Instead, we can split our data into distinct <strong>training</strong> and <strong>test</strong> sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the test set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.</p>
+<div id="regression" class="section level2">
+<h2>Regression</h2>
+<p>Here we will examine the relationship between horsepower and car mileage in the <code>Auto</code> dataset (found in <code>library(ISLR)</code>):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ISLR)
+
+Auto &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(Auto)
+Auto</code></pre></div>
+<pre><code>## # A tibble: 392 x 9
+##      mpg cylinders displacement horsepower weight acceleration  year
+##  * &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt; &lt;dbl&gt;
+##  1    18         8          307        130   3504         12.0    70
+##  2    15         8          350        165   3693         11.5    70
+##  3    18         8          318        150   3436         11.0    70
+##  4    16         8          304        150   3433         12.0    70
+##  5    17         8          302        140   3449         10.5    70
+##  6    15         8          429        198   4341         10.0    70
+##  7    14         8          454        220   4354          9.0    70
+##  8    14         8          440        215   4312          8.5    70
+##  9    14         8          455        225   4425         10.0    70
+## 10    15         8          390        190   3850          8.5    70
+## # ... with 382 more rows, and 2 more variables: origin &lt;dbl&gt;, name &lt;fctr&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/auto_plot-1.png" width="672" /></p>
+<p>The relationship does not appear to be strictly linear:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/auto_plot_lm-1.png" width="672" /></p>
+<p>Perhaps by adding <a href="stat003_logistic_regression.html#quadratic_terms">quadratic terms</a> to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated <code>mpg</code>. To calculate the accuracy of the model, we will use <strong>Mean Squared Error</strong> (MSE), defined as</p>
+<p><span class="math display">\[MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(y_i =\)</span> the observed response value for the <span class="math inline">\(i\)</span>th observation</li>
+<li><span class="math inline">\(\hat{f}(x_i) =\)</span> the predicted response value for the <span class="math inline">\(i\)</span>th observation given by <span class="math inline">\(\hat{f}\)</span></li>
+<li><span class="math inline">\(n =\)</span> the total number of observations</li>
+</ul>
+<p>Boo math! Actually this is pretty intuitive. All we’re doing is for each observation, calculating the difference between the actual and predicted values for <span class="math inline">\(y\)</span>, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.</p>
+<p>For this task, first we can use <code>modelr::resample_partition()</code> to create training and test sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.</p>
+<ul>
+<li>I use <code>set.seed()</code> in the beginning - whenever you are writing a script that involves randomization (here, random subsetting of the data), always set the seed at the beginning of the script. This ensures the results can be reproduced precisely.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
+<li>I also use the <code>glm()</code> function rather than <code>lm()</code> - if you don’t change the <code>family</code> parameter, the results of <code>lm()</code> and <code>glm()</code> are exactly the same.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1234</span>)
+
+auto_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(Auto, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.5</span>, <span class="dt">train =</span> <span class="fl">0.5</span>))
+auto_train &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(auto_split<span class="op">$</span>train)
+auto_test &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(auto_split<span class="op">$</span>test)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_lm &lt;-<span class="st"> </span><span class="kw">glm</span>(mpg <span class="op">~</span><span class="st"> </span>horsepower, <span class="dt">data =</span> auto_train)
+<span class="kw">summary</span>(auto_lm)</code></pre></div>
+<pre><code>## 
+## Call:
+## glm(formula = mpg ~ horsepower, data = auto_train)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -12.892   -2.864   -0.545    2.793   13.298  
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 38.005404   0.921129   41.26   &lt;2e-16 ***
+## horsepower  -0.140459   0.007968  -17.63   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 20.48452)
+## 
+##     Null deviance: 10359.4  on 196  degrees of freedom
+## Residual deviance:  3994.5  on 195  degrees of freedom
+## AIC: 1157.9
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>To estimate the MSE for a single partition (i.e. for a training or test set), I wrote a special function <code>mse()</code>:<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mse &lt;-<span class="st"> </span><span class="cf">function</span>(model, data) {
+  x &lt;-<span class="st"> </span>modelr<span class="op">:::</span><span class="kw">residuals</span>(model, data)
+  <span class="kw">mean</span>(x <span class="op">^</span><span class="st"> </span><span class="dv">2</span>, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
+}</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mse</span>(auto_lm, auto_test)</code></pre></div>
+<pre><code>## [1] 28.57255</code></pre>
+<p>For a strictly linear model, the MSE for the test set is 28.57. How does this compare to a quadratic model? We can use the <code>poly()</code> function in conjunction with a <code>map()</code> iteration to estimate the MSE for a series of models with higher-order polynomial terms:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_poly_glm &lt;-<span class="st"> </span><span class="cf">function</span>(x){
+  <span class="kw">glm</span>(mpg <span class="op">~</span><span class="st"> </span><span class="kw">poly</span>(horsepower, x), <span class="dt">data =</span> auto_train)
+}
+
+auto_poly_results &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,
+                                <span class="dt">model =</span> <span class="kw">map</span>(terms, auto_poly_glm),
+                                <span class="dt">MSE =</span> <span class="kw">map_dbl</span>(model,
+                                              mse,
+                                              <span class="dt">data =</span> auto_test)
+)
+
+<span class="kw">ggplot</span>(auto_poly_results, <span class="kw">aes</span>(terms, MSE)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Comparing quadratic linear models&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;Using validation set&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Highest-order polynomial&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Mean Squared Error&quot;</span>)</code></pre></div>
+<p><img src="stat005_resampling_files/figure-html/mse_poly-1.png" width="672" /></p>
+<p>Based on the MSE for the validation (test) set, a polynomial model with a quadratic term (<span class="math inline">\(\text{horsepower}^2\)</span>) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.</p>
+</div>
 <div id="classification" class="section level2">
 <h2>Classification</h2>
-<p>Recall how we used this approach to evaluate the accuracy of our <a href="stat003_logistic_regression.html#interactive_terms">interactive model predicting survival during the sinking of the Titanic</a>.</p>
+<p>Recall our efforts to <a href="stat003_logistic_regression.html#interactive_terms">predict passenger survival during the sinking of the Titanic</a>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(titanic)
-titanic &lt;-<span class="st"> </span>titanic_train <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">as_tibble</span>()
+titanic &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(titanic_train)
 
 titanic <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">head</span>() <span class="op">%&gt;%</span>
@@ -499,156 +598,55 @@ titanic <span class="op">%&gt;%</span>
 ## AIC: 748.4
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">logit2prob &lt;-<span class="st"> </span><span class="cf">function</span>(x){
+<p>We can use the same validation set approach to evaluate the model’s accuracy. For classification models, instead of using MSE we examine the <strong>test error rate</strong>. That is, of all the predictions generated for the test set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is <span class="math inline">\(0%\)</span>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># function to convert log-odds to probabilities</span>
+logit2prob &lt;-<span class="st"> </span><span class="cf">function</span>(x){
   <span class="kw">exp</span>(x) <span class="op">/</span><span class="st"> </span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>(x))
 }</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(modelr)
-
-titanic_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(titanic, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(titanic, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.3</span>, <span class="dt">train =</span> <span class="fl">0.7</span>))
 <span class="kw">map</span>(titanic_split, dim)</code></pre></div>
 <pre><code>## $test
 ## [1] 267  12
 ## 
 ## $train
 ## [1] 624  12</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train_model &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age <span class="op">+</span><span class="st"> </span>Sex, <span class="dt">data =</span> titanic_split<span class="op">$</span>train,
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">train_model &lt;-<span class="st"> </span><span class="kw">glm</span>(Survived <span class="op">~</span><span class="st"> </span>Age <span class="op">*</span><span class="st"> </span>Sex, <span class="dt">data =</span> titanic_split<span class="op">$</span>train,
                    <span class="dt">family =</span> binomial)
 <span class="kw">summary</span>(train_model)</code></pre></div>
 <pre><code>## 
 ## Call:
-## glm(formula = Survived ~ Age + Sex, family = binomial, data = titanic_split$train)
+## glm(formula = Survived ~ Age * Sex, family = binomial, data = titanic_split$train)
 ## 
 ## Deviance Residuals: 
 ##     Min       1Q   Median       3Q      Max  
-## -1.7885  -0.6857  -0.6772   0.6837   1.8007  
+## -2.0027  -0.7056  -0.6274   0.6999   2.0394  
 ## 
 ## Coefficients:
-##              Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)  1.376270   0.284458   4.838 1.31e-06 ***
-## Age         -0.001307   0.007671  -0.170    0.865    
-## Sexmale     -2.672766   0.228740 -11.685  &lt; 2e-16 ***
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)  0.86045    0.38879   2.213 0.026886 *  
+## Age          0.01755    0.01307   1.343 0.179157    
+## Sexmale     -1.83123    0.50484  -3.627 0.000286 ***
+## Age:Sexmale -0.02974    0.01642  -1.812 0.070040 .  
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
 ##     Null deviance: 687.03  on 504  degrees of freedom
-## Residual deviance: 516.27  on 502  degrees of freedom
+## Residual deviance: 512.91  on 501  degrees of freedom
 ##   (119 observations deleted due to missingness)
-## AIC: 522.27
+## AIC: 520.91
 ## 
 ## Number of Fisher Scoring iterations: 4</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">x_test_accuracy &lt;-<span class="st"> </span>titanic_split<span class="op">$</span>test <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">tbl_df</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">add_predictions</span>(train_model) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pred =</span> <span class="kw">logit2prob</span>(pred),
          <span class="dt">pred =</span> <span class="kw">as.numeric</span>(pred <span class="op">&gt;</span><span class="st"> </span>.<span class="dv">5</span>))
 
-<span class="kw">mean</span>(x_test_accuracy<span class="op">$</span>Survived <span class="op">==</span><span class="st"> </span>x_test_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## [1] 0.7511962</code></pre>
-</div>
-<div id="regression" class="section level2">
-<h2>Regression</h2>
-<p>This method also works for regression analysis. Here we will examine the relationship between horsepower and car mileage in the <code>Auto</code> dataset (found in <code>library(ISLR)</code>):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ISLR)
-
-Auto &lt;-<span class="st"> </span>Auto <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">tbl_df</span>()
-Auto</code></pre></div>
-<pre><code>## # A tibble: 392 x 9
-##      mpg cylinders displacement horsepower weight acceleration  year
-##  * &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt; &lt;dbl&gt;
-##  1    18         8          307        130   3504         12.0    70
-##  2    15         8          350        165   3693         11.5    70
-##  3    18         8          318        150   3436         11.0    70
-##  4    16         8          304        150   3433         12.0    70
-##  5    17         8          302        140   3449         10.5    70
-##  6    15         8          429        198   4341         10.0    70
-##  7    14         8          454        220   4354          9.0    70
-##  8    14         8          440        215   4312          8.5    70
-##  9    14         8          455        225   4425         10.0    70
-## 10    15         8          390        190   3850          8.5    70
-## # ... with 382 more rows, and 2 more variables: origin &lt;dbl&gt;, name &lt;fctr&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/auto_plot-1.png" width="672" /></p>
-<p>The relationship does not appear to be strictly linear:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/auto_plot_lm-1.png" width="672" /></p>
-<p>Perhaps by adding <a href="stat003_logistic_regression.html#quadratic_terms">quadratic terms</a> to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated <code>mpg</code>. Rather than relying on the raw error rate (which makes sense in a classification model), we will instead use <strong>Mean Squared Error</strong> (MSE), defined as</p>
-<p><span class="math display">\[MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}\]</span></p>
-<p>where:</p>
-<ul>
-<li><span class="math inline">\(y_i =\)</span> the observed response value for the <span class="math inline">\(i\)</span>th observation</li>
-<li><span class="math inline">\(\hat{f}(x_i) =\)</span> the predicted response value for the <span class="math inline">\(i\)</span>th observation given by <span class="math inline">\(\hat{f}\)</span></li>
-<li><span class="math inline">\(n =\)</span> the total number of observations</li>
-</ul>
-<p>Boo math! Actually this is pretty intuitive. All we’re doing is for each observation, calculating the difference between the actual and predicted values for <span class="math inline">\(y\)</span>, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.</p>
-<p>For this task, first we can use <code>modelr::resample_partition()</code> to create training and test sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.</p>
-<ul>
-<li>I use <code>set.seed()</code> in the beginning - whenever you are writing a script that involves randomization (here, random subsetting of the data), always set the seed at the beginning of the script. This ensures the results can be reproduced precisely.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></li>
-<li>I also use the <code>glm()</code> function rather than <code>lm()</code> - if you don’t change the <code>family</code> parameter, the results of <code>lm()</code> and <code>glm()</code> are exactly the same.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a></li>
-</ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">set.seed</span>(<span class="dv">1234</span>)
-
-auto_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(Auto, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.5</span>, <span class="dt">train =</span> <span class="fl">0.5</span>))
-auto_train &lt;-<span class="st"> </span>auto_split<span class="op">$</span>train <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">tbl_df</span>()
-auto_test &lt;-<span class="st"> </span>auto_split<span class="op">$</span>test <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">tbl_df</span>()</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_lm &lt;-<span class="st"> </span><span class="kw">glm</span>(mpg <span class="op">~</span><span class="st"> </span>horsepower, <span class="dt">data =</span> auto_train)
-<span class="kw">summary</span>(auto_lm)</code></pre></div>
-<pre><code>## 
-## Call:
-## glm(formula = mpg ~ horsepower, data = auto_train)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -12.892   -2.864   -0.545    2.793   13.298  
-## 
-## Coefficients:
-##              Estimate Std. Error t value Pr(&gt;|t|)    
-## (Intercept) 38.005404   0.921129   41.26   &lt;2e-16 ***
-## horsepower  -0.140459   0.007968  -17.63   &lt;2e-16 ***
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## (Dispersion parameter for gaussian family taken to be 20.48452)
-## 
-##     Null deviance: 10359.4  on 196  degrees of freedom
-## Residual deviance:  3994.5  on 195  degrees of freedom
-## AIC: 1157.9
-## 
-## Number of Fisher Scoring iterations: 2</code></pre>
-<p>To estimate the MSE for a single partition (i.e. for a training or test set), I wrote a special function <code>mse()</code>:<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mse &lt;-<span class="st"> </span><span class="cf">function</span>(model, data) {
-  x &lt;-<span class="st"> </span>modelr<span class="op">:::</span><span class="kw">residuals</span>(model, data)
-  <span class="kw">mean</span>(x <span class="op">^</span><span class="st"> </span><span class="dv">2</span>, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)
-}</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">mse</span>(auto_lm, auto_test)</code></pre></div>
-<pre><code>## [1] 28.57255</code></pre>
-<p>For a strictly linear model, the MSE for the test set is 28.57. How does this compare to a quadratic model? We can use the <code>poly()</code> function in conjunction with a <code>map()</code> iteration to estimate the MSE for a series of models with higher-order polynomial terms:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">auto_poly_glm &lt;-<span class="st"> </span><span class="cf">function</span>(x){
-  <span class="kw">glm</span>(mpg <span class="op">~</span><span class="st"> </span><span class="kw">poly</span>(horsepower, x), <span class="dt">data =</span> auto_train)
-}
-
-auto_poly_results &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,
-                                <span class="dt">model =</span> <span class="kw">map</span>(terms, auto_poly_glm),
-                                <span class="dt">MSE =</span> <span class="kw">map_dbl</span>(model,
-                                              mse,
-                                              <span class="dt">data =</span> auto_test)
-)
-
-<span class="kw">ggplot</span>(auto_poly_results, <span class="kw">aes</span>(terms, MSE)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Comparing quadratic linear models&quot;</span>,
-       <span class="dt">subtitle =</span> <span class="st">&quot;Using validation set&quot;</span>,
-       <span class="dt">x =</span> <span class="st">&quot;Highest-order polynomial&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Mean Squared Error&quot;</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/mse_poly-1.png" width="672" /></p>
-<p>Based on the MSE for the validation (test) set, a polynomial model with a quadratic term (<span class="math inline">\(\text{horsepower}^2\)</span>) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.</p>
+<span class="kw">mean</span>(x_test_accuracy<span class="op">$</span>Survived <span class="op">!=</span><span class="st"> </span>x_test_accuracy<span class="op">$</span>pred, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## [1] 0.2488038</code></pre>
+<p>This interactive model generates an error rate of 24.9%. We could compare this error rate to alternative classification models, either other logistic regression models (using different formulas) or a tree-based method.</p>
 </div>
 <div id="drawbacks-to-validation-sets" class="section level2">
 <h2>Drawbacks to validation sets</h2>
@@ -657,10 +655,8 @@ auto_poly_results &lt;-<span class="st"> </span><span class="kw">data_frame</spa
 <li><p>Validation estimates of the test error rates can be highly variable depending on which observations are sampled into the training and test sets. See what happens if we repeat the sampling, estimation, and validation procedure for the <code>Auto</code> data set:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mse_variable &lt;-<span class="st"> </span><span class="cf">function</span>(Auto){
   auto_split &lt;-<span class="st"> </span><span class="kw">resample_partition</span>(Auto, <span class="kw">c</span>(<span class="dt">test =</span> <span class="fl">0.5</span>, <span class="dt">train =</span> <span class="fl">0.5</span>))
-  auto_train &lt;-<span class="st"> </span>auto_split<span class="op">$</span>train <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">tbl_df</span>()
-  auto_test &lt;-<span class="st"> </span>auto_split<span class="op">$</span>test <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">tbl_df</span>()
+  auto_train &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(auto_split<span class="op">$</span>train)
+  auto_test &lt;-<span class="st"> </span><span class="kw">as_tibble</span>(auto_split<span class="op">$</span>test)
 
   results &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">terms =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">5</span>,
                         <span class="dt">model =</span> <span class="kw">map</span>(terms, auto_poly_glm),
@@ -752,7 +748,7 @@ titanic_models &lt;-<span class="st"> </span><span class="kw">map</span>(titanic
 titanic_mse &lt;-<span class="st"> </span><span class="kw">map2_dbl</span>(titanic_models, titanic_loocv<span class="op">$</span>test, mse.glm)
 <span class="kw">mean</span>(titanic_mse, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
 <pre><code>## [1] 0.1703518</code></pre>
-<p>In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive <code>Age * Sex</code> model has a 17% error rate, or 83%. This is similar to the validation set result (<span class="math inline">\(75.1\%\)</span>)</p>
+<p>In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive <code>Age * Sex</code> model has a 17% error rate. This is similar to the validation set result (<span class="math inline">\(24.9\%\)</span>)</p>
 </div>
 <div id="exercise-loocv-in-linear-regression" class="section level2">
 <h2>Exercise: LOOCV in linear regression</h2>
@@ -912,294 +908,6 @@ mh_cv10_full &lt;-<span class="st"> </span><span class="kw">crossv_kfold</span>(
 </ol>
 </div>
 </div>
-<div id="the-bootstrap" class="section level1">
-<h1>The bootstrap</h1>
-<p>The <strong>bootstrap</strong> is a different resampling-based method for quantifying uncertainty associated with a given estimator or statistical method. It is extremely flexible and can be applied to virtually any statistical method.</p>
-<div id="sampling-with-replacement" class="section level2">
-<h2>Sampling with replacement</h2>
-<p>Sampling with replacement allows us to potentially draw the same observation multiple times, and ignore other observations entirely.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rerun</span>(<span class="dv">10</span>, <span class="kw">sample.int</span>(<span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">TRUE</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span>unlist <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">matrix</span>(<span class="dt">ncol =</span> <span class="dv">10</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-##  [1,]    7    9    3    1    6    3    8    4    8     8
-##  [2,]    6    9    6    6    7    1   10    6    3     8
-##  [3,]    4    7    7    9    8    8   10    5    7     5
-##  [4,]    5    5    8    1   10    3    7    1    3     1
-##  [5,]    5    6    9    5    3    1   10    1    8     8
-##  [6,]    2    9    4    7    8    2    2    2    1    10
-##  [7,]    6    3    6    1   10    1    8    3    5     3
-##  [8,]    2    5    6    3    7    7    6    1    1     8
-##  [9,]   10    3    8    1    8    8   10    1    4     5
-## [10,]    4    7    8    4    9    5    5    5    8     6</code></pre>
-<p>Here I’ve drawn 10 random samples with replacement from the vector <span class="math inline">\(1, 2, 3, 4, 5, 6, 7, 8, 9, 10\)</span>. Each row contains a different sample. Notice how some rows contain multiples of the same values and exclude others entirely. Compare this to <strong>sampling without replacement</strong>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rerun</span>(<span class="dv">10</span>, <span class="kw">sample.int</span>(<span class="dv">10</span>, <span class="dt">replace =</span> <span class="ot">FALSE</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span>unlist <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">matrix</span>(<span class="dt">ncol =</span> <span class="dv">10</span>, <span class="dt">byrow =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>##       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
-##  [1,]    2    6   10    8    1    7    3    9    5     4
-##  [2,]    5    2    7    9    1    4    6    8   10     3
-##  [3,]   10    9    7    6    8    3    4    5    1     2
-##  [4,]    2    8    9    1    7    5   10    3    6     4
-##  [5,]    8    5   10    2    1    6    4    7    3     9
-##  [6,]    3    7    8    4    5    6    2    9    1    10
-##  [7,]    2    7    6    5    4    9    8    1   10     3
-##  [8,]    3    8    9    4    1    5    6    7    2    10
-##  [9,]    8    2    5    6    9   10    7    4    3     1
-## [10,]    3   10    7    5    9    1    4    6    8     2</code></pre>
-<p>Sampling without replacement doesn’t allow you to draw an observation more than once and would produce the exact same sample every time, just in a different order.</p>
-</div>
-<div id="why-use-the-bootstrap" class="section level2">
-<h2>Why use the bootstrap?</h2>
-<p>Statistical learning methods are frequently used to draw inferences about a population. Since you cannot directly measure the entire population<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a>, you take a sample and ask a question of it instead. But how do you know your sample answer is close to the population answer? There are two approaches you can take:</p>
-<ol style="list-style-type: decimal">
-<li>Make <strong>assumptions</strong> about the shape of the population.</li>
-<li>Use the <strong>information in the sample</strong> to learn about it.</li>
-</ol>
-<p>Suppose you decide to make assumptions, e.g. that the sample is distributed normally or <a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Bernoulli</a> or some other probability distribution. You could learn about how much the answer to your question varies based on the specific sample drawn by repeatedly generating samples of the same size and asking them the same question. If you have a computaionally convenient assumption (such as the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>), you may even be able to bypass the resampling step and use a known formula to estimate your confidence in the original answer.</p>
-<p>Provided you are happy to make the assumptions, this seems like a good idea. If you are not willing to make the assumption, you could instead take the sample you have and sample from it. You can do this because the sample you have <strong>is also a population</strong>, just a very small and discrete one. It is identical to the histogram of your data. Sampling with replacement merely allows you to treat the sample like it’s a population and sample from it in a way that reflects its shape.</p>
-<p>This is a reasonable thing to do for a couple reasons. First, it’s the only information you have about the population. Second, randomly chosen samples should look quite similar to the population from which they came, so as long as you drew a random sample it is likely that your’s is also similar.</p>
-<div id="estimating-the-accuracy-of-a-statistic-of-interest" class="section level3">
-<h3>Estimating the accuracy of a statistic of interest</h3>
-<p>Suppose you want to know how often Americans eat ice cream in a given month.</p>
-<div class="figure">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Rockyroadicecream.jpg/800px-Rockyroadicecream.jpg" />
-
-</div>
-<p>We decide to estimate this by tracking a sample of 1000 Americans and counting how many times they eat ice cream over the course of a month.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate the sample</span>
-<span class="kw">set.seed</span>(<span class="dv">1234</span>)
-lambda &lt;-<span class="st"> </span><span class="dv">5</span>
-n_obs &lt;-<span class="st"> </span><span class="dv">1000</span>
-ice &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">sim =</span> <span class="kw">rpois</span>(n_obs, <span class="dt">lambda =</span> lambda))
-
-<span class="kw">ggplot</span>(ice, <span class="kw">aes</span>(sim)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/ice-sim-1.png" width="672" /></p>
-<p>The mean of this sample is 5.062, which we will treat as the population mean <span class="math inline">\(\mu\)</span>. Remember that in the real world, we do not know <span class="math inline">\(\mu\)</span> because we have not observed all members of the population. Instead, we use the sample to estimate <span class="math inline">\(\hat{\mu}\)</span> on the assumption that the sample mean approximates the true mean.</p>
-<p>The <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson distribution</a> is the most likely population distribution as it describes the count of events over time. The probability mass function of the Poisson distribution is</p>
-<p><span class="math display">\[P(k) = \frac{\lambda^{k} e^{-k}}{k!}\]</span></p>
-<p>where <span class="math inline">\(\lambda\)</span> is the event rate (average number of events per interval), <span class="math inline">\(e\)</span> is Euler’s number, <span class="math inline">\(k\)</span> is an integer with range <span class="math inline">\([0, \infty]\)</span>, and <span class="math inline">\(k!\)</span> is the factorial of <span class="math inline">\(k\)</span>. The mean <span class="math inline">\(\mu\)</span> and variance <span class="math inline">\(\sigma\)</span> of a Poisson distribution is defined as <span class="math inline">\(\lambda\)</span>.</p>
-<p>Because we are estimating <span class="math inline">\(\mu\)</span> from a sample, we should also estimate the <strong>standard error</strong> of the sample mean. This is necessary because any random sample drawn from a population will not exactly reproduce the population. We need to account for sampling error by estimating how much our sample mean <span class="math inline">\(\hat{\mu}\)</span> might differ from the true mean <span class="math inline">\(\mu\)</span>.</p>
-<p>The distribution of the mean of a set of samples is approximately <a href="https://en.wikipedia.org/wiki/Normal_distribution">normal</a>.<a href="#fn6" class="footnoteRef" id="fnref6"><sup>6</sup></a> Therefore the standard error of the sample mean from a Poisson distribution is</p>
-<p><span class="math display">\[\sqrt{\frac{\lambda}{n}}\]</span></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">lambda_samp &lt;-<span class="st"> </span><span class="kw">mean</span>(ice<span class="op">$</span>sim)
-
-(sem &lt;-<span class="st"> </span><span class="kw">sqrt</span>(lambda_samp <span class="op">/</span><span class="st"> </span>n_obs))</code></pre></div>
-<pre><code>## [1] 0.07114773</code></pre>
-<p>The standard error of the sample mean is <span class="math inline">\(0.0711477\)</span>. This is a good estimate <strong>as long as the data generating process actually followed a Poisson distribution</strong>. The Poisson distribution requires <a href="https://en.wikipedia.org/wiki/Poisson_distribution#Assumptions:_When_is_the_Poisson_distribution_an_appropriate_model.3F">several assumptions</a>. If any of these assumptions are violated, then the formula for estimating the standard error of the sample mean <span class="math inline">\(\lambda\)</span> will not be accurate.</p>
-<p>In that situation, we can use the bootstrap to estimate the standard error without making any distributional assumptions. In this approach, we draw <span class="math inline">\(B\)</span> samples with replacement from the original sample. To estimate the population mean <span class="math inline">\(\mu\)</span> we calculate the mean of the bootstrapped sample means <span class="math inline">\(\hat{\mu}_1, \hat{\mu}_2, \dots, \hat{\mu}_B\)</span>. To estimate the standard error of the sampling mean <span class="math inline">\(\hat{\mu}\)</span> we use the formula</p>
-<p><span class="math display">\[SE_{B}(\hat{\mu}) = \sqrt{\frac{1}{B-1} \sum_{r = 1}^{B} \left( \hat{\mu}_r - \frac{1}{B} \sum_{r&#39; = 1}^{B} \hat{\mu}_{r&#39;} \right)^2}\]</span></p>
-<p>What this boils down to is calculating the <strong>standard deviation</strong> of all the bootstrapped sample means. That gives us our standard error.</p>
-<p>Let’s bootstrap our standard error of the mean for our simulated ice cream data. We’ll use <span class="math inline">\(B = 1000\)</span> to produce 1000 bootstrapped estimates of the mean, then calculate the standard deviation of them:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ice_boot &lt;-<span class="st"> </span>ice <span class="op">%&gt;%</span>
-<span class="st">  </span>modelr<span class="op">::</span><span class="kw">bootstrap</span>(<span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mean =</span> <span class="kw">map_dbl</span>(strap, <span class="op">~</span><span class="st"> </span><span class="kw">mean</span>(<span class="kw">as_tibble</span>(.)<span class="op">$</span>sim, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)))
-boot_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice_boot<span class="op">$</span>mean)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(ice_boot, <span class="kw">aes</span>(mean)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> .<span class="dv">01</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda,
-                 <span class="dt">color =</span> <span class="st">&quot;Population mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda_samp,
-                 <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice_boot<span class="op">$</span>mean),
-                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice_boot<span class="op">$</span>mean) <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>boot_sem,
-                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice_boot<span class="op">$</span>mean) <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>boot_sem,
-                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda_samp <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>sem,
-                 <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
-             <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda_samp <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>sem,
-                 <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
-             <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">name =</span> <span class="ot">NULL</span>, <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;Population mean&quot;</span>,
-                                             <span class="st">&quot;Sample mean&quot;</span>,
-                                             <span class="st">&quot;Bootstrapped mean&quot;</span>),
-                     <span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;green&quot;</span>, <span class="st">&quot;orange&quot;</span>)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Bootstrapped sample mean&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Count&quot;</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/ice-boot-plot-1.png" width="672" /></p>
-<p>The bootstrap estimate of the standard error of the sample mean is 0.0741523. Compared to the original estimate of 0.0711477, this is slightly closer to the defined population mean, but not by much. Why bother using the bootstrap? Because the bootstrap estimator will be more accurate <strong>when the distributional assumptions are not met</strong>.</p>
-<p>Let’s simulate the results once again, but draw the observations from a combination of the Poisson distribution and <a href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">uniform distribution</a>.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># simulate the sample</span>
-<span class="kw">set.seed</span>(<span class="dv">113</span>)
-ice2 &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">sim =</span> <span class="kw">c</span>(<span class="kw">rpois</span>(n_obs <span class="op">/</span><span class="st"> </span><span class="dv">2</span>, <span class="dt">lambda =</span> lambda),
-                           <span class="kw">round</span>(<span class="kw">runif</span>(n_obs <span class="op">/</span><span class="st"> </span><span class="dv">2</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="dv">10</span>))))
-
-<span class="co"># plot the sample distribution</span>
-<span class="kw">ggplot</span>(ice2, <span class="kw">aes</span>(sim)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> <span class="dv">1</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/ice-sim2-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># calculate sample mean and standard error</span>
-lambda2_samp &lt;-<span class="st"> </span><span class="kw">mean</span>(ice2<span class="op">$</span>sim)
-sem2 &lt;-<span class="st"> </span><span class="kw">sqrt</span>(lambda2_samp <span class="op">/</span><span class="st"> </span>n_obs)
-
-<span class="co"># calculate the bootstrap</span>
-ice2_boot &lt;-<span class="st"> </span>ice2 <span class="op">%&gt;%</span>
-<span class="st">  </span>modelr<span class="op">::</span><span class="kw">bootstrap</span>(<span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">mean =</span> <span class="kw">map_dbl</span>(strap, <span class="op">~</span><span class="st"> </span><span class="kw">mean</span>(<span class="kw">as_tibble</span>(.)<span class="op">$</span>sim, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)))
-boot2_sem &lt;-<span class="st"> </span><span class="kw">sd</span>(ice2_boot<span class="op">$</span>mean)
-
-<span class="co"># plot the bootstrapped distribution</span>
-<span class="kw">ggplot</span>(ice2_boot, <span class="kw">aes</span>(mean)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_histogram</span>(<span class="dt">binwidth =</span> .<span class="dv">01</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda,
-                 <span class="dt">color =</span> <span class="st">&quot;Population mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda2_samp,
-                 <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice2_boot<span class="op">$</span>mean),
-                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">size =</span> <span class="dv">1</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice2_boot<span class="op">$</span>mean) <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>boot2_sem,
-                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> <span class="kw">mean</span>(ice2_boot<span class="op">$</span>mean) <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>boot2_sem,
-                 <span class="dt">color =</span> <span class="st">&quot;Bootstrapped mean&quot;</span>), <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda2_samp <span class="op">+</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>sem2,
-                 <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
-             <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_vline</span>(<span class="kw">aes</span>(<span class="dt">xintercept =</span> lambda2_samp <span class="op">-</span><span class="st"> </span><span class="fl">1.96</span> <span class="op">*</span><span class="st"> </span>sem2,
-                 <span class="dt">color =</span> <span class="st">&quot;Sample mean&quot;</span>),
-             <span class="dt">linetype =</span> <span class="dv">2</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">name =</span> <span class="ot">NULL</span>, <span class="dt">breaks =</span> <span class="kw">c</span>(<span class="st">&quot;Population mean&quot;</span>,
-                                             <span class="st">&quot;Sample mean&quot;</span>,
-                                             <span class="st">&quot;Bootstrapped mean&quot;</span>),
-                     <span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;green&quot;</span>, <span class="st">&quot;orange&quot;</span>)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;Bootstrapped sample mean&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Count&quot;</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/ice-sim2-2.png" width="672" /></p>
-<p>The population mean <span class="math inline">\(\mu\)</span> is still defined as 5, but now look what happens to the standard errors of the estimates. The estimated means are identical under the formula-based or bootstrapped approaches (5.147), however the standard error for the sample-based approach is <span class="math inline">\(0.0717426\)</span>, compared to 0.0835042. Because the bootstrap approach generates its estimate of the standard error directly from the data, the bootstrapped 95% confidence interval includes the population mean. However the 95% confidence interval under the formula-based method does not include the population mean. In this case we are better off using the bootstrapped standard error rather than using the formula for the Poisson distribution.</p>
-</div>
-<div id="estimating-the-accuracy-of-a-linear-regression-model" class="section level3">
-<h3>Estimating the accuracy of a linear regression model</h3>
-<p>In a linear regression model, the standard errors are statistical estimates of the average amount that the estimated parameters <span class="math inline">\(\hat{\beta}\)</span> differ from the true population parameters <span class="math inline">\(\beta\)</span>. The formula for estimating standard errors for a linear regression model is:</p>
-<p><span class="math display">\[\widehat{s.e.}(\mathbf{\hat{\beta}}_j) = \sqrt{\sigma^{2} (\mathbf{X}^{T}\mathbf{X})^{-1}_{jj}}\]</span></p>
-<p>More simply this is the square root of the diagonal of the <a href="https://en.wikipedia.org/wiki/Ordinary_least_squares#Finite_sample_properties">variance-covariance matrix</a>. For the formula to hold, we make certain assumptions, including that our estimate of the variance <span class="math inline">\(\sigma^2\)</span> is accurate and that any variability in the model after we account for <span class="math inline">\(\mathbf{X}\)</span> is the result of the errors <span class="math inline">\(\epsilon\)</span>. If these assumptions are wrong, then our estimates of the standard errors will also be wrong.</p>
-<p>Let’s revisit our horsepower and highway mileage linear model.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot the data and model</span>
-<span class="kw">ggplot</span>(Auto, <span class="kw">aes</span>(horsepower, mpg)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
-<p><img src="stat005_resampling_files/figure-html/auto-boot-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># traditional parameter estimates and standard errors</span>
-auto_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>horsepower, <span class="dt">data =</span> Auto)
-<span class="kw">tidy</span>(auto_lm)</code></pre></div>
-<pre><code>##          term   estimate   std.error statistic       p.value
-## 1 (Intercept) 39.9358610 0.717498656  55.65984 1.220362e-187
-## 2  horsepower -0.1578447 0.006445501 -24.48914  7.031989e-81</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bootstrapped estimates of the parameter estimates and standard errors</span>
-auto_boot &lt;-<span class="st"> </span>Auto <span class="op">%&gt;%</span>
-<span class="st">  </span>modelr<span class="op">::</span><span class="kw">bootstrap</span>(<span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(strap, <span class="op">~</span><span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>horsepower, <span class="dt">data =</span> .)),
-         <span class="dt">coef =</span> <span class="kw">map</span>(model, tidy))
-
-auto_boot <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">unnest</span>(coef) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">est.boot =</span> <span class="kw">mean</span>(estimate),
-            <span class="dt">se.boot =</span> <span class="kw">sd</span>(estimate, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
-<pre><code>## # A tibble: 2 x 3
-##          term   est.boot     se.boot
-##         &lt;chr&gt;      &lt;dbl&gt;       &lt;dbl&gt;
-## 1 (Intercept) 39.9759145 0.850939151
-## 2  horsepower -0.1583452 0.007316326</code></pre>
-<p>The bootstrapped estimates of parameters are virtually identical, however the standard errors on the bootstrap estimates are slightly larger. This is because they do not rely on any distributional assumptions, whereas the traditional estimates do. Recall from the <a href="#regression">demonstration above</a> that the relationship between horsepower and mpg is non-linear, so the residuals from a linear model will be inflated, and the residuals are used to estimate <span class="math inline">\(\sigma^2\)</span>. The bootstrap method is not biased by these assumptions and gives us a more robust estimate.</p>
-<p>If we compare the traditional and bootstrap estimates for the polynomial regression model, we find more similarity in our results:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># traditional parameter estimates and standard errors</span>
-auto2_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>horsepower <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(horsepower<span class="op">^</span><span class="dv">2</span>), <span class="dt">data =</span> Auto)
-<span class="kw">tidy</span>(auto2_lm)</code></pre></div>
-<pre><code>##              term     estimate    std.error statistic       p.value
-## 1     (Intercept) 56.900099702 1.8004268063  31.60367 1.740911e-109
-## 2      horsepower -0.466189630 0.0311246171 -14.97816  2.289429e-40
-## 3 I(horsepower^2)  0.001230536 0.0001220759  10.08009  2.196340e-21</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bootstrapped estimates of the parameter estimates and standard errors</span>
-auto2_boot &lt;-<span class="st"> </span>Auto <span class="op">%&gt;%</span>
-<span class="st">  </span>modelr<span class="op">::</span><span class="kw">bootstrap</span>(<span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(strap, <span class="op">~</span><span class="st"> </span><span class="kw">lm</span>(mpg <span class="op">~</span><span class="st"> </span>horsepower <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(horsepower<span class="op">^</span><span class="dv">2</span>),
-                                 <span class="dt">data =</span> .)),
-         <span class="dt">coef =</span> <span class="kw">map</span>(model, tidy))
-
-auto2_boot <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">unnest</span>(coef) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">est.boot =</span> <span class="kw">mean</span>(estimate),
-            <span class="dt">se.boot =</span> <span class="kw">sd</span>(estimate, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
-<pre><code>## # A tibble: 3 x 3
-##              term     est.boot      se.boot
-##             &lt;chr&gt;        &lt;dbl&gt;        &lt;dbl&gt;
-## 1     (Intercept) 56.915517472 2.1459109695
-## 2      horsepower -0.466390996 0.0343177764
-## 3 I(horsepower^2)  0.001231462 0.0001237015</code></pre>
-</div>
-</div>
-<div id="exercise-bootstrap-standard-errors-of-regression-parameters" class="section level2">
-<h2>Exercise: bootstrap standard errors of regression parameters</h2>
-<ol style="list-style-type: decimal">
-<li><p>Estimate 1000 bootstrapped standard errors of a linear regression of the relationship between admission rate and cost in the <a href="stat002_linear_models.html#exercise:_linear_regression_with_scorecard"><code>scorecard</code> dataset</a> and compare them to the original estimates (i.e. the original model with no cross-validation or separate training/test sets).</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># original model</span>
-scorecard_lm &lt;-<span class="st"> </span><span class="kw">lm</span>(cost <span class="op">~</span><span class="st"> </span>admrate, <span class="dt">data =</span> scorecard)
-<span class="kw">tidy</span>(scorecard_lm)</code></pre></div>
-<pre><code>##          term   estimate  std.error statistic       p.value
-## 1 (Intercept) 43607.1844 1001.38991  43.54666 1.036472e-284
-## 2     admrate  -181.6923   14.38405 -12.63151  3.980318e-35</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bootstrapped model</span>
-scorecard_boot &lt;-<span class="st"> </span>scorecard <span class="op">%&gt;%</span>
-<span class="st">  </span>modelr<span class="op">::</span><span class="kw">bootstrap</span>(<span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(strap, <span class="op">~</span><span class="st"> </span><span class="kw">lm</span>(cost <span class="op">~</span><span class="st"> </span>admrate, <span class="dt">data =</span> .)),
-         <span class="dt">coef =</span> <span class="kw">map</span>(model, tidy))
-
-scorecard_boot <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">unnest</span>(coef) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">est.boot =</span> <span class="kw">mean</span>(estimate),
-            <span class="dt">se.boot =</span> <span class="kw">sd</span>(estimate, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
-<pre><code>## # A tibble: 2 x 3
-##          term   est.boot    se.boot
-##         &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-## 1 (Intercept) 43593.7338 1234.55370
-## 2     admrate  -181.6049   16.57404</code></pre>
-</p>
-<p></details></p></li>
-<li><p>Estimate 1000 bootstrapped standard errors of a <a href="stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health">logistic regression model of voter turnout</a> using all available predictors and compare them to the original estimates (i.e. the original model with no cross-validation or separate training/test sets).</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># basic model</span>
-mh_glm &lt;-<span class="st"> </span><span class="kw">glm</span>(vote96 <span class="op">~</span><span class="st"> </span>mhealth, <span class="dt">data =</span> mental_health, <span class="dt">family =</span> binomial)
-<span class="kw">tidy</span>(mh_glm)</code></pre></div>
-<pre><code>##          term   estimate  std.error statistic      p.value
-## 1 (Intercept)  1.2225348 0.08901013 13.734782 6.284476e-43
-## 2     mhealth -0.1766612 0.02217096 -7.968135 1.610862e-15</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># bootstrapped model</span>
-mh_boot &lt;-<span class="st"> </span>mental_health <span class="op">%&gt;%</span>
-<span class="st">  </span>modelr<span class="op">::</span><span class="kw">bootstrap</span>(<span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(strap, <span class="op">~</span><span class="st"> </span><span class="kw">glm</span>(vote96 <span class="op">~</span><span class="st"> </span>mhealth, <span class="dt">data =</span> .,
-                                  <span class="dt">family =</span> binomial)),
-         <span class="dt">coef =</span> <span class="kw">map</span>(model, tidy))
-
-mh_boot <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">unnest</span>(coef) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">est.boot =</span> <span class="kw">mean</span>(estimate),
-            <span class="dt">se.boot =</span> <span class="kw">sd</span>(estimate, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</code></pre></div>
-<pre><code>## # A tibble: 2 x 3
-##          term   est.boot    se.boot
-##         &lt;chr&gt;      &lt;dbl&gt;      &lt;dbl&gt;
-## 1 (Intercept)  1.2254148 0.09107391
-## 2     mhealth -0.1773183 0.02257032</code></pre>
-</p>
-<p></details></p></li>
-</ol>
-</div>
-</div>
-<div id="acknowledgements" class="section level1 toc-ignore">
-<h1>Acknowledgements</h1>
-<ul>
-<li>Bootstrap standard error of the mean example derived from <a href="http://t-redactyl.io/blog/2015/09/a-gentle-introduction-to-bootstrapping.html">A gentle introduction to bootstrapping</a>.</li>
-<li>“Why use the bootstrap?” reproduced from <a href="http://stats.stackexchange.com/a/26093">Explaining to laypeople why bootstrapping works - Stack Overflow</a>, licensed under the <a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0 Creative Commons License</a>.</li>
-</ul>
-</div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
@@ -1210,7 +918,7 @@ mh_boot <span class="op">%&gt;%</span>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-21                  
+##  date     2017-10-24                  
 ## 
 ##  package     * version    date       source                              
 ##  assertthat    0.2.0      2017-04-11 CRAN (R 3.4.0)                      
@@ -1225,11 +933,11 @@ mh_boot <span class="op">%&gt;%</span>
 ##  codetools     0.2-15     2016-10-05 CRAN (R 3.4.1)                      
 ##  colorspace    1.3-2      2016-12-14 CRAN (R 3.4.0)                      
 ##  compiler      3.4.1      2017-07-07 local                               
-##  crayon        1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  crayon        1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab) 
 ##  datasets    * 3.4.1      2017-07-07 local                               
 ##  devtools      1.13.3     2017-08-02 CRAN (R 3.4.1)                      
 ##  digest        0.6.12     2017-01-27 CRAN (R 3.4.0)                      
-##  dplyr       * 0.7.2.9000 2017-08-10 Github (tidyverse/dplyr@65db321)    
+##  dplyr       * 0.7.4.9000 2017-10-03 Github (tidyverse/dplyr@1a0730a)    
 ##  evaluate      0.10.1     2017-06-24 CRAN (R 3.4.1)                      
 ##  forcats     * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
 ##  foreign       0.8-69     2017-06-22 CRAN (R 3.4.1)                      
@@ -1243,7 +951,7 @@ mh_boot <span class="op">%&gt;%</span>
 ##  hms           0.3        2016-11-22 CRAN (R 3.4.0)                      
 ##  htmltools     0.3.6      2017-04-28 CRAN (R 3.4.0)                      
 ##  htmlwidgets   0.9        2017-07-10 CRAN (R 3.4.1)                      
-##  httr          1.2.1      2016-07-03 CRAN (R 3.4.0)                      
+##  httr          1.3.1      2017-08-20 CRAN (R 3.4.1)                      
 ##  ISLR        * 1.1        2017-08-11 CRAN (R 3.4.1)                      
 ##  jsonlite      1.5        2017-06-01 CRAN (R 3.4.0)                      
 ##  knitr         1.17       2017-08-10 cran (@1.17)                        
@@ -1266,7 +974,7 @@ mh_boot <span class="op">%&gt;%</span>
 ##  purrr       * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
 ##  R6            2.2.2      2017-06-17 CRAN (R 3.4.0)                      
 ##  rcfss       * 0.1.5      2017-07-31 local                               
-##  Rcpp          0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  Rcpp          0.12.13    2017-09-28 cran (@0.12.13)                     
 ##  readr       * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl        1.0.0      2017-04-18 CRAN (R 3.4.0)                      
 ##  reshape2      1.4.2      2016-10-22 CRAN (R 3.4.0)                      
@@ -1279,8 +987,8 @@ mh_boot <span class="op">%&gt;%</span>
 ##  stats       * 3.4.1      2017-07-07 local                               
 ##  stringi       1.1.5      2017-04-07 CRAN (R 3.4.0)                      
 ##  stringr     * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
-##  tibble      * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
-##  tidyr       * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
+##  tibble      * 1.3.4      2017-08-22 CRAN (R 3.4.1)                      
+##  tidyr       * 0.7.0      2017-08-16 CRAN (R 3.4.1)                      
 ##  tidyverse   * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
 ##  titanic     * 0.1.0      2015-08-31 CRAN (R 3.4.0)                      
 ##  tools         3.4.1      2017-07-07 local                               
@@ -1296,8 +1004,6 @@ mh_boot <span class="op">%&gt;%</span>
 <li id="fn2"><p>The default <code>family</code> for <code>glm()</code> is <code>gaussian()</code>, or the <strong>Gaussian</strong> distribution. You probably know it by its other name, the <a href="https://en.wikipedia.org/wiki/Normal_distribution"><strong>Normal</strong> distribution</a>.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>This function can also be loaded via the <a href="https://github.com/uc-cfss/rcfss"><code>rcfss</code></a> library. Be sure to update your package to the latest version to make sure the function is available.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>This function can also be loaded via the <a href="https://github.com/uc-cfss/rcfss"><code>rcfss</code></a> library.<a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p>Exception - <a href="http://www.census.gov/2010census/">the Census</a>.<a href="#fnref5">↩</a></p></li>
-<li id="fn6"><p>As defined by the <a href="https://en.wikipedia.org/wiki/Central_limit_theorem">Central Limit Theorem</a>.<a href="#fnref6">↩</a></p></li>
 </ol>
 </div>
 
