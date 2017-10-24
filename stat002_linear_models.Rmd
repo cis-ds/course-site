@@ -22,11 +22,6 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-# Objectives
-
-* Demonstrate how to estimate linear models in R
-* Demonstrate how to extract model statistics using [`broom`](https://cran.r-project.org/web/packages/broom/index.html) and [`modelr`](https://github.com/hadley/modelr)
-
 # Linear models using `ggplot`
 
 Linear models are the simplest to understand. They adopt a generic form
@@ -195,7 +190,7 @@ In order to extract model statistics and use them in a **tidy** manner, we can u
 
 ### `tidy()`
 
-`tidy()` constructs a data frame that summarizes the model's statistical findings. This includes **coefficients** and **p-values** for each parameter in a model. Different models will report different elements.
+`tidy()` constructs a data frame that summarizes the model's statistical findings. This includes **coefficients** and **p-values** for each parameter in a regression model. Note that depending on the statistical learning method employed, the statistics stored in the columns may vary.
 
 ```{r tidy}
 tidy(gapminder_mod)
@@ -212,7 +207,7 @@ Notice that the structure of the resulting object is a tidy data frame. Every ro
 
 ```{r augment}
 augment(gapminder_mod) %>%
-  tbl_df()
+  as_tibble()
 ```
 
 `augment()` will only return statistics to the original data used to estimate the model, so it cannot be used like `add_predictions()` to generate predictions for new data.
@@ -242,7 +237,7 @@ gapminder %>%
 
 ## Separate models for each country using `map()` and nested data frames
 
-What if we want to estimate separate models for **every country**? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned last week how to [iterate using `for` loops](block011_iteration.html#writing_for_loops). We could do this using a `for` loop, but this will take a bunch of code. Instead, let's use the [`map()` functions we already learned](block011_iteration.html#map_functions), but add an additional component on top of that.
+What if we want to estimate separate models for **every country**? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned a couple of weeks ago how to [iterate using `for` loops](block011_iteration.html#writing_for_loops). We could do this using a `for` loop, but this will take a bunch of code. Instead, let's use the [`map()` functions we already learned](block011_iteration.html#map_functions), but add an additional component on top of that.
 
 Instead of repeating an action for each **column** (variable), we want to repeat an action for each **country**, a subset of rows. To do that, we need a new data structure: the **nested data frame**. To create a nested data frame we start with a grouped data frame, and "nest" it:
 
@@ -256,13 +251,13 @@ by_country
 
 This looks very different from what you've seen in data frames before. Typically every cell in a data frame is a single value. But here, each element in the `data` column is actually **another data frame**. This demonstrates the benefits of lists - they can be used recursively to store other lists, which is exactly what data frames are.
 
-Now we have one row per country, with the variables associated with each country stored in their own column. All the original data is still in this nested data frame, just stored in a different way. Note that to see the values of the variables in `data`, we use the special notation we learned last week:
+Now we have one row per country, with the variables associated with each country stored in their own column. All the original data is still in this nested data frame, just stored in a different way. Note that to see the values of the variables in `data`, we use the special notation we learned previously:
 
 ```{r nest-view}
 by_country$data[[1]]
 ```
 
-It's hard to see the overall structure, but it's easy to use the `map()` functions to access this data and analyze it. We have a model fitting function:
+It's hard to see the overall structure, but it's easy to use the `map()` functions to access this data and analyze it. We create a model fitting function:
 
 ```{r model-function}
 country_model <- function(df) {
@@ -276,7 +271,7 @@ And we want to apply it to each country. That is exactly what `map()` is designe
 models <- map(by_country$data, country_model)
 ```
 
-And as we've already learned, we could store the models as a new column in `by_country` to keep all the data and analysis stored together.
+And because `models` is a list and we just saw how to create list-columns, we could store the models as a new column in `by_country` to keep all the data and analysis together.
 
 ```{r map-model-column}
 by_country <- by_country %>%
@@ -303,7 +298,7 @@ by_country <- by_country %>%
 by_country
 ```
 
-What if you want to plot the residuals? We need to unnest the residuals:
+What if you want to plot the residuals? We need to **unnest** the residuals. `unnest()` makes each element of the list its own row:
 
 ```{r unnest}
 resids <- unnest(by_country, resids)
@@ -326,7 +321,7 @@ scorecard
 
 Answer the following questions using the statistical modeling tools you have learned.
 
-1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot.
+1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
 
     <details> 
       <summary>Click for the solution</summary>
@@ -334,23 +329,9 @@ Answer the following questions using the statistical modeling tools you have lea
 
     ```{r scorecard-point}
     ggplot(scorecard, aes(admrate, cost)) +
-      geom_point()
-    ```    
-      </p>
-    </details>
-
-1. Summarize the relationship between admission rate and cost by adding a best-fit line to your scatterplot.
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-point-fit}
-    ggplot(scorecard, aes(admrate, cost)) +
       geom_point() +
       geom_smooth(method = "lm")
-    ```
-    
+    ```    
       </p>
     </details>
 
@@ -368,46 +349,33 @@ Answer the following questions using the statistical modeling tools you have lea
       </p>
     </details>
 
-1. Is the relationship between admission rate and cost different based on the type of college? Visualize the distribution of residuals for each type of college.
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-resid}
-    scorecard_resid <- scorecard %>% 
-      add_residuals(scorecard_mod)
-    scorecard_resid
-    
-    ggplot(scorecard_resid, aes(resid)) + 
-      geom_freqpoly(aes(color = type))
-    ```
-    
-    It would appear the relationship between admission rate and cost is different for each college type. The distributions for private schools (for or non-profit) are not centered around 0.
-    
-      </p>
-    </details>
-
-1. Estimate separate linear regression models of the relationship between admission rate and cost for each type of college.
+1. Estimate separate linear regression models of the relationship between admission rate and cost for each type of college. Report the estimated parameters and standard errors in a tidy data frame.
 
     <details> 
       <summary>Click for the solution</summary>
       <p>
 
     ```{r scorecard-sep-lm}
+    # model-building function
     type_model <- function(df) {
       lm(cost ~ admrate, data = df)
     }
     
+    # nest the data frame
     by_type <- scorecard %>%
       group_by(type) %>%
       nest()
     by_type
     
+    # estimate the models
     by_type <- by_type %>%
-      mutate(model = map(data, type_model),
-             resids = map2(data, model, add_residuals))
+      mutate(model = map(data, type_model))
     by_type
+    
+    # extract the parameters and print a tidy data frame
+    by_type %>%
+      mutate(results = map(model, tidy)) %>%
+      unnest(results)
     ```
     
     The same approach by using an anonymous function with the [one-sided formula format](http://r4ds.had.co.nz/iteration.html#shortcuts):
@@ -415,35 +383,9 @@ Answer the following questions using the statistical modeling tools you have lea
     ```{r scorecard-sep-anon, eval = FALSE}
     by_type %>%
       mutate(model = map(data, ~lm(cost ~ admrate, data = .)),
-             resids = map2(data, model, add_residuals))
+             results = map(model, tidy)) %>%
+      unnest(results)
     ```
-    
-      </p>
-    </details>
-
-1. Compare the results of the new series of models to the old one by graphing the new residuals. Is it better to use a single model or three sets of models to explain this relationship?
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-compare}
-    # results of original model
-    glance(scorecard_mod)
-    
-    # results of new models
-    by_type %>%
-      mutate(glance = map(model, glance)) %>%
-      unnest(glance, .drop = TRUE)
-    
-    # what about the new residuals?
-    resids <- unnest(by_type, resids)
-    
-    ggplot(resids, aes(resid)) + 
-      geom_freqpoly(aes(color = type))
-    ```
-
-    Our residuals are now centered around 0 for each type of college. Obviously we could go much deeper here, but this is a good starting point.
     
       </p>
     </details>

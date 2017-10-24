@@ -337,11 +337,9 @@ And now our minds are blown once again! For women, as age increases the probabil
 
 You may think then that it makes sense to throw in interaction terms (and quadratic terms) willy-nilly to all your regression models since we never know for sure if the relationship is strictly linear and independent. You could do that, but once you start adding more predictors (3, 4, 5, etc.) that will get very difficult to keep track of (five-way interactions are extremely difficult to interpret - even three-way get to be problematic). The best advice is to use theory and your domain knowledge as your guide. Do you have a reason to believe the relationship should be interactive? If so, test for it. If not, don't.
 
-# Evaluating model accuracy
+# Comparing models
 
-## Accuracy of predictions
-
-How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how accurate are the predictions? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a $.5$ cut-point), then see what percentage of predictions were the same as the actual survivals?
+How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a $.5$ cut-point), then see what percentage of predictions were the same as the actual survivals?
 
 ```{r accuracy_age, dependson="titanic_age_glm"}
 age_accuracy <- titanic %>%
@@ -349,10 +347,10 @@ age_accuracy <- titanic %>%
   mutate(pred = logit2prob(pred),
          pred = as.numeric(pred > .5))
 
-mean(age_accuracy$Survived == age_accuracy$pred, na.rm = TRUE)
+mean(age_accuracy$Survived != age_accuracy$pred, na.rm = TRUE)
 ```
 
-$`r formatC(mean(age_accuracy$Survived == age_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the predictions based on age were correct. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $`r formatC((1 - mean(titanic$Survived, na.rm = TRUE)) * 100, digits = 3)`\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still be right more often than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
+$`r formatC(mean(age_accuracy$Survived != age_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $`r formatC((1 - mean(titanic$Survived, na.rm = TRUE)) * 100, digits = 3)`\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
 
 ```{r accuracy_age_gender_x, dependson="age_woman_cross"}
 x_accuracy <- titanic %>%
@@ -360,37 +358,10 @@ x_accuracy <- titanic %>%
   mutate(pred = logit2prob(pred),
          pred = as.numeric(pred > .5))
 
-mean(x_accuracy$Survived == x_accuracy$pred, na.rm = TRUE)
+mean(x_accuracy$Survived != x_accuracy$pred, na.rm = TRUE)
 ```
 
-This model is much better. Just by knowing an individual's age and gender, we can predict with `r formatC(mean(x_accuracy$Survived == x_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`% whether he/she lives or dies.
-
-## Training/test sets
-
-One issue with the previous approach is that we are fitting our model to the data, then using the same data to assess the model's accuracy. This isn't very appropriate because we will bias our model towards fitting the data that we have. **We may fit our function to create the results we expect or desire, rather than the "true" function**.
-
-Instead, we can split our data into distinct **training** and **test** sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the test set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.
-
-Let's use this workflow instead. We can use `resample_partition()` from `modelr` to split `titanic` into a training and test set (we'll allocate 70% of observations to the training set and 30% to the test set), reproduce the interactive model using only the training data, then make predictions on the test set and compare them to the actual, known survivals and deaths.
-
-```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE}
-titanic_split <- resample_partition(titanic, c(test = 0.3, train = 0.7))
-map(titanic_split, dim)
-
-train_model <- glm(Survived ~ Age * Sex, data = titanic_split$train,
-                   family = binomial)
-summary(train_model)
-
-x_test_accuracy <- titanic_split$test %>%
-  as_tibble() %>%
-  add_predictions(train_model) %>%
-  mutate(pred = logit2prob(pred),
-         pred = as.numeric(pred > .5))
-
-mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE)
-```
-
-This is reassuring. $`r formatC(mean(x_test_accuracy$Survived == x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the test set observations were accurately predicted. Remember, we explicitly set this up so that the model never saw the test observations, and they never factored into our decisionmaking process when we generated the model. This tells us that we did a pretty good job estimating the functional form $f$ for the entire dataset, not just the training set.
+This model is much better. Just by knowing an individual's age and gender, our model is incorrect only `r formatC(mean(x_accuracy$Survived != x_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`% of the time.
 
 # Exercise: logistic regression with `mental_health`
 
@@ -403,19 +374,7 @@ library(rcfss)
 mental_health
 ```
 
-1. Split the data into a training and test set (70/30%).
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r mh-partition, dependson="mental-health"}
-    mh_split <- resample_partition(mental_health, c(test = 0.3, train = 0.7))
-    ```    
-      </p>
-    </details>
-
-1. Estimate a logistic regression model of voter turnout using the training set and only `mhealth` as the predictor. Estimate predicted probabilities and plot the logistic regression line using `ggplot`.
+1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and plot the logistic regression line using `ggplot`.
 
     <details> 
       <summary>Click for the solution</summary>
@@ -423,13 +382,12 @@ mental_health
 
     ```{r mh-model, dependson="mental-health"}
     # estimate model
-    mh_model <- glm(vote96 ~ mhealth, data = mh_split$train,
+    mh_model <- glm(vote96 ~ mhealth, data = mental_health,
                     family = binomial)
     tidy(mh_model)
     
     # estimate predicted probabilities
-    mh_health <- mh_split$train %>%
-      as_tibble() %>%
+    mh_health <- mental_health %>%
       data_grid(mhealth) %>%
       add_predictions(mh_model) %>%
       mutate(pred = logit2prob(pred))
@@ -445,26 +403,26 @@ mental_health
       </p>
     </details>
 
-1. Calculate the accuracy rate of the model using the test set.
+1. Calculate the error rate of the model.
 
     <details> 
       <summary>Click for the solution</summary>
       <p>
 
     ```{r mh-model-error, dependson="mental-health"}
-    mh_model_accuracy <- mh_split$test %>%
+    mh_model_accuracy <- mental_health %>%
       as_tibble() %>%
       add_predictions(mh_model) %>%
       mutate(pred = logit2prob(pred),
              pred = as.numeric(pred > .5))
     
-    (mh_model_err <- mean(mh_model_accuracy$vote96 == mh_model_accuracy$pred,
+    (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$pred,
                           na.rm = TRUE))
     ```    
       </p>
     </details>
 
-1. Estimate a second logistic regression model of voter turnout using the training set and all the predictors. Calculate it's accuracy rate using the test set, and compare it to the original model. Which is better?
+1. Estimate a second logistic regression model of voter turnout using the training set and all the predictors. Calculate it's error rate using the test set, and compare it to the original model. Which is better?
 
     <details> 
       <summary>Click for the solution</summary>
@@ -472,22 +430,22 @@ mental_health
 
     ```{r mh-model-all, dependson="mental-health"}
     # estimate model
-    mh_model_all <- glm(vote96 ~ ., data = mh_split$train,
+    mh_model_all <- glm(vote96 ~ ., data = mental_health,
                     family = binomial)
     tidy(mh_model_all)
     
-    # calculate accuracy rate on test set
-    mh_model_all_accuracy <- mh_split$test %>%
+    # calculate error rate
+    mh_model_all_accuracy <- mental_health %>%
       as_tibble() %>%
       add_predictions(mh_model_all) %>%
       mutate(pred = logit2prob(pred),
              pred = as.numeric(pred > .5))
     
-    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 == mh_model_all_accuracy$pred,
+    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 != mh_model_all_accuracy$pred,
                               na.rm = TRUE))
     ```
     
-    The model with all predictors has a `r formatC((mh_model_all_err - mh_model_err) * 100, digits = 3)`% higher accuracy rate than predictions based only on mental health.
+    The model with all predictors has a `r formatC((mh_model_err - mh_model_all_err) * 100, digits = 3)`% lower error rate than predictions based only on mental health.
       </p>
     </details>
 

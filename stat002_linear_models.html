@@ -344,13 +344,6 @@ div.tocify {
 <span class="kw">set.seed</span>(<span class="dv">1234</span>)
 
 <span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
-<div id="objectives" class="section level1">
-<h1>Objectives</h1>
-<ul>
-<li>Demonstrate how to estimate linear models in R</li>
-<li>Demonstrate how to extract model statistics using <a href="https://cran.r-project.org/web/packages/broom/index.html"><code>broom</code></a> and <a href="https://github.com/hadley/modelr"><code>modelr</code></a></li>
-</ul>
-</div>
 <div id="linear-models-using-ggplot" class="section level1">
 <h1>Linear models using <code>ggplot</code></h1>
 <p>Linear models are the simplest to understand. They adopt a generic form</p>
@@ -667,7 +660,7 @@ grid</code></pre></div>
 <p>In order to extract model statistics and use them in a <strong>tidy</strong> manner, we can use a set of functions from the <code>broom</code> package. For these functions, the input is always the model object itself, not the original data frame.</p>
 <div id="tidy" class="section level3">
 <h3><code>tidy()</code></h3>
-<p><code>tidy()</code> constructs a data frame that summarizes the model’s statistical findings. This includes <strong>coefficients</strong> and <strong>p-values</strong> for each parameter in a model. Different models will report different elements.</p>
+<p><code>tidy()</code> constructs a data frame that summarizes the model’s statistical findings. This includes <strong>coefficients</strong> and <strong>p-values</strong> for each parameter in a regression model. Note that depending on the statistical learning method employed, the statistics stored in the columns may vary.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tidy</span>(gapminder_mod)</code></pre></div>
 <pre><code>##          term     estimate   std.error statistic      p.value
 ## 1 (Intercept) -585.6521874 32.31396452 -18.12381 2.897807e-67
@@ -686,19 +679,19 @@ grid</code></pre></div>
 <h3><code>augment()</code></h3>
 <p><code>augment()</code> adds columns to the original data that was modeled. This could include predictions, residuals, and other observation-level statistics.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">augment</span>(gapminder_mod) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">tbl_df</span>()</code></pre></div>
-<pre><code>## # A tibble: 1,704 × 9
+<span class="st">  </span><span class="kw">as_tibble</span>()</code></pre></div>
+<pre><code>## # A tibble: 1,704 x 9
 ##    lifeExp  year  .fitted   .se.fit    .resid         .hat   .sigma
 ##      &lt;dbl&gt; &lt;int&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;    &lt;dbl&gt;
-## 1   28.801  1952 50.51208 0.5299963 -21.71108 0.0020765619 11.62203
-## 2   30.332  1957 52.14160 0.4629044 -21.80960 0.0015840967 11.62193
-## 3   31.997  1962 53.77112 0.4012330 -21.77412 0.0011901244 11.62197
-## 4   34.020  1967 55.40064 0.3478771 -21.38064 0.0008946453 11.62241
-## 5   36.088  1972 57.03016 0.3072006 -20.94216 0.0006976591 11.62288
-## 6   38.438  1977 58.65968 0.2846912 -20.22168 0.0005991661 11.62363
-## 7   39.854  1982 60.28920 0.2846912 -20.43520 0.0005991661 11.62341
-## 8   40.822  1987 61.91872 0.3072006 -21.09672 0.0006976591 11.62271
-## 9   41.674  1992 63.54824 0.3478771 -21.87424 0.0008946453 11.62187
+##  1  28.801  1952 50.51208 0.5299963 -21.71108 0.0020765619 11.62203
+##  2  30.332  1957 52.14160 0.4629044 -21.80960 0.0015840967 11.62193
+##  3  31.997  1962 53.77112 0.4012330 -21.77412 0.0011901244 11.62197
+##  4  34.020  1967 55.40064 0.3478771 -21.38064 0.0008946453 11.62241
+##  5  36.088  1972 57.03016 0.3072006 -20.94216 0.0006976591 11.62288
+##  6  38.438  1977 58.65968 0.2846912 -20.22168 0.0005991661 11.62363
+##  7  39.854  1982 60.28920 0.2846912 -20.43520 0.0005991661 11.62341
+##  8  40.822  1987 61.91872 0.3072006 -21.09672 0.0006976591 11.62271
+##  9  41.674  1992 63.54824 0.3478771 -21.87424 0.0008946453 11.62187
 ## 10  41.763  1997 65.17776 0.4012330 -23.41476 0.0011901244 11.62010
 ## # ... with 1,694 more rows, and 2 more variables: .cooksd &lt;dbl&gt;,
 ## #   .std.resid &lt;dbl&gt;</code></pre>
@@ -728,7 +721,7 @@ grid</code></pre></div>
 </div>
 <div id="separate-models-for-each-country-using-map-and-nested-data-frames" class="section level2">
 <h2>Separate models for each country using <code>map()</code> and nested data frames</h2>
-<p>What if we want to estimate separate models for <strong>every country</strong>? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned last week how to <a href="block011_iteration.html#writing_for_loops">iterate using <code>for</code> loops</a>. We could do this using a <code>for</code> loop, but this will take a bunch of code. Instead, let’s use the <a href="block011_iteration.html#map_functions"><code>map()</code> functions we already learned</a>, but add an additional component on top of that.</p>
+<p>What if we want to estimate separate models for <strong>every country</strong>? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned a couple of weeks ago how to <a href="block011_iteration.html#writing_for_loops">iterate using <code>for</code> loops</a>. We could do this using a <code>for</code> loop, but this will take a bunch of code. Instead, let’s use the <a href="block011_iteration.html#map_functions"><code>map()</code> functions we already learned</a>, but add an additional component on top of that.</p>
 <p>Instead of repeating an action for each <strong>column</strong> (variable), we want to repeat an action for each <strong>country</strong>, a subset of rows. To do that, we need a new data structure: the <strong>nested data frame</strong>. To create a nested data frame we start with a grouped data frame, and “nest” it:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country &lt;-<span class="st"> </span>gapminder <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">group_by</span>(country, continent) <span class="op">%&gt;%</span><span class="st"> </span>
@@ -750,7 +743,7 @@ by_country</code></pre></div>
 ## 10     Belgium    Europe &lt;tibble [12 × 4]&gt;
 ## # ... with 132 more rows</code></pre>
 <p>This looks very different from what you’ve seen in data frames before. Typically every cell in a data frame is a single value. But here, each element in the <code>data</code> column is actually <strong>another data frame</strong>. This demonstrates the benefits of lists - they can be used recursively to store other lists, which is exactly what data frames are.</p>
-<p>Now we have one row per country, with the variables associated with each country stored in their own column. All the original data is still in this nested data frame, just stored in a different way. Note that to see the values of the variables in <code>data</code>, we use the special notation we learned last week:</p>
+<p>Now we have one row per country, with the variables associated with each country stored in their own column. All the original data is still in this nested data frame, just stored in a different way. Note that to see the values of the variables in <code>data</code>, we use the special notation we learned previously:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country<span class="op">$</span>data[[<span class="dv">1</span>]]</code></pre></div>
 <pre><code>## # A tibble: 12 × 4
 ##     year lifeExp      pop gdpPercap
@@ -767,13 +760,13 @@ by_country</code></pre></div>
 ## 10  1997  41.763 22227415  635.3414
 ## 11  2002  42.129 25268405  726.7341
 ## 12  2007  43.828 31889923  974.5803</code></pre>
-<p>It’s hard to see the overall structure, but it’s easy to use the <code>map()</code> functions to access this data and analyze it. We have a model fitting function:</p>
+<p>It’s hard to see the overall structure, but it’s easy to use the <code>map()</code> functions to access this data and analyze it. We create a model fitting function:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">country_model &lt;-<span class="st"> </span><span class="cf">function</span>(df) {
   <span class="kw">lm</span>(lifeExp <span class="op">~</span><span class="st"> </span>year, <span class="dt">data =</span> df)
 }</code></pre></div>
 <p>And we want to apply it to each country. That is exactly what <code>map()</code> is designed for.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">models &lt;-<span class="st"> </span><span class="kw">map</span>(by_country<span class="op">$</span>data, country_model)</code></pre></div>
-<p>And as we’ve already learned, we could store the models as a new column in <code>by_country</code> to keep all the data and analysis stored together.</p>
+<p>And because <code>models</code> is a list and we just saw how to create list-columns, we could store the models as a new column in <code>by_country</code> to keep all the data and analysis together.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_country &lt;-<span class="st"> </span>by_country <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, country_model))
 by_country</code></pre></div>
@@ -830,7 +823,7 @@ by_country</code></pre></div>
 ## 9   Bangladesh      Asia &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
 ## 10     Belgium    Europe &lt;tibble [12 × 4]&gt; &lt;S3: lm&gt; &lt;tibble [12 × 5]&gt;
 ## # ... with 132 more rows</code></pre>
-<p>What if you want to plot the residuals? We need to unnest the residuals:</p>
+<p>What if you want to plot the residuals? We need to <strong>unnest</strong> the residuals. <code>unnest()</code> makes each element of the list its own row:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_country, resids)
 resids</code></pre></div>
 <pre><code>## # A tibble: 1,704 × 7
@@ -878,21 +871,13 @@ scorecard</code></pre></div>
 ## #   comprate &lt;dbl&gt;, firstgen &lt;dbl&gt;, debt &lt;dbl&gt;</code></pre>
 <p>Answer the following questions using the statistical modeling tools you have learned.</p>
 <ol style="list-style-type: decimal">
-<li><p>What is the relationship between admission rate and cost? Report this relationship using a scatterplot.</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(scorecard, <span class="kw">aes</span>(admrate, cost)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
-<img src="stat002_linear_models_files/figure-html/scorecard-point-1.png" width="672" />
-</p>
-<p></details></p></li>
-<li><p>Summarize the relationship between admission rate and cost by adding a best-fit line to your scatterplot.</p>
+<li><p>What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.</p>
 <details> <summary>Click for the solution</summary>
 <p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(scorecard, <span class="kw">aes</span>(admrate, cost)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>)</code></pre></div>
-<p><img src="stat002_linear_models_files/figure-html/scorecard-point-fit-1.png" width="672" /></p>
+<img src="stat002_linear_models_files/figure-html/scorecard-point-1.png" width="672" />
 </p>
 <p></details></p></li>
 <li><p>Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.</p>
@@ -905,95 +890,54 @@ scorecard</code></pre></div>
 ## 2     admrate  -181.6923   14.38405 -12.63151  3.980318e-35</code></pre>
 </p>
 <p></details></p></li>
-<li><p>Is the relationship between admission rate and cost different based on the type of college? Visualize the distribution of residuals for each type of college.</p>
+<li><p>Estimate separate linear regression models of the relationship between admission rate and cost for each type of college. Report the estimated parameters and standard errors in a tidy data frame.</p>
 <details> <summary>Click for the solution</summary>
 <p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">scorecard_resid &lt;-<span class="st"> </span>scorecard <span class="op">%&gt;%</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">add_residuals</span>(scorecard_mod)
-scorecard_resid</code></pre></div>
-<pre><code>## # A tibble: 1,849 × 13
-##    unitid                                 name state                type
-##     &lt;int&gt;                                &lt;chr&gt; &lt;chr&gt;               &lt;chr&gt;
-## 1  450234      ITT Technical Institute-Wichita    KS Private, for-profit
-## 2  448479 ITT Technical Institute-Swartz Creek    MI Private, for-profit
-## 3  456427      ITT Technical Institute-Concord    CA Private, for-profit
-## 4  459596  ITT Technical Institute-Tallahassee    FL Private, for-profit
-## 5  459851        Herzing University-Brookfield    WI Private, for-profit
-## 6  482477            DeVry University-Illinois    IL Private, for-profit
-## 7  482547              DeVry University-Nevada    NV Private, for-profit
-## 8  482592              DeVry University-Oregon    OR Private, for-profit
-## 9  482617           DeVry University-Tennessee    TN Private, for-profit
-## 10 482662          DeVry University-Washington    WA Private, for-profit
-## # ... with 1,839 more rows, and 9 more variables: cost &lt;int&gt;,
-## #   admrate &lt;dbl&gt;, satavg &lt;dbl&gt;, avgfacsal &lt;dbl&gt;, pctpell &lt;dbl&gt;,
-## #   comprate &lt;dbl&gt;, firstgen &lt;dbl&gt;, debt &lt;dbl&gt;, resid &lt;dbl&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(scorecard_resid, <span class="kw">aes</span>(resid)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_freqpoly</span>(<span class="kw">aes</span>(<span class="dt">color =</span> type))</code></pre></div>
-<p><img src="stat002_linear_models_files/figure-html/scorecard-resid-1.png" width="672" /></p>
-<p>It would appear the relationship between admission rate and cost is different for each college type. The distributions for private schools (for or non-profit) are not centered around 0.</p>
-</p>
-<p></details></p></li>
-<li><p>Estimate separate linear regression models of the relationship between admission rate and cost for each type of college.</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">type_model &lt;-<span class="st"> </span><span class="cf">function</span>(df) {
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># model-building function</span>
+type_model &lt;-<span class="st"> </span><span class="cf">function</span>(df) {
   <span class="kw">lm</span>(cost <span class="op">~</span><span class="st"> </span>admrate, <span class="dt">data =</span> df)
 }
 
+<span class="co"># nest the data frame</span>
 by_type &lt;-<span class="st"> </span>scorecard <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">group_by</span>(type) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">nest</span>()
 by_type</code></pre></div>
-<pre><code>## # A tibble: 3 × 2
+<pre><code>## # A tibble: 3 x 2
 ##                  type                  data
 ##                 &lt;chr&gt;                &lt;list&gt;
-## 1 Private, for-profit   &lt;tibble [216 × 11]&gt;
-## 2  Private, nonprofit &lt;tibble [1,092 × 11]&gt;
-## 3              Public   &lt;tibble [541 × 11]&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_type &lt;-<span class="st"> </span>by_type <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, type_model),
-         <span class="dt">resids =</span> <span class="kw">map2</span>(data, model, add_residuals))
+## 1 Private, for-profit   &lt;tibble [216 x 11]&gt;
+## 2  Private, nonprofit &lt;tibble [1,092 x 11]&gt;
+## 3              Public   &lt;tibble [541 x 11]&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># estimate the models</span>
+by_type &lt;-<span class="st"> </span>by_type <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, type_model))
 by_type</code></pre></div>
-<pre><code>## # A tibble: 3 × 4
-##                  type                  data    model                resids
-##                 &lt;chr&gt;                &lt;list&gt;   &lt;list&gt;                &lt;list&gt;
-## 1 Private, for-profit   &lt;tibble [216 × 11]&gt; &lt;S3: lm&gt;   &lt;tibble [216 × 12]&gt;
-## 2  Private, nonprofit &lt;tibble [1,092 × 11]&gt; &lt;S3: lm&gt; &lt;tibble [1,092 × 12]&gt;
-## 3              Public   &lt;tibble [541 × 11]&gt; &lt;S3: lm&gt;   &lt;tibble [541 × 12]&gt;</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##                  type                  data    model
+##                 &lt;chr&gt;                &lt;list&gt;   &lt;list&gt;
+## 1 Private, for-profit   &lt;tibble [216 x 11]&gt; &lt;S3: lm&gt;
+## 2  Private, nonprofit &lt;tibble [1,092 x 11]&gt; &lt;S3: lm&gt;
+## 3              Public   &lt;tibble [541 x 11]&gt; &lt;S3: lm&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># extract the parameters and print a tidy data frame</span>
+by_type <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">results =</span> <span class="kw">map</span>(model, tidy)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">unnest</span>(results)</code></pre></div>
+<pre><code>## # A tibble: 6 x 6
+##                  type        term     estimate  std.error   statistic
+##                 &lt;chr&gt;       &lt;chr&gt;        &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
+## 1 Private, for-profit (Intercept) 33148.964036 1679.37739  19.7388414
+## 2 Private, for-profit     admrate   -69.012413   21.21030  -3.2537210
+## 3  Private, nonprofit (Intercept) 50797.468138 1112.33157  45.6675593
+## 4  Private, nonprofit     admrate  -198.228160   16.49201 -12.0196449
+## 5              Public (Intercept) 20192.509481  718.82795  28.0908798
+## 6              Public     admrate    -7.202504   10.27522  -0.7009587
+## # ... with 1 more variables: p.value &lt;dbl&gt;</code></pre>
 <p>The same approach by using an anonymous function with the <a href="http://r4ds.had.co.nz/iteration.html#shortcuts">one-sided formula format</a>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">by_type <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">model =</span> <span class="kw">map</span>(data, <span class="op">~</span><span class="kw">lm</span>(cost <span class="op">~</span><span class="st"> </span>admrate, <span class="dt">data =</span> .)),
-         <span class="dt">resids =</span> <span class="kw">map2</span>(data, model, add_residuals))</code></pre></div>
-</p>
-<p></details></p></li>
-<li><p>Compare the results of the new series of models to the old one by graphing the new residuals. Is it better to use a single model or three sets of models to explain this relationship?</p>
-<details> <summary>Click for the solution</summary>
-<p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># results of original model</span>
-<span class="kw">glance</span>(scorecard_mod)</code></pre></div>
-<pre><code>##    r.squared adj.r.squared    sigma statistic      p.value df    logLik
-## 1 0.08035796    0.07985432 12146.48  159.5552 3.980318e-35  2 -19784.78
-##        AIC     BIC     deviance df.residual
-## 1 39575.57 39592.1 269402514670        1826</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># results of new models</span>
-by_type <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">glance =</span> <span class="kw">map</span>(model, glance)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">unnest</span>(glance, <span class="dt">.drop =</span> <span class="ot">TRUE</span>)</code></pre></div>
-<pre><code>## # A tibble: 3 × 12
-##                  type    r.squared adj.r.squared     sigma   statistic
-##                 &lt;chr&gt;        &lt;dbl&gt;         &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;
-## 1 Private, for-profit 0.0488797330  0.0442626443  5189.999  10.5867001
-## 2  Private, nonprofit 0.1181801128  0.1173620981 11200.479 144.4718626
-## 3              Public 0.0009124439 -0.0009445961  4123.599   0.4913432
-## # ... with 7 more variables: p.value &lt;dbl&gt;, df &lt;int&gt;, logLik &lt;dbl&gt;,
-## #   AIC &lt;dbl&gt;, BIC &lt;dbl&gt;, deviance &lt;dbl&gt;, df.residual &lt;int&gt;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># what about the new residuals?</span>
-resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_type, resids)
-
-<span class="kw">ggplot</span>(resids, <span class="kw">aes</span>(resid)) <span class="op">+</span><span class="st"> </span>
-<span class="st">  </span><span class="kw">geom_freqpoly</span>(<span class="kw">aes</span>(<span class="dt">color =</span> type))</code></pre></div>
-<p><img src="stat002_linear_models_files/figure-html/scorecard-compare-1.png" width="672" /></p>
-<p>Our residuals are now centered around 0 for each type of college. Obviously we could go much deeper here, but this is a good starting point.</p>
+         <span class="dt">results =</span> <span class="kw">map</span>(model, tidy)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">unnest</span>(results)</code></pre></div>
 </p>
 <p></details></p></li>
 </ol>
@@ -1014,28 +958,30 @@ resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_type, res
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-09                  
+##  date     2017-10-24                  
 ## 
 ##  package    * version    date       source                              
 ##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
 ##  backports    1.1.0      2017-05-22 CRAN (R 3.4.0)                      
 ##  base       * 3.4.1      2017-07-07 local                               
 ##  bindr        0.1        2016-11-13 CRAN (R 3.4.0)                      
-##  bindrcpp     0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  bindrcpp   * 0.2        2017-06-17 CRAN (R 3.4.0)                      
 ##  boxes        0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
 ##  broom      * 0.4.2      2017-08-09 local                               
 ##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                      
 ##  clisymbols   1.2.0      2017-05-21 cran (@1.2.0)                       
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.4.1)                      
 ##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                      
 ##  compiler     3.4.1      2017-07-07 local                               
-##  crayon       1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  crayon       1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab) 
 ##  datasets   * 3.4.1      2017-07-07 local                               
-##  devtools     1.13.2     2017-06-02 CRAN (R 3.4.0)                      
+##  devtools     1.13.3     2017-08-02 CRAN (R 3.4.1)                      
 ##  digest       0.6.12     2017-01-27 CRAN (R 3.4.0)                      
-##  dplyr      * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
+##  dplyr      * 0.7.4.9000 2017-10-03 Github (tidyverse/dplyr@1a0730a)    
 ##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                      
 ##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
 ##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.1)                      
+##  gapminder  * 0.2.0      2015-12-31 CRAN (R 3.4.0)                      
 ##  ggplot2    * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
 ##  glue         1.1.1      2017-06-21 CRAN (R 3.4.1)                      
 ##  graphics   * 3.4.1      2017-07-07 local                               
@@ -1045,9 +991,9 @@ resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_type, res
 ##  haven        1.1.0      2017-07-09 CRAN (R 3.4.1)                      
 ##  hms          0.3        2016-11-22 CRAN (R 3.4.0)                      
 ##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                      
-##  httr         1.2.1      2016-07-03 CRAN (R 3.4.0)                      
+##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                      
 ##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                      
-##  knitr        1.16       2017-05-18 CRAN (R 3.4.0)                      
+##  knitr        1.17       2017-08-10 cran (@1.17)                        
 ##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.1)                      
 ##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
 ##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
@@ -1055,21 +1001,21 @@ resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_type, res
 ##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
 ##  methods    * 3.4.1      2017-07-07 local                               
 ##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
-##  modelr     * 0.1.1      2017-07-24 CRAN (R 3.4.1)                      
+##  modelr     * 0.1.1      2017-08-10 local                               
 ##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
 ##  nlme         3.1-131    2017-02-06 CRAN (R 3.4.1)                      
 ##  parallel     3.4.1      2017-07-07 local                               
 ##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                      
 ##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                      
 ##  psych        1.7.5      2017-05-03 CRAN (R 3.4.1)                      
-##  purrr      * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
+##  purrr      * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
 ##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                      
 ##  rcfss      * 0.1.5      2017-07-31 local                               
-##  Rcpp         0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  Rcpp         0.12.13    2017-09-28 cran (@0.12.13)                     
 ##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                      
 ##  reshape2     1.4.2      2016-10-22 CRAN (R 3.4.0)                      
-##  rlang        0.1.1      2017-05-18 CRAN (R 3.4.0)                      
+##  rlang        0.1.2      2017-08-09 CRAN (R 3.4.1)                      
 ##  rmarkdown    1.6        2017-06-15 CRAN (R 3.4.0)                      
 ##  rprojroot    1.2        2017-01-16 CRAN (R 3.4.0)                      
 ##  rstudioapi   0.6        2016-06-27 CRAN (R 3.4.0)                      
@@ -1078,8 +1024,9 @@ resids &lt;-<span class="st"> </span><span class="kw">unnest</span>(by_type, res
 ##  stats      * 3.4.1      2017-07-07 local                               
 ##  stringi      1.1.5      2017-04-07 CRAN (R 3.4.0)                      
 ##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
-##  tibble     * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
-##  tidyr      * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
+##  tibble     * 1.3.4      2017-08-22 CRAN (R 3.4.1)                      
+##  tidyr      * 0.7.0      2017-08-16 CRAN (R 3.4.1)                      
+##  tidyselect   0.1.1      2017-07-24 CRAN (R 3.4.1)                      
 ##  tidyverse  * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
 ##  tools        3.4.1      2017-07-07 local                               
 ##  utils      * 3.4.1      2017-07-07 local                               
