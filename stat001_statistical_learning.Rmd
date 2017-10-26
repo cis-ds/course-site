@@ -8,13 +8,14 @@ output:
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE,
-                      interval = .4,
+                      echo = FALSE,
                       message = FALSE,
                       warning = FALSE)
 ```
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
+library(FNN)
 theme_set(theme_minimal())
 ```
 
@@ -40,7 +41,7 @@ By plotting the variables against one another using a scatterplot, we can see th
   select(-X1))
 ```
 
-```{r plot_ad, echo = FALSE, dependson="get_ad"}
+```{r plot_ad, dependson="get_ad"}
 # plot separate facets for relationship between ad spending and sales
 plot_ad <- advertising %>%
   gather(method, spend, -Sales) %>%
@@ -59,7 +60,7 @@ where $f$ is some fixed, unknown function of the relationship between the indepe
 
 Statistical learning refers to the set of approaches for estimating $f$. There are many potential approaches to defining the functional form of $f$. One approach widely used is called **least squares** - it means that the overall solution minimizes the sum of the squares of the errors made in the results of the equation. The errors are simply the vertical difference between the actual values for $y$ and the predicted values for $y$. Applied here, the results would look like:
 
-```{r plot_ad_fit, echo = FALSE}
+```{r plot_ad_fit}
 plot_ad +
   geom_smooth(method = "lm", se = FALSE)
 ```
@@ -89,7 +90,7 @@ Parametric methods involve a two-stage process:
 1. First make an assumption about the functional form of $f$. For instance, OLS assumes that the relationship between $X$ and $Y$ is **linear**. This greatly simplifies the problem of estimating the model because we know a great deal about the properties of linear models.
 1. After a model has been selected, we need to **fit** or **train** the model using the actual data. We demonstrated this previously with ordinary least squares. The estimation procedure minimizes the sum of the squares of the differences between the observed responses $Y$ and those predicted by a linear function $\hat{Y}$.
 
-```{r plot_parametric, echo = FALSE, dependson="get_ad"}
+```{r plot_parametric, dependson="get_ad"}
 method_model <- function(df) {
   lm(Sales ~ spend, data = df)
 }
@@ -122,76 +123,47 @@ The downside to parametric methods is that they assume a specific functional for
 
 Non-parametric methods do not make any assumptions about the functional form of $f$. Instead, they use the data itself to estimate $f$ so that it gets as close as possible to the data points without becoming overly complex. By avoiding any assumptions about the functional form, non-parametric methods avoid the issues caused by parametic models. However, by doing so non-parametric methods require a large set of observations to avoid **overfitting** the data and obtain an accurate estimate of $f$.
 
-One non-parametric method is **locally weighted scatterplot smoothing** (LOWESS or LOESS). This method estimates a regression line based on localized subsets of the data, building up the global function $f$ point-by-point. Here is an example of a LOESS on the `ethanol` dataset in the `lattice` package:
+One non-parametric method is called **$K$-nearest neighbors regression** (KNN regression). Rather than binning the data into discrete and fixed intervals, KNN regression uses a moving average to generate the regression line. Given a value for $K$ and a prediction point $x_0$, KNN regression identifies the $K$ observations closest to the prediction point $X_0$, and estimates a local regression line that is the average of these observations values for the outcome $Y$.
 
-```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
-library(broom)
-library(lattice)
+With $K=1$, the resulting KNN regression line will fit the training observations extraordinarily well.
 
-mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
-fit <- augment(mod)
-
-ggplot(fit, aes(E, NOx)) +
-  geom_point() +
-  geom_line(aes(y = .fitted), color = "red") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
+```{r knn-1}
+advertising %>%
+  gather(method, spend, -Sales) %>%
+  group_by(method) %>%
+  nest() %>%
+  mutate(knn = map(data, ~ knn.reg(.x$spend, y = .x$Sales, k = 1)),
+         pred = map(knn, ~ .x$pred)) %>%
+  unnest(data, pred) %>%
+  ggplot(aes(spend, Sales)) +
+  facet_wrap(~ method, scales = "free_x") +
+  geom_point(alpha = .25) +
+  geom_step(aes(y = pred), color = "blue") +
+  labs(title = "K-Nearest Neighbor",
+       subtitle = "K = 1",
+       x = "Spending (in thousands of dollars)")
 ```
 
-The LOESS is built up point-by-point:
+Perhaps a bit too well. Compare this to $K=9$:
 
-```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
-dat <- ethanol %>%
-  inflate(center = unique(ethanol$E)) %>%
-  mutate(dist = abs(E - center)) %>%
-  filter(rank(dist) / n() <= .75) %>%
-  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
-
-library(gganimate)
-
-p <- ggplot(dat, aes(E, NOx)) +
-  geom_point(aes(alpha = weight, frame = center)) +
-  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
-  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
-  geom_line(aes(y = .fitted), data = fit, color = "red") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
-gganimate(p)
+```{r knn-9}
+advertising %>%
+  gather(method, spend, -Sales) %>%
+  group_by(method) %>%
+  nest() %>%
+  mutate(knn = map(data, ~ knn.reg(.x$spend, y = .x$Sales, k = 9)),
+         pred = map(knn, ~ .x$pred)) %>%
+  unnest(data, pred) %>%
+  ggplot(aes(spend, Sales)) +
+  facet_wrap(~ method, scales = "free_x") +
+  geom_point(alpha = .25) +
+  geom_step(aes(y = pred), color = "blue") +
+  labs(title = "K-Nearest Neighbor",
+       subtitle = "K = 9",
+       x = "Spending (in thousands of dollars)")
 ```
 
-One important argument you can control with LOESS is the **span**, or how smooth the LOESS function will become. A larger span will result in a smoother curve, but may not be as accurate.
-
-```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
-spans <- c(.25, .5, .75, 1)
-
-# create loess fits, one for each span
-fits <- data_frame(span = spans) %>%
-  group_by(span) %>%
-  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
-
-# calculate weights to reproduce this with local weighted fits
-dat <- ethanol %>%
-  inflate(span = spans, center = unique(ethanol$E)) %>%
-  mutate(dist = abs(E - center)) %>%
-  filter(rank(dist) / n() <= span) %>%
-  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
-
-# create faceted plot with changing points, local linear fits, and vertical lines,
-# and constant hollow points and loess fit
-p <- ggplot(dat, aes(E, NOx)) +
-  geom_point(aes(alpha = weight, frame = center)) +
-  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
-  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
-  geom_point(shape = 1, data = ethanol, alpha = .25) +
-  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
-  facet_wrap(~span) +
-  ylim(0, 5) +
-  ggtitle("x0 = ") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
-
-gganimate(p)
-```
+This smoothing line averages over the nine nearest observations; while still a step function, it is smoother than $K=1$.
 
 # Classification vs. regression
 
