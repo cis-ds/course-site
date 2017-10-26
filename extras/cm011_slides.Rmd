@@ -1,9 +1,9 @@
 ---
-title: "Statistical learning: basics and regression problems"
+title: "Statistical learning: regression and classification"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 6, 2017"
+date: "October 30, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -11,25 +11,26 @@ output: rcfss::cfss_slides
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE,
-                      echo = FALSE,
                       interval = .4)
 
 library(tidyverse)
 library(modelr)
+library(broom)
+library(FNN)
 library(here)
-theme_set(theme_bw(base_size = 18))
+theme_set(theme_minimal(base_size = 18))
 ```
 
 ## What is statistical learning?
 
-```{r get_ad, message = FALSE, warning = FALSE}
+```{r get_ad, message = FALSE, warning = FALSE, echo = FALSE}
 # get advertising data
 advertising <- read_csv(here("data/Advertising.csv")) %>%
   tbl_df() %>%
   select(-X1)
 ```
 
-```{r plot_ad, dependson="get_ad"}
+```{r plot_ad, dependson="get_ad", echo = FALSE}
 # plot separate facets for relationship between ad spending and sales
 plot_ad <- advertising %>%
   gather(method, spend, -Sales) %>%
@@ -48,7 +49,7 @@ $$Y = f(X) + \epsilon$$
 
 ## Linear functional form
 
-```{r plot_ad_fit}
+```{r plot_ad_fit, echo = FALSE}
 plot_ad +
   geom_smooth(method = "lm", se = FALSE)
 ```
@@ -68,7 +69,7 @@ plot_ad +
 
 ## OLS
 
-```{r plot_parametric, dependson="get_ad"}
+```{r plot_parametric, dependson="get_ad", echo = FALSE}
 method_model <- function(df) {
   lm(Sales ~ spend, data = df)
 }
@@ -106,103 +107,56 @@ $$Y = \beta_0 + \beta_{1}X_1$$
     * Avoid overcomplexity
 * Requires large amount of observations
 
-## LOESS
+## $K$-Nearest Neighbors regression
 
-```{r loess, echo = FALSE, warning = FALSE, message = FALSE}
-library(broom)
-library(lattice)
-
-mod <- loess(NOx ~ E, ethanol, degree = 1, span = .75)
-fit <- augment(mod)
-
-ggplot(fit, aes(E, NOx)) +
-  geom_point() +
-  geom_line(aes(y = .fitted), color = "red") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
+```{r knn-1, echo = FALSE}
+advertising %>%
+  gather(method, spend, -Sales) %>%
+  group_by(method) %>%
+  nest() %>%
+  mutate(knn = map(data, ~ knn.reg(.x$spend, y = .x$Sales, k = 1)),
+         pred = map(knn, ~ .x$pred)) %>%
+  unnest(data, pred) %>%
+  ggplot(aes(spend, Sales)) +
+  facet_wrap(~ method, scales = "free_x") +
+  geom_point(alpha = .25) +
+  geom_step(aes(y = pred), color = "blue") +
+  labs(title = "K-Nearest Neighbor",
+       subtitle = "K = 1",
+       x = "Spending (in thousands of dollars)")
 ```
 
-----
+## $K$-Nearest Neighbors regression
 
-```{r loess_buildup, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
-dat <- ethanol %>%
-  inflate(center = unique(ethanol$E)) %>%
-  mutate(dist = abs(E - center)) %>%
-  filter(rank(dist) / n() <= .75) %>%
-  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
-
-library(gganimate)
-
-p <- ggplot(dat, aes(E, NOx)) +
-  geom_point(aes(alpha = weight, frame = center)) +
-  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
-  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
-  geom_line(aes(y = .fitted), data = fit, color = "red") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
-gg_animate(p)
+```{r knn-9, echo = FALSE}
+advertising %>%
+  gather(method, spend, -Sales) %>%
+  group_by(method) %>%
+  nest() %>%
+  mutate(knn = map(data, ~ knn.reg(.x$spend, y = .x$Sales, k = 9)),
+         pred = map(knn, ~ .x$pred)) %>%
+  unnest(data, pred) %>%
+  ggplot(aes(spend, Sales)) +
+  facet_wrap(~ method, scales = "free_x") +
+  geom_point(alpha = .25) +
+  geom_step(aes(y = pred), color = "blue") +
+  labs(title = "K-Nearest Neighbor",
+       subtitle = "K = 9",
+       x = "Spending (in thousands of dollars)")
 ```
-
-----
-
-```{r loess_span, dependson="loess", fig.show = "animate", echo = FALSE, warning = FALSE, message = FALSE}
-spans <- c(.25, .5, .75, 1)
-
-# create loess fits, one for each span
-fits <- data_frame(span = spans) %>%
-  group_by(span) %>%
-  do(augment(loess(NOx ~ E, ethanol, degree = 1, span = .$span)))
-
-# calculate weights to reproduce this with local weighted fits
-dat <- ethanol %>%
-  inflate(span = spans, center = unique(ethanol$E)) %>%
-  mutate(dist = abs(E - center)) %>%
-  filter(rank(dist) / n() <= span) %>%
-  mutate(weight = (1 - (dist / max(dist)) ^ 3) ^ 3)
-
-# create faceted plot with changing points, local linear fits, and vertical lines,
-# and constant hollow points and loess fit
-p <- ggplot(dat, aes(E, NOx)) +
-  geom_point(aes(alpha = weight, frame = center)) +
-  geom_smooth(aes(group = center, frame = center, weight = weight), method = "lm", se = FALSE) +
-  geom_vline(aes(xintercept = center, frame = center), lty = 2) +
-  geom_point(shape = 1, data = ethanol, alpha = .25) +
-  geom_line(aes(y = .fitted, frame = E, cumulative = TRUE), data = fits, color = "red") +
-  facet_wrap(~span) +
-  ylim(0, 5) +
-  ggtitle("x0 = ") +
-  labs(x = "Equivalence ratio",
-       y = "Concentration of nitrogen oxides in micrograms/J")
-
-gg_animate(p)
-```
-
-## Types of learning
-
-* Supervised
-* Unsupervised
-
-## Statistical learning vs. machine learning
-
-* Statistical learning
-    * Subfield of statistics
-    * Focused predominantly on **inference**
-* Machine learning
-    * Subfield of computer science
-    * Focused predominantly on **prediction**
 
 ## Linear models
 
 $$y = \beta_0 + \beta_1 * x$$
 
-```{r sim-plot}
+```{r sim-plot, echo = FALSE}
 ggplot(sim1, aes(x, y)) + 
   geom_point()
 ```
 
 ## Linear models
 
-```{r sim-random-fit}
+```{r sim-random-fit, echo = FALSE}
 models <- tibble(
   a1 = runif(250, -20, 40),
   a2 = runif(250, -5, 5)
@@ -231,30 +185,30 @@ ggplot(dist1, aes(x1, y)) +
 
 ## Estimating a linear model using `lm()`
 
-```{r sim-lm, echo = TRUE}
+```{r sim-lm}
 sim1_mod <- lm(y ~ x, data = sim1)
 coef(sim1_mod)
 ```
 
 ## `str(lm())`
 
-```{r lm-str, echo = TRUE}
+```{r lm-str}
 str(sim1_mod)
 ```
 
 ## Predicted values
 
-```{r add-predict-data}
+```{r add-predict-data, echo = FALSE}
 grid <- sim1 %>% 
   data_grid(x) 
 ```
 
-```{r add-predict}
+```{r add-predict, echo = FALSE}
 grid <- grid %>% 
   add_predictions(sim1_mod) 
 ```
 
-```{r plot-lm-predict}
+```{r plot-lm-predict, echo = FALSE}
 ggplot(sim1, aes(x)) +
   geom_point(aes(y = y)) +
   geom_line(aes(y = pred), data = grid, color = "red", size = 1) +
@@ -263,7 +217,7 @@ ggplot(sim1, aes(x)) +
 
 ## Residuals
 
-```{r resids}
+```{r resids, echo = FALSE}
 sim1 <- sim1 %>% 
   add_residuals(sim1_mod)
 
@@ -271,17 +225,351 @@ ggplot(sim1, aes(resid)) +
   geom_freqpoly(binwidth = 0.5)
 ```
 
-## Estimating linear models using `gapminder`
+## Overall `gapminder` model {.scrollable}
 
-Go [here](stat002_linear_models.html#estimating_a_linear_model(s)_using_gapminder).
+```{r load-gapminder, echo = FALSE}
+library(gapminder)
+gapminder
+```
+
+```{r lifeExp-by-country}
+gapminder %>% 
+  ggplot(aes(year, lifeExp, group = country)) +
+    geom_line(alpha = 1/3)
+```
+
+## Overall `gapminder` model {.scrollable}
+
+```{r lifeExp-mod}
+gapminder_mod <- lm(lifeExp ~ year, data = gapminder)
+summary(gapminder_mod)
+
+grid <- gapminder %>% 
+  data_grid(year, country) 
+grid
+
+grid <- grid %>% 
+  add_predictions(gapminder_mod) 
+grid
+
+ggplot(gapminder, aes(year, group = country)) +
+  geom_line(aes(y = lifeExp), alpha = .2) +
+  geom_line(aes(y = pred), data = grid, color = "red", size = 1)
+```
+
+## `tidy()` {.scrollable}
+
+```{r tidy}
+tidy(gapminder_mod)
+
+tidy(gapminder_mod) %>%
+  str()
+```
+
+## `augment()`
+
+```{r augment}
+augment(gapminder_mod) %>%
+  as_tibble()
+```
+
+## `glance()`
+
+```{r glance}
+glance(gapminder_mod)
+```
+
+## Separate model for USA
+
+```{r gapminder-us, echo = FALSE}
+gapminder %>%
+  filter(country == "United States") %>%
+  ggplot(aes(year, lifeExp)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "United States")
+```
+
+## `map()` and nested data frames {.scrollable}
+
+```{r nest}
+by_country <- gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+
+by_country
+```
+
+## `map()` and nested data frames
+
+```{r nest-view}
+by_country$data[[1]]
+```
+
+## `map()` and nested data frames {.scrollable}
+
+```{r model-function}
+country_model <- function(df) {
+  lm(lifeExp ~ year, data = df)
+}
+```
+
+```{r map-model-column}
+by_country <- by_country %>%
+  mutate(model = map(data, country_model))
+by_country
+```
+
+```{r map-model-filter}
+by_country %>% 
+  filter(continent == "Europe")
+```
+
+## Unnesting {.scrollable}
+
+```{r map2}
+by_country <- by_country %>% 
+  mutate(resids = map2(data, model, add_residuals))
+by_country
+```
+
+```{r unnest}
+resids <- unnest(by_country, resids)
+resids
+
+resids %>% 
+  ggplot(aes(year, resid)) +
+    geom_line(aes(group = country), alpha = 1 / 3) + 
+    geom_smooth(se = FALSE)
+```
 
 ## Exercise: linear regression with `scorecard`
 
-Complete [this exercise](stat002_linear_models.html#exercise:_linear_regression_with_scorecard)
+![](http://strive-365.com/wp-content/uploads/2014/04/food-and-exercise.jpg)
 
-## Acknowledgments
+## Titanic
 
-* This presentation is derived in part from ["Creating a LOESS animation with `gganimate`"](http://varianceexplained.org/files/loess.html) by David Robinson.
-* This presentation is derived in part from ["Machine Learning vs. Statistical Modeling: The Real Difference"](http://www.infogix.com/blog/machine-learning-vs-statistical-modeling-the-real-difference/)
-* For more information on statistical learning and the math behind these methods, see the awesome book [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7)
+[![Sinking of the *Titanic*](https://static1.squarespace.com/static/5006453fe4b09ef2252ba068/5095eabce4b06cb305058603/5095eabce4b02d37bef4c24c/1352002236895/100_anniversary_titanic_sinking_by_esai8mellows-d4xbme8.jpg)](http://www.ultimatetitanic.com/the-sinking/)
 
+## Titanic
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/WNIPqafd4As" frameborder="0" allowfullscreen></iframe>
+
+## Titanic
+
+![[Titanic (1997)](https://en.wikipedia.org/wiki/Titanic_(1997_film))](http://i.giphy.com/KSeT85Vtym7m.gif)
+    
+## Get data
+
+```{r titanic_data, message = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble()
+
+str(titanic)
+```
+
+## Linear regression
+
+```{r titanic_ols, echo = FALSE}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+## Linear regression
+
+```{r titanic_ols_old, echo = FALSE}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
+  xlim(0, 200)
+```
+
+## Logistic regression
+
+$$P(\text{survival} = \text{Yes} | \text{age})$$
+
+* Predicted probability of surviving
+
+## Logistic regression
+
+```{r titanic_age_gl}
+survive_age <- glm(Survived ~ Age, data = titanic, family = binomial)
+summary(survive_age)
+```
+
+## Logistic regression
+
+```{r titanic_age_glm_plot, echo = FALSE}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"),
+              se = FALSE)
+```
+
+## Logistic regression
+
+```{r titanic_age_glm_plot_wide, echo = FALSE}
+ggplot(titanic, aes(Age, Survived)) +
+  geom_point() +
+  geom_smooth(method = "glm", method.args = list(family = "binomial"),
+              se = FALSE, fullrange = TRUE) +
+  xlim(0,200)
+```
+
+```{r make_age_pred, echo = FALSE}
+titanic_age <- titanic %>%
+  data_grid(Age)
+```
+
+```{r logit, echo = FALSE}
+logit2prob <- function(x){
+  exp(x) / (1 + exp(x))
+}
+```
+
+```{r extract_modelr, depends="make_age_pred", echo = FALSE}
+titanic_age <- titanic_age %>%
+  add_predictions(survive_age) %>%
+  mutate(pred = logit2prob(pred))
+```
+
+```{r plot_pred, depends="make_age_pred", eval = FALSE, echo = FALSE}
+ggplot(titanic_age, aes(Age, pred)) +
+  geom_line() +
+  labs(title = "Relationship Between Age and Surviving the Titanic",
+       y = "Predicted Probability of Survival")
+```
+
+## Multiple predictors
+
+```{r survive_age_woman, echo = FALSE}
+survive_age_woman <- glm(Survived ~ Age + Sex, data = titanic,
+                         family = binomial)
+summary(survive_age_woman)
+```
+
+## Multiple predictors
+
+```{r survive_age_woman_pred, echo = FALSE}
+titanic_age_sex <- titanic %>%
+  data_grid(Age, Sex) %>%
+  add_predictions(survive_age_woman) %>%
+  mutate(pred = logit2prob(pred))
+```
+
+```{r survive_age_woman_plot, dependson="survive_age_woman", echo = FALSE}
+ggplot(titanic_age_sex, aes(Age, pred, color = Sex)) +
+  geom_line() +
+  labs(title = "Probability of Surviving the Titanic",
+       y = "Predicted Probability of Survival",
+       color = "Sex")
+```
+
+## Quadratic terms
+
+```{r straight_line, echo = FALSE}
+sim_line <- tibble(x = runif(1000),
+                   y = x * 1)
+
+ggplot(sim_line, aes(x, y)) +
+  geom_line()
+```
+
+## Quadratic terms
+
+```{r parabola, echo = FALSE}
+sim_line <- tibble(x = runif(1000, -1, 1),
+                   y = x^2 + x)
+
+ggplot(sim_line, aes(x, y)) +
+  geom_line()
+```
+
+## Quadratic terms
+
+```{r quadratic, echo = FALSE}
+sim_line <- tibble(x = runif(1000, -1, 1),
+                   y = x^3 + x^2 + x)
+
+ggplot(sim_line, aes(x, y)) +
+  geom_line()
+```
+
+## Quadratic terms
+
+```{r, echo = FALSE}
+survive_age_square <- glm(Survived ~ Age + I(Age^2), data = titanic,
+                          family = binomial)
+
+titanic_age %>%
+  add_predictions(survive_age) %>%
+  mutate(pred = logit2prob(pred)) %>%
+  ggplot(aes(Age, pred)) +
+  geom_line() +
+  labs(title = "Relationship Between Age and Surviving the Titanic",
+       y = "Predicted Probability of Survival")
+```
+
+## Interactive terms
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
+
+## Interactive terms
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
+
+## Interactive terms
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
+
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
+
+## Interactive terms
+
+```{r age_woman_cross, echo = FALSE}
+survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+```
+
+```{r age_woman_cross_pred, dependson="age_woman_cross", echo = FALSE}
+titanic_age_sex_x <- titanic %>%
+  data_grid(Age, Sex) %>%
+  add_predictions(survive_age_woman_x) %>%
+  mutate(pred = logit2prob(pred))
+```
+
+```{r age_woman_plot, dependson="age_woman_cross", echo = FALSE}
+ggplot(titanic_age_sex_x, aes(Age, pred, color = Sex)) +
+  geom_line() +
+  labs(title = "Probability of Surviving the Titanic",
+       y = "Predicted Probability of Survival",
+       color = "Sex")
+```
+
+## Accuracy of predictions
+
+```{r accuracy_age, dependson="titanic_age_glm"}
+age_accuracy <- titanic %>%
+  add_predictions(survive_age) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(age_accuracy$Survived != age_accuracy$pred, na.rm = TRUE)
+```
+
+## Accuracy of predictions
+
+```{r accuracy_age_gender_x, dependson="age_woman_cross"}
+x_accuracy <- titanic %>%
+  add_predictions(survive_age_woman_x) %>%
+  mutate(pred = logit2prob(pred),
+         pred = as.numeric(pred > .5))
+
+mean(x_accuracy$Survived != x_accuracy$pred, na.rm = TRUE)
+```
+
+## Exercise: depression and voting
+
+![](http://www.careactplans.com/blog/es/wp-content/uploads/2015/04/health-fresh-food-exercise-key-perfect-health.w654.jpg)
