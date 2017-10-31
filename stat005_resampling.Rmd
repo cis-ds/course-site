@@ -99,10 +99,12 @@ mse(auto_lm, auto_test)
 For a strictly linear model, the MSE for the test set is `r formatC(mse(auto_lm, auto_test), digits = 4)`. How does this compare to a quadratic model? We can use the `poly()` function in conjunction with a `map()` iteration to estimate the MSE for a series of models with higher-order polynomial terms:
 
 ```{r mse_poly, dependson="auto_split"}
+# write a custom model function
 auto_poly_glm <- function(x){
   glm(mpg ~ poly(horsepower, x), data = auto_train)
 }
 
+# estimate models with higher order polynomials
 auto_poly_results <- data_frame(terms = 1:5,
                                 model = map(terms, auto_poly_glm),
                                 MSE = map_dbl(model,
@@ -110,6 +112,22 @@ auto_poly_results <- data_frame(terms = 1:5,
                                               data = auto_test)
 )
 
+# visualize each model
+data_grid(Auto, horsepower) %>%
+  gather_predictions(`1` = auto_poly_results$model[[1]],
+                     `2` = auto_poly_results$model[[2]],
+                     `3` = auto_poly_results$model[[3]],
+                     `4` = auto_poly_results$model[[4]],
+                     `5` = auto_poly_results$model[[5]]) %>%
+  ggplot(aes(horsepower, pred)) +
+  geom_point(data = Auto, aes(y = mpg), alpha = .1) +
+  geom_line(aes(color = model)) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  labs(x = "Horsepower",
+       y = "MPG",
+       color = "Highest-order\npolynomial")
+
+# compare mse
 ggplot(auto_poly_results, aes(terms, MSE)) +
   geom_line() +
   labs(title = "Comparing quadratic linear models",
