@@ -1,9 +1,9 @@
 ---
-title: "Distributed learning"
+title: "Geospatial visualization"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 15, 2017"
+date: "November 8, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -11,224 +11,795 @@ output: rcfss::cfss_slides
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE,
-                      echo = FALSE)
+                      echo = TRUE,
+                      interval = .4)
 
 library(tidyverse)
-library(gapminder)
+library(knitr)
+library(broom)
 library(stringr)
+library(modelr)
+library(forcats)
+library(ggmap)
 
+options(digits = 3)
 set.seed(1234)
-
 theme_set(theme_minimal(base_size = 18))
 ```
 
-## Distributed computing
+----
 
-![](https://tctechcrunch2011.files.wordpress.com/2015/08/clouds.jpg)
-
-## SQL
-
-* *Structured Query Language*
-* Means of communicating with a relational database management system
-* Different flavors of SQL
-    * SQLite
-    * MySQL
-    * Microsoft SQL
-    * PostgreSQL
-    * BigQuery
-* Hosting platforms
-    * [UChicago Research Computing Center](https://rcc.uchicago.edu/)
-    * [Amazon Web Services](https://aws.amazon.com/)
-    * [Google Cloud Platform](https://cloud.google.com/)
-
-## SQL locally
-
-```{r, cache = FALSE}
-library(RSQLite)
-my_db <- src_sqlite("../data/my_db.sqlite3", create = T)
+```{r minard_data, include = FALSE}
+troops <- read_table("../data/minard-troops.txt")
+cities <- read_table("../data/minard-cities.txt")
 ```
 
-```{r eval = FALSE}
-flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
-  c("year", "month", "day"), "carrier", "tailnum"))
+```{r plot_troops, include = FALSE}
+plot_troops <- ggplot(troops, aes(long, lat)) +
+  geom_path(aes(size = survivors,
+                color = direction,
+                group = group))
+plot_troops
 ```
 
-```{r, echo = FALSE}
-if(file.exists("my_db.sqlite3")){
-  flights_sqlite <- tbl(my_db, "flights")
-} else{
-  flights_sqlite <- copy_to(my_db, flights, temporary = FALSE, indexes = list(
-  c("year", "month", "day"), "carrier", "tailnum"))
+```{r plot_both, include = FALSE}
+plot_both <- plot_troops + 
+  geom_text(data = cities, aes(label = city), size = 4)
+plot_both
+```
+
+```{r plot_polished, include = FALSE}
+plot_polished <- plot_both + 
+  scale_size(range = c(0, 12),
+             breaks = c(10000, 20000, 30000),
+             labels = c("10,000", "20,000", "30,000")) + 
+  scale_color_manual(values = c("tan", "grey50")) +
+  coord_map() +
+  labs(title = "Map of Napoleon's Russian campaign of 1812",
+       x = NULL,
+       y = NULL)
+plot_polished
+```
+
+```{r plot_final, echo = FALSE}
+plot_polished +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Geospatial visualization
+
+* Oldest data visualization methods in human existence
+* [Google Maps](https://www.google.com/maps)
+* Depict spatial features
+    * Additional data overlaid
+* Maps defined by:
+    * Scale
+    * Projection
+    * Symbols
+
+## Drawing maps in R
+
+![](http://i.dailymail.co.uk/i/pix/2014/10/01/1412192463879_wps_18_Great_British_Bake_off_se.jpg)
+
+## Types of layers
+
+* Points
+* Symbols
+* Fills
+
+## Storing map boundaries
+
+* Geographic information system
+* General-purpose vs. specialized software
+* `ggplot2`
+
+## Using `maps` boundaries {.scrollable}
+
+```{r maps}
+library(maps)
+
+# map of the world
+map()
+
+# usa boundaries
+map("usa")
+map("state")
+
+# county map of illinois
+map("county", "illinois")
+```
+
+## Using `maps` boundaries {.scrollable}
+
+```{r map_data}
+# map of the world
+map_data("world") %>%
+  as_tibble
+
+# usa boundaries
+map_data("usa") %>%
+  as_tibble
+map_data("state") %>%
+  as_tibble
+
+# county map of illinois
+map_data("county", "illinois") %>%
+  as_tibble
+```
+
+## Importance of `group` {.scrollable}
+
+```{r group}
+library(gapminder)
+
+# no group aesthetic
+ggplot(gapminder, aes(year, lifeExp)) +
+  geom_line()
+
+# with grouping by country
+ggplot(gapminder, aes(year, lifeExp, group = country)) +
+  geom_line()
+```
+
+## Importance of `group`
+
+```{r michigan}
+map("state", "michigan")
+```
+    
+## Drawing the United States
+
+```{r usa-bound}
+usa <- as_tibble(map_data("usa"))
+usa
+```
+
+## Simple black map
+
+```{r usa-map}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group))
+```
+
+## Fixed aspect ratio {.scrollable}
+
+```{r coord-fixed}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group)) +
+  coord_fixed()
+```
+
+## Fixed aspect ratio {.scrollable}
+
+```{r coord-fixed-13}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group)) +
+  coord_fixed(1.3)
+```
+
+## Change the colors {.scrollable}
+
+```{r fill-color}
+ggplot() +
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group),
+               fill = NA, color = "red") + 
+  coord_fixed(1.3)
+
+gg1 <- ggplot() + 
+  geom_polygon(data = usa, aes(x = long, y = lat, group = group),
+               fill = "violet", color = "blue") + 
+  coord_fixed(1.3)
+gg1
+```
+
+## Always use the group aesthetic {.scrollable}
+
+```{r no-group}
+ggplot() + 
+  geom_polygon(data = usa, aes(x = long, y = lat),
+               fill = "violet", color = "blue") + 
+  coord_fixed(1.3)
+```
+
+## State maps {.scrollable}
+
+```{r states}
+states <- as_tibble(map_data("state"))
+states
+```
+
+## State maps {.scrollable}
+
+```{r states-no-fill}
+ggplot(data = states) + 
+  geom_polygon(aes(x = long, y = lat, group = group), color = "white") + 
+  coord_fixed(1.3)
+```
+
+## State maps {.scrollable}
+
+```{r states-fill}
+ggplot(data = states) + 
+  geom_polygon(aes(x = long, y = lat, fill = region, group = group), color = "white") + 
+  coord_fixed(1.3) +
+  # turn off color legend
+  theme(legend.position = "none")
+```
+
+## Plot a subset of states {.scrollable}
+
+```{r midwest}
+midwest <- filter(states,
+                  region %in% c("illinois", "indiana", "iowa",
+                                "kansas", "michigan", "minnesota",
+                                "missouri", "nebraska", "north dakota",
+                                "ohio", "south dakota", "wisconsin"))
+
+ggplot(data = midwest) + 
+  geom_polygon(aes(x = long, y = lat, group = group),
+               fill = "palegreen", color = "black") + 
+  coord_fixed(1.3)
+```
+
+## Zoom in on Illinois and its counties {.scrollable}
+
+```{r il-state}
+(il_df <- filter(states, region == "illinois"))
+```
+
+```{r il-counties}
+counties <- as_tibble(map_data("county"))
+(il_county <- filter(counties, region == "illinois"))
+```
+
+## Zoom in on Illinois and its counties {.scrollable}
+
+```{r il-map}
+il_base <- ggplot(data = il_df,
+                  mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+
+il_base +
+  theme_void()
+```
+
+## Zoom in on Illinois and its counties {.scrollable}
+
+```{r il-county-plot}
+il_base +
+  theme_void() + 
+  geom_polygon(data = il_county, fill = NA, color = "white") +
+  # get the state border back on top
+  geom_polygon(color = "black", fill = NA)
+```
+
+## (Contiguous) United States
+
+```{r all-50, echo = FALSE}
+library(maptools)
+library(rgeos)
+library(rgdal)
+
+#state shape file from
+# http://www.arcgis.com/home/item.html?id=f7f805eb65eb4ab787a0a3e1116ca7e5
+loc <- file.path(tempdir(), "stats_dat")
+unzip(system.file("extdata", "states_21basic.zip", package = "fiftystater"),
+      exdir = loc)
+fifty_states_sp <- readOGR(dsn = loc, layer = "states", verbose = FALSE)
+
+fifty_states_sp %>%
+  fortify(region = "STATE_NAME") %>%
+  mutate(id = tolower(id)) %>%
+  ggplot(mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## `fiftystater` {.scrollable}
+
+```{r fiftystater}
+library(fiftystater)
+
+data("fifty_states")
+as_tibble(fifty_states)
+
+ggplot(data = fifty_states, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## Using shapefiles
+
+* `.shp` - geographic coordinates of the geographic features
+* `.dbf` - data associated with the geographic features
+* `.prj` - information about the projection of the coordinates in the shapefile
+
+## Importing shapefiles in R
+
+```{r readshapepoly}
+library(rgdal)
+
+usa <- readOGR("../data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
+str(usa, max.level = 2) # view structure of object
+```
+
+## Importing shapefiles in R
+
+```{r states-convert}
+fortify(usa) %>%
+  head()
+```
+
+## Importing shapefiles in R
+
+```{r at-data}
+as_tibble(usa@data)
+```
+
+## Importing shapefiles in R {.scrollable}
+
+```{r fortify-id}
+# state name
+usa %>%
+  fortify(region = "NAME") %>%
+  head()
+
+# FIPS code
+usa %>%
+  fortify(region = "STATEFP") %>%
+  head()
+
+# keep it all
+(usa2 <- usa %>%
+  fortify(region = "NAME") %>%
+  as_tibble() %>%
+  left_join(usa@data, by = c("id" = "NAME")))
+```
+
+## Plotting shapefiles {.scrollable}
+
+```{r usa2-all}
+ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## Plotting shapefiles {.scrollable}
+
+```{r usa2-filter}
+usa2 <- usa2 %>%
+  filter(id != "Alaska", id != "Hawaii", id != "Puerto Rico")
+
+ggplot(data = usa2, mapping = aes(x = long, y = lat, group = group)) + 
+  coord_fixed(1.3) + 
+  geom_polygon(color = "black", fill = "gray")
+```
+
+## `ggmap` {.scrollable}
+
+```{r ggmap}
+library(ggmap)
+```
+
+```{r google-maps}
+get_googlemap("university of chicago", zoom = 12) %>%
+  ggmap()
+```
+
+## Changing map projections
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
+
+## Changing map projections {.scrollable}
+
+```{r projections}
+map_proj_base <- ggplot(data = usa2,
+                        mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray")
+
+map_proj_base +
+  coord_map() +
+  ggtitle("Mercator projection (default)")
+
+map_proj_base +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50) +
+  ggtitle("Albers equal-area projection")
+```
+
+## Adding data to the map
+
+* Points
+* Symbols
+* Fills
+* Overlay vs. incorporate
+
+## `airports`
+
+```{r nycflights}
+library(nycflights13)
+airports
+```
+
+## `airports`
+
+```{r scatter}
+ggplot(airports, aes(lon, lat)) +
+  geom_point()
+```
+
+## `airports` + map {.scrollable}
+
+```{r flights-usa}
+ggplot() + 
+  coord_map() + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "gray") +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+## Crop a map's limits {.scrollable}
+
+```{r crop}
+ggplot() + 
+  coord_map(xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "gray") +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+## Change the projection method {.scrollable}
+
+```{r crop-proj}
+ggplot() + 
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50,
+            xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "gray") +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+## Bubble plot {.scrollable}
+
+```{r airport-alt}
+ggplot() + 
+  coord_map(xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "white") +
+  geom_point(data = airports, aes(x = lon, y = lat, size = alt),
+             fill = "grey", color = "black", alpha = .2) +
+  # strip out background junk and remove legend
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Bubble plot {.scrollable}
+
+```{r airport-dest}
+(airports_n <- flights %>%
+  count(dest) %>%
+  left_join(airports, by = c("dest" = "faa")))
+
+ggplot() + 
+  coord_map(xlim = c(-130, -60),
+            ylim = c(20, 50)) + 
+  geom_polygon(data = usa2, mapping = aes(x = long, y = lat, group = group),
+               color = "black", fill = "white") +
+  geom_point(data = airports_n, aes(x = lon, y = lat, size = n),
+             fill = "grey", color = "black", alpha = .2) +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Choropleth maps
+
+![](https://static01.nyt.com/newsgraphics/2016/11/01/election-map-forms/738e8fe0f4e6d89ec6cb63555d3deb92e772f916/counties.png)
+
+## Loading the data {.scrollable}
+
+```{r county-shp, echo = FALSE}
+# load USA shapefile for map boundaries
+usa <- readOGR("../data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
+
+# fortify and filter to keep contiguous USA
+usa2 <- usa %>%
+  fortify(region = "GEOID") %>%
+  as_tibble() %>%
+  left_join(usa@data, by = c("id" = "GEOID")) %>%
+  # filter out Alaska, Hawaii, Puerto Rico via FIPS codes
+  filter(!(STATEFP %in% c("02", "15", "72")))
+
+# do the same thing for the county shapefile
+counties <- readOGR("../data/census_bureau/cb_2013_us_county_20m/cb_2013_us_county_20m.shp")
+
+counties2 <- counties %>%
+  fortify(region = "GEOID") %>%
+  as_tibble() %>%
+  left_join(counties@data, by = c("id" = "GEOID")) %>%
+  # filter out Alaska, Hawaii, Puerto Rico via FIPS codes
+  filter(!(STATEFP %in% c("02", "15", "72")))
+
+# plot county map boundaries
+ggplot(counties2, mapping = aes(x = long, y = lat, group = group)) + 
+  geom_polygon(color = "black", fill = "gray") +
+  coord_map()
+```
+
+## Number of foreign-born individuals in each region {.scrollable}
+
+```{r import-foreign}
+(fb_state <- read_csv("../data/census_bureau/ACS_13_5YR_B05012_state/ACS_13_5YR_B05012.csv") %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+
+(fb_county <- read_csv("../data/census_bureau/ACS_13_5YR_B05012_county/ACS_13_5YR_B05012.csv") %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+```
+
+## State-level choropleth {.scrollable}
+
+```{r geom-map-state}
+ggplot(fb_state, aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat)
+```
+
+## State-level choropleth {.scrollable}
+
+```{r geom-map-state-neat}
+ggplot(fb_state, aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat) +
+  scale_fill_continuous(labels = scales::percent) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+```
+
+## County-level choropleth {.scrollable}
+
+```{r geom-map-county}
+ggplot(fb_county, aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  scale_fill_continuous(labels = scales::percent) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+```
+
+## `cut_interval()` {.scrollable}
+
+```{r cut-interval}
+fb_county %>%
+  mutate(rate_cut = cut_interval(rate, 6)) %>%
+  ggplot(aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate_cut), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+```
+
+## `cut_number()` {.scrollable}
+
+```{r cut-number}
+fb_county %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot(aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate_cut), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+```
+
+## Choosing a color palette
+
+```{r color-wheel, echo = FALSE}
+# generate simulated data points
+sim_points <- data_frame(x = factor(1:6))
+
+plots <- purrr::map(1:6, ~ ggplot(sim_points[1:.x, ], aes(x, x, color = x)) +
+  geom_point(size = 5) +
+    ggtitle(paste(.x, "color")) +
+  theme(legend.position = "none"))
+
+gridExtra::marrangeGrob(plots, nrow = 2, ncol = 3, top = NULL)
+```
+
+## RColorBrewer
+
+* [Color Brewer](http://colorbrewer2.org/)
+
+## Sequential {.scrollable}
+
+```{r cb-seq}
+# define ggplot object
+seq_plot <- fb_county %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot(aes(map_id = GEO.id2)) +
+  geom_map(aes(fill = rate_cut), map = counties2) +
+  expand_limits(x = counties2$long, y = counties2$lat) +
+  labs(title = "Rate of foreign-born individuals in the population",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+
+seq_plot +
+  scale_fill_brewer(palette = "BuGn")
+
+seq_plot +
+  scale_fill_brewer(palette = "YlGn")
+
+seq_plot +
+  scale_fill_brewer(palette = "Blues")
+```
+
+## Qualitative {.scrollable}
+
+```{r qual}
+state_data <- data_frame(name = state.name,
+                         region = state.region,
+                         subregion = state.division,
+                         abb = state.abb) %>%
+  bind_cols(as_tibble(state.x77)) %>%
+  # get id variable into data frame
+  left_join(usa2 %>%
+              select(id, NAME) %>%
+              distinct(),
+            by = c("name" = "NAME")) %>%
+  # remove Alaska and Hawaii
+  na.omit()
+
+# set region base plot
+region_p <- ggplot(state_data, aes(map_id = id)) +
+  geom_map(aes(fill = region), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat) +
+  labs(fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+region_p
+
+# try different color brewers
+region_p +
+  scale_fill_brewer(palette = "Paired")
+
+region_p +
+  scale_fill_brewer(palette = "Dark2")
+
+region_p +
+  scale_fill_brewer(palette = "Pastel2")
+
+# set subregion base plot
+subregion_p <- ggplot(state_data, aes(map_id = id)) +
+  geom_map(aes(fill = subregion), map = usa2) +
+  expand_limits(x = usa2$long, y = usa2$lat) +
+  labs(fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "albers", lat0 = 25, lat1 = 50)
+subregion_p
+
+subregion_p +
+  scale_fill_brewer(palette = "Paired")
+
+subregion_p +
+  scale_fill_brewer(palette = "Set1")
+
+subregion_p +
+  scale_fill_brewer(palette = "Pastel1")
+```
+
+## Get world fertility rate data {.scrollable}
+
+```{r world-shape, echo = FALSE}
+# import and fortify world shapefile
+world <- readOGR("../data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp")
+world2 <- fortify(world, region = "iso_a3")
+ 
+# Country-level data
+(fertility <- read_csv("../data/API_SP.DYN.TFRT.IN_DS2_en_csv_v2/API_SP.DYN.TFRT.IN_DS2_en_csv_v2.csv") %>%
+  select(-X62) %>%
+  # tidy the data frame
+  gather(year, fertility, `1960`:`2016`, convert = TRUE) %>%
+  filter(year < 2015) %>%
+  mutate(fertility = as.numeric(fertility),
+         # cut into six intervals
+         fertility_rate = cut_interval(fertility, 6)))
+```
+
+## `For` loop {.scrollable}
+
+```{r world-plot-for}
+for(year in seq(from = 1970, to = 2010, by = 5)){
+  p <- fertility %>%
+    filter(year == year) %>%
+    ggplot(aes(map_id = `Country Code`)) +
+    geom_map(aes(fill = fertility_rate), map = world2) +
+    expand_limits(x = world2$long, y = world2$lat) +
+    scale_fill_brewer(palette = "BuGn") +
+    labs(title = "Fertility rate",
+         subtitle = year,
+         fill = NULL) +
+    ggthemes::theme_map() +
+    coord_map(projection = "mollweide", xlim = c(-180, 180))
+  print(p)
 }
 ```
 
-```{r}
-flights_sqlite
+## `purrr::map()` {.scrollable}
+
+```{r world-plot-map}
+seq(from = 1970, to = 2010, by = 5) %>%
+  purrr::map(~ fertility %>%
+    filter(year == .x) %>%
+    ggplot(aes(map_id = `Country Code`)) +
+    geom_map(aes(fill = fertility_rate), map = world2) +
+    expand_limits(x = world2$long, y = world2$lat) +
+    scale_fill_brewer(palette = "BuGn") +
+    labs(title = "Fertility rate",
+         subtitle = .x,
+         fill = NULL) +
+    ggthemes::theme_map() +
+    coord_map(projection = "mollweide", xlim = c(-180, 180)))
 ```
 
-## Basic verbs {.scrollable}
+## `facet_wrap()` {.scrollable}
 
-```{r echo = TRUE}
-select(flights_sqlite, year:day, dep_delay, arr_delay)
-filter(flights_sqlite, dep_delay > 240)
-arrange(flights_sqlite, year, month, day)
-mutate(flights_sqlite, speed = air_time / distance)
-summarise(flights_sqlite, delay = mean(dep_time))
+```{r world-facet-grid-all}
+ggplot(fertility, aes(map_id = `Country Code`)) +
+  facet_wrap(~ year) +
+  geom_map(aes(fill = fertility_rate), map = world2) +
+  expand_limits(x = world2$long, y = world2$lat) +
+  scale_fill_brewer(palette = "BuGn") +
+  labs(title = "Fertility rate",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "mollweide", xlim = c(-180, 180)) +
+  theme(legend.position = "none")
 ```
 
-## Convert to SQL
+## `facet_wrap()` {.scrollable}
 
-```{r, echo = TRUE}
-select(flights_sqlite, year:day, dep_delay, arr_delay) %>%
-  explain()
+```{r world-facet-grid-south-africa}
+south_africa <- world2 %>%
+  filter(id == "ZAF")
+
+fertility %>%
+  filter(`Country Name` == "South Africa") %>%
+  ggplot(aes(map_id = `Country Code`)) +
+  facet_wrap(~ year) +
+  geom_map(aes(fill = fertility_rate), map = south_africa) +
+  expand_limits(x = south_africa$long, y = south_africa$lat) +
+  scale_fill_brewer(palette = "BuGn") +
+  labs(title = "Fertility rate",
+       subtitle = "South Africa",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map() +
+  theme(legend.position = "none")
 ```
 
-```sql
-SELECT `year` AS `year`, `month` AS `month`, `day` AS `day`, `dep_delay` AS `dep_delay`, `arr_delay` AS `arr_delay`
-FROM `flights`
+## `gganimate` {.scrollable}
+
+```{r gganimate, fig.show = "animate"}
+library(gganimate)
+
+p <- ggplot(fertility, aes(map_id = `Country Code`, frame = year)) +
+  geom_map(aes(fill = fertility_rate), map = world2) +
+  expand_limits(x = world2$long, y = world2$lat) +
+  scale_fill_brewer(palette = "BuGn") +
+  labs(title = "Fertility rate",
+       fill = NULL) +
+  ggthemes::theme_map() +
+  coord_map(projection = "mollweide", xlim = c(-180, 180)) +
+  theme(legend.position = "none")
+gganimate(p)
 ```
-
-## Laziness
-
-```{r}
-c1 <- filter(flights_sqlite, year == 2013, month == 1, day == 1)
-c2 <- select(c1, year, month, day, carrier, dep_delay, air_time, distance)
-c3 <- mutate(c2, speed = distance / air_time * 60)
-c4 <- arrange(c3, year, month, day, carrier)
-```
-
-## Laziness {.scrollable}
-
-```{r}
-c4
-```
-
-```{r}
-collect(c4)
-```
-
-## Google Bigquery
-
-* Can scan TB in seconds and PB in minutes
-* Flexible pricing depending on needs
-* Could be as little a pennies, though depending on your computation may cost more
-
-## Interacting with Google Bigquery via `dplyr`
-
-```{r, echo = TRUE}
-library(bigrquery)
-
-taxi <- src_bigquery(project = "nyc-tlc",
-                     dataset = "yellow",
-                     billing = getOption("bigquery_id"))
-taxi
-```
-
-## Questions {.scrollable}
-
-How many trips per taken each month in yellow cabs?
-
-```sql
-SELECT
-  LEFT(STRING(pickup_datetime), 7) month,
-  COUNT(*) trips
-FROM
-  [nyc-tlc:yellow.trips]
-WHERE
-  YEAR(pickup_datetime) = 2014
-GROUP BY
-  1
-ORDER BY
-  1
-```
-
-```{r echo = TRUE}
-system.time({
-  trips_by_month <- taxi %>%
-    tbl("trips") %>%
-    filter(year(pickup_datetime) == 2014) %>%
-    mutate(month = month(pickup_datetime)) %>%
-    count(month) %>%
-    arrange(month) %>%
-    collect()
-})
-trips_by_month
-```
-
-## Questions {.scrollable}
-
-What about the average speed per hour of day in yellow cabs?
-
-```{r echo = TRUE}
-system.time({
-  speed_per_hour <- taxi %>%
-    tbl("trips") %>%
-    mutate(hour = hour(pickup_datetime),
-           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
-    mutate(speed = trip_distance / trip_duration) %>%
-    filter(fare_amount / trip_distance >= 2,
-           fare_amount / trip_distance <= 10) %>%
-    group_by(hour) %>%
-    summarize(speed = mean(speed)) %>%
-    arrange(hour) %>%
-    collect()
-})
-
-ggplot(speed_per_hour, aes(hour, speed)) +
-  geom_line() +
-  labs(title = "Average Speed of NYC Yellow Taxis",
-       x = "Hour of day",
-       y = "Average speed, in MPH")
-```
-
-## Questions {.scrollable}
-
-Finally, what is the average speed by day of the week?
-
-```{r echo = TRUE}
-system.time({
-  speed_per_day <- taxi %>%
-    tbl("trips") %>%
-    mutate(hour = hour(pickup_datetime),
-           day = dayofweek(pickup_datetime),
-           trip_duration = (dropoff_datetime - pickup_datetime) / 3600000000) %>%
-    mutate(speed = trip_distance / trip_duration) %>%
-    filter(fare_amount / trip_distance >= 2,
-           fare_amount / trip_distance <= 10,
-           hour >= 8,
-           hour <= 18) %>%
-    group_by(day) %>%
-    summarize(speed = mean(speed)) %>%
-    arrange(day) %>%
-    collect()
-})
-speed_per_day
-```
-
-## Parallel computing
-
-![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
-
-## Parallel computing
-
-* Parallel processing
-* Serial processing
-* Multithreading
-
-## Why use parallel computing
-
-* Imitates real life
-* More efficient (maybe)
-* Tackle larger problems
-* Distributed resources
-
-## Why not to use parallel computing
-
-![Amdahl's Law from [Wikipedia](https://en.wikipedia.org/wiki/Amdahl's_law)](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png)
-    
-## Why not to use parallel computing
-
-* Limits to efficiency gains
-* Complexity
-* Dependencies
-* Parallel slowdown
