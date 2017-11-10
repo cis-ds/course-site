@@ -43,6 +43,7 @@ answer_json %>%
   fromJSON() %>% 
   as_tibble()
 ```
+
 Wait a minute, what happened? Look at the structure of `answer_json %>% fromJSON()`:
 
 ```{r omdb-str}
@@ -137,6 +138,10 @@ map_chr(got_chars[13:16], 3)
 What if you want to retrieve elements? What if you want to know the character's name and gender? For a single user, we can use traditional [subsetting](http://r4ds.had.co.nz/vectors.html#subsetting-1):
 
 ```{r got-subset-one}
+# Victarion element
+got_chars[[3]]
+
+# specific elements for Victarion
 got_chars[[3]][c("name", "culture", "gender", "born")]
 ```
 
@@ -301,6 +306,7 @@ one_repo[c("name", "fork", "open_issues")]
 
 # make a data frame of that info for all a user's repos
 map_df(one_user, `[`, c("name", "fork", "open_issues"))
+map_df(one_user, extract, c("name", "fork", "open_issues"))
 ```
 
 ### Scale up to all users
@@ -311,7 +317,7 @@ Next let's scale this up to all the users in the data frame by executing a `map(
 udf %>% 
   mutate(repo_info = gh_repos %>%
            map(. %>%
-                 map_df(`[`, c("name", "fork", "open_issues"))))
+                 map_df(extract, c("name", "fork", "open_issues"))))
 ```
 
 ### Tidy the data frame
@@ -323,7 +329,7 @@ Now that we extracted our user-specific information, we want to make this a tidy
    mutate(
      repo_info = gh_repos %>%
        map(. %>%
-             map_df(`[`, c("name", "fork", "open_issues")))
+             map_df(extract, c("name", "fork", "open_issues")))
    ) %>% 
    select(-gh_repos) %>% 
    tidyr::unnest())

@@ -511,7 +511,63 @@ got_chars <span class="op">%&gt;%</span><span class="st"> </span>
 <div id="extract-multiple-values" class="section level2">
 <h2>Extract multiple values</h2>
 <p>What if you want to retrieve elements? What if you want to know the character’s name and gender? For a single user, we can use traditional <a href="http://r4ds.had.co.nz/vectors.html#subsetting-1">subsetting</a>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">got_chars[[<span class="dv">3</span>]][<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;culture&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;born&quot;</span>)]</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Victarion element</span>
+got_chars[[<span class="dv">3</span>]]</code></pre></div>
+<pre><code>## $url
+## [1] &quot;http://www.anapioficeandfire.com/api/characters/1074&quot;
+## 
+## $id
+## [1] 1074
+## 
+## $name
+## [1] &quot;Victarion Greyjoy&quot;
+## 
+## $gender
+## [1] &quot;Male&quot;
+## 
+## $culture
+## [1] &quot;Ironborn&quot;
+## 
+## $born
+## [1] &quot;In 268 AC or before, at Pyke&quot;
+## 
+## $died
+## [1] &quot;&quot;
+## 
+## $alive
+## [1] TRUE
+## 
+## $titles
+## [1] &quot;Lord Captain of the Iron Fleet&quot; &quot;Master of the Iron Victory&quot;    
+## 
+## $aliases
+## [1] &quot;The Iron Captain&quot;
+## 
+## $father
+## [1] &quot;&quot;
+## 
+## $mother
+## [1] &quot;&quot;
+## 
+## $spouse
+## [1] &quot;&quot;
+## 
+## $allegiances
+## [1] &quot;House Greyjoy of Pyke&quot;
+## 
+## $books
+## [1] &quot;A Game of Thrones&quot; &quot;A Clash of Kings&quot;  &quot;A Storm of Swords&quot;
+## 
+## $povBooks
+## [1] &quot;A Feast for Crows&quot;    &quot;A Dance with Dragons&quot;
+## 
+## $tvSeries
+## list()
+## 
+## $playedBy
+## list()</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># specific elements for Victarion</span>
+got_chars[[<span class="dv">3</span>]][<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;culture&quot;</span>, <span class="st">&quot;gender&quot;</span>, <span class="st">&quot;born&quot;</span>)]</code></pre></div>
 <pre><code>## $name
 ## [1] &quot;Victarion Greyjoy&quot;
 ## 
@@ -806,6 +862,21 @@ one_repo[<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <sp
 ##  9  conditions  TRUE           0
 ## 10      crayon FALSE           7
 ## # ... with 20 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">map_df</span>(one_user, extract, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;fork&quot;</span>, <span class="st">&quot;open_issues&quot;</span>))</code></pre></div>
+<pre><code>## # A tibble: 30 x 3
+##           name  fork open_issues
+##          &lt;chr&gt; &lt;lgl&gt;       &lt;int&gt;
+##  1       after FALSE           0
+##  2      argufy FALSE           6
+##  3         ask FALSE           4
+##  4 baseimports FALSE           0
+##  5      citest  TRUE           0
+##  6  clisymbols FALSE           0
+##  7      cmaker  TRUE           0
+##  8       cmark  TRUE           0
+##  9  conditions  TRUE           0
+## 10      crayon FALSE           7
+## # ... with 20 more rows</code></pre>
 </div>
 <div id="scale-up-to-all-users" class="section level3">
 <h3>Scale up to all users</h3>
@@ -813,7 +884,7 @@ one_repo[<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <sp
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">udf <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">repo_info =</span> gh_repos <span class="op">%&gt;%</span>
 <span class="st">           </span><span class="kw">map</span>(. <span class="op">%&gt;%</span>
-<span class="st">                 </span><span class="kw">map_df</span>(<span class="st">`</span><span class="dt">[</span><span class="st">`</span>, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;fork&quot;</span>, <span class="st">&quot;open_issues&quot;</span>))))</code></pre></div>
+<span class="st">                 </span><span class="kw">map_df</span>(extract, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;fork&quot;</span>, <span class="st">&quot;open_issues&quot;</span>))))</code></pre></div>
 <pre><code>## # A tibble: 6 x 3
 ##      username    gh_repos         repo_info
 ##         &lt;chr&gt;      &lt;list&gt;            &lt;list&gt;
@@ -831,7 +902,7 @@ one_repo[<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <sp
 <span class="st">   </span><span class="kw">mutate</span>(
      <span class="dt">repo_info =</span> gh_repos <span class="op">%&gt;%</span>
 <span class="st">       </span><span class="kw">map</span>(. <span class="op">%&gt;%</span>
-<span class="st">             </span><span class="kw">map_df</span>(<span class="st">`</span><span class="dt">[</span><span class="st">`</span>, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;fork&quot;</span>, <span class="st">&quot;open_issues&quot;</span>)))
+<span class="st">             </span><span class="kw">map_df</span>(extract, <span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <span class="st">&quot;fork&quot;</span>, <span class="st">&quot;open_issues&quot;</span>)))
    ) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">   </span><span class="kw">select</span>(<span class="op">-</span>gh_repos) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">   </span>tidyr<span class="op">::</span><span class="kw">unnest</span>())</code></pre></div>
@@ -869,7 +940,7 @@ one_repo[<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <sp
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-22</code></pre>
+##  date     2017-11-10</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
 <pre><code>##  package     * version    date       source                              
 ##  assertthat    0.2.0      2017-04-11 CRAN (R 3.4.0)                      
@@ -884,12 +955,12 @@ one_repo[<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <sp
 ##  codetools     0.2-15     2016-10-05 CRAN (R 3.4.1)                      
 ##  colorspace    1.3-2      2016-12-14 CRAN (R 3.4.0)                      
 ##  compiler      3.4.1      2017-07-07 local                               
-##  crayon        1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
+##  crayon        1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab) 
 ##  curl        * 2.8.1      2017-07-21 CRAN (R 3.4.1)                      
 ##  datasets    * 3.4.1      2017-07-07 local                               
 ##  devtools      1.13.3     2017-08-02 CRAN (R 3.4.1)                      
 ##  digest        0.6.12     2017-01-27 CRAN (R 3.4.0)                      
-##  dplyr       * 0.7.2.9000 2017-08-10 Github (tidyverse/dplyr@65db321)    
+##  dplyr       * 0.7.4.9000 2017-10-03 Github (tidyverse/dplyr@1a0730a)    
 ##  evaluate      0.10.1     2017-06-24 CRAN (R 3.4.1)                      
 ##  forcats     * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
 ##  foreign       0.8-69     2017-06-22 CRAN (R 3.4.1)                      
@@ -923,7 +994,7 @@ one_repo[<span class="kw">c</span>(<span class="st">&quot;name&quot;</span>, <sp
 ##  psych         1.7.5      2017-05-03 CRAN (R 3.4.1)                      
 ##  purrr       * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
 ##  R6            2.2.2      2017-06-17 CRAN (R 3.4.0)                      
-##  Rcpp          0.12.12    2017-07-15 CRAN (R 3.4.1)                      
+##  Rcpp          0.12.13    2017-09-28 cran (@0.12.13)                     
 ##  readr       * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl        1.0.0      2017-04-18 CRAN (R 3.4.0)                      
 ##  repurrrsive * 0.0.0.9001 2017-08-22 Github (jennybc/repurrrsive@bbc3727)
