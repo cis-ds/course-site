@@ -19,9 +19,110 @@ library(jsonlite)
 library(curl)
 library(repurrrsive)
 library(listviewer)
+library(wordcloud)
+library(tidytext)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
+```
+
+## Methods for obtaining data online
+
+* Click and download
+* Install and play
+* API query
+* Scraping
+
+## Click and download
+
+* `read.csv` or `readr::read_csv`
+* `downloader` package or `curl`
+
+## Data supplied on the web
+
+* Application programming interface (API)
+* Client
+* Server
+
+## Install and play packages
+
+* Packages with R functions written for existing APIs
+* Useful because
+    * provenance
+    * reproducible
+    * updating
+    * ease
+    * scaling
+
+## The Manifesto Project: `manifestoR`
+
+* Collects and organizes political party manifestos from around the world
+* Over 1000 parties from 1945 until today in over 50 countries on five continents
+* [`manifestoR`](https://github.com/ManifestoProject/manifestoR)
+
+## Load library and set API key
+
+```{r manifestor-load, message = FALSE, cache = FALSE}
+library(manifestoR)
+
+# retrieve API key stored in .Rprofile
+mp_setapikey(key = getOption("manifesto_key"))
+```
+
+## Retrieve the database
+
+```{r manifestor-db}
+(mpds <- mp_maindataset())
+```
+
+## How many manifestos have been published by each political party in Sweden? {.scrollable}
+
+```{r manifesto-dist}
+mpds %>%
+  filter(countryname == "Sweden") %>%
+  count(partyname) %>%
+  ggplot(aes(fct_reorder(partyname, n), n)) +
+  geom_col() +
+  labs(title = "Political manifestos published in Sweden",
+       x = NULL,
+       y = "Total (1948-present)") +
+  coord_flip()
+```
+
+## How have the Democratic and Republican Party manifestos in the United States changed over time? {.scrollable}
+
+```{r manifestor-usa}
+mpds %>%
+  filter(party == 61320 | party == 61620) %>%
+  mutate(ideo = mp_scale(.)) %>%
+  select(partyname, edate, ideo) %>%
+  ggplot(aes(edate, ideo, color = partyname)) +
+  geom_line() +
+  scale_color_manual(values = c("blue", "red")) +
+  labs(title = "Ideological scaling of major US political parties",
+       x = "Year",
+       y = "Ideological position",
+       color = NULL) +
+  theme(legend.position = "bottom")
+```
+
+## Analyze text of manifestos {.scrollable}
+
+```{r manifestor-corpus, message = FALSE, warning = FALSE}
+# download documents
+(docs <- mp_corpus(countryname == "United States" & edate > as.Date("2012-01-01")))
+
+# generate wordcloud of most common terms
+docs %>%
+  tidy() %>%
+  mutate(party = factor(party, levels = c(61320, 61620),
+                        labels = c("Democratic Party", "Republican Party"))) %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words) %>%
+  count(party, word, sort = TRUE) %>%
+  na.omit() %>%
+  reshape2::acast(word ~ party, value.var = "n", fill = 0) %>%
+  comparison.cloud(max.words = 200)
 ```
 
 ## Twitter API
