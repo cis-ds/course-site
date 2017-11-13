@@ -16,11 +16,15 @@ library(tidyverse)
 library(broom)
 library(twitteR)
 library(jsonlite)
+library(stringr)
+library(XML)
 library(curl)
 library(repurrrsive)
 library(listviewer)
 library(wordcloud)
 library(tidytext)
+library(manifestoR)
+library(httr)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
@@ -185,6 +189,156 @@ df
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/379px-Official_Portrait_of_President_Donald_Trump.jpg)
 
+## Writing an API function
+
+* No package for API
+* Write your own function!
+* [Open Movie Database](http://www.omdbapi.com/)
+
+## Determine the shape of an API request
+
+![](../images/ombd.png)
+
+## Determine the shape of an API request
+
+```http
+http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013&plot=short&r=xml
+```
+
+```http
+<?xml version="1.0" encoding="UTF-8"?><root response="True"><movie title="Sharknado" year="2013" rated="TV-14" released="11 Jul 2013" runtime="86 min" genre="Comedy, Horror, Sci-Fi" director="Anthony C. Ferrante" writer="Thunder Levin" actors="Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo" plot="When a freak hurricane swamps Los Angeles, nature's deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace." language="English" country="USA" awards="1 win &amp; 2 nominations." poster="https://images-na.ssl-images-amazon.com/images/M/MV5BOTE2OTk4MTQzNV5BMl5BanBnXkFtZTcwODUxOTM3OQ@@._V1_SX300.jpg" metascore="N/A" imdbRating="3.3" imdbVotes="38,948" imdbID="tt2724064" type="movie"/></root>
+```
+
+## Create a request in R {.scrollable}
+
+```{r omdb-key}
+# retrieve API key from .RProfile
+omdb_key <- getOption("omdb_key")
+
+# create url
+request <- str_c("http://www.omdbapi.com/?apikey=", omdb_key, "&", "t=", "Sharknado", "&", "y=", "2013", "&", "plot=", "short", "&", "r=", "xml")
+request
+```
+
+## Abstracting to a function
+
+```{r omdb-function, dependson = "omdb-key"}
+omdb <- function(Key, Title, Year, Plot, Format){
+  baseurl <- "http://www.omdbapi.com/?"
+  params <- c("apikey=", "t=", "y=", "plot=", "r=")
+  values <- c(Key, Title, Year, Plot, Format)
+  param_values <- map2_chr(params, values, str_c)
+  args <- str_c(param_values, collapse = "&")
+  str_c(baseurl, args)
+}
+
+omdb("omdb_key", "Sharknado", "2013", "short", "xml")
+```
+
+## Obtain data with `curl`
+
+```{r omdb-xml, dependson = "omdb-key"}
+request_sharknado <- omdb(omdb_key, "Sharknado", "2013", "short", "xml")
+con <- curl(request_sharknado)
+answer_xml <- readLines(con)
+close(con)
+answer_xml
+```
+
+## Obtain data with `curl`
+
+```{r omdb-json, dependson = "omdb-key", warning = FALSE}
+request_sharknado <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
+con <- curl(request_sharknado)
+answer_json <- readLines(con)
+close(con)
+answer_json %>% 
+  prettify()
+```
+
+## JavaScript Object Notation (JSON)
+
+```javascript
+{
+  "crust": "original",
+  "toppings": ["cheese", "pepperoni", "garlic"],
+  "status": "cooking",
+  "customer": {
+    "name": "Brian",
+    "phone": "573-111-1111"
+  }
+}
+```
+
+## Parsing JSON
+
+```{r parse-json, dependson = "omdb-json"}
+answer_json %>% 
+  fromJSON()
+```
+
+## Parsing JSON into a data frame {.scrollable}
+
+```{r json-df, dependson = "omdb-json"}
+answer_json %>% 
+  fromJSON() %>% 
+  # remove ratings element for now
+  list_modify(Ratings = NULL) %>%
+  as_tibble()
+```
+
+## Introducing the easy way: `httr`
+
+* GET
+* POST
+* PUT
+* DELETE
+
+## `GET` Sharknado
+
+```{r httr-json}
+sharknado_json <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
+response_json <- GET(sharknado_json)
+content(response_json, as = "parsed", type = "application/json")
+```
+
+## Headers
+
+```{r httr-headers, dependson = "httr-json"}
+headers(response_json)
+```
+
+## HTTP status code
+
+```{r httr-status, dependson = "httr-json"}
+status_code(response_json)
+```
+
+## HTTP status code
+
+Code | Status
+-------|--------|
+1xx    | Informational
+2xx    | Success
+3xx    | Redirection
+4xx    | Client error (you did something wrong)
+5xx    | Server error (server did something wrong)
+
+> [A more intuitive guide](https://www.flickr.com/photos/girliemac/sets/72157628409467125)
+
+## Skip `omdb()` {.scrollable}
+
+```{r httr-get-only}
+sharknado_2 <- GET("http://www.omdbapi.com/?",
+                   query = list(t = "Sharknado 2: The Second One",
+                                y = 2014,
+                                plot = "short",
+                                r = "json",
+                                apikey = omdb_key))
+
+content(sharknado_2)
+```
+
 ## Messy API responses {.scrollable}
 
 ```{r omdb-recursive, error = TRUE, warning = FALSE}
@@ -199,7 +353,8 @@ omdb <- function(Key, Title, Year, Plot, Format){
 }
 
 # use curl to execute the query
-request_sharknado <- omdb(getOption("omdb_key"), "Sharknado", "2013", "short", "json")
+request_sharknado <- omdb(getOption("omdb_key"), "Sharknado",
+                          "2013", "short", "json")
 con <- curl(request_sharknado)
 answer_json <- readLines(con)
 close(con)
