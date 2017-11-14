@@ -3,7 +3,7 @@ title: "Getting data from the web: scraping"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 22, 2017"
+date: "November 15, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -13,246 +13,318 @@ knitr::opts_chunk$set(cache = TRUE,
                       warning = FALSE)
 
 library(tidyverse)
-library(stringr)
-library(knitr)
-library(curl)
-library(jsonlite)
-library(XML)
-library(httr)
 library(rvest)
-library(ggmap)
 
 set.seed(1234)
 ```
 
-## OMDB
+## Web scraping
 
-[![](../webdata-supp/ombd.png)](http://www.omdbapi.com/?t=Interstellar&y=2014&plot=short&r=xml)
+* Data on a website with no API
+* Still want a programatic, reproducible way to obtain data
+* Ability to scrape depends on the quality of the website
 
-``` http
-http://www.omdbapi.com/?t=Interstellar&y=2014&plot=short&r=xml
-```
-## Creating link in R
+## HTML
 
-```{r}
-request <- str_c("http://www.omdbapi.com/?t=", "Interstellar", "&",
-                 "y=", "2014", "&", "plot=",
-                 "short", "&", "r=", "xml")
-request
-```
+![[tags](https://xkcd.com/1144/)](http://imgs.xkcd.com/comics/tags.png)
 
-## Better way
+## Process of HTML
 
-```{r}
-omdb <- function(Title, Year, Plot, Format){
-  baseurl <- "http://www.omdbapi.com/?"
-  params <- c("t=", "y=", "plot=", "r=")
-  values <- c(Title, Year, Plot, Format)
-  param_values <- map2_chr(params, values, str_c)
-  args <- str_c(param_values, collapse = "&")
-  str_c(baseurl, args)
-}
+1. The web browser sends a request to the server that hosts the website
+1. The server sends the browser an HTML document
+1. The browser uses instructions in the HTML to render the website
 
-omdb("Interstellar", "2014", "short", "xml")
-```
-
-## Obtain OMDB data
-
-```{r}
-request_interstellar <- omdb("Interstellar", "2014", "short", "xml")
-con <- curl(request_interstellar)
-answer_xml <- readLines(con)
-close(con)
-answer_xml
-```
-
-## Obtain OMDB data
-
-```{r warning = FALSE}
-request_interstellar <- omdb("Interstellar", "2014", "short", "json")
-con <- curl(request_interstellar)
-answer_json <- readLines(con)
-close(con)
-answer_json %>% 
-  prettify()
-```
-
-## **J**ava**S**cript **O**bject **N**otation
-
-```javascript
-{
-  "crust": "original",
-  "toppings": ["cheese", "pepperoni", "garlic"],
-  "status": "cooking",
-  "customer": {
-    "name": "Brian",
-    "phone": "573-111-1111"
-  }
-}
-```
-## e**X**tensible **M**arkup **L**anguage
-
-```XML
-<order>
-    <crust>original</crust>
-    <toppings>
-        <topping>cheese</topping>
-        <topping>pepperoni</topping>
-        <topping>garlic</topping>
-    </toppings>
-    <status>cooking</status>
-</order>
-```
-
-## Parsing JSON {.scrollable}
-
-```{r}
-answer_json %>% 
-  fromJSON()
-```
-
-
-```{r results='asis'}
-answer_json %>% 
-  fromJSON() %>% 
-  as_tibble() %>% 
-  kable()
-```
-
-## Parsing XML
-
-```{r}
-ans_xml_parsed <- xmlParse(answer_xml)
-ans_xml_parsed
-```
-
-## Parsing XML
-
-| field | method |
-|:-----:|:------:|
-| name  | `xmlName()` |
-| attributes | `xmlAttrs()` |
-| children  | `xmlChildren()` |
-| value    | `xmlValue()`
-
-## Parsing XML {.scrollable}
-
-```{r}
-ans_xml_parsed_root <- xmlRoot(ans_xml_parsed)[["movie"]]  # could also use [[1]]
-ans_xml_parsed_root
-ans_xml_attrs <- xmlAttrs(ans_xml_parsed_root)
-ans_xml_attrs
-```
-
-```{r results='asis'}
-ans_xml_attrs %>%
-  t() %>%
-  as_tibble() %>%
-  kable()
-```
-
-## Introducing the easy way: `httr`
-
-* **GET**: fetch an existing resource
-* **POST**: create a new resource
-* **PUT**: update an existing resource
-* **DELETE**: delete an existing resource
-
-## Redo the OMDB example
-
-```{r}
-interstellar_json <- omdb("Interstellar", "2014", "short", "json")
-response_json <- GET(interstellar_json)
-content(response_json, as = "parsed", type = "application/json")
-```
-
-## Redo the OMDB example
-
-```{r}
-interstellar_xml <- omdb("Interstellar", "2014", "short", "xml")
-response_xml <- GET(interstellar_xml)
-content(response_xml, as = "parsed")
-```
-
-## Headers
-
-```{r}
-headers(response_xml)
-```
-
-## Status codes
-
-```{r}
-status_code(response_xml)
-```
-
-## Status codes
-
-Code   | Status
--------|--------|
-1xx    | Informational
-2xx    | Success
-3xx    | Redirection
-4xx    | Client error (you did something wrong)
-5xx    | Server error (server did something wrong)
-
-* [Perhaps a more intuitive explanation](https://www.flickr.com/photos/girliemac/sets/72157628409467125)
-
-## Don't need `omdb()`
-
-```{r}
-the_martian <- GET("http://www.omdbapi.com/?",
-                   query = list(t = "The Martian", y = 2015,
-                                plot = "short", r = "json"))
-
-content(the_martian)
-```
-
-## Scraping
+## Components of HTML code
 
 ```html
-<HTML>
-<HEAD>
-  <TITLE>Your Title Here</TITLE>
-</HEAD>
-
-<BODY BGCOLOR="FFFFFF">
-<CENTER><IMG SRC="clouds.jpg" ALIGN="BOTTOM"> </CENTER>
-<HR>
-<a href="http://somegreatsite.com">Link Name</a> is a link to another nifty site
-<H1>This is a Header</H1>
-<H2>This is a Medium Header</H2>
-Send me mail at <a href="mailto:support@yourcompany.com"> support@yourcompany.com</a>.
-<P> This is a new paragraph!
-<P> <B>This is a new paragraph!</B>
-<BR> <B><I>This is a new sentence without a paragraph break, in bold italics.</I></B>
-<HR>
-</BODY>
-</HTML>
+<html>
+  <head>
+    <title>Title</title>
+    <link rel="icon" type="icon" href="http://a" />
+    <link rel="icon" type="icon" href="http://b" />
+    <script src="https://c.js"></script>
+  </head>
+  <body>
+    <div>
+      <p>Click <b>here</b> now.</p>
+      <span>Frozen</span>
+    </div>
+    <table style="width:100%">
+      <tr>
+        <td>Kristen</td>
+        <td>Bell</td>
+      </tr>
+      <tr>
+        <td>Idina</td>
+        <td>Menzel</td>
+      </tr>
+    </table>
+  <img src="http://ia.media-imdb.com/images.png"/>
+  </body>
+</html>
 ```
 
-## Rendered HTML
+## Components of HTML code
 
-![](../images/example_html.jpg)
+```html
+<a href="http://github.com">GitHub</a>
+```
 
-## Install your equipment
+* `<a></a>` - tag name
+* `href` - attribute (name)
+* `"http://github.com"` - attribute (value)
+* `GitHub` - content
 
-* `rvest` - `devtools::install_github("hadley/rvest")`
-* SelectorGadget - [Install in your browser](http://selectorgadget.com/)
+## Nested structure of HTML
 
-## Practice CSS selectors
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * `b`
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
 
-[Let's play a game together!](http://flukeout.github.io)
+## Find the content "here"
 
-## Obtain a table
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * <span style="color:red">**`b`**</span>
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
 
-![gm](../webdata-supp/gapminderhead.png)
+## Find the source code
 
-## Read in table
+![IMDB page for *Frozen*](../images/frozen_bell.png)
 
-```{r}
-read_html("../GapminderHead.html") %>%
-  html_table()
+## Find the source code
+
+![HTML tag for "Kristen Bell"](../images/frozen_span.png)
+
+## HTML only
+
+![HTML only](../images/shiny-css-none.png)
+
+## HTML + CSS
+
+![HTML + CSS](../images/shiny-css.png)
+
+## CSS code
+
+```css
+span {
+  color: #ffffff;
+}
+
+.num {
+  color: #a8660d;
+}
+
+table.data {
+  width: auto;
+}
+
+#firstname {
+  background-color: yellow;
+}
+```
+
+## CSS code
+
+```html
+<span class="bigname" id="shiny">Shiny</span>
+```
+
+* `<span></span>` - tag name
+* `bigname` - class (optional)
+* `shiny` - id (optional)
+
+## CSS selectors
+
+```css
+span
+```
+
+```css
+.bigname
+```
+
+```css
+span.bigname
+```
+
+```css
+#shiny
+```
+
+## CSS selectors
+
+Prefix | Matches
+-------|--------
+none   | tag
+.      | class
+#      | id
+
+> [CSS diner](http://flukeout.github.io)
+
+## Find the CSS selector
+
+![IMDB page for *Frozen*](../images/frozen_bell.png)
+
+## Find the CSS selector
+
+![](../images/frozen_css.png)
+
+## `rvest`
+
+1. Download the HTML and turn it into an XML file with `read_html()`
+1. Extract specific nodes with `html_nodes()`
+1. Extract content from nodes with various functions
+
+## Download the HTML
+
+```{r frozen-dl}
+library(rvest)
+frozen <- read_html("http://www.imdb.com/title/tt2294629/")
+frozen
+```
+
+## Extract nodes
+
+```{r frozen-nodes, dependson = "frozen-dl"}
+itals <- html_nodes(frozen, "em")
+itals
+```
+
+## Extract content from nodes {.scrollable}
+
+```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes")}
+itals
+html_text(itals)
+html_name(itals)
+html_children(itals)
+html_attr(itals, "class")
+html_attrs(itals)
+```
+
+## Extract content
+
+1. Read in the *Frozen* HTML
+1. Select the nodes that are both `span`s and `class = "itemprop"`
+1. Extract the text from the nodes
+
+## Extract content
+
+```{r frozen-extract}
+library(rvest)
+frozen <- read_html("http://www.imdb.com/title/tt2294629/")
+cast <- html_nodes(frozen, "span.itemprop")
+html_text(cast)
+```
+
+## SelectorGadget
+
+* GUI tool used to identify CSS selector combinations from a webpage.
+1. Run `vignette("selectorgadget")`
+1. Drag **SelectorGadget** link into your browser's bookmark bar
+
+## Using SelectorGadget
+
+1. Navigate to a webpage
+1. Open the SelectorGadget bookmark
+1. Click on the item to scrape
+1. Click on yellow items you do not want to scrape
+1. Click on additional items that you do want to scrape
+1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
+1. Copy the selector to use with `html_nodes()`
+
+## Practice using SelectorGadget
+
+> Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
+
+## Practice using SelectorGadget
+
+```{r frozen-selectorgadget, dependson = "frozen-extract"}
+cast2 <- html_nodes(frozen, "#titleCast span.itemprop")
+html_text(cast2)
+
+cast3 <- html_nodes(frozen, ".itemprop .itemprop")
+html_text(cast3)
+```
+
+## Practice scraping data
+
+1. Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/)
+1. Extract it with `html_nodes()` and `html_text()`
+
+## Practice scraping data
+
+```{r sterling}
+sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
+
+col <- html_nodes(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+html_text(col)
+
+# or use a piped operation
+sterling %>%
+  html_nodes(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
+  html_text()
+```
+
+## Tables
+
+```{r sterling-table, dependson = "sterling"}
+tables <- html_nodes(sterling, css = "table")
+
+tables %>%
+  # get the second table
+  nth(2) %>%
+  # convert to data frame
+  html_table(header = TRUE)
+```
+
+## Extract climate statistics
+
+> Extract the climate statistics of your hometown as a data frame with useful column names
+
+## Extract climate statistics {.scrollable}
+
+```{r sterling-climate}
+sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
+
+climate <- html_nodes(sterling_climate, css = "table")
+html_table(climate, header = TRUE, fill = TRUE)[[2]]
+
+sterling_climate %>%
+  html_nodes(css = "table") %>%
+  nth(2) %>%
+  html_table(header = TRUE)
 ```
 
 ## Random observations on scraping
@@ -260,4 +332,3 @@ read_html("../GapminderHead.html") %>%
 * Make sure you've obtained only what you want
 * If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking
 * Confirm that there is no R package and no API
-
