@@ -3,18 +3,15 @@ title: "Text analysis: fundamentals and sentiment analysis"
 author: |
   | MACS 30500
   | University of Chicago
-date: "February 27, 2017"
+date: "November 20, 2017"
 output: rcfss::cfss_slides
 ---
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
-                      warning = FALSE,
-                      echo = FALSE)
-```
+                      warning = FALSE)
 
-```{r packages}
 library(tidyverse)
 library(lubridate)
 library(stringr)
@@ -24,6 +21,7 @@ library(scales)
 library(twitteR)
 library(wordcloud)
 library(reshape2)
+library(acs)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
@@ -82,60 +80,6 @@ theme_set(theme_minimal(base_size = 18))
     * Corpora comparison
     * Topic modeling
 
-## Sentiment analysis
-
-> I am happy
-
-## Dictionaries
-
-```{r}
-get_sentiments("bing")
-```
-
-## Dictionaries
-
-```{r}
-get_sentiments("afinn")
-```
-
-## Dictionaries
-
-```{r}
-get_sentiments("nrc")
-```
-
-## Dictionaries
-
-```{r}
-get_sentiments("nrc") %>%
-  count(sentiment)
-```
-
-## Measuring overall sentiment {.scrollable}
-
-```{r}
-library(janeaustenr)
-
-tidy_books <- austen_books() %>%
-  group_by(book) %>%
-  mutate(linenumber = row_number(),
-         chapter = cumsum(str_detect(text,
-                                     regex("^chapter [\\divxlc]",
-                                           ignore_case = TRUE)))) %>%
-  ungroup() %>%
-  unnest_tokens(word, text)
-
-janeaustensentiment <- tidy_books %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(book, index = linenumber %/% 80, sentiment) %>%
-  spread(sentiment, n, fill = 0) %>%
-  mutate(sentiment = positive - negative)
-
-ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
-        geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-        facet_wrap(~book, ncol = 2, scales = "free_x")
-```
-
 ## [`tidytext`](https://github.com/juliasilge/tidytext)
 
 * Tidy text format
@@ -143,404 +87,254 @@ ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
 * Differs from the document-term matrix
     * One-document-per-row and one-term-per-column
 
-## \@realDonaldTrump
+## Get text corpa
 
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Every non-hyperbolic tweet is from iPhone (his staff). <br><br>Every hyperbolic tweet is from Android (from him). <a href="https://t.co/GWr6D8h5ed">pic.twitter.com/GWr6D8h5ed</a></p>&mdash; Todd Vaziri (\@tvaziri) <a href="https://twitter.com/tvaziri/status/762005541388378112">August 6, 2016</a></blockquote>
-<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
+```{r janeausten-corpa}
+library(janeaustenr)
 
-## Obtaining documents
-
-```{r}
-library(twitteR)
-```
-
-```{r}
-# You'd need to set global options with an authenticated app
-setup_twitter_oauth(getOption("twitter_api_key"),
-                    getOption("twitter_api_token"))
-```
-
-```{r, eval = FALSE}
-# We can request only 3200 tweets at a time; it will return fewer
-# depending on the API
-trump_tweets <- userTimeline("realDonaldTrump", n = 3200)
-trump_tweets_df <- trump_tweets %>%
-  map_df(as.data.frame) %>%
-  tbl_df()
-```
-
-```{r trump_tweets_df}
-# if you want to follow along without setting up Twitter authentication,
-# just use this dataset:
-load(url("http://varianceexplained.org/files/trump_tweets_df.rda"))
-str(trump_tweets_df)
-```
-
-## Clean up the data
-
-```{r tweets, dependson = "trump_tweets_df"}
-tweets <- trump_tweets_df %>%
-  select(id, statusSource, text, created) %>%
-  extract(statusSource, "source", "Twitter for (.*?)<") %>%
-  filter(source %in% c("iPhone", "Android"))
-
-tweets %>%
-  head() %>%
-  knitr::kable()
-```
-
-## When does he tweet?
-
-```{r dependson = "tweets"}
-tweets %>%
-  count(source, hour = hour(with_tz(created, "EST"))) %>%
-  mutate(percent = n / sum(n)) %>%
-  ggplot(aes(hour, percent, color = source)) +
-  geom_line() +
-  scale_y_continuous(labels = percent_format()) +
-  labs(x = "Hour of day (EST)",
-       y = "% of tweets",
-       color = "")
-```
-
-## How does he retweet? {.center}
-
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">&quot;<a href="https://twitter.com/trumplican2016">\@trumplican2016</a>: <a href="https://twitter.com/realDonaldTrump">\@realDonaldTrump</a> <a href="https://twitter.com/DavidWohl">\@DavidWohl</a> stay the course mr trump your message is resonating with the PEOPLE&quot;</p>&mdash; Donald J. Trump (\@realDonaldTrump) <a href="https://twitter.com/realDonaldTrump/status/758512401629192192">July 28, 2016</a></blockquote>
-<script async src="http://platform.twitter.com/widgets.js" charset="utf-8"></script>
-
-## How does he retweet?
-
-```{r dependson = "tweets"}
-tweets %>%
-  count(source,
-        quoted = ifelse(str_detect(text, '^"'), "Quoted", "Not quoted")) %>%
-  ggplot(aes(source, n, fill = quoted)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "", y = "Number of tweets", fill = "") +
-  ggtitle('Whether tweets start with a quotation mark (")')
-```
-
-## Trump tweets
-
-```{r}
-library(tidytext)
-
-# function to neatly print the first 10 rows using kable
-print_neat <- function(df){
-  df %>%
-    head() %>%
-    knitr::kable()
-}
-
-# tweets data frame
-tweets %>%
-  print_neat()
-```
-
-## Remove manual retweets
-
-```{r}
-# remove manual retweets
-tweets %>%
-  filter(!str_detect(text, '^"')) %>%
-  print_neat()
-```
-
-## Tokenize
-
-```{r}
-# custom regular expression to tokenize tweets
-reg <- "([^A-Za-z\\d#@']|'(?![A-Za-z\\d#@]))"
-
-# unnest into tokens - tidytext format
-tweets %>%
-  filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
-  print_neat()
-```
-
-## Remove stop words
-
-```{r}
-# remove stop words
-tweets %>%
-  filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
-  filter(!word %in% stop_words$word,
-         str_detect(word, "[a-z]")) %>%
-  print_neat()
-```
-
-```{r, include = FALSE}
-# store for future use
-tweet_words <- tweets %>%
-  filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
-  filter(!word %in% stop_words$word,
-         str_detect(word, "[a-z]"))
-```
-
-## Frequency of tokens
-
-```{r tweet_words_plot, dependson = "tweet_words", fig.height = 6, fig.width = 8, echo = FALSE}
-tweet_words %>%
-  count(word, sort = TRUE) %>%
-  head(20) %>%
-  mutate(word = reorder(word, n)) %>%
-  ggplot(aes(word, n)) +
-  geom_bar(stat = "identity") +
-  labs(title = "Frequency of tokens",
-       subtitle = "@realDonaldTrump",
-       x = "Word",
-       y = "Occurrences") +
-  coord_flip()
-```
-
-## Assessing word importance
-
-* Term frequency (tf)
-* Inverse document frequency (idf)
-* Term frequency-inverse document frequency (tf-idf)
-
-    $$idf(\text{term}) = \ln{\left(\frac{n_{\text{documents}}}{n_{\text{documents containing term}}}\right)}$$
-
-## Calculate tf-idf
-
-```{r}
-tweet_words_count <- tweet_words %>%
-  count(source, word, sort = TRUE) %>%
+books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(linenumber = row_number(),
+         chapter = cumsum(str_detect(text,
+                                     regex("^chapter [\\divxlc]",
+                                           ignore_case = TRUE)))) %>%
   ungroup()
-tweet_words_count
+books
 ```
 
-## Calculate tf-idf
+## Tokenize text
 
-```{r}
-total_words <- tweet_words_count %>%
-  group_by(source) %>%
-  summarize(total = sum(n))
-total_words
+```{r janeausten-token, dependson = "janeausten-corpa"}
+tidy_books <- books %>%
+  unnest_tokens(output = word, input = text)
+tidy_books
 ```
 
-## Calculate tf-idf
+## Download population data for U.S. states
 
-```{r}
-tweet_words_count <- left_join(tweet_words_count, total_words)
-tweet_words_count
+```{r acs-pop}
+# retrieve state populations in 2014 from Census Bureau
+pop_df <- read_csv("http://cfss.uchicago.edu/data/pop2014.csv")
+
+# do these results make sense?
+pop_df %>% 
+  arrange(desc(pop2014)) %>%
+  top_n(10)
 ```
 
-## Calculate tf-idf
+## Retrieve song lyrics
 
-```{r}
-tweet_words_count <- tweet_words_count %>%
-  bind_tf_idf(word, source, n)
-tweet_words_count
+```{r lyrics-import}
+song_lyrics <- read_csv("../data/billboard_lyrics_1964-2015.csv")
+str(song_lyrics)
 ```
 
-## Which terms have a high tf-idf?
+----
 
-```{r}
-tweet_words_count %>%
-  select(-total) %>%
-  arrange(desc(tf_idf))
+> Use `tidytext` to create a data frame with one row for each token in each song
+
+## Use `tidytext` to create a data frame with one row for each token in each song {.scrollable}
+
+```{r lyrics-tidy}
+tidy_lyrics <- bind_rows(song_lyrics %>% 
+                           unnest_tokens(output = state_name,
+                                         input = Lyrics),
+                         song_lyrics %>% 
+                           unnest_tokens(output = state_name,
+                                         input = Lyrics, 
+                                         token = "ngrams", n = 2))
+tidy_lyrics
 ```
 
-## Which terms have a high tf-idf?
+----
 
-```{r}
-tweet_important <- tweet_words_count %>%
-  arrange(desc(tf_idf)) %>%
-  mutate(word = factor(word, levels = rev(unique(word))))
+> Find all the state names occurring in the song lyrics
 
-tweet_important %>%
-  group_by(source) %>%
-  slice(1:15) %>%
-  ggplot(aes(word, tf_idf, fill = source)) +
-  geom_bar(alpha = 0.8, stat = "identity") +
-  labs(title = "Highest tf-idf words",
-       subtitle = "Top 15 for Android and iPhone",
-       x = NULL, y = "tf-idf") +
-  coord_flip()
+## Find all the state names occurring in the song lyrics
+
+```{r lyrics-state-distinct}
+tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
+  distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE)
+tidy_lyrics
+```
+
+----
+
+> Calculate the frequency for each state's mention in a song and create a new column for the frequency adjusted by the state's population
+
+## Calculate the frequency for each state's mention in a song and create a new column for the frequency adjusted by the state's population {.scrollable}
+  
+```{r state-counts}
+(state_counts <- tidy_lyrics %>% 
+   count(state_name) %>% 
+   arrange(desc(n)))
+```
+
+```{r state-counts-poprel}
+pop_df <- pop_df %>% 
+  left_join(state_counts) %>% 
+  mutate(rate = n / pop2014 * 1e6)
+
+pop_df %>%
+  arrange(desc(rate)) %>%
+  top_n(10)
+```
+
+## Make a choropleth map for both the raw frequency counts and relative frequency counts {.scrollable}
+
+```{r state-map, warning = FALSE}
+library(statebins)
+
+pop_df %>%
+  mutate(state_name = stringr::str_to_title(state_name),
+         state_name = if_else(state_name == "District Of Columbia",
+                              "District of Columbia", state_name)) %>%
+  statebins_continuous(state_col = "state_name", value_col = "n") +
+  labs(title = "Frequency of states mentioned in song lyrics",
+       subtitle = "Number of mentions") +
+  theme(legend.position = "bottom")
+
+pop_df %>%
+  mutate(state_name = stringr::str_to_title(state_name),
+         state_name = if_else(state_name == "District Of Columbia",
+                              "District of Columbia", state_name)) %>%
+  statebins_continuous(state_col = "state_name", value_col = "rate") +
+  labs(title = "Frequency of states mentioned in song lyrics",
+       subtitle = "Number of mentions per capita") +
+  theme(legend.position = "bottom")
 ```
 
 ## Sentiment analysis
+
+> I am happy
+
+## Dictionaries
+
+```{r bing}
+get_sentiments("bing")
+```
+
+## Dictionaries
+
+```{r afinn}
+get_sentiments("afinn")
+```
+
+## Dictionaries
 
 ```{r nrc}
-nrc <- sentiments %>%
-  filter(lexicon == "nrc") %>%
-  select(word, sentiment)
-nrc
+get_sentiments("nrc")
 ```
 
-## Sentiment analysis
+## Dictionaries
 
-```{r by_source_sentiment}
-sources <- tweet_words %>%
-  group_by(source) %>%
-  mutate(total_words = n()) %>%
-  ungroup() %>%
-  distinct(id, source, total_words)
-sources
+```{r nrc-types}
+get_sentiments("nrc") %>%
+  count(sentiment)
 ```
 
-## Sentiment analysis
+## Calculate sentiment {.scrollable}
 
-```{r}
-by_source_sentiment <- tweet_words %>%
-  inner_join(nrc, by = "word") %>%
-  count(sentiment, id) %>%
-  ungroup() %>%
-  complete(sentiment, id, fill = list(n = 0)) %>%
-  inner_join(sources) %>%
-  group_by(source, sentiment, total_words) %>%
-  summarize(words = sum(n)) %>%
-  ungroup()
+```{r janeausten-sentiment, dependson = c("janeausten-corpa", "janeausten-token")}
+tidy_books %>%
+  inner_join(get_sentiments("bing"))
 
-head(by_source_sentiment)
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment)
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0)
+
+tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+janeaustensentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  spread(sentiment, n, fill = 0) %>%
+  mutate(sentiment = positive - negative)
+
+# plot the sentiment over time in each book
+ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
+        geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+        facet_wrap( ~ book, ncol = 2, scales = "free_x")
 ```
 
-## Is this significant?
+## Load Harry Potter text
 
-```{r}
-# function to calculate the poisson.test for a given sentiment
-poisson_test <- function(df){
-  poisson.test(df$words, df$total_words)
-}
+```{r hp, echo = FALSE}
+library(harrypotter)
 
-# use the nest() and map() functions to apply poisson_test to each
-# sentiment and extract results using broom::tidy()
-sentiment_differences <- by_source_sentiment %>%
-  group_by(sentiment) %>%
-  nest() %>%
-  mutate(poisson = map(data, poisson_test),
-         poisson_tidy = map(poisson, tidy)) %>%
-  unnest(poisson_tidy, .drop = TRUE)
-sentiment_differences
+# names of each book
+hp_books <- c("philosophers_stone", "chamber_of_secrets",
+              "prisoner_of_azkaban", "goblet_of_fire",
+              "order_of_the_phoenix", "half_blood_prince",
+              "deathly_hallows")
+
+# combine books into a list
+hp_words <- list(
+  philosophers_stone = philosophers_stone,
+  chamber_of_secrets = chamber_of_secrets,
+  prisoner_of_azkaban = prisoner_of_azkaban,
+  goblet_of_fire = goblet_of_fire,
+  order_of_the_phoenix = order_of_the_phoenix,
+  half_blood_prince = half_blood_prince,
+  deathly_hallows = deathly_hallows
+) %>%
+  # convert each book to a data frame and merge into a single data frame
+  map_df(as_tibble, .id = "book") %>%
+  # convert book to a factor
+  mutate(book = factor(book, levels = hp_books)) %>%
+  # remove empty chapters
+  filter(!is.na(value)) %>%
+  # create a chapter id column
+  group_by(book) %>%
+  mutate(chapter = row_number(book)) %>%
+  # tokenize the data frame
+  unnest_tokens(word, value)
+
+hp_words
 ```
 
-## Is this significant?
+## Most frequent words, by book
 
-```{r}
-sentiment_differences %>%
-  ungroup() %>%
-  mutate(sentiment = reorder(sentiment, estimate)) %>%
-  mutate_each(funs(. - 1), estimate, conf.low, conf.high) %>%
-  ggplot(aes(estimate, sentiment)) +
-  geom_point() +
-  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high)) +
-  scale_x_continuous(labels = percent_format()) +
-  labs(x = "% increase in Android relative to iPhone",
-       y = "Sentiment")
+```{r word-freq, echo = FALSE}
+hp_words %>%
+  # delete stopwords
+  anti_join(stop_words) %>%
+  # summarize count per word per book
+  count(book, word) %>%
+  # highest freq on top
+  arrange(desc(n)) %>% 
+  # identify rank within group
+  group_by(book) %>% # 
+  mutate(top = seq_along(word)) %>%
+  # retain top 15 frequent words
+  filter(top <= 15) %>%
+  # create barplot
+  ggplot(aes(x = -top, y = n, fill = book)) + 
+  geom_col(color = "black") +
+  # print words in plot instead of as axis labels
+  geom_text(aes(label = word), hjust = "left", nudge_y = 100) +
+  labs(title = "Most frequent words in Harry Potter",
+       x = NULL,
+       y = "Word count") +
+  facet_wrap( ~ book) +
+  coord_flip() +
+  theme(legend.position = "none",
+        # rotate x text
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        # remove tick marks and text on y-axis
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
 ```
 
-## Most important words
+## Exercises
 
-```{r, fig.height = 10}
-tweet_important %>%
-  inner_join(nrc, by = "word") %>%
-  filter(!sentiment %in% c("positive", "negative")) %>%
-  mutate(sentiment = reorder(sentiment, -tf_idf),
-         word = reorder(word, -tf_idf)) %>%
-  group_by(sentiment) %>%
-  top_n(10, tf_idf) %>%
-  ungroup() %>%
-  ggplot(aes(word, tf_idf, fill = source)) +
-  facet_wrap(~ sentiment, scales = "free", nrow = 4) +
-  geom_bar(stat = "identity") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(x = "",
-       y = "tf-idf") +
-  scale_fill_manual(name = "", labels = c("Android", "iPhone"),
-                    values = c("red", "lightblue"))
-```
-
-## Wordclouds
-
-```{r}
-library(wordcloud)
-
-tweet_words %>%
-  count(word) %>%
-  with(wordcloud(word, n, max.words = 100, scale = c(3,.5)))
-```
-
-## `#rstats`
-
-```{r wordcloud-rstats}
-# get tweets
-rstats <- searchTwitter('#rstats', n = 3200) %>%
-  twListToDF %>%
-  as_tibble
-
-# tokenize
-rstats_token <- rstats %>%
-  filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
-  filter(!word %in% stop_words$word,
-         str_detect(word, "[a-z]"))
-
-# plot
-rstats_token %>%
-  count(word) %>%
-  filter(word != "#rstats") %>%
-  with(wordcloud(word, n, max.words = 100))
-```
-
-## Pope Francis
-
-```{r wordcloud-pope}
-# get tweets
-pope <- userTimeline("Pontifex", n = 3200) %>%
-  twListToDF %>%
-  as_tibble
-
-# tokenize
-pope_token <- pope %>%
-  filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
-  filter(!word %in% stop_words$word,
-         str_detect(word, "[a-z]"))
-
-# plot
-pope_token %>%
-  count(word) %>%
-  with(wordcloud(word, n, max.words = 100))
-```
-
-## Pope Francis vs. President Trump
-
-```{r wordcloud-pope-trump}
-library(reshape2)
-
-# get fresh trump tweets
-trump <- userTimeline("realDonaldTrump", n = 3200) %>%
-  twListToDF %>%
-  as_tibble
-
-# tokenize
-trump_token <- trump %>%
-  filter(!str_detect(text, '^"')) %>%
-  mutate(text = str_replace_all(text, "https://t.co/[A-Za-z\\d]+|&amp;", "")) %>%
-  unnest_tokens(word, text, token = "regex", pattern = reg) %>%
-  filter(!word %in% stop_words$word,
-         str_detect(word, "[a-z]"))
-
-bind_rows(Trump = trump_token, Pope = pope_token, .id = "person") %>%
-  count(word, person) %>%
-  acast(word ~ person, value.var = "n", fill = 0) %>%
-  comparison.cloud(max.words = 100, colors = c("blue", "red"))
-```
-
-## Acknowledgments {.toc-ignore}
-
-```{r child='../_ack_stat545.Rmd'}
-```
-* This page is derived in part from ["Text analysis of Trump's tweets confirms he writes only the (angrier) Android half"](http://varianceexplained.org/r/trump-tweets/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
-* This page is derived in part from ["Tidy Text Mining with R"](http://tidytextmining.com/) and licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States License](https://creativecommons.org/licenses/by-nc-sa/3.0/us/).
-
-
+![](https://img.cinemablend.com/filter:scale/quill/b/b/f/b/3/c/bbfb3c1ed393ec47b44de8709af71c8589cfa1db.jpg?mw=600)
