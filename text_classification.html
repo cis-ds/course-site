@@ -351,7 +351,7 @@ div.tocify {
 <li>Hand-code a small set of documents (say <span class="math inline">\(1000\)</span>) for whatever variable(s) you care about</li>
 <li>Train a statistical learning model on the hand-coded data, using the variable as the outcome of interest and the text features of the documents as the predictors</li>
 <li>Evaluate the effectiveness of the statistical learning model via a <a href="stat004_decision_trees.html">resampling method</a></li>
-<li>Once you have trained a model with sufficient predictive accuracy, apply the model the remaining set of documents that have never been hand-coded (say <span class="math inline">\(1000000\)</span>)</li>
+<li>Once you have trained a model with sufficient predictive accuracy, apply the model to the remaining set of documents that have never been hand-coded (say <span class="math inline">\(1000000\)</span>)</li>
 </ol>
 <div id="sample-set-of-documents-uscongress" class="section level1">
 <h1>Sample set of documents: <code>USCongress</code></h1>
@@ -518,14 +518,14 @@ plot_congress <span class="op">%&gt;%</span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">congress_rf &lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">x =</span> <span class="kw">as.matrix</span>(congress_dtm),
                      <span class="dt">y =</span> <span class="kw">factor</span>(congress<span class="op">$</span>major),
                      <span class="dt">method =</span> <span class="st">&quot;rf&quot;</span>,
-                     <span class="dt">ntree =</span> <span class="dv">500</span>,
+                     <span class="dt">ntree =</span> <span class="dv">200</span>,
                      <span class="dt">trControl =</span> <span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;oob&quot;</span>))</code></pre></div>
 <p>Note the differences from <a href="stat004_decision_trees.html#estimating_a_random_forest">how we specified them before with a standard data frame</a>.</p>
 <ul>
 <li><code>x = as.matrix(congress_dtm)</code> - instead of using a formula, we pass the independent and dependent variables separately into <code>train()</code>. <code>x</code> needs to be a simple matrix, data frame, or sparse matrix. These are specific types of objects in R. <code>congress_dtm</code> is a <code>DocumentTermMatrix</code>, so we use <code>as.matrix()</code> to convert it to a simple matrix.</li>
 <li><code>y = factor(congress$major)</code> - we return to the original <code>congress</code> data frame to obtain the vector of outcome values for each document. Here, this is the major topic code associated with each bill. The important thing is that the order of documents in <code>x</code> remains the same as the order of documents in <code>y</code>, so that each document is associated with the correct outcome. Because <code>congress$major</code> is a numeric vector, we need to convert it to a factor vector so that we perform classification (and not regression).</li>
 </ul>
-<p>Otherwise everything else is the same as before. Notice how long it takes to build a random forest model with 10 trees, compared to a more typical random forest model with 500 trees</p>
+<p>Otherwise everything else is the same as before. Notice how long it takes to build a random forest model with 10 trees, compared to a more typical random forest model with 200 trees:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
   congress_rf_<span class="dv">10</span> &lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">x =</span> <span class="kw">as.matrix</span>(congress_dtm),
                           <span class="dt">y =</span> <span class="kw">factor</span>(congress<span class="op">$</span>major),
@@ -547,70 +547,70 @@ plot_congress <span class="op">%&gt;%</span>
 <pre><code>##    user  system elapsed 
 ##  10.832   0.188  11.201</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">system.time</span>({
-  congress_rf_<span class="dv">500</span> &lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">x =</span> <span class="kw">as.matrix</span>(congress_dtm),
+  congress_rf_<span class="dv">200</span> &lt;-<span class="st"> </span><span class="kw">train</span>(<span class="dt">x =</span> <span class="kw">as.matrix</span>(congress_dtm),
                            <span class="dt">y =</span> <span class="kw">factor</span>(congress<span class="op">$</span>major),
                            <span class="dt">method =</span> <span class="st">&quot;rf&quot;</span>,
-                           <span class="dt">ntree =</span> <span class="dv">500</span>,
+                           <span class="dt">ntree =</span> <span class="dv">200</span>,
                            <span class="dt">trControl =</span> <span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&quot;oob&quot;</span>))
 })</code></pre></div>
 <pre><code>##    user  system elapsed 
-## 434.343   3.676 445.707</code></pre>
+## 188.377   1.873 198.240</code></pre>
 <p>This is why it is important to remove sparse features and simplify the document-term matrix as much as possible - the more text features and observations in the document-term matrix, the longer it takes to train the model.</p>
 <p>Otherwise, the result is no different from a model trained on categorical or continuous variables. We can generate the same diagnostics information:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">congress_rf_<span class="dv">500</span><span class="op">$</span>finalModel</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">congress_rf_<span class="dv">200</span><span class="op">$</span>finalModel</code></pre></div>
 <pre><code>## 
 ## Call:
-##  randomForest(x = x, y = y, ntree = 500, mtry = param$mtry) 
+##  randomForest(x = x, y = y, ntree = 200, mtry = param$mtry) 
 ##                Type of random forest: classification
-##                      Number of trees: 500
+##                      Number of trees: 200
 ## No. of variables tried at each split: 105
 ## 
 ##         OOB estimate of  error rate: 32.64%
 ## Confusion matrix:
-##      1  2   3  4   5   6   7  8 10  12 13 14  15  16 17  18 19  20  21 99
-## 1  106  0   2  0   4   3   3  4  5   8  0  3  12   2  1   3  0   6   1  0
-## 2    2 18   5  1   5   4   5  1  3   4  3  2   4   6  4   1  1  11   4  0
-## 3    2  1 535  3  10   9   4  1  5   9  6  3   9  10  1   0  0   5   4  0
-## 4    2  0   8 91   4   1   5  1  1   2  0  1   2   0  1   4  3   2   5  0
-## 5    7  1  12  1 151  11   4  0 10  12  2  2   6   6  6   8  5   6  11  1
-## 6    7  1   6  0   8 165   2  0  2  10  1  1   3   3  2   4  2   1   4  0
-## 7    4  2   6  5   2   2 108  5  8   8  1  1   6   3  4   3  3   5  25  0
-## 8    8  1   1  1   3   1   3 99  2   3  0  2   3   1  0   1  1   3   5  0
-## 10   5  1   1  1   4   1   5  2 96  14  0  0   5   3  3   6  3  16   5  0
-## 12  10  2  19  4  10   8   9  0  6 147  4  3  12   3  3   7  6  28   7  3
-## 13   4  0   5  0   4   0   3  2  1   2 64  2   1   0  1   2  0   2   1  0
-## 14   1  0   1  2   5   2   3  1  4   1  1 46   3   2  3   2  0   1   2  0
-## 15  12  4   8  5  13   2   8  6  5  18  1  2 152   4  6  12  7  11   2  1
-## 16   1  4   1  0   7   4   3  2  7   6  1  1   5 137  0  11  6  16   7  0
-## 17   3  0   2  1   6   3   3  1  4   7  1  2   3   1 41   1  2   5   3  1
-## 18   0  0   1  2   1   2   5  2  2   1  0  0   1   2  0 372  7   2   2  0
-## 19   2  0   4  1   9   5   7  0  4   8  0  0   2   6  0   9 50   4  10  0
-## 20  10  2   7  1  12   4   5  1  5  27  1  3   9  13  6  13  1 240  19  1
-## 21   7  3   7  3   3   4  23  1  7   6  1  4   4  14  3  10  4  14 354  0
-## 99   0  0   0  0   0   0   0  0  1   0  0  0   0   1  2   0  0   0   1 25
+##      1  2   3  4   5   6   7  8  10  12 13 14  15  16 17  18 19  20  21 99
+## 1  106  0   2  0   4   3   2  4   6   9  0  3  10   2  2   3  0   6   1  0
+## 2    1 19   5  0   5   4   5  1   2   7  3  2   5   6  4   1  1   9   4  0
+## 3    3  1 536  3  10  10   4  1   5   8  6  3   8  10  1   0  0   4   4  0
+## 4    2  0   9 92   4   1   4  1   1   2  0  1   1   0  1   5  2   1   6  0
+## 5    7  2  12  2 152  12   5  1   9  11  2  1   6   7  6   7  4   7   8  1
+## 6    7  1   7  0   8 165   1  0   2  11  1  1   3   2  2   4  2   1   4  0
+## 7    3  2   6  5   4   3 105  6   9   7  1  1   7   3  4   2  4   5  24  0
+## 8    7  1   1  1   3   1   3 99   2   3  1  2   2   1  1   1  1   2   6  0
+## 10   5  1   0  2   4   1   6  2 100  12  0  0   6   3  2   4  3  16   4  0
+## 12  10  2  17  5  10   8   8  0   6 149  3  3  13   3  4   8  6  28   5  3
+## 13   4  0   5  0   6   0   3  2   1   2 62  2   1   0  1   1  1   2   1  0
+## 14   1  0   1  2   5   2   2  1   4   1  1 45   4   2  3   2  0   2   2  0
+## 15  14  7   8  6  15   2   7  4   6  16  1  2 149   3  7  11  6  11   3  1
+## 16   1  5   2  0   6   4   4  2   5   6  2  1   5 137  0   8  6  18   7  0
+## 17   4  0   2  1   6   3   4  1   3  10  1  1   3   1 42   1  1   2   3  1
+## 18   0  0   1  2   1   2   5  3   2   1  0  0   2   2  0 371  7   2   1  0
+## 19   2  0   3  2  10   5   4  0   4   8  0  0   2   5  0   9 52   4  11  0
+## 20  10  1   7  1  15   4   5  2   7  27  1  3  12  13  4  11  1 236  19  1
+## 21   7  2   5  2   4   4  24  1   8   7  1  4   4  13  3   9  4  15 355  0
+## 99   0  0   0  0   1   0   0  0   1   0  0  0   0   1  1   0  0   0   1 25
 ##    class.error
 ## 1   0.34969325
-## 2   0.78571429
-## 3   0.13290113
-## 4   0.31578947
-## 5   0.42366412
+## 2   0.77380952
+## 3   0.13128039
+## 4   0.30827068
+## 5   0.41984733
 ## 6   0.25675676
-## 7   0.46268657
+## 7   0.47761194
 ## 8   0.28260870
-## 10  0.43859649
-## 12  0.49484536
-## 13  0.31914894
-## 14  0.42500000
-## 15  0.45519713
+## 10  0.41520468
+## 12  0.48797251
+## 13  0.34042553
+## 14  0.43750000
+## 15  0.46594982
 ## 16  0.37442922
-## 17  0.54444444
-## 18  0.07462687
-## 19  0.58677686
-## 20  0.36842105
-## 21  0.25000000
+## 17  0.53333333
+## 18  0.07711443
+## 19  0.57024793
+## 20  0.37894737
+## 21  0.24788136
 ## 99  0.16666667</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">varImpPlot</span>(congress_rf_<span class="dv">500</span><span class="op">$</span>finalModel)</code></pre></div>
-<p><img src="text_classification_files/figure-html/rf-diag-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">varImpPlot</span>(congress_rf_<span class="dv">200</span><span class="op">$</span>finalModel)</code></pre></div>
+<p><img src="text_classification_files/figure-html/rf-varimp-1.png" width="672" /></p>
 <p>And if we had a test set of observations (or a set of congressional bills never previously hand-coded), we could use this model to predict their major topic codes.</p>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
@@ -631,7 +631,7 @@ plot_congress <span class="op">%&gt;%</span>
 ##  backports      1.1.0      2017-05-22 CRAN (R 3.4.0)                      
 ##  base         * 3.4.1      2017-07-07 local                               
 ##  bindr          0.1        2016-11-13 CRAN (R 3.4.0)                      
-##  bindrcpp       0.2        2017-06-17 CRAN (R 3.4.0)                      
+##  bindrcpp     * 0.2        2017-06-17 CRAN (R 3.4.0)                      
 ##  boxes          0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
 ##  broom          0.4.2      2017-08-09 local                               
 ##  car            2.1-5      2017-07-04 CRAN (R 3.4.1)                      
@@ -692,6 +692,7 @@ plot_congress <span class="op">%&gt;%</span>
 ##  purrr        * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
 ##  quantreg       5.33       2017-04-18 CRAN (R 3.4.0)                      
 ##  R6             2.2.2      2017-06-17 CRAN (R 3.4.0)                      
+##  randomForest * 4.6-12     2015-10-07 CRAN (R 3.4.0)                      
 ##  Rcpp           0.12.13    2017-09-28 cran (@0.12.13)                     
 ##  readr        * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
 ##  readxl         1.0.0      2017-04-18 CRAN (R 3.4.0)                      
