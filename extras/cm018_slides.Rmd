@@ -1,9 +1,9 @@
 ---
-title: "Text analysis: topic modeling"
+title: "Text analysis: classification and topic modeling"
 author: |
   | MACS 30500
   | University of Chicago
-date: "March 1, 2017"
+date: "November 22, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -11,11 +11,151 @@ output: rcfss::cfss_slides
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
                       warning = FALSE,
-                      include = FALSE,
                       echo = FALSE)
 
 library(tidyverse)
+library(tidytext)
+library(stringr)
+library(caret)
+library(tm)
+
+set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
+```
+
+## Supervised learning
+
+1. Hand-code a small set of documents ($N = 1000$)
+1. Train a statistical learning model on the hand-coded data
+1. Evaluate the effectiveness of the statistical learning model
+1. Apply the final model to the remaining set of documents ($N = 1000000$)
+
+* Text classification
+
+## `USCongress`
+
+```{r get-docs}
+data(USCongress, package = "RTextTools")
+
+congress <- as_tibble(USCongress) %>%
+  mutate(text = as.character(text))
+str(congress)
+```
+
+* Set of hand-coded bills from US Congress
+* Text description
+* Major policy topic
+
+## Create tidy text data frame {.scrollable}
+
+```{r convert-tidytext, echo = TRUE}
+(congress_tokens <- congress %>%
+   unnest_tokens(output = word, input = text) %>%
+   filter(!str_detect(word, "^[0-9]*$")) %>%
+   anti_join(stop_words) %>%
+   mutate(word = SnowballC::wordStem(word)))
+```
+
+## Create document-term matrix
+
+```{r dtm, echo = TRUE}
+(congress_dtm <- congress_tokens %>%
+   count(ID, word) %>%
+   cast_dtm(document = ID, term = word, value = n))
+```
+
+## Weighting
+
+* Term frequency (tf)
+* Term frequency-inverse document frequency (tf-idf)
+
+## Weighting
+
+```{r dtm-tf-idf, echo = TRUE}
+congress_tokens %>%
+  count(ID, word) %>%
+  cast_dtm(document = ID, term = word, value = n,
+           weighting = tm::weightTfIdf)
+```
+
+## Sparsity {.scrollable}
+
+```{r removesparseterms, echo = TRUE}
+removeSparseTerms(congress_dtm, sparse = .99)
+removeSparseTerms(congress_dtm, sparse = .95)
+removeSparseTerms(congress_dtm, sparse = .90)
+```
+
+```{r remove-sparse-terms-final}
+congress_dtm <- removeSparseTerms(congress_dtm, sparse = .99)
+```
+
+## Exploratory analysis
+
+```{r bind-tf-idf}
+congress_tfidf <- congress_tokens %>%
+  count(major, word) %>%
+  bind_tf_idf(term_col = word, document_col = major, n_col = n)
+```
+
+```{r plot-tf-idf}
+# sort the data frame and convert word to a factor column
+plot_congress <- congress_tfidf %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+# graph the top 10 tokens for 4 categories
+plot_congress %>%
+  filter(major %in% c(1:3, 6)) %>%
+  mutate(major = factor(major, levels = c(1:3, 6),
+                        labels = c("Macroeconomics", "Civil Rights",
+                                   "Health", "Education"))) %>%
+  group_by(major) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  ggplot(aes(word, tf_idf)) +
+  geom_col() +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~major, scales = "free") +
+  coord_flip()
+```
+
+## Estimate model
+
+```r
+congress_rf <- train(x = as.matrix(congress_dtm),
+                     y = factor(congress$major),
+                     method = "rf",
+                     ntree = 200,
+                     trControl = trainControl(method = "oob"))
+```
+
+```{r rf-train-10, eval = FALSE}
+congress_rf_10 <- train(x = as.matrix(congress_dtm),
+                        y = factor(congress$major),
+                        method = "rf",
+                        ntree = 10,
+                        trControl = trainControl(method = "oob"))
+```
+
+```{r rf-train-200}
+congress_rf_200 <- train(x = as.matrix(congress_dtm),
+                         y = factor(congress$major),
+                         method = "rf",
+                         ntree = 200,
+                         trControl = trainControl(method = "oob"))
+```
+
+## Evaluate model
+
+```{r rf-error, echo = TRUE}
+congress_rf_200$finalModel
+```
+
+## Evaluate model
+
+```{r rf-varimp}
+varImpPlot(congress_rf_200$finalModel)
 ```
 
 ## Topic modeling
@@ -54,21 +194,6 @@ theme_set(theme_minimal(base_size = 18))
 * Pick the fourth word to come from the food topic
 * Pick the fifth word to come from the food topic
 
-## How does LDA learn?
-
-* Randomly assign each word in the document to one of $K$ topics
-* For each document $d$:
-    * Go through each word $w$ in $d$
-        * And for each topic $t$, compute two things:
-            1. $p(t | d)$
-            1. $p(w | t)$
-        * Reassign $w$ a new topic $t$ with probability $p(t|d) \times p(w|t)$
-* Rinse and repeat
-
-* Estimate from LDA
-    1. The topic mixtures of each document
-    1. The words associated to each topic
-
 ## LDA with a known topic structure
 
 * *Great Expectations* by Charles Dickens
@@ -76,7 +201,7 @@ theme_set(theme_minimal(base_size = 18))
 * *Twenty Thousand Leagues Under the Sea* by Jules Verne
 * *Pride and Prejudice* by Jane Austen
 
-```{r topic_books}
+```{r topic_books, include = FALSE}
 titles <- c("Twenty Thousand Leagues under the Sea", "The War of the Worlds",
             "Pride and Prejudice", "Great Expectations")
 
@@ -110,13 +235,13 @@ word_counts
 
 ## `topicmodels`
 
-```{r chapters_dtm, include = TRUE}
+```{r chapters_dtm}
 chapters_dtm <- word_counts %>%
   cast_dtm(title_chapter, word, n)
 chapters_dtm
 ```
 
-```{r chapters_lda}
+```{r chapters_lda, include = FALSE}
 library(topicmodels)
 chapters_lda <- LDA(chapters_dtm, k = 4, control = list(seed = 1234))
 chapters_lda
@@ -124,14 +249,14 @@ chapters_lda
 
 ## Terms associated with each topic
 
-```{r chapters_lda_td}
+```{r chapters_lda_td, include = FALSE}
 library(tidytext)
 
 chapters_lda_td <- tidy(chapters_lda)
 chapters_lda_td
 ```
 
-```{r top_terms}
+```{r top_terms, include = FALSE}
 top_terms <- chapters_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
@@ -140,7 +265,7 @@ top_terms <- chapters_lda_td %>%
 top_terms
 ```
 
-```{r top_terms_plot, fig.height=6, fig.width=7, include = TRUE}
+```{r top_terms_plot, fig.height=6, fig.width=7}
 top_terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
@@ -151,24 +276,24 @@ top_terms %>%
 
 ## Per-document classification
 
-```{r chapters_lda_gamma_raw}
+```{r chapters_lda_gamma_raw, include = FALSE}
 chapters_lda_gamma <- tidy(chapters_lda, matrix = "gamma")
 chapters_lda_gamma
 ```
 
-```{r chapters_lda_gamma}
+```{r chapters_lda_gamma, include = FALSE}
 chapters_lda_gamma <- chapters_lda_gamma %>%
   separate(document, c("title", "chapter"), sep = "_", convert = TRUE)
 chapters_lda_gamma
 ```
 
-```{r chapters_lda_gamma_plot, fig.width=8, fig.height=6, include = TRUE}
+```{r chapters_lda_gamma_plot, fig.width=8, fig.height=6}
 ggplot(chapters_lda_gamma, aes(gamma, fill = factor(topic))) +
   geom_histogram() +
   facet_wrap(~ title, nrow = 2)
 ```
 
-```{r chapter_classifications}
+```{r chapter_classifications, include = FALSE}
 chapter_classifications <- chapters_lda_gamma %>%
   group_by(title, chapter) %>%
   top_n(1, gamma) %>%
@@ -180,9 +305,10 @@ chapter_classifications
 
 ## Consensus topic
 
-```{r book_topics, include = TRUE}
+```{r book_topics}
 book_topics <- chapter_classifications %>%
   count(title, topic) %>%
+  group_by(title) %>%
   top_n(1, n) %>%
   ungroup() %>%
   transmute(consensus = title, topic)
@@ -192,7 +318,7 @@ book_topics
 
 ## Mis-identification
 
-```{r, include = TRUE, echo = TRUE}
+```{r misidentification, echo = TRUE, dependson="book_topics"}
 chapter_classifications %>%
   inner_join(book_topics, by = "topic") %>%
   count(title, consensus) %>%
@@ -201,11 +327,11 @@ chapter_classifications %>%
 
 ## Incorrectly classified words
 
-```{r assignments}
+```{r assignments, include = FALSE}
 assignments <- augment(chapters_lda, data = chapters_dtm)
 ```
 
-```{r assignments2, dependson = "assignments"}
+```{r assignments2, dependson = c("assignments", "book_topics"), include = FALSE}
 assignments <- assignments %>%
   separate(document, c("title", "chapter"), sep = "_", convert = TRUE) %>%
   inner_join(book_topics, by = c(".topic" = "topic"))
@@ -213,7 +339,7 @@ assignments <- assignments %>%
 assignments
 ```
 
-```{r dependson = "assignments2", include = TRUE}
+```{r dependson = "assignments2"}
 assignments %>%
   count(title, consensus, wt = count) %>%
   spread(consensus, n, fill = 0) %>%
@@ -222,7 +348,7 @@ assignments %>%
 
 ## Most commonly mistaken words
 
-```{r wrong_words, dependson = "assignments2", include = TRUE}
+```{r wrong_words, dependson = "assignments2"}
 wrong_words <- assignments %>%
   filter(title != consensus)
 
@@ -232,23 +358,21 @@ wrong_words %>%
   arrange(desc(n))
 ```
 
-```{r dependson = "word_counts"}
+```{r dependson = "word_counts", include = FALSE}
 word_counts %>%
   filter(word == "flopson")
 ```
 
-## LDA with an unknown topic structure
-
 ## Associated Press articles
 
-```{r associated_press}
+```{r associated_press, include = FALSE}
 data("AssociatedPress", package = "topicmodels")
 
 ap_td <- tidy(AssociatedPress)
 ap_td
 ```
 
-```{r ap_stopwords, dependson = "associated_press", include = TRUE}
+```{r ap_stopwords, dependson = "associated_press"}
 ap_dtm <- ap_td %>%
   anti_join(stop_words, by = c(term = "word")) %>%
   cast_dtm(document, term, count)
@@ -257,12 +381,12 @@ ap_dtm
 
 ----
 
-```{r ap_topic_4, dependson = "associated_press"}
+```{r ap_topic_4, dependson = "associated_press", include = FALSE}
 ap_lda <- LDA(ap_dtm, k = 4, control = list(seed = 1234))
 ap_lda
 ```
 
-```{r ap_4_topn, include = TRUE}
+```{r ap_4_topn}
 ap_lda_td <- tidy(ap_lda)
 
 top_terms <- ap_lda_td %>%
@@ -281,12 +405,12 @@ top_terms %>%
 
 ----
 
-```{r ap_topic_12, dependson = "associated_press"}
+```{r ap_topic_12, dependson = "associated_press", include = FALSE}
 ap_lda <- LDA(ap_dtm, k = 12, control = list(seed = 1234))
 ap_lda
 ```
 
-```{r ap_12_topn, dependson="ap_topic_12", include = TRUE, fig.height = 8}
+```{r ap_12_topn, dependson="ap_topic_12", fig.height = 8}
 ap_lda_td <- tidy(ap_lda)
 
 top_terms <- ap_lda_td %>%
@@ -310,13 +434,13 @@ top_terms %>%
 * Perplexity for LDA model with 12 topics
     * `r topicmodels::perplexity(ap_lda)`
 
-```{r ap_12_perplex, dependson="ap_topic_12"}
+```{r ap_12_perplex, dependson="ap_topic_12", include = FALSE}
 perplexity(ap_lda)
 ```
 
 ----
 
-```{r ap_lda_compare, dependson="associated_press"}
+```{r ap_lda_compare, dependson="associated_press", include = FALSE}
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
 if(file.exists("../extras/ap_lda_compare.Rdata")){
@@ -327,7 +451,7 @@ if(file.exists("../extras/ap_lda_compare.Rdata")){
 }
 ```
 
-```{r ap_lda_compare_viz, dependson="ap_lda_compare", include = TRUE} 
+```{r ap_lda_compare_viz, dependson="ap_lda_compare"} 
 data_frame(k = n_topics,
            perplex = map_dbl(ap_lda_compare, perplexity)) %>%
   ggplot(aes(k, perplex)) +
@@ -341,7 +465,7 @@ data_frame(k = n_topics,
 
 ## Topics from $k=100$
 
-```{r ap_100_topn, dependson="ap_lda_compare", include = TRUE}
+```{r ap_100_topn, dependson="ap_lda_compare"}
 ap_lda_td <- tidy(ap_lda_compare[[6]])
 
 top_terms <- ap_lda_td %>%
@@ -351,17 +475,10 @@ top_terms <- ap_lda_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  filter(topic <= 12) %>%
+  filter(topic <= 9) %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
-
-## Acknowledgments
-
-* This page is derived in part from ["Tidy Text Mining with R"](http://tidytextmining.com/) and licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States License](https://creativecommons.org/licenses/by-nc-sa/3.0/us/).
-* This page is derived in part from ["What is a good explanation of Latent Dirichlet Allocation?"](https://www.quora.com/What-is-a-good-explanation-of-Latent-Dirichlet-Allocation)
-
-
