@@ -14,7 +14,6 @@ knitr::opts_chunk$set(cache = TRUE,
 
 library(tidyverse)
 library(broom)
-library(twitteR)
 library(jsonlite)
 library(stringr)
 library(XML)
@@ -25,6 +24,7 @@ library(wordcloud)
 library(tidytext)
 library(manifestoR)
 library(httr)
+library(rtweet)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
@@ -138,56 +138,69 @@ docs %>%
 * [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html)
 * [`rtweet`](http://rtweet.info/)
 
-## Using `twitteR`
+## Using `rtweet`
 
 ```{r twitter}
-library(twitteR)
+library(rtweet)
 ```
 
 ## OAuth authentication
 
 1. Create a Twitter account
 1. Store your API key and token using the `.Rprofile` method
-1. `setup_twitter_oauth()` **from the console**
+1. `create_token()` **from the console**
 1. Get back into RStudio
 
 ## Searching tweets
 
-```{r twitter-setup, cache = FALSE}
-setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
-                    consumer_secret = getOption("twitter_api_token"))
-```
-
 ```{r twitter-rstats}
-tweets <- searchTwitter('#rstats', n = 5)
-tweets
+rt <- search_tweets(
+  q = "#rstats",
+  n = 3000,
+  include_rts = FALSE
+)
+rt
 ```
 
 ## Searching users
 
-```{r twitter-clinton}
-clinton <- getUser("hillaryclinton")
-clinton$getDescription()
-clinton$getFriends(n = 5)
+```{r twitter-count}
+countvoncount <- get_timeline(user = "countvoncount", n = 1000)
+countvoncount
 ```
 
-## Tidying tweets
+## Visualizing tweets
 
-```{r twitter-list}
-str(tweets)
+```{r rstats-freq}
+ts_plot(rt, by = "3 hours")
 ```
 
-## Tidying tweets
+## Visualizing tweets
 
-```{r twitter-df}
-df <- twListToDF(tweets) %>%
-  as_tibble()
-df
+```{r rstats-freq-day}
+ts_plot(rt, by = "1 hours")
 ```
 
-## Exercise: Practice using `twitteR`
+## Visualizing tweets {.scrollable}
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Official_Portrait_of_President_Donald_Trump.jpg/379px-Official_Portrait_of_President_Donald_Trump.jpg)
+```{r rstats-freq-clean}
+ts_plot(rt, by = "3 hours") +
+  theme(plot.title = element_text(face = "bold")) +
+  labs(
+    x = NULL, y = NULL,
+    title = "Frequency of #rstats Twitter statuses from past 9 days",
+    subtitle = "Twitter status (tweet) counts aggregated using three-hour intervals",
+    caption = "\nSource: Data collected from Twitter's REST API via rtweet"
+  )
+```
+
+## Exercise: Practice using `rtweet` {.scrollable}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Katy_Perry%E2%80%93Zenith_Paris.jpg/360px-Katy_Perry%E2%80%93Zenith_Paris.jpg)
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Kim_Kardashian_West_2014.jpg/320px-Kim_Kardashian_West_2014.jpg)
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Ariana_Grande_%2832426962484%29_%28cropped%29.jpg/343px-Ariana_Grande_%2832426962484%29_%28cropped%29.jpg)
 
 ## Writing an API function
 

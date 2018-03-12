@@ -27,18 +27,18 @@ Popular packages for the Twitter API in R include:
 
 * [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html) is the most popular package for R, but it only allows you to access the REST API. It is also deprecated (not actively updated), in lieu of a new up-and-coming package (identified below)
 * [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html) is more complicated, but allows you to query the Streaming API from R. It is ancient in computational terms (last updated in January 2014), but does what it needs to do.
-* [`rtweet`](http://rtweet.info/) is a relatively recent addition to the R package universe that allows you to access both the REST and streaming APIs. Alas, it is so recent I only discovered it last week and have not had adequate time to test it out and write out an exercise using it. You may find it more useful/user-friendly.
+* [`rtweet`](http://rtweet.info/) is a relatively recent addition to the R package universe that allows you to access both the REST and streaming APIs.
 
-# Using `twitteR`
+# Using `rtweet`
 
-Here, we are going to practice using the `twitteR` package to search Twitter.
+Here, we are going to practice using the `rtweet` package to search Twitter.
 
 ```r
-install.packages("twitteR")
+install.packages("rtweet")
 ```
 
 ```{r twitter}
-library(twitteR)
+library(rtweet)
 ```
 
 ## OAuth authentication
@@ -47,11 +47,12 @@ OAuth is an open standard for authorization, commonly used as a way for Internet
 
 1. The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (https://apps.twitter.com/app/new) and log in. After filling in the basic info (make sure to set the "Callback URL" to "http://127.0.0.1:1410"), go to the **Permissions** tab and select "Read, Write and Access direct messages". Make sure to click on the save button after doing this. In the **Details** tab, take note of your consumer key and consumer secret.
 
-1. Store your API key and token using the `.Rprofile` method. Edit `.Rprofile` and add
+1. Store your API key and secret using the `.Rprofile` method. Edit `.Rprofile` and add
 
     ```r
+    options(twitter_app_name = "Your app name")
     options(twitter_api_key = "Your API key")
-    options(twitter_api_token = "Your API secret")
+    options(twitter_api_secret = "Your API secret")
     ```
 
     Restart RStudio to get the keys loaded into your environment.
@@ -59,76 +60,140 @@ OAuth is an open standard for authorization, commonly used as a way for Internet
 1. Run from the console:
 
     ```r
-    setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
-                        consumer_secret = getOption("twitter_api_token"))
+    twitter_token <- create_token(
+      app = getOption("twitter_app_name"),
+      consumer_key = getOption("twitter_api_key"),
+      consumer_secret = getOption("twitter_api_secret"))
     ```
     
     This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.
     
-1. At this point you should get a message back in RStudio "Authentication complete." You're done setting up the authentication for `twitteR`.
+1. At this point you should get a message back in RStudio "Authentication complete." You're done setting up the authentication for `rtweet` - you'd just need to set the `token` argument equal to `twitter_token` (the token object we just created).
 
-**You must do this in order to query Twitter from within a non-interactive session (i.e. an R Markdown document or using `source()` to run a script).** If you do not, you will get an error because R will not be able to finish the authentication process without your input.
+### Storing Twitter token
+
+Rather than creating a token every time you open R, remembering where you saved your token(s) or passwords, and specifying a token every time you use a function, users are encouraged to save tokens as an environment variable. Since `twitter_token` is no longer a character string, we cannot use the `.Rprofile` method from before. Instead, we can store the token as an **environment variable**, or an object stored on your computer separately from your project directory.
+
+To save a personal access token as an environment variable, complete the following steps:
+
+1. Use `readr::write_rds()` to save `twitter_token` to your home directory. The code below should locate and construct the path to your home directory for you. Assuming you've saved your token as `twitter_token`, the final line in the code below will save your token for you as well.
+
+    ```r
+    # path of home directory
+    home_directory <- path.expand("~/")
+
+    # combine with name for token
+    file_name <- file.path(home_directory, "twitter_token.rds")
+
+    # save token to home directory
+    readr::write_rds(twitter_token, path = file_name)
+    ```
+
+1. Create a plain text file containing the path to your token object and save it to your home directory as `.Renviron`.
+    
+    To create a plain text file in R, modify the code below. Change `TWITTER_PAT` location to match the path you used earlier (in the example below, you'd want to change "/Users/soltoffbc/twitter_token.rds"). You can also create a plain text document in any text editor like TextEdit or Notepad. If you're using Rstudio, select File > New File > Text File.
+
+    **Important**: Like with `.Rprofile`, make sure the last line of `.Renviron` is blank. I achieved this in the code below by including `fill = TRUE` in the `cat()` function.
+
+    ```r
+    # On my mac, the .Renviron text looks like this:
+    #     TWITTER_PAT=/Users/soltoffbc/twitter_token.rds
+
+    # Assuming you followed the procedures to create "file_name"
+    # from the previous code chunk, then the code below should
+    # create and save your environment variable.
+
+    cat(paste0("TWITTER_PAT=", file_name),
+        file = file.path(home_directory, ".Renviron"),
+        append = TRUE)
+    ```
+
+1. Restart R so it can process the environment variable.
+
+1. If you completed the steps successfully, you should be able to use `rtweet` functions without specifying [or even *thinking* about] tokens [ever again].
 
 ## Searching tweets
 
-```{r twitter-setup, echo = FALSE}
-setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
-                    consumer_secret = getOption("twitter_api_token"))
-```
+To find 3000 recent tweets using the "rstats" hashtag:
 
 ```{r twitter-rstats}
-tweets <- searchTwitter('#rstats', n = 5)
-tweets
+rt <- search_tweets(
+  q = "#rstats",
+  n = 3000,
+  include_rts = FALSE
+)
+rt
 ```
+
+* `q` - the search query
+* `n` - maximum number of tweets to be returned
+* `include_rts = FALSE` - exclude retweets generated by Twitter's built-in "retweet" function. We only want original tweets.
+
+The resulting object is a `tibble` data frame with one row for each tweet. The data frame contains the full text of the tweet (`text`), the username of the poster (`screen_name`), as well as a wealth of metadata.
+
+Note that the Twitter REST API limits all searches to the past 6-9 days. **You will not retrieve any earlier results.**
 
 ## Searching users
 
-Use `getUser()` which returns a `user` object that you can perform additional functions on. This only works for users with public profiles or those that have authorized your app.
+Use `get_timeline()` or `get_timelines()` to retrieve tweets from one or more specified Twitter users. This only works for users with public profiles or those that have authorized your app.
 
-```{r twitter-clinton}
-clinton <- getUser("hillaryclinton")
-clinton$getDescription()
-clinton$getFriends(n = 5)
+```{r twitter-count}
+countvoncount <- get_timeline(user = "countvoncount", n = 1000)
+countvoncount
 ```
 
-## Tidying tweets
+With `get_timelines()`, you are not limited to only the most recent 6-9 days of tweets.
 
-By default `twitteR` returns tweets in complex lists.
+## Visualizing tweets
 
-```{r twitter-list}
-str(tweets)
+Because the resulting objects are data frames, you can perform standard data transformation, summarization, and visualization on the underlying data.
+
+`rtweet` includes the `ts_plot()` function which automates some common time series visualization methods. For example, we can quickly visualize the frequency of `#rstats` tweets:
+
+```{r rstats-freq}
+ts_plot(rt, by = "3 hours")
 ```
 
-To get the data into a data frame, use
+The `by` argument allows us to aggregate over different lengths of time.
 
-```{r twitter-df}
-df <- twListToDF(tweets) %>%
-  as_tibble()
-df
+```{r rstats-freq-day}
+ts_plot(rt, by = "1 hours")
 ```
 
-# Exercise: Practice using `twitteR`
+And because `ts_plot()` uses `ggplot2`, we can modify the graphs using familiar `ggplot2` functions:
+
+```{r rstats-freq-clean}
+ts_plot(rt, by = "3 hours") +
+  theme(plot.title = element_text(face = "bold")) +
+  labs(
+    x = NULL, y = NULL,
+    title = "Frequency of #rstats Twitter statuses from past 9 days",
+    subtitle = "Twitter status (tweet) counts aggregated using three-hour intervals",
+    caption = "\nSource: Data collected from Twitter's REST API via rtweet"
+  )
+```
+
+# Exercise: Practice using `rtweet`
 
 1. Create a new R project on your computer. You can use Git or not - it is just for practice in class today
 1. Setup your API key with a Twitter app
-1. Authenticate using the `twitteR` package in R
-1. Find the 50 most recent tweets by [President Donald Trump](https://twitter.com/realDonaldTrump) and store them in a data frame
-    * `userTimeline()` can be used to retrieve tweets from individual users
-    * `searchTwitter()` finds tweets from any public account that references the username
+1. Authenticate using the `rtweet` package in R
+1. Find the 1000 most recent tweets by [Katy Perry](https://twitter.com/katyperry), [Kim Kardashian West](https://twitter.com/KimKardashian), and [Ariana Grande](https://twitter.com/ArianaGrande).
+1. Visualize their tweet frequency by week. Who posts most often? Who posts least often?
 
 <details> 
   <summary>Click for the solution</summary>
   <p>
 
-```{r twitter-donald}
-setup_twitter_oauth(consumer_key = getOption("twitter_api_key"),
-                    consumer_secret = getOption("twitter_api_token"))
+```{r twitter-popstars}
+popstars <- get_timelines(
+  user = c("katyperry", "KimKardashian", "ArianaGrande"),
+  n = 1000
+)
 
-trump <- userTimeline("realDonaldTrump", n = 50)
-
-trump_df <- twListToDF(trump) %>%
-  as_tibble()
-trump_df
+popstars %>%
+  group_by(screen_name) %>%
+  ts_plot(by = "week")
 ```
     
   </p>
@@ -138,6 +203,7 @@ trump_df
 
 ```{r child='_ack_stat545.Rmd'}
 ```
+* OAuth token storage derived from ["Obtaining and using access tokens"](http://rtweet.info/articles/auth.html).
 
 # Session Info {.toc-ignore}
 

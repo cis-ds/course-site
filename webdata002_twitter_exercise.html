@@ -351,305 +351,184 @@ div.tocify {
 <ul>
 <li><a href="https://cran.rstudio.com/web/packages/twitteR/index.html"><code>twitteR</code></a> is the most popular package for R, but it only allows you to access the REST API. It is also deprecated (not actively updated), in lieu of a new up-and-coming package (identified below)</li>
 <li><a href="https://cran.rstudio.com/web/packages/streamR/index.html"><code>streamR</code></a> is more complicated, but allows you to query the Streaming API from R. It is ancient in computational terms (last updated in January 2014), but does what it needs to do.</li>
-<li><a href="http://rtweet.info/"><code>rtweet</code></a> is a relatively recent addition to the R package universe that allows you to access both the REST and streaming APIs. Alas, it is so recent I only discovered it last week and have not had adequate time to test it out and write out an exercise using it. You may find it more useful/user-friendly.</li>
+<li><a href="http://rtweet.info/"><code>rtweet</code></a> is a relatively recent addition to the R package universe that allows you to access both the REST and streaming APIs.</li>
 </ul>
-<div id="using-twitter" class="section level1">
-<h1>Using <code>twitteR</code></h1>
-<p>Here, we are going to practice using the <code>twitteR</code> package to search Twitter.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;twitteR&quot;</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(twitteR)</code></pre></div>
-<pre><code>## 
-## Attaching package: &#39;twitteR&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:dplyr&#39;:
-## 
-##     id, location</code></pre>
+<div id="using-rtweet" class="section level1">
+<h1>Using <code>rtweet</code></h1>
+<p>Here, we are going to practice using the <code>rtweet</code> package to search Twitter.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;rtweet&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rtweet)</code></pre></div>
 <div id="oauth-authentication" class="section level2">
 <h2>OAuth authentication</h2>
 <p>OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.</p>
 <ol style="list-style-type: decimal">
 <li><p>The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (<a href="https://apps.twitter.com/app/new" class="uri">https://apps.twitter.com/app/new</a>) and log in. After filling in the basic info (make sure to set the “Callback URL” to “<a href="http://127.0.0.1:1410" class="uri">http://127.0.0.1:1410</a>”), go to the <strong>Permissions</strong> tab and select “Read, Write and Access direct messages”. Make sure to click on the save button after doing this. In the <strong>Details</strong> tab, take note of your consumer key and consumer secret.</p></li>
-<li><p>Store your API key and token using the <code>.Rprofile</code> method. Edit <code>.Rprofile</code> and add</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">twitter_api_key =</span> <span class="st">&quot;Your API key&quot;</span>)
-<span class="kw">options</span>(<span class="dt">twitter_api_token =</span> <span class="st">&quot;Your API secret&quot;</span>)</code></pre></div>
+<li><p>Store your API key and secret using the <code>.Rprofile</code> method. Edit <code>.Rprofile</code> and add</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">twitter_app_name =</span> <span class="st">&quot;Your app name&quot;</span>)
+<span class="kw">options</span>(<span class="dt">twitter_api_key =</span> <span class="st">&quot;Your API key&quot;</span>)
+<span class="kw">options</span>(<span class="dt">twitter_api_secret =</span> <span class="st">&quot;Your API secret&quot;</span>)</code></pre></div>
 <p>Restart RStudio to get the keys loaded into your environment.</p></li>
 <li><p>Run from the console:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setup_twitter_oauth</span>(<span class="dt">consumer_key =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_key&quot;</span>),
-                    <span class="dt">consumer_secret =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_token&quot;</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">twitter_token &lt;-<span class="st"> </span><span class="kw">create_token</span>(
+  <span class="dt">app =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_app_name&quot;</span>),
+  <span class="dt">consumer_key =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_key&quot;</span>),
+  <span class="dt">consumer_secret =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_secret&quot;</span>))</code></pre></div>
 <p>This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.</p></li>
-<li><p>At this point you should get a message back in RStudio “Authentication complete.” You’re done setting up the authentication for <code>twitteR</code>.</p></li>
+<li><p>At this point you should get a message back in RStudio “Authentication complete.” You’re done setting up the authentication for <code>rtweet</code> - you’d just need to set the <code>token</code> argument equal to <code>twitter_token</code> (the token object we just created).</p></li>
 </ol>
-<p><strong>You must do this in order to query Twitter from within a non-interactive session (i.e. an R Markdown document or using <code>source()</code> to run a script).</strong> If you do not, you will get an error because R will not be able to finish the authentication process without your input.</p>
+<div id="storing-twitter-token" class="section level3">
+<h3>Storing Twitter token</h3>
+<p>Rather than creating a token every time you open R, remembering where you saved your token(s) or passwords, and specifying a token every time you use a function, users are encouraged to save tokens as an environment variable. Since <code>twitter_token</code> is no longer a character string, we cannot use the <code>.Rprofile</code> method from before. Instead, we can store the token as an <strong>environment variable</strong>, or an object stored on your computer separately from your project directory.</p>
+<p>To save a personal access token as an environment variable, complete the following steps:</p>
+<ol style="list-style-type: decimal">
+<li><p>Use <code>readr::write_rds()</code> to save <code>twitter_token</code> to your home directory. The code below should locate and construct the path to your home directory for you. Assuming you’ve saved your token as <code>twitter_token</code>, the final line in the code below will save your token for you as well.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># path of home directory</span>
+home_directory &lt;-<span class="st"> </span><span class="kw">path.expand</span>(<span class="st">&quot;~/&quot;</span>)
+
+<span class="co"># combine with name for token</span>
+file_name &lt;-<span class="st"> </span><span class="kw">file.path</span>(home_directory, <span class="st">&quot;twitter_token.rds&quot;</span>)
+
+<span class="co"># save token to home directory</span>
+readr<span class="op">::</span><span class="kw">write_rds</span>(twitter_token, <span class="dt">path =</span> file_name)</code></pre></div></li>
+<li><p>Create a plain text file containing the path to your token object and save it to your home directory as <code>.Renviron</code>.</p>
+<p>To create a plain text file in R, modify the code below. Change <code>TWITTER_PAT</code> location to match the path you used earlier (in the example below, you’d want to change “/Users/soltoffbc/twitter_token.rds”). You can also create a plain text document in any text editor like TextEdit or Notepad. If you’re using Rstudio, select File &gt; New File &gt; Text File.</p>
+<p><strong>Important</strong>: Like with <code>.Rprofile</code>, make sure the last line of <code>.Renviron</code> is blank. I achieved this in the code below by including <code>fill = TRUE</code> in the <code>cat()</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># On my mac, the .Renviron text looks like this:</span>
+<span class="co">#     TWITTER_PAT=/Users/soltoffbc/twitter_token.rds</span>
+
+<span class="co"># Assuming you followed the procedures to create &quot;file_name&quot;</span>
+<span class="co"># from the previous code chunk, then the code below should</span>
+<span class="co"># create and save your environment variable.</span>
+
+<span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;TWITTER_PAT=&quot;</span>, file_name),
+    <span class="dt">file =</span> <span class="kw">file.path</span>(home_directory, <span class="st">&quot;.Renviron&quot;</span>),
+    <span class="dt">append =</span> <span class="ot">TRUE</span>)</code></pre></div></li>
+<li><p>Restart R so it can process the environment variable.</p></li>
+<li><p>If you completed the steps successfully, you should be able to use <code>rtweet</code> functions without specifying [or even <em>thinking</em> about] tokens [ever again].</p></li>
+</ol>
+</div>
 </div>
 <div id="searching-tweets" class="section level2">
 <h2>Searching tweets</h2>
-<pre><code>## [1] &quot;Using browser based authentication&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">tweets &lt;-<span class="st"> </span><span class="kw">searchTwitter</span>(<span class="st">&#39;#rstats&#39;</span>, <span class="dt">n =</span> <span class="dv">5</span>)
-tweets</code></pre></div>
-<pre><code>## [[1]]
-## [1] &quot;giorapac: microPop: Modelling microbial populations and communities in R #rstats @MethodsEcolEvol https://t.co/YrOKCU0BCd&quot;
-## 
-## [[2]]
-## [1] &quot;RLionheart92: Got around to sorting out my personal site, inspired by @Emaasit  using #rstats and @xieyihui blogdown package.… https://t.co/EaiFJj8A2H&quot;
-## 
-## [[3]]
-## [1] &quot;dataframing: Sunk cost fallacy is running a LENGTHY block of #rstats code and not assigning the output to a variable because it&#39;s already running.&quot;
-## 
-## [[4]]
-## [1] &quot;Pvalsfr: RT @Rbloggers: Learning things we already know about stocks https://t.co/cy7kKWz4y6 #rstats #DataScience&quot;
-## 
-## [[5]]
-## [1] &quot;ecuervog: RT @Rbloggers: An Introduction to Stock Market Data Analysis with R (Part 1) https://t.co/gbLfQEI7ZY #rstats #DataScience&quot;</code></pre>
+<p>To find 3000 recent tweets using the “rstats” hashtag:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rt &lt;-<span class="st"> </span><span class="kw">search_tweets</span>(
+  <span class="dt">q =</span> <span class="st">&quot;#rstats&quot;</span>,
+  <span class="dt">n =</span> <span class="dv">3000</span>,
+  <span class="dt">include_rts =</span> <span class="ot">FALSE</span>
+)</code></pre></div>
+<pre><code>## Searching for tweets...</code></pre>
+<pre><code>## Finished collecting tweets!</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">rt</code></pre></div>
+<pre><code>## # A tibble: 2,656 x 42
+##    status_id  created_at          user_id  screen_name text         source
+##    &lt;chr&gt;      &lt;dttm&gt;              &lt;chr&gt;    &lt;chr&gt;       &lt;chr&gt;        &lt;chr&gt; 
+##  1 973234778… 2018-03-12 16:30:27 2957630… calves06    Today’s the… Twitt…
+##  2 973234218… 2018-03-12 16:28:14 9354611… RLadiesLau… We are cont… Twitt…
+##  3 973233874… 2018-03-12 16:26:52 8441528… rweekly_li… Steel-ing a… R Wee…
+##  4 973233697… 2018-03-12 16:26:10 4686586… bass_analy… &quot;A tidy mod… Twitt…
+##  5 973232678… 2018-03-12 16:22:07 1989657… monkmanmh   &quot;TIL that I… Twitt…
+##  6 973231360… 2018-03-12 16:16:52 16736320 kai_arzhei… @kuziemsky … Twitt…
+##  7 973230437… 2018-03-12 16:13:12 89191817 BigDataIns… &quot;Big | Data… Paper…
+##  8 973229907… 2018-03-12 16:11:06 5232165… martinjhnh… &quot;I&#39;ve a #GI… Twitt…
+##  9 973228130… 2018-03-12 16:04:02 3580439… maximaform… #Statistics… Buffer
+## 10 973227858… 2018-03-12 16:02:57 1120991… fongchunch… Anyone know… Tweet…
+## # ... with 2,646 more rows, and 36 more variables:
+## #   reply_to_status_id &lt;chr&gt;, reply_to_user_id &lt;chr&gt;,
+## #   reply_to_screen_name &lt;chr&gt;, is_quote &lt;lgl&gt;, is_retweet &lt;lgl&gt;,
+## #   favorite_count &lt;int&gt;, retweet_count &lt;int&gt;, hashtags &lt;list&gt;,
+## #   symbols &lt;list&gt;, urls_url &lt;list&gt;, urls_t.co &lt;list&gt;,
+## #   urls_expanded_url &lt;list&gt;, media_url &lt;list&gt;, media_t.co &lt;list&gt;,
+## #   media_expanded_url &lt;list&gt;, media_type &lt;list&gt;, ext_media_url &lt;list&gt;,
+## #   ext_media_t.co &lt;list&gt;, ext_media_expanded_url &lt;list&gt;,
+## #   ext_media_type &lt;lgl&gt;, mentions_user_id &lt;list&gt;,
+## #   mentions_screen_name &lt;list&gt;, lang &lt;chr&gt;, quoted_status_id &lt;chr&gt;,
+## #   quoted_text &lt;chr&gt;, retweet_status_id &lt;chr&gt;, retweet_text &lt;chr&gt;,
+## #   place_url &lt;chr&gt;, place_name &lt;chr&gt;, place_full_name &lt;chr&gt;,
+## #   place_type &lt;chr&gt;, country &lt;chr&gt;, country_code &lt;chr&gt;,
+## #   geo_coords &lt;list&gt;, coords_coords &lt;list&gt;, bbox_coords &lt;list&gt;</code></pre>
+<ul>
+<li><code>q</code> - the search query</li>
+<li><code>n</code> - maximum number of tweets to be returned</li>
+<li><code>include_rts = FALSE</code> - exclude retweets generated by Twitter’s built-in “retweet” function. We only want original tweets.</li>
+</ul>
+<p>The resulting object is a <code>tibble</code> data frame with one row for each tweet. The data frame contains the full text of the tweet (<code>text</code>), the username of the poster (<code>screen_name</code>), as well as a wealth of metadata.</p>
+<p>Note that the Twitter REST API limits all searches to the past 6-9 days. <strong>You will not retrieve any earlier results.</strong></p>
 </div>
 <div id="searching-users" class="section level2">
 <h2>Searching users</h2>
-<p>Use <code>getUser()</code> which returns a <code>user</code> object that you can perform additional functions on. This only works for users with public profiles or those that have authorized your app.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clinton &lt;-<span class="st"> </span><span class="kw">getUser</span>(<span class="st">&quot;hillaryclinton&quot;</span>)
-clinton<span class="op">$</span><span class="kw">getDescription</span>()</code></pre></div>
-<pre><code>## [1] &quot;Wife, mom, grandma, women+kids advocate, FLOTUS, Senator, SecState, hair icon, pantsuit aficionado, 2016 presidential candidate.&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clinton<span class="op">$</span><span class="kw">getFriends</span>(<span class="dt">n =</span> <span class="dv">5</span>)</code></pre></div>
-<pre><code>## $`28185163`
-## [1] &quot;BeauWillimon&quot;
-## 
-## $`800704496246484992`
-## [1] &quot;swingleft&quot;
-## 
-## $`18602100`
-## [1] &quot;PhilippeReines&quot;
-## 
-## $`809420163711909888`
-## [1] &quot;runforsomething&quot;
-## 
-## $`30354991`
-## [1] &quot;KamalaHarris&quot;</code></pre>
+<p>Use <code>get_timeline()</code> or <code>get_timelines()</code> to retrieve tweets from one or more specified Twitter users. This only works for users with public profiles or those that have authorized your app.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">countvoncount &lt;-<span class="st"> </span><span class="kw">get_timeline</span>(<span class="dt">user =</span> <span class="st">&quot;countvoncount&quot;</span>, <span class="dt">n =</span> <span class="dv">1000</span>)
+countvoncount</code></pre></div>
+<pre><code>## # A tibble: 1,200 x 42
+##    status_id   created_at          user_id  screen_name text      source  
+##  * &lt;chr&gt;       &lt;dttm&gt;              &lt;chr&gt;    &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt;   
+##  1 9731839178… 2018-03-12 13:08:21 5551297… CountVonCo… One thou… CountVo…
+##  2 9728970194… 2018-03-11 18:08:19 5551297… CountVonCo… One thou… CountVo…
+##  3 9725799215… 2018-03-10 21:08:17 5551297… CountVonCo… One thou… CountVo…
+##  4 9723081230… 2018-03-10 03:08:15 5551297… CountVonCo… One thou… CountVo…
+##  5 9721420240… 2018-03-09 16:08:14 5551297… CountVonCo… One thou… CountVo…
+##  6 9718551253… 2018-03-08 21:08:12 5551297… CountVonCo… One thou… CountVo…
+##  7 9717343260… 2018-03-08 13:08:11 5551297… CountVonCo… One thou… CountVo…
+##  8 9714776275… 2018-03-07 20:08:10 5551297… CountVonCo… One thou… CountVo…
+##  9 9713870278… 2018-03-07 14:08:09 5551297… CountVonCo… One thou… CountVo…
+## 10 9711303288… 2018-03-06 21:08:07 5551297… CountVonCo… One thou… CountVo…
+## # ... with 1,190 more rows, and 36 more variables:
+## #   reply_to_status_id &lt;lgl&gt;, reply_to_user_id &lt;lgl&gt;,
+## #   reply_to_screen_name &lt;lgl&gt;, is_quote &lt;lgl&gt;, is_retweet &lt;lgl&gt;,
+## #   favorite_count &lt;int&gt;, retweet_count &lt;int&gt;, hashtags &lt;list&gt;,
+## #   symbols &lt;list&gt;, urls_url &lt;list&gt;, urls_t.co &lt;list&gt;,
+## #   urls_expanded_url &lt;list&gt;, media_url &lt;list&gt;, media_t.co &lt;list&gt;,
+## #   media_expanded_url &lt;list&gt;, media_type &lt;list&gt;, ext_media_url &lt;list&gt;,
+## #   ext_media_t.co &lt;list&gt;, ext_media_expanded_url &lt;list&gt;,
+## #   ext_media_type &lt;lgl&gt;, mentions_user_id &lt;list&gt;,
+## #   mentions_screen_name &lt;list&gt;, lang &lt;chr&gt;, quoted_status_id &lt;chr&gt;,
+## #   quoted_text &lt;chr&gt;, retweet_status_id &lt;chr&gt;, retweet_text &lt;chr&gt;,
+## #   place_url &lt;chr&gt;, place_name &lt;chr&gt;, place_full_name &lt;chr&gt;,
+## #   place_type &lt;chr&gt;, country &lt;chr&gt;, country_code &lt;chr&gt;,
+## #   geo_coords &lt;list&gt;, coords_coords &lt;list&gt;, bbox_coords &lt;list&gt;</code></pre>
+<p>With <code>get_timelines()</code>, you are not limited to only the most recent 6-9 days of tweets.</p>
 </div>
-<div id="tidying-tweets" class="section level2">
-<h2>Tidying tweets</h2>
-<p>By default <code>twitteR</code> returns tweets in complex lists.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(tweets)</code></pre></div>
-<pre><code>## List of 5
-##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
-##   ..$ text         : chr &quot;microPop: Modelling microbial populations and communities in R #rstats @MethodsEcolEvol https://t.co/YrOKCU0BCd&quot;
-##   ..$ favorited    : logi FALSE
-##   ..$ favoriteCount: num 0
-##   ..$ replyToSN    : chr(0) 
-##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:45:24&quot;
-##   ..$ truncated    : logi FALSE
-##   ..$ replyToSID   : chr(0) 
-##   ..$ id           : chr &quot;900066388693327873&quot;
-##   ..$ replyToUID   : chr(0) 
-##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter Web Client&lt;/a&gt;&quot;
-##   ..$ screenName   : chr &quot;giorapac&quot;
-##   ..$ retweetCount : num 0
-##   ..$ isRetweet    : logi FALSE
-##   ..$ retweeted    : logi FALSE
-##   ..$ longitude    : chr(0) 
-##   ..$ latitude     : chr(0) 
-##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
-##   .. ..$ url         : chr &quot;https://t.co/YrOKCU0BCd&quot;
-##   .. ..$ expanded_url: chr &quot;http://onlinelibrary.wiley.com/doi/10.1111/2041-210X.12873/abstract&quot;
-##   .. ..$ display_url : chr &quot;onlinelibrary.wiley.com/doi/10.1111/20…&quot;
-##   .. ..$ start_index : num 88
-##   .. ..$ stop_index  : num 111
-##   ..and 53 methods, of which 39 are  possibly relevant:
-##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
-##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
-##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
-##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
-##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
-##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
-##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
-##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
-##   ..  toDataFrame, toDataFrame#twitterObj
-##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
-##   ..$ text         : chr &quot;Got around to sorting out my personal site, inspired by @Emaasit  using #rstats and @xieyihui blogdown package.&quot;| __truncated__
-##   ..$ favorited    : logi FALSE
-##   ..$ favoriteCount: num 0
-##   ..$ replyToSN    : chr(0) 
-##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:45:13&quot;
-##   ..$ truncated    : logi TRUE
-##   ..$ replyToSID   : chr(0) 
-##   ..$ id           : chr &quot;900066345676664835&quot;
-##   ..$ replyToUID   : chr(0) 
-##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com/download/iphone\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter for iPhone&lt;/a&gt;&quot;
-##   ..$ screenName   : chr &quot;RLionheart92&quot;
-##   ..$ retweetCount : num 0
-##   ..$ isRetweet    : logi FALSE
-##   ..$ retweeted    : logi FALSE
-##   ..$ longitude    : chr(0) 
-##   ..$ latitude     : chr(0) 
-##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
-##   .. ..$ url         : chr &quot;https://t.co/EaiFJj8A2H&quot;
-##   .. ..$ expanded_url: chr &quot;https://twitter.com/i/web/status/900066345676664835&quot;
-##   .. ..$ display_url : chr &quot;twitter.com/i/web/status/9…&quot;
-##   .. ..$ start_index : num 113
-##   .. ..$ stop_index  : num 136
-##   ..and 53 methods, of which 39 are  possibly relevant:
-##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
-##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
-##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
-##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
-##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
-##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
-##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
-##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
-##   ..  toDataFrame, toDataFrame#twitterObj
-##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
-##   ..$ text         : chr &quot;Sunk cost fallacy is running a LENGTHY block of #rstats code and not assigning the output to a variable because&quot;| __truncated__
-##   ..$ favorited    : logi FALSE
-##   ..$ favoriteCount: num 0
-##   ..$ replyToSN    : chr(0) 
-##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:44:50&quot;
-##   ..$ truncated    : logi FALSE
-##   ..$ replyToSID   : chr(0) 
-##   ..$ id           : chr &quot;900066248393990144&quot;
-##   ..$ replyToUID   : chr(0) 
-##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com/download/iphone\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter for iPhone&lt;/a&gt;&quot;
-##   ..$ screenName   : chr &quot;dataframing&quot;
-##   ..$ retweetCount : num 0
-##   ..$ isRetweet    : logi FALSE
-##   ..$ retweeted    : logi FALSE
-##   ..$ longitude    : chr(0) 
-##   ..$ latitude     : chr(0) 
-##   ..$ urls         :&#39;data.frame&#39;:    0 obs. of  4 variables:
-##   .. ..$ url         : chr(0) 
-##   .. ..$ expanded_url: chr(0) 
-##   .. ..$ dispaly_url : chr(0) 
-##   .. ..$ indices     : num(0) 
-##   ..and 53 methods, of which 39 are  possibly relevant:
-##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
-##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
-##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
-##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
-##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
-##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
-##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
-##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
-##   ..  toDataFrame, toDataFrame#twitterObj
-##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
-##   ..$ text         : chr &quot;RT @Rbloggers: Learning things we already know about stocks https://t.co/cy7kKWz4y6 #rstats #DataScience&quot;
-##   ..$ favorited    : logi FALSE
-##   ..$ favoriteCount: num 0
-##   ..$ replyToSN    : chr(0) 
-##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:40:49&quot;
-##   ..$ truncated    : logi FALSE
-##   ..$ replyToSID   : chr(0) 
-##   ..$ id           : chr &quot;900065237105332224&quot;
-##   ..$ replyToUID   : chr(0) 
-##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com/download/android\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter for Android&lt;/a&gt;&quot;
-##   ..$ screenName   : chr &quot;Pvalsfr&quot;
-##   ..$ retweetCount : num 3
-##   ..$ isRetweet    : logi TRUE
-##   ..$ retweeted    : logi FALSE
-##   ..$ longitude    : chr(0) 
-##   ..$ latitude     : chr(0) 
-##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
-##   .. ..$ url         : chr &quot;https://t.co/cy7kKWz4y6&quot;
-##   .. ..$ expanded_url: chr &quot;https://wp.me/pMm6L-E8r&quot;
-##   .. ..$ display_url : chr &quot;wp.me/pMm6L-E8r&quot;
-##   .. ..$ start_index : num 60
-##   .. ..$ stop_index  : num 83
-##   ..and 53 methods, of which 39 are  possibly relevant:
-##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
-##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
-##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
-##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
-##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
-##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
-##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
-##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
-##   ..  toDataFrame, toDataFrame#twitterObj
-##  $ :Reference class &#39;status&#39; [package &quot;twitteR&quot;] with 17 fields
-##   ..$ text         : chr &quot;RT @Rbloggers: An Introduction to Stock Market Data Analysis with R (Part 1) https://t.co/gbLfQEI7ZY #rstats #DataScience&quot;
-##   ..$ favorited    : logi FALSE
-##   ..$ favoriteCount: num 0
-##   ..$ replyToSN    : chr(0) 
-##   ..$ created      : POSIXct[1:1], format: &quot;2017-08-22 18:40:40&quot;
-##   ..$ truncated    : logi FALSE
-##   ..$ replyToSID   : chr(0) 
-##   ..$ id           : chr &quot;900065198479990784&quot;
-##   ..$ replyToUID   : chr(0) 
-##   ..$ statusSource : chr &quot;&lt;a href=\&quot;http://twitter.com\&quot; rel=\&quot;nofollow\&quot;&gt;Twitter Web Client&lt;/a&gt;&quot;
-##   ..$ screenName   : chr &quot;ecuervog&quot;
-##   ..$ retweetCount : num 57
-##   ..$ isRetweet    : logi TRUE
-##   ..$ retweeted    : logi FALSE
-##   ..$ longitude    : chr(0) 
-##   ..$ latitude     : chr(0) 
-##   ..$ urls         :&#39;data.frame&#39;:    1 obs. of  5 variables:
-##   .. ..$ url         : chr &quot;https://t.co/gbLfQEI7ZY&quot;
-##   .. ..$ expanded_url: chr &quot;https://wp.me/pMm6L-CFU&quot;
-##   .. ..$ display_url : chr &quot;wp.me/pMm6L-CFU&quot;
-##   .. ..$ start_index : num 77
-##   .. ..$ stop_index  : num 100
-##   ..and 53 methods, of which 39 are  possibly relevant:
-##   ..  getCreated, getFavoriteCount, getFavorited, getId, getIsRetweet,
-##   ..  getLatitude, getLongitude, getReplyToSID, getReplyToSN,
-##   ..  getReplyToUID, getRetweetCount, getRetweeted, getRetweeters,
-##   ..  getRetweets, getScreenName, getStatusSource, getText, getTruncated,
-##   ..  getUrls, initialize, setCreated, setFavoriteCount, setFavorited,
-##   ..  setId, setIsRetweet, setLatitude, setLongitude, setReplyToSID,
-##   ..  setReplyToSN, setReplyToUID, setRetweetCount, setRetweeted,
-##   ..  setScreenName, setStatusSource, setText, setTruncated, setUrls,
-##   ..  toDataFrame, toDataFrame#twitterObj</code></pre>
-<p>To get the data into a data frame, use</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">df &lt;-<span class="st"> </span><span class="kw">twListToDF</span>(tweets) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">as_tibble</span>()
-df</code></pre></div>
-<pre><code>## # A tibble: 5 x 16
-##                                                                          text
-##                                                                         &lt;chr&gt;
-## 1 microPop: Modelling microbial populations and communities in R #rstats @Met
-## 2 Got around to sorting out my personal site, inspired by @Emaasit  using #rs
-## 3 Sunk cost fallacy is running a LENGTHY block of #rstats code and not assign
-## 4 RT @Rbloggers: Learning things we already know about stocks https://t.co/cy
-## 5 RT @Rbloggers: An Introduction to Stock Market Data Analysis with R (Part 1
-## # ... with 15 more variables: favorited &lt;lgl&gt;, favoriteCount &lt;dbl&gt;,
-## #   replyToSN &lt;lgl&gt;, created &lt;dttm&gt;, truncated &lt;lgl&gt;, replyToSID &lt;lgl&gt;,
-## #   id &lt;chr&gt;, replyToUID &lt;lgl&gt;, statusSource &lt;chr&gt;, screenName &lt;chr&gt;,
-## #   retweetCount &lt;dbl&gt;, isRetweet &lt;lgl&gt;, retweeted &lt;lgl&gt;, longitude &lt;lgl&gt;,
-## #   latitude &lt;lgl&gt;</code></pre>
+<div id="visualizing-tweets" class="section level2">
+<h2>Visualizing tweets</h2>
+<p>Because the resulting objects are data frames, you can perform standard data transformation, summarization, and visualization on the underlying data.</p>
+<p><code>rtweet</code> includes the <code>ts_plot()</code> function which automates some common time series visualization methods. For example, we can quickly visualize the frequency of <code>#rstats</code> tweets:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ts_plot</span>(rt, <span class="dt">by =</span> <span class="st">&quot;3 hours&quot;</span>)</code></pre></div>
+<p><img src="webdata002_twitter_exercise_files/figure-html/rstats-freq-1.png" width="672" /></p>
+<p>The <code>by</code> argument allows us to aggregate over different lengths of time.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ts_plot</span>(rt, <span class="dt">by =</span> <span class="st">&quot;1 hours&quot;</span>)</code></pre></div>
+<p><img src="webdata002_twitter_exercise_files/figure-html/rstats-freq-day-1.png" width="672" /></p>
+<p>And because <code>ts_plot()</code> uses <code>ggplot2</code>, we can modify the graphs using familiar <code>ggplot2</code> functions:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ts_plot</span>(rt, <span class="dt">by =</span> <span class="st">&quot;3 hours&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">plot.title =</span> <span class="kw">element_text</span>(<span class="dt">face =</span> <span class="st">&quot;bold&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(
+    <span class="dt">x =</span> <span class="ot">NULL</span>, <span class="dt">y =</span> <span class="ot">NULL</span>,
+    <span class="dt">title =</span> <span class="st">&quot;Frequency of #rstats Twitter statuses from past 9 days&quot;</span>,
+    <span class="dt">subtitle =</span> <span class="st">&quot;Twitter status (tweet) counts aggregated using three-hour intervals&quot;</span>,
+    <span class="dt">caption =</span> <span class="st">&quot;</span><span class="ch">\n</span><span class="st">Source: Data collected from Twitter&#39;s REST API via rtweet&quot;</span>
+  )</code></pre></div>
+<p><img src="webdata002_twitter_exercise_files/figure-html/rstats-freq-clean-1.png" width="672" /></p>
 </div>
 </div>
-<div id="exercise-practice-using-twitter" class="section level1">
-<h1>Exercise: Practice using <code>twitteR</code></h1>
+<div id="exercise-practice-using-rtweet" class="section level1">
+<h1>Exercise: Practice using <code>rtweet</code></h1>
 <ol style="list-style-type: decimal">
 <li>Create a new R project on your computer. You can use Git or not - it is just for practice in class today</li>
 <li>Setup your API key with a Twitter app</li>
-<li>Authenticate using the <code>twitteR</code> package in R</li>
-<li>Find the 50 most recent tweets by <a href="https://twitter.com/realDonaldTrump">President Donald Trump</a> and store them in a data frame
-<ul>
-<li><code>userTimeline()</code> can be used to retrieve tweets from individual users</li>
-<li><code>searchTwitter()</code> finds tweets from any public account that references the username</li>
-</ul></li>
+<li>Authenticate using the <code>rtweet</code> package in R</li>
+<li>Find the 1000 most recent tweets by <a href="https://twitter.com/katyperry">Katy Perry</a>, <a href="https://twitter.com/KimKardashian">Kim Kardashian West</a>, and <a href="https://twitter.com/ArianaGrande">Ariana Grande</a>.</li>
+<li>Visualize their tweet frequency by week. Who posts most often? Who posts least often?</li>
 </ol>
 <details> <summary>Click for the solution</summary>
 <p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">setup_twitter_oauth</span>(<span class="dt">consumer_key =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_key&quot;</span>),
-                    <span class="dt">consumer_secret =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_token&quot;</span>))</code></pre></div>
-<pre><code>## [1] &quot;Using browser based authentication&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trump &lt;-<span class="st"> </span><span class="kw">userTimeline</span>(<span class="st">&quot;realDonaldTrump&quot;</span>, <span class="dt">n =</span> <span class="dv">50</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">popstars &lt;-<span class="st"> </span><span class="kw">get_timelines</span>(
+  <span class="dt">user =</span> <span class="kw">c</span>(<span class="st">&quot;katyperry&quot;</span>, <span class="st">&quot;KimKardashian&quot;</span>, <span class="st">&quot;ArianaGrande&quot;</span>),
+  <span class="dt">n =</span> <span class="dv">1000</span>
+)
 
-trump_df &lt;-<span class="st"> </span><span class="kw">twListToDF</span>(trump) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">as_tibble</span>()
-trump_df</code></pre></div>
-<pre><code>## # A tibble: 43 x 16
-##                                                                           text
-##                                                                          &lt;chr&gt;
-##  1 Was with great people last night in Fort Myer, Virginia. The future of our 
-##  2 &quot;Address to the Nation\nFull Video &amp;amp; Transcript:\nhttps://t.co/FELdImTu
-##  3 &quot;Thank you to the men and women of Fort Myer, and every member of the U.S. 
-##  4  &quot;Join me live from Fort Myer in Arlington, Virginia. \n➡️https://t.co/LOV4S
-##  5 Thank you, the very dishonest Fake News Media is out of control! https://t.
-##  6 Jerry Falwell of Liberty University was fantastic on @foxandfriends. The Fa
-##  7 Thoughts &amp;amp; prayers are w/ our @USNavy sailors aboard the #USSJohnSMcCai
-##  8 Heading back to Washington after working hard and watching some of the wors
-##  9 I want to applaud the many protestors in Boston who are speaking out agains
-## 10 Our great country has been divided for decades. Sometimes you need protest 
-## # ... with 33 more rows, and 15 more variables: favorited &lt;lgl&gt;,
-## #   favoriteCount &lt;dbl&gt;, replyToSN &lt;chr&gt;, created &lt;dttm&gt;, truncated &lt;lgl&gt;,
-## #   replyToSID &lt;chr&gt;, id &lt;chr&gt;, replyToUID &lt;chr&gt;, statusSource &lt;chr&gt;,
-## #   screenName &lt;chr&gt;, retweetCount &lt;dbl&gt;, isRetweet &lt;lgl&gt;,
-## #   retweeted &lt;lgl&gt;, longitude &lt;lgl&gt;, latitude &lt;lgl&gt;</code></pre>
+popstars <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">group_by</span>(screen_name) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ts_plot</span>(<span class="dt">by =</span> <span class="st">&quot;week&quot;</span>)</code></pre></div>
+<p><img src="webdata002_twitter_exercise_files/figure-html/twitter-popstars-1.png" width="672" /></p>
 </p>
 <p></details></p>
 </div>
@@ -657,6 +536,7 @@ trump_df</code></pre></div>
 <h1>Acknowledgments</h1>
 <ul>
 <li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+<li>OAuth token storage derived from <a href="http://rtweet.info/articles/auth.html">“Obtaining and using access tokens”</a>.</li>
 </ul>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
@@ -664,83 +544,83 @@ trump_df</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>## Session info -------------------------------------------------------------</code></pre>
 <pre><code>##  setting  value                       
-##  version  R version 3.4.1 (2017-06-30)
+##  version  R version 3.4.3 (2017-11-30)
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-11-10</code></pre>
+##  date     2018-03-12</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
-<pre><code>##  package    * version    date       source                              
-##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                      
-##  backports    1.1.0      2017-05-22 CRAN (R 3.4.0)                      
-##  base       * 3.4.1      2017-07-07 local                               
-##  bindr        0.1        2016-11-13 CRAN (R 3.4.0)                      
-##  bindrcpp     0.2        2017-06-17 CRAN (R 3.4.0)                      
-##  boxes        0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
-##  broom      * 0.4.2      2017-08-09 local                               
-##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                      
-##  clisymbols   1.2.0      2017-05-21 cran (@1.2.0)                       
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                      
-##  compiler     3.4.1      2017-07-07 local                               
-##  crayon       1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab) 
-##  datasets   * 3.4.1      2017-07-07 local                               
-##  devtools     1.13.3     2017-08-02 CRAN (R 3.4.1)                      
-##  digest       0.6.12     2017-01-27 CRAN (R 3.4.0)                      
-##  dplyr      * 0.7.4.9000 2017-10-03 Github (tidyverse/dplyr@1a0730a)    
-##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                      
-##  forcats    * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
-##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.1)                      
-##  ggplot2    * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
-##  glue         1.1.1      2017-06-21 CRAN (R 3.4.1)                      
-##  graphics   * 3.4.1      2017-07-07 local                               
-##  grDevices  * 3.4.1      2017-07-07 local                               
-##  grid         3.4.1      2017-07-07 local                               
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.4.0)                      
-##  haven        1.1.0      2017-07-09 CRAN (R 3.4.1)                      
-##  hms          0.3        2016-11-22 CRAN (R 3.4.0)                      
-##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                      
-##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                      
-##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                      
-##  knitr        1.17       2017-08-10 cran (@1.17)                        
-##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.1)                      
-##  lazyeval     0.2.0      2016-06-12 CRAN (R 3.4.0)                      
-##  lubridate    1.6.0      2016-09-13 CRAN (R 3.4.0)                      
-##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                      
-##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                      
-##  methods    * 3.4.1      2017-07-07 local                               
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                      
-##  modelr       0.1.1      2017-08-10 local                               
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                      
-##  nlme         3.1-131    2017-02-06 CRAN (R 3.4.1)                      
-##  parallel     3.4.1      2017-07-07 local                               
-##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                      
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                      
-##  psych        1.7.5      2017-05-03 CRAN (R 3.4.1)                      
-##  purrr      * 0.2.3      2017-08-02 CRAN (R 3.4.1)                      
-##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                      
-##  Rcpp         0.12.13    2017-09-28 cran (@0.12.13)                     
-##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
-##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                      
-##  reshape2     1.4.2      2016-10-22 CRAN (R 3.4.0)                      
-##  rlang        0.1.2      2017-08-09 CRAN (R 3.4.1)                      
-##  rmarkdown    1.6        2017-06-15 CRAN (R 3.4.0)                      
-##  rprojroot    1.2        2017-01-16 CRAN (R 3.4.0)                      
-##  rstudioapi   0.6        2016-06-27 CRAN (R 3.4.0)                      
-##  rvest        0.3.2      2016-06-17 CRAN (R 3.4.0)                      
-##  scales       0.4.1      2016-11-09 CRAN (R 3.4.0)                      
-##  stats      * 3.4.1      2017-07-07 local                               
-##  stringi      1.1.5      2017-04-07 CRAN (R 3.4.0)                      
-##  stringr    * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
-##  tibble     * 1.3.4      2017-08-22 CRAN (R 3.4.1)                      
-##  tidyr      * 0.7.0      2017-08-16 CRAN (R 3.4.1)                      
-##  tidyverse  * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
-##  tools        3.4.1      2017-07-07 local                               
-##  utils      * 3.4.1      2017-07-07 local                               
-##  withr        2.0.0      2017-07-28 CRAN (R 3.4.1)                      
-##  xml2         1.1.1      2017-01-24 CRAN (R 3.4.0)                      
-##  yaml         2.1.14     2016-11-12 CRAN (R 3.4.0)</code></pre>
+<pre><code>##  package    * version    date       source                             
+##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                     
+##  backports    1.1.2      2017-12-13 CRAN (R 3.4.3)                     
+##  base       * 3.4.3      2017-12-07 local                              
+##  bindr        0.1        2016-11-13 CRAN (R 3.4.0)                     
+##  bindrcpp     0.2        2017-06-17 CRAN (R 3.4.0)                     
+##  broom      * 0.4.3      2017-11-20 CRAN (R 3.4.1)                     
+##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                     
+##  cli          1.0.0      2017-11-05 CRAN (R 3.4.2)                     
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                     
+##  compiler     3.4.3      2017-12-07 local                              
+##  crayon       1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab)
+##  datasets   * 3.4.3      2017-12-07 local                              
+##  devtools     1.13.5     2018-02-18 CRAN (R 3.4.3)                     
+##  digest       0.6.15     2018-01-28 CRAN (R 3.4.3)                     
+##  dplyr      * 0.7.4.9000 2017-10-03 Github (tidyverse/dplyr@1a0730a)   
+##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                     
+##  forcats    * 0.3.0      2018-02-19 CRAN (R 3.4.3)                     
+##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.3)                     
+##  ggplot2    * 2.2.1      2016-12-30 CRAN (R 3.4.0)                     
+##  glue         1.2.0      2017-10-29 CRAN (R 3.4.2)                     
+##  graphics   * 3.4.3      2017-12-07 local                              
+##  grDevices  * 3.4.3      2017-12-07 local                              
+##  grid         3.4.3      2017-12-07 local                              
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.4.0)                     
+##  haven        1.1.1      2018-01-18 CRAN (R 3.4.3)                     
+##  hms          0.4.1      2018-01-24 CRAN (R 3.4.3)                     
+##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                     
+##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                     
+##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                     
+##  knitr        1.20       2018-02-20 CRAN (R 3.4.3)                     
+##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.3)                     
+##  lazyeval     0.2.1      2017-10-29 CRAN (R 3.4.2)                     
+##  lubridate    1.7.2      2018-02-06 CRAN (R 3.4.3)                     
+##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                     
+##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                     
+##  methods    * 3.4.3      2017-12-07 local                              
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                     
+##  modelr       0.1.1      2017-08-10 local                              
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                     
+##  nlme         3.1-131.1  2018-02-16 CRAN (R 3.4.3)                     
+##  parallel     3.4.3      2017-12-07 local                              
+##  pillar       1.1.0      2018-01-14 CRAN (R 3.4.3)                     
+##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                     
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                     
+##  psych        1.7.8      2017-09-09 CRAN (R 3.4.1)                     
+##  purrr      * 0.2.4      2017-10-18 CRAN (R 3.4.2)                     
+##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                     
+##  Rcpp         0.12.15    2018-01-20 CRAN (R 3.4.3)                     
+##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                     
+##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                     
+##  reshape2     1.4.3      2017-12-11 CRAN (R 3.4.3)                     
+##  rlang        0.2.0      2018-02-20 cran (@0.2.0)                      
+##  rmarkdown    1.8        2017-11-17 CRAN (R 3.4.2)                     
+##  rprojroot    1.3-2      2018-01-03 CRAN (R 3.4.3)                     
+##  rstudioapi   0.7        2017-09-07 CRAN (R 3.4.1)                     
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.4.0)                     
+##  scales       0.5.0      2017-08-24 cran (@0.5.0)                      
+##  stats      * 3.4.3      2017-12-07 local                              
+##  stringi      1.1.6      2017-11-17 CRAN (R 3.4.2)                     
+##  stringr    * 1.3.0      2018-02-19 CRAN (R 3.4.3)                     
+##  tibble     * 1.4.2      2018-01-22 CRAN (R 3.4.3)                     
+##  tidyr      * 0.8.0      2018-01-29 CRAN (R 3.4.3)                     
+##  tidyverse  * 1.2.1      2017-11-14 CRAN (R 3.4.2)                     
+##  tools        3.4.3      2017-12-07 local                              
+##  utils      * 3.4.3      2017-12-07 local                              
+##  withr        2.1.1      2017-12-19 CRAN (R 3.4.3)                     
+##  xml2         1.2.0      2018-01-24 CRAN (R 3.4.3)                     
+##  yaml         2.1.16     2017-12-12 CRAN (R 3.4.3)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
