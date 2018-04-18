@@ -54,7 +54,7 @@ Let's review the three components of every `for` loop.
 
 #### Output
 
-`output <- vector("double", length(x))`
+`output <- vector("double", length = ncol(df))`
     
 Before you start a loop, you need to create an empty vector to store the output of the loop. Preallocating space for your output is much more efficient than creating space as you move through the loop. The `vector()` function allows you to create an empty vector of any type. The first argument `mode` defines the type of vector ("logical", "integer", "double", "character", etc.) and the second argument `length` defines the length of the vector.
     
@@ -321,13 +321,13 @@ Scoped verbs allow you to use standard **verbs** (or functions) in `dplyr` that 
 `summarize_all()` takes a tibble and a function and applies that function to each column:
 
 ```{r summarize-all}
-summarize_all(mtcars, mean)
+summarize_all(mtcars, .funs = mean)
 ```
 
 If you want to apply multiple summaries, use the `funs()` helper:
 
 ```{r summarize-all-funs}
-summarize_all(mtcars, funs(min, max))
+summarize_all(mtcars, .funs = funs(min, max))
 ```
 
 And as always, you could combine this with `group_by()` to calculate group-level summary statistics:
@@ -335,7 +335,7 @@ And as always, you could combine this with `group_by()` to calculate group-level
 ```{r summarize-all-group-by}
 mtcars %>%
   group_by(gear) %>%
-  summarize_all(mean)
+  summarize_all(.funs = mean)
 ```
 
 ### `summarize_at()`
@@ -343,15 +343,15 @@ mtcars %>%
 `summarize_at()` allows you to pick columns in the same way as `select()`, that is, based on their names. There is one small difference: you need to wrap the complete selection with the `vars()` helper (this avoids ambiguity).
 
 ```{r summarize-at}
-summarize_at(mtcars, vars(-mpg), mean)
+summarize_at(mtcars, .vars = vars(-mpg), .funs = mean)
 ```
 
 By default, the newly created columns have the shortest names needed to uniquely identify the output.
 
 ```{r summarize-at-unique}
-summarize_at(mtcars, vars(mpg), funs(min, max))
-summarize_at(mtcars, vars(mpg, wt), min)
-summarize_at(mtcars, vars(-mpg), funs(min, max))
+summarize_at(mtcars, .vars = vars(mpg), .funs = funs(min, max))
+summarize_at(mtcars, .vars = vars(mpg, wt), .funs = min)
+summarize_at(mtcars, .vars = vars(-mpg), .funs = funs(min, max))
 ```
 
 ### `summarize_if()`
@@ -363,7 +363,7 @@ starwars
 
 starwars %>%
   group_by(species) %>%
-  summarize_if(is.numeric, mean, na.rm = TRUE)
+  summarize_if(.predicate = is.numeric, .funs = mean, na.rm = TRUE)
 ```
 
 (Note that `na.rm = TRUE` is passed on to `mean()` in the same way as in `purrr::map()`.)
@@ -373,7 +373,7 @@ starwars %>%
 `mutate_all()`, `mutate_if()` and `mutate_at()` work in a similar way to their summarize equivalents.
 
 ```{r mutate-all}
-mutate_all(mtcars, log10)
+mutate_all(mtcars, .funs = log10)
 ```
 
 ## Filter
@@ -386,10 +386,11 @@ It's particularly useful finding missing values:
 library(nycflights13)
 
 # Rows where any value is missing
-filter_all(weather, any_vars(is.na(.)))
+filter_all(weather, .vars_predicate = any_vars(is.na(.)))
 
 # Rows where all wind variables are missing
-filter_at(weather, vars(starts_with("wind")), all_vars(is.na(.)))
+filter_at(weather, .vars = vars(starts_with("wind")),
+          .vars_predicate = all_vars(is.na(.)))
 ```
 
 # Acknowledgments {.toc-ignore}
