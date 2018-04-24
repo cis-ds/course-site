@@ -1408,81 +1408,85 @@ profvis = (function() {
         return collapsed ? "none" : "";
       }
 
+      function toggleTreeNode(d) {
+        if (!d.canExpand)
+          return;
+
+        var collapsed = d.collapsed;
+        if (collapsed === undefined) {
+          // Create a copy since we might insert the same node twice: once
+          // for the normal leaf the other one for a collapsed node.
+          var sumChildren = d.sumChildren.map(function(x) {
+            return jQuery.extend({}, x);
+          });
+
+          var childNodes = sumChildren.filter(function(x) {
+            return x.depthCollapsed !== null;
+          });
+
+          childNodes.forEach(function(x) {
+            x.isInternal = d.isInternal ? d.isInternal : false;
+            x.isDescendant = d.isDescendant ? d.isDescendant : false;
+          });
+
+          var internalChildNodes = sumChildren.filter(function(x) {
+            return x.depthCollapsed === null;
+          });
+
+          internalChildNodes.forEach(function(x) {
+            x.isInternal = true;
+            x.isDescendant = false;
+          });
+
+          var notInternalDescendantNodes = [];
+          if (!d.isInternal) {
+            notInternalDescendantNodes = allTopNodes(internalChildNodes, function(x) {
+              return x.depthCollapsed !== null && d.depth < x.depth;
+            });
+          }
+
+          notInternalDescendantNodes.forEach(function(x) {
+            x.isInternal = false;
+            x.isDescendant = true;
+          });
+
+          childNodes = childNodes.concat(internalChildNodes);
+          childNodes = childNodes.concat(notInternalDescendantNodes);
+
+          childNodes.forEach(function(n) {
+            n.visualDepth = d.visualDepth + 1;
+            n.parent = d;
+          });
+
+          vis.profTable = vis.profTable.concat(childNodes);
+          d.collapsed = false;
+
+          updateRows();
+
+          // Nodes are sorted "heaviest first"
+          if (childNodes.length == 1) toggleTreeNode(childNodes[0]);
+        }
+        else {
+          d.collapsed = !collapsed;
+          updateRows();
+        }
+      }
+
       function updateLabelCells(labelCell) {
         labelCell
           .attr("nowrap", "true")
           .style("padding-left", function(d) {
             return (8 + 15 * (d.visualDepth - 1)) + "px";
           })
-          .on("click", function(d) {
-            if (!d.canExpand)
-              return;
-
-            var collapsed = d.collapsed;
-            if (collapsed === undefined) {
-              // Create a copy since we might insert the same node twice: once
-              // for the normal leaf the other one for a collapsed node.
-              var sumChildren = d.sumChildren.map(function(x) {
-                return jQuery.extend({}, x);
-              });
-
-              var childNodes = sumChildren.filter(function(x) {
-                return x.depthCollapsed !== null;
-              });
-
-              childNodes.forEach(function(x) {
-                x.isInternal = d.isInternal ? d.isInternal : false;
-                x.isDescendant = d.isDescendant ? d.isDescendant : false;
-              });
-
-              var internalChildNodes = sumChildren.filter(function(x) {
-                return x.depthCollapsed === null;
-              });
-
-              internalChildNodes.forEach(function(x) {
-                x.isInternal = true;
-                x.isDescendant = false;
-              });
-
-              var notInternalDescendantNodes = [];
-              if (!d.isInternal) {
-                notInternalDescendantNodes = allTopNodes(internalChildNodes, function(x) {
-                  return x.depthCollapsed !== null && d.depth < x.depth;
-                });
-              }
-
-              notInternalDescendantNodes.forEach(function(x) {
-                x.isInternal = false;
-                x.isDescendant = true;
-              });
-
-              childNodes = childNodes.concat(internalChildNodes);
-              childNodes = childNodes.concat(notInternalDescendantNodes);
-
-              childNodes.forEach(function(n) {
-                n.visualDepth = d.visualDepth + 1;
-                n.parent = d;
-              });
-
-              vis.profTable = vis.profTable.concat(childNodes);
-              d.collapsed = false;
-            }
-            else if (collapsed) {
-              d.collapsed = false;
-            }
-            else {
-              d.collapsed = true;
-            }
-
-            updateRows();
-          })
+          .on("click", toggleTreeNode)
           .attr("class", function(d) {
             d.canExpand = false;
             if (d.sumChildren) {
               d.sumChildren.forEach(function(c) {
-                if (c.sumChildren.length > 0)
+                if (c.sumChildren.length > 0) {
                   if (!vis.hideInternals || oneNode(c, function(c1) { return c1.depthCollapsed !== null; }))
                     d.canExpand = true;
+                }
               });
             }
 
@@ -1515,7 +1519,7 @@ profvis = (function() {
             if (vis.hideInternals && d.depthCollapsed === null)
               return false;
 
-            return d.sumChildren.length > 0;
+            return true;
           })
           .on("click", function(d) {
             table.selectAll("tr")
@@ -1616,24 +1620,24 @@ profvis = (function() {
             var nameMapEntry = nameMap[c.label];
             if (!nameMapEntry) {
               nameMapEntry = jQuery.extend({}, c);
-              nameMapEntry.sumTime = c.endTime - c.startTime;
+              nameMapEntry.sumTime     = c.endTime - c.startTime;
               nameMapEntry.sumChildren = [];
-              nameMapEntry.children = [];
-              nameMapEntry.parent = node;
-              nameMapEntry.sumCount = 1;
+              nameMapEntry.children    = [];
+              nameMapEntry.parent      = node;
+              nameMapEntry.sumCount    = 1;
             }
             else {
-              nameMapEntry.sumMem = nameMapEntry.sumMem + c.sumMem;
+              nameMapEntry.sumMem        = nameMapEntry.sumMem        + c.sumMem;
               nameMapEntry.sumMemDealloc = nameMapEntry.sumMemDealloc + c.sumMemDealloc;
-              nameMapEntry.sumMemAlloc = nameMapEntry.sumMemAlloc + c.sumMemAlloc;
-              nameMapEntry.sumTime = nameMapEntry.sumTime + (c.endTime - c.startTime);
-              nameMapEntry.sumCount = nameMapEntry.sumCount + 1;
+              nameMapEntry.sumMemAlloc   = nameMapEntry.sumMemAlloc   + c.sumMemAlloc;
+              nameMapEntry.sumTime       = nameMapEntry.sumTime       + (c.endTime - c.startTime);
+              nameMapEntry.sumCount      = nameMapEntry.sumCount      + 1;
             }
 
-            nameMapEntry.propMem = nameMapEntry.sumMem / vis.totalMem;
+            nameMapEntry.propMem        = nameMapEntry.sumMem        / vis.totalMem;
             nameMapEntry.propMemDealloc = nameMapEntry.sumMemDealloc / vis.totalMem;
-            nameMapEntry.propMemAlloc = nameMapEntry.sumMemAlloc / vis.totalMem;
-            nameMapEntry.propTime = nameMapEntry.sumTime / vis.totalTime;
+            nameMapEntry.propMemAlloc   = nameMapEntry.sumMemAlloc   / vis.totalMem;
+            nameMapEntry.propTime       = nameMapEntry.sumTime       / vis.totalTime;
 
             c.children.forEach(function(e) {
               nameMapEntry.children.push(e);
@@ -1647,8 +1651,14 @@ profvis = (function() {
             childrenSum.push(nameMap[label]);
           }
 
+          // Sort by time descending
+          childrenSum.sort(function(a, b) { return b.sumTime - a.sumTime });
           return childrenSum;
         };
+
+        function addToNodesAt(c, i) {
+          nodes.splice(i, 0, c);
+        }
 
         var id = 0;
         while (nodes.length > 0) {
@@ -1658,9 +1668,9 @@ profvis = (function() {
           id = id + 1;
 
           node.sumChildren = aggregateChildren(node);
-          node.sumChildren.forEach(function(c) {
-            nodes.unshift(c);
-          });
+
+          // Processing in order is important to preserve order of IDs!
+          node.sumChildren.forEach(addToNodesAt);
         }
 
         return head.sumChildren;
@@ -2066,8 +2076,11 @@ profvis = (function() {
       {
         case "split": {
           vis.splitDir = checked ? "h" : "v";
-          initResizing();
-          vis.flameGraph.onResize();
+          // Check that flame graph is visible
+          if ($.inArray(vis.flameGraph, vis.activeViews) !== -1) {
+            initResizing();
+            vis.flameGraph.onResize();
+          }
           break;
         }
         case "internals": {
