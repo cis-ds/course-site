@@ -408,7 +408,7 @@ div.tocify {
 <h2>Patterns of missingness</h2>
 <div id="missing-completely-at-random-mcar" class="section level3">
 <h3>Missing completely at random (MCAR)</h3>
-<p>Data are <strong>missing completely at random</strong> if the missing data can be regarded as a simple ranom sample of the complete data. The probability that a data value is missing is unrelated to the data value itself or any other value, missing or observed, in the data set.</p>
+<p>Data are <strong>missing completely at random</strong> if the missing data can be regarded as a simple random sample of the complete data. The probability that a data value is missing is unrelated to the data value itself or any other value, missing or observed, in the data set.</p>
 </div>
 <div id="missing-at-random-mar" class="section level3">
 <h3>Missing at random (MAR)</h3>
@@ -424,7 +424,7 @@ div.tocify {
 </div>
 <div id="why-we-should-care-about-missingness-patterns" class="section level2">
 <h2>Why we should care about missingness patterns</h2>
-<p>If data are MCAR or MAR, then we don’t need to model the process that generates the missing data in order to accomodate the missing data. This means that when data are MCAR or MAR, the <strong>mechanism</strong> that produces the missing data is <strong>ignorable</strong>. But when data are MNAR, the mechanism is <strong>non-ignorable</strong> and it becomes necessary to model this mechanism in order to deal with the missingness in a valid way.</p>
+<p>If data are MCAR or MAR, then we don’t need to model the process that generates the missing data in order to accommodate the missing data. This means that when data are MCAR or MAR, the <strong>mechanism</strong> that produces the missing data is <strong>ignorable</strong>. But when data are MNAR, the mechanism is <strong>non-ignorable</strong> and it becomes necessary to model this mechanism in order to deal with the missingness in a valid way.</p>
 <p>Even more depressingly, you rarely if ever can test to see if your data are MCAR, MAR, or MNAR <strong>because the information needed to make that determination is missing</strong>.</p>
 </div>
 <div id="simulated-examples-of-missingness-patterns" class="section level2">
@@ -473,6 +473,7 @@ data_sim &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># plot of data</span>
 <span class="kw">ggplot</span>(data_sim, <span class="kw">aes</span>(x1, x2)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Complete data&quot;</span>,
        <span class="dt">x =</span> <span class="kw">expression</span>(X[<span class="dv">1</span>]),
        <span class="dt">y =</span> <span class="kw">expression</span>(X[<span class="dv">2</span>]))</code></pre></div>
@@ -482,13 +483,18 @@ data_sim &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">na =</span> <span class="kw">ifelse</span>(<span class="kw">row_number</span>(x2) <span class="op">%in%</span><span class="st"> </span><span class="kw">sample</span>(<span class="kw">seq_len</span>(n_sim), <span class="dv">100</span>), <span class="ot">TRUE</span>, <span class="ot">FALSE</span>))
 
 <span class="kw">ggplot</span>(mcar, <span class="kw">aes</span>(x1, x2)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> na, <span class="dt">alpha =</span> na)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">alpha =</span> na)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">filter</span>(mcar, <span class="op">!</span>na),
+              <span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Non-missing values&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;All values&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_alpha_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(.<span class="dv">5</span>, <span class="dv">1</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_alpha_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(.<span class="dv">3</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Missing completely at random&quot;</span>,
        <span class="dt">x =</span> <span class="kw">expression</span>(X[<span class="dv">1</span>]),
        <span class="dt">y =</span> <span class="kw">expression</span>(X[<span class="dv">2</span>]),
-       <span class="dt">color =</span> <span class="st">&quot;Missing&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Regression line&quot;</span>,
        <span class="dt">alpha =</span> <span class="st">&quot;Missing&quot;</span>)</code></pre></div>
 <p><img src="persp014_missing_data_files/figure-html/sim-mcar-1.png" width="672" /></p>
 <p>100 observations on <span class="math inline">\(X_2\)</span> are selected at random and set to missing. Here the missing values of <span class="math inline">\(X_2\)</span> are MCAR and the subset of valid observations is a simple random sample of the full data set. The regression line with and without the missing values is relatively similar, though slightly different due to the lower sample size needed to calculate the parameter estimates and the standard errors.</p>
@@ -498,13 +504,18 @@ data_sim &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class
          <span class="dt">na =</span> <span class="kw">as.logical</span>(<span class="kw">round</span>(na)))
 
 <span class="kw">ggplot</span>(mar, <span class="kw">aes</span>(x1, x2)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> na, <span class="dt">alpha =</span> na)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">alpha =</span> na)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">filter</span>(mar, <span class="op">!</span>na),
+              <span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Non-missing values&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;All values&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_alpha_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(.<span class="dv">5</span>, <span class="dv">1</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_alpha_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(.<span class="dv">3</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Missing at random&quot;</span>,
        <span class="dt">x =</span> <span class="kw">expression</span>(X[<span class="dv">1</span>]),
        <span class="dt">y =</span> <span class="kw">expression</span>(X[<span class="dv">2</span>]),
-       <span class="dt">color =</span> <span class="st">&quot;Missing&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Regression line&quot;</span>,
        <span class="dt">alpha =</span> <span class="st">&quot;Missing&quot;</span>)</code></pre></div>
 <p><img src="persp014_missing_data_files/figure-html/sim-mar-1.png" width="672" /></p>
 <p>Here an observation’s missingness on <span class="math inline">\(X_2\)</span> is related to its observed value of <span class="math inline">\(X_1\)</span> in the logistic regression functional form:</p>
@@ -516,13 +527,18 @@ data_sim &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class
          <span class="dt">na =</span> <span class="kw">as.logical</span>(<span class="kw">round</span>(na)))
 
 <span class="kw">ggplot</span>(mnar, <span class="kw">aes</span>(x1, x2)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">color =</span> na, <span class="dt">alpha =</span> na)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">alpha =</span> na)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">data =</span> <span class="kw">filter</span>(mnar, <span class="op">!</span>na),
+              <span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;Non-missing values&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_smooth</span>(<span class="kw">aes</span>(<span class="dt">color =</span> <span class="st">&quot;All values&quot;</span>),
+              <span class="dt">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="dt">se =</span> <span class="ot">FALSE</span>, <span class="dt">fullrange =</span> <span class="ot">TRUE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_alpha_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(.<span class="dv">5</span>, <span class="dv">1</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_alpha_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(.<span class="dv">3</span>, <span class="dv">1</span>)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Missing not at random&quot;</span>,
        <span class="dt">x =</span> <span class="kw">expression</span>(X[<span class="dv">1</span>]),
        <span class="dt">y =</span> <span class="kw">expression</span>(X[<span class="dv">2</span>]),
-       <span class="dt">color =</span> <span class="st">&quot;Missing&quot;</span>,
+       <span class="dt">color =</span> <span class="st">&quot;Regression line&quot;</span>,
        <span class="dt">alpha =</span> <span class="st">&quot;Missing&quot;</span>)</code></pre></div>
 <p><img src="persp014_missing_data_files/figure-html/sim-mnar-1.png" width="672" /></p>
 <p>Finally, here an observation’s missingness on <span class="math inline">\(X_2\)</span> is related to the (potentially) unobserved value of <span class="math inline">\(X_2\)</span> itself:</p>
@@ -558,7 +574,7 @@ data_sim &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class
 </div>
 <div id="available-case-analysis" class="section level3">
 <h3>Available-case analysis</h3>
-<p><strong>Available-case analysis</strong> (or <strong>pairwise deletion</strong>) uses all nonmissing observations to compute each statistic of interest. In OLS, this means estimating the regression coefficients from the means, variances, and covariances of the variables rather than directly from the observations. While this appears to use more information than complete-case analysis, it can sometimes be <em>less efficient</em>. And by basing each statistic of interest on different subsets of the data, results can become nonsensical (e.g. correlations outside of the <span class="math inline">\([-1, +1]\)</span> range). Finally, this method is much more difficult to implement outside of OLS to other GLMs.</p>
+<p><strong>Available-case analysis</strong> (or <strong>pairwise deletion</strong>) uses all non missing observations to compute each statistic of interest. In OLS, this means estimating the regression coefficients from the means, variances, and covariances of the variables rather than directly from the observations. While this appears to use more information than complete-case analysis, it can sometimes be <em>less efficient</em>. And by basing each statistic of interest on different subsets of the data, results can become nonsensical (e.g. correlations outside of the <span class="math inline">\([-1, +1]\)</span> range). Finally, this method is much more difficult to implement outside of OLS to other GLMs.</p>
 </div>
 </div>
 <div id="imputation" class="section level2">
@@ -693,24 +709,50 @@ sum_stats &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(
 </div>
 </div>
 </div>
-<div id="maximum-likelihood-estimation-for-data-mar" class="section level1">
-<h1>Maximum-likelihood estimation for data MAR</h1>
+<div id="imputation-estimation-strategies" class="section level1">
+<h1>Imputation estimation strategies</h1>
+<div id="maximum-likelihood-estimation-for-data-mar" class="section level2">
+<h2>Maximum-likelihood estimation for data MAR</h2>
 <p>When data are MAR (or MCAR), we can use maximum-likelihood estimation to estimate the parameters of interest and generate imputed values for the missing data. This requires several assumptions about the missingness mechanism and the distribution of the complete data.</p>
-<p>Let <span class="math inline">\(p(\mathbf{X}, \theta) = p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)\)</span> represent the joint probability density for the complete data <span class="math inline">\(\mathbf{X}\)</span>, which is composed of the observed and missing components denoted by <span class="math inline">\(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}\)</span>. The vector <span class="math inline">\(\theta\)</span> contains the unknown parameters on which the complete-data distribution depends. For example, if the variables in <span class="math inline">\(\mathbf{X}\)</span> are multivariately normally distributed, then <span class="math inline">\(\theta\)</span> includes the population means and covariances among the variables.</p>
+<p>Let <span class="math inline">\(p(\mathbf{X}, \theta) = p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)\)</span> represent the joint probability density for the complete data <span class="math inline">\(\mathbf{X}\)</span>, which is composed of the observed and missing components denoted by <span class="math inline">\(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}\)</span>. The vector <span class="math inline">\(\theta\)</span> contains the unknown parameters on which the complete-data distribution depends. For example, if the variables in <span class="math inline">\(\mathbf{X}\)</span> are multivariate normally distributed, then <span class="math inline">\(\theta\)</span> includes the population means and covariances among the variables.</p>
 <p>If data is MAR, then the ML estimate <span class="math inline">\(\hat{\theta}\)</span> of <span class="math inline">\(\theta\)</span> can be obtained from the marginal distribution of the observed data by integrating over the missing data:</p>
 <p><span class="math display">\[p(\mathbf{X}_\text{obs}; \theta) = \int{p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)} d\mathbf{X}_{\text{mis}}\]</span></p>
-<p>We’ll skip the math for all of this<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>, but the important thing to note is that the ML estimate only has a closed-form solution when missingness follows an arbitrary pattern (i.e. MAR). We can use iterative processes such as an <strong>expectation-maximization (EM) algorithm</strong> to find the ML estimates in the absence of arbitrary patterns of missingness. The algorithm is a two-step process, the <strong>expectation</strong> step and the <strong>maximization</strong> step:</p>
-<ol style="list-style-type: decimal">
-<li><p>Find the expectation of the complete-data log-likelihood, integrating over the missing data given the observed data and the current estimates of the parameters</p>
-<span class="math display">\[E[\log_eL(\theta; \mathbf{X})| \theta^(l)] = \int{\log_e L(\theta; \mathbf{X} p(\mathbf{X}_\text{mis} | \mathbf{X}_\text{obs}, \theta^{(l)})) d \mathbf{X}_\text{mis}}\]</span></li>
-<li><p>Find the values <span class="math inline">\(\theta^{(l+1)}\)</span> of <span class="math inline">\(\theta\)</span> that maximize the expected log-likelihood <span class="math inline">\(E[\log_eL(\theta; \mathbf{X})| \theta^(l)]\)</span>. These become the parameter estimates for the next iteration.</p></li>
-</ol>
-<p>When the parameter estimates stop changing from one iteration to the next, they converge to the ML estimates <span class="math inline">\(\hat{\theta}\)</span>.</p>
+<p>We’ll skip the math for all of this<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a>, but the important thing to note is that the ML estimate only has a closed-form solution when missingness follows an arbitrary pattern (i.e. MAR). We can use iterative processes such as an <strong>expectation-maximization (EM) algorithm</strong> to find the ML estimates in the absence of arbitrary patterns of missingness. Typically software will use an <strong>expectation-maximization (EM) algorithm</strong> to find the ML estimates in the absence of arbitrary patterns of missingness. When the parameter estimates stop changing from one iteration to the next, they converge to the ML estimates <span class="math inline">\(\hat{\theta}\)</span>.</p>
+<ul>
+<li>Implemented in <code>Amelia</code> for R</li>
+</ul>
 </div>
-<div id="bayesian-multiple-imputation" class="section level1">
-<h1>Bayesian multiple imputation</h1>
+<div id="predictive-mean-matching" class="section level2">
+<h2>Predictive mean matching</h2>
+<p>Combines regression model with matching procedure.</p>
+<ol style="list-style-type: decimal">
+<li>For cases with no missing data, estimate a linear regression of <span class="math inline">\(x\)</span> on <span class="math inline">\(z\)</span>, producing a set of coefficients <span class="math inline">\(b\)</span>.</li>
+<li>Make a random draw from the <strong>posterior predictive distribution</strong> of <span class="math inline">\(b\)</span>, producing a new set of coefficients <span class="math inline">\(b*\)</span>. Typically this would be a random draw from a multivariate normal distribution with mean <span class="math inline">\(b\)</span> and the estimated covariance matrix of <span class="math inline">\(b\)</span> (with an additional random draw for the residual variance). This step is necessary to produce sufficient variability in the imputed values, and is common to all robust methods for multiple imputation.</li>
+<li>Using <span class="math inline">\(b*\)</span>, generate predicted values for <span class="math inline">\(x\)</span> for all cases, both those with data missing on <span class="math inline">\(x\)</span> and those with data present.</li>
+<li>For each case with missing <span class="math inline">\(x\)</span>, identify a set of cases with observed <span class="math inline">\(x\)</span> whose predicted values are close to the predicted value for the case with missing data.</li>
+<li>From among those close cases, randomly choose one and assign its observed value to substitute for the missing value.</li>
+</ol>
+<p>Step 2 distinguishes this from pure conditional-mean imputation by accounting for additional uncertainty in the model(s). By default in most software, <span class="math inline">\(k=5\)</span> is the number of matches observations from which to draw the imputed value.</p>
+<ul>
+<li>Implemented in <code>mice</code> and <code>mi</code> for R</li>
+</ul>
+</div>
+<div id="random-forest-model" class="section level2">
+<h2>Random forest model</h2>
+<p>Alternatively, we can use a random forest algorithm to pursue a non-parametric imputation strategy. In this approach, you build a random forest model for each variable to predict its value using the other variables in the dataset. These results are used to generate imputed values for all the missing variables and observations.</p>
+<ul>
+<li>Implemented in <code>missForest</code> for R</li>
+</ul>
+</div>
+<div id="deep-learning" class="section level2">
+<h2>Deep learning</h2>
+<p>Because everyone is doing it. No stable packages implement off-the-shelf methods, but researchers are developing deep learning methods for imputing missing values.</p>
+</div>
+</div>
+<div id="generating-multiple-imputations" class="section level1">
+<h1>Generating multiple imputations</h1>
 <p><strong>Bayesian multiple imputation</strong> (MI) is a flexible method for dealing with missing data MAR. It starts by specifying the distribution of the complete data; typically the data is assumed to be multivariate normal. The key difference is that this method reflects uncertainty associated with missing data by imputing multiple values for each missing data value (i.e. multiple imputation), producing several complete datasets. Each dataset is then analyzed independently and in parallel, estimating parameters of interest and standard errors for each imputed dataset. The estimated parameters are then averaged together across the imputed datasets. Standard errors are also combined, taking into account the variation among the estimates in the several datasets and capturing the added uncertainty due to having to deal with missing data.</p>
-<p>The method is <strong>Bayesian</strong> because each estimate of the parameters and standard errors is drawn from the <strong>posterior distribution</strong> of the parameters, typically assuming a non-informative (flat) prior distribution. We will discuss Bayesian inference techniques in a couple weeks, but the important thing to note is that this method directly accounts for our uncertainty associated with both the sampling variance of the coefficients used in the imputation model as well as the uncertainty derived from the missingness itself.</p>
+<p>The method is <strong>Bayesian</strong> because each estimate of the parameters and standard errors is drawn from the <strong>posterior distribution</strong> of the parameters, typically assuming a non-informative (flat) prior distribution. The important thing to note is that this method directly accounts for our uncertainty associated with both the sampling variance of the coefficients used in the imputation model as well as the uncertainty derived from the missingness itself.</p>
 <div id="inference-for-individual-coefficients" class="section level2">
 <h2>Inference for individual coefficients</h2>
 <p>We use this method to produce <span class="math inline">\(g\)</span> complete datasets. MI estimates of population parameters of interest (such as a regression coefficient) are obtained by averaging over the imputed datasets:</p>
@@ -730,7 +772,7 @@ sum_stats &lt;-<span class="st"> </span><span class="kw">bind_rows</span>(
 </div>
 <div id="practical-considerations-for-multiple-imputation" class="section level2">
 <h2>Practical considerations for multiple imputation</h2>
-<p>The MI method is typically implemented assuming the complete data follows a multivariate normal distribution. Violation of this assumption isn’t necessarily a dealbreaker for relying on MI estimates. However MI can only preserve features of the dataset represented in the imputation model. Therefore you need to think carefully about which features (variables) need to be preserved when building the imputation model to ensure those particular features will appear in the final statistical model.</p>
+<p>The MI method is typically implemented assuming the complete data follows a multivariate normal distribution. Violation of this assumption isn’t necessarily a deal-breaker for relying on MI estimates. However MI can only preserve features of the dataset represented in the imputation model. Therefore you need to think carefully about which features (variables) need to be preserved when building the imputation model to ensure those particular features will appear in the final statistical model.</p>
 <ul>
 <li><strong>Include variables in the imputation model that make the assumption of ignorable missingness reasonable.</strong> Remember that the MI method assumes data is MAR. So for this to work on data MNAR, we want to build a predictive model that does a great job of predicting missing values. Typically this includes using variables that will be in the final statistical model as well as variables in the dataset not used in the final statistical model, variables strongly correlated with the variable with missingness (as measured by the complete observations), and even the response variable itself. Think of the imputation model as a pure prediction model - you are not conducting inference on the imputation model itself, so it can be highly complex.</li>
 <li><strong>Transform variables to approximately normal.</strong> After the imputed data are obtained, you can transform them back to their original scales prior to analyzing the completed datasets.</li>
@@ -836,7 +878,7 @@ un.out &lt;-<span class="st"> </span><span class="kw">amelia</span>(<span class=
 <p>If your data frame is a <code>tibble</code>, you need to turn back into a plain data frame using <code>as.data.frame()</code> in order to successfully impute the data.</p>
 </blockquote>
 <p>Here we specify <code>country</code> and <code>region</code> are id variables (text strings) and we don’t want to use them to generate imputed values. By default, <code>amelia()</code> uses all the variables in their raw forms to impute missing values for each variable. Clearly we still want to tune this approach, but for now let’s run with it. The list of imputed data frames is stored in the <code>imputations</code> element:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">str</span>(un.out<span class="op">$</span>imputations, <span class="dt">max.level =</span> <span class="dv">2</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">glimpse</span>(un.out<span class="op">$</span>imputations)</code></pre></div>
 <pre><code>## List of 5
 ##  $ imp1:&#39;data.frame&#39;:    207 obs. of  14 variables:
 ##   ..$ country               : chr [1:207] &quot;Afghanistan&quot; &quot;Albania&quot; &quot;Algeria&quot; &quot;American.Samoa&quot; ...
@@ -854,6 +896,9 @@ un.out &lt;-<span class="st"> </span><span class="kw">amelia</span>(<span class=
 ##   ..$ illiteracyMale        : num [1:207] 52.8 8.941 26.1 0.264 NA ...
 ##   ..$ illiteracyFemale      : num [1:207] 85 16.02 51 0.36 NA ...
 ##   ..- attr(*, &quot;spec&quot;)=List of 2
+##   .. ..$ cols   :List of 14
+##   .. ..$ default: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;collector_guess&quot; &quot;collector&quot;
 ##   .. ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;
 ##  $ imp2:&#39;data.frame&#39;:    207 obs. of  14 variables:
 ##   ..$ country               : chr [1:207] &quot;Afghanistan&quot; &quot;Albania&quot; &quot;Algeria&quot; &quot;American.Samoa&quot; ...
@@ -871,6 +916,9 @@ un.out &lt;-<span class="st"> </span><span class="kw">amelia</span>(<span class=
 ##   ..$ illiteracyMale        : num [1:207] 52.8 2.955 26.1 0.264 NA ...
 ##   ..$ illiteracyFemale      : num [1:207] 85 3.52 51 0.36 NA ...
 ##   ..- attr(*, &quot;spec&quot;)=List of 2
+##   .. ..$ cols   :List of 14
+##   .. ..$ default: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;collector_guess&quot; &quot;collector&quot;
 ##   .. ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;
 ##  $ imp3:&#39;data.frame&#39;:    207 obs. of  14 variables:
 ##   ..$ country               : chr [1:207] &quot;Afghanistan&quot; &quot;Albania&quot; &quot;Algeria&quot; &quot;American.Samoa&quot; ...
@@ -888,6 +936,9 @@ un.out &lt;-<span class="st"> </span><span class="kw">amelia</span>(<span class=
 ##   ..$ illiteracyMale        : num [1:207] 52.8 1.728 26.1 0.264 NA ...
 ##   ..$ illiteracyFemale      : num [1:207] 85 14.92 51 0.36 NA ...
 ##   ..- attr(*, &quot;spec&quot;)=List of 2
+##   .. ..$ cols   :List of 14
+##   .. ..$ default: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;collector_guess&quot; &quot;collector&quot;
 ##   .. ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;
 ##  $ imp4:&#39;data.frame&#39;:    207 obs. of  14 variables:
 ##   ..$ country               : chr [1:207] &quot;Afghanistan&quot; &quot;Albania&quot; &quot;Algeria&quot; &quot;American.Samoa&quot; ...
@@ -905,6 +956,9 @@ un.out &lt;-<span class="st"> </span><span class="kw">amelia</span>(<span class=
 ##   ..$ illiteracyMale        : num [1:207] 52.8 16.589 26.1 0.264 NA ...
 ##   ..$ illiteracyFemale      : num [1:207] 85 19.43 51 0.36 NA ...
 ##   ..- attr(*, &quot;spec&quot;)=List of 2
+##   .. ..$ cols   :List of 14
+##   .. ..$ default: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;collector_guess&quot; &quot;collector&quot;
 ##   .. ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;
 ##  $ imp5:&#39;data.frame&#39;:    207 obs. of  14 variables:
 ##   ..$ country               : chr [1:207] &quot;Afghanistan&quot; &quot;Albania&quot; &quot;Algeria&quot; &quot;American.Samoa&quot; ...
@@ -922,30 +976,23 @@ un.out &lt;-<span class="st"> </span><span class="kw">amelia</span>(<span class=
 ##   ..$ illiteracyMale        : num [1:207] 52.8 15.825 26.1 0.264 NA ...
 ##   ..$ illiteracyFemale      : num [1:207] 85 24.52 51 0.36 NA ...
 ##   ..- attr(*, &quot;spec&quot;)=List of 2
+##   .. ..$ cols   :List of 14
+##   .. ..$ default: list()
+##   .. .. ..- attr(*, &quot;class&quot;)= chr [1:2] &quot;collector_guess&quot; &quot;collector&quot;
 ##   .. ..- attr(*, &quot;class&quot;)= chr &quot;col_spec&quot;
 ##  - attr(*, &quot;class&quot;)= chr [1:2] &quot;mi&quot; &quot;list&quot;</code></pre>
 <p>Each of these imputed datasets is a complete data frame. So for example, we could plot the same scatterplot of GDP vs. infant mortality with the imputed values for the 14 countries with missing values.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">un.out<span class="op">$</span>imputations <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">map</span>(<span class="op">~</span><span class="st"> </span><span class="kw">ggplot</span>(.x, <span class="kw">aes</span>(GDPperCapita, infantMortality)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">map</span>(as.data.frame) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">bind_rows</span>(<span class="dt">.id =</span> <span class="st">&quot;impute&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(GDPperCapita, infantMortality)) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_x_continuous</span>(<span class="dt">labels =</span> scales<span class="op">::</span>dollar) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_grid</span>(impute <span class="op">~</span><span class="st"> </span>.) <span class="op">+</span>
 <span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&quot;GDP per capita (in USD)&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>))</code></pre></div>
-<pre><code>## $imp1</code></pre>
+       <span class="dt">y =</span> <span class="st">&quot;Infant mortality rate (per 1,000)&quot;</span>)</code></pre></div>
 <p><img src="persp014_missing_data_files/figure-html/plot-imput-1.png" width="672" /></p>
-<pre><code>## 
-## $imp2</code></pre>
-<p><img src="persp014_missing_data_files/figure-html/plot-imput-2.png" width="672" /></p>
-<pre><code>## 
-## $imp3</code></pre>
-<p><img src="persp014_missing_data_files/figure-html/plot-imput-3.png" width="672" /></p>
-<pre><code>## 
-## $imp4</code></pre>
-<p><img src="persp014_missing_data_files/figure-html/plot-imput-4.png" width="672" /></p>
-<pre><code>## 
-## $imp5</code></pre>
-<p><img src="persp014_missing_data_files/figure-html/plot-imput-5.png" width="672" /></p>
 <p>Notice that for some of the imputed datasets, the imputed values are nonsensical; for instance, you cannot have a negative GDP or infant mortality rate. But again, let’s just run with it.</p>
 <p>We can use <code>purrr::map()</code> to estimate the linear model from before on the new imputed datasets and extract the coefficients and standard errors with <code>broom::tidy()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">models_imp &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">data =</span> un.out<span class="op">$</span>imputations) <span class="op">%&gt;%</span>
@@ -1019,7 +1066,7 @@ models_imp</code></pre></div>
 <p>Let’s think more carefully about what variables to include in the imputation model and how to specify them. First, which variables are highly correlated with contraception and female education?</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">GGally<span class="op">::</span><span class="kw">ggpairs</span>(<span class="kw">select_if</span>(un, is.numeric))</code></pre></div>
 <p><img src="persp014_missing_data_files/figure-html/heatmap-1.png" width="672" /></p>
-<p>Variables such as total fertility rate and the illiteracy rate for women are strongly correlated with our issing variables. Let’s now limit our imputation model to just the four variables in the original regression model plus the total fertility rate, expectation of life for women, percentage of women engaged in economic activity outside the home, and the illiteracy rate for women.</p>
+<p>Variables such as total fertility rate and the illiteracy rate for women are strongly correlated with our missing variables. Let’s now limit our imputation model to just the four variables in the original regression model plus the total fertility rate, expectation of life for women, percentage of women engaged in economic activity outside the home, and the illiteracy rate for women.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">un_lite &lt;-<span class="st"> </span>un <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">select</span>(infantMortality, GDPperCapita, contraception, educationFemale,
          tfr, lifeFemale, economicActivityFemale, illiteracyFemale)
@@ -1167,6 +1214,23 @@ models_trans_imp</code></pre></div>
 </div>
 </div>
 </div>
+<div id="multiple-imputation-outside-of-glms" class="section level1">
+<h1>Multiple imputation outside of GLMs</h1>
+<ul>
+<li>Tree-based inference - missing value becomes a feature of the data</li>
+</ul>
+</div>
+<div id="mi-in-python" class="section level1">
+<h1>MI in Python</h1>
+<ul>
+<li><a href="http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Imputer.html"><code>sklearn.preprocessing.Imputer</code></a> - for basic imputation with mean, median, or modal values</li>
+<li><a href="http://www.statsmodels.org/dev/imputation.html">Multiple Imputation with Chained Equations</a> - for <code>statsmodels</code>
+<ul>
+<li>Uses the predictive mean matching technique</li>
+</ul></li>
+<li><a href="https://github.com/Oracen/MIDAS">MIDAS - Multiple Imputation with Denoising Autoencoders</a> - deep learning method for multiple imputation</li>
+</ul>
+</div>
 <div id="acknowledgments" class="section level1 toc-ignore">
 <h1>Acknowledgments</h1>
 <ul>
@@ -1178,156 +1242,93 @@ models_trans_imp</code></pre></div>
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>##  setting  value                       
-##  version  R version 3.4.1 (2017-06-30)
+##  version  R version 3.4.3 (2017-11-30)
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2017-08-01                  
+##  date     2018-04-30                  
 ## 
-##  package      * version    date       source                              
-##  assertthat     0.2.0      2017-04-11 CRAN (R 3.4.0)                      
-##  backports      1.1.0      2017-05-22 CRAN (R 3.4.0)                      
-##  base         * 3.4.1      2017-07-07 local                               
-##  base64enc      0.1-3      2015-07-28 CRAN (R 3.4.0)                      
-##  bindr          0.1        2016-11-13 CRAN (R 3.4.0)                      
-##  bindrcpp     * 0.2        2017-06-17 CRAN (R 3.4.0)                      
-##  bit            1.1-12     2014-04-09 CRAN (R 3.4.0)                      
-##  bit64          0.9-7      2017-05-08 CRAN (R 3.4.0)                      
-##  blob           1.1.0      2017-06-17 CRAN (R 3.4.0)                      
-##  boxes          0.0.0.9000 2017-07-19 Github (r-pkgs/boxes@03098dc)       
-##  broom        * 0.4.2      2017-02-13 CRAN (R 3.4.0)                      
-##  car          * 2.1-5      2017-07-04 CRAN (R 3.4.1)                      
-##  caret        * 6.0-76     2017-04-18 CRAN (R 3.4.0)                      
-##  cellranger     1.1.0      2016-07-27 CRAN (R 3.4.0)                      
-##  class          7.3-14     2015-08-30 CRAN (R 3.4.1)                      
-##  clisymbols     1.2.0      2017-05-21 cran (@1.2.0)                       
-##  codetools      0.2-15     2016-10-05 CRAN (R 3.4.1)                      
-##  coefplot     * 1.2.4      2016-01-10 CRAN (R 3.4.0)                      
-##  colorspace     1.3-2      2016-12-14 CRAN (R 3.4.0)                      
-##  compiler       3.4.1      2017-07-07 local                               
-##  config         0.2        2016-08-02 CRAN (R 3.4.0)                      
-##  crayon         1.3.2.9000 2017-07-19 Github (gaborcsardi/crayon@750190f) 
-##  data.table     1.10.4     2017-02-01 CRAN (R 3.4.0)                      
-##  datasets     * 3.4.1      2017-07-07 local                               
-##  DBI            0.7        2017-06-18 CRAN (R 3.4.0)                      
-##  dbplyr         1.1.0      2017-06-27 CRAN (R 3.4.1)                      
-##  devtools       1.13.2     2017-06-02 CRAN (R 3.4.0)                      
-##  digest         0.6.12     2017-01-27 CRAN (R 3.4.0)                      
-##  dplyr        * 0.7.2      2017-07-20 CRAN (R 3.4.1)                      
-##  e1071        * 1.6-8      2017-02-02 CRAN (R 3.4.0)                      
-##  evaluate       0.10.1     2017-06-24 CRAN (R 3.4.1)                      
-##  FNN          * 1.1        2013-07-31 CRAN (R 3.4.0)                      
-##  forcats      * 0.2.0      2017-01-23 CRAN (R 3.4.0)                      
-##  foreach      * 1.4.3      2015-10-13 CRAN (R 3.4.0)                      
-##  foreign        0.8-69     2017-06-22 CRAN (R 3.4.1)                      
-##  gam          * 1.14-4     2017-04-25 CRAN (R 3.4.0)                      
-##  gapminder    * 0.2.0      2015-12-31 CRAN (R 3.4.0)                      
-##  gbm          * 2.1.3      2017-03-21 CRAN (R 3.4.0)                      
-##  gganimate    * 0.1.0.9000 2017-05-26 Github (dgrtwo/gganimate@bf82002)   
-##  ggdendro     * 0.1-20     2016-04-27 CRAN (R 3.4.0)                      
-##  ggplot2      * 2.2.1      2016-12-30 CRAN (R 3.4.0)                      
-##  glue           1.1.1      2017-06-21 CRAN (R 3.4.1)                      
-##  graphics     * 3.4.1      2017-07-07 local                               
-##  grDevices    * 3.4.1      2017-07-07 local                               
-##  grid         * 3.4.1      2017-07-07 local                               
-##  gridExtra    * 2.2.1      2016-02-29 CRAN (R 3.4.0)                      
-##  gtable         0.2.0      2016-02-26 CRAN (R 3.4.0)                      
-##  haven        * 1.1.0      2017-07-09 CRAN (R 3.4.1)                      
-##  highr          0.6        2016-05-09 CRAN (R 3.4.0)                      
-##  hms            0.3        2016-11-22 CRAN (R 3.4.0)                      
-##  htmltools      0.3.6      2017-04-28 CRAN (R 3.4.0)                      
-##  htmlwidgets    0.9        2017-07-10 CRAN (R 3.4.1)                      
-##  httpuv         1.3.5      2017-07-04 CRAN (R 3.4.1)                      
-##  httr           1.2.1      2016-07-03 CRAN (R 3.4.0)                      
-##  igraph         1.1.2      2017-07-21 CRAN (R 3.4.1)                      
-##  ISLR         * 1.0        2013-06-11 CRAN (R 3.4.0)                      
-##  iterators      1.0.8      2015-10-13 CRAN (R 3.4.0)                      
-##  janeaustenr    0.1.5      2017-06-10 CRAN (R 3.4.0)                      
-##  jsonlite       1.5        2017-06-01 CRAN (R 3.4.0)                      
-##  kknn         * 1.3.1      2016-03-26 CRAN (R 3.4.0)                      
-##  knitr        * 1.16       2017-05-18 CRAN (R 3.4.0)                      
-##  labeling       0.3        2014-08-23 CRAN (R 3.4.0)                      
-##  lattice      * 0.20-35    2017-03-25 CRAN (R 3.4.1)                      
-##  lazyeval       0.2.0      2016-06-12 CRAN (R 3.4.0)                      
-##  lme4           1.1-13     2017-04-19 CRAN (R 3.4.0)                      
-##  lmtest       * 0.9-35     2017-02-11 CRAN (R 3.4.0)                      
-##  lubridate      1.6.0      2016-09-13 CRAN (R 3.4.0)                      
-##  magrittr       1.5        2014-11-22 CRAN (R 3.4.0)                      
-##  MASS           7.3-47     2017-02-26 CRAN (R 3.4.1)                      
-##  Matrix         1.2-10     2017-05-03 CRAN (R 3.4.1)                      
-##  MatrixModels   0.4-1      2015-08-22 CRAN (R 3.4.0)                      
-##  memoise        1.1.0      2017-04-21 CRAN (R 3.4.0)                      
-##  methods        3.4.1      2017-07-07 local                               
-##  mgcv           1.8-18     2017-07-28 CRAN (R 3.4.1)                      
-##  mime           0.5        2016-07-07 CRAN (R 3.4.0)                      
-##  minqa          1.2.4      2014-10-09 CRAN (R 3.4.0)                      
-##  mnormt         1.5-5      2016-10-15 CRAN (R 3.4.0)                      
-##  ModelMetrics   1.1.0      2016-08-26 CRAN (R 3.4.0)                      
-##  modelr       * 0.1.1      2017-07-24 CRAN (R 3.4.1)                      
-##  modeltools     0.2-21     2013-09-02 CRAN (R 3.4.0)                      
-##  munsell        0.4.3      2016-02-13 CRAN (R 3.4.0)                      
-##  nlme           3.1-131    2017-02-06 CRAN (R 3.4.1)                      
-##  nloptr         1.0.4      2014-08-04 CRAN (R 3.4.0)                      
-##  NLP          * 0.1-10     2017-02-21 CRAN (R 3.4.0)                      
-##  nnet         * 7.3-12     2016-02-02 CRAN (R 3.4.1)                      
-##  nycflights13   0.2.2      2017-01-27 CRAN (R 3.4.0)                      
-##  parallel     * 3.4.1      2017-07-07 local                               
-##  pbkrtest       0.4-7      2017-03-15 CRAN (R 3.4.0)                      
-##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.4.0)                      
-##  plotly       * 4.7.1      2017-07-29 CRAN (R 3.4.1)                      
-##  plyr           1.8.4      2016-06-08 CRAN (R 3.4.0)                      
-##  pROC         * 1.10.0     2017-06-10 CRAN (R 3.4.0)                      
-##  psych          1.7.5      2017-05-03 CRAN (R 3.4.1)                      
-##  purrr        * 0.2.2.2    2017-05-11 CRAN (R 3.4.0)                      
-##  quantreg       5.33       2017-04-18 CRAN (R 3.4.0)                      
-##  R6             2.2.2      2017-06-17 CRAN (R 3.4.0)                      
-##  randomForest * 4.6-12     2015-10-07 CRAN (R 3.4.0)                      
-##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.4.0)                      
-##  rcfss        * 0.1.5      2017-07-31 local                               
-##  RColorBrewer * 1.1-2      2014-12-07 CRAN (R 3.4.0)                      
-##  Rcpp           0.12.12    2017-07-15 CRAN (R 3.4.1)                      
-##  readr        * 1.1.1      2017-05-16 CRAN (R 3.4.0)                      
-##  readxl         1.0.0      2017-04-18 CRAN (R 3.4.0)                      
-##  reshape2       1.4.2      2016-10-22 CRAN (R 3.4.0)                      
-##  rlang          0.1.1      2017-05-18 CRAN (R 3.4.0)                      
-##  rmarkdown      1.6        2017-06-15 CRAN (R 3.4.0)                      
-##  rprojroot      1.2        2017-01-16 CRAN (R 3.4.0)                      
-##  RSQLite      * 2.0        2017-06-19 CRAN (R 3.4.1)                      
-##  rstudioapi     0.6        2016-06-27 CRAN (R 3.4.0)                      
-##  rvest          0.3.2      2016-06-17 CRAN (R 3.4.0)                      
-##  scales         0.4.1      2016-11-09 CRAN (R 3.4.0)                      
-##  shiny          1.0.3      2017-04-26 CRAN (R 3.4.0)                      
-##  slam           0.1-40     2016-12-01 CRAN (R 3.4.0)                      
-##  SnowballC      0.5.1      2014-08-09 CRAN (R 3.4.0)                      
-##  sparklyr     * 0.6.0      2017-07-29 CRAN (R 3.4.1)                      
-##  SparseM        1.77       2017-04-23 CRAN (R 3.4.0)                      
-##  splines      * 3.4.1      2017-07-07 local                               
-##  stats        * 3.4.1      2017-07-07 local                               
-##  stats4         3.4.1      2017-07-07 local                               
-##  stringi        1.1.5      2017-04-07 CRAN (R 3.4.0)                      
-##  stringr      * 1.2.0      2017-02-18 CRAN (R 3.4.0)                      
-##  survival     * 2.41-3     2017-04-04 CRAN (R 3.4.1)                      
-##  tibble       * 1.3.3      2017-05-28 CRAN (R 3.4.0)                      
-##  tidyr        * 0.6.3      2017-05-15 CRAN (R 3.4.0)                      
-##  tidytext     * 0.1.3      2017-06-19 CRAN (R 3.4.1)                      
-##  tidyverse    * 1.1.1.9000 2017-07-19 Github (tidyverse/tidyverse@a028619)
-##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.4.0)                      
-##  tm           * 0.7-1      2017-03-02 CRAN (R 3.4.0)                      
-##  tokenizers     0.1.4      2016-08-29 CRAN (R 3.4.0)                      
-##  tools          3.4.1      2017-07-07 local                               
-##  topicmodels  * 0.2-6      2017-04-18 CRAN (R 3.4.0)                      
-##  tree         * 1.0-37     2016-01-21 CRAN (R 3.4.0)                      
-##  tweenr       * 0.1.5      2016-10-10 CRAN (R 3.4.0)                      
-##  useful         1.2.3      2017-06-07 CRAN (R 3.4.0)                      
-##  utils        * 3.4.1      2017-07-07 local                               
-##  viridisLite    0.2.0      2017-03-24 CRAN (R 3.4.0)                      
-##  withr          2.0.0      2017-07-28 CRAN (R 3.4.1)                      
-##  xml2           1.1.1      2017-01-24 CRAN (R 3.4.0)                      
-##  xtable         1.8-2      2016-02-05 CRAN (R 3.4.0)                      
-##  yaml           2.1.14     2016-11-12 CRAN (R 3.4.0)                      
-##  zoo          * 1.8-0      2017-04-12 CRAN (R 3.4.0)</code></pre>
+##  package      * version    date       source                             
+##  abind          1.4-5      2016-07-21 CRAN (R 3.4.0)                     
+##  assertthat     0.2.0      2017-04-11 CRAN (R 3.4.0)                     
+##  backports      1.1.2      2017-12-13 CRAN (R 3.4.3)                     
+##  base         * 3.4.3      2017-12-07 local                              
+##  bindr          0.1.1      2018-03-13 CRAN (R 3.4.3)                     
+##  bindrcpp     * 0.2.2.9000 2018-04-08 Github (krlmlr/bindrcpp@bd5ae73)   
+##  broom        * 0.4.4      2018-03-29 CRAN (R 3.4.3)                     
+##  car          * 3.0-0      2018-04-02 CRAN (R 3.4.4)                     
+##  carData      * 3.0-1      2018-03-28 CRAN (R 3.4.4)                     
+##  cellranger     1.1.0      2016-07-27 CRAN (R 3.4.0)                     
+##  cli            1.0.0      2017-11-05 CRAN (R 3.4.2)                     
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.4.0)                     
+##  compiler       3.4.3      2017-12-07 local                              
+##  crayon         1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab)
+##  curl           3.2        2018-03-28 CRAN (R 3.4.4)                     
+##  data.table     1.10.4-3   2017-10-27 CRAN (R 3.4.2)                     
+##  datasets     * 3.4.3      2017-12-07 local                              
+##  devtools       1.13.5     2018-02-18 CRAN (R 3.4.3)                     
+##  digest         0.6.15     2018-01-28 CRAN (R 3.4.3)                     
+##  dplyr        * 0.7.4.9003 2018-04-08 Github (tidyverse/dplyr@b7aaa95)   
+##  evaluate       0.10.1     2017-06-24 CRAN (R 3.4.1)                     
+##  forcats      * 0.3.0      2018-02-19 CRAN (R 3.4.3)                     
+##  foreign        0.8-69     2017-06-22 CRAN (R 3.4.3)                     
+##  ggplot2      * 2.2.1.9000 2018-04-24 Github (tidyverse/ggplot2@3c9c504) 
+##  glue           1.2.0      2017-10-29 CRAN (R 3.4.2)                     
+##  graphics     * 3.4.3      2017-12-07 local                              
+##  grDevices    * 3.4.3      2017-12-07 local                              
+##  grid           3.4.3      2017-12-07 local                              
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.4.0)                     
+##  haven          1.1.1      2018-01-18 CRAN (R 3.4.3)                     
+##  hms            0.4.2      2018-03-10 CRAN (R 3.4.3)                     
+##  htmltools      0.3.6      2017-04-28 CRAN (R 3.4.0)                     
+##  httr           1.3.1      2017-08-20 CRAN (R 3.4.1)                     
+##  jsonlite       1.5        2017-06-01 CRAN (R 3.4.0)                     
+##  knitr          1.20       2018-02-20 CRAN (R 3.4.3)                     
+##  lattice        0.20-35    2017-03-25 CRAN (R 3.4.3)                     
+##  lazyeval       0.2.1      2017-10-29 CRAN (R 3.4.2)                     
+##  lubridate      1.7.4      2018-04-11 CRAN (R 3.4.3)                     
+##  magrittr       1.5        2014-11-22 CRAN (R 3.4.0)                     
+##  memoise        1.1.0      2017-04-21 CRAN (R 3.4.0)                     
+##  methods      * 3.4.3      2017-12-07 local                              
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.4.0)                     
+##  modelr       * 0.1.1      2017-08-10 local                              
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.4.0)                     
+##  nlme           3.1-137    2018-04-07 CRAN (R 3.4.4)                     
+##  openxlsx       4.0.17     2017-03-23 CRAN (R 3.4.0)                     
+##  parallel       3.4.3      2017-12-07 local                              
+##  pillar         1.2.1      2018-02-27 CRAN (R 3.4.3)                     
+##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.4.0)                     
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.4.0)                     
+##  psych          1.8.3.3    2018-03-30 CRAN (R 3.4.4)                     
+##  purrr        * 0.2.4      2017-10-18 CRAN (R 3.4.2)                     
+##  R6             2.2.2      2017-06-17 CRAN (R 3.4.0)                     
+##  rcfss        * 0.1.5      2018-04-08 Github (uc-cfss/rcfss@8d2b2c0)     
+##  RColorBrewer * 1.1-2      2014-12-07 CRAN (R 3.4.0)                     
+##  Rcpp           0.12.16    2018-03-13 CRAN (R 3.4.4)                     
+##  readr        * 1.1.1      2017-05-16 CRAN (R 3.4.0)                     
+##  readxl         1.0.0      2017-04-18 CRAN (R 3.4.0)                     
+##  reshape2       1.4.3      2017-12-11 CRAN (R 3.4.3)                     
+##  rio            0.5.10     2018-03-29 CRAN (R 3.4.4)                     
+##  rlang          0.2.0.9001 2018-04-24 Github (r-lib/rlang@82b2727)       
+##  rmarkdown      1.9        2018-03-01 CRAN (R 3.4.3)                     
+##  rprojroot      1.3-2      2018-01-03 CRAN (R 3.4.3)                     
+##  rstudioapi     0.7        2017-09-07 CRAN (R 3.4.1)                     
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.4.0)                     
+##  scales         0.5.0.9000 2018-04-24 Github (hadley/scales@d767915)     
+##  stats        * 3.4.3      2017-12-07 local                              
+##  stringi        1.1.7      2018-03-12 CRAN (R 3.4.3)                     
+##  stringr      * 1.3.0      2018-02-19 CRAN (R 3.4.3)                     
+##  tibble       * 1.4.2      2018-01-22 CRAN (R 3.4.3)                     
+##  tidyr        * 0.8.0      2018-01-29 CRAN (R 3.4.3)                     
+##  tidyselect     0.2.4      2018-02-26 CRAN (R 3.4.3)                     
+##  tidyverse    * 1.2.1      2017-11-14 CRAN (R 3.4.2)                     
+##  tools          3.4.3      2017-12-07 local                              
+##  utils        * 3.4.3      2017-12-07 local                              
+##  withr          2.1.2      2018-04-24 Github (jimhester/withr@79d7b0d)   
+##  xml2           1.2.0      2018-01-24 CRAN (R 3.4.3)                     
+##  yaml           2.1.18     2018-03-08 CRAN (R 3.4.4)</code></pre>
 </div>
 <div class="footnotes">
 <hr />

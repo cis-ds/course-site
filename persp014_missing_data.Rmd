@@ -58,7 +58,7 @@ theme_set(theme_minimal())
 
 ### Missing completely at random (MCAR)
 
-Data are **missing completely at random** if the missing data can be regarded as a simple ranom sample of the complete data. The probability that a data value is missing is unrelated to the data value itself or any other value, missing or observed, in the data set.
+Data are **missing completely at random** if the missing data can be regarded as a simple random sample of the complete data. The probability that a data value is missing is unrelated to the data value itself or any other value, missing or observed, in the data set.
 
 ### Missing at random (MAR)
 
@@ -72,7 +72,7 @@ If missingness is related to the missing values themselves *even when the inform
 
 ## Why we should care about missingness patterns
 
-If data are MCAR or MAR, then we don't need to model the process that generates the missing data in order to accomodate the missing data. This means that when data are MCAR or MAR, the **mechanism** that produces the missing data is **ignorable**. But when data are MNAR, the mechanism is **non-ignorable** and it becomes necessary to model this mechanism in order to deal with the missingness in a valid way.
+If data are MCAR or MAR, then we don't need to model the process that generates the missing data in order to accommodate the missing data. This means that when data are MCAR or MAR, the **mechanism** that produces the missing data is **ignorable**. But when data are MNAR, the mechanism is **non-ignorable** and it becomes necessary to model this mechanism in order to deal with the missingness in a valid way.
 
 Even more depressingly, you rarely if ever can test to see if your data are MCAR, MAR, or MNAR **because the information needed to make that determination is missing**.
 
@@ -111,6 +111,7 @@ lm(x1 ~ x2, data = data_sim)
 # plot of data
 ggplot(data_sim, aes(x1, x2)) +
   geom_point() +
+  geom_smooth(method = "lm") +
   labs(title = "Complete data",
        x = expression(X[1]),
        y = expression(X[2]))
@@ -123,13 +124,18 @@ mcar <- data_sim %>%
   mutate(na = ifelse(row_number(x2) %in% sample(seq_len(n_sim), 100), TRUE, FALSE))
 
 ggplot(mcar, aes(x1, x2)) +
-  geom_point(aes(color = na, alpha = na)) +
+  geom_point(aes(alpha = na)) +
+  geom_smooth(data = filter(mcar, !na),
+              aes(color = "Non-missing values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
+  geom_smooth(aes(color = "All values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
   scale_color_brewer(palette = "Dark2") +
-  scale_alpha_manual(values = c(.5, 1)) +
+  scale_alpha_manual(values = c(.3, 1)) +
   labs(title = "Missing completely at random",
        x = expression(X[1]),
        y = expression(X[2]),
-       color = "Missing",
+       color = "Regression line",
        alpha = "Missing")
 ```
 
@@ -142,13 +148,18 @@ mar <- data_sim %>%
          na = as.logical(round(na)))
 
 ggplot(mar, aes(x1, x2)) +
-  geom_point(aes(color = na, alpha = na)) +
+  geom_point(aes(alpha = na)) +
+  geom_smooth(data = filter(mar, !na),
+              aes(color = "Non-missing values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
+  geom_smooth(aes(color = "All values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
   scale_color_brewer(palette = "Dark2") +
-  scale_alpha_manual(values = c(.5, 1)) +
+  scale_alpha_manual(values = c(.3, 1)) +
   labs(title = "Missing at random",
        x = expression(X[1]),
        y = expression(X[2]),
-       color = "Missing",
+       color = "Regression line",
        alpha = "Missing")
 ```
 
@@ -165,13 +176,18 @@ mnar <- data_sim %>%
          na = as.logical(round(na)))
 
 ggplot(mnar, aes(x1, x2)) +
-  geom_point(aes(color = na, alpha = na)) +
+  geom_point(aes(alpha = na)) +
+  geom_smooth(data = filter(mnar, !na),
+              aes(color = "Non-missing values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
+  geom_smooth(aes(color = "All values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
   scale_color_brewer(palette = "Dark2") +
-  scale_alpha_manual(values = c(.5, 1)) +
+  scale_alpha_manual(values = c(.3, 1)) +
   labs(title = "Missing not at random",
        x = expression(X[1]),
        y = expression(X[2]),
-       color = "Missing",
+       color = "Regression line",
        alpha = "Missing")
 ```
 
@@ -209,7 +225,7 @@ The disadvantages of this method are that it:
 
 ### Available-case analysis
 
-**Available-case analysis** (or **pairwise deletion**) uses all nonmissing observations to compute each statistic of interest. In OLS, this means estimating the regression coefficients from the means, variances, and covariances of the variables rather than directly from the observations. While this appears to use more information than complete-case analysis, it can sometimes be *less efficient*. And by basing each statistic of interest on different subsets of the data, results can become nonsensical (e.g. correlations outside of the $[-1, +1]$ range). Finally, this method is much more difficult to implement outside of OLS to other GLMs.
+**Available-case analysis** (or **pairwise deletion**) uses all non missing observations to compute each statistic of interest. In OLS, this means estimating the regression coefficients from the means, variances, and covariances of the variables rather than directly from the observations. While this appears to use more information than complete-case analysis, it can sometimes be *less efficient*. And by basing each statistic of interest on different subsets of the data, results can become nonsensical (e.g. correlations outside of the $[-1, +1]$ range). Finally, this method is much more difficult to implement outside of OLS to other GLMs.
 
 ## Imputation
 
@@ -348,31 +364,51 @@ sum_stats %>%
         legend.position = "bottom")
 ```
 
-# Maximum-likelihood estimation for data MAR
+# Imputation estimation strategies
+
+## Maximum-likelihood estimation for data MAR
 
 When data are MAR (or MCAR), we can use maximum-likelihood estimation to estimate the parameters of interest and generate imputed values for the missing data. This requires several assumptions about the missingness mechanism and the distribution of the complete data.
 
-Let $p(\mathbf{X}, \theta) = p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)$ represent the joint probability density for the complete data $\mathbf{X}$, which is composed of the observed and missing components denoted by $\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}$. The vector $\theta$ contains the unknown parameters on which the complete-data distribution depends. For example, if the variables in $\mathbf{X}$ are multivariately normally distributed, then $\theta$ includes the population means and covariances among the variables.
+Let $p(\mathbf{X}, \theta) = p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)$ represent the joint probability density for the complete data $\mathbf{X}$, which is composed of the observed and missing components denoted by $\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}$. The vector $\theta$ contains the unknown parameters on which the complete-data distribution depends. For example, if the variables in $\mathbf{X}$ are multivariate normally distributed, then $\theta$ includes the population means and covariances among the variables.
 
 If data is MAR, then the ML estimate $\hat{\theta}$ of $\theta$ can be obtained from the marginal distribution of the observed data by integrating over the missing data:
 
 $$p(\mathbf{X}_\text{obs}; \theta) = \int{p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)} d\mathbf{X}_{\text{mis}}$$
 
-We'll skip the math for all of this^[See Fox ch 20.3 for the gory details], but the important thing to note is that the ML estimate only has a closed-form solution when missingness follows an arbitrary pattern (i.e. MAR). We can use iterative processes such as an **expectation-maximization (EM) algorithm** to find the ML estimates in the absence of arbitrary patterns of missingness. The algorithm is a two-step process, the **expectation** step and the **maximization** step:
+We'll skip the math for all of this^[See Fox ch 20.3 for the gory details], but the important thing to note is that the ML estimate only has a closed-form solution when missingness follows an arbitrary pattern (i.e. MAR). We can use iterative processes such as an **expectation-maximization (EM) algorithm** to find the ML estimates in the absence of arbitrary patterns of missingness. Typically software will use an **expectation-maximization (EM) algorithm** to find the ML estimates in the absence of arbitrary patterns of missingness. When the parameter estimates stop changing from one iteration to the next, they converge to the ML estimates $\hat{\theta}$.
 
-1. Find the expectation of the complete-data log-likelihood, integrating over the missing data given the observed data and the current estimates of the parameters
+* Implemented in `Amelia` for R
 
-    $$E[\log_eL(\theta; \mathbf{X})| \theta^(l)] = \int{\log_e L(\theta; \mathbf{X} p(\mathbf{X}_\text{mis} | \mathbf{X}_\text{obs}, \theta^{(l)})) d \mathbf{X}_\text{mis}}$$
-1. Find the values $\theta^{(l+1)}$ of $\theta$ that maximize the expected log-likelihood
-$E[\log_eL(\theta; \mathbf{X})| \theta^(l)]$. These become the parameter estimates for the next iteration.
+## Predictive mean matching
 
-When the parameter estimates stop changing from one iteration to the next, they converge to the ML estimates $\hat{\theta}$.
+Combines regression model with matching procedure.
 
-# Bayesian multiple imputation
+1. For cases with no missing data, estimate a linear regression of $x$ on $z$, producing a set of coefficients $b$.
+1. Make a random draw from the **posterior predictive distribution** of $b$, producing a new set of coefficients $b*$. Typically this would be a random draw from a multivariate normal distribution with mean $b$ and the estimated covariance matrix of $b$ (with an additional random draw for the residual variance). This step is necessary to produce sufficient variability in the imputed values, and is common to all robust methods for multiple imputation.
+1. Using $b*$, generate predicted values for $x$ for all cases, both those with data missing on $x$ and those with data present.
+1. For each case with missing $x$, identify a set of cases with observed $x$ whose predicted values are close to the predicted value for the case with missing data.
+1. From among those close cases, randomly choose one and assign its observed value to substitute for the missing value.
+
+Step 2 distinguishes this from pure conditional-mean imputation by accounting for additional uncertainty in the model(s). By default in most software, $k=5$ is the number of matches observations from which to draw the imputed value.
+
+* Implemented in `mice` and `mi` for R
+
+## Random forest model
+
+Alternatively, we can use a random forest algorithm to pursue a non-parametric imputation strategy. In this approach, you build a random forest model for each variable to predict its value using the other variables in the dataset. These results are used to generate imputed values for all the missing variables and observations.
+
+* Implemented in `missForest` for R
+
+## Deep learning
+
+Because everyone is doing it. No stable packages implement off-the-shelf methods, but researchers are developing deep learning methods for imputing missing values.
+
+# Generating multiple imputations
 
 **Bayesian multiple imputation** (MI) is a flexible method for dealing with missing data MAR. It starts by specifying the distribution of the complete data; typically the data is assumed to be multivariate normal. The key difference is that this method reflects uncertainty associated with missing data by imputing multiple values for each missing data value (i.e. multiple imputation), producing several complete datasets. Each dataset is then analyzed independently and in parallel, estimating parameters of interest and standard errors for each imputed dataset. The estimated parameters are then averaged together across the imputed datasets. Standard errors are also combined, taking into account the variation among the estimates in the several datasets and capturing the added uncertainty due to having to deal with missing data.
 
-The method is **Bayesian** because each estimate of the parameters and standard errors is drawn from the **posterior distribution** of the parameters, typically assuming a non-informative (flat) prior distribution. We will discuss Bayesian inference techniques in a couple weeks, but the important thing to note is that this method directly accounts for our uncertainty associated with both the sampling variance of the coefficients used in the imputation model as well as the uncertainty derived from the missingness itself.
+The method is **Bayesian** because each estimate of the parameters and standard errors is drawn from the **posterior distribution** of the parameters, typically assuming a non-informative (flat) prior distribution. The important thing to note is that this method directly accounts for our uncertainty associated with both the sampling variance of the coefficients used in the imputation model as well as the uncertainty derived from the missingness itself.
 
 ## Inference for individual coefficients
 
@@ -402,7 +438,7 @@ $$df_j = (g-1) \left ( 1 + \frac{g}{g+1} \times \frac{V_j^{(W)}}{V_j^{(B)}} \rig
 
 ## Practical considerations for multiple imputation
 
-The MI method is typically implemented assuming the complete data follows a multivariate normal distribution. Violation of this assumption isn't necessarily a dealbreaker for relying on MI estimates. However MI can only preserve features of the dataset represented in the imputation model. Therefore you need to think carefully about which features (variables) need to be preserved when building the imputation model to ensure those particular features will appear in the final statistical model.
+The MI method is typically implemented assuming the complete data follows a multivariate normal distribution. Violation of this assumption isn't necessarily a deal-breaker for relying on MI estimates. However MI can only preserve features of the dataset represented in the imputation model. Therefore you need to think carefully about which features (variables) need to be preserved when building the imputation model to ensure those particular features will appear in the final statistical model.
 
 * **Include variables in the imputation model that make the assumption of ignorable missingness reasonable.** Remember that the MI method assumes data is MAR. So for this to work on data MNAR, we want to build a predictive model that does a great job of predicting missing values. Typically this includes using variables that will be in the final statistical model as well as variables in the dataset not used in the final statistical model, variables strongly correlated with the variable with missingness (as measured by the complete observations), and even the response variable itself. Think of the imputation model as a pure prediction model - you are not conducting inference on the imputation model itself, so it can be highly complex.
 * **Transform variables to approximately normal.** After the imputed data are obtained, you can transform them back to their original scales prior to analyzing the completed datasets.
@@ -467,19 +503,22 @@ un.out <- amelia(as.data.frame(un), m = 5, idvars = c("country", "region"))
 Here we specify `country` and `region` are id variables (text strings) and we don't want to use them to generate imputed values. By default, `amelia()` uses all the variables in their raw forms to impute missing values for each variable. Clearly we still want to tune this approach, but for now let's run with it. The list of imputed data frames is stored in the `imputations` element:
 
 ```{r amelia-result}
-str(un.out$imputations, max.level = 2)
+glimpse(un.out$imputations)
 ```
 
 Each of these imputed datasets is a complete data frame. So for example, we could plot the same scatterplot of GDP vs. infant mortality with the imputed values for the `r nrow(filter(un, is.na(GDPperCapita) | is.na(infantMortality)))` countries with missing values.
 
 ```{r plot-imput}
 un.out$imputations %>%
-  map(~ ggplot(.x, aes(GDPperCapita, infantMortality)) +
+  map(as.data.frame) %>%
+  bind_rows(.id = "impute") %>%
+  ggplot(aes(GDPperCapita, infantMortality)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   scale_x_continuous(labels = scales::dollar) +
+  facet_grid(impute ~ .) +
   labs(x = "GDP per capita (in USD)",
-       y = "Infant mortality rate (per 1,000)"))
+       y = "Infant mortality rate (per 1,000)")
 ```
 
 Notice that for some of the imputed datasets, the imputed values are nonsensical; for instance, you cannot have a negative GDP or infant mortality rate. But again, let's just run with it.
@@ -542,7 +581,7 @@ Let's think more carefully about what variables to include in the imputation mod
 GGally::ggpairs(select_if(un, is.numeric))
 ```
 
-Variables such as total fertility rate and the illiteracy rate for women are strongly correlated with our issing variables. Let's now limit our imputation model to just the four variables in the original regression model plus the total fertility rate, expectation of life for women, percentage of women engaged in economic activity outside the home, and the illiteracy rate for women.
+Variables such as total fertility rate and the illiteracy rate for women are strongly correlated with our missing variables. Let's now limit our imputation model to just the four variables in the original regression model plus the total fertility rate, expectation of life for women, percentage of women engaged in economic activity outside the home, and the illiteracy rate for women.
 
 ```{r select-un}
 un_lite <- un %>%
@@ -638,6 +677,17 @@ bind_rows(orig = tidy(mortal_mod),
   theme(legend.position = "bottom")
 ```
 
+# Multiple imputation outside of GLMs
+
+* Tree-based inference - missing value becomes a feature of the data
+
+# MI in Python
+
+* [`sklearn.preprocessing.Imputer`](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Imputer.html) - for basic imputation with mean, median, or modal values
+* [Multiple Imputation with Chained Equations](http://www.statsmodels.org/dev/imputation.html) - for `statsmodels`
+    * Uses the predictive mean matching technique
+* [MIDAS - Multiple Imputation with Denoising Autoencoders](https://github.com/Oracen/MIDAS) - deep learning method for multiple imputation
+
 # Acknowledgments {.toc-ignore}
 
 * [Fox, John. *Applied Regression Analysis and Generalized Linear Models*. 3rd edition. 2016.](http://socserv.socsci.mcmaster.ca/jfox/Books/Applied-Regression-3E/index.html)
@@ -647,7 +697,3 @@ bind_rows(orig = tidy(mortal_mod),
 
 ```{r child='_sessioninfo.Rmd'}
 ```
-
-
-
-
