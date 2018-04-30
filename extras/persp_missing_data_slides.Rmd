@@ -3,7 +3,6 @@ title: "Missing data and multiple imputation"
 author: |
   | MACS 30200
   | University of Chicago
-date: "May 10, 2017"
 output: rcfss::cfss_slides
 ---
 
@@ -81,6 +80,7 @@ data_sim <- MASS::mvrnorm(n_sim, mu, sigma) %>%
 # plot of data
 ggplot(data_sim, aes(x1, x2)) +
   geom_point() +
+  geom_smooth(method = "lm") +
   labs(title = "Complete data",
        x = expression(X[1]),
        y = expression(X[2]))
@@ -93,14 +93,21 @@ mcar <- data_sim %>%
   mutate(na = ifelse(row_number(x2) %in% sample(seq_len(n_sim), 100), TRUE, FALSE))
 
 ggplot(mcar, aes(x1, x2)) +
-  geom_point(aes(color = na, alpha = na)) +
+  geom_point(aes(alpha = na)) +
+  geom_smooth(data = filter(mcar, !na),
+              aes(color = "Non-missing values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
+  geom_smooth(aes(color = "All values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
   scale_color_brewer(palette = "Dark2") +
-  scale_alpha_manual(values = c(.5, 1)) +
+  scale_alpha_manual(values = c(.3, 1)) +
   labs(title = "Missing completely at random",
        x = expression(X[1]),
        y = expression(X[2]),
-       color = "Missing",
-       alpha = "Missing")
+       color = "Regression line",
+       alpha = "Missing") +
+  theme(legend.position = "bottom",
+        legend.box = "vertical")
 ```
 
 ----
@@ -112,14 +119,21 @@ mar <- data_sim %>%
          na = as.logical(round(na)))
 
 ggplot(mar, aes(x1, x2)) +
-  geom_point(aes(color = na, alpha = na)) +
+  geom_point(aes(alpha = na)) +
+  geom_smooth(data = filter(mar, !na),
+              aes(color = "Non-missing values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
+  geom_smooth(aes(color = "All values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
   scale_color_brewer(palette = "Dark2") +
-  scale_alpha_manual(values = c(.5, 1)) +
+  scale_alpha_manual(values = c(.3, 1)) +
   labs(title = "Missing at random",
        x = expression(X[1]),
        y = expression(X[2]),
-       color = "Missing",
-       alpha = "Missing")
+       color = "Regression line",
+       alpha = "Missing") +
+  theme(legend.position = "bottom",
+        legend.box = "vertical")
 ```
 
 ----
@@ -131,14 +145,21 @@ mnar <- data_sim %>%
          na = as.logical(round(na)))
 
 ggplot(mnar, aes(x1, x2)) +
-  geom_point(aes(color = na, alpha = na)) +
+  geom_point(aes(alpha = na)) +
+  geom_smooth(data = filter(mnar, !na),
+              aes(color = "Non-missing values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
+  geom_smooth(aes(color = "All values"),
+              method = "lm", se = FALSE, fullrange = TRUE) +
   scale_color_brewer(palette = "Dark2") +
-  scale_alpha_manual(values = c(.5, 1)) +
+  scale_alpha_manual(values = c(.3, 1)) +
   labs(title = "Missing not at random",
        x = expression(X[1]),
        y = expression(X[2]),
-       color = "Missing",
-       alpha = "Missing")
+       color = "Regression line",
+       alpha = "Missing") +
+  theme(legend.position = "bottom",
+        legend.box = "vertical")
 ```
 
 ## Things to consider
@@ -271,8 +292,9 @@ sum_stats %>%
   filter(id %in% c("mcar", "mar", "mnar")) %>%
   mutate(id = factor(id, levels = c("mcar", "mar", "mnar"),
                      labels = c("MCAR", "MAR", "MNAR"))) %>%
-  ggplot(aes(id, value, color = method, shape = method)) +
-  facet_wrap( ~ param, nrow = 2, scales = "free_y",
+  ggplot(aes(forcats::fct_rev(id), value, color = method, shape = method)) +
+  coord_flip() +
+  facet_wrap( ~ param, nrow = 2, scales = "free_x",
               labeller = "label_parsed") +
   geom_point() +
   geom_hline(data = filter(sum_stats, id == "Parameter"),
@@ -283,8 +305,8 @@ sum_stats %>%
        y = "Estimated parameter value",
        color = NULL,
        shape = NULL) +
-  theme(axis.text.x = element_text(angle = 30),
-        legend.position = "bottom")
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 12))
 ```
 
 ## Maximum-likelihood estimation
@@ -295,22 +317,27 @@ $$p(\mathbf{X}, \theta) = p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \t
 
     $$p(\mathbf{X}_\text{obs}; \theta) = \int{p(\mathbf{X}_{\text{obs}}, \mathbf{X}_{\text{mis}}; \theta)} d\mathbf{X}_{\text{mis}}$$
 
-* Closed-form solution
+* EM algorithm
+* Single model for all variables
 
-## Expectation-maximization (EM) algorithm
+## Predictive mean matching
 
-1. Find the expectation of the complete-data log-likelihood
+1. For cases with no missing data, estimate a linear regression of $x$ on $z$, producing a set of coefficients $b$
+1. Make a random draw from the **posterior predictive distribution** of $b$, producing a new set of coefficients $b*$
+1. Using $b*$, generate predicted values for $x$ for all cases
+1. For each case with missing $x$, identify a set of cases with observed $x$ whose predicted values are close to the predicted value for the case with missing data
+1. From among those close cases, randomly choose one and assign its observed value to substitute for the missing value
 
-    $$E[\log_eL(\theta; \mathbf{X})| \theta^(l)] = \int{\log_e L(\theta; \mathbf{X} p(\mathbf{X}_\text{mis} | \mathbf{X}_\text{obs}, \theta^{(l)})) d \mathbf{X}_\text{mis}}$$
-1. Find the values $\theta^{(l+1)}$ of $\theta$ that maximize the expected log-likelihood
-$E[\log_eL(\theta; \mathbf{X})| \theta^(l)]$
+## Non-parametric models
 
-## Bayesian multiple imputation
+* Random forests
+* Deep learning
 
-* Multivariate normal distribution
-* **Multiple** imputation
+## Multiple imputation
+
+* Generate multiple imputed datasets
+* Bayesian multiple imputation
 * Account for uncertainty within and across the datasets
-* Bayesian method
 
 ## Conducting inference
 
@@ -354,7 +381,7 @@ ggplot(un, aes(GDPperCapita, infantMortality)) +
 ```{r log-log}
 ggplot(un, aes(GDPperCapita, infantMortality)) +
   geom_point() +
-  geom_smooth(se = FALSE) +
+  geom_smooth(method = "lm", se = FALSE) +
   scale_x_log10(labels = scales::dollar) +
   scale_y_log10() +
   labs(x = "GDP per capita (in USD)",
@@ -379,23 +406,27 @@ un %>%
 
 ```{r un-amelia, echo = TRUE}
 library(Amelia)
-un.out <- amelia(as.data.frame(un), m = 5, idvars = c("country", "region"))
+un.out <- amelia(as.data.frame(un), m = 5,
+                 idvars = c("country", "region"))
 ```
 
 ```{r amelia-result}
 str(un.out$imputations, max.level = 2)
 ```
 
-## MI scatterplot {.scrollable}
+## MI scatterplot
 
 ```{r plot-imput}
 un.out$imputations %>%
-  map(~ ggplot(.x, aes(GDPperCapita, infantMortality)) +
+  map(as.data.frame) %>%
+  bind_rows(.id = "impute") %>%
+  ggplot(aes(GDPperCapita, infantMortality)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   scale_x_continuous(labels = scales::dollar) +
+  facet_grid(impute ~ .) +
   labs(x = "GDP per capita (in USD)",
-       y = "Infant mortality rate (per 1,000)"))
+       y = "Infant mortality rate (per 1,000)")
 ```
 
 ## Conducting inference
@@ -462,7 +493,7 @@ GGally::ggpairs(un_lite)
 
 ## Transforming variables
 
-```{r amelia-transform}
+```{r amelia-transform, echo = TRUE}
 un_lite.out <- amelia(un_lite, m = 5,
                       logs = c("infantMortality", "GDPperCapita"),
                       sqrt = c("tfr"))
