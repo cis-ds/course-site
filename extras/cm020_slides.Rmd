@@ -3,19 +3,22 @@ title: "Building Shiny Apps"
 author: |
   | MACS 30500
   | University of Chicago
-date: "March 6, 2017"
 output: rcfss::cfss_slides
 ---
 
-```{r setup, include = FALSE, cache = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE,
-                      eval = FALSE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = TRUE, message = FALSE, warning = FALSE)
+```
 
+```{r packages, cache = FALSE, message = FALSE, include = FALSE}
 library(tidyverse)
 library(shiny)
-theme_set(theme_minimal(base_size = 18))
+
+options(digits = 3)
+set.seed(1234)
+
+base_size <- 22
+theme_set(theme_minimal(base_size = base_size))
 ```
 
 ## What is Shiny?
@@ -42,7 +45,7 @@ theme_set(theme_minimal(base_size = 18))
 
 ## Shiny app template
 
-```{r shiny_template}
+```r
 library(shiny)
 ui <- fluidPage()
 server <- function(input, output) {}
@@ -89,7 +92,7 @@ Work through the tutorial until the end of Section 4
 
 ## Add elements to app inside `fluidPage()`
 
-```{r}
+```r
 library(shiny)
 ui <- fluidPage("Hello CFSS")
 server <- function(input, output) {}
@@ -100,7 +103,7 @@ shinyApp(ui = ui, server = server)
 
 ## Add elements to app inside `fluidPage()`
 
-```{r}
+```r
 fluidPage(
 	h1("My Shiny app"),
 	"Hello CFSS"
@@ -122,7 +125,7 @@ fluidPage(
 
 ## Add HTML to `fluidPage()`
 
-```{r}
+```r
 fluidPage(
   h1("My Shiny app"),
   h3("Subtitle"),
@@ -143,7 +146,7 @@ fluidPage(
 
 ## `sidebarLayout()`
 
-```{r}
+```r
 fluidPage(
   titlePanel("My Shiny app"),
   sidebarLayout(
@@ -177,7 +180,7 @@ Work through the tutorial until the end of Section 5
 
 ## Inputs
 
-```{r}
+```r
 library(shiny)
 
 ui <- fluidPage(
@@ -196,7 +199,7 @@ shinyApp(ui = ui, server = server)
 
 ## Inputs
 
-```{r}
+```r
 sliderInput("num", "Choose a number",
             min = 0, max = 100, value = 20)
 ```
@@ -213,7 +216,7 @@ print(sliderInput("num", "Choose a number",
 ## Inputs
 
 <div id="left">
-```{r}
+```r
 sliderInput("num",
             "Choose a number",
             min = 0,
@@ -247,7 +250,7 @@ Function | Outputs
 ## Outputs
 
 <div id="left">
-```{r}
+```r
 sliderInput("num",
             "Choose a number",
             min = 0,
@@ -264,7 +267,7 @@ sliderInput("num",
 
 ## Outputs
 
-```{r}
+```r
 library(shiny)
 
 ui <- fluidPage(
@@ -301,7 +304,7 @@ Work through the tutorial until the end of Section 8
 
 ## Server: assemble input into outputs with 3 rules
 
-```{r}
+```r
 server <- function(input, output) {
     output$myplot <- renderPlot({
         plot(rnorm(input$num))
@@ -323,7 +326,7 @@ Output function | Render function
 
 ## `render*()` functions build reactive output to display in UI
 
-```{r}
+```r
 renderPlot({
   plot(rnorm(100))
 })
@@ -331,7 +334,7 @@ renderPlot({
 
 ## Server: assemble input into outputs with 3 rules
 
-```{r}
+```r
 server <- function(input, output) {
     output$myplot <- renderPlot({
         plot(rnorm(input$num))
@@ -355,7 +358,7 @@ Work through the tutorial until the end of Section 9
 * Reactive variables
     * When value of variable `x` changes, anything that relies on `x` is re-evaluated
     * Contrast with regular R:
-        ```{r}
+        ```r
         x <- 5
         y <- x + 1
         x <- 10
@@ -365,7 +368,7 @@ Work through the tutorial until the end of Section 9
 ## Reactivity
 
 * `input$num` is a **reactive** value
-    ```{r}
+    ```r
     output$myplot <- renderPlot({
       plot(rnorm(input$num))
     })
@@ -388,14 +391,14 @@ Work through the tutorial until the end of Section 9
 <div id="left">
 <center>Assign variable</center>
 
-```{r}
+```r
 server <- function(input, output) {
 	x <- input$num + 1
 }
 # error
 ```
 
-```{r}
+```r
 server <- function(input, output) {
   x <- reactive({
     input$num + 1
@@ -408,14 +411,14 @@ server <- function(input, output) {
 <div id="right">
 <center>Access variable</center>
 
-```{r}
+```r
 server <- function(input, output) {
 	print(input$num)
 }
 # error
 ```
 
-```{r}
+```r
 server <- function(input, output) {
   observe({
     print(input$num)
@@ -427,7 +430,7 @@ server <- function(input, output) {
 
 ## Simple Shiny app using basic reactivity
 
-```{r}
+```r
 library(shiny)
 ui <- fluidPage(
   sliderInput("num", "Choose a number",
@@ -454,20 +457,29 @@ shinyApp(ui = ui, server = server)
 
 Work through the tutorial until the end of Section 10
 
-## Using buttons in the UI
+## Using uiOutput() to create UI elements dynamically
 
-* Different from other inputs: you usually don't care about the "value" of the button, you care when it's clicked
-    ```{r}
-    ui <- fluidPage(
-      actionButton("btn", "Click me")
-    )
-    server <- function(input, output, session) {
-      observe({
-        cat(input$btn)
-      })
-    }
-    shinyApp(ui = ui, server = server) 
-    ```
+* `uiOutput()`
+* Changing input values based on other inputs
+
+## Basic example of uiOutput()
+
+```r
+library(shiny)
+ui <- fluidPage(
+  numericInput("num", "Maximum slider value", 5),
+  uiOutput("slider")
+)
+
+server <- function(input, output) {
+  output$slider <- renderUI({
+    sliderInput("slider", "Slider", min = 0,
+                max = input$num, value = 0)
+  })
+}
+
+shinyApp(ui = ui, server = server)
+```
 
 ----
 
