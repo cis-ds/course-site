@@ -361,51 +361,65 @@ div.tocify {
 <div id="oauth-authentication" class="section level2">
 <h2>OAuth authentication</h2>
 <p>OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.</p>
-<ol style="list-style-type: decimal">
-<li><p>The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (<a href="https://apps.twitter.com/app/new" class="uri">https://apps.twitter.com/app/new</a>) and log in. After filling in the basic info (make sure to set the “Callback URL” to “<a href="http://127.0.0.1:1410" class="uri">http://127.0.0.1:1410</a>”), go to the <strong>Permissions</strong> tab and select “Read, Write and Access direct messages”. Make sure to click on the save button after doing this. In the <strong>Details</strong> tab, take note of your consumer key and consumer secret.</p></li>
-<li><p>Store your API key and secret using the <code>.Rprofile</code> method. Edit <code>.Rprofile</code> and add</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">twitter_app_name =</span> <span class="st">&quot;Your app name&quot;</span>)
-<span class="kw">options</span>(<span class="dt">twitter_api_key =</span> <span class="st">&quot;Your API key&quot;</span>)
-<span class="kw">options</span>(<span class="dt">twitter_api_secret =</span> <span class="st">&quot;Your API secret&quot;</span>)</code></pre></div>
-<p>Restart RStudio to get the keys loaded into your environment.</p></li>
-<li><p>Run from the console:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">twitter_token &lt;-<span class="st"> </span><span class="kw">create_token</span>(
-  <span class="dt">app =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_app_name&quot;</span>),
-  <span class="dt">consumer_key =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_key&quot;</span>),
-  <span class="dt">consumer_secret =</span> <span class="kw">getOption</span>(<span class="st">&quot;twitter_api_secret&quot;</span>))</code></pre></div>
-<p>This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.</p></li>
-<li><p>At this point you should get a message back in RStudio “Authentication complete.” You’re done setting up the authentication for <code>rtweet</code> - you’d just need to set the <code>token</code> argument equal to <code>twitter_token</code> (the token object we just created).</p></li>
-</ol>
-<div id="storing-twitter-token" class="section level3">
-<h3>Storing Twitter token</h3>
-<p>Rather than creating a token every time you open R, remembering where you saved your token(s) or passwords, and specifying a token every time you use a function, users are encouraged to save tokens as an environment variable. Since <code>twitter_token</code> is no longer a character string, we cannot use the <code>.Rprofile</code> method from before. Instead, we can store the token as an <strong>environment variable</strong>, or an object stored on your computer separately from your project directory.</p>
-<p>To save a personal access token as an environment variable, complete the following steps:</p>
-<ol style="list-style-type: decimal">
-<li><p>Use <code>readr::write_rds()</code> to save <code>twitter_token</code> to your home directory. The code below should locate and construct the path to your home directory for you. Assuming you’ve saved your token as <code>twitter_token</code>, the final line in the code below will save your token for you as well.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># path of home directory</span>
-home_directory &lt;-<span class="st"> </span><span class="kw">path.expand</span>(<span class="st">&quot;~/&quot;</span>)
-
-<span class="co"># combine with name for token</span>
-file_name &lt;-<span class="st"> </span><span class="kw">file.path</span>(home_directory, <span class="st">&quot;twitter_token.rds&quot;</span>)
-
-<span class="co"># save token to home directory</span>
-readr<span class="op">::</span><span class="kw">write_rds</span>(twitter_token, <span class="dt">path =</span> file_name)</code></pre></div></li>
-<li><p>Create a plain text file containing the path to your token object and save it to your home directory as <code>.Renviron</code>.</p>
-<p>To create a plain text file in R, modify the code below. Change <code>TWITTER_PAT</code> location to match the path you used earlier (in the example below, you’d want to change <code>/Users/soltoffbc/twitter_token.rds</code>). You can also create a plain text document in any text editor like TextEdit or Notepad. If you’re using Rstudio, select File &gt; New File &gt; Text File.</p>
-<p><strong>Important</strong>: Like with <code>.Rprofile</code>, make sure the last line of <code>.Renviron</code> is blank. I achieved this in the code below by including <code>fill = TRUE</code> in the <code>cat()</code> function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># On my mac, the .Renviron text looks like this:</span>
-<span class="co">#     TWITTER_PAT=/Users/soltoffbc/twitter_token.rds</span>
-
-<span class="co"># Assuming you followed the procedures to create &quot;file_name&quot;</span>
-<span class="co"># from the previous code chunk, then the code below should</span>
-<span class="co"># create and save your environment variable.</span>
-
-<span class="kw">cat</span>(<span class="kw">paste0</span>(<span class="st">&quot;TWITTER_PAT=&quot;</span>, file_name),
-    <span class="dt">file =</span> <span class="kw">file.path</span>(home_directory, <span class="st">&quot;.Renviron&quot;</span>),
-    <span class="dt">append =</span> <span class="ot">TRUE</span>)</code></pre></div></li>
-<li><p>Restart R so it can process the environment variable.</p></li>
-<li><p>If you completed the steps successfully, you should be able to use <code>rtweet</code> functions without specifying [or even <em>thinking</em> about] tokens [ever again].</p></li>
-</ol>
+<div id="create-a-twitter-app" class="section level3">
+<h3>Create a Twitter App</h3>
+<ul>
+<li>To create a Twitter app, navigate to <a href="https://apps.twitter.com/">apps.twitter.com</a> and create a new app by providing a <code>Name</code>, <code>Description</code>, and <code>Website</code> of your choosing (example screenshot provided below)</li>
+<li><strong>Important</strong> In the <code>Callback URL</code> field, make sure to enter the following: <code>http://127.0.0.1:1410</code></li>
+<li>Check yes if you agree and then click “Create your Twitter application”</li>
+</ul>
+<div class="figure">
+<img src="images/creating.png" alt="Create an application" />
+<p class="caption">Create an application</p>
+</div>
+</div>
+<div id="access-tokensecret-authentication" class="section level3">
+<h3>Access token/secret authentication</h3>
+<ul>
+<li>Click the tab labeled <code>Keys and Access Tokens</code> to retrieve your keys</li>
+</ul>
+<div class="figure">
+<img src="images/created.png" alt="Created application" />
+<p class="caption">Created application</p>
+</div>
+<ul>
+<li>In the <code>Keys and Access Tokens</code> tab, locate and copy/paste values <code>Consumer Key</code> (aka “API Key”) and <code>Consumer Secret</code> (aka “API Secret”) into an R script</li>
+</ul>
+<div class="figure">
+<img src="images/keys.png" alt="Get API key and secret" />
+<p class="caption">Get API key and secret</p>
+</div>
+<ul>
+<li>In the <code>Keys and Access Tokens</code> tab, scroll down to <code>Token Actions</code> and click <code>Create my access token</code></li>
+</ul>
+<div class="figure">
+<img src="images/gen_token.png" alt="Generate access token" />
+<p class="caption">Generate access token</p>
+</div>
+<ul>
+<li>That should generate two access keys: <code>Access Token</code> and <code>Access Token Secret</code></li>
+</ul>
+<div class="figure">
+<img src="images/accesskeys.png" alt="Access token and token secret" />
+<p class="caption">Access token and token secret</p>
+</div>
+<ul>
+<li>Locate and copy/paste <code>Access Token</code> and <code>Access Token Secret</code> (fake keys shown in image above) into an R script file</li>
+<li>Once the keys are read into R, pass the objects to <code>create_token()</code>, and store the output as <code>twitter_token</code></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># create token and save it as an environment variable</span>
+twitter_token &lt;-<span class="st"> </span><span class="kw">create_token</span>(
+  <span class="dt">app =</span> appname,
+  <span class="dt">consumer_key =</span> key,
+  <span class="dt">consumer_secret =</span> secret,
+  <span class="dt">access_token =</span> access_token,
+  <span class="dt">access_secret =</span> access_secret
+)</code></pre></div>
+<ul>
+<li>The <code>create_token()</code> function should automatically save your token as an environment variable for you. This is basically a global version of <code>.Rprofile</code>. <strong>Now you can access the Twitter API through <code>rtweet</code> from any project on your computer without having to reauthenticate.</strong> To make sure it worked, compare the created token object to the object returned by <code>get_token()</code></li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># check to see if the token is loaded</span>
+<span class="kw">identical</span>(twitter_token, <span class="kw">get_token</span>())</code></pre></div>
 </div>
 </div>
 <div id="searching-tweets" class="section level2">
@@ -544,84 +558,84 @@ popstars <span class="op">%&gt;%</span>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>## Session info -------------------------------------------------------------</code></pre>
 <pre><code>##  setting  value                       
-##  version  R version 3.4.3 (2017-11-30)
+##  version  R version 3.5.0 (2018-04-23)
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2018-05-10</code></pre>
+##  date     2018-06-20</code></pre>
 <pre><code>## Packages -----------------------------------------------------------------</code></pre>
-<pre><code>##  package    * version    date       source                             
-##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                     
-##  backports    1.1.2      2017-12-13 CRAN (R 3.4.3)                     
-##  base       * 3.4.3      2017-12-07 local                              
-##  bindr        0.1.1      2018-03-13 CRAN (R 3.4.3)                     
-##  bindrcpp     0.2.2.9000 2018-04-08 Github (krlmlr/bindrcpp@bd5ae73)   
-##  broom      * 0.4.4      2018-03-29 CRAN (R 3.4.3)                     
-##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                     
-##  cli          1.0.0      2017-11-05 CRAN (R 3.4.2)                     
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                     
-##  compiler     3.4.3      2017-12-07 local                              
-##  crayon       1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab)
-##  datasets   * 3.4.3      2017-12-07 local                              
-##  devtools     1.13.5     2018-02-18 CRAN (R 3.4.3)                     
-##  digest       0.6.15     2018-01-28 CRAN (R 3.4.3)                     
-##  dplyr      * 0.7.4.9003 2018-04-08 Github (tidyverse/dplyr@b7aaa95)   
-##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                     
-##  forcats    * 0.3.0      2018-02-19 CRAN (R 3.4.3)                     
-##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.3)                     
-##  ggplot2    * 2.2.1.9000 2018-04-24 Github (tidyverse/ggplot2@3c9c504) 
-##  glue         1.2.0      2017-10-29 CRAN (R 3.4.2)                     
-##  graphics   * 3.4.3      2017-12-07 local                              
-##  grDevices  * 3.4.3      2017-12-07 local                              
-##  grid         3.4.3      2017-12-07 local                              
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.4.0)                     
-##  haven        1.1.1      2018-01-18 CRAN (R 3.4.3)                     
-##  hms          0.4.2      2018-03-10 CRAN (R 3.4.3)                     
-##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                     
-##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                     
-##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                     
-##  knitr        1.20       2018-02-20 CRAN (R 3.4.3)                     
-##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.3)                     
-##  lazyeval     0.2.1      2017-10-29 CRAN (R 3.4.2)                     
-##  lubridate    1.7.4      2018-04-11 CRAN (R 3.4.3)                     
-##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                     
-##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                     
-##  methods    * 3.4.3      2017-12-07 local                              
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                     
-##  modelr       0.1.1      2017-08-10 local                              
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                     
-##  nlme         3.1-137    2018-04-07 CRAN (R 3.4.4)                     
-##  parallel     3.4.3      2017-12-07 local                              
-##  pillar       1.2.1      2018-02-27 CRAN (R 3.4.3)                     
-##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                     
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                     
-##  psych        1.8.3.3    2018-03-30 CRAN (R 3.4.4)                     
-##  purrr      * 0.2.4      2017-10-18 CRAN (R 3.4.2)                     
-##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                     
-##  Rcpp         0.12.16    2018-03-13 CRAN (R 3.4.4)                     
-##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                     
-##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                     
-##  reshape2     1.4.3      2017-12-11 CRAN (R 3.4.3)                     
-##  rlang        0.2.0.9001 2018-04-24 Github (r-lib/rlang@82b2727)       
-##  rmarkdown    1.9        2018-03-01 CRAN (R 3.4.3)                     
-##  rprojroot    1.3-2      2018-01-03 CRAN (R 3.4.3)                     
-##  rstudioapi   0.7        2017-09-07 CRAN (R 3.4.1)                     
-##  rvest        0.3.2      2016-06-17 CRAN (R 3.4.0)                     
-##  scales       0.5.0.9000 2018-04-24 Github (hadley/scales@d767915)     
-##  stats      * 3.4.3      2017-12-07 local                              
-##  stringi      1.1.7      2018-03-12 CRAN (R 3.4.3)                     
-##  stringr    * 1.3.0      2018-02-19 CRAN (R 3.4.3)                     
-##  tibble     * 1.4.2      2018-01-22 CRAN (R 3.4.3)                     
-##  tidyr      * 0.8.0      2018-01-29 CRAN (R 3.4.3)                     
-##  tidyselect   0.2.4      2018-02-26 CRAN (R 3.4.3)                     
-##  tidyverse  * 1.2.1      2017-11-14 CRAN (R 3.4.2)                     
-##  tools        3.4.3      2017-12-07 local                              
-##  utils      * 3.4.3      2017-12-07 local                              
-##  withr        2.1.2      2018-04-24 Github (jimhester/withr@79d7b0d)   
-##  xml2         1.2.0      2018-01-24 CRAN (R 3.4.3)                     
-##  yaml         2.1.18     2018-03-08 CRAN (R 3.4.4)</code></pre>
+<pre><code>##  package    * version    date       source                         
+##  assertthat   0.2.0      2017-04-11 CRAN (R 3.5.0)                 
+##  backports    1.1.2      2017-12-13 CRAN (R 3.5.0)                 
+##  base       * 3.5.0      2018-04-24 local                          
+##  bindr        0.1.1      2018-03-13 CRAN (R 3.5.0)                 
+##  bindrcpp     0.2.2      2018-03-29 CRAN (R 3.5.0)                 
+##  broom      * 0.4.4      2018-03-29 CRAN (R 3.5.0)                 
+##  cellranger   1.1.0      2016-07-27 CRAN (R 3.5.0)                 
+##  cli          1.0.0      2017-11-05 CRAN (R 3.5.0)                 
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.5.0)                 
+##  compiler     3.5.0      2018-04-24 local                          
+##  crayon       1.3.4      2017-09-16 CRAN (R 3.5.0)                 
+##  datasets   * 3.5.0      2018-04-24 local                          
+##  devtools     1.13.5     2018-02-18 CRAN (R 3.5.0)                 
+##  digest       0.6.15     2018-01-28 CRAN (R 3.5.0)                 
+##  dplyr      * 0.7.5      2018-05-19 CRAN (R 3.5.0)                 
+##  evaluate     0.10.1     2017-06-24 CRAN (R 3.5.0)                 
+##  forcats    * 0.3.0      2018-02-19 CRAN (R 3.5.0)                 
+##  foreign      0.8-70     2017-11-28 CRAN (R 3.5.0)                 
+##  ggplot2    * 2.2.1.9000 2018-06-07 Github (hadley/ggplot2@4db5122)
+##  glue         1.2.0      2017-10-29 CRAN (R 3.5.0)                 
+##  graphics   * 3.5.0      2018-04-24 local                          
+##  grDevices  * 3.5.0      2018-04-24 local                          
+##  grid         3.5.0      2018-04-24 local                          
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.5.0)                 
+##  haven        1.1.1      2018-01-18 CRAN (R 3.5.0)                 
+##  hms          0.4.2      2018-03-10 CRAN (R 3.5.0)                 
+##  htmltools    0.3.6      2017-04-28 CRAN (R 3.5.0)                 
+##  httr         1.3.1      2017-08-20 CRAN (R 3.5.0)                 
+##  jsonlite     1.5        2017-06-01 CRAN (R 3.5.0)                 
+##  knitr        1.20       2018-02-20 CRAN (R 3.5.0)                 
+##  lattice      0.20-35    2017-03-25 CRAN (R 3.5.0)                 
+##  lazyeval     0.2.1      2017-10-29 CRAN (R 3.5.0)                 
+##  lubridate    1.7.4      2018-04-11 CRAN (R 3.5.0)                 
+##  magrittr     1.5        2014-11-22 CRAN (R 3.5.0)                 
+##  memoise      1.1.0      2017-04-21 CRAN (R 3.5.0)                 
+##  methods    * 3.5.0      2018-04-24 local                          
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.5.0)                 
+##  modelr       0.1.2      2018-05-11 CRAN (R 3.5.0)                 
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.5.0)                 
+##  nlme         3.1-137    2018-04-07 CRAN (R 3.5.0)                 
+##  parallel     3.5.0      2018-04-24 local                          
+##  pillar       1.2.3      2018-05-25 CRAN (R 3.5.0)                 
+##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.5.0)                 
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.5.0)                 
+##  psych        1.8.4      2018-05-06 CRAN (R 3.5.0)                 
+##  purrr      * 0.2.5      2018-05-29 CRAN (R 3.5.0)                 
+##  R6           2.2.2      2017-06-17 CRAN (R 3.5.0)                 
+##  Rcpp         0.12.17    2018-05-18 CRAN (R 3.5.0)                 
+##  readr      * 1.1.1      2017-05-16 CRAN (R 3.5.0)                 
+##  readxl       1.1.0      2018-04-20 CRAN (R 3.5.0)                 
+##  reshape2     1.4.3      2017-12-11 CRAN (R 3.5.0)                 
+##  rlang        0.2.1      2018-05-30 CRAN (R 3.5.0)                 
+##  rmarkdown    1.9        2018-03-01 CRAN (R 3.5.0)                 
+##  rprojroot    1.3-2      2018-01-03 CRAN (R 3.5.0)                 
+##  rstudioapi   0.7        2017-09-07 CRAN (R 3.5.0)                 
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.5.0)                 
+##  scales       0.5.0      2017-08-24 CRAN (R 3.5.0)                 
+##  stats      * 3.5.0      2018-04-24 local                          
+##  stringi      1.2.2      2018-05-02 CRAN (R 3.5.0)                 
+##  stringr    * 1.3.1      2018-05-10 CRAN (R 3.5.0)                 
+##  tibble     * 1.4.2      2018-01-22 CRAN (R 3.5.0)                 
+##  tidyr      * 0.8.1      2018-05-18 CRAN (R 3.5.0)                 
+##  tidyselect   0.2.4      2018-02-26 CRAN (R 3.5.0)                 
+##  tidyverse  * 1.2.1      2017-11-14 CRAN (R 3.5.0)                 
+##  tools        3.5.0      2018-04-24 local                          
+##  utils      * 3.5.0      2018-04-24 local                          
+##  withr        2.1.2      2018-03-15 CRAN (R 3.5.0)                 
+##  xml2         1.2.0      2018-01-24 CRAN (R 3.5.0)                 
+##  yaml         2.1.19     2018-05-01 CRAN (R 3.5.0)</code></pre>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>

@@ -45,72 +45,52 @@ library(rtweet)
 
 OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.
 
-1. The first step is to create a Twitter application for yourself. In order to do this, you do need to have a registered Twitter account. Go to (https://apps.twitter.com/app/new) and log in. After filling in the basic info (make sure to set the "Callback URL" to "http://127.0.0.1:1410"), go to the **Permissions** tab and select "Read, Write and Access direct messages". Make sure to click on the save button after doing this. In the **Details** tab, take note of your consumer key and consumer secret.
+### Create a Twitter App
 
-1. Store your API key and secret using the `.Rprofile` method. Edit `.Rprofile` and add
+* To create a Twitter app, navigate to [apps.twitter.com](https://apps.twitter.com/) and create a new app by providing a `Name`, `Description`, and `Website` of your choosing (example screenshot provided below)
+* **Important** In the `Callback URL` field, make sure to enter the following: `http://127.0.0.1:1410`
+* Check yes if you agree and then click "Create your Twitter application"
 
-    ```r
-    options(twitter_app_name = "Your app name")
-    options(twitter_api_key = "Your API key")
-    options(twitter_api_secret = "Your API secret")
-    ```
+![Create an application](images/creating.png)
 
-    Restart RStudio to get the keys loaded into your environment.
-    
-1. Run from the console:
+### Access token/secret authentication
 
-    ```r
-    twitter_token <- create_token(
-      app = getOption("twitter_app_name"),
-      consumer_key = getOption("twitter_api_key"),
-      consumer_secret = getOption("twitter_api_secret"))
-    ```
-    
-    This will open your browser and take you to a page to authorize your app to access your Twitter account. You need this in order to search any content on Twitter.
-    
-1. At this point you should get a message back in RStudio "Authentication complete." You're done setting up the authentication for `rtweet` - you'd just need to set the `token` argument equal to `twitter_token` (the token object we just created).
+* Click the tab labeled `Keys and Access Tokens` to retrieve your keys
 
-### Storing Twitter token
+![Created application](images/created.png)
 
-Rather than creating a token every time you open R, remembering where you saved your token(s) or passwords, and specifying a token every time you use a function, users are encouraged to save tokens as an environment variable. Since `twitter_token` is no longer a character string, we cannot use the `.Rprofile` method from before. Instead, we can store the token as an **environment variable**, or an object stored on your computer separately from your project directory.
+* In the `Keys and Access Tokens` tab, locate and copy/paste values `Consumer Key` (aka "API Key") and `Consumer Secret` (aka "API Secret") into an R script
 
-To save a personal access token as an environment variable, complete the following steps:
+![Get API key and secret](images/keys.png)
 
-1. Use `readr::write_rds()` to save `twitter_token` to your home directory. The code below should locate and construct the path to your home directory for you. Assuming you've saved your token as `twitter_token`, the final line in the code below will save your token for you as well.
+* In the `Keys and Access Tokens` tab, scroll down to `Token Actions` and click `Create my access token`
 
-    ```r
-    # path of home directory
-    home_directory <- path.expand("~/")
+![Generate access token](images/gen_token.png)
 
-    # combine with name for token
-    file_name <- file.path(home_directory, "twitter_token.rds")
+* That should generate two access keys: `Access Token` and `Access Token Secret`
 
-    # save token to home directory
-    readr::write_rds(twitter_token, path = file_name)
-    ```
+![Access token and token secret](images/accesskeys.png)
 
-1. Create a plain text file containing the path to your token object and save it to your home directory as `.Renviron`.
-    
-    To create a plain text file in R, modify the code below. Change `TWITTER_PAT` location to match the path you used earlier (in the example below, you'd want to change `/Users/soltoffbc/twitter_token.rds`). You can also create a plain text document in any text editor like TextEdit or Notepad. If you're using Rstudio, select File > New File > Text File.
+* Locate and copy/paste `Access Token` and `Access Token Secret` (fake keys shown in image above) into an R script file
+* Once the keys are read into R, pass the objects to `create_token()`, and store the output as `twitter_token`
 
-    **Important**: Like with `.Rprofile`, make sure the last line of `.Renviron` is blank. I achieved this in the code below by including `fill = TRUE` in the `cat()` function.
+```r
+# create token and save it as an environment variable
+twitter_token <- create_token(
+  app = appname,
+  consumer_key = key,
+  consumer_secret = secret,
+  access_token = access_token,
+  access_secret = access_secret
+)
+```
 
-    ```r
-    # On my mac, the .Renviron text looks like this:
-    #     TWITTER_PAT=/Users/soltoffbc/twitter_token.rds
+* The `create_token()` function should automatically save your token as an environment variable for you. This is basically a global version of `.Rprofile`. **Now you can access the Twitter API through `rtweet` from any project on your computer without having to reauthenticate.** To make sure it worked, compare the created token object to the object returned by `get_token()`
 
-    # Assuming you followed the procedures to create "file_name"
-    # from the previous code chunk, then the code below should
-    # create and save your environment variable.
-
-    cat(paste0("TWITTER_PAT=", file_name),
-        file = file.path(home_directory, ".Renviron"),
-        append = TRUE)
-    ```
-
-1. Restart R so it can process the environment variable.
-
-1. If you completed the steps successfully, you should be able to use `rtweet` functions without specifying [or even *thinking* about] tokens [ever again].
+```r
+# check to see if the token is loaded
+identical(twitter_token, get_token())
+```
 
 ## Searching tweets
 
