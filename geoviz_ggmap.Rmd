@@ -1,0 +1,114 @@
+---
+title: "Drawing raster maps with `ggmap`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(lubridate)
+library(ggmap)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# `ggmap`
+
+
+# Divvy data
+
+```{r import-divvy}
+(stations <- read_csv("data/divvy/Divvy_Stations_2017_Q3Q4.csv"))
+(trips <- read_csv("data/divvy/Divvy_Trips_2017_Q4.csv"))
+```
+
+```{r clean-divvy}
+trips <- trips %>%
+  # convert times to ymd_hms
+  mutate_at(vars(contains("time")), mdy_hm) %>%
+  # calculate day of week
+  mutate(wday = wday(start_time, label = TRUE, abbr = FALSE))
+```
+
+# Obtain map images
+
+* Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get GPS coordinates
+
+```{r import-chicago}
+chicago <- get_map(location = c(lon = -87.65, lat = 41.855),
+                        zoom = 11)
+hyde_park <- get_map(location = c(lon = -87.5941826666874,
+                                lat = 41.7950474612645),
+                     zoom = 14)
+downtown <- get_map(location = c(lon = -87.6276834590085,
+                                 lat = 41.8783445383598),
+                    zoom = 14)
+```
+
+# Locating stations
+
+```{r plot-stations}
+ggmap(chicago) +
+  geom_point(data = stations,
+             aes(x = longitude, y = latitude))
+
+ggmap(chicago) +
+  geom_point(data = stations,
+             aes(x = longitude, y = latitude),
+             size = 1, alpha = .25)
+
+ggmap(chicago) +
+  geom_bin2d(data = stations,
+             aes(x = longitude, y = latitude),
+             size = .5, bins = 50, alpha = .5)
+```
+
+## Total station capacity
+
+```{r plot-capacity}
+clip_stations <- function(df, map){
+  # get bounding box
+  bb <- attr(map, which = "bb")
+  
+  # filter the data frame
+  df %>%
+    filter(latitude >= bb$ll.lat,
+           latitude <= bb$ur.lat,
+           longitude >= bb$ll.lon,
+           longitude <= bb$ur.lon)
+}
+
+ggmap(chicago) +
+  geom_point(data = stations,
+             aes(x = longitude, y = latitude, size = dpcapacity), shape = 1)
+
+ggmap(downtown) +
+  geom_point(data = clip_stations(stations, downtown),
+             aes(x = longitude, y = latitude, size = dpcapacity), shape = 1)
+
+ggmap(hyde_park) +
+  geom_point(data = clip_stations(stations, hyde_park),
+             aes(x = longitude, y = latitude, size = dpcapacity), shape = 1)
+```
+
+# Locating trip origin
+
+
+# Plotting a heatmap
+
+
+# Acknowledgments {.toc-ignore}
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
