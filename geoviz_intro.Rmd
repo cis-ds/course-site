@@ -64,6 +64,23 @@ Geometric visualizations are used to depict spatial features, and with the incor
 
 ## Scale
 
+**Scale** defines the proportion between distances and sizes on a map and their actual distances and sizes on Earth. Depending on the total geographic area for which you have data to visualize, you could create a **small-scale map** or a **large-scale map**. So for instance, a map of the United States would be considered large-scale:
+
+```{r large-scale}
+world_gmaps <- get_map("United States of America", zoom = 4)
+ggmap(world_gmaps)
+```
+
+Whereas a map of Hyde Park would be small-scale:
+
+```{r small-scale}
+library(ggmap)
+
+hyde_park <- get_map("Hyde Park, Chicago, IL", zoom = 15)
+ggmap(hyde_park)
+```
+
+The smaller the scale, the easier it is to include additional details in the map.
 
 ## Projection
 
@@ -75,23 +92,46 @@ Geometric visualizations are used to depict spatial features, and with the incor
 1. Distance
 1. Direction
 
-Projection methods typically maximize the accuracy of one or two of these properties, but no more. For instance, the **mercator** projection preserves shape and area and is very useful for sea navigation, but distorts the area of landmasses.
+Projection methods typically maximize the accuracy of one or two of these properties, but no more. For instance, **conformal projections** such as the **mercator** projection preserves shape and local angles and is very useful for sea navigation, but distorts the area of landmasses.
 
-```{r mercator}
-st_read("data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp") %>%
+```{r import-world, include = FALSE}
+world <- st_read("data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp")
+```
+
+```{r mercator, dependson = "import-world"}
+world %>%
   st_transform("+proj=merc") %>%
   ggplot() +
-  geom_sf()
+  geom_sf() +
+  ggtitle("Mercator projection")
+```
 
-st_read("data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp") %>%
-  st_transform("+proj=moll") %>%
+The farther away from the equator one travels, the more distorted the size of the region.
+
+Another family of projections called **equal-area projections** preserves area ratios, so that the relative size of areas on a map are proportional to their areas on the Earth.
+
+```{r equal-area, dependson = "import-world"}
+world %>%
+  st_transform("+proj=laea") %>%
   ggplot() +
-  geom_sf()
+  geom_sf() +
+  ggtitle("Lambert equal area projection")
 
-st_read("data/nautral_earth/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp") %>%
+world %>%
   st_transform("+proj=cea") %>%
   ggplot() +
-  geom_sf()
+  geom_sf() +
+  ggtitle("Equal area cylindrical projection")
+```
+
+The downside is that equal-area projections tend to distory shapes heavily, so shapes of areas can become distorted. No method can be both conformal and equal-area simultaneously, but some methods such as the **Mollweide** projection achieve a trade-off between these sets of characteristics.
+
+```{r mollweide, dependson = "import-world"}
+world %>%
+  st_transform("+proj=moll") %>%
+  ggplot() +
+  geom_sf() +
+  ggtitle("Mollweide projection")
 ```
 
 ## Symbols
