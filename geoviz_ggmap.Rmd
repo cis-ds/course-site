@@ -101,9 +101,77 @@ ggmap(hyde_park) +
 
 # Locating trip origin
 
+```{r plot-trip-origin}
+trips_origin <- stations %>%
+  select(id, latitude, longitude) %>%
+  right_join(trips, by = c("id" = "from_station_id"))
 
-# Plotting a heatmap
+ggmap(chicago) +
+  geom_point(data = trips_origin,
+             aes(x = longitude,
+                 y = latitude))
 
+ggmap(chicago) +
+  geom_point(data = trips_origin %>%
+               count(id, longitude, latitude),
+             aes(x = longitude,
+                 y = latitude,
+                 size = n),
+             shape = 1)
+
+ggmap(chicago) +
+  geom_bin2d(data = trips_origin %>%
+               count(id, longitude, latitude),
+             aes(x = longitude,
+                 y = latitude),
+             bins = 50,
+             alpha = .5)
+
+ggmap(chicago) +
+  stat_density_2d(data = trips_origin,
+             aes(x = longitude,
+                 y = latitude,
+                 fill = ..level..),
+             n = 200,
+             geom = "polygon")
+
+
+```
+
+```{r plot-trip-arrival}
+trips_arrival <- stations %>%
+  select(id, latitude, longitude) %>%
+  right_join(trips, by = c("id" = "to_station_id"))
+
+ggmap(downtown) +
+  geom_point(data = clip_stations(trips_arrival, downtown) %>%
+               count(id, longitude, latitude),
+             aes(x = longitude,
+                 y = latitude,
+                 size = n),
+             shape = 1)
+
+ggmap(downtown) +
+  stat_density_2d(data = clip_stations(trips_arrival, downtown),
+             aes(x = longitude,
+                 y = latitude,
+                 fill = ..level..,
+                 alpha = ..level..),
+             geom = "polygon") +
+  scale_alpha_continuous(range = c(0.4, 0.8))
+
+ggmap(downtown) +
+  stat_density_2d(data = clip_stations(trips_arrival, downtown),
+             aes(x = longitude,
+                 y = latitude,
+                 fill = ..level..,
+                 alpha = ..level..),
+             geom = "polygon") +
+  scale_alpha_continuous(range = c(0.4, 0.8)) +
+  facet_wrap(~ wday)
+
+
+```
 
 # Acknowledgments {.toc-ignore}
 
