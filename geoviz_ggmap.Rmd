@@ -14,6 +14,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, echo = FAL
 library(tidyverse)
 library(lubridate)
 library(ggmap)
+library(RColorBrewer)
 
 options(digits = 3)
 set.seed(1234)
@@ -170,6 +171,112 @@ ggmap(downtown) +
   facet_wrap(~ wday)
 
 
+```
+
+# Crimes
+
+## Import data
+
+```{r import-crimes}
+crimes <- read_csv("data/Crimes_-_2017.csv")
+```
+
+```{r tidy-crimes, dependson = "import-crimes"}
+crimes <- crimes %>%
+  mutate(Date = mdy_hms(Date),
+         wday = wday(Date, label = TRUE, abbr = FALSE),
+         hour = hour(Date))
+```
+
+## Plot high-level map of crime
+
+### Using `geom_point()`
+
+```{r plot-crime-point, dependson = "tidy-crimes"}
+ggmap(chicago) +
+  geom_point(data = crimes,
+             aes(x = Longitude,
+                 y = Latitude))
+
+ggmap(chicago) +
+  geom_point(data = crimes,
+             aes(x = Longitude,
+                 y = Latitude),
+             size = 1, alpha = .05)
+```
+
+### Using `stat_density_2d()`
+
+```{r plot-crime-density, dependson = "tidy-crimes"}
+crime_overall <- ggmap(chicago) +
+  stat_density_2d(data = crimes,
+                  aes(x = Longitude,
+                      y = Latitude,
+                      fill = ..level..),
+                  alpha = .2,
+                  bins = 25,
+                  geom = "polygon") +
+  scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd"))
+crime_overall
+```
+
+```{r plot-crime-wday, dependson = "tidy-crimes", fig.height = 12}
+ggmap(chicago) +
+  stat_density_2d(data = filter(crimes, `Primary Type` == "THEFT"),
+                  aes(x = Longitude,
+                      y = Latitude,
+                      fill = ..level..),
+                  alpha = .4,
+                  bins = 10,
+                  geom = "polygon") +
+  scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd")) +
+  facet_wrap(~ wday)
+```
+
+Make the plot print window bigger, but changes in south side crime rates
+
+## Locations of murders
+
+Use `geom_point()`
+
+```{r get-community-areas, include = FALSE}
+library(sf)
+
+# import shapefile with area names and numbers
+areas <- st_read("data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp")
+
+crimes %>%
+  filter(`Primary Type` == "HOMICIDE") %>%
+  count(`Community Area`, sort = TRUE) %>%
+  left_join(areas %>%
+              select(community, area_numbe) %>%
+              mutate(area_numbe = as.numeric(as.character(area_numbe))),
+            by = c("Community Area" = "area_numbe"))
+```
+
+```{r get-high-low-murder-maps}
+# North Lawndale is the highest homicides in 2017
+# Compare to Kenwood
+north_lawndale <- get_map(location = c(lon = -87.714401,
+                                lat = 41.858768),
+                     zoom = 14)
+
+kenwood <- get_map(location = c(lon = -87.59320836086425,
+                                lat = 41.80965352973664),
+                   zoom = 15)
+```
+
+```{r plot-murder, dependson = "tidy-crime"}
+murders <- crimes %>%
+  filter(`Primary Type` == "HOMICIDE")
+
+ggmap(north_lawndale) +
+  geom_point(data = murders,
+             aes(x = Longitude, y = Latitude))
+
+ggmap(kenwood) +
+  geom_point(data = murders,
+             aes(x = Longitude, y = Latitude))
 ```
 
 # Acknowledgments {.toc-ignore}
