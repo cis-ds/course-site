@@ -560,7 +560,36 @@ chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</spa
 </div>
 <div id="locations-of-murders" class="section level1">
 <h1>Locations of murders</h1>
-<p>Use <code>geom_point()</code></p>
+<p>While <code>geom_point()</code> was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let’s limit our analysis strictly to reported incidents of homicide in 2017.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(homicides &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;HOMICIDE&quot;</span>))</code></pre></div>
+<pre><code>## # A tibble: 671 x 23
+##         ID `Case Number` Date                Block    IUCR  `Primary Type`
+##      &lt;int&gt; &lt;chr&gt;         &lt;dttm&gt;              &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;         
+##  1  2.31e4 JA149608      2017-02-11 07:05:00 001XX N… 0110  HOMICIDE      
+##  2  2.39e4 JA530946      2017-11-30 11:45:00 088XX S… 0110  HOMICIDE      
+##  3  2.34e4 JA302423      2017-06-11 18:48:00 047XX S… 0110  HOMICIDE      
+##  4  2.34e4 JA312425      2017-06-18 16:23:00 006XX E… 0110  HOMICIDE      
+##  5  2.37e4 JA490016      2017-10-28 22:50:00 048XX W… 0110  HOMICIDE      
+##  6  2.32e4 JA210752      2017-04-03 12:34:00 013XX S… 0110  HOMICIDE      
+##  7  2.36e4 JA461918      2017-10-07 11:11:00 018XX S… 0110  HOMICIDE      
+##  8  2.36e4 JA461918      2017-10-07 11:11:00 018XX S… 0110  HOMICIDE      
+##  9  1.08e7 JA138326      2017-02-01 18:37:57 013XX S… 0142  HOMICIDE      
+## 10  2.35e4 JA364517      2017-07-26 17:04:00 047XX W… 0110  HOMICIDE      
+## # ... with 661 more rows, and 17 more variables: Description &lt;chr&gt;,
+## #   `Location Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;,
+## #   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI
+## #   Code` &lt;chr&gt;, `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;,
+## #   `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;,
+## #   wday &lt;ord&gt;</code></pre>
+<p>We can draw a map of the city with all homicides indicated on the map using <code>geom_point()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                           <span class="dt">y =</span> Latitude),
+             <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/homicide-city-1.png" width="672" /></p>
+<p>Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we’ll examine North Lawndale and Kenwood.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># North Lawndale is the highest homicides in 2017</span>
 <span class="co"># Compare to Kenwood</span>
 north_lawndale &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.714401</span>,
@@ -569,27 +598,62 @@ north_lawndale &lt;-<span class="st"> </span><span class="kw">get_map</span>(<sp
 
 kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.59320836086425</span>,
                                 <span class="dt">lat =</span> <span class="fl">41.80965352973664</span>),
-                   <span class="dt">zoom =</span> <span class="dv">15</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">murders &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;HOMICIDE&quot;</span>)
+                   <span class="dt">zoom =</span> <span class="dv">15</span>)
 
-<span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> murders,
+<span class="kw">ggmap</span>(north_lawndale)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/get-high-low-murder-maps-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/get-high-low-murder-maps-2.png" width="672" /></p>
+<p>To plot homicides specifically in these neighborhoods, change <code>ggmap(chicago)</code> to the appropriate map tile:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
              <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-murder-1.png" width="672" /></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> murders,
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
              <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-murder-2.png" width="672" /></p>
+<p>North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful.</p>
+<p>All the other aesthetic customizations of <code>geom_point()</code> work with <code>ggmap</code>. So we could expand these neighborhood maps to include all violent crime categories<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> and distinguish each type by <code>color</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(violent &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;HOMICIDE&quot;</span>, <span class="st">&quot;CRIM SEXUAL ASSAULT&quot;</span>, <span class="st">&quot;ROBBERY&quot;</span>)))</code></pre></div>
+<pre><code>## # A tibble: 14,146 x 23
+##         ID `Case Number` Date                Block    IUCR  `Primary Type`
+##      &lt;int&gt; &lt;chr&gt;         &lt;dttm&gt;              &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;         
+##  1  1.12e7 JA531910      2017-12-01 06:20:00 022XX W… 0265  CRIM SEXUAL A…
+##  2  1.10e7 JA322389      2017-06-25 19:00:00 003XX W… 031A  ROBBERY       
+##  3  1.12e7 JA545986      2017-12-11 19:15:00 007XX N… 031A  ROBBERY       
+##  4  1.12e7 JA546734      2017-12-12 18:00:00 007XX N… 031A  ROBBERY       
+##  5  1.12e7 JB147188      2017-10-08 03:00:00 092XX S… 0281  CRIM SEXUAL A…
+##  6  1.12e7 JB147599      2017-08-26 10:00:00 001XX W… 0281  CRIM SEXUAL A…
+##  7  2.31e4 JA149608      2017-02-11 07:05:00 001XX N… 0110  HOMICIDE      
+##  8  1.10e7 JA378592      2017-08-05 15:45:00 038XX W… 0313  ROBBERY       
+##  9  1.12e7 JA538651      2017-12-06 09:15:00 092XX S… 031A  ROBBERY       
+## 10  1.12e7 JB149656      2017-12-24 02:00:00 005XX S… 0330  ROBBERY       
+## # ... with 14,136 more rows, and 17 more variables: Description &lt;chr&gt;,
+## #   `Location Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;,
+## #   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI
+## #   Code` &lt;chr&gt;, `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;,
+## #   `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;,
+## #   wday &lt;ord&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
+                 <span class="dt">color =</span> <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-violent-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
+                 <span class="dt">color =</span> <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-violent-2.png" width="672" /></p>
 </div>
 <div id="additional-resources" class="section level1 toc-ignore">
 <h1>Additional resources</h1>
 <ul>
 <li><a href="https://journal.r-project.org/archive/2013/RJ-2013-014/RJ-2013-014.pdf">Kahle, D., &amp; Wickham, H. (2013). <code>ggmap</code>: Spatial Visualization with ggplot2. <em>R Journal</em>, 5(1).</a></li>
 </ul>
-</div>
-<div id="acknowledgments" class="section level1 toc-ignore">
-<h1>Acknowledgments</h1>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
@@ -648,7 +712,6 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  lazyeval       0.2.1      2017-10-29 CRAN (R 3.5.0)                 
 ##  lubridate    * 1.7.4      2018-04-11 CRAN (R 3.5.0)                 
 ##  magrittr       1.5        2014-11-22 CRAN (R 3.5.0)                 
-##  MASS           7.3-50     2018-04-30 CRAN (R 3.5.0)                 
 ##  memoise        1.1.0      2017-04-21 CRAN (R 3.5.0)                 
 ##  methods      * 3.5.0      2018-04-24 local                          
 ##  mnormt         1.5-5      2016-10-15 CRAN (R 3.5.0)                 
@@ -688,6 +751,7 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  tools          3.5.0      2018-04-24 local                          
 ##  udunits2       0.13       2016-11-17 CRAN (R 3.5.0)                 
 ##  units          0.5-1      2018-01-08 CRAN (R 3.5.0)                 
+##  utf8           1.1.4      2018-05-24 CRAN (R 3.5.0)                 
 ##  utils        * 3.5.0      2018-04-24 local                          
 ##  withr          2.1.2      2018-03-15 CRAN (R 3.5.0)                 
 ##  xml2           1.2.0      2018-01-24 CRAN (R 3.5.0)                 
@@ -698,6 +762,7 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 <ol>
 <li id="fn1"><p><a href="https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2">Full documentation of the data from the larger 2001-present crime dataset.</a>.<a href="#fnref1">↩</a></p></li>
 <li id="fn2"><p>Specifically burglary, motor vehicle theft, narcotics, and robbery.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Specifcally homicides, criminal sexual assault, and robbery. <a href="http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html">Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant</a>, but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.<a href="#fnref3">↩</a></p></li>
 </ol>
 </div>
 

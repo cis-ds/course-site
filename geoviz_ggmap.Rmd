@@ -272,7 +272,24 @@ There is a large difference in the geographic density of narcotics crimes relati
 
 # Locations of murders
 
-Use `geom_point()`
+While `geom_point()` was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let's limit our analysis strictly to reported incidents of homicide in 2017.
+
+```{r homicide, dependson = "tidy-crime"}
+(homicides <- crimes %>%
+  filter(`Primary Type` == "HOMICIDE"))
+```
+
+We can draw a map of the city with all homicides indicated on the map using `geom_point()`:
+
+```{r homicide-city, dependson = "homicide"}
+ggmap(chicago) +
+  geom_point(data = homicides,
+             mapping = aes(x = Longitude,
+                           y = Latitude),
+             size = 1)
+```
+
+Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we'll examine North Lawndale and Kenwood.
 
 ```{r get-community-areas, include = FALSE}
 library(sf)
@@ -299,27 +316,49 @@ north_lawndale <- get_map(location = c(lon = -87.714401,
 kenwood <- get_map(location = c(lon = -87.59320836086425,
                                 lat = 41.80965352973664),
                    zoom = 15)
+
+ggmap(north_lawndale)
+ggmap(kenwood)
 ```
 
-```{r plot-murder, dependson = "tidy-crime"}
-murders <- crimes %>%
-  filter(`Primary Type` == "HOMICIDE")
+To plot homicides specifically in these neighborhoods, change `ggmap(chicago)` to the appropriate map tile:
 
+```{r plot-murder, dependson = "tidy-crime"}
 ggmap(north_lawndale) +
-  geom_point(data = murders,
+  geom_point(data = homicides,
              aes(x = Longitude, y = Latitude))
 
 ggmap(kenwood) +
-  geom_point(data = murders,
+  geom_point(data = homicides,
              aes(x = Longitude, y = Latitude))
+```
+
+North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful.
+
+All the other aesthetic customizations of `geom_point()` work with `ggmap`. So we could expand these neighborhood maps to include all violent crime categories^[Specifcally homicides, criminal sexual assault, and robbery. [Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant](http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html), but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.] and distinguish each type by `color`:
+
+```{r violent, dependson = "tidy-crime"}
+(violent <- crimes %>%
+  filter(`Primary Type` %in% c("HOMICIDE", "CRIM SEXUAL ASSAULT", "ROBBERY")))
+```
+
+```{r plot-violent, dependson = "violent"}
+ggmap(north_lawndale) +
+  geom_point(data = violent,
+             aes(x = Longitude, y = Latitude,
+                 color = `Primary Type`)) +
+  scale_color_brewer(type = "qual", palette = "Dark2")
+
+ggmap(kenwood) +
+  geom_point(data = violent,
+             aes(x = Longitude, y = Latitude,
+                 color = `Primary Type`)) +
+  scale_color_brewer(type = "qual", palette = "Dark2")
 ```
 
 # Additional resources {.toc-ignore}
 
 * [Kahle, D., & Wickham, H. (2013). `ggmap`: Spatial Visualization with ggplot2. *R Journal*, 5(1).](https://journal.r-project.org/archive/2013/RJ-2013-014/RJ-2013-014.pdf)
-
-# Acknowledgments {.toc-ignore}
-
 
 # Session Info {.toc-ignore}
 
