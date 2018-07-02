@@ -136,43 +136,104 @@ See the documentation for the `get_*map()` function for the exact code necessary
 
 # Import crime data
 
-```{r import-chicago}
-chicago <- get_map(location = c(lon = -87.65, lat = 41.855),
-                        zoom = 11)
-```
+Now that we can obtain map tiles and draw them using `ggmap()`, let's explore how to add data to the map. The city of Chicago has [an excellent data portal](https://data.cityofchicago.org/) publishing a large volume of public records. Here we'll look at [crime data from 2017](https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr).^[[Full documentation of the data from the larger 2001-present crime dataset.](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2).] I previously downloaded a `.csv` file containing all the records, which I import using `read_csv()`:
+
+> If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://cfss.uchicago.edu/data/Crimes_-_2017.csv")` to download the file from the course website.
 
 ```{r import-crimes}
 crimes <- read_csv("data/Crimes_-_2017.csv")
 ```
 
+I perform a little tidying of the data, converting the `Date` column to a properly formatted date-time column using [`lubridate`](https://lubridate.tidyverse.org/) and extracting the weekday for future analysis.
+
 ```{r tidy-crimes, dependson = "import-crimes"}
 crimes <- crimes %>%
   mutate(Date = mdy_hms(Date),
-         wday = wday(Date, label = TRUE, abbr = FALSE),
-         hour = hour(Date))
+         wday = wday(Date, label = TRUE, abbr = FALSE, week_start = 1))
+glimpse(crimes)
 ```
+
+Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the `Longitude` and `Latitude` columns respectively.
 
 # Plot high-level map of crime
 
+Let's start with a simple high-level overview of reported crime in Chicago. First we need a map for the entire city.
+
+```{r import-chicago}
+chicago <- get_googlemap(center = c(lon = -87.65, lat = 41.855),
+                        zoom = 11)
+ggmap(chicago)
+```
+
 ## Using `geom_point()`
+
+Since each row is a single reported incident of crime, we could use `geom_point()` to map the location of every crime in the dataset. Because `ggmap()` uses the map tiles (here, defined by `chicago`) as the basic input, we specify `data` and `mapping` inside of `geom_point()`, rather than inside `ggplot()`:
 
 ```{r plot-crime-point, dependson = "tidy-crimes"}
 ggmap(chicago) +
   geom_point(data = crimes,
-             aes(x = Longitude,
-                 y = Latitude))
+             mapping = aes(x = Longitude,
+                           y = Latitude))
+```
 
+What went wrong? All we get is a sea of black.
+
+```{r num-crimes, dependson = "tidy-crimes"}
+nrow(crimes)
+```
+
+Oh yeah. There were `r nrow(crimes)` reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:
+
+```{r plot-crime-point-alpha, dependson = "tidy-crimes"}
 ggmap(chicago) +
   geom_point(data = crimes,
              aes(x = Longitude,
                  y = Latitude),
-             size = 1, alpha = .05)
+             size = .25,
+             alpha = .01)
 ```
+
+Better, but still not quite as useful as it could be.
 
 ## Using `stat_density_2d()`
 
+Instead of relying on `geom_point()` and plotting the raw data, a better approach is to create a **heatmap**. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in `ggplot2` to generate this kind of plot is `geom_density_2d()`:
+
+```{r kde-contour, dependson = "tidy-crimes"}
+ggmap(chicago) +
+  geom_density_2d(data = crimes,
+                  aes(x = Longitude,
+                      y = Latitude))
+```
+
+By default, `geom_density_2d()` draws a [**contour plot**](https://en.wikipedia.org/wiki/Contour_line) with lines of constant value. That is, each line represents approximately the same frequency of crime all along that specific line. Contour plots are frequently used in maps (known as **topographic maps**) to denote elevation.
+
+![The Cadillac Mountains. Source: [US Geological Survey](https://www.usgs.gov/media/images/cadillacmountainss)](images/contour-map.jpg)
+
+Rather than drawing lines, instead we can fill in the graph so that we use the `fill` aesthetic to draw bands of crime density. To do that, we use the related function `stat_density_2d()`:
+
+```{r kde-fill, dependson = "tidy-crimes"}
+ggmap(chicago) +
+  stat_density_2d(data = crimes,
+                  aes(x = Longitude,
+                      y = Latitude,
+                      fill = ..level..),
+                  geom = "polygon")
+```
+
+Note the two new arguments:
+
+* `geom = "polygon"` - change the [geometric object](dataviz_grammar_of_graphics.html#geometric_objects) to be drawn from a `density_2d` geom to a `polygon` geom
+* `fill = ..level..` - the value for the `fill` aesthetic is the `level` calculated within `stat_density_2d()`, which we access using the `..` notation.
+
+This is an improvement, but we can adjust some additional settings to make the graph visually more useful. Specifically,
+
+* Increase the number of `bins`, or unique bands of color allowed on the graph
+* Make the heatmap semi-transparent using `alpha` so we can still view the underlying map
+* Change the color palette to better distinguish between high and low crime areas. Here I use `brewer.pal()` from the `RColorBrewer` package to create a custom color palette using reds and yellows.
+
 ```{r plot-crime-density, dependson = "tidy-crimes"}
-crime_overall <- ggmap(chicago) +
+ggmap(chicago) +
   stat_density_2d(data = crimes,
                   aes(x = Longitude,
                       y = Latitude,
@@ -181,12 +242,22 @@ crime_overall <- ggmap(chicago) +
                   bins = 25,
                   geom = "polygon") +
   scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd"))
-crime_overall
 ```
 
-```{r plot-crime-wday, dependson = "tidy-crimes", fig.height = 12}
+From this map, a couple trends are noticeable:
+
+* The downtown region has the highest crime incidence rate. Not surprising given its population density during the workday.
+* There are clusters of crime on the south and west sides. Also not surprising if you know anything about the city of Chicago.
+
+## Looking for variation
+
+Because `ggmap` is built on `ggplot2`, we can use the core features of `ggplot2` to modify the graph. One major feature is faceting. Let's focus our analysis on four types of crimes with similar frequency of reported incidents^[Specifically burglary, motor vehicle theft, narcotics, and robbery.] and facet by type of crime:
+
+```{r plot-crime-wday, dependson = "tidy-crimes"}
 ggmap(chicago) +
-  stat_density_2d(data = filter(crimes, `Primary Type` == "THEFT"),
+  stat_density_2d(data = crimes %>%
+                    filter(`Primary Type` %in% c("BURGLARY", "MOTOR VEHICLE THEFT",
+                                                 "NARCOTICS", "ROBBERY")),
                   aes(x = Longitude,
                       y = Latitude,
                       fill = ..level..),
@@ -194,10 +265,10 @@ ggmap(chicago) +
                   bins = 10,
                   geom = "polygon") +
   scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd")) +
-  facet_wrap(~ wday, ncol = 2)
+  facet_wrap(~ `Primary Type`)
 ```
 
-Make the plot print window bigger, but changes in south side crime rates
+There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.
 
 # Locations of murders
 

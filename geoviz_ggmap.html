@@ -426,33 +426,104 @@ chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</spa
 </div>
 <div id="import-crime-data" class="section level1">
 <h1>Import crime data</h1>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
-                        <span class="dt">zoom =</span> <span class="dv">11</span>)</code></pre></div>
+<p>Now that we can obtain map tiles and draw them using <code>ggmap()</code>, let’s explore how to add data to the map. The city of Chicago has <a href="https://data.cityofchicago.org/">an excellent data portal</a> publishing a large volume of public records. Here we’ll look at <a href="https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr">crime data from 2017</a>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> I previously downloaded a <code>.csv</code> file containing all the records, which I import using <code>read_csv()</code>:</p>
+<blockquote>
+<p>If you are copying-and-pasting code from this demonstration, change this line of code to <code>crimes &lt;- read_csv(&quot;https://cfss.uchicago.edu/data/Crimes_-_2017.csv&quot;)</code> to download the file from the course website.</p>
+</blockquote>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)</code></pre></div>
+<p>I perform a little tidying of the data, converting the <code>Date</code> column to a properly formatted date-time column using <a href="https://lubridate.tidyverse.org/"><code>lubridate</code></a> and extracting the weekday for future analysis.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Date =</span> <span class="kw">mdy_hms</span>(Date),
-         <span class="dt">wday =</span> <span class="kw">wday</span>(Date, <span class="dt">label =</span> <span class="ot">TRUE</span>, <span class="dt">abbr =</span> <span class="ot">FALSE</span>),
-         <span class="dt">hour =</span> <span class="kw">hour</span>(Date))</code></pre></div>
+         <span class="dt">wday =</span> <span class="kw">wday</span>(Date, <span class="dt">label =</span> <span class="ot">TRUE</span>, <span class="dt">abbr =</span> <span class="ot">FALSE</span>, <span class="dt">week_start =</span> <span class="dv">1</span>))
+<span class="kw">glimpse</span>(crimes)</code></pre></div>
+<pre><code>## Observations: 267,345
+## Variables: 23
+## $ ID                     &lt;int&gt; 11094370, 11118031, 11134189, 11156462,...
+## $ `Case Number`          &lt;chr&gt; &quot;JA440032&quot;, &quot;JA470589&quot;, &quot;JA491697&quot;, &quot;JA...
+## $ Date                   &lt;dttm&gt; 2017-09-21 00:15:00, 2017-10-12 19:14:...
+## $ Block                  &lt;chr&gt; &quot;072XX N CALIFORNIA AVE&quot;, &quot;055XX W GRAN...
+## $ IUCR                   &lt;chr&gt; &quot;1122&quot;, &quot;1345&quot;, &quot;4651&quot;, &quot;1110&quot;, &quot;0265&quot;,...
+## $ `Primary Type`         &lt;chr&gt; &quot;DECEPTIVE PRACTICE&quot;, &quot;CRIMINAL DAMAGE&quot;...
+## $ Description            &lt;chr&gt; &quot;COUNTERFEIT CHECK&quot;, &quot;TO CITY OF CHICAG...
+## $ `Location Description` &lt;chr&gt; &quot;CURRENCY EXCHANGE&quot;, &quot;JAIL / LOCK-UP FA...
+## $ Arrest                 &lt;chr&gt; &quot;true&quot;, &quot;true&quot;, &quot;true&quot;, &quot;true&quot;, &quot;true&quot;,...
+## $ Domestic               &lt;chr&gt; &quot;false&quot;, &quot;false&quot;, &quot;false&quot;, &quot;false&quot;, &quot;fa...
+## $ Beat                   &lt;chr&gt; &quot;2411&quot;, &quot;2515&quot;, &quot;0922&quot;, &quot;2514&quot;, &quot;1221&quot;,...
+## $ District               &lt;chr&gt; &quot;024&quot;, &quot;025&quot;, &quot;009&quot;, &quot;025&quot;, &quot;012&quot;, &quot;002...
+## $ Ward                   &lt;int&gt; 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, ...
+## $ `Community Area`       &lt;int&gt; 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, ...
+## $ `FBI Code`             &lt;chr&gt; &quot;10&quot;, &quot;14&quot;, &quot;26&quot;, &quot;11&quot;, &quot;02&quot;, &quot;15&quot;, &quot;03...
+## $ `X Coordinate`         &lt;int&gt; 1156443, 1138788, 1159425, 1138653, 116...
+## $ `Y Coordinate`         &lt;int&gt; 1947707, 1913480, 1875711, 1920720, 190...
+## $ Year                   &lt;int&gt; 2017, 2017, 2017, 2017, 2017, 2017, 201...
+## $ `Updated On`           &lt;chr&gt; &quot;03/01/2018 03:52:35 PM&quot;, &quot;03/01/2018 0...
+## $ Latitude               &lt;dbl&gt; 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41....
+## $ Longitude              &lt;dbl&gt; -87.7, -87.8, -87.7, -87.8, -87.7, -87....
+## $ Location               &lt;chr&gt; &quot;(42.012293397, -87.699714109)&quot;, &quot;(41.9...
+## $ wday                   &lt;ord&gt; Thursday, Thursday, Monday, Friday, Fri...</code></pre>
+<p>Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the <code>Longitude</code> and <code>Latitude</code> columns respectively.</p>
 </div>
 <div id="plot-high-level-map-of-crime" class="section level1">
 <h1>Plot high-level map of crime</h1>
+<p>Let’s start with a simple high-level overview of reported crime in Chicago. First we need a map for the entire city.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_googlemap</span>(<span class="dt">center =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+                        <span class="dt">zoom =</span> <span class="dv">11</span>)
+<span class="kw">ggmap</span>(chicago)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/import-chicago-1.png" width="672" /></p>
 <div id="using-geom_point" class="section level2">
 <h2>Using <code>geom_point()</code></h2>
+<p>Since each row is a single reported incident of crime, we could use <code>geom_point()</code> to map the location of every crime in the dataset. Because <code>ggmap()</code> uses the map tiles (here, defined by <code>chicago</code>) as the basic input, we specify <code>data</code> and <code>mapping</code> inside of <code>geom_point()</code>, rather than inside <code>ggplot()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
-             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
-                 <span class="dt">y =</span> Latitude))</code></pre></div>
+             <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                           <span class="dt">y =</span> Latitude))</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-1.png" width="672" /></p>
+<p>What went wrong? All we get is a sea of black.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nrow</span>(crimes)</code></pre></div>
+<pre><code>## [1] 267345</code></pre>
+<p>Oh yeah. There were 267345 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
              <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
                  <span class="dt">y =</span> Latitude),
-             <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">alpha =</span> .<span class="dv">05</span>)</code></pre></div>
-<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-2.png" width="672" /></p>
+             <span class="dt">size =</span> .<span class="dv">25</span>,
+             <span class="dt">alpha =</span> .<span class="dv">01</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-alpha-1.png" width="672" /></p>
+<p>Better, but still not quite as useful as it could be.</p>
 </div>
 <div id="using-stat_density_2d" class="section level2">
 <h2>Using <code>stat_density_2d()</code></h2>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crime_overall &lt;-<span class="st"> </span><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<p>Instead of relying on <code>geom_point()</code> and plotting the raw data, a better approach is to create a <strong>heatmap</strong>. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in <code>ggplot2</code> to generate this kind of plot is <code>geom_density_2d()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/kde-contour-1.png" width="672" /></p>
+<p>By default, <code>geom_density_2d()</code> draws a <a href="https://en.wikipedia.org/wiki/Contour_line"><strong>contour plot</strong></a> with lines of constant value. That is, each line represents approximately the same frequency of crime all along that specific line. Contour plots are frequently used in maps (known as <strong>topographic maps</strong>) to denote elevation.</p>
+<div class="figure">
+<img src="images/contour-map.jpg" alt="The Cadillac Mountains. Source: US Geological Survey" />
+<p class="caption">The Cadillac Mountains. Source: <a href="https://www.usgs.gov/media/images/cadillacmountainss">US Geological Survey</a></p>
+</div>
+<p>Rather than drawing lines, instead we can fill in the graph so that we use the <code>fill</code> aesthetic to draw bands of crime density. To do that, we use the related function <code>stat_density_2d()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> ..level..),
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/kde-fill-1.png" width="672" /></p>
+<p>Note the two new arguments:</p>
+<ul>
+<li><code>geom = &quot;polygon&quot;</code> - change the <a href="dataviz_grammar_of_graphics.html#geometric_objects">geometric object</a> to be drawn from a <code>density_2d</code> geom to a <code>polygon</code> geom</li>
+<li><code>fill = ..level..</code> - the value for the <code>fill</code> aesthetic is the <code>level</code> calculated within <code>stat_density_2d()</code>, which we access using the <code>..</code> notation.</li>
+</ul>
+<p>This is an improvement, but we can adjust some additional settings to make the graph visually more useful. Specifically,</p>
+<ul>
+<li>Increase the number of <code>bins</code>, or unique bands of color allowed on the graph</li>
+<li>Make the heatmap semi-transparent using <code>alpha</code> so we can still view the underlying map</li>
+<li>Change the color palette to better distinguish between high and low crime areas. Here I use <code>brewer.pal()</code> from the <code>RColorBrewer</code> package to create a custom color palette using reds and yellows.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
 <span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
                   <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
                       <span class="dt">y =</span> Latitude,
@@ -460,11 +531,21 @@ chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</spa
                   <span class="dt">alpha =</span> .<span class="dv">2</span>,
                   <span class="dt">bins =</span> <span class="dv">25</span>,
                   <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>))
-crime_overall</code></pre></div>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>))</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-crime-density-1.png" width="672" /></p>
+<p>From this map, a couple trends are noticeable:</p>
+<ul>
+<li>The downtown region has the highest crime incidence rate. Not surprising given its population density during the workday.</li>
+<li>There are clusters of crime on the south and west sides. Also not surprising if you know anything about the city of Chicago.</li>
+</ul>
+</div>
+<div id="looking-for-variation" class="section level2">
+<h2>Looking for variation</h2>
+<p>Because <code>ggmap</code> is built on <code>ggplot2</code>, we can use the core features of <code>ggplot2</code> to modify the graph. One major feature is faceting. Let’s focus our analysis on four types of crimes with similar frequency of reported incidents<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and facet by type of crime:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
-<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> <span class="kw">filter</span>(crimes, <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;THEFT&quot;</span>),
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes <span class="op">%&gt;%</span>
+<span class="st">                    </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;BURGLARY&quot;</span>, <span class="st">&quot;MOTOR VEHICLE THEFT&quot;</span>,
+                                                 <span class="st">&quot;NARCOTICS&quot;</span>, <span class="st">&quot;ROBBERY&quot;</span>)),
                   <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
                       <span class="dt">y =</span> Latitude,
                       <span class="dt">fill =</span> ..level..),
@@ -472,9 +553,9 @@ crime_overall</code></pre></div>
                   <span class="dt">bins =</span> <span class="dv">10</span>,
                   <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
 <span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>wday, <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> `</span><span class="dt">Primary Type</span><span class="st">`</span>)</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-crime-wday-1.png" width="672" /></p>
-<p>Make the plot print window bigger, but changes in south side crime rates</p>
+<p>There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.</p>
 </div>
 </div>
 <div id="locations-of-murders" class="section level1">
@@ -527,18 +608,23 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  backports      1.1.2      2017-12-13 CRAN (R 3.5.0)                 
 ##  base         * 3.5.0      2018-04-24 local                          
 ##  bindr          0.1.1      2018-03-13 CRAN (R 3.5.0)                 
-##  bindrcpp       0.2.2      2018-03-29 CRAN (R 3.5.0)                 
+##  bindrcpp     * 0.2.2      2018-03-29 CRAN (R 3.5.0)                 
 ##  bitops         1.0-6      2013-08-17 CRAN (R 3.5.0)                 
 ##  broom          0.4.4      2018-03-29 CRAN (R 3.5.0)                 
 ##  cellranger     1.1.0      2016-07-27 CRAN (R 3.5.0)                 
+##  class          7.3-14     2015-08-30 CRAN (R 3.5.0)                 
+##  classInt       0.2-3      2018-04-16 CRAN (R 3.5.0)                 
 ##  cli            1.0.0      2017-11-05 CRAN (R 3.5.0)                 
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.5.0)                 
 ##  colorspace     1.3-2      2016-12-14 CRAN (R 3.5.0)                 
 ##  compiler       3.5.0      2018-04-24 local                          
 ##  crayon         1.3.4      2017-09-16 CRAN (R 3.5.0)                 
 ##  datasets     * 3.5.0      2018-04-24 local                          
+##  DBI            1.0.0      2018-05-02 CRAN (R 3.5.0)                 
 ##  devtools       1.13.5     2018-02-18 CRAN (R 3.5.0)                 
 ##  digest         0.6.15     2018-01-28 CRAN (R 3.5.0)                 
 ##  dplyr        * 0.7.6      2018-06-29 cran (@0.7.6)                  
+##  e1071          1.6-8      2017-02-02 CRAN (R 3.5.0)                 
 ##  evaluate       0.10.1     2017-06-24 CRAN (R 3.5.0)                 
 ##  forcats      * 0.3.0      2018-02-19 CRAN (R 3.5.0)                 
 ##  foreign        0.8-70     2017-11-28 CRAN (R 3.5.0)                 
@@ -557,10 +643,12 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  jpeg           0.1-8      2014-01-23 CRAN (R 3.5.0)                 
 ##  jsonlite       1.5        2017-06-01 CRAN (R 3.5.0)                 
 ##  knitr          1.20       2018-02-20 CRAN (R 3.5.0)                 
+##  labeling       0.3        2014-08-23 CRAN (R 3.5.0)                 
 ##  lattice        0.20-35    2017-03-25 CRAN (R 3.5.0)                 
 ##  lazyeval       0.2.1      2017-10-29 CRAN (R 3.5.0)                 
 ##  lubridate    * 1.7.4      2018-04-11 CRAN (R 3.5.0)                 
 ##  magrittr       1.5        2014-11-22 CRAN (R 3.5.0)                 
+##  MASS           7.3-50     2018-04-30 CRAN (R 3.5.0)                 
 ##  memoise        1.1.0      2017-04-21 CRAN (R 3.5.0)                 
 ##  methods      * 3.5.0      2018-04-24 local                          
 ##  mnormt         1.5-5      2016-10-15 CRAN (R 3.5.0)                 
@@ -588,6 +676,8 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  rstudioapi     0.7        2017-09-07 CRAN (R 3.5.0)                 
 ##  rvest          0.3.2      2016-06-17 CRAN (R 3.5.0)                 
 ##  scales         0.5.0      2017-08-24 CRAN (R 3.5.0)                 
+##  sf           * 0.6-3      2018-05-17 CRAN (R 3.5.0)                 
+##  spData         0.2.8.3    2018-03-25 CRAN (R 3.5.0)                 
 ##  stats        * 3.5.0      2018-04-24 local                          
 ##  stringi        1.2.2      2018-05-02 CRAN (R 3.5.0)                 
 ##  stringr      * 1.3.1      2018-05-10 CRAN (R 3.5.0)                 
@@ -596,10 +686,19 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  tidyselect     0.2.4      2018-02-26 CRAN (R 3.5.0)                 
 ##  tidyverse    * 1.2.1      2017-11-14 CRAN (R 3.5.0)                 
 ##  tools          3.5.0      2018-04-24 local                          
+##  udunits2       0.13       2016-11-17 CRAN (R 3.5.0)                 
+##  units          0.5-1      2018-01-08 CRAN (R 3.5.0)                 
 ##  utils        * 3.5.0      2018-04-24 local                          
 ##  withr          2.1.2      2018-03-15 CRAN (R 3.5.0)                 
 ##  xml2           1.2.0      2018-01-24 CRAN (R 3.5.0)                 
 ##  yaml           2.1.19     2018-05-01 CRAN (R 3.5.0)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2">Full documentation of the data from the larger 2001-present crime dataset.</a>.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Specifically burglary, motor vehicle theft, narcotics, and robbery.<a href="#fnref2">↩</a></p></li>
+</ol>
 </div>
 
 <p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
