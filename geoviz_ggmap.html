@@ -347,17 +347,78 @@ div.tocify {
 <span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
 <div id="ggmap" class="section level1">
 <h1><code>ggmap</code></h1>
+<p><a href="https://github.com/dkahle/ggmap"><code>ggmap</code></a> is a package for R that retrieves raster map tiles from online mapping services like <a href="https://www.google.com/maps">Google Maps</a> and plots them using the <code>ggplot2</code> framework. The map tiles are <strong>raster</strong> because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.</p>
 </div>
 <div id="obtain-map-images" class="section level1">
 <h1>Obtain map images</h1>
-<ul>
-<li>Use <a href="https://www.findlatitudeandlongitude.com/">Find Latitude and Longitude</a> to get GPS coordinates</li>
-</ul>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
-                        <span class="dt">zoom =</span> <span class="dv">11</span>)</code></pre></div>
+<p><code>ggmap</code> supports open-source map providers such as <a href="https://www.openstreetmap.org/">OpenStreetMap</a> and <a href="http://maps.stamen.com/#terrain/12/37.7706/-122.3782">Stamen Maps</a>, as well as the proprietary Google Maps. Obtaining map tiles requires use of the <code>get_map()</code> function. There are two formats for specifying the mapping region you wish to obtain:</p>
+<ol style="list-style-type: decimal">
+<li>Bounding box</li>
+<li>Center/zoom</li>
+</ol>
+<div id="specifying-map-regions" class="section level2">
+<h2>Specifying map regions</h2>
+<div id="bounding-box" class="section level3">
+<h3>Bounding box</h3>
+<p><strong>Bounding box</strong> requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago_stamen &lt;-<span class="st"> </span><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> <span class="kw">c</span>(<span class="dt">left =</span> <span class="op">-</span><span class="fl">87.936287</span>,
+                                         <span class="dt">bottom =</span> <span class="fl">41.679835</span>,
+                                         <span class="dt">right =</span> <span class="op">-</span><span class="fl">87.447052</span>,
+                                         <span class="dt">top =</span> <span class="fl">42.000835</span>),
+                                <span class="dt">zoom =</span> <span class="dv">11</span>)
+chicago_stamen</code></pre></div>
+<pre><code>## 627x712 terrain map image from Stamen Maps.  see ?ggmap to plot it.</code></pre>
+<p>To view the map, use <code>ggmap()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago_stamen)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-plot-1.png" width="672" /></p>
+<p>The <code>zoom</code> argument in <code>get_stamenmap()</code> controls the level of detail in the map. The larger the number, the greater the detail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> <span class="kw">c</span>(<span class="dt">left =</span> <span class="op">-</span><span class="fl">87.936287</span>,
+                       <span class="dt">bottom =</span> <span class="fl">41.679835</span>,
+                       <span class="dt">right =</span> <span class="op">-</span><span class="fl">87.447052</span>,
+                       <span class="dt">top =</span> <span class="fl">42.000835</span>),
+              <span class="dt">zoom =</span> <span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-zoom-in-1.png" width="672" /></p>
+<p>The smaller the number, the lesser the detail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> <span class="kw">c</span>(<span class="dt">left =</span> <span class="op">-</span><span class="fl">87.936287</span>,
+                       <span class="dt">bottom =</span> <span class="fl">41.679835</span>,
+                       <span class="dt">right =</span> <span class="op">-</span><span class="fl">87.447052</span>,
+                       <span class="dt">top =</span> <span class="fl">42.000835</span>),
+              <span class="dt">zoom =</span> <span class="dv">10</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-zoom-out-1.png" width="672" /></p>
+<p>Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.</p>
+<blockquote>
+<p>Use <a href="http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000">bboxfinder.com</a> to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.</p>
+</blockquote>
+</div>
+<div id="centerzoom" class="section level3">
+<h3>Center/zoom</h3>
+<p>While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the <strong>center</strong> coordinate of the map (a single longitude/latitude location) and the level of <strong>zoom</strong> or detail. <code>zoom</code> is an integer value from <code>3</code> (continent) to <code>21</code> (building). This means the level of detail is hardcoded to the size of the mapping region. The default <code>zoom</code> level is <code>10</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</span>(<span class="dt">center =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>))
+<span class="kw">ggmap</span>(chicago_google)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_googlemap</span>(<span class="dt">center =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+              <span class="dt">zoom =</span> <span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_googlemap</span>(<span class="dt">center =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+              <span class="dt">zoom =</span> <span class="dv">8</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-3.png" width="672" /></p>
+<blockquote>
+<p>Use <a href="https://www.findlatitudeandlongitude.com/">Find Latitude and Longitude</a> to get the exact GPS coordinates of the center location.</p>
+</blockquote>
+</div>
+</div>
+<div id="map-tile-types" class="section level2">
+<h2>Map tile types</h2>
+</div>
 </div>
 <div id="import-crime-data" class="section level1">
 <h1>Import crime data</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+                        <span class="dt">zoom =</span> <span class="dv">11</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Date =</span> <span class="kw">mdy_hms</span>(Date),
@@ -458,6 +519,7 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  base         * 3.5.0      2018-04-24 local                          
 ##  bindr          0.1.1      2018-03-13 CRAN (R 3.5.0)                 
 ##  bindrcpp     * 0.2.2      2018-03-29 CRAN (R 3.5.0)                 
+##  bitops         1.0-6      2013-08-17 CRAN (R 3.5.0)                 
 ##  broom          0.4.4      2018-03-29 CRAN (R 3.5.0)                 
 ##  cellranger     1.1.0      2016-07-27 CRAN (R 3.5.0)                 
 ##  class          7.3-14     2015-08-30 CRAN (R 3.5.0)                 
@@ -471,14 +533,13 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  DBI            1.0.0      2018-05-02 CRAN (R 3.5.0)                 
 ##  devtools       1.13.5     2018-02-18 CRAN (R 3.5.0)                 
 ##  digest         0.6.15     2018-01-28 CRAN (R 3.5.0)                 
-##  dplyr        * 0.7.5      2018-05-19 CRAN (R 3.5.0)                 
+##  dplyr        * 0.7.6      2018-06-29 cran (@0.7.6)                  
 ##  e1071          1.6-8      2017-02-02 CRAN (R 3.5.0)                 
 ##  evaluate       0.10.1     2017-06-24 CRAN (R 3.5.0)                 
 ##  forcats      * 0.3.0      2018-02-19 CRAN (R 3.5.0)                 
 ##  foreign        0.8-70     2017-11-28 CRAN (R 3.5.0)                 
-##  geosphere      1.5-7      2017-11-05 CRAN (R 3.5.0)                 
-##  ggmap        * 2.6.1      2016-01-23 CRAN (R 3.5.0)                 
-##  ggplot2      * 2.2.1.9000 2018-06-07 Github (hadley/ggplot2@4db5122)
+##  ggmap        * 2.7.900    2018-07-02 Github (dkahle/ggmap@1c2fb46)  
+##  ggplot2      * 2.2.1.9000 2018-07-02 Github (hadley/ggplot2@348b26f)
 ##  glue           1.2.0      2017-10-29 CRAN (R 3.5.0)                 
 ##  graphics     * 3.5.0      2018-04-24 local                          
 ##  grDevices    * 3.5.0      2018-04-24 local                          
@@ -491,12 +552,11 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  jpeg           0.1-8      2014-01-23 CRAN (R 3.5.0)                 
 ##  jsonlite       1.5        2017-06-01 CRAN (R 3.5.0)                 
 ##  knitr          1.20       2018-02-20 CRAN (R 3.5.0)                 
+##  labeling       0.3        2014-08-23 CRAN (R 3.5.0)                 
 ##  lattice        0.20-35    2017-03-25 CRAN (R 3.5.0)                 
 ##  lazyeval       0.2.1      2017-10-29 CRAN (R 3.5.0)                 
 ##  lubridate    * 1.7.4      2018-04-11 CRAN (R 3.5.0)                 
 ##  magrittr       1.5        2014-11-22 CRAN (R 3.5.0)                 
-##  mapproj        1.2.6      2018-03-29 CRAN (R 3.5.0)                 
-##  maps           3.3.0      2018-04-03 CRAN (R 3.5.0)                 
 ##  memoise        1.1.0      2017-04-21 CRAN (R 3.5.0)                 
 ##  methods      * 3.5.0      2018-04-24 local                          
 ##  mnormt         1.5-5      2016-10-15 CRAN (R 3.5.0)                 
@@ -508,7 +568,6 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.5.0)                 
 ##  plyr           1.8.4      2016-06-08 CRAN (R 3.5.0)                 
 ##  png            0.1-7      2013-12-03 CRAN (R 3.5.0)                 
-##  proto          1.0.0      2016-10-29 CRAN (R 3.5.0)                 
 ##  psych          1.8.4      2018-05-06 CRAN (R 3.5.0)                 
 ##  purrr        * 0.2.5      2018-05-29 CRAN (R 3.5.0)                 
 ##  R6             2.2.2      2017-06-17 CRAN (R 3.5.0)                 
@@ -517,8 +576,8 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  readr        * 1.1.1      2017-05-16 CRAN (R 3.5.0)                 
 ##  readxl         1.1.0      2018-04-20 CRAN (R 3.5.0)                 
 ##  reshape2       1.4.3      2017-12-11 CRAN (R 3.5.0)                 
-##  RgoogleMaps    1.4.1      2016-09-18 CRAN (R 3.5.0)                 
-##  rjson          0.2.19     2018-05-18 CRAN (R 3.5.0)                 
+##  RgoogleMaps    1.4.2      2018-06-08 cran (@1.4.2)                  
+##  rjson          0.2.20     2018-06-08 cran (@0.2.20)                 
 ##  rlang          0.2.1      2018-05-30 CRAN (R 3.5.0)                 
 ##  rmarkdown      1.9        2018-03-01 CRAN (R 3.5.0)                 
 ##  rprojroot      1.3-2      2018-01-03 CRAN (R 3.5.0)                 
@@ -526,7 +585,6 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 ##  rvest          0.3.2      2016-06-17 CRAN (R 3.5.0)                 
 ##  scales         0.5.0      2017-08-24 CRAN (R 3.5.0)                 
 ##  sf           * 0.6-3      2018-05-17 CRAN (R 3.5.0)                 
-##  sp             1.3-1      2018-06-05 CRAN (R 3.5.0)                 
 ##  spData         0.2.8.3    2018-03-25 CRAN (R 3.5.0)                 
 ##  stats        * 3.5.0      2018-04-24 local                          
 ##  stringi        1.2.2      2018-05-02 CRAN (R 3.5.0)                 

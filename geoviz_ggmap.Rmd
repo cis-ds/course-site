@@ -23,16 +23,90 @@ theme_set(theme_minimal())
 
 # `ggmap`
 
+[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
+
 # Obtain map images
 
-* Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get GPS coordinates
+`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782), as well as the proprietary Google Maps. Obtaining map tiles requires use of the `get_map()` function. There are two formats for specifying the mapping region you wish to obtain:
+
+1. Bounding box
+1. Center/zoom
+
+## Specifying map regions
+
+### Bounding box
+
+**Bounding box** requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
+
+```{r bb-chicago-stamen}
+chicago_stamen <- get_stamenmap(bbox = c(left = -87.936287,
+                                         bottom = 41.679835,
+                                         right = -87.447052,
+                                         top = 42.000835),
+                                zoom = 11)
+chicago_stamen
+```
+
+To view the map, use `ggmap()`:
+
+```{r bb-chicago-stamen-plot}
+ggmap(chicago_stamen)
+```
+
+The `zoom` argument in `get_stamenmap()` controls the level of detail in the map. The larger the number, the greater the detail.
+
+```{r bb-chicago-stamen-zoom-in}
+get_stamenmap(bbox = c(left = -87.936287,
+                       bottom = 41.679835,
+                       right = -87.447052,
+                       top = 42.000835),
+              zoom = 12) %>%
+  ggmap()
+```
+
+The smaller the number, the lesser the detail.
+
+```{r bb-chicago-stamen-zoom-out}
+get_stamenmap(bbox = c(left = -87.936287,
+                       bottom = 41.679835,
+                       right = -87.447052,
+                       top = 42.000835),
+              zoom = 10) %>%
+  ggmap()
+```
+
+
+Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.
+
+> Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000) to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.
+
+### Center/zoom
+
+While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the **center** coordinate of the map (a single longitude/latitude location) and the level of **zoom** or detail. `zoom` is an integer value from `3` (continent) to `21` (building). This means the level of detail is hardcoded to the size of the mapping region. The default `zoom` level is `10`.
+
+```{r center-zoom-chicago}
+chicago_google <- get_googlemap(center = c(lon = -87.65, lat = 41.855))
+ggmap(chicago_google)
+
+get_googlemap(center = c(lon = -87.65, lat = 41.855),
+              zoom = 12) %>%
+  ggmap()
+
+get_googlemap(center = c(lon = -87.65, lat = 41.855),
+              zoom = 8) %>%
+  ggmap()
+```
+
+> Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
+
+## Map tile types
+
+# Import crime data
 
 ```{r import-chicago}
 chicago <- get_map(location = c(lon = -87.65, lat = 41.855),
                         zoom = 11)
 ```
-
-# Import crime data
 
 ```{r import-crimes}
 crimes <- read_csv("data/Crimes_-_2017.csv")
