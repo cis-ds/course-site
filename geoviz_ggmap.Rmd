@@ -15,6 +15,7 @@ library(tidyverse)
 library(lubridate)
 library(ggmap)
 library(RColorBrewer)
+library(gridExtra)
 
 options(digits = 3)
 set.seed(1234)
@@ -39,10 +40,13 @@ theme_set(theme_minimal())
 **Bounding box** requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
 
 ```{r bb-chicago-stamen}
-chicago_stamen <- get_stamenmap(bbox = c(left = -87.936287,
-                                         bottom = 41.679835,
-                                         right = -87.447052,
-                                         top = 42.000835),
+# store bounding box coordinates
+chi_bb <- c(left = -87.936287,
+            bottom = 41.679835,
+            right = -87.447052,
+            top = 42.000835)
+
+chicago_stamen <- get_stamenmap(bbox = chi_bb,
                                 zoom = 11)
 chicago_stamen
 ```
@@ -56,10 +60,7 @@ ggmap(chicago_stamen)
 The `zoom` argument in `get_stamenmap()` controls the level of detail in the map. The larger the number, the greater the detail.
 
 ```{r bb-chicago-stamen-zoom-in}
-get_stamenmap(bbox = c(left = -87.936287,
-                       bottom = 41.679835,
-                       right = -87.447052,
-                       top = 42.000835),
+get_stamenmap(bbox = chi_bb,
               zoom = 12) %>%
   ggmap()
 ```
@@ -67,10 +68,7 @@ get_stamenmap(bbox = c(left = -87.936287,
 The smaller the number, the lesser the detail.
 
 ```{r bb-chicago-stamen-zoom-out}
-get_stamenmap(bbox = c(left = -87.936287,
-                       bottom = 41.679835,
-                       right = -87.447052,
-                       top = 42.000835),
+get_stamenmap(bbox = chi_bb,
               zoom = 10) %>%
   ggmap()
 ```
@@ -85,21 +83,56 @@ Trial and error will help you decide on the appropriate level of detail dependin
 While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the **center** coordinate of the map (a single longitude/latitude location) and the level of **zoom** or detail. `zoom` is an integer value from `3` (continent) to `21` (building). This means the level of detail is hardcoded to the size of the mapping region. The default `zoom` level is `10`.
 
 ```{r center-zoom-chicago}
-chicago_google <- get_googlemap(center = c(lon = -87.65, lat = 41.855))
+# store center coordinate
+chi_center <- c(lon = -87.65, lat = 41.855)
+
+chicago_google <- get_googlemap(center = chi_center)
 ggmap(chicago_google)
 
-get_googlemap(center = c(lon = -87.65, lat = 41.855),
+get_googlemap(center = chi_center,
               zoom = 12) %>%
   ggmap()
 
-get_googlemap(center = c(lon = -87.65, lat = 41.855),
+get_googlemap(center = chi_center,
               zoom = 8) %>%
   ggmap()
 ```
 
 > Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
 
-## Map tile types
+## Types of map tiles
+
+Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
+
+```{r stamen-maptype, fig.height = 8, fig.width = 6, echo = FALSE}
+stamen_maptype <- data_frame(maptype = c("terrain", "terrain-background",
+                                         "terrain-labels", "terrain-lines",
+                                         "toner", "toner-2010", "toner-2011",
+                                         "toner-background", "toner-hybrid",
+                                         "toner-labels", "toner-lines",
+                                         "toner-lite", "watercolor")) %>%
+  mutate(bb = map(maptype, ~ get_stamenmap(bbox = chi_bb, zoom = 10, maptype = .x)),
+         ggmap = map2(bb, maptype, ~ ggmap(.x) +
+                        ggtitle(.y)))
+
+grid.arrange(grobs = stamen_maptype$ggmap)
+```
+
+Google Maps is a bit more limited, but still offers a few major types:
+
+```{r google-maptype, echo = FALSE}
+google_maptype <- data_frame(maptype = c("terrain", "satellite",
+                                         "roadmap", "hybrid")) %>%
+  mutate(bb = map(maptype, ~ get_googlemap(center = chi_center, maptype = .x)),
+         ggmap = map2(bb, maptype, ~ ggmap(.x) +
+                        ggtitle(.y)))
+
+grid.arrange(grobs = google_maptype$ggmap)
+```
+
+See the documentation for the `get_*map()` function for the exact code necessary to get each type of map.
+
+> `get_map()` is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_googlemap()`, `get_stamenmap()`, and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
 
 # Import crime data
 
