@@ -35,6 +35,49 @@
 </script>
 
 
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
 
 
 <style type="text/css">
@@ -294,11 +337,20 @@ div.tocify {
 </div>
 
 
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(lubridate)
+<span class="kw">library</span>(ggmap)
+<span class="kw">library</span>(RColorBrewer)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
 <div id="ggmap" class="section level1">
 <h1><code>ggmap</code></h1>
 </div>
 <div id="divvy-data" class="section level1">
 <h1>Divvy data</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(stations &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/divvy/Divvy_Stations_2017_Q3Q4.csv&quot;</span>))</code></pre></div>
 <pre><code>## # A tibble: 585 x 8
 ##       id name       city   latitude longitude dpcapacity online_date X8   
 ##    &lt;int&gt; &lt;chr&gt;      &lt;chr&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;int&gt; &lt;chr&gt;       &lt;chr&gt;
@@ -313,6 +365,7 @@ div.tocify {
 ##  9    12 South Sho… Chica…     41.8     -87.6         15 6/21/2013 … &lt;NA&gt; 
 ## 10    13 Wilton Av… Chica…     41.9     -87.7         27 6/22/2013 … &lt;NA&gt; 
 ## # ... with 575 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(trips &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/divvy/Divvy_Trips_2017_Q4.csv&quot;</span>))</code></pre></div>
 <pre><code>## # A tibble: 669,239 x 12
 ##     trip_id start_time    end_time     bikeid tripduration from_station_id
 ##       &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;         &lt;int&gt;        &lt;int&gt;           &lt;int&gt;
@@ -329,40 +382,185 @@ div.tocify {
 ## # ... with 669,229 more rows, and 6 more variables:
 ## #   from_station_name &lt;chr&gt;, to_station_id &lt;int&gt;, to_station_name &lt;chr&gt;,
 ## #   usertype &lt;chr&gt;, gender &lt;chr&gt;, birthyear &lt;int&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trips &lt;-<span class="st"> </span>trips <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="co"># convert times to ymd_hms</span>
+<span class="st">  </span><span class="kw">mutate_at</span>(<span class="kw">vars</span>(<span class="kw">contains</span>(<span class="st">&quot;time&quot;</span>)), mdy_hm) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="co"># calculate day of week</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">wday =</span> <span class="kw">wday</span>(start_time, <span class="dt">label =</span> <span class="ot">TRUE</span>, <span class="dt">abbr =</span> <span class="ot">FALSE</span>))</code></pre></div>
 </div>
 <div id="obtain-map-images" class="section level1">
 <h1>Obtain map images</h1>
 <ul>
 <li>Use <a href="https://www.findlatitudeandlongitude.com/">Find Latitude and Longitude</a> to get GPS coordinates</li>
 </ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+                        <span class="dt">zoom =</span> <span class="dv">11</span>)
+hyde_park &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.5941826666874</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.7950474612645</span>),
+                     <span class="dt">zoom =</span> <span class="dv">14</span>)
+downtown &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.6276834590085</span>,
+                                 <span class="dt">lat =</span> <span class="fl">41.8783445383598</span>),
+                    <span class="dt">zoom =</span> <span class="dv">14</span>)</code></pre></div>
 </div>
 <div id="locating-stations" class="section level1">
 <h1>Locating stations</h1>
-<p><img src="geoviz_ggmap_files/figure-html/plot-stations-1.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-stations-2.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-stations-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> stations,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude, <span class="dt">y =</span> latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-stations-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> stations,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude, <span class="dt">y =</span> latitude),
+             <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">alpha =</span> .<span class="dv">25</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-stations-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bin2d</span>(<span class="dt">data =</span> stations,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude, <span class="dt">y =</span> latitude),
+             <span class="dt">size =</span> .<span class="dv">5</span>, <span class="dt">bins =</span> <span class="dv">50</span>, <span class="dt">alpha =</span> .<span class="dv">5</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-stations-3.png" width="672" /></p>
 <div id="total-station-capacity" class="section level2">
 <h2>Total station capacity</h2>
-<p><img src="geoviz_ggmap_files/figure-html/plot-capacity-1.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-capacity-2.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-capacity-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">clip_stations &lt;-<span class="st"> </span><span class="cf">function</span>(df, map){
+  <span class="co"># get bounding box</span>
+  bb &lt;-<span class="st"> </span><span class="kw">attr</span>(map, <span class="dt">which =</span> <span class="st">&quot;bb&quot;</span>)
+  
+  <span class="co"># filter the data frame</span>
+  df <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">filter</span>(latitude <span class="op">&gt;=</span><span class="st"> </span>bb<span class="op">$</span>ll.lat,
+           latitude <span class="op">&lt;=</span><span class="st"> </span>bb<span class="op">$</span>ur.lat,
+           longitude <span class="op">&gt;=</span><span class="st"> </span>bb<span class="op">$</span>ll.lon,
+           longitude <span class="op">&lt;=</span><span class="st"> </span>bb<span class="op">$</span>ur.lon)
+}
+
+<span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> stations,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude, <span class="dt">y =</span> latitude, <span class="dt">size =</span> dpcapacity), <span class="dt">shape =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-capacity-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(downtown) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> <span class="kw">clip_stations</span>(stations, downtown),
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude, <span class="dt">y =</span> latitude, <span class="dt">size =</span> dpcapacity), <span class="dt">shape =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-capacity-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(hyde_park) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> <span class="kw">clip_stations</span>(stations, hyde_park),
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude, <span class="dt">y =</span> latitude, <span class="dt">size =</span> dpcapacity), <span class="dt">shape =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-capacity-3.png" width="672" /></p>
 </div>
 </div>
 <div id="locating-trip-origin" class="section level1">
 <h1>Locating trip origin</h1>
-<p><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-1.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-2.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-3.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-4.png" width="672" /></p>
-<p><img src="geoviz_ggmap_files/figure-html/plot-trip-arrival-1.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-trip-arrival-2.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-trip-arrival-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trips_origin &lt;-<span class="st"> </span>stations <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(id, latitude, longitude) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">right_join</span>(trips, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;id&quot;</span> =<span class="st"> &quot;from_station_id&quot;</span>))
+
+<span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> trips_origin,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> trips_origin <span class="op">%&gt;%</span>
+<span class="st">               </span><span class="kw">count</span>(id, longitude, latitude),
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude,
+                 <span class="dt">size =</span> n),
+             <span class="dt">shape =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_bin2d</span>(<span class="dt">data =</span> trips_origin,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude),
+             <span class="dt">bins =</span> <span class="dv">50</span>,
+             <span class="dt">alpha =</span> .<span class="dv">5</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-3.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> trips_origin,
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude,
+                 <span class="dt">fill =</span> ..level..),
+             <span class="dt">n =</span> <span class="dv">200</span>,
+             <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-origin-4.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">trips_arrival &lt;-<span class="st"> </span>stations <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(id, latitude, longitude) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">right_join</span>(trips, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;id&quot;</span> =<span class="st"> &quot;to_station_id&quot;</span>))
+
+<span class="kw">ggmap</span>(downtown) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> <span class="kw">clip_stations</span>(trips_arrival, downtown) <span class="op">%&gt;%</span>
+<span class="st">               </span><span class="kw">count</span>(id, longitude, latitude),
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude,
+                 <span class="dt">size =</span> n),
+             <span class="dt">shape =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-arrival-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(downtown) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> <span class="kw">clip_stations</span>(trips_arrival, downtown),
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude,
+                 <span class="dt">fill =</span> ..level..,
+                 <span class="dt">alpha =</span> ..level..),
+             <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_alpha_continuous</span>(<span class="dt">range =</span> <span class="kw">c</span>(<span class="fl">0.4</span>, <span class="fl">0.8</span>))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-arrival-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(downtown) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> <span class="kw">clip_stations</span>(trips_arrival, downtown),
+             <span class="kw">aes</span>(<span class="dt">x =</span> longitude,
+                 <span class="dt">y =</span> latitude,
+                 <span class="dt">fill =</span> ..level..,
+                 <span class="dt">alpha =</span> ..level..),
+             <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_alpha_continuous</span>(<span class="dt">range =</span> <span class="kw">c</span>(<span class="fl">0.2</span>, <span class="fl">0.5</span>), <span class="dt">guide =</span> <span class="ot">FALSE</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>wday)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-trip-arrival-3.png" width="672" /></p>
 </div>
 <div id="crimes" class="section level1">
 <h1>Crimes</h1>
 <div id="import-data" class="section level2">
 <h2>Import data</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Date =</span> <span class="kw">mdy_hms</span>(Date),
+         <span class="dt">wday =</span> <span class="kw">wday</span>(Date, <span class="dt">label =</span> <span class="ot">TRUE</span>, <span class="dt">abbr =</span> <span class="ot">FALSE</span>),
+         <span class="dt">hour =</span> <span class="kw">hour</span>(Date))</code></pre></div>
 </div>
 <div id="plot-high-level-map-of-crime" class="section level2">
 <h2>Plot high-level map of crime</h2>
 <div id="using-geom_point" class="section level3">
 <h3>Using <code>geom_point()</code></h3>
-<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-1.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-crime-point-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                 <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                 <span class="dt">y =</span> Latitude),
+             <span class="dt">size =</span> <span class="dv">1</span>, <span class="dt">alpha =</span> .<span class="dv">05</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-2.png" width="672" /></p>
 </div>
 <div id="using-stat_density_2d" class="section level3">
 <h3>Using <code>stat_density_2d()</code></h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crime_overall &lt;-<span class="st"> </span><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> ..level..),
+                  <span class="dt">alpha =</span> .<span class="dv">2</span>,
+                  <span class="dt">bins =</span> <span class="dv">25</span>,
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>))
+crime_overall</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-crime-density-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> <span class="kw">filter</span>(crimes, <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;THEFT&quot;</span>),
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> ..level..),
+                  <span class="dt">alpha =</span> .<span class="dv">4</span>,
+                  <span class="dt">bins =</span> <span class="dv">10</span>,
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> </span>wday, <span class="dt">ncol =</span> <span class="dv">2</span>)</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-crime-wday-1.png" width="672" /></p>
 <p>Make the plot print window bigger, but changes in south side crime rates</p>
 </div>
@@ -370,14 +568,40 @@ div.tocify {
 <div id="locations-of-murders" class="section level2">
 <h2>Locations of murders</h2>
 <p>Use <code>geom_point()</code></p>
-<p><img src="geoviz_ggmap_files/figure-html/plot-murder-1.png" width="672" /><img src="geoviz_ggmap_files/figure-html/plot-murder-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># North Lawndale is the highest homicides in 2017</span>
+<span class="co"># Compare to Kenwood</span>
+north_lawndale &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.714401</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.858768</span>),
+                     <span class="dt">zoom =</span> <span class="dv">14</span>)
+
+kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.59320836086425</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.80965352973664</span>),
+                   <span class="dt">zoom =</span> <span class="dv">15</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">murders &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;HOMICIDE&quot;</span>)
+
+<span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> murders,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-murder-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> murders,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-murder-2.png" width="672" /></p>
 </div>
+</div>
+<div id="additional-resources" class="section level1 toc-ignore">
+<h1>Additional resources</h1>
+<ul>
+<li><a href="https://journal.r-project.org/archive/2013/RJ-2013-014/RJ-2013-014.pdf">Kahle, D., &amp; Wickham, H. (2013). <code>ggmap</code>: Spatial Visualization with ggplot2. <em>R Journal</em>, 5(1).</a></li>
+</ul>
 </div>
 <div id="acknowledgments" class="section level1 toc-ignore">
 <h1>Acknowledgments</h1>
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>##  setting  value                       
 ##  version  R version 3.5.0 (2018-04-23)
 ##  system   x86_64, darwin15.6.0        
