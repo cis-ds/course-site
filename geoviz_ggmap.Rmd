@@ -142,14 +142,6 @@ Now that we can obtain map tiles and draw them using `ggmap()`, let's explore ho
 
 ```{r import-crimes}
 crimes <- read_csv("data/Crimes_-_2017.csv")
-```
-
-I perform a little tidying of the data, converting the `Date` column to a properly formatted date-time column using [`lubridate`](https://lubridate.tidyverse.org/) and extracting the weekday for future analysis.
-
-```{r tidy-crimes, dependson = "import-crimes"}
-crimes <- crimes %>%
-  mutate(Date = mdy_hms(Date),
-         wday = wday(Date, label = TRUE, abbr = FALSE, week_start = 1))
 glimpse(crimes)
 ```
 
@@ -169,7 +161,7 @@ ggmap(chicago)
 
 Since each row is a single reported incident of crime, we could use `geom_point()` to map the location of every crime in the dataset. Because `ggmap()` uses the map tiles (here, defined by `chicago`) as the basic input, we specify `data` and `mapping` inside of `geom_point()`, rather than inside `ggplot()`:
 
-```{r plot-crime-point, dependson = "tidy-crimes"}
+```{r plot-crime-point, dependson = "import-crimes"}
 ggmap(chicago) +
   geom_point(data = crimes,
              mapping = aes(x = Longitude,
@@ -178,13 +170,13 @@ ggmap(chicago) +
 
 What went wrong? All we get is a sea of black.
 
-```{r num-crimes, dependson = "tidy-crimes"}
+```{r num-crimes, dependson = "import-crimes"}
 nrow(crimes)
 ```
 
 Oh yeah. There were `r nrow(crimes)` reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:
 
-```{r plot-crime-point-alpha, dependson = "tidy-crimes"}
+```{r plot-crime-point-alpha, dependson = "import-crimes"}
 ggmap(chicago) +
   geom_point(data = crimes,
              aes(x = Longitude,
@@ -199,7 +191,7 @@ Better, but still not quite as useful as it could be.
 
 Instead of relying on `geom_point()` and plotting the raw data, a better approach is to create a **heatmap**. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in `ggplot2` to generate this kind of plot is `geom_density_2d()`:
 
-```{r kde-contour, dependson = "tidy-crimes"}
+```{r kde-contour, dependson = "import-crimes"}
 ggmap(chicago) +
   geom_density_2d(data = crimes,
                   aes(x = Longitude,
@@ -212,7 +204,7 @@ By default, `geom_density_2d()` draws a [**contour plot**](https://en.wikipedia.
 
 Rather than drawing lines, instead we can fill in the graph so that we use the `fill` aesthetic to draw bands of crime density. To do that, we use the related function `stat_density_2d()`:
 
-```{r kde-fill, dependson = "tidy-crimes"}
+```{r kde-fill, dependson = "import-crimes"}
 ggmap(chicago) +
   stat_density_2d(data = crimes,
                   aes(x = Longitude,
@@ -232,7 +224,7 @@ This is an improvement, but we can adjust some additional settings to make the g
 * Make the heatmap semi-transparent using `alpha` so we can still view the underlying map
 * Change the color palette to better distinguish between high and low crime areas. Here I use `brewer.pal()` from the `RColorBrewer` package to create a custom color palette using reds and yellows.
 
-```{r plot-crime-density, dependson = "tidy-crimes"}
+```{r plot-crime-density, dependson = "import-crimes"}
 ggmap(chicago) +
   stat_density_2d(data = crimes,
                   aes(x = Longitude,
@@ -253,7 +245,7 @@ From this map, a couple trends are noticeable:
 
 Because `ggmap` is built on `ggplot2`, we can use the core features of `ggplot2` to modify the graph. One major feature is faceting. Let's focus our analysis on four types of crimes with similar frequency of reported incidents^[Specifically burglary, motor vehicle theft, narcotics, and robbery.] and facet by type of crime:
 
-```{r plot-crime-wday, dependson = "tidy-crimes"}
+```{r plot-crime-wday, dependson = "import-crimes"}
 ggmap(chicago) +
   stat_density_2d(data = crimes %>%
                     filter(`Primary Type` %in% c("BURGLARY", "MOTOR VEHICLE THEFT",
@@ -274,7 +266,7 @@ There is a large difference in the geographic density of narcotics crimes relati
 
 While `geom_point()` was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let's limit our analysis strictly to reported incidents of homicide in 2017.
 
-```{r homicide, dependson = "tidy-crime"}
+```{r homicide, dependson = "import-crimes"}
 (homicides <- crimes %>%
   filter(`Primary Type` == "HOMICIDE"))
 ```
@@ -323,7 +315,7 @@ ggmap(kenwood)
 
 To plot homicides specifically in these neighborhoods, change `ggmap(chicago)` to the appropriate map tile:
 
-```{r plot-murder, dependson = "tidy-crime"}
+```{r plot-murder, dependson = "homicide"}
 ggmap(north_lawndale) +
   geom_point(data = homicides,
              aes(x = Longitude, y = Latitude))
@@ -333,13 +325,15 @@ ggmap(kenwood) +
              aes(x = Longitude, y = Latitude))
 ```
 
-North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful.
+North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though `homicides` contained data for homicides across the entire city, `ggmap()` automatically cropped the graph to keep just the homicides that occurred within the bounding box.
 
 All the other aesthetic customizations of `geom_point()` work with `ggmap`. So we could expand these neighborhood maps to include all violent crime categories^[Specifcally homicides, criminal sexual assault, and robbery. [Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant](http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html), but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.] and distinguish each type by `color`:
 
-```{r violent, dependson = "tidy-crime"}
+```{r violent, dependson = "import-crimes"}
 (violent <- crimes %>%
-  filter(`Primary Type` %in% c("HOMICIDE", "CRIM SEXUAL ASSAULT", "ROBBERY")))
+  filter(`Primary Type` %in% c("HOMICIDE",
+                               "CRIM SEXUAL ASSAULT",
+                               "ROBBERY")))
 ```
 
 ```{r plot-violent, dependson = "violent"}

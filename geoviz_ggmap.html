@@ -430,17 +430,13 @@ chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</spa
 <blockquote>
 <p>If you are copying-and-pasting code from this demonstration, change this line of code to <code>crimes &lt;- read_csv(&quot;https://cfss.uchicago.edu/data/Crimes_-_2017.csv&quot;)</code> to download the file from the course website.</p>
 </blockquote>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)</code></pre></div>
-<p>I perform a little tidying of the data, converting the <code>Date</code> column to a properly formatted date-time column using <a href="https://lubridate.tidyverse.org/"><code>lubridate</code></a> and extracting the weekday for future analysis.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Date =</span> <span class="kw">mdy_hms</span>(Date),
-         <span class="dt">wday =</span> <span class="kw">wday</span>(Date, <span class="dt">label =</span> <span class="ot">TRUE</span>, <span class="dt">abbr =</span> <span class="ot">FALSE</span>, <span class="dt">week_start =</span> <span class="dv">1</span>))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)
 <span class="kw">glimpse</span>(crimes)</code></pre></div>
 <pre><code>## Observations: 267,345
-## Variables: 23
+## Variables: 22
 ## $ ID                     &lt;int&gt; 11094370, 11118031, 11134189, 11156462,...
 ## $ `Case Number`          &lt;chr&gt; &quot;JA440032&quot;, &quot;JA470589&quot;, &quot;JA491697&quot;, &quot;JA...
-## $ Date                   &lt;dttm&gt; 2017-09-21 00:15:00, 2017-10-12 19:14:...
+## $ Date                   &lt;chr&gt; &quot;09/21/2017 12:15:00 AM&quot;, &quot;10/12/2017 0...
 ## $ Block                  &lt;chr&gt; &quot;072XX N CALIFORNIA AVE&quot;, &quot;055XX W GRAN...
 ## $ IUCR                   &lt;chr&gt; &quot;1122&quot;, &quot;1345&quot;, &quot;4651&quot;, &quot;1110&quot;, &quot;0265&quot;,...
 ## $ `Primary Type`         &lt;chr&gt; &quot;DECEPTIVE PRACTICE&quot;, &quot;CRIMINAL DAMAGE&quot;...
@@ -459,8 +455,7 @@ chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</spa
 ## $ `Updated On`           &lt;chr&gt; &quot;03/01/2018 03:52:35 PM&quot;, &quot;03/01/2018 0...
 ## $ Latitude               &lt;dbl&gt; 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41....
 ## $ Longitude              &lt;dbl&gt; -87.7, -87.8, -87.7, -87.8, -87.7, -87....
-## $ Location               &lt;chr&gt; &quot;(42.012293397, -87.699714109)&quot;, &quot;(41.9...
-## $ wday                   &lt;ord&gt; Thursday, Thursday, Monday, Friday, Fri...</code></pre>
+## $ Location               &lt;chr&gt; &quot;(42.012293397, -87.699714109)&quot;, &quot;(41.9...</code></pre>
 <p>Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the <code>Longitude</code> and <code>Latitude</code> columns respectively.</p>
 </div>
 <div id="plot-high-level-map-of-crime" class="section level1">
@@ -563,25 +558,24 @@ chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</spa
 <p>While <code>geom_point()</code> was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let’s limit our analysis strictly to reported incidents of homicide in 2017.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(homicides &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;HOMICIDE&quot;</span>))</code></pre></div>
-<pre><code>## # A tibble: 671 x 23
-##         ID `Case Number` Date                Block    IUCR  `Primary Type`
-##      &lt;int&gt; &lt;chr&gt;         &lt;dttm&gt;              &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;         
-##  1  2.31e4 JA149608      2017-02-11 07:05:00 001XX N… 0110  HOMICIDE      
-##  2  2.39e4 JA530946      2017-11-30 11:45:00 088XX S… 0110  HOMICIDE      
-##  3  2.34e4 JA302423      2017-06-11 18:48:00 047XX S… 0110  HOMICIDE      
-##  4  2.34e4 JA312425      2017-06-18 16:23:00 006XX E… 0110  HOMICIDE      
-##  5  2.37e4 JA490016      2017-10-28 22:50:00 048XX W… 0110  HOMICIDE      
-##  6  2.32e4 JA210752      2017-04-03 12:34:00 013XX S… 0110  HOMICIDE      
-##  7  2.36e4 JA461918      2017-10-07 11:11:00 018XX S… 0110  HOMICIDE      
-##  8  2.36e4 JA461918      2017-10-07 11:11:00 018XX S… 0110  HOMICIDE      
-##  9  1.08e7 JA138326      2017-02-01 18:37:57 013XX S… 0142  HOMICIDE      
-## 10  2.35e4 JA364517      2017-07-26 17:04:00 047XX W… 0110  HOMICIDE      
-## # ... with 661 more rows, and 17 more variables: Description &lt;chr&gt;,
-## #   `Location Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;,
-## #   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI
-## #   Code` &lt;chr&gt;, `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;,
-## #   `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;,
-## #   wday &lt;ord&gt;</code></pre>
+<pre><code>## # A tibble: 671 x 22
+##         ID `Case Number` Date    Block   IUCR  `Primary Type` Description 
+##      &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;       
+##  1  2.31e4 JA149608      02/11/… 001XX … 0110  HOMICIDE       FIRST DEGRE…
+##  2  2.39e4 JA530946      11/30/… 088XX … 0110  HOMICIDE       FIRST DEGRE…
+##  3  2.34e4 JA302423      06/11/… 047XX … 0110  HOMICIDE       FIRST DEGRE…
+##  4  2.34e4 JA312425      06/18/… 006XX … 0110  HOMICIDE       FIRST DEGRE…
+##  5  2.37e4 JA490016      10/28/… 048XX … 0110  HOMICIDE       FIRST DEGRE…
+##  6  2.32e4 JA210752      04/03/… 013XX … 0110  HOMICIDE       FIRST DEGRE…
+##  7  2.36e4 JA461918      10/07/… 018XX … 0110  HOMICIDE       FIRST DEGRE…
+##  8  2.36e4 JA461918      10/07/… 018XX … 0110  HOMICIDE       FIRST DEGRE…
+##  9  1.08e7 JA138326      02/01/… 013XX … 0142  HOMICIDE       RECKLESS HO…
+## 10  2.35e4 JA364517      07/26/… 047XX … 0110  HOMICIDE       FIRST DEGRE…
+## # ... with 661 more rows, and 15 more variables: `Location
+## #   Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;, Beat &lt;chr&gt;,
+## #   District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI Code` &lt;chr&gt;,
+## #   `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;, `Updated
+## #   On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;</code></pre>
 <p>We can draw a map of the city with all homicides indicated on the map using <code>geom_point()</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
@@ -613,29 +607,30 @@ kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span clas
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
              <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
 <p><img src="geoviz_ggmap_files/figure-html/plot-murder-2.png" width="672" /></p>
-<p>North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful.</p>
+<p>North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though <code>homicides</code> contained data for homicides across the entire city, <code>ggmap()</code> automatically cropped the graph to keep just the homicides that occurred within the bounding box.</p>
 <p>All the other aesthetic customizations of <code>geom_point()</code> work with <code>ggmap</code>. So we could expand these neighborhood maps to include all violent crime categories<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> and distinguish each type by <code>color</code>:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(violent &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;HOMICIDE&quot;</span>, <span class="st">&quot;CRIM SEXUAL ASSAULT&quot;</span>, <span class="st">&quot;ROBBERY&quot;</span>)))</code></pre></div>
-<pre><code>## # A tibble: 14,146 x 23
-##         ID `Case Number` Date                Block    IUCR  `Primary Type`
-##      &lt;int&gt; &lt;chr&gt;         &lt;dttm&gt;              &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;         
-##  1  1.12e7 JA531910      2017-12-01 06:20:00 022XX W… 0265  CRIM SEXUAL A…
-##  2  1.10e7 JA322389      2017-06-25 19:00:00 003XX W… 031A  ROBBERY       
-##  3  1.12e7 JA545986      2017-12-11 19:15:00 007XX N… 031A  ROBBERY       
-##  4  1.12e7 JA546734      2017-12-12 18:00:00 007XX N… 031A  ROBBERY       
-##  5  1.12e7 JB147188      2017-10-08 03:00:00 092XX S… 0281  CRIM SEXUAL A…
-##  6  1.12e7 JB147599      2017-08-26 10:00:00 001XX W… 0281  CRIM SEXUAL A…
-##  7  2.31e4 JA149608      2017-02-11 07:05:00 001XX N… 0110  HOMICIDE      
-##  8  1.10e7 JA378592      2017-08-05 15:45:00 038XX W… 0313  ROBBERY       
-##  9  1.12e7 JA538651      2017-12-06 09:15:00 092XX S… 031A  ROBBERY       
-## 10  1.12e7 JB149656      2017-12-24 02:00:00 005XX S… 0330  ROBBERY       
-## # ... with 14,136 more rows, and 17 more variables: Description &lt;chr&gt;,
-## #   `Location Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;,
-## #   Beat &lt;chr&gt;, District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI
-## #   Code` &lt;chr&gt;, `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;,
-## #   `Updated On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;,
-## #   wday &lt;ord&gt;</code></pre>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;HOMICIDE&quot;</span>,
+                               <span class="st">&quot;CRIM SEXUAL ASSAULT&quot;</span>,
+                               <span class="st">&quot;ROBBERY&quot;</span>)))</code></pre></div>
+<pre><code>## # A tibble: 14,146 x 22
+##         ID `Case Number` Date    Block   IUCR  `Primary Type` Description 
+##      &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;       
+##  1  1.12e7 JA531910      12/01/… 022XX … 0265  CRIM SEXUAL A… AGGRAVATED:…
+##  2  1.10e7 JA322389      06/25/… 003XX … 031A  ROBBERY        ARMED: HAND…
+##  3  1.12e7 JA545986      12/11/… 007XX … 031A  ROBBERY        ARMED: HAND…
+##  4  1.12e7 JA546734      12/12/… 007XX … 031A  ROBBERY        ARMED: HAND…
+##  5  1.12e7 JB147188      10/08/… 092XX … 0281  CRIM SEXUAL A… NON-AGGRAVA…
+##  6  1.12e7 JB147599      08/26/… 001XX … 0281  CRIM SEXUAL A… NON-AGGRAVA…
+##  7  2.31e4 JA149608      02/11/… 001XX … 0110  HOMICIDE       FIRST DEGRE…
+##  8  1.10e7 JA378592      08/05/… 038XX … 0313  ROBBERY        ARMED: OTHE…
+##  9  1.12e7 JA538651      12/06/… 092XX … 031A  ROBBERY        ARMED: HAND…
+## 10  1.12e7 JB149656      12/24/… 005XX … 0330  ROBBERY        AGGRAVATED  
+## # ... with 14,136 more rows, and 15 more variables: `Location
+## #   Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;, Beat &lt;chr&gt;,
+## #   District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI Code` &lt;chr&gt;,
+## #   `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;, `Updated
+## #   On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
 <span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
              <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
