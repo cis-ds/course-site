@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Importing shapefiles using sf</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Importing shapefiles using <code>sf</code></h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(sf)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<div id="map-data-file-formats" class="section level1">
+<h1>Map data file formats</h1>
+<p>Rather than storing spatial data as <a href="geoviz_ggmap.html">raster image files</a> which are not easily modifiable, we can instead store spatial data as <strong>vector</strong> files. Vector files store the underlying geographical features (e.g. points, lines, polygons) as numerical data which software such as R can import and use to draw a map.</p>
+<p>There are <a href="https://en.wikipedia.org/wiki/GIS_file_formats#Popular_GIS_file_formats">many popular file formats for storing spatial data.</a> Here we will look at two common file types, <strong>shapefiles</strong> and <strong>GeoJSON</strong>.</p>
+<div id="shapefile" class="section level2">
+<h2>Shapefile</h2>
+<p><strong>Shapefiles</strong> are a commonly supported file type for spatial data dating back to the early 1990s. Proprietary software for geographic information systems (GIS) such as <a href="https://www.esri.com/en-us/arcgis/about-arcgis/overview">ArcGIS</a> pioneered this format and helps maintain its continued usage. A shapefile encodes points, lines, and polygons in geographic space, and is actually a set of files. Shapefiles appear with a <code>.shp</code> extension, sometimes with accompanying files ending in <code>.dbf</code> and <code>.prj</code>.</p>
+<ul>
+<li><code>.shp</code> stores the geographic coordinates of the geographic features (e.g. country, state, county)</li>
+<li><code>.dbf</code> stores data associated with the geographic features (e.g. unemployment rate, crime rates, percentage of votes cast for Donald Trump)</li>
+<li><code>.prj</code> stores information about the projection of the coordinates in the shapefile</li>
+</ul>
+</div>
+<div id="geojson" class="section level2">
+<h2>GeoJSON</h2>
+<p><strong>GeoJSON</strong> is a newer format for encoding a variety of geographical data structures using the <strong>J</strong>ava<strong>S</strong>cript <strong>O</strong>bject <strong>N</strong>otation (JSON) file format. JSON formatted data is frequently used in web development and services. We will explore it in more detail when we get to <a href="webdata003_api_by_hand.html#intro_to_json_and_xml">collecting data from the web.</a> An example of a GeoJSON file is below:</p>
+<div class="sourceCode"><pre class="sourceCode json"><code class="sourceCode json"><span class="fu">{</span>
+  <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;Feature&quot;</span><span class="fu">,</span>
+  <span class="dt">&quot;geometry&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;type&quot;</span><span class="fu">:</span> <span class="st">&quot;Point&quot;</span><span class="fu">,</span>
+    <span class="dt">&quot;coordinates&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="fl">125.6</span><span class="ot">,</span> <span class="fl">10.1</span><span class="ot">]</span>
+  <span class="fu">},</span>
+  <span class="dt">&quot;properties&quot;</span><span class="fu">:</span> <span class="fu">{</span>
+    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Dinagat Islands&quot;</span>
+  <span class="fu">}</span>
+<span class="fu">}</span></code></pre></div>
+<p>GeoJSON files are plain text files and can contain many different types of geometric features.</p>
+</div>
+</div>
+<div id="simple-features" class="section level1">
+<h1>Simple features</h1>
+<p><a href="https://cran.r-project.org/web/views/Spatial.html">There are a crap ton of packages for R that allow you to interact with shapefiles and spatial data.</a> Here we will focus on a modern package for reading and transforming spatial data in a tidy format.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> <a href="https://en.wikipedia.org/wiki/Simple_Features">Simple features</a> or <a href="http://www.opengeospatial.org/standards/sfa"><strong>simple feature access</strong></a> refers to a formal standard that describes how objects in the real world can be represented in computers, with emphasis on the <strong>spatial</strong> geometry of these objects. It also describes how such objects can be stored in and retrieved from databases, and which geometrical operations should be defined for them.</p>
+<p>The standard is widely implemented in spatial databases (such as PostGIS), commercial GIS (e.g., <a href="http://www.esri.com/">ESRI ArcGIS</a>) and forms the vector data basis for libraries such as <a href="http://www.gdal.org/">GDAL</a>. A subset of simple features forms the <a href="http://geojson.org/">GeoJSON</a> standard.</p>
+<p>R has well-supported classes for storing spatial data (<a href="https://CRAN.R-project.org/package=sp"><code>sp</code></a>) and interfacing to the above mentioned environments (<a href="https://CRAN.R-project.org/package=rgdal"><code>rgdal</code></a>, <a href="https://CRAN.R-project.org/package=rgeos"><code>rgeos</code></a>), but has so far lacked a complete implementation of simple features, making conversions at times convoluted, inefficient or incomplete. The <a href="http://github.com/r-spatial/sf"><code>sf</code></a> package tries to fill this gap.</p>
+<div id="what-is-a-feature" class="section level2">
+<h2>What is a feature?</h2>
+<p>A <strong>feature</strong> is a thing or an object in the real world. Often features will consist of a set of features. For instance, a tree can be a feature but a set of trees can form a forest which is itself a feature. Features have <strong>geometry</strong> describing where on Earth the feature is located. They also have attributes, which describe other properties of the feature.</p>
+</div>
+<div id="dimensions" class="section level2">
+<h2>Dimensions</h2>
+<p>All geometries are composed of points. Points are coordinates in a 2-, 3- or 4-dimensional space. All points in a geometry have the same dimensionality. In addition to X and Y coordinates, there are two optional additional dimensions:</p>
+<ul>
+<li>a Z coordinate, denoting altitude</li>
+<li>an M coordinate (rarely used), denoting some <strong>measure</strong> that is associated with the point, rather than with the feature as a whole (in which case it would be a feature attribute); examples could be time of measurement, or measurement error of the coordinates</li>
+</ul>
+<p>The four possible cases then are:</p>
+<ol style="list-style-type: decimal">
+<li>two-dimensional points refer to x and y, easting and northing, or longitude and latitude, we refer to them as XY</li>
+<li>three-dimensional points as XYZ</li>
+<li>three-dimensional points as XYM</li>
+<li>four-dimensional points as XYZM (the third axis is Z, fourth M)</li>
+</ol>
+</div>
+<div id="simple-feature-geometry-types" class="section level2">
+<h2>Simple feature geometry types</h2>
+<p>The following seven simple feature types are the most common, and are for instance the only ones used for <a href="https://tools.ietf.org/html/rfc7946">GeoJSON</a>:</p>
+<table style="width:78%;">
+<colgroup>
+<col width="6%" />
+<col width="70%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>type</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>POINT</code></td>
+<td>zero-dimensional geometry containing a single point</td>
+</tr>
+<tr class="even">
+<td><code>LINESTRING</code></td>
+<td>sequence of points connected by straight, non-self intersecting line pieces; one-dimensional geometry</td>
+</tr>
+<tr class="odd">
+<td><code>POLYGON</code></td>
+<td>geometry with a positive area (two-dimensional); sequence of points form a closed, non-self intersecting ring; the first ring denotes the exterior ring, zero or more subsequent rings denote holes in this exterior ring</td>
+</tr>
+<tr class="even">
+<td><code>MULTIPOINT</code></td>
+<td>set of points; a MULTIPOINT is simple if no two Points in the MULTIPOINT are equal</td>
+</tr>
+<tr class="odd">
+<td><code>MULTILINESTRING</code></td>
+<td>set of linestrings</td>
+</tr>
+<tr class="even">
+<td><code>MULTIPOLYGON</code></td>
+<td>set of polygons</td>
+</tr>
+<tr class="odd">
+<td><code>GEOMETRYCOLLECTION</code></td>
+<td>set of geometries of any type except GEOMETRYCOLLECTION</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="coordinate-reference-system" class="section level2">
+<h2>Coordinate reference system</h2>
+<p>Coordinates can only be placed on the Earth’s surface when their coordinate reference system (CRS) is known; this may be an spheroid CRS such as WGS84, a projected, two-dimensional (Cartesian) CRS such as a UTM zone or Web Mercator, or a CRS in three-dimensions, or including time. Similarly, M-coordinates need an attribute reference system, e.g. a <a href="https://CRAN.R-project.org/package=units">measurement unit</a>.</p>
+</div>
+<div id="simple-features-in-r" class="section level2">
+<h2>Simple features in R</h2>
+<p><code>sf</code> stores simple features as basic R data structures (lists, matrix, vectors, etc.). The typical data structure stores geometric and feature attributes as a data frame with one row per feature. However since feature geometries are not single-valued, they are put in a <strong>list-column</strong> with each list element holding the simple feature geometry of that feature.</p>
+</div>
+</div>
+<div id="importing-spatial-data-using-sf" class="section level1">
+<h1>Importing spatial data using <code>sf</code></h1>
+<p><code>st_read()</code> imports a spatial data file and converts it to a simple feature data frame. Here we import a shapefile containing the spatial boundaries of each <a href="https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-current-/cauq-8yn6">community area in the city of Chicago</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chi_shape &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="st">&quot;data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp&quot;</span>)</code></pre></div>
+<pre><code>## Reading layer `geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19&#39; from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/uc-cfss.github.io/data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp&#39; using driver `ESRI Shapefile&#39;
+## Simple feature collection with 77 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +ellps=WGS84 +no_defs</code></pre>
+<p>The short report printed gives the file name, mentions that there are 77 features (records, represented as rows) and 10 fields (attributes, represented as columns), states that the spatial data file is a <code>MULTIPOLYGON</code>, provides the bounding box coordinates, and identifies the projection method (which we will discuss later). If we print the first rows of <code>chi_shape</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chi_shape</code></pre></div>
+<pre><code>## Simple feature collection with 77 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +ellps=WGS84 +no_defs
+## First 10 features:
+##    perimeter       community shape_len shape_area area comarea area_numbe
+## 1          0         DOUGLAS     31027   46004621    0       0         35
+## 2          0         OAKLAND     19566   16913961    0       0         36
+## 3          0     FULLER PARK     25339   19916705    0       0         37
+## 4          0 GRAND BOULEVARD     28197   48492503    0       0         38
+## 5          0         KENWOOD     23325   29071742    0       0         39
+## 6          0  LINCOLN SQUARE     36625   71352328    0       0          4
+## 7          0 WASHINGTON PARK     28175   42373881    0       0         40
+## 8          0       HYDE PARK     29747   45105380    0       0         41
+## 9          0        WOODLAWN     46937   57815180    0       0         42
+## 10         0     ROGERS PARK     34052   51259902    0       0          1
+##    area_num_1 comarea_id                       geometry
+## 1          35          0 MULTIPOLYGON (((-87.6 41.8,...
+## 2          36          0 MULTIPOLYGON (((-87.6 41.8,...
+## 3          37          0 MULTIPOLYGON (((-87.6 41.8,...
+## 4          38          0 MULTIPOLYGON (((-87.6 41.8,...
+## 5          39          0 MULTIPOLYGON (((-87.6 41.8,...
+## 6           4          0 MULTIPOLYGON (((-87.7 42, -...
+## 7          40          0 MULTIPOLYGON (((-87.6 41.8,...
+## 8          41          0 MULTIPOLYGON (((-87.6 41.8,...
+## 9          42          0 MULTIPOLYGON (((-87.6 41.8,...
+## 10          1          0 MULTIPOLYGON (((-87.7 42, -...</code></pre>
+<p>In the output we see:</p>
+<ul>
+<li>Each row is a simple feature: a single record, or <code>data.frame</code> row, consisting of attributes and geometry</li>
+<li>The <code>geometry</code> column is a simple feature list-column (an object of class <code>sfc</code>, which is a column in the <code>data.frame</code>)</li>
+<li>Each value in <code>geometry</code> is a single simple feature geometry (an object of class <code>sfg</code>)</li>
+</ul>
+<p>We start to recognize the data frame structure. Substantively, <code>community</code> defines the name of the community area for each row.</p>
+<p><code>st_read()</code> also works with GeoJSON files.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chi_json &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="st">&quot;data/Boundaries - Community Areas (current).geojson&quot;</span>)</code></pre></div>
+<pre><code>## Reading layer `OGRGeoJSON&#39; from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/uc-cfss.github.io/data/Boundaries - Community Areas (current).geojson&#39; using driver `GeoJSON&#39;
+## Simple feature collection with 77 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chi_json</code></pre></div>
+<pre><code>## Simple feature collection with 77 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+## First 10 features:
+##          community area    shape_area perimeter area_num_1 area_numbe
+## 1          DOUGLAS    0 46004621.1581         0         35         35
+## 2          OAKLAND    0 16913961.0408         0         36         36
+## 3      FULLER PARK    0 19916704.8692         0         37         37
+## 4  GRAND BOULEVARD    0 48492503.1554         0         38         38
+## 5          KENWOOD    0 29071741.9283         0         39         39
+## 6   LINCOLN SQUARE    0 71352328.2399         0          4          4
+## 7  WASHINGTON PARK    0 42373881.4842         0         40         40
+## 8        HYDE PARK    0 45105380.1732         0         41         41
+## 9         WOODLAWN    0  57815179.512         0         42         42
+## 10     ROGERS PARK    0 51259902.4506         0          1          1
+##    comarea_id comarea     shape_len                       geometry
+## 1           0       0 31027.0545098 MULTIPOLYGON (((-87.6 41.8,...
+## 2           0       0 19565.5061533 MULTIPOLYGON (((-87.6 41.8,...
+## 3           0       0 25339.0897503 MULTIPOLYGON (((-87.6 41.8,...
+## 4           0       0 28196.8371573 MULTIPOLYGON (((-87.6 41.8,...
+## 5           0       0 23325.1679062 MULTIPOLYGON (((-87.6 41.8,...
+## 6           0       0 36624.6030848 MULTIPOLYGON (((-87.7 42, -...
+## 7           0       0 28175.3160866 MULTIPOLYGON (((-87.6 41.8,...
+## 8           0       0 29746.7082016 MULTIPOLYGON (((-87.6 41.8,...
+## 9           0       0 46936.9592443 MULTIPOLYGON (((-87.6 41.8,...
+## 10          0       0 34052.3975757 MULTIPOLYGON (((-87.7 42, -...</code></pre>
+</div>
+<div id="acknowledgements" class="section level1 toc-ignore">
+<h1>Acknowledgements</h1>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.5.0 (2018-04-23)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2018-07-03                  
+## 
+##  package    * version    date       source                         
+##  assertthat   0.2.0      2017-04-11 CRAN (R 3.5.0)                 
+##  backports    1.1.2      2017-12-13 CRAN (R 3.5.0)                 
+##  base       * 3.5.0      2018-04-24 local                          
+##  bindr        0.1.1      2018-03-13 CRAN (R 3.5.0)                 
+##  bindrcpp     0.2.2      2018-03-29 CRAN (R 3.5.0)                 
+##  broom        0.4.4      2018-03-29 CRAN (R 3.5.0)                 
+##  cellranger   1.1.0      2016-07-27 CRAN (R 3.5.0)                 
+##  class        7.3-14     2015-08-30 CRAN (R 3.5.0)                 
+##  classInt     0.2-3      2018-04-16 CRAN (R 3.5.0)                 
+##  cli          1.0.0      2017-11-05 CRAN (R 3.5.0)                 
+##  codetools    0.2-15     2016-10-05 CRAN (R 3.5.0)                 
+##  colorspace   1.3-2      2016-12-14 CRAN (R 3.5.0)                 
+##  compiler     3.5.0      2018-04-24 local                          
+##  crayon       1.3.4      2017-09-16 CRAN (R 3.5.0)                 
+##  datasets   * 3.5.0      2018-04-24 local                          
+##  DBI          1.0.0      2018-05-02 CRAN (R 3.5.0)                 
+##  devtools     1.13.5     2018-02-18 CRAN (R 3.5.0)                 
+##  digest       0.6.15     2018-01-28 CRAN (R 3.5.0)                 
+##  dplyr      * 0.7.6      2018-06-29 cran (@0.7.6)                  
+##  e1071        1.6-8      2017-02-02 CRAN (R 3.5.0)                 
+##  evaluate     0.10.1     2017-06-24 CRAN (R 3.5.0)                 
+##  forcats    * 0.3.0      2018-02-19 CRAN (R 3.5.0)                 
+##  foreign      0.8-70     2017-11-28 CRAN (R 3.5.0)                 
+##  ggplot2    * 2.2.1.9000 2018-07-02 Github (hadley/ggplot2@348b26f)
+##  glue         1.2.0      2017-10-29 CRAN (R 3.5.0)                 
+##  graphics   * 3.5.0      2018-04-24 local                          
+##  grDevices  * 3.5.0      2018-04-24 local                          
+##  grid         3.5.0      2018-04-24 local                          
+##  gtable       0.2.0      2016-02-26 CRAN (R 3.5.0)                 
+##  haven        1.1.1      2018-01-18 CRAN (R 3.5.0)                 
+##  hms          0.4.2      2018-03-10 CRAN (R 3.5.0)                 
+##  htmltools    0.3.6      2017-04-28 CRAN (R 3.5.0)                 
+##  httr         1.3.1      2017-08-20 CRAN (R 3.5.0)                 
+##  jsonlite     1.5        2017-06-01 CRAN (R 3.5.0)                 
+##  knitr        1.20       2018-02-20 CRAN (R 3.5.0)                 
+##  lattice      0.20-35    2017-03-25 CRAN (R 3.5.0)                 
+##  lazyeval     0.2.1      2017-10-29 CRAN (R 3.5.0)                 
+##  lubridate    1.7.4      2018-04-11 CRAN (R 3.5.0)                 
+##  magrittr     1.5        2014-11-22 CRAN (R 3.5.0)                 
+##  memoise      1.1.0      2017-04-21 CRAN (R 3.5.0)                 
+##  methods    * 3.5.0      2018-04-24 local                          
+##  mnormt       1.5-5      2016-10-15 CRAN (R 3.5.0)                 
+##  modelr       0.1.2      2018-05-11 CRAN (R 3.5.0)                 
+##  munsell      0.4.3      2016-02-13 CRAN (R 3.5.0)                 
+##  nlme         3.1-137    2018-04-07 CRAN (R 3.5.0)                 
+##  parallel     3.5.0      2018-04-24 local                          
+##  pillar       1.2.3      2018-05-25 CRAN (R 3.5.0)                 
+##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.5.0)                 
+##  plyr         1.8.4      2016-06-08 CRAN (R 3.5.0)                 
+##  psych        1.8.4      2018-05-06 CRAN (R 3.5.0)                 
+##  purrr      * 0.2.5      2018-05-29 CRAN (R 3.5.0)                 
+##  R6           2.2.2      2017-06-17 CRAN (R 3.5.0)                 
+##  Rcpp         0.12.17    2018-05-18 CRAN (R 3.5.0)                 
+##  readr      * 1.1.1      2017-05-16 CRAN (R 3.5.0)                 
+##  readxl       1.1.0      2018-04-20 CRAN (R 3.5.0)                 
+##  reshape2     1.4.3      2017-12-11 CRAN (R 3.5.0)                 
+##  rlang        0.2.1      2018-05-30 CRAN (R 3.5.0)                 
+##  rmarkdown    1.9        2018-03-01 CRAN (R 3.5.0)                 
+##  rprojroot    1.3-2      2018-01-03 CRAN (R 3.5.0)                 
+##  rstudioapi   0.7        2017-09-07 CRAN (R 3.5.0)                 
+##  rvest        0.3.2      2016-06-17 CRAN (R 3.5.0)                 
+##  scales       0.5.0      2017-08-24 CRAN (R 3.5.0)                 
+##  sf         * 0.6-3      2018-05-17 CRAN (R 3.5.0)                 
+##  spData       0.2.8.3    2018-03-25 CRAN (R 3.5.0)                 
+##  stats      * 3.5.0      2018-04-24 local                          
+##  stringi      1.2.2      2018-05-02 CRAN (R 3.5.0)                 
+##  stringr    * 1.3.1      2018-05-10 CRAN (R 3.5.0)                 
+##  tibble     * 1.4.2      2018-01-22 CRAN (R 3.5.0)                 
+##  tidyr      * 0.8.1      2018-05-18 CRAN (R 3.5.0)                 
+##  tidyselect   0.2.4      2018-02-26 CRAN (R 3.5.0)                 
+##  tidyverse  * 1.2.1      2017-11-14 CRAN (R 3.5.0)                 
+##  tools        3.5.0      2018-04-24 local                          
+##  udunits2     0.13       2016-11-17 CRAN (R 3.5.0)                 
+##  units        0.5-1      2018-01-08 CRAN (R 3.5.0)                 
+##  utils      * 3.5.0      2018-04-24 local                          
+##  withr        2.1.2      2018-03-15 CRAN (R 3.5.0)                 
+##  xml2         1.2.0      2018-01-24 CRAN (R 3.5.0)                 
+##  yaml         2.1.19     2018-05-01 CRAN (R 3.5.0)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>In this section I draw heavily from <a href="https://cran.r-project.org/web/packages/sf/index.html">the vignettes for the <code>sf</code> package</a>.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

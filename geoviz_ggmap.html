@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Drawing raster maps with ggmap</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Drawing raster maps with <code>ggmap</code></h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(ggmap)
+<span class="kw">library</span>(RColorBrewer)
+<span class="kw">library</span>(gridExtra)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<div id="ggmap" class="section level1">
+<h1><code>ggmap</code></h1>
+<p><a href="https://github.com/dkahle/ggmap"><code>ggmap</code></a> is a package for R that retrieves raster map tiles from online mapping services like <a href="https://www.google.com/maps">Google Maps</a> and plots them using the <code>ggplot2</code> framework. The map tiles are <strong>raster</strong> because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.</p>
+</div>
+<div id="obtain-map-images" class="section level1">
+<h1>Obtain map images</h1>
+<p><code>ggmap</code> supports open-source map providers such as <a href="https://www.openstreetmap.org/">OpenStreetMap</a> and <a href="http://maps.stamen.com/#terrain/12/37.7706/-122.3782">Stamen Maps</a>, as well as the proprietary Google Maps. Obtaining map tiles requires use of the <code>get_map()</code> function. There are two formats for specifying the mapping region you wish to obtain:</p>
+<ol style="list-style-type: decimal">
+<li>Bounding box</li>
+<li>Center/zoom</li>
+</ol>
+<div id="specifying-map-regions" class="section level2">
+<h2>Specifying map regions</h2>
+<div id="bounding-box" class="section level3">
+<h3>Bounding box</h3>
+<p><strong>Bounding box</strong> requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># store bounding box coordinates</span>
+chi_bb &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">left =</span> <span class="op">-</span><span class="fl">87.936287</span>,
+            <span class="dt">bottom =</span> <span class="fl">41.679835</span>,
+            <span class="dt">right =</span> <span class="op">-</span><span class="fl">87.447052</span>,
+            <span class="dt">top =</span> <span class="fl">42.000835</span>)
+
+chicago_stamen &lt;-<span class="st"> </span><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> chi_bb,
+                                <span class="dt">zoom =</span> <span class="dv">11</span>)
+chicago_stamen</code></pre></div>
+<pre><code>## 627x712 terrain map image from Stamen Maps.  see ?ggmap to plot it.</code></pre>
+<p>To view the map, use <code>ggmap()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago_stamen)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-plot-1.png" width="672" /></p>
+<p>The <code>zoom</code> argument in <code>get_stamenmap()</code> controls the level of detail in the map. The larger the number, the greater the detail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> chi_bb,
+              <span class="dt">zoom =</span> <span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-zoom-in-1.png" width="672" /></p>
+<p>The smaller the number, the lesser the detail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> chi_bb,
+              <span class="dt">zoom =</span> <span class="dv">10</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-zoom-out-1.png" width="672" /></p>
+<p>Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.</p>
+<blockquote>
+<p>Use <a href="http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000">bboxfinder.com</a> to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.</p>
+</blockquote>
+</div>
+<div id="centerzoom" class="section level3">
+<h3>Center/zoom</h3>
+<p>While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the <strong>center</strong> coordinate of the map (a single longitude/latitude location) and the level of <strong>zoom</strong> or detail. <code>zoom</code> is an integer value from <code>3</code> (continent) to <code>21</code> (building). This means the level of detail is hardcoded to the size of the mapping region. The default <code>zoom</code> level is <code>10</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># store center coordinate</span>
+chi_center &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>)
+
+chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</span>(<span class="dt">center =</span> chi_center)
+<span class="kw">ggmap</span>(chicago_google)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_googlemap</span>(<span class="dt">center =</span> chi_center,
+              <span class="dt">zoom =</span> <span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_googlemap</span>(<span class="dt">center =</span> chi_center,
+              <span class="dt">zoom =</span> <span class="dv">8</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-3.png" width="672" /></p>
+<blockquote>
+<p>Use <a href="https://www.findlatitudeandlongitude.com/">Find Latitude and Longitude</a> to get the exact GPS coordinates of the center location.</p>
+</blockquote>
+</div>
+</div>
+<div id="types-of-map-tiles" class="section level2">
+<h2>Types of map tiles</h2>
+<p>Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:</p>
+<p><img src="geoviz_ggmap_files/figure-html/stamen-maptype-1.png" width="576" /></p>
+<p>Google Maps is a bit more limited, but still offers a few major types:</p>
+<p><img src="geoviz_ggmap_files/figure-html/google-maptype-1.png" width="672" /></p>
+<p>See the documentation for the <code>get_*map()</code> function for the exact code necessary to get each type of map.</p>
+<blockquote>
+<p><code>get_map()</code> is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of <code>get_googlemap()</code>, <code>get_stamenmap()</code>, and <code>getopenstreetmap()</code> and can become a bit jumbled. Use at your own risk.</p>
+</blockquote>
+</div>
+</div>
+<div id="import-crime-data" class="section level1">
+<h1>Import crime data</h1>
+<p>Now that we can obtain map tiles and draw them using <code>ggmap()</code>, let’s explore how to add data to the map. The city of Chicago has <a href="https://data.cityofchicago.org/">an excellent data portal</a> publishing a large volume of public records. Here we’ll look at <a href="https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr">crime data from 2017</a>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> I previously downloaded a <code>.csv</code> file containing all the records, which I import using <code>read_csv()</code>:</p>
+<blockquote>
+<p>If you are copying-and-pasting code from this demonstration, change this line of code to <code>crimes &lt;- read_csv(&quot;https://cfss.uchicago.edu/data/Crimes_-_2017.csv&quot;)</code> to download the file from the course website.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)
+<span class="kw">glimpse</span>(crimes)</code></pre></div>
+<pre><code>## Observations: 267,345
+## Variables: 22
+## $ ID                     &lt;int&gt; 11094370, 11118031, 11134189, 11156462,...
+## $ `Case Number`          &lt;chr&gt; &quot;JA440032&quot;, &quot;JA470589&quot;, &quot;JA491697&quot;, &quot;JA...
+## $ Date                   &lt;chr&gt; &quot;09/21/2017 12:15:00 AM&quot;, &quot;10/12/2017 0...
+## $ Block                  &lt;chr&gt; &quot;072XX N CALIFORNIA AVE&quot;, &quot;055XX W GRAN...
+## $ IUCR                   &lt;chr&gt; &quot;1122&quot;, &quot;1345&quot;, &quot;4651&quot;, &quot;1110&quot;, &quot;0265&quot;,...
+## $ `Primary Type`         &lt;chr&gt; &quot;DECEPTIVE PRACTICE&quot;, &quot;CRIMINAL DAMAGE&quot;...
+## $ Description            &lt;chr&gt; &quot;COUNTERFEIT CHECK&quot;, &quot;TO CITY OF CHICAG...
+## $ `Location Description` &lt;chr&gt; &quot;CURRENCY EXCHANGE&quot;, &quot;JAIL / LOCK-UP FA...
+## $ Arrest                 &lt;chr&gt; &quot;true&quot;, &quot;true&quot;, &quot;true&quot;, &quot;true&quot;, &quot;true&quot;,...
+## $ Domestic               &lt;chr&gt; &quot;false&quot;, &quot;false&quot;, &quot;false&quot;, &quot;false&quot;, &quot;fa...
+## $ Beat                   &lt;chr&gt; &quot;2411&quot;, &quot;2515&quot;, &quot;0922&quot;, &quot;2514&quot;, &quot;1221&quot;,...
+## $ District               &lt;chr&gt; &quot;024&quot;, &quot;025&quot;, &quot;009&quot;, &quot;025&quot;, &quot;012&quot;, &quot;002...
+## $ Ward                   &lt;int&gt; 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, ...
+## $ `Community Area`       &lt;int&gt; 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, ...
+## $ `FBI Code`             &lt;chr&gt; &quot;10&quot;, &quot;14&quot;, &quot;26&quot;, &quot;11&quot;, &quot;02&quot;, &quot;15&quot;, &quot;03...
+## $ `X Coordinate`         &lt;int&gt; 1156443, 1138788, 1159425, 1138653, 116...
+## $ `Y Coordinate`         &lt;int&gt; 1947707, 1913480, 1875711, 1920720, 190...
+## $ Year                   &lt;int&gt; 2017, 2017, 2017, 2017, 2017, 2017, 201...
+## $ `Updated On`           &lt;chr&gt; &quot;03/01/2018 03:52:35 PM&quot;, &quot;03/01/2018 0...
+## $ Latitude               &lt;dbl&gt; 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41....
+## $ Longitude              &lt;dbl&gt; -87.7, -87.8, -87.7, -87.8, -87.7, -87....
+## $ Location               &lt;chr&gt; &quot;(42.012293397, -87.699714109)&quot;, &quot;(41.9...</code></pre>
+<p>Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the <code>Longitude</code> and <code>Latitude</code> columns respectively.</p>
+</div>
+<div id="plot-high-level-map-of-crime" class="section level1">
+<h1>Plot high-level map of crime</h1>
+<p>Let’s start with a simple high-level overview of reported crime in Chicago. First we need a map for the entire city.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_googlemap</span>(<span class="dt">center =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+                        <span class="dt">zoom =</span> <span class="dv">11</span>)
+<span class="kw">ggmap</span>(chicago)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/import-chicago-1.png" width="672" /></p>
+<div id="using-geom_point" class="section level2">
+<h2>Using <code>geom_point()</code></h2>
+<p>Since each row is a single reported incident of crime, we could use <code>geom_point()</code> to map the location of every crime in the dataset. Because <code>ggmap()</code> uses the map tiles (here, defined by <code>chicago</code>) as the basic input, we specify <code>data</code> and <code>mapping</code> inside of <code>geom_point()</code>, rather than inside <code>ggplot()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
+             <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                           <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-1.png" width="672" /></p>
+<p>What went wrong? All we get is a sea of black.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nrow</span>(crimes)</code></pre></div>
+<pre><code>## [1] 267345</code></pre>
+<p>Oh yeah. There were 267345 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                 <span class="dt">y =</span> Latitude),
+             <span class="dt">size =</span> .<span class="dv">25</span>,
+             <span class="dt">alpha =</span> .<span class="dv">01</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-alpha-1.png" width="672" /></p>
+<p>Better, but still not quite as useful as it could be.</p>
+</div>
+<div id="using-stat_density_2d" class="section level2">
+<h2>Using <code>stat_density_2d()</code></h2>
+<p>Instead of relying on <code>geom_point()</code> and plotting the raw data, a better approach is to create a <strong>heatmap</strong>. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in <code>ggplot2</code> to generate this kind of plot is <code>geom_density_2d()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/kde-contour-1.png" width="672" /></p>
+<p>By default, <code>geom_density_2d()</code> draws a <a href="https://en.wikipedia.org/wiki/Contour_line"><strong>contour plot</strong></a> with lines of constant value. That is, each line represents approximately the same frequency of crime all along that specific line. Contour plots are frequently used in maps (known as <strong>topographic maps</strong>) to denote elevation.</p>
+<div class="figure">
+<img src="images/contour-map.jpg" alt="The Cadillac Mountains. Source: US Geological Survey" />
+<p class="caption">The Cadillac Mountains. Source: <a href="https://www.usgs.gov/media/images/cadillacmountainss">US Geological Survey</a></p>
+</div>
+<p>Rather than drawing lines, instead we can fill in the graph so that we use the <code>fill</code> aesthetic to draw bands of crime density. To do that, we use the related function <code>stat_density_2d()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> ..level..),
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/kde-fill-1.png" width="672" /></p>
+<p>Note the two new arguments:</p>
+<ul>
+<li><code>geom = &quot;polygon&quot;</code> - change the <a href="dataviz_grammar_of_graphics.html#geometric_objects">geometric object</a> to be drawn from a <code>density_2d</code> geom to a <code>polygon</code> geom</li>
+<li><code>fill = ..level..</code> - the value for the <code>fill</code> aesthetic is the <code>level</code> calculated within <code>stat_density_2d()</code>, which we access using the <code>..</code> notation.</li>
+</ul>
+<p>This is an improvement, but we can adjust some additional settings to make the graph visually more useful. Specifically,</p>
+<ul>
+<li>Increase the number of <code>bins</code>, or unique bands of color allowed on the graph</li>
+<li>Make the heatmap semi-transparent using <code>alpha</code> so we can still view the underlying map</li>
+<li>Change the color palette to better distinguish between high and low crime areas. Here I use <code>brewer.pal()</code> from the <code>RColorBrewer</code> package to create a custom color palette using reds and yellows.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> ..level..),
+                  <span class="dt">alpha =</span> .<span class="dv">2</span>,
+                  <span class="dt">bins =</span> <span class="dv">25</span>,
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-density-1.png" width="672" /></p>
+<p>From this map, a couple trends are noticeable:</p>
+<ul>
+<li>The downtown region has the highest crime incidence rate. Not surprising given its population density during the workday.</li>
+<li>There are clusters of crime on the south and west sides. Also not surprising if you know anything about the city of Chicago.</li>
+</ul>
+</div>
+<div id="looking-for-variation" class="section level2">
+<h2>Looking for variation</h2>
+<p>Because <code>ggmap</code> is built on <code>ggplot2</code>, we can use the core features of <code>ggplot2</code> to modify the graph. One major feature is faceting. Let’s focus our analysis on four types of crimes with similar frequency of reported incidents<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and facet by type of crime:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes <span class="op">%&gt;%</span>
+<span class="st">                    </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;BURGLARY&quot;</span>, <span class="st">&quot;MOTOR VEHICLE THEFT&quot;</span>,
+                                                 <span class="st">&quot;NARCOTICS&quot;</span>, <span class="st">&quot;ROBBERY&quot;</span>)),
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> ..level..),
+                  <span class="dt">alpha =</span> .<span class="dv">4</span>,
+                  <span class="dt">bins =</span> <span class="dv">10</span>,
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> `</span><span class="dt">Primary Type</span><span class="st">`</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-wday-1.png" width="672" /></p>
+<p>There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.</p>
+</div>
+</div>
+<div id="locations-of-murders" class="section level1">
+<h1>Locations of murders</h1>
+<p>While <code>geom_point()</code> was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let’s limit our analysis strictly to reported incidents of homicide in 2017.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(homicides &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;HOMICIDE&quot;</span>))</code></pre></div>
+<pre><code>## # A tibble: 671 x 22
+##         ID `Case Number` Date    Block   IUCR  `Primary Type` Description 
+##      &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;       
+##  1  2.31e4 JA149608      02/11/… 001XX … 0110  HOMICIDE       FIRST DEGRE…
+##  2  2.39e4 JA530946      11/30/… 088XX … 0110  HOMICIDE       FIRST DEGRE…
+##  3  2.34e4 JA302423      06/11/… 047XX … 0110  HOMICIDE       FIRST DEGRE…
+##  4  2.34e4 JA312425      06/18/… 006XX … 0110  HOMICIDE       FIRST DEGRE…
+##  5  2.37e4 JA490016      10/28/… 048XX … 0110  HOMICIDE       FIRST DEGRE…
+##  6  2.32e4 JA210752      04/03/… 013XX … 0110  HOMICIDE       FIRST DEGRE…
+##  7  2.36e4 JA461918      10/07/… 018XX … 0110  HOMICIDE       FIRST DEGRE…
+##  8  2.36e4 JA461918      10/07/… 018XX … 0110  HOMICIDE       FIRST DEGRE…
+##  9  1.08e7 JA138326      02/01/… 013XX … 0142  HOMICIDE       RECKLESS HO…
+## 10  2.35e4 JA364517      07/26/… 047XX … 0110  HOMICIDE       FIRST DEGRE…
+## # ... with 661 more rows, and 15 more variables: `Location
+## #   Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;, Beat &lt;chr&gt;,
+## #   District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI Code` &lt;chr&gt;,
+## #   `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;, `Updated
+## #   On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;</code></pre>
+<p>We can draw a map of the city with all homicides indicated on the map using <code>geom_point()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                           <span class="dt">y =</span> Latitude),
+             <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/homicide-city-1.png" width="672" /></p>
+<p>Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we’ll examine North Lawndale and Kenwood.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># North Lawndale is the highest homicides in 2017</span>
+<span class="co"># Compare to Kenwood</span>
+north_lawndale &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.714401</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.858768</span>),
+                     <span class="dt">zoom =</span> <span class="dv">14</span>)
+
+kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.59320836086425</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.80965352973664</span>),
+                   <span class="dt">zoom =</span> <span class="dv">15</span>)
+
+<span class="kw">ggmap</span>(north_lawndale)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/get-high-low-murder-maps-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/get-high-low-murder-maps-2.png" width="672" /></p>
+<p>To plot homicides specifically in these neighborhoods, change <code>ggmap(chicago)</code> to the appropriate map tile:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-murder-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-murder-2.png" width="672" /></p>
+<p>North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though <code>homicides</code> contained data for homicides across the entire city, <code>ggmap()</code> automatically cropped the graph to keep just the homicides that occurred within the bounding box.</p>
+<p>All the other aesthetic customizations of <code>geom_point()</code> work with <code>ggmap</code>. So we could expand these neighborhood maps to include all violent crime categories<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> and distinguish each type by <code>color</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(violent &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;HOMICIDE&quot;</span>,
+                               <span class="st">&quot;CRIM SEXUAL ASSAULT&quot;</span>,
+                               <span class="st">&quot;ROBBERY&quot;</span>)))</code></pre></div>
+<pre><code>## # A tibble: 14,146 x 22
+##         ID `Case Number` Date    Block   IUCR  `Primary Type` Description 
+##      &lt;int&gt; &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;       
+##  1  1.12e7 JA531910      12/01/… 022XX … 0265  CRIM SEXUAL A… AGGRAVATED:…
+##  2  1.10e7 JA322389      06/25/… 003XX … 031A  ROBBERY        ARMED: HAND…
+##  3  1.12e7 JA545986      12/11/… 007XX … 031A  ROBBERY        ARMED: HAND…
+##  4  1.12e7 JA546734      12/12/… 007XX … 031A  ROBBERY        ARMED: HAND…
+##  5  1.12e7 JB147188      10/08/… 092XX … 0281  CRIM SEXUAL A… NON-AGGRAVA…
+##  6  1.12e7 JB147599      08/26/… 001XX … 0281  CRIM SEXUAL A… NON-AGGRAVA…
+##  7  2.31e4 JA149608      02/11/… 001XX … 0110  HOMICIDE       FIRST DEGRE…
+##  8  1.10e7 JA378592      08/05/… 038XX … 0313  ROBBERY        ARMED: OTHE…
+##  9  1.12e7 JA538651      12/06/… 092XX … 031A  ROBBERY        ARMED: HAND…
+## 10  1.12e7 JB149656      12/24/… 005XX … 0330  ROBBERY        AGGRAVATED  
+## # ... with 14,136 more rows, and 15 more variables: `Location
+## #   Description` &lt;chr&gt;, Arrest &lt;chr&gt;, Domestic &lt;chr&gt;, Beat &lt;chr&gt;,
+## #   District &lt;chr&gt;, Ward &lt;int&gt;, `Community Area` &lt;int&gt;, `FBI Code` &lt;chr&gt;,
+## #   `X Coordinate` &lt;int&gt;, `Y Coordinate` &lt;int&gt;, Year &lt;int&gt;, `Updated
+## #   On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
+                 <span class="dt">color =</span> <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-violent-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
+                 <span class="dt">color =</span> <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-violent-2.png" width="672" /></p>
+</div>
+<div id="additional-resources" class="section level1 toc-ignore">
+<h1>Additional resources</h1>
+<ul>
+<li><a href="https://journal.r-project.org/archive/2013/RJ-2013-014/RJ-2013-014.pdf">Kahle, D., &amp; Wickham, H. (2013). <code>ggmap</code>: Spatial Visualization with ggplot2. <em>R Journal</em>, 5(1).</a></li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.5.0 (2018-04-23)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2018-07-03                  
+## 
+##  package      * version    date       source                         
+##  assertthat     0.2.0      2017-04-11 CRAN (R 3.5.0)                 
+##  backports      1.1.2      2017-12-13 CRAN (R 3.5.0)                 
+##  base         * 3.5.0      2018-04-24 local                          
+##  bindr          0.1.1      2018-03-13 CRAN (R 3.5.0)                 
+##  bindrcpp       0.2.2      2018-03-29 CRAN (R 3.5.0)                 
+##  bitops         1.0-6      2013-08-17 CRAN (R 3.5.0)                 
+##  broom          0.4.4      2018-03-29 CRAN (R 3.5.0)                 
+##  cellranger     1.1.0      2016-07-27 CRAN (R 3.5.0)                 
+##  cli            1.0.0      2017-11-05 CRAN (R 3.5.0)                 
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.5.0)                 
+##  compiler       3.5.0      2018-04-24 local                          
+##  crayon         1.3.4      2017-09-16 CRAN (R 3.5.0)                 
+##  datasets     * 3.5.0      2018-04-24 local                          
+##  devtools       1.13.5     2018-02-18 CRAN (R 3.5.0)                 
+##  digest         0.6.15     2018-01-28 CRAN (R 3.5.0)                 
+##  dplyr        * 0.7.6      2018-06-29 cran (@0.7.6)                  
+##  evaluate       0.10.1     2017-06-24 CRAN (R 3.5.0)                 
+##  forcats      * 0.3.0      2018-02-19 CRAN (R 3.5.0)                 
+##  foreign        0.8-70     2017-11-28 CRAN (R 3.5.0)                 
+##  ggmap        * 2.7.900    2018-07-02 Github (dkahle/ggmap@1c2fb46)  
+##  ggplot2      * 2.2.1.9000 2018-07-02 Github (hadley/ggplot2@348b26f)
+##  glue           1.2.0      2017-10-29 CRAN (R 3.5.0)                 
+##  graphics     * 3.5.0      2018-04-24 local                          
+##  grDevices    * 3.5.0      2018-04-24 local                          
+##  grid           3.5.0      2018-04-24 local                          
+##  gridExtra    * 2.3        2017-09-09 CRAN (R 3.5.0)                 
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.5.0)                 
+##  haven          1.1.1      2018-01-18 CRAN (R 3.5.0)                 
+##  hms            0.4.2      2018-03-10 CRAN (R 3.5.0)                 
+##  htmltools      0.3.6      2017-04-28 CRAN (R 3.5.0)                 
+##  httr           1.3.1      2017-08-20 CRAN (R 3.5.0)                 
+##  jpeg           0.1-8      2014-01-23 CRAN (R 3.5.0)                 
+##  jsonlite       1.5        2017-06-01 CRAN (R 3.5.0)                 
+##  knitr          1.20       2018-02-20 CRAN (R 3.5.0)                 
+##  lattice        0.20-35    2017-03-25 CRAN (R 3.5.0)                 
+##  lazyeval       0.2.1      2017-10-29 CRAN (R 3.5.0)                 
+##  lubridate      1.7.4      2018-04-11 CRAN (R 3.5.0)                 
+##  magrittr       1.5        2014-11-22 CRAN (R 3.5.0)                 
+##  memoise        1.1.0      2017-04-21 CRAN (R 3.5.0)                 
+##  methods      * 3.5.0      2018-04-24 local                          
+##  mnormt         1.5-5      2016-10-15 CRAN (R 3.5.0)                 
+##  modelr         0.1.2      2018-05-11 CRAN (R 3.5.0)                 
+##  munsell        0.4.3      2016-02-13 CRAN (R 3.5.0)                 
+##  nlme           3.1-137    2018-04-07 CRAN (R 3.5.0)                 
+##  parallel       3.5.0      2018-04-24 local                          
+##  pillar         1.2.3      2018-05-25 CRAN (R 3.5.0)                 
+##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.5.0)                 
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.5.0)                 
+##  png            0.1-7      2013-12-03 CRAN (R 3.5.0)                 
+##  psych          1.8.4      2018-05-06 CRAN (R 3.5.0)                 
+##  purrr        * 0.2.5      2018-05-29 CRAN (R 3.5.0)                 
+##  R6             2.2.2      2017-06-17 CRAN (R 3.5.0)                 
+##  RColorBrewer * 1.1-2      2014-12-07 CRAN (R 3.5.0)                 
+##  Rcpp           0.12.17    2018-05-18 CRAN (R 3.5.0)                 
+##  readr        * 1.1.1      2017-05-16 CRAN (R 3.5.0)                 
+##  readxl         1.1.0      2018-04-20 CRAN (R 3.5.0)                 
+##  reshape2       1.4.3      2017-12-11 CRAN (R 3.5.0)                 
+##  RgoogleMaps    1.4.2      2018-06-08 cran (@1.4.2)                  
+##  rjson          0.2.20     2018-06-08 cran (@0.2.20)                 
+##  rlang          0.2.1      2018-05-30 CRAN (R 3.5.0)                 
+##  rmarkdown      1.9        2018-03-01 CRAN (R 3.5.0)                 
+##  rprojroot      1.3-2      2018-01-03 CRAN (R 3.5.0)                 
+##  rstudioapi     0.7        2017-09-07 CRAN (R 3.5.0)                 
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.5.0)                 
+##  scales         0.5.0      2017-08-24 CRAN (R 3.5.0)                 
+##  stats        * 3.5.0      2018-04-24 local                          
+##  stringi        1.2.2      2018-05-02 CRAN (R 3.5.0)                 
+##  stringr      * 1.3.1      2018-05-10 CRAN (R 3.5.0)                 
+##  tibble       * 1.4.2      2018-01-22 CRAN (R 3.5.0)                 
+##  tidyr        * 0.8.1      2018-05-18 CRAN (R 3.5.0)                 
+##  tidyselect     0.2.4      2018-02-26 CRAN (R 3.5.0)                 
+##  tidyverse    * 1.2.1      2017-11-14 CRAN (R 3.5.0)                 
+##  tools          3.5.0      2018-04-24 local                          
+##  utils        * 3.5.0      2018-04-24 local                          
+##  withr          2.1.2      2018-03-15 CRAN (R 3.5.0)                 
+##  xml2           1.2.0      2018-01-24 CRAN (R 3.5.0)                 
+##  yaml           2.1.19     2018-05-01 CRAN (R 3.5.0)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2">Full documentation of the data from the larger 2001-present crime dataset.</a>.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Specifically burglary, motor vehicle theft, narcotics, and robbery.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Specifcally homicides, criminal sexual assault, and robbery. <a href="http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html">Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant</a>, but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
