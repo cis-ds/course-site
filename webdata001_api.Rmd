@@ -16,6 +16,7 @@ library(forcats)
 library(broom)
 library(wordcloud)
 library(tidytext)
+library(viridis)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -258,6 +259,110 @@ docs %>%
   na.omit() %>%
   reshape2::acast(word ~ party, value.var = "n", fill = 0) %>%
   comparison.cloud(max.words = 200)
+```
+
+# Census data with `tidycensus`
+
+[`tidycensus`](https://walkerke.github.io/tidycensus/index.html) provides an interface with the US Census Bureau's decennial census and American Community APIs and returns tidy data frames with optional simple feature geometry. These APIs require a free key you can obtain [here](https://api.census.gov/data/key_signup.html). Rather than storing your key in `.Rprofile`, `tidycensus` includes `census_api_key()` which automatically stores your key in `.Renviron`, which is basically a global version of `.Rprofile`. Anything stored in `.Renviron` is automatically loaded anytime you initiate R on your computer, regardless of the project or file location. Once you get your key, load it:
+
+```{r tidycensus}
+library(tidycensus)
+```
+
+```r
+census_api_key("YOUR API KEY GOES HERE")
+```
+
+## Obtaining data
+
+`get_decennial()` allows you to obtain data from the 1990, 2000, and 2010 decennial US censuses. Let's look at the number of individuals of Chinese ethnicity by state in 2010:
+
+```{r get-china}
+china10 <- get_decennial(geography = "state", variables = "PCT0060007", year = 2010)
+china10
+```
+
+The result of `get_decennial()` is a tidy data frame with one row per geographic unit-variable.
+
+* `GEOID` - identifier for the geographical unit associated with the row
+* `NAME` - descriptive name of the geographical unit
+* `variable` - the Census variable encoded in the row
+* `value` - the value of the variable for that geographic unit
+
+We can quickly visualize this data frame using `ggplot2`:
+
+```{r plot-chinese, fig.asp = 1}
+ggplot(china10, aes(x = reorder(NAME, value), y = value)) +
+  geom_point() +
+  coord_flip()
+```
+
+Of course this graph is not entirely useful since it is based on the raw frequency of Chinese individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:
+
+```{r china-total-pop, fig.asp = 1}
+china_pop <- get_decennial(geography = "state",
+                           variables = c("PCT0060007", "P0010001"),
+                           year = 2010) %>%
+  spread(variable, value) %>%
+  mutate(pct_chinese = PCT0060007 / P0010001)
+china_pop
+
+ggplot(china_pop, aes(x = reorder(NAME, pct_chinese), y = pct_chinese)) +
+  geom_point() +
+  scale_y_continuous(labels = scales::percent) +
+  coord_flip()
+```
+
+`get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2012-2016 ACS for counties in Illinois.
+
+```{r income-usa}
+usa_inc <- get_acs(geography = "state", 
+                   variables = c(medincome = "B19013_001"), 
+                   year = 2016)
+usa_inc
+```
+
+Now we return both an `estimate` column for the ACS estimate and `moe` for the margin of error (defaults to 90% confidence interval).
+
+```{r income-usa-plot, fig.asp = 1}
+usa_inc %>%
+  ggplot(aes(x = reorder(NAME, estimate), y = estimate)) +
+  geom_pointrange(aes(ymin = estimate - moe,
+                     ymax = estimate + moe),
+                  size = .25) +
+  coord_flip() +
+  labs(title = "Household income by state",
+       subtitle = "2012-2016 American Community Survey",
+       x = "",
+       y = "ACS estimate (bars represent margin of error)")
+```
+
+## Search for variables
+
+`get_()` requires knowing the variable ID, of which there are thousands. `load_variables()` downloads a list of variable IDs and labels for a given Census or ACS and dataset. You can then use `View()` to interactively browse through and filter for variables in RStudio.
+
+## Drawing maps
+
+`tidycensus` also can return [simple feature geometry](geoviz_import_data.html) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](geoviz_plot.html) Let's look at median household incomeby Census tracts from the 2012-2016 ACS in Loudoun County, Virginia:
+
+```{r loudoun-sf, message = FALSE}
+loudoun <- get_acs(state = "VA",
+                   county = "Loudoun",
+                   geography = "tract", 
+                   variables = c(medincome = "B19013_001"), 
+                   year = 2016,
+                   geometry = TRUE)
+loudoun
+```
+
+This looks similar to the previous output but because we set `geometry = TRUE` it is now a simple features data frame with a `geometry` column defining the geographic feature. We can visualize it using `geom_sf()` and `viridis::scale_*_viridis()` to adjust the color palette.
+
+```{r loudoun-sf-plot}
+ggplot(data = loudoun) +
+  geom_sf(aes(fill = estimate, color = estimate)) + 
+  coord_sf(crs = 26911) + 
+  scale_fill_viridis(option = "magma") + 
+  scale_color_viridis(option = "magma")
 ```
 
 # Acknowledgments {.toc-ignore}
