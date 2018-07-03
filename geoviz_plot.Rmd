@@ -19,8 +19,13 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
+Unlike [raster image maps](geoviz_ggmap.html), vector maps require you to obtain [spatial data files](geoviz_import_data.html) which contain detailed information necessary to draw all the components of a map (e.g. points, lines, polygons). Once you successfully import that data into R, `ggplot2` works with simple features data frames to easily generate geospatial visualizations using all the core elements and approaches of `ggplot()`.
+
+> You will need to install the development version of `ggplot2` in order to implement the approach described below. You can do this by running `devtools::install_github("tidyverse/ggplot2")` from the console.
 
 # Import USA state boundaries
+
+First we will import a spatial data file containing the boundaries of all 50 states in the United States^[Plus the District of Columbia and Puerto Rico] using `sf::st_read()`:
 
 ```{r import-usa}
 usa <- st_read("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
@@ -28,22 +33,84 @@ usa <- st_read("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp
 
 # Draw the boundaries
 
+`ggplot2` contains a geometric object specifically for simple feature objects called `geom_sf()`. This works reasonably well when you need to draw **polygons**, like our state boundaries. Support for simple features in `ggplot2` is under active development, so you may not find adequate support for plotting line or point features. To draw the map, we pass the simple features data frame as the `data` argument.
+
 ```{r geom-sf}
 ggplot(data = usa) +
   geom_sf()
 ```
 
-## Plot a subset
+Because simple features data frames are standardized with the `geometry` column always containing information on the geographic coordinates of the features, we do not need to specify additional parameters for `aes()`. Notice a problem with the map above: it wastes a lot of space. This is caused by the presence of Alaska and Hawaii in the dataset. The Aleutian Islands cross the the 180th meridian, requiring the map to show the Eastern hemisphere. Likewise, Hawaii is substantially distant from the continental United States.
+
+## Plot a subset of a map
+
+One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.^[Issues of political sovereignty aside, these entities are frequently excluded from maps depending on the data to be incorporated. You can always choose to leave them in the map.] Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use `filter()` from `dplyr` to exclude these four states/territories.
 
 ```{r usa-subset}
-usa_48 <- usa %>%
-  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico")))
+(usa_48 <- usa %>%
+  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico"))))
 
 ggplot(data = usa_48) +
   geom_sf()
+```
 
+Since the map is a `ggplot()` object, it can easily be modified like any other `ggplot()` graph. We could change the color of the map and the borders:
+
+```{r usa-fill}
 ggplot(data = usa_48) +
   geom_sf(fill = "palegreen", color = "black")
+```
+
+## `fiftystater`
+
+Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately a new package is available that has already done the work for you. [`fiftystater`](https://cran.r-project.org/web/packages/fiftystater/vignettes/fiftystater.html) includes the `fifty_states` data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. `fifty_states` is an ordinary data frame with one row for each point: 
+
+```{r fiftystater}
+library(fiftystater)
+
+data("fifty_states")
+as_tibble(fifty_states)
+```
+
+That is, each row defines a boundary point. The boundary for a state is created by drawing a line connecting each point. We need to convert this points-based data frame to a simple features data frame where each feature is a state.^[Modified from [Convert a fortified data.frame back to sf object](https://stackoverflow.com/questions/49526198/convert-a-fortified-data-frame-back-to-sf-object) on StackOverflow.] First we convert the data frame to a simple features data frame using `st_as_sf()`. This creates a simple features data frame where each feature is a boundary point, like before.
+
+```{r fiftystater-sf-point}
+st_as_sf(fifty_states, coords = c("long", "lat"))
+```
+
+Next we group the simple features data frame by `id` and `piece` (these variables define each distinct land mass within a state), combine them together using `summarize()`, and convert them to polygons:
+
+```{r fiftystater-sf-polygon}
+st_as_sf(fifty_states, coords = c("long", "lat")) %>% 
+  # convert sets of points to polygons
+  group_by(id, piece) %>% 
+  summarize(do_union = FALSE) %>%
+  st_cast("POLYGON")
+```
+
+Finally, we combine together all the pieces of land comprising each state. For example, Alabama is a single contiguous landmass, whereas Alaska is `r st_as_sf(fifty_states, coords = c("long", "lat")) %>% group_by(id, piece) %>% summarize(do_union = FALSE) %>% st_cast("POLYGON") %>% filter(id == "alaska") %>% nrow()` distinct pieces of land. This is another `group_by() %>% summarize()` operation, but only aggregating on `id`.
+
+```{r fiftystater-sf-multipolygon}
+# convert fifty_states to an sf data frame
+(sf_fifty <- st_as_sf(fifty_states, coords = c("long", "lat")) %>% 
+   # convert sets of points to polygons
+   group_by(id, piece) %>% 
+   summarize(do_union = FALSE) %>%
+   st_cast("POLYGON") %>%
+   # convert polygons to multipolygons for states with discontinuous regions
+   group_by(id) %>%
+   summarize())
+```
+
+Finally we set the projection method^[Run `?st_crs` from the console to read the documentation for this function and understand how this number is determined.] and draw the map:
+
+```{r fiftystater-proj}
+st_crs(sf_fifty) <- 4326
+```
+
+```{r fiftystater-sf-plot}
+ggplot(data = sf_fifty) +
+  geom_sf()
 ```
 
 # Add data to the map
@@ -116,13 +183,11 @@ ggplot(data = usa_48) +
 
 > `airports` contains a list of virtually all commercial airports in the United States. However `flights` only contains data on flights departing from New York City airports (JFK, LaGuardia, or Newark) and only services a few airports around the country.
 
-## Fill
-
 ## Fill (choropleths)
 
 **Choropleth maps** encode information by assigning shades of colors to defined areas on a map (e.g. countries, states, counties, zip codes). There are lots of ways to tweak and customize these graphs, which is generally a good idea because remember that color is one of the harder-to-decode channels.
 
-We'll continue to use the `usa_48` simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the `census_bureau` folder. Let's also normalize our measure by the total population to get the rate of foreign-born individuals in the population:
+We will continue to use the `usa_48` simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the `census_bureau` folder. Let's also normalize our measure by the total population to get the rate of foreign-born individuals in the population:
 
 ```{r import-foreign}
 (fb_state <- read_csv("data/census_bureau/ACS_13_5YR_B05012_state/ACS_13_5YR_B05012.csv") %>%
@@ -140,6 +205,8 @@ Now that we have our data, we want to draw it on the map. `fb_state` contains on
 
 ### Draw the map
 
+With the newly combined data frame, use `geom_sf()` and define the `fill` aesthetic based on the column in `usa_fb` you want to visualize.
+
 ```{r geom-map-state}
 ggplot(data = usa_fb) +
   geom_sf(aes(fill = rate))
@@ -147,9 +214,9 @@ ggplot(data = usa_fb) +
 
 ### Bin data to discrete intervals
 
-> Remember `cut()`? There are some `ggplot2` variants on this function that more explicitly identify how we want to bin the numeric vector (column).
+When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keep the variable continuous is technically more precise, [the human eye cannot usually distinguish between two colors which are very similar to one another.](https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf) By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While `cut()` is a base R function for converting continuous variables into discrete values, `ggplot2` offers two functions that explicitly define how we want to bin the numeric vector (column).
 
-* `cut_interval()` - makes `n` groups with equal range
+`cut_interval()` makes `n` groups with equal range:
 
 ```{r cut-interval}
 usa_fb %>%
@@ -158,7 +225,7 @@ usa_fb %>%
   geom_sf(aes(fill = rate_cut))
 ```
 
-* `cut_number()` - makes `n` groups with (approximately) equal numbers of observations
+Whereas `cut_number()` makes `n` groups with (approximately) equal numbers of observations:
 
 ```{r cut-number}
 usa_fb %>%
@@ -166,6 +233,8 @@ usa_fb %>%
   ggplot() +
   geom_sf(aes(fill = rate_cut))
 ```
+
+> See [this StackOverflow thread](https://gis.stackexchange.com/questions/86668/should-i-use-a-discrete-or-continuous-scale-for-coloring-a-chloropleth) for a more in-depth discussion on the merits of bucketizing a continuous variable and whether to use `cut_interval()` or `cut_number()`.
 
 ### Select a color palette
 
