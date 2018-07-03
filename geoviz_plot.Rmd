@@ -1,0 +1,286 @@
+---
+title: "Drawing vector maps with `ggplot2` and `sf`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(sf)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+
+# Import USA state boundaries
+
+```{r import-usa}
+usa <- st_read("data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp")
+```
+
+# Draw the boundaries
+
+```{r geom-sf}
+ggplot(data = usa) +
+  geom_sf()
+```
+
+## Plot a subset
+
+```{r usa-subset}
+usa_48 <- usa %>%
+  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico")))
+
+ggplot(data = usa_48) +
+  geom_sf()
+
+ggplot(data = usa_48) +
+  geom_sf(fill = "palegreen", color = "black")
+```
+
+# Add data to the map
+
+Region boundaries serve as the background in geospatial data visualization - so now we need to add data. Some types of geographic data (points and symbols) are overlaid on top of the boundaries, whereas other data (fill) are incorporated into the region layer itself.
+
+## Points
+
+Let's use our `usa_48` map data to add some points. The `airports` data frame in the `nycflights13` package includes geographic info on airports in the United States.
+
+```{r nycflights}
+library(nycflights13)
+airports
+```
+
+Each airport has it's geographic location encoded through `lat` and `lon`. To draw these points on the map, basically we draw a scatterplot with `x = lon` and `y = lat`. In fact we could simply do that:
+
+```{r scatter}
+ggplot(airports, aes(lon, lat)) +
+  geom_point()
+```
+
+Let's overlay it with the mapped state borders:
+
+```{r flights-usa}
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+Slight problem. We have airports listed outside of the continental United States. There are a couple ways to rectify this. Unfortunately `airports` does not include a variable identifying state so the `filter()` operation is not that simple. The easiest solution is to crop the limits of the graph using `coord_sf()` to only show the mainland:
+
+```{r crop}
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50))
+```
+
+## Symbols
+
+We can change the size or type of symbols on the map. For instance, we can draw a **bubble plot** (also known as a **proportional symbol map**) and encode the altitude of the airport through the size channel:
+
+```{r airport-alt}
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports, aes(x = lon, y = lat, size = alt),
+             fill = "grey", color = "black", alpha = .2) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50)) +
+  scale_size_area(guide = FALSE)
+```
+
+Circle area is proportional to the airport's altitude (in feet). Or we could scale it based on the number of arriving flights in `flights`:
+
+```{r airport-dest}
+airports_n <- flights %>%
+  count(dest) %>%
+  left_join(airports, by = c("dest" = "faa"))
+
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports_n, aes(x = lon, y = lat, size = n),
+             fill = "grey", color = "black", alpha = .2) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50)) +
+  scale_size_area(guide = FALSE)
+```
+
+> `airports` contains a list of virtually all commercial airports in the United States. However `flights` only contains data on flights departing from New York City airports (JFK, LaGuardia, or Newark) and only services a few airports around the country.
+
+## Fill
+
+## Fill (choropleths)
+
+**Choropleth maps** encode information by assigning shades of colors to defined areas on a map (e.g. countries, states, counties, zip codes). There are lots of ways to tweak and customize these graphs, which is generally a good idea because remember that color is one of the harder-to-decode channels.
+
+We'll continue to use the `usa_48` simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the `census_bureau` folder. Let's also normalize our measure by the total population to get the rate of foreign-born individuals in the population:
+
+```{r import-foreign}
+(fb_state <- read_csv("data/census_bureau/ACS_13_5YR_B05012_state/ACS_13_5YR_B05012.csv") %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+```
+
+### Join the data
+
+Now that we have our data, we want to draw it on the map. `fb_state` contains one row per state, as does `usa_48`. Since there is a one-to-one match between the data frames, we join the data frames together first, then use that single data frame to draw the map. This differs from the approach above for drawing points because a point feature is not the same thing as a polygon feature. That is, there were more airports then there were states. Because the spatial data is stored in a data frame with one row per state, all we need to do is merge the data frames together on a column that uniquely identifies each row in each data frame.
+
+```{r usa-foreign-join}
+(usa_fb <- usa_48 %>%
+  left_join(fb_state, by = c("STATEFP" = "GEO.id2")))
+```
+
+### Draw the map
+
+```{r geom-map-state}
+ggplot(data = usa_fb) +
+  geom_sf(aes(fill = rate))
+```
+
+### Bin data to discrete intervals
+
+> Remember `cut()`? There are some `ggplot2` variants on this function that more explicitly identify how we want to bin the numeric vector (column).
+
+* `cut_interval()` - makes `n` groups with equal range
+
+```{r cut-interval}
+usa_fb %>%
+  mutate(rate_cut = cut_interval(rate, 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+```
+
+* `cut_number()` - makes `n` groups with (approximately) equal numbers of observations
+
+```{r cut-number}
+usa_fb %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+```
+
+### Select a color palette
+
+Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth. By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):^[Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process]
+
+```{r color-wheel}
+# generate simulated data points
+sim_points <- data_frame(x = factor(1:6))
+
+plots <- purrr::map(1:6, ~ ggplot(sim_points[1:.x, ], aes(x, x, color = x)) +
+  geom_point(size = 5) +
+    ggtitle(paste(.x, "color")) +
+  theme(legend.position = "none"))
+
+gridExtra::marrangeGrob(plots, nrow = 2, ncol = 3, top = NULL)
+```
+
+`ggplot2` gives you many different ways of defining and customizing your `scale_color_` and `scale_fill_` palettes, but will not tell you if they are optimal for your specific usage in the graph.
+
+#### Color Brewer
+
+[Color Brewer](http://colorbrewer2.org/) is a diagnostic tool for selecting optimal color palettes for maps with discrete variables. The authors have generated different color palettes designed to make differentiating between categories easy depending on the scaling of your variable. All you need to do is define the number of categories in the variable, the nature of your data (sequential, diverging, or qualitative), and a color scheme. There are also options to select palettes that are colorblind safe, print friendly, and photocopy safe. Depending on the combination of options, you may not find any color palette that matches your criteria. In such a case, consider reducing the number of data classes.
+
+#### Sequential
+
+```{r cb-seq}
+seq_plot <- usa_fb %>%
+  mutate(rate_cut = cut_number(rate, 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+
+seq_plot +
+  scale_fill_brewer(palette = "BuGn")
+
+seq_plot +
+  scale_fill_brewer(palette = "YlGn")
+
+seq_plot +
+  scale_fill_brewer(palette = "Blues")
+```
+
+#### Qualitative
+
+```{r qual}
+# get state regions and subregions
+state_data <- data_frame(name = state.name,
+                         region = state.region,
+                         subregion = state.division,
+                         abb = state.abb)
+
+# set region base plot
+region_p <- usa_48 %>%
+  left_join(state_data, by = c("NAME" = "name")) %>%
+  ggplot() +
+  geom_sf(aes(fill = region))
+region_p
+
+# try different color brewers
+region_p +
+  scale_fill_brewer(palette = "Paired")
+
+region_p +
+  scale_fill_brewer(palette = "Dark2")
+
+region_p +
+  scale_fill_brewer(palette = "Pastel2")
+
+# set subregion base plot
+subregion_p <- usa_48 %>%
+  left_join(state_data, by = c("NAME" = "name")) %>%
+  ggplot() +
+  geom_sf(aes(fill = subregion))
+subregion_p
+
+subregion_p +
+  scale_fill_brewer(palette = "Paired")
+
+subregion_p +
+  scale_fill_brewer(palette = "Set1")
+
+subregion_p +
+  scale_fill_brewer(palette = "Pastel1")
+```
+
+# Changing map projection
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
+
+Representing portions of the globe on a flat surface can be challenging. Depending on how you project the map, you can distort or emphasize certain features of the map. Fortunately, `ggplot()` includes the `coord_sf()` function which allows us to easily implement different projection methods.
+
+```{r projections}
+map_proj_base <- ggplot(data = usa_48) +
+  geom_sf()
+
+map_proj_base +
+  coord_sf(crs = "+proj=merc") +
+  ggtitle("Mercator projection")
+
+map_proj_base +
+  coord_sf(crs = "+proj=cea +lon_0=0 +lat_ts=45") +
+  ggtitle("Gall-Peters projection")
+
+map_proj_base +
+  coord_sf(crs = "+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100") +
+  ggtitle("Albers equal-area projection")
+
+map_proj_base +
+  coord_sf(crs = "+proj=laea +lat_0=35 +lon_0=-100") +
+  ggtitle("Lambert azimuthal projection")
+```
+
+# Acknowledgements {.toc-ignore}
+
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
