@@ -548,6 +548,37 @@ airports</code></pre></div>
 <span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">130</span>, <span class="op">-</span><span class="dv">60</span>),
            <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">50</span>))</code></pre></div>
 <p><img src="geoviz_plot_files/figure-html/crop-1.png" width="672" /></p>
+<p>Alternatively, we can use <code>st_as_sf()</code> to convert <code>airports</code> to a simple features data frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">airports_sf &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(airports, <span class="dt">coords =</span> <span class="kw">c</span>(<span class="st">&quot;lon&quot;</span>, <span class="st">&quot;lat&quot;</span>))
+<span class="kw">st_crs</span>(airports_sf) &lt;-<span class="st"> </span><span class="dv">4326</span>   <span class="co"># set the coordinate reference system</span>
+airports_sf</code></pre></div>
+<pre><code>## Simple feature collection with 1458 features and 6 fields
+## geometry type:  POINT
+## dimension:      XY
+## bbox:           xmin: -177 ymin: 19.7 xmax: 174 ymax: 72.3
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+## # A tibble: 1,458 x 7
+##    faa   name              alt    tz dst   tzone                  geometry
+##    &lt;chr&gt; &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;               &lt;POINT [°]&gt;
+##  1 04G   Lansdowne Airp…  1044    -5 A     America/N…         (-80.6 41.1)
+##  2 06A   Moton Field Mu…   264    -6 A     America/C…         (-85.7 32.5)
+##  3 06C   Schaumburg Reg…   801    -6 A     America/C…           (-88.1 42)
+##  4 06N   Randall Airport   523    -5 A     America/N…         (-74.4 41.4)
+##  5 09J   Jekyll Island …    11    -5 A     America/N…         (-81.4 31.1)
+##  6 0A9   Elizabethton M…  1593    -5 A     America/N…         (-82.2 36.4)
+##  7 0G6   Williams Count…   730    -5 A     America/N…         (-84.5 41.5)
+##  8 0G7   Finger Lakes R…   492    -5 A     America/N…         (-76.8 42.9)
+##  9 0P2   Shoestring Avi…  1000    -5 U     America/N…         (-76.6 39.8)
+## 10 0S9   Jefferson Coun…   108    -8 A     America/L…          (-123 48.1)
+## # ... with 1,448 more rows</code></pre>
+<p><code>coords</code> tells <code>st_as_sf()</code> which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second <code>geom_sf()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> airports_sf, <span class="dt">shape =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">130</span>, <span class="op">-</span><span class="dv">60</span>),
+           <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">50</span>))</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/flights-sf-plot-1.png" width="672" /></p>
 </div>
 <div id="symbols" class="section level2">
 <h2>Symbols</h2>
@@ -670,87 +701,6 @@ airports</code></pre></div>
 <p>See <a href="https://gis.stackexchange.com/questions/86668/should-i-use-a-discrete-or-continuous-scale-for-coloring-a-chloropleth">this StackOverflow thread</a> for a more in-depth discussion on the merits of bucketizing a continuous variable and whether to use <code>cut_interval()</code> or <code>cut_number()</code>.</p>
 </blockquote>
 </div>
-<div id="select-a-color-palette" class="section level3">
-<h3>Select a color palette</h3>
-<p>Selection of your <strong>color palette</strong> is perhaps the most important decision to make when drawing a choropleth. By default, <code>ggplot2</code> picks evenly spaced hues around the <a href="https://en.wikipedia.org/wiki/HCL_color_space">Hue-Chroma-Luminance (HCL) color space</a>:<a href="#fn5" class="footnoteRef" id="fnref5"><sup>5</sup></a></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate simulated data points</span>
-sim_points &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">x =</span> <span class="kw">factor</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>))
-
-plots &lt;-<span class="st"> </span>purrr<span class="op">::</span><span class="kw">map</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">6</span>, <span class="op">~</span><span class="st"> </span><span class="kw">ggplot</span>(sim_points[<span class="dv">1</span><span class="op">:</span>.x, ], <span class="kw">aes</span>(x, x, <span class="dt">color =</span> x)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">size =</span> <span class="dv">5</span>) <span class="op">+</span>
-<span class="st">    </span><span class="kw">ggtitle</span>(<span class="kw">paste</span>(.x, <span class="st">&quot;color&quot;</span>)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;none&quot;</span>))
-
-gridExtra<span class="op">::</span><span class="kw">marrangeGrob</span>(plots, <span class="dt">nrow =</span> <span class="dv">2</span>, <span class="dt">ncol =</span> <span class="dv">3</span>, <span class="dt">top =</span> <span class="ot">NULL</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/color-wheel-1.png" width="672" /></p>
-<p><code>ggplot2</code> gives you many different ways of defining and customizing your <code>scale_color_</code> and <code>scale_fill_</code> palettes, but will not tell you if they are optimal for your specific usage in the graph.</p>
-<div id="color-brewer" class="section level4">
-<h4>Color Brewer</h4>
-<p><a href="http://colorbrewer2.org/">Color Brewer</a> is a diagnostic tool for selecting optimal color palettes for maps with discrete variables. The authors have generated different color palettes designed to make differentiating between categories easy depending on the scaling of your variable. All you need to do is define the number of categories in the variable, the nature of your data (sequential, diverging, or qualitative), and a color scheme. There are also options to select palettes that are colorblind safe, print friendly, and photocopy safe. Depending on the combination of options, you may not find any color palette that matches your criteria. In such a case, consider reducing the number of data classes.</p>
-</div>
-<div id="sequential" class="section level4">
-<h4>Sequential</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">seq_plot &lt;-<span class="st"> </span>usa_fb <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rate_cut =</span> <span class="kw">cut_number</span>(rate, <span class="dv">6</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> rate_cut))
-
-seq_plot <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;BuGn&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/cb-seq-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">seq_plot <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;YlGn&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/cb-seq-2.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">seq_plot <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Blues&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/cb-seq-3.png" width="672" /></p>
-</div>
-<div id="qualitative" class="section level4">
-<h4>Qualitative</h4>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># get state regions and subregions</span>
-state_data &lt;-<span class="st"> </span><span class="kw">data_frame</span>(<span class="dt">name =</span> state.name,
-                         <span class="dt">region =</span> state.region,
-                         <span class="dt">subregion =</span> state.division,
-                         <span class="dt">abb =</span> state.abb)
-
-<span class="co"># set region base plot</span>
-region_p &lt;-<span class="st"> </span>usa_<span class="dv">48</span> <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">left_join</span>(state_data, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;NAME&quot;</span> =<span class="st"> &quot;name&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> region))
-region_p</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-1.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># try different color brewers</span>
-region_p <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Paired&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-2.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">region_p <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-3.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">region_p <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Pastel2&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-4.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># set subregion base plot</span>
-subregion_p &lt;-<span class="st"> </span>usa_<span class="dv">48</span> <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">left_join</span>(state_data, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;NAME&quot;</span> =<span class="st"> &quot;name&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> subregion))
-subregion_p</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-5.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subregion_p <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Paired&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-6.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subregion_p <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Set1&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-7.png" width="672" /></p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subregion_p <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">palette =</span> <span class="st">&quot;Pastel1&quot;</span>)</code></pre></div>
-<p><img src="geoviz_plot_files/figure-html/qual-8.png" width="672" /></p>
-<blockquote>
-<p>Also check out the <a href="https://cran.r-project.org/web/packages/viridis/vignettes/intro-to-viridis.html"><code>viridis</code></a> package for generating optimal continuous color scales.</p>
-</blockquote>
-</div>
-</div>
 </div>
 </div>
 <div id="changing-map-projection" class="section level1">
@@ -789,7 +739,7 @@ subregion_p</code></pre></div>
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2018-07-03                  
+##  date     2018-07-05                  
 ## 
 ##  package    * version    date       source                         
 ##  assertthat   0.2.0      2017-04-11 CRAN (R 3.5.0)                 
@@ -877,7 +827,6 @@ subregion_p</code></pre></div>
 <li id="fn2"><p>Issues of political sovereignty aside, these entities are frequently excluded from maps depending on the data to be incorporated. You can always choose to leave them in the map.<a href="#fnref2">↩</a></p></li>
 <li id="fn3"><p>Modified from <a href="https://stackoverflow.com/questions/49526198/convert-a-fortified-data-frame-back-to-sf-object">Convert a fortified data.frame back to sf object</a> on StackOverflow.<a href="#fnref3">↩</a></p></li>
 <li id="fn4"><p>Run <code>?st_crs</code> from the console to read the documentation for this function and understand how this number is determined.<a href="#fnref4">↩</a></p></li>
-<li id="fn5"><p>Check out chapter 6.6.2 in <em><code>ggplot2</code>: Elegant Graphics for Data Analysis</em> for a much more thorough explanation of the theory behind this selection process<a href="#fnref5">↩</a></p></li>
 </ol>
 </div>
 
