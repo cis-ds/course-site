@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Drawing interactive maps with leaflet</title>
+
+<script src="site_libs/jquery-1.12.4/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/htmlwidgets-1.2/htmlwidgets.js"></script>
+<link href="site_libs/leaflet-1.3.1/leaflet.css" rel="stylesheet" />
+<script src="site_libs/leaflet-1.3.1/leaflet.js"></script>
+<link href="site_libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet" />
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4-compressed.js"></script>
+<script src="site_libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+<link href="site_libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet" />
+<script src="site_libs/leaflet-binding-2.0.1/leaflet.js"></script>
+<script src="site_libs/leaflet-providers-1.1.17/leaflet-providers.js"></script>
+<script src="site_libs/leaflet-providers-plugin-2.0.1/leaflet-providers-plugin.js"></script>
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-45631879-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Drawing interactive maps with <code>leaflet</code></h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(leaflet)
+<span class="kw">library</span>(RColorBrewer)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<div id="intro-to-leaflet" class="section level1">
+<h1>Intro to Leaflet</h1>
+<p><a href="https://leafletjs.com/">Leaflet</a> is an open-source JavaScript library for creating interactive maps. Unlike static visualization packages such as <code>ggplot2</code> or <code>ggmap</code>, Leaflet maps are fully interactive and can include features such as:</p>
+<ul>
+<li>Interactive panning/zooming</li>
+<li>Pop-up tooltips and labels</li>
+<li>Highlighting/selecting regions</li>
+</ul>
+<p>It is used by many news organizations and tech websites to visualize geographic data. The <code>leaflet</code> package for R enables the creation of interactive maps within R without learning how to write JavaScript code. The <a href="https://rstudio.github.io/leaflet/"><code>leaflet</code> documentation</a> is a handy walkthrough for the basics of creating Leaflet maps in R. Let’s explore here how to create Leaflet maps using the same data we used to create <a href="geoviz_ggmap.html">raster maps with <code>ggmap</code></a>, <a href="https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr">crime data from the city of Chicago in 2017</a>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;data/Crimes_-_2017.csv&quot;</span>)
+<span class="kw">glimpse</span>(crimes)</code></pre></div>
+<pre><code>## Observations: 267,345
+## Variables: 22
+## $ ID                     &lt;int&gt; 11094370, 11118031, 11134189, 11156462,...
+## $ `Case Number`          &lt;chr&gt; &quot;JA440032&quot;, &quot;JA470589&quot;, &quot;JA491697&quot;, &quot;JA...
+## $ Date                   &lt;chr&gt; &quot;09/21/2017 12:15:00 AM&quot;, &quot;10/12/2017 0...
+## $ Block                  &lt;chr&gt; &quot;072XX N CALIFORNIA AVE&quot;, &quot;055XX W GRAN...
+## $ IUCR                   &lt;chr&gt; &quot;1122&quot;, &quot;1345&quot;, &quot;4651&quot;, &quot;1110&quot;, &quot;0265&quot;,...
+## $ `Primary Type`         &lt;chr&gt; &quot;DECEPTIVE PRACTICE&quot;, &quot;CRIMINAL DAMAGE&quot;...
+## $ Description            &lt;chr&gt; &quot;COUNTERFEIT CHECK&quot;, &quot;TO CITY OF CHICAG...
+## $ `Location Description` &lt;chr&gt; &quot;CURRENCY EXCHANGE&quot;, &quot;JAIL / LOCK-UP FA...
+## $ Arrest                 &lt;chr&gt; &quot;true&quot;, &quot;true&quot;, &quot;true&quot;, &quot;true&quot;, &quot;true&quot;,...
+## $ Domestic               &lt;chr&gt; &quot;false&quot;, &quot;false&quot;, &quot;false&quot;, &quot;false&quot;, &quot;fa...
+## $ Beat                   &lt;chr&gt; &quot;2411&quot;, &quot;2515&quot;, &quot;0922&quot;, &quot;2514&quot;, &quot;1221&quot;,...
+## $ District               &lt;chr&gt; &quot;024&quot;, &quot;025&quot;, &quot;009&quot;, &quot;025&quot;, &quot;012&quot;, &quot;002...
+## $ Ward                   &lt;int&gt; 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, ...
+## $ `Community Area`       &lt;int&gt; 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, ...
+## $ `FBI Code`             &lt;chr&gt; &quot;10&quot;, &quot;14&quot;, &quot;26&quot;, &quot;11&quot;, &quot;02&quot;, &quot;15&quot;, &quot;03...
+## $ `X Coordinate`         &lt;int&gt; 1156443, 1138788, 1159425, 1138653, 116...
+## $ `Y Coordinate`         &lt;int&gt; 1947707, 1913480, 1875711, 1920720, 190...
+## $ Year                   &lt;int&gt; 2017, 2017, 2017, 2017, 2017, 2017, 201...
+## $ `Updated On`           &lt;chr&gt; &quot;03/01/2018 03:52:35 PM&quot;, &quot;03/01/2018 0...
+## $ Latitude               &lt;dbl&gt; 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41....
+## $ Longitude              &lt;dbl&gt; -87.7, -87.8, -87.7, -87.8, -87.7, -87....
+## $ Location               &lt;chr&gt; &quot;(42.012293397, -87.699714109)&quot;, &quot;(41.9...</code></pre>
+</div>
+<div id="basic-usage" class="section level1">
+<h1>Basic usage</h1>
+<p>Leaflet maps are built using layers, similar to <code>ggplot2</code>.</p>
+<ol style="list-style-type: decimal">
+<li>Create a map widget by calling <code>leaflet()</code></li>
+<li>Add <strong>layers</strong> to the map using one or more of the layer functions (e.g. <code>addTiles()</code>, <code>addMarkers()</code>, <code>addPolygons()</code>)</li>
+<li>Repeat step 2 as many times as necessary to incorporate the necessary information</li>
+<li>Display the map widget</li>
+</ol>
+<p>A basic example is:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m &lt;-<span class="st"> </span><span class="kw">leaflet</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">addTiles</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">addMarkers</span>(<span class="dt">lng =</span> <span class="op">-</span><span class="fl">87.597241</span>, <span class="dt">lat =</span> <span class="fl">41.789829</span>,
+             <span class="dt">popup =</span> <span class="st">&quot;Saieh Hall of Economics&quot;</span>)
+m</code></pre></div>
+<div id="htmlwidget-1d9f9b9fdca3023baa83" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1d9f9b9fdca3023baa83">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addMarkers","args":[41.789829,-87.597241,null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},"Saieh Hall of Economics",null,null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[41.789829,41.789829],"lng":[-87.597241,-87.597241]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="basemaps" class="section level1">
+<h1>Basemaps</h1>
+<p>Like <code>ggmap</code>, <code>leaflet</code> supports basemaps using map tiles. By default, OpenStreetMap tiles are used.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m &lt;-<span class="st"> </span><span class="kw">leaflet</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">setView</span>(<span class="dt">lng =</span> <span class="op">-</span><span class="fl">87.597241</span>, <span class="dt">lat =</span> <span class="fl">41.789829</span>, <span class="dt">zoom =</span> <span class="dv">14</span>)
+m <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">addTiles</span>()</code></pre></div>
+<div id="htmlwidget-b18b48ec4ad649442f3b" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b18b48ec4ad649442f3b">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"setView":[[41.789829,-87.597241],14,[]],"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]}]},"evals":[],"jsHooks":[]}</script>
+<p>To use a different basemap provider, use <code>addProviderTiles()</code> with the name of the provider you wish to implement. You can view the complete list of providers using <code>names(providers)</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">addProviderTiles</span>(providers<span class="op">$</span>Stamen.Toner)</code></pre></div>
+<div id="htmlwidget-514d280a38cf86ead40b" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-514d280a38cf86ead40b">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"setView":[[41.789829,-87.597241],14,[]],"calls":[{"method":"addProviderTiles","args":["Stamen.Toner",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}]},"evals":[],"jsHooks":[]}</script>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">addProviderTiles</span>(providers<span class="op">$</span>CartoDB.Positron)</code></pre></div>
+<div id="htmlwidget-74434d812ec23342fdce" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-74434d812ec23342fdce">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"setView":[[41.789829,-87.597241],14,[]],"calls":[{"method":"addProviderTiles","args":["CartoDB.Positron",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}]},"evals":[],"jsHooks":[]}</script>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">addProviderTiles</span>(providers<span class="op">$</span>Esri.NatGeoWorldMap)</code></pre></div>
+<div id="htmlwidget-8da54f9f5480ad7c3ec3" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-8da54f9f5480ad7c3ec3">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"setView":[[41.789829,-87.597241],14,[]],"calls":[{"method":"addProviderTiles","args":["Esri.NatGeoWorldMap",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}]},"evals":[],"jsHooks":[]}</script>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">m <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">addProviderTiles</span>(providers<span class="op">$</span>Wikimedia)</code></pre></div>
+<div id="htmlwidget-124fb78127817ec02cd9" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-124fb78127817ec02cd9">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"setView":[[41.789829,-87.597241],14,[]],"calls":[{"method":"addProviderTiles","args":["Wikimedia",null,null,{"errorTileUrl":"","noWrap":false,"detectRetina":false}]}]},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="add-markers" class="section level1">
+<h1>Add markers</h1>
+</div>
+<div id="add-labels" class="section level1">
+<h1>Add labels</h1>
+</div>
+<div id="add-lines-and-shapes" class="section level1">
+<h1>Add lines and shapes</h1>
+</div>
+<div id="add-legend" class="section level1">
+<h1>Add legend</h1>
+</div>
+<div id="choropleth-of-crime-rates-by-neighborhood" class="section level1">
+<h1>Choropleth of crime rates by neighborhood</h1>
+</div>
+<div id="additional-resources" class="section level1 toc-ignore">
+<h1>Additional resources</h1>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>##  setting  value                       
+##  version  R version 3.5.0 (2018-04-23)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2018-07-19                  
+## 
+##  package      * version date       source        
+##  assertthat     0.2.0   2017-04-11 CRAN (R 3.5.0)
+##  backports      1.1.2   2017-12-13 CRAN (R 3.5.0)
+##  base         * 3.5.0   2018-04-24 local         
+##  bindr          0.1.1   2018-03-13 CRAN (R 3.5.0)
+##  bindrcpp       0.2.2   2018-03-29 CRAN (R 3.5.0)
+##  broom          0.4.4   2018-03-29 CRAN (R 3.5.0)
+##  cellranger     1.1.0   2016-07-27 CRAN (R 3.5.0)
+##  cli            1.0.0   2017-11-05 CRAN (R 3.5.0)
+##  codetools      0.2-15  2016-10-05 CRAN (R 3.5.0)
+##  colorspace     1.3-2   2016-12-14 CRAN (R 3.5.0)
+##  compiler       3.5.0   2018-04-24 local         
+##  crayon         1.3.4   2017-09-16 CRAN (R 3.5.0)
+##  crosstalk      1.0.0   2016-12-21 CRAN (R 3.5.0)
+##  datasets     * 3.5.0   2018-04-24 local         
+##  devtools       1.13.5  2018-02-18 CRAN (R 3.5.0)
+##  digest         0.6.15  2018-01-28 CRAN (R 3.5.0)
+##  dplyr        * 0.7.6   2018-06-29 cran (@0.7.6) 
+##  evaluate       0.10.1  2017-06-24 CRAN (R 3.5.0)
+##  forcats      * 0.3.0   2018-02-19 CRAN (R 3.5.0)
+##  foreign        0.8-70  2017-11-28 CRAN (R 3.5.0)
+##  ggplot2      * 3.0.0   2018-07-03 CRAN (R 3.5.0)
+##  glue           1.2.0   2017-10-29 CRAN (R 3.5.0)
+##  graphics     * 3.5.0   2018-04-24 local         
+##  grDevices    * 3.5.0   2018-04-24 local         
+##  grid           3.5.0   2018-04-24 local         
+##  gtable         0.2.0   2016-02-26 CRAN (R 3.5.0)
+##  haven          1.1.1   2018-01-18 CRAN (R 3.5.0)
+##  hms            0.4.2   2018-03-10 CRAN (R 3.5.0)
+##  htmltools      0.3.6   2017-04-28 CRAN (R 3.5.0)
+##  htmlwidgets    1.2     2018-04-19 CRAN (R 3.5.0)
+##  httpuv         1.4.3   2018-05-10 CRAN (R 3.5.0)
+##  httr           1.3.1   2017-08-20 CRAN (R 3.5.0)
+##  jsonlite       1.5     2017-06-01 CRAN (R 3.5.0)
+##  knitr          1.20    2018-02-20 CRAN (R 3.5.0)
+##  later          0.7.2   2018-05-01 CRAN (R 3.5.0)
+##  lattice        0.20-35 2017-03-25 CRAN (R 3.5.0)
+##  lazyeval       0.2.1   2017-10-29 CRAN (R 3.5.0)
+##  leaflet      * 2.0.1   2018-06-04 CRAN (R 3.5.0)
+##  lubridate      1.7.4   2018-04-11 CRAN (R 3.5.0)
+##  magrittr       1.5     2014-11-22 CRAN (R 3.5.0)
+##  memoise        1.1.0   2017-04-21 CRAN (R 3.5.0)
+##  methods      * 3.5.0   2018-04-24 local         
+##  mime           0.5     2016-07-07 CRAN (R 3.5.0)
+##  mnormt         1.5-5   2016-10-15 CRAN (R 3.5.0)
+##  modelr         0.1.2   2018-05-11 CRAN (R 3.5.0)
+##  munsell        0.4.3   2016-02-13 CRAN (R 3.5.0)
+##  nlme           3.1-137 2018-04-07 CRAN (R 3.5.0)
+##  parallel       3.5.0   2018-04-24 local         
+##  pillar         1.2.3   2018-05-25 CRAN (R 3.5.0)
+##  pkgconfig      2.0.1   2017-03-21 CRAN (R 3.5.0)
+##  plyr           1.8.4   2016-06-08 CRAN (R 3.5.0)
+##  promises       1.0.1   2018-04-13 CRAN (R 3.5.0)
+##  psych          1.8.4   2018-05-06 CRAN (R 3.5.0)
+##  purrr        * 0.2.5   2018-05-29 CRAN (R 3.5.0)
+##  R6             2.2.2   2017-06-17 CRAN (R 3.5.0)
+##  RColorBrewer * 1.1-2   2014-12-07 CRAN (R 3.5.0)
+##  Rcpp           0.12.17 2018-05-18 CRAN (R 3.5.0)
+##  readr        * 1.1.1   2017-05-16 CRAN (R 3.5.0)
+##  readxl         1.1.0   2018-04-20 CRAN (R 3.5.0)
+##  reshape2       1.4.3   2017-12-11 CRAN (R 3.5.0)
+##  rlang          0.2.1   2018-05-30 CRAN (R 3.5.0)
+##  rmarkdown      1.9     2018-03-01 CRAN (R 3.5.0)
+##  rprojroot      1.3-2   2018-01-03 CRAN (R 3.5.0)
+##  rstudioapi     0.7     2017-09-07 CRAN (R 3.5.0)
+##  rvest          0.3.2   2016-06-17 CRAN (R 3.5.0)
+##  scales         0.5.0   2017-08-24 CRAN (R 3.5.0)
+##  shiny          1.1.0   2018-05-17 CRAN (R 3.5.0)
+##  stats        * 3.5.0   2018-04-24 local         
+##  stringi        1.2.2   2018-05-02 CRAN (R 3.5.0)
+##  stringr      * 1.3.1   2018-05-10 CRAN (R 3.5.0)
+##  tibble       * 1.4.2   2018-01-22 CRAN (R 3.5.0)
+##  tidyr        * 0.8.1   2018-05-18 CRAN (R 3.5.0)
+##  tidyselect     0.2.4   2018-02-26 CRAN (R 3.5.0)
+##  tidyverse    * 1.2.1   2017-11-14 CRAN (R 3.5.0)
+##  tools          3.5.0   2018-04-24 local         
+##  utils        * 3.5.0   2018-04-24 local         
+##  withr          2.1.2   2018-03-15 CRAN (R 3.5.0)
+##  xml2           1.2.0   2018-01-24 CRAN (R 3.5.0)
+##  xtable         1.8-2   2016-02-05 CRAN (R 3.5.0)
+##  yaml           2.1.19  2018-05-01 CRAN (R 3.5.0)</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2">Full documentation of the data from the larger 2001-present crime dataset.</a>.<a href="#fnref1">↩</a></p></li>
+</ol>
+</div>
+
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
