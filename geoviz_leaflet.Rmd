@@ -60,14 +60,13 @@ Like `ggmap`, `leaflet` supports basemaps using map tiles. By default, OpenStree
 
 ```{r basemap}
 m <- leaflet() %>%
-  setView(lng = -87.597241, lat = 41.789829, zoom = 14)
-m %>%
-  addTiles()
+  setView(lng = -87.618994, lat = 41.875619, zoom = 12)
+m %>% addTiles()
 ```
 
 To use a different basemap provider, use `addProviderTiles()` with the name of the provider you wish to implement. You can view the complete list of providers using `names(providers)`.
 
-```{r basemap-third-party}
+```{r basemap-third-party, dependson = "basemap"}
 m %>% addProviderTiles(providers$Stamen.Toner)
 m %>% addProviderTiles(providers$CartoDB.Positron)
 m %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
@@ -76,6 +75,53 @@ m %>% addProviderTiles(providers$Wikimedia)
 
 # Add markers
 
+**Markers** are used to identify points on the map. Each point needs to be defined in terms of latitude/longitude coordinates. These can come from a variety of sources, most commonly either a [map data file](geoviz_import_data.html) such as a shapefile or GeoJSON (imported using `sf`) or a data frame with latitude and longitude columns.
+
+Let's use the Chicago crimes data to draw a map of the city identifying the location of each reported homicide:
+
+```{r homicide, dependson = "import-crimes"}
+(homicides <- crimes %>%
+  filter(`Primary Type` == "HOMICIDE"))
+```
+
+```{r homicide-map, dependson = "homicide"}
+leaflet(data = homicides) %>%
+  addTiles() %>%
+  addMarkers()
+```
+
+> `addMarkers()` and related functions will automatically check data frames for columns called ` lng`/`long`/`longitude` and `lat`/`latitude` (case-insensitively). If your coordinate columns have any other names, you need to explicitly identify them using the `lng` and `lat` arguments. Such as `addMarkers(lng = ~Longitude, lat = ~Latitude).
+
+Without any customization, we get a basic map with each murder location indicated by a dropped pin. Each markers appearance can be customized, though the technical difficulty quickly ramps up. The [awesome markers](https://github.com/lvoogdt/Leaflet.awesome-markers) plugin offers the most straight-forward customizability options. Instead of using `addMarkers()`, use `addAwesomeMarkers()` to control the appearance of the markers using icons from the [Font Awesome](http://fontawesome.io/icons/), [Bootstrap Glyphicons](https://getbootstrap.com/components/), and [Ion icons](http://ionicons.com/) icon libraries. First you define the appearance of the icon using `awesomeIcons()`, then pass that as an argument to `addAwesomeMarkers()`:
+
+```{r homicide-map-icons, dependson = "homicide"}
+icons <- awesomeIcons(
+  icon = 'bolt',
+  iconColor = 'orange',
+  markerColor = "black",
+  library = 'fa'
+)
+
+leaflet(data = homicides) %>%
+  addTiles() %>%
+  addAwesomeMarkers(icon = icons)
+```
+
+One concern is that some neighborhoods have so many murders that the points overlap. One solution enabled by Leaflet's interactivity is to **cluster** markers at varying levels of detail using the `clusterOptions` argument to `addMarkers()`:
+
+```{r homicide-map-cluster, dependson = "homicide"}
+leaflet(data = homicides) %>%
+  addTiles() %>%
+  addMarkers(clusterOptions = markerClusterOptions())
+```
+
+Alternatively, we could use circles using `addCircleMarkers()`:
+
+```{r homicide-map-circles, dependson = "homicide"}
+leaflet(data = homicides) %>%
+  addTiles() %>%
+  addCircleMarkers()
+```
 
 # Add labels
 
