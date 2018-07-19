@@ -7,13 +7,14 @@ output:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(cache = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
 library(leaflet)
-library(RColorBrewer)
+library(stringr)
+library(sf)
 
 options(digits = 3)
 set.seed(1234)
@@ -144,8 +145,6 @@ leaflet(data = homicides) %>%
 We can combine multiple pieces of information to create a custom popup message. Unfortunately this does require [basic knowledge of writing HTML documents](https://websitesetup.org/html5-cheat-sheet/).
 
 ```{r homicide-map-popups-long, dependson = "homicide"}
-library(stringr)
-
 homicides %>%
   mutate(popup = str_c(Date,
                        Block,
@@ -159,14 +158,171 @@ homicides %>%
 
 # Add lines and shapes
 
+Leaflet can also draw spatial lines and shapes from R and add them to maps. Given our previous exposure to `sf` and importing shapefiles using `st_read()`, let draw a map of Chicago with each community area outlined.
 
-# Add legend
+```{r get-community-areas}
+areas <- st_read("data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp") %>%
+  # convert community names to title case
+  mutate(community = str_to_title(community))
+```
 
+To do this in `ggplot()`, we only need two lines of code:
 
-# Choropleth of crime rates by neighborhood
+```{r community-areas-ggplot, dependson = "get-community-areas"}
+ggplot(data = areas) +
+  geom_sf()
+```
 
-# Additional resources {.toc-ignore}
+To draw this in `leaflet`, we use `addPolygons()`:
 
+```{r community-areas-leaflet, dependson = "get-community-areas"}
+leaflet(data = areas) %>%
+  addPolygons(color = "#444444",
+              weight = 1,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.5,
+              highlightOptions = highlightOptions(color = "white",
+                                                  weight = 2,
+                                                  bringToFront = TRUE))
+```
+
+The first several arguments adjust the appearance of each polygon region (e.g. color, opacity, border thickness). `highlightOptions` emphasizes the currently moused-over polygon. We can further add detail to this map by labeling each community area just as we did with points:
+
+```{r community-areas-label, dependson = "get-community-areas"}
+leaflet(data = areas) %>%
+  addPolygons(label = ~community,
+              color = "#444444",
+              weight = 1,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.5,
+              highlightOptions = highlightOptions(color = "white",
+                                                  weight = 2,
+                                                  bringToFront = TRUE))
+```
+
+And since `leaflet` map widgets are built in layers, we can overlay the community areas on top of a standard map of the city.
+
+```{r community-areas-overlay, dependson = "get-community-areas"}
+leaflet(data = areas) %>%
+  addTiles() %>%
+  addPolygons(label = ~community,
+              color = "#444444",
+              weight = 1,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.5,
+              highlightOptions = highlightOptions(color = "white",
+                                                  weight = 2,
+                                                  bringToFront = TRUE))
+```
+
+# Choropleth of homicides by neighborhood
+
+Now that we have a basic map of the city of Chicago with each community area identified, we can turn this map into a choropleth by filling in the color of each community area based on the number of reported homicides in 2017. First we calculate the total number of reported homicides by community area and merge this with the simple features data frame:
+
+```{r community-areas-homicides, dependson = "get-community-areas"}
+(areas_homicides <- areas %>%
+   select(community, area_numbe) %>%
+   mutate(area_numbe = as.numeric(as.character(area_numbe))) %>%
+   left_join(homicides %>%
+               count(`Community Area`),
+             by = c("area_numbe" = "Community Area")) %>%
+   mutate(n = ifelse(is.na(n), 0, n)))
+```
+
+## Add color
+
+Next we need to define the [color palette](geoviz_color.html) for this map. `leaflet` has [its own series of functions to generate palettes](https://rstudio.github.io/leaflet/colors.html) using either `RColorBrewer` or `viridis`.
+
+First, we define the bins. This is a numeric vector that defines the boundaries between intervals (`(0,10]`, `(10,20]`, and so on).
+
+Then, we call `colorBin()` to generate a palette function that maps the `RColorBrewer` `"YlOrRd"` palette to our bins.
+
+Finally, we modify `addPolygons()` to use the palette function and the density values to generate a vector of colors for `fillColor()`, and also add some other static style properties.
+
+```{r choropleth-color, dependson = "get-community-areas"}
+bins <- c(0, 10, 20, 30, 40, 50, Inf)
+pal <- colorBin("YlOrRd", domain = areas_homicides$n, bins = bins)
+
+areas_homicides %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolygons(label = ~community,
+              fillColor = ~pal(n),
+              color = "#444444",
+              weight = 1,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.5,
+              highlightOptions = highlightOptions(color = "white",
+                                                  weight = 2,
+                                                  bringToFront = TRUE))
+```
+
+## Custom information
+
+Let's now modify the label to explicitly identify the number of reported homicides in the community area. We generate the HTML by hand and pass it to `map(htmltools::HTML)` so that Leaflet knows to treat each label as HTML instead of plain text. We also adjust the appearance of each label using the `labelOptions` argument and corresponding function.
+
+```{r choropleth-label-detail, dependson = "choropleth-color"}
+areas_homicides %>%
+  mutate(popup = str_c("<strong>", community, "</strong>",
+                       "<br/>",
+                       "Reported homicides in 2017: ", n) %>%
+           map(htmltools::HTML)) %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolygons(label = ~popup,
+              fillColor = ~pal(n),
+              color = "#444444",
+              weight = 1,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.5,
+              highlightOptions = highlightOptions(color = "white",
+                                                  weight = 2,
+                                                  bringToFront = TRUE),
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto"))
+```
+
+## Add legend
+
+Finally, we add a legend using `addLegend()`.
+
+```{r choropleth-label-legend, dependson = "choropleth-color"}
+areas_homicides %>%
+  mutate(popup = str_c("<strong>", community, "</strong>",
+                       "<br/>",
+                       "Reported homicides in 2017: ", n) %>%
+           map(htmltools::HTML)) %>%
+  leaflet() %>%
+  addTiles() %>%
+  addPolygons(label = ~popup,
+              fillColor = ~pal(n),
+              color = "#444444",
+              weight = 1,
+              smoothFactor = 0.5,
+              opacity = 1.0,
+              fillOpacity = 0.5,
+              highlightOptions = highlightOptions(color = "white",
+                                                  weight = 2,
+                                                  bringToFront = TRUE),
+              labelOptions = labelOptions(
+                style = list("font-weight" = "normal", padding = "3px 8px"),
+                textsize = "15px",
+                direction = "auto")) %>%
+  addLegend(pal = pal,
+            values = ~n,
+            opacity = 0.7,
+            title = NULL,
+            position = "bottomright")
+```
+
+The main requirement here is `pal = pal`, which tells `addLegend()` the custom palette function used to create the color palette.
 
 # Session Info {.toc-ignore}
 
