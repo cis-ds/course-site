@@ -295,7 +295,7 @@ holdout_results <- function(splits) {
   holdout <- assessment(splits)
   
   # `augment` will save the predictions with the holdout data set
-  res <- augment(mod, newdata = holdout, type.residuals = "deviance") %>%
+  res <- augment(mod, newdata = holdout) %>%
     # calculate residuals for future use
     mutate(.resid = mpg - .fitted)
   
@@ -370,31 +370,35 @@ And arrive at a similar conclusion. There may be a very marginal advantage to ad
 
 ## LOOCV in classification
 
-Let's use classification to validate the interactive terms model from before. For technical reasons, we need to use a custom `mse.glm()` function to properly calculate the MSE for binary response variables:^[This function can also be loaded via the [`rcfss`](https://github.com/uc-cfss/rcfss) library.]
+Let's verify the error rate of our interactive terms model for the Titanic data set:
 
-```{r mse-glm}
-mse.glm <- function (model, data){
-  residuals.glm <- function(model, data) {
-    modelr:::response(model, data) - stats::predict(model,
-                                                    data,
-                                                    type = "response")
-  }
+```{r titanic-loocv}
+# function to generate assessment statistics for titanic model
+holdout_results <- function(splits) {
+  # Fit the model to the n-1
+  mod <- glm(Survived ~ Age * Sex, data = analysis(splits),
+             family = binomial)
   
-  x <- residuals(model, data)
-  mean(x^2, na.rm = TRUE)
+  # Save the heldout observation
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = assessment(splits)) %>% 
+    as_tibble() %>%
+    mutate(pred = logit2prob(.fitted),
+           pred = as.numeric(pred > .5))
+
+  # Return the assessment data set with the additional columns
+  res
 }
+
+titanic_loocv <- loo_cv(titanic) %>%
+  mutate(results = map(splits, holdout_results),
+         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred, na.rm = TRUE)))
+mean(titanic_loocv$error_rate, na.rm = TRUE)
 ```
 
-```{r titanic_loocv}
-titanic_loocv <- crossv_kfold(titanic, k = nrow(titanic))
-titanic_models <- map(titanic_loocv$train, ~ glm(Survived ~ Age * Sex,
-                                                 data = .,
-                                                 family = binomial))
-titanic_mse <- map2_dbl(titanic_models, titanic_loocv$test, mse.glm)
-mean(titanic_mse, na.rm = TRUE)
-```
-
-In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(mean(titanic_mse, na.rm = TRUE) * 100, digits = 3)`% error rate. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
+In a classification problem, the LOOCV tells us the average error rate based on our predictions. So here, it tells us that the interactive `Age * Sex` model has a `r formatC(mean(titanic_loocv$error_rate, na.rm = TRUE) * 100, digits = 3)`% error rate. This is similar to the validation set result ($`r formatC(mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$)
 
 ## Exercise: LOOCV in linear regression
 
