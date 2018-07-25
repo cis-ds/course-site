@@ -337,7 +337,7 @@ holdout_results <- function(splits, i) {
   holdout <- assessment(splits)
   
   # `augment` will save the predictions with the holdout data set
-  res <- augment(mod, newdata = holdout, type.residuals = "deviance") %>%
+  res <- augment(mod, newdata = holdout) %>%
     # calculate residuals for future use
     mutate(.resid = mpg - .fitted)
   
@@ -411,9 +411,26 @@ In a classification problem, the LOOCV tells us the average error rate based on 
     ```{r scorecard-mse}
     library(rcfss)
     
-    scorecard_loocv <- crossv_kfold(scorecard, k = nrow(scorecard)) %>%
-      mutate(model = map(train, ~ lm(cost ~ admrate, data = .)),
-             mse = map2_dbl(model, test, mse))
+    # function to estimate heldout results for model
+    holdout_results <- function(splits, i) {
+      # Fit the model to the n-1
+      mod <- glm(cost ~ admrate, data = analysis(splits))
+      
+      # Save the heldout observation
+      holdout <- assessment(splits)
+      
+      # `augment` will save the predictions with the holdout data set
+      res <- augment(mod, newdata = holdout) %>%
+        # calculate residuals for future use
+        mutate(.resid = cost - .fitted)
+      
+      # Return the assessment data set with the additional columns
+      res
+    }
+    
+    scorecard_loocv <- loo_cv(scorecard) %>%
+      mutate(results = map(splits, holdout_results),
+             mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
     mean(scorecard_loocv$mse, na.rm = TRUE)
     ```
     
@@ -426,20 +443,40 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       <summary>Click for the solution</summary>
       <p>
 
+> Because this problem requires two separate regression formulas, rather than writing `holdout_results()` twice I create a second argument `formula` to the function. `as.formula()` stores a formula for a function as a separate object and can be passed directly into `glm()`.
+
     ```{r mh-mse}
+    # function to generate assessment statistics for titanic model
+    # add the formula argument to pass the regression formula
+    holdout_results <- function(splits, formula) {
+      # Fit the model to the n-1
+      mod <- glm(formula, data = analysis(splits),
+                 family = binomial)
+      
+      # Save the heldout observation
+      holdout <- assessment(splits)
+      
+      # `augment` will save the predictions with the holdout data set
+      res <- augment(mod, newdata = assessment(splits)) %>% 
+        as_tibble() %>%
+        mutate(pred = logit2prob(.fitted),
+               pred = as.numeric(pred > .5))
+      
+      # Return the assessment data set with the additional columns
+      res
+    }
+    
     # basic model
-    mh_loocv_lite <- crossv_kfold(mental_health, k = nrow(mental_health)) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ mhealth, data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_loocv_lite$mse, na.rm = TRUE)
+    mh_loocv_lite <- loo_cv(mental_health) %>%
+      mutate(results = map(splits, holdout_results, formula = as.formula(vote96 ~ mhealth)),
+             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+    mean(mh_loocv_lite$error_rate, na.rm = TRUE)
     
     # full model
-    mh_loocv_full <- crossv_kfold(mental_health, k = nrow(mental_health)) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ ., data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_loocv_full$mse, na.rm = TRUE)
+    mh_loocv_full <- loo_cv(mental_health) %>%
+      mutate(results = map(splits, holdout_results, formula = as.formula(vote96 ~ .)),
+             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+    mean(mh_loocv_full$error_rate, na.rm = TRUE)
     ```
     
     The full model is better and has a lower error rate.
