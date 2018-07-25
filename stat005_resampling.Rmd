@@ -15,6 +15,7 @@ knitr::opts_chunk$set(cache = TRUE,
 ```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
 library(tidyverse)
 library(modelr)
+library(rsample)
 library(broom)
 set.seed(1234)
 
@@ -65,7 +66,7 @@ where:
 
 Boo math! Actually this is pretty intuitive. All we're doing is for each observation, calculating the difference between the actual and predicted values for $y$, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.
 
-For this task, first we can use `modelr::resample_partition()` to create training and test sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.
+For this task, first we can use `rsample::initial_split()` to create training and test sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.
 
 * I use `set.seed()` in the beginning - whenever you are writing a script that involves randomization (here, random subsetting of the data), always set the seed at the beginning of the script. This ensures the results can be reproduced precisely.^[The actual value you use is irrelevant. Just be sure to set it in the script, otherwise R will randomly pick one each time you start a new session.]
 * I also use the `glm()` function rather than `lm()` - if you don't change the `family` parameter, the results of `lm()` and `glm()` are exactly the same.^[The default `family` for `glm()` is `gaussian()`, or the **Gaussian** distribution. You probably know it by its other name, the [**Normal** distribution](https://en.wikipedia.org/wiki/Normal_distribution).]
@@ -73,9 +74,9 @@ For this task, first we can use `modelr::resample_partition()` to create trainin
 ```{r auto_split}
 set.seed(1234)
 
-auto_split <- resample_partition(Auto, c(test = 0.5, train = 0.5))
-auto_train <- as_tibble(auto_split$train)
-auto_test <- as_tibble(auto_split$test)
+auto_split <- initial_split(data = Auto, prop = 0.5)
+auto_train <- training(auto_split)
+auto_test <- testing(auto_split)
 ```
 
 ```{r auto_lm, dependson="auto_split"}
@@ -167,14 +168,14 @@ logit2prob <- function(x){
 ```
 
 ```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE}
-titanic_split <- resample_partition(titanic, c(test = 0.3, train = 0.7))
-map(titanic_split, dim)
+titanic_split <- initial_split(data = titanic, prop = 0.5)
+titanic_split
 
-train_model <- glm(Survived ~ Age * Sex, data = titanic_split$train,
+train_model <- glm(Survived ~ Age * Sex, data = training(titanic_split),
                    family = binomial)
 summary(train_model)
 
-x_test_accuracy <- titanic_split$test %>%
+x_test_accuracy <- testing(titanic_split) %>%
   as_tibble() %>%
   add_predictions(train_model) %>%
   mutate(pred = logit2prob(pred),
@@ -193,9 +194,9 @@ There are two main problems with validation sets:
 
     ```{r auto_variable_mse}
     mse_variable <- function(Auto){
-      auto_split <- resample_partition(Auto, c(test = 0.5, train = 0.5))
-      auto_train <- as_tibble(auto_split$train)
-      auto_test <- as_tibble(auto_split$test)
+      auto_split <- initial_split(Auto, prop = 0.5)
+      auto_train <- training(auto_split)
+      auto_test <- testing(auto_split)
       
       results <- data_frame(terms = seq(from = 1, to = 5),
                             model = map(terms, auto_poly_glm),
@@ -231,41 +232,93 @@ Of course the downside is that this method is computationally difficult. You hav
 
 ## LOOCV in linear regression
 
-We can use the `crossv_kfold()` function in the `modelr` library to compute the LOOCV of any linear or logistic regression model. It takes two arguments: the data frame and the number of $k$-folds (which we will define shortly). For our purposes now, all you need to know is that `k` should equal the number of observations in the data frame which we can retrieve using the `nrow()` function. For the `Auto` dataset, this looks like:
+We can use the `loo_cv()` function in the `rsample` library to compute the LOOCV of any linear or logistic regression model. It takes a single argument: the data frame being cross-validated. For the `Auto` dataset, this looks like:
 
 ```{r loocv-data, dependson="Auto"}
-loocv_data <- crossv_kfold(Auto, k = nrow(Auto))
+loocv_data <- loo_cv(Auto)
+loocv_data
 ```
 
-Now we estimate the linear model $k$ times, excluding the holdout test observation, then calculate the MSE:
+Given this new data frame, we write a function that will, for each resample:
 
-```{r loocv, dependson="Auto"}
-loocv_models <- map(loocv_data$train, ~ lm(mpg ~ horsepower, data = .))
-loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
-mean(loocv_mse)
+1. Obtain the analysis data set (i.e. the $n-1$ training set)
+1. Fit a linear regression model
+1. Predict the test data (also known as the **assessment** data, the $1$ test set) using the `broom` package
+1. Determine the MSE for each sample
+
+```{r loocv-function, dependson = "Auto"}
+holdout_results <- function(splits) {
+  # Fit the model to the n-1
+  mod <- glm(mpg ~ horsepower, data = analysis(splits))
+  
+  # Save the heldout observation
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = holdout, type.residuals = "deviance") %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
+}
 ```
 
-The results of the mapped `mse()` function is the MSE for each iteration through the data, so there is one MSE for each observation. Calculating the `mean()` of that vector gives us the LOOCV MSE.
+This function works for a single resample:
+
+```{r loocv-function-test, dependson = "loocv-function"}
+holdout_results(loocv_data$splits[[1]])
+```
+
+To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the $n$ observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each test set:
+
+```{r loocv, dependson = c("Auto", "loocv-function")}
+loocv_data$results <- map(loocv_data$splits, holdout_results)
+loocv_data$mse <- map_dbl(loocv_data$results, ~ mean(.$.resid ^ 2))
+loocv_data
+```
+
+Now we can compute the overall LOOCV MSE for the data set by calculating the mean of the `mse` column:
+
+```{r loocv-test-mse, dependson = c("Auto", "loocv-function")}
+loocv_data %>%
+  summarize(mse = mean(mse))
+```
 
 We can also use this method to compare the optimal number of polynomial terms as before.
 
 ```{r loocv_poly, dependson="Auto"}
-cv_error <- vector("numeric", 5)
-terms <- seq(from = 1, to = 5)
-
-for(i in terms){
-  loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i),
-                                             data = .)
-  )
-  loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
-  cv_error[[i]] <- mean(loocv_mse)
+# modified function to estimate model with varying highest order polynomial
+holdout_results <- function(splits, i) {
+  # Fit the model to the n-1
+  mod <- glm(mpg ~ poly(horsepower, i), data = analysis(splits))
+  
+  # Save the heldout observation
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = holdout, type.residuals = "deviance") %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
 }
 
-cv_mse <- data_frame(terms = terms,
-                     cv_MSE = cv_error)
+# function to return MSE for a specific higher-order polynomial term
+poly_mse <- function(i, loocv_data){
+  loocv_mod <- loocv_data %>%
+    mutate(results = map(splits, holdout_results, i),
+           mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+  
+  mean(loocv_mod$mse)
+}
+
+cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                     mse_loocv = map_dbl(terms, poly_mse, loocv_data))
 cv_mse
 
-ggplot(cv_mse, aes(terms, cv_MSE)) +
+ggplot(cv_mse, aes(terms, mse_loocv)) +
   geom_line() +
   labs(title = "Comparing quadratic linear models",
        subtitle = "Using LOOCV",
