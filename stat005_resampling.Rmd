@@ -17,6 +17,8 @@ library(tidyverse)
 library(modelr)
 library(rsample)
 library(broom)
+library(magrittr)
+
 set.seed(1234)
 
 theme_set(theme_minimal())
@@ -28,7 +30,7 @@ Resampling methods are essential to test and evaluate statistical models. Becaus
 
 # Validation set
 
-One issue with using the same data to both fit and evaluate our model is that we will bias our model towards fitting the data that we have. We may fit our function to create the results we expect or desire, rather than the "true" function. Instead, we can split our data into distinct **training** and **test** sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the test set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.
+One issue with using the same data to both fit and evaluate our model is that we will bias our model towards fitting the data that we have. We may fit our function to create the results we expect or desire, rather than the "true" function. Instead, we can split our data into distinct **training** and **validation** sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the validation set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.
 
 ## Regression
 
@@ -54,7 +56,7 @@ ggplot(Auto, aes(horsepower, mpg)) +
   geom_smooth(method = "lm", se = FALSE)
 ```
 
-Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and test set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
+Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and validation set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
 
 $$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
 
@@ -66,7 +68,7 @@ where:
 
 Boo math! Actually this is pretty intuitive. All we're doing is for each observation, calculating the difference between the actual and predicted values for $y$, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.
 
-For this task, first we can use `rsample::initial_split()` to create training and test sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.
+For this task, first we use `rsample::initial_split()` to create training and validation sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.
 
 * I use `set.seed()` in the beginning - whenever you are writing a script that involves randomization (here, random subsetting of the data), always set the seed at the beginning of the script. This ensures the results can be reproduced precisely.^[The actual value you use is irrelevant. Just be sure to set it in the script, otherwise R will randomly pick one each time you start a new session.]
 * I also use the `glm()` function rather than `lm()` - if you don't change the `family` parameter, the results of `lm()` and `glm()` are exactly the same.^[The default `family` for `glm()` is `gaussian()`, or the **Gaussian** distribution. You probably know it by its other name, the [**Normal** distribution](https://en.wikipedia.org/wiki/Normal_distribution).]
@@ -84,52 +86,88 @@ auto_lm <- glm(mpg ~ horsepower, data = auto_train)
 summary(auto_lm)
 ```
 
-To estimate the MSE for a single partition (i.e. for a training or test set), I wrote a special function `mse()`:^[This function can also be loaded via the [`rcfss`](https://github.com/uc-cfss/rcfss) library. Be sure to update your package to the latest version to make sure the function is available.]
+To estimate the MSE for a single partition (i.e. for a training or validation set):
 
-```{r mse-function}
-mse <- function(model, data) {
-  x <- modelr:::residuals(model, data)
-  mean(x ^ 2, na.rm = TRUE)
-}
+1. Use `broom::augment()` to generate predicted values for the data set
+1. Calculate the residuals and square each value
+1. Calculate the mean of all the squared residuals in the data set
+
+For the training set, this would look like:
+
+```{r mse-train, dependson = "auto_lm"}
+(train_mse <- augment(auto_lm, newdata = auto_train) %>%
+  mutate(.resid = mpg - .fitted,
+         .resid2 = .resid ^ 2) %$%
+  mean(.resid2))
 ```
 
-```{r mse, dependson="auto_split"}
-mse(auto_lm, auto_test)
+> Note the special use of the [`$%$` pipe operator from the `magrittr` package](http://r4ds.had.co.nz/pipes.html#other-tools-from-magrittr). This allows us to directly access columns from the data frame entering the pipe. This is especially useful for integrating non-tidy functions into a tidy operation.
+
+For the validation set:
+
+```{r mse-test, dependson = "auto_lm"}
+(test_mse <- augment(auto_lm, newdata = auto_test) %>%
+  mutate(.resid = mpg - .fitted,
+         .resid2 = .resid ^ 2) %$%
+  mean(.resid2))
 ```
 
-For a strictly linear model, the MSE for the test set is `r formatC(mse(auto_lm, auto_test), digits = 4)`. How does this compare to a quadratic model? We can use the `poly()` function in conjunction with a `map()` iteration to estimate the MSE for a series of models with higher-order polynomial terms:
+For a strictly linear model, the MSE for the validation set is `r formatC(test_mse, digits = 4)`. How does this compare to a quadratic model? We can use the `poly()` function in conjunction with a `map()` iteration to estimate the MSE for a series of models with higher-order polynomial terms:
 
-```{r mse_poly, dependson="auto_split"}
-# write a custom model function
-auto_poly_glm <- function(x){
-  glm(mpg ~ poly(horsepower, x), data = auto_train)
-}
-
-# estimate models with higher order polynomials
-auto_poly_results <- data_frame(terms = seq(from = 1, to = 5),
-                                model = map(terms, auto_poly_glm),
-                                MSE = map_dbl(model,
-                                              mse,
-                                              data = auto_test)
-)
-
+```{r mse-poly, dependson = "auto_split"}
 # visualize each model
-data_grid(Auto, horsepower) %>%
-  gather_predictions(`1` = auto_poly_results$model[[1]],
-                     `2` = auto_poly_results$model[[2]],
-                     `3` = auto_poly_results$model[[3]],
-                     `4` = auto_poly_results$model[[4]],
-                     `5` = auto_poly_results$model[[5]]) %>%
-  ggplot(aes(horsepower, pred)) +
-  geom_point(data = Auto, aes(y = mpg), alpha = .1) +
-  geom_line(aes(color = model)) +
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point(alpha = .1) +
+  geom_smooth(aes(color = "1"),
+              method = "glm",
+              formula = y ~ poly(x, i = 1),
+              se = FALSE) +
+  geom_smooth(aes(color = "2"),
+              method = "glm",
+              formula = y ~ poly(x, i = 2),
+              se = FALSE) +
+  geom_smooth(aes(color = "3"),
+              method = "glm",
+              formula = y ~ poly(x, i = 3),
+              se = FALSE) +
+  geom_smooth(aes(color = "4"),
+              method = "glm",
+              formula = y ~ poly(x, i = 4),
+              se = FALSE) +
+  geom_smooth(aes(color = "5"),
+              method = "glm",
+              formula = y ~ poly(x, i = 5),
+              se = FALSE) +
   scale_color_brewer(type = "qual", palette = "Dark2") +
   labs(x = "Horsepower",
        y = "MPG",
        color = "Highest-order\npolynomial")
 
-# compare mse
-ggplot(auto_poly_results, aes(terms, MSE)) +
+# function to estimate model using training set and generate fit statistics
+# using the test set
+poly_results <- function(train, test, i) {
+  # Fit the model to the training set
+  mod <- glm(mpg ~ poly(horsepower, i), data = train)
+  
+  # `augment` will save the predictions with the test data set
+  res <- augment(mod, newdata = test) %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the test data set with the additional columns
+  res
+}
+
+# function to return MSE for a specific higher-order polynomial term
+poly_mse <- function(i, train, test){
+  poly_results(train, test, i) %$%
+    mean(.resid ^ 2)
+}
+
+cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                     mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+
+ggplot(cv_mse, aes(terms, mse_test)) +
   geom_line() +
   labs(title = "Comparing quadratic linear models",
        subtitle = "Using validation set",
@@ -137,7 +175,7 @@ ggplot(auto_poly_results, aes(terms, MSE)) +
        y = "Mean Squared Error")
 ```
 
-Based on the MSE for the validation (test) set, a polynomial model with a quadratic term ($\text{horsepower}^2$) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.
+Based on the MSE for the validation set, a polynomial model with a quadratic term ($\text{horsepower}^2$) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.
 
 ## Classification
 
