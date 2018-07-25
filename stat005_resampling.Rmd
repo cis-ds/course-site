@@ -208,7 +208,6 @@ logit2prob <- function(x){
 ```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE}
 # split the data into training and validation sets
 titanic_split <- initial_split(data = titanic, prop = 0.5)
-titanic_split
 
 # fit model to training data
 train_model <- glm(Survived ~ Age * Sex, data = training(titanic_split),
@@ -240,7 +239,7 @@ There are two main problems with validation sets:
       auto_test <- testing(auto_split)
       
       cv_mse <- data_frame(terms = seq(from = 1, to = 5),
-                     mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+                           mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
       
       return(cv_mse)
     }
@@ -279,7 +278,21 @@ loocv_data <- loo_cv(Auto)
 loocv_data
 ```
 
-Given this new data frame, we write a function that will, for each resample:
+Each element of `loocv_data$splits` is an object of class `rsplit`. This is essentially an efficient container for storing both the **analysis** data (i.e. the training data set) and the **assessment** data (i.e. the validation data set). If we print the contents of a single `rsplit` object:
+
+```{r rsplit, dependson = "loocv-data"}
+first_resample <- loocv_data$splits[[1]]
+first_resample
+```
+
+This tells us there are `r dim(first_resample)[["analysis"]]` observations in the analysis set, `r dim(first_resample)[["assessment"]]` observation in the assessment set, and the original data set contained `r dim(first_resample)[["n"]]` observations. To extract the analysis/assessment sets, use `analysis()` or `assessment()` respectively:
+
+```{r rsplit-extract}
+training(first_resample)
+assessment(first_resample)
+```
+
+Given this new `loocv_data` data frame, we write a function that will, for each resample:
 
 1. Obtain the analysis data set (i.e. the $n-1$ training set)
 1. Fit a linear regression model
@@ -412,7 +425,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
     library(rcfss)
     
     # function to estimate heldout results for model
-    holdout_results <- function(splits, i) {
+    holdout_results <- function(splits) {
       # Fit the model to the n-1
       mod <- glm(cost ~ admrate, data = analysis(splits))
       
@@ -443,7 +456,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       <summary>Click for the solution</summary>
       <p>
 
-> Because this problem requires two separate regression formulas, rather than writing `holdout_results()` twice I create a second argument `formula` to the function. `as.formula()` stores a formula for a function as a separate object and can be passed directly into `glm()`.
+    > Because this problem requires two separate regression formulas, rather than writing `holdout_results()` twice I create a second argument `formula` to the function. `as.formula()` stores a formula for a function as a separate object and can be passed directly into `glm()`.
 
     ```{r mh-mse}
     # function to generate assessment statistics for titanic model
@@ -468,13 +481,15 @@ In a classification problem, the LOOCV tells us the average error rate based on 
     
     # basic model
     mh_loocv_lite <- loo_cv(mental_health) %>%
-      mutate(results = map(splits, holdout_results, formula = as.formula(vote96 ~ mhealth)),
+      mutate(results = map(splits, holdout_results,
+                           formula = as.formula(vote96 ~ mhealth)),
              error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
     mean(mh_loocv_lite$error_rate, na.rm = TRUE)
     
     # full model
     mh_loocv_full <- loo_cv(mental_health) %>%
-      mutate(results = map(splits, holdout_results, formula = as.formula(vote96 ~ .)),
+      mutate(results = map(splits, holdout_results,
+                           formula = as.formula(vote96 ~ .)),
              error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
     mean(mh_loocv_full$error_rate, na.rm = TRUE)
     ```
@@ -490,36 +505,57 @@ A less computationally-intensive approach to cross validation is **$k$-fold cros
 
 $$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
-As you probably figured out by now, LOOCV is the special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
+As you may have noticed, LOOCV is a special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
 
 ## k-fold CV in linear regression
 
 Let's go back to the `Auto` data set. Instead of LOOCV, let's use 10-fold CV to compare the different polynomial models.
 
 ```{r 10_fold_auto}
-cv10_data <- crossv_kfold(Auto, k = 10)
-
-cv_error_fold10 <- vector("numeric", 5)
-terms <- seq(from = 1, to = 5)
-
-for(i in terms){
-  cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i),
-                                           data = .)
-  )
-  cv10_mse <- map2_dbl(cv10_models, cv10_data$test, mse)
-  cv_error_fold10[[i]] <- mean(cv10_mse)
+# modified function to estimate model with varying highest order polynomial
+holdout_results <- function(splits, i) {
+  # Fit the model to the training set
+  mod <- glm(mpg ~ poly(horsepower, i), data = analysis(splits))
+  
+  # Save the heldout observations
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = holdout) %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
 }
 
-cv_error_fold10
+# function to return MSE for a specific higher-order polynomial term
+poly_mse <- function(i, vfold_data){
+  vfold_mod <- vfold_data %>%
+    mutate(results = map(splits, holdout_results, i),
+           mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+  
+  mean(vfold_mod$mse)
+}
+
+# split Auto into 10 folds
+auto_cv10 <- vfold_cv(data = Auto, v = 10)
+
+cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                     mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
+cv_mse
 ```
 
 How do these results compare to the LOOCV values?
 
 ```{r 10_fold_auto_loocv, dependson=c("10_fold_auto","loocv_poly")}
-data_frame(terms = terms,
-           loocv = cv_error,
-           fold10 = cv_error_fold10) %>%
-  gather(method, MSE, loocv:fold10) %>%
+auto_loocv <- loo_cv(Auto)
+
+data_frame(terms = seq(from = 1, to = 5),
+           `10-fold` = map_dbl(terms, poly_mse, auto_cv10),
+           LOOCV = map_dbl(terms, poly_mse, auto_loocv)
+) %>%
+  gather(method, MSE, -terms) %>%
   ggplot(aes(terms, MSE, color = method)) +
   geom_line() +
   labs(title = "MSE estimates",
@@ -538,14 +574,8 @@ Pretty much the same results.
 library(profvis)
 
 profvis({
-  cv_error <- vector("numeric", 5)
-  terms <- seq(from = 1, to = 5)
-  
-  for(i in terms){
-    loocv_models <- map(loocv_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
-    loocv_mse <- map2_dbl(loocv_models, loocv_data$test, mse)
-    cv_error[[i]] <- mean(loocv_mse)
-  }
+  data_frame(terms = seq(from = 1, to = 5),
+             mse_vfold = map_dbl(terms, poly_mse, auto_loocv))
 })
 ```
 
@@ -553,14 +583,8 @@ profvis({
 
 ```{r kfold_time}
 profvis({
-  cv_error_fold10 <- vector("numeric", 5)
-  terms <- seq(from = 1, to = 5)
-  
-  for(i in terms){
-    cv10_models <- map(cv10_data$train, ~ lm(mpg ~ poly(horsepower, i), data = .))
-    cv10_mse <- map2_dbl(cv10_models, cv10_data$test, mse)
-    cv_error_fold10[[i]] <- mean(cv10_mse)
-  }
+  data_frame(terms = seq(from = 1, to = 5),
+             mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
 })
 ```
 
@@ -571,12 +595,29 @@ On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimatin
 You've gotten the idea by now, but let's do it one more time on our interactive Titanic model.
 
 ```{r titanic_kfold}
-titanic_kfold <- crossv_kfold(titanic, k = 10)
-titanic_models <- map(titanic_kfold$train, ~ glm(Survived ~ Age * Sex,
-                                                 data = .,
-                                                 family = binomial))
-titanic_mse <- map2_dbl(titanic_models, titanic_kfold$test, mse.glm)
-mean(titanic_mse, na.rm = TRUE)
+# function to generate assessment statistics for titanic model
+holdout_results <- function(splits) {
+  # Fit the model to the training set
+  mod <- glm(Survived ~ Age * Sex, data = analysis(splits),
+             family = binomial)
+  
+  # Save the heldout observations
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = assessment(splits)) %>% 
+    as_tibble() %>%
+    mutate(pred = logit2prob(.fitted),
+           pred = as.numeric(pred > .5))
+
+  # Return the assessment data set with the additional columns
+  res
+}
+
+titanic_cv10 <- vfold_cv(data = titanic, v = 10) %>%
+  mutate(results = map(splits, holdout_results),
+         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred, na.rm = TRUE)))
+mean(titanic_cv10$error_rate, na.rm = TRUE)
 ```
 
 Not a large difference from the LOOCV approach, but it take much less time to compute.
@@ -590,9 +631,26 @@ Not a large difference from the LOOCV approach, but it take much less time to co
       <p>
 
     ```{r scorecard-cv}
-    scorecard_cv10 <- crossv_kfold(scorecard, k = 10) %>%
-      mutate(model = map(train, ~ lm(cost ~ admrate, data = .)),
-             mse = map2_dbl(model, test, mse))
+    # function to estimate heldout results for model
+    holdout_results <- function(splits) {
+      # Fit the model to the training set
+      mod <- glm(cost ~ admrate, data = analysis(splits))
+      
+      # Save the heldout observations
+      holdout <- assessment(splits)
+      
+      # `augment` will save the predictions with the holdout data set
+      res <- augment(mod, newdata = holdout) %>%
+        # calculate residuals for future use
+        mutate(.resid = cost - .fitted)
+      
+      # Return the assessment data set with the additional columns
+      res
+    }
+    
+    scorecard_cv10 <- vfold_cv(data = scorecard, v = 10) %>%
+      mutate(results = map(splits, holdout_results),
+             mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
     mean(scorecard_cv10$mse, na.rm = TRUE)
     ```
     
@@ -606,19 +664,39 @@ Not a large difference from the LOOCV approach, but it take much less time to co
       <p>
 
     ```{r mh-cv}
+    # function to generate assessment statistics for titanic model
+    # add the formula argument to pass the regression formula
+    holdout_results <- function(splits, formula) {
+      # Fit the model to the training set
+      mod <- glm(formula, data = analysis(splits),
+                 family = binomial)
+      
+      # Save the heldout observations
+      holdout <- assessment(splits)
+      
+      # `augment` will save the predictions with the holdout data set
+      res <- augment(mod, newdata = assessment(splits)) %>% 
+        as_tibble() %>%
+        mutate(pred = logit2prob(.fitted),
+               pred = as.numeric(pred > .5))
+      
+      # Return the assessment data set with the additional columns
+      res
+    }
+    
     # basic model
-    mh_cv10_lite <- crossv_kfold(mental_health, k = 10) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ mhealth, data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_cv10_lite$mse, na.rm = TRUE)
+    mh_cv10_lite <- vfold_cv(data = mental_health, v = 10) %>%
+      mutate(results = map(splits, holdout_results,
+                           formula = as.formula(vote96 ~ mhealth)),
+             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+    mean(mh_cv10_lite$error_rate, na.rm = TRUE)
     
     # full model
-    mh_cv10_full <- crossv_kfold(mental_health, k = 10) %>%
-      mutate(model = map(train, ~ glm(vote96 ~ ., data = .,
-                                      family = binomial)),
-             mse = map2_dbl(model, test, mse.glm))
-    mean(mh_cv10_full$mse, na.rm = TRUE)
+    mh_cv10_full <- vfold_cv(data = mental_health, v = 10) %>%
+      mutate(results = map(splits, holdout_results,
+                           formula = as.formula(vote96 ~ .)),
+             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+    mean(mh_cv10_full$error_rate, na.rm = TRUE)
     ```
     
       </p>
@@ -628,9 +706,3 @@ Not a large difference from the LOOCV approach, but it take much less time to co
 
 ```{r child='_sessioninfo.Rmd'}
 ```
-
-
-
-
-
-
