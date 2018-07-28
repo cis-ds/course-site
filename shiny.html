@@ -356,7 +356,7 @@ div.tocify {
 <h1>Introduction</h1>
 <p>Shiny is a package from RStudio that can be used to build interactive web pages with R. While that may sound scary because of the words “web pages”, it’s geared to R users who have <strong>no</strong> experience with web development, and you do not need to know any HTML/CSS/JavaScript.</p>
 <p>You can do quite a lot with Shiny: think of it as an easy way to make an interactive web page, and that web page can seamlessly interact with R and display R objects (plots, tables, of anything else you do in R). To get a sense of the wide range of things you can do with Shiny, you can visit <a href="http://shiny.rstudio.com/gallery/">the Shiny gallery</a>, which hosts examples of basic (and complex) Shiny apps.</p>
-<p>In this activity, we’ll walk through all the steps of building a Shiny app using a dataset that lets you explore the products available at the <a href="https://www.abc.virginia.gov/products">Virginia ABC stores</a>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> The final version of the app <a href="https://bensoltoff.shinyapps.io/cfss-abc/">can be seen here</a>. Any activity deemed as an exercise throughout this tutorial is not mandatory for building our app, but they are good for getting more practice with Shiny.</p>
+<p>In this lesson, we’ll walk through all the steps of building a Shiny app using a subset of the city of Chicago’s <a href="https://data.cityofchicago.org/Administration-Finance/Current-Employee-Names-Salaries-and-Position-Title/xzkq-xp2w">current employee data set</a>. The city annually releases an updated file of all employees of the city government, including information on department, job title, and salary/wage. We will build an app to report information specifically for wage employees. The final version of the app <a href="https://bensoltoff.shinyapps.io/chicago-employees/">can be seen here</a>. Any activity deemed as an exercise throughout this tutorial is not mandatory for building our app, but they are good for getting more practice with Shiny.</p>
 <p>If you want even more practice, another great tutorial is the <a href="http://shiny.rstudio.com/tutorial/">official Shiny tutorial</a>. RStudio also provides a <a href="https://www.rstudio.com/resources/cheatsheets/">handy cheatsheet</a> to remember all the little details after you already learned the basics.</p>
 </div>
 <div id="before-we-begin" class="section level1">
@@ -367,6 +367,7 @@ div.tocify {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(shiny)
 <span class="kw">runExample</span>(<span class="st">&quot;01_hello&quot;</span>)</code></pre></div>
 <p>If the example app is running, press <em>Escape</em> to close the app, and you are ready to build your first Shiny app!</p>
+<p>To follow along with this lesson, fork and clone the <a href="https://github.com/uc-cfss/shiny-demo"><code>shiny-demo</code></a> Git repository which contains the data files for city employees.</p>
 </div>
 <div id="shiny-app-basics" class="section level1">
 <h1>Shiny app basics</h1>
@@ -402,12 +403,12 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 </div>
 <div id="load-the-dataset" class="section level1">
 <h1>Load the dataset</h1>
-<p>The dataset we’ll be using contains information about all the products sold by the Virginia ABC stores and was previously scraped by <a href="https://github.com/taber/Virginia-ABC-Data">taber</a>. The processed dataset we’ll be using in this app is available <a href="http://cfss.uchicago.edu/data/abc.csv">here</a>. Download it now and place this file in the same folder as your Shiny app. Make sure the file is named <code>abc.csv</code>.</p>
-<p>Add a line in your app to load the data into a variable called <code>abc</code>. It should look something like this (be sure to to add <code>library(tidyverse)</code> or <code>library(readr)</code> to the script so you can use the <code>read_csv</code> function):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">abc &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;abc.csv&quot;</span>)</code></pre></div>
-<p>Place this line in your app as the second line, just after <code>library(shiny)</code> and <code>library(tidyverse)</code>. Make sure the file path and file name are correct, otherwise your app won’t run. Try to run the app to make sure the file can be loaded without errors.</p>
+<p>The raw dataset contains information about all employees of the city of Chicago (<code>employees-all.csv</code>). The processed dataset we’ll be using in this app is the subset of employees who are <strong>wage</strong> employees (paid hourly), as opposed to <strong>salaried</strong> employees. This subset is in the <code>employees-wage.csv</code> file.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a></p>
+<p>Add a line in your app to load the data into a variable called <code>employ</code>. It should look something like this (be sure to to add <code>library(tidyverse)</code> or <code>library(readr)</code> to the script so you can use the <code>read_csv</code> function):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">employ &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;employees-wage.csv&quot;</span>)</code></pre></div>
+<p>Place this line in your app as the third line, just after <code>library(shiny)</code> and <code>library(tidyverse)</code>. Make sure the file path and file name are correct, otherwise your app won’t run. Try to run the app to make sure the file can be loaded without errors.</p>
 <p>If you want to verify that the app can successfully read the data, you can add a <code>print()</code> statement after reading the data. This won’t make anything happen in your Shiny app, but you will see a summary of the dataset printed in the console, which should let you know that the dataset was indeed loaded correctly. You can place the following line after reading the data:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="kw">str</span>(abc))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(<span class="kw">glimpse</span>(employ))</code></pre></div>
 <p>Once you get confirmation that the data is properly loaded, you can remove that line.</p>
 <p><strong>Exercise:</strong> Load the data file into R and get a feel for what’s in it. How big is it, what variables are there, what are the normal price ranges, etc.</p>
 </div>
@@ -417,7 +418,7 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <div id="add-plain-text-to-the-ui" class="section level2">
 <h2>Add plain text to the UI</h2>
 <p>You can place R strings inside <code>fluidPage()</code> to render text.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fluidPage</span>(<span class="st">&quot;Virginia ABC Stores&quot;</span>, <span class="st">&quot;prices&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fluidPage</span>(<span class="st">&quot;City of Chicago Wage Employees&quot;</span>, <span class="st">&quot;hourly wage&quot;</span>)</code></pre></div>
 <p>Replace the line in your app that assigns an empty <code>fluidPage()</code> into <code>ui</code> with the one above, and run the app.</p>
 <p>The entire UI will be built by passing comma-separated arguments into the <code>fluidPage()</code> function. By passing regular text, the web page will just render boring unformatted text.</p>
 <p><strong>Exercise:</strong> Add several more strings to <code>fluidPage()</code> and run the app. Nothing too exciting is happening yet, but you should just see all the text appear in one contiguous block.</p>
@@ -430,11 +431,11 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <p>Just as a demonstration, try replacing the <code>fluidPage()</code> function in your UI with</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(
   <span class="kw">h1</span>(<span class="st">&quot;My app&quot;</span>),
-  <span class="st">&quot;Virginia&quot;</span>,
-  <span class="st">&quot;ABC&quot;</span>,
+  <span class="st">&quot;Chiacgo&quot;</span>,
+  <span class="st">&quot;Wage Employees&quot;</span>,
   <span class="kw">br</span>(),
-  <span class="st">&quot;Store&quot;</span>,
-  <span class="kw">strong</span>(<span class="st">&quot;prices&quot;</span>)
+  <span class="st">&quot;Hourly&quot;</span>,
+  <span class="kw">strong</span>(<span class="st">&quot;wage&quot;</span>)
 )</code></pre></div>
 <p>Run the app with this code as the UI. Notice the formatting of the text and understand why it is rendered that way.</p>
 <blockquote>
@@ -447,7 +448,7 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <p>We could add a title to the app with <code>h1()</code>, but Shiny also has a special function <code>titlePanel()</code>. Using <code>titlePanel()</code> not only adds a visible big title-like text to the top of the page, but it also sets the “official” title of the web page. This means that when you look at the name of the tab in the browser, you’ll see this title.</p>
 <p>Overwrite the <code>fluidPage()</code> that you experimented with so far, and replace it with the simple one below, that simply has a title and nothing else.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">fluidPage</span>(
-  <span class="kw">titlePanel</span>(<span class="st">&quot;Virginia ABC Store Prices&quot;</span>)
+  <span class="kw">titlePanel</span>(<span class="st">&quot;City of Chicago Wage Employees&quot;</span>)
 )</code></pre></div>
 <p><strong>Exercise:</strong> Look at the documentation for the <code>titlePanel()</code> function and notice it has another argument. Use that argument and see if you can see what it does.</p>
 </div>
@@ -464,10 +465,10 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(shiny)
 <span class="kw">library</span>(tidyverse)
 
-abc &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;abc.csv&quot;</span>)
+employ &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;employees-wage.csv&quot;</span>)
 
 ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(
-  <span class="kw">titlePanel</span>(<span class="st">&quot;Virginia ABC Store prices&quot;</span>),
+  <span class="kw">titlePanel</span>(<span class="st">&quot;City of Chicago Wage Employees&quot;</span>),
   <span class="kw">sidebarLayout</span>(
     <span class="kw">sidebarPanel</span>(<span class="st">&quot;our inputs will go here&quot;</span>),
     <span class="kw">mainPanel</span>(<span class="st">&quot;the results will go here&quot;</span>)
@@ -488,7 +489,7 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <p>This was already mentioned, but it’s important to remember: the entire UI is just HTML, and Shiny simply gives you easy tools to write it without having to know HTML. To convince yourself of this, look at the output when printing the contents of the <code>ui</code> variable.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(ui)</code></pre></div>
 <pre><code>&lt;div class=&quot;container-fluid&quot;&gt;
-  &lt;h2&gt;Virginia ABC Store prices&lt;/h2&gt;
+  &lt;h2&gt;City of Chicago Wage Employees&lt;/h2&gt;
   &lt;div class=&quot;row&quot;&gt;
     &lt;div class=&quot;col-sm-4&quot;&gt;
       &lt;form class=&quot;well&quot;&gt;our inputs will go here&lt;/form&gt;
@@ -505,50 +506,165 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <p><a href="images/shiny-inputs.png"><img src="images/shiny-inputs.png" alt="Shiny inputs" /></a></p>
 <p>All input functions have the same first two arguments: <code>inputId</code> and <code>label</code>. The <code>inputId</code> will be the name that Shiny will use to refer to this input when you want to retrieve its current value. It is important to note that every input must have a unique <code>inputId</code>. If you give more than one input the same id, Shiny will unfortunately not give you an explicit error, but your app won’t work correctly. The <code>label</code> argument specifies the text in the display label that goes along with the input widget. Every input can also have multiple other arguments specific to that input type. The only way to find out what arguments you can use with a specific input function is to look at its help file.</p>
 <p><strong>Exercise:</strong> Read the documentation of <code>?numericInput</code> and try adding a numeric input to the UI. Experiment with the different arguments. Run the app and see how you can interact with this input. Then try different inputs types.</p>
-<div id="input-for-price" class="section level2">
-<h2>Input for price</h2>
-<p>The first input we want to have is for specifying a price range (minimum and maximum price). The most sensible types of input for this are either <code>numericInput()</code> or <code>sliderInput()</code> since they are both used for selecting numbers. If we use <code>numericInput()</code>, we’d have to use two inputs, one for the minimum value and one for the maximum. Looking at the documentation for <code>sliderInput()</code>, you’ll see that by supplying a vector of length two as the <code>value</code> argument, it can be used to specify a range rather than a single number. This sounds like what we want in this case, so we’ll use <code>sliderInput()</code>.</p>
-<p>To create a slider input, a maximum value needs to be provided. We could use the maximum price in the dataset, which is $5,002, but I doubt I’d ever buy something that expensive. I think $100 is a more reasonable max price for me, and about 94% of the products in this dataset are below $100, so let’s use that as our max.</p>
+<div id="input-for-hourly-wage" class="section level2">
+<h2>Input for hourly wage</h2>
+<p>The first input we want to have is for specifying a wage range (minimum and maximum hourly wage). The most sensible types of input for this are either <code>numericInput()</code> or <code>sliderInput()</code> since they are both used for selecting numbers. If we use <code>numericInput()</code>, we’d have to use two inputs, one for the minimum value and one for the maximum. Looking at the documentation for <code>sliderInput()</code>, you’ll see that by supplying a vector of length two as the <code>value</code> argument, it can be used to specify a range rather than a single number. This sounds like what we want in this case, so we’ll use <code>sliderInput()</code>.</p>
+<p>To create a slider input, a maximum value needs to be provided. We could manually determine the highest hourly wage rate in the dataset and hardcode this into the app. But we’re already using R, so let’s calculate it dynamically. That is, write a short piece of R code to determine the largest value in the <code>wage</code> column. <code>max()</code> does exactly that.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## [1] 109</code></pre>
 <p>By looking at the documentation for the slider input function, the following piece of code can be constructed.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sliderInput</span>(<span class="st">&quot;priceInput&quot;</span>, <span class="st">&quot;Price&quot;</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="dv">100</span>,
-            <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">40</span>), <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sliderInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;wage&quot;</span>,
+            <span class="dt">label =</span> <span class="st">&quot;Wage range&quot;</span>,
+            <span class="dt">min =</span> <span class="dv">0</span>,
+            <span class="dt">max =</span> <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+            <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)),
+            <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>)</code></pre></div>
 <p>Place the code for the slider input inside <code>sidebarPanel()</code> (replace the text we wrote earlier with this input).</p>
 <p><strong>Exercise:</strong> Run the code of the <code>sliderInput()</code> in the R console and see what it returns. Change some of the parameters of <code>sliderInput()</code>, and see how that changes the result. It’s important to truly understand that all these functions in the UI are simply a convenient way to write HTML, as is apparent whenever you run these functions on their own.</p>
 </div>
-<div id="input-for-product-type" class="section level2">
-<h2>Input for product type</h2>
-<p>Usually when going to the liquor store you know what kind of alcohol you want, and you don’t want to waste your time in the wrong section. The same is true in our app, we should be able to choose what type of product we want.</p>
-<p>For this we want some kind of a text input. But allowing the user to enter text freely isn’t the right solution because we want to restrict the user to only a few choices. We could either use radio buttons or a select box for our purpose. Let’s use radio buttons for now since there are only a few options, so take a look at the documentation for <code>radioButtons()</code> and come up with a reasonable input function code. It should look like this:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">radioButtons</span>(<span class="st">&quot;typeInput&quot;</span>, <span class="st">&quot;Product type&quot;</span>,
-            <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Mixers&quot;</span>, <span class="st">&quot;Rimmers&quot;</span>, <span class="st">&quot;Spirits&quot;</span>, <span class="st">&quot;Wine&quot;</span>),
-            <span class="dt">selected =</span> <span class="st">&quot;Spirits&quot;</span>)</code></pre></div>
+<div id="input-for-fullpart-time" class="section level2">
+<h2>Input for full/part-time</h2>
+<p>While many employees of the city are full-time workers, a large portion only work for the city part-time. Part-time workers are more likely to be seasonal employees, and as such their hourly wages may systematically differ from full-time employees. It will be helpful to include an option to filter the datset between these two types of employees.</p>
+<p>For this we want some kind of a text input. But allowing the user to enter text freely isn’t the right solution because we want to restrict the user to only two choices. We could either use radio buttons or a select box for our purpose. Let’s use radio buttons for now since there are only two options, so take a look at the documentation for <code>radioButtons()</code> and come up with a reasonable input function code. It should look like this:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">radioButtons</span>(<span class="dt">inputId =</span> <span class="st">&quot;full_time&quot;</span>,
+             <span class="dt">label =</span> <span class="st">&quot;Full or part-time&quot;</span>,
+             <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Full-Time&quot;</span>, <span class="st">&quot;Part-Time&quot;</span>))</code></pre></div>
 <p>Add this input code inside <code>sidebarPanel()</code>, after the previous input (separate them with a comma).</p>
-<blockquote>
-<p>If you look at that input function and think “what if there were 100 types, listing them by hand would not be fun, there’s got to be a better way!”, then you’re right. This is where <a href="#using-uioutput-to-create-ui-elements-dynamically"><code>uiOutput()</code></a> comes in handy, but we’ll talk about that later.</p>
-</blockquote>
 </div>
-<div id="input-for-proof-category" class="section level2">
-<h2>Input for proof category</h2>
-<p>I should probably decide how drunk I want to get by selecting the proof of the alcohol. We could use a <code>sliderInput()</code> since proof is numeric, but I’ve also simplified it by creating a categorical variable by binning the products’ proofs. The most appropriate input type in this case is probably the select box. Look at the documentation for <code>selectInput()</code> and create an input function. Let’s have 0-40, 40-80, 80-120, 120-160, and 160+ as the options.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">selectInput</span>(<span class="st">&quot;proofInput&quot;</span>, <span class="st">&quot;Proof&quot;</span>,
-            <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;0-40&quot;</span>, <span class="st">&quot;40-80&quot;</span>, <span class="st">&quot;80-120&quot;</span>, <span class="st">&quot;120-160&quot;</span>, <span class="st">&quot;160+&quot;</span>))</code></pre></div>
+<div id="input-for-department" class="section level2">
+<h2>Input for department</h2>
+<p>Different departments will offer different wage structures depending on the value of the skills in demand. The city classifies wage employees into 22 distinct departments:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Department</th>
+<th align="right">Number of Employees</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Animal Care and Control</td>
+<td align="right">19</td>
+</tr>
+<tr class="even">
+<td align="left">Aviation</td>
+<td align="right">1082</td>
+</tr>
+<tr class="odd">
+<td align="left">Budget &amp; Management</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Business Affairs and Consumer Protection</td>
+<td align="right">7</td>
+</tr>
+<tr class="odd">
+<td align="left">City Council</td>
+<td align="right">64</td>
+</tr>
+<tr class="even">
+<td align="left">Community Development</td>
+<td align="right">4</td>
+</tr>
+<tr class="odd">
+<td align="left">Cultural Affairs and Special Events</td>
+<td align="right">7</td>
+</tr>
+<tr class="even">
+<td align="left">Emergency Management &amp; Communications</td>
+<td align="right">1273</td>
+</tr>
+<tr class="odd">
+<td align="left">Family &amp; Support</td>
+<td align="right">287</td>
+</tr>
+<tr class="even">
+<td align="left">Finance</td>
+<td align="right">44</td>
+</tr>
+<tr class="odd">
+<td align="left">Fire</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">General Services</td>
+<td align="right">765</td>
+</tr>
+<tr class="odd">
+<td align="left">Human Resources</td>
+<td align="right">4</td>
+</tr>
+<tr class="even">
+<td align="left">Law</td>
+<td align="right">40</td>
+</tr>
+<tr class="odd">
+<td align="left">Mayor’s Office</td>
+<td align="right">8</td>
+</tr>
+<tr class="even">
+<td align="left">Police</td>
+<td align="right">10</td>
+</tr>
+<tr class="odd">
+<td align="left">Procurement Services</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="left">Public Health</td>
+<td align="right">3</td>
+</tr>
+<tr class="odd">
+<td align="left">Public Library</td>
+<td align="right">299</td>
+</tr>
+<tr class="even">
+<td align="left">Streets &amp; Sanitation</td>
+<td align="right">1862</td>
+</tr>
+<tr class="odd">
+<td align="left">Transportation</td>
+<td align="right">725</td>
+</tr>
+<tr class="even">
+<td align="left">Water Management</td>
+<td align="right">1513</td>
+</tr>
+</tbody>
+</table>
+<p>The most appropriate input type in this case is probably the select box <code>selectInput()</code>. However we don’t want to write out the entire vector by hand:</p>
+<pre><code>## c(&quot;Animal Care and Control&quot;, &quot;Aviation&quot;, &quot;Budget &amp; Management&quot;, &quot;Business Affairs and Consumer Protection&quot;, &quot;City Council&quot;, &quot;Community Development&quot;, &quot;Cultural Affairs and Special Events&quot;, &quot;Emergency Management &amp; Communications&quot;, &quot;Family &amp; Support&quot;, &quot;Finance&quot;, &quot;Fire&quot;, &quot;General Services&quot;, &quot;Human Resources&quot;, &quot;Law&quot;, &quot;Mayor&#39;s Office&quot;, &quot;Police&quot;, &quot;Procurement Services&quot;, &quot;Public Health&quot;, &quot;Public Library&quot;, &quot;Streets &amp; Sanitation&quot;, &quot;Transportation&quot;, &quot;Water Management&quot;)</code></pre>
+<p>Instead, like before we’ll extract these values directly from the data frame:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">selectInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;department&quot;</span>,
+            <span class="dt">label =</span> <span class="st">&quot;Department&quot;</span>,
+            <span class="dt">choices =</span> <span class="kw">sort</span>(<span class="kw">unique</span>(employ<span class="op">$</span>department)),
+            <span class="dt">multiple =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<blockquote>
+<p>Set <code>multiple = TRUE</code> so the user can select more than one department at a time.</p>
+</blockquote>
 <p>Add this function as well to your app. If you followed along, your entire app should have this code:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(shiny)
 <span class="kw">library</span>(tidyverse)
 
-abc &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;abc.csv&quot;</span>)
+employ &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;employees-wage.csv&quot;</span>)
 
 ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(
-  <span class="kw">titlePanel</span>(<span class="st">&quot;Virginia ABC Store prices&quot;</span>),
+  <span class="kw">titlePanel</span>(<span class="st">&quot;City of Chicago Wage Employees&quot;</span>),
   <span class="kw">sidebarLayout</span>(
     <span class="kw">sidebarPanel</span>(
-      <span class="kw">sliderInput</span>(<span class="st">&quot;priceInput&quot;</span>, <span class="st">&quot;Price&quot;</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="dv">100</span>,
-                  <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">40</span>), <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>),
-      <span class="kw">radioButtons</span>(<span class="st">&quot;typeInput&quot;</span>, <span class="st">&quot;Product type&quot;</span>,
-                   <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Mixers&quot;</span>, <span class="st">&quot;Rimmers&quot;</span>, <span class="st">&quot;Spirits&quot;</span>, <span class="st">&quot;Wine&quot;</span>),
-                   <span class="dt">selected =</span> <span class="st">&quot;Spirits&quot;</span>),
-      <span class="kw">selectInput</span>(<span class="st">&quot;proofInput&quot;</span>, <span class="st">&quot;Proof&quot;</span>,
-                  <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;0-40&quot;</span>, <span class="st">&quot;40-80&quot;</span>, <span class="st">&quot;80-120&quot;</span>, <span class="st">&quot;120-160&quot;</span>, <span class="st">&quot;160+&quot;</span>))
+      <span class="kw">sliderInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;wage&quot;</span>,
+                  <span class="dt">label =</span> <span class="st">&quot;Wage range&quot;</span>,
+                  <span class="dt">min =</span> <span class="dv">0</span>,
+                  <span class="dt">max =</span> <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+                  <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)),
+                  <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>),
+      <span class="kw">radioButtons</span>(<span class="dt">inputId =</span> <span class="st">&quot;full_time&quot;</span>,
+                   <span class="dt">label =</span> <span class="st">&quot;Full or part-time&quot;</span>,
+                   <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Full-Time&quot;</span>, <span class="st">&quot;Part-Time&quot;</span>)),
+      <span class="kw">selectInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;department&quot;</span>,
+                  <span class="dt">label =</span> <span class="st">&quot;Department&quot;</span>,
+                  <span class="dt">choices =</span> <span class="kw">sort</span>(<span class="kw">unique</span>(employ<span class="op">$</span>department)),
+                  <span class="dt">multiple =</span> <span class="ot">TRUE</span>)
     ),
     <span class="kw">mainPanel</span>(<span class="st">&quot;the results will go here&quot;</span>)
   )
@@ -566,17 +682,17 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <p>Shiny provides several output functions, one for each type of output. Similarly to the input functions, all the output functions have an <code>outputId</code> argument that is used to identify each output, and this argument must be unique for each output.</p>
 <div id="output-for-a-plot-of-the-results" class="section level2">
 <h2>Output for a plot of the results</h2>
-<p>At the top of the main panel we’ll have a plot showing some visualization of the results. Since we want a plot, the function we use is <code>plotOutput()</code>.</p>
+<p>At the top of the main panel we’ll have a plot showing the distribution of hourly wages. Since we want a plot, the function we use is <code>plotOutput()</code>.</p>
 <p>Add the following code into the <code>mainPanel()</code> (replace the existing text):</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plotOutput</span>(<span class="st">&quot;coolplot&quot;</span>)</code></pre></div>
-<p>This will add a placeholder in the UI for a plot named <em>coolplot</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">plotOutput</span>(<span class="st">&quot;hourlyPlot&quot;</span>)</code></pre></div>
+<p>This will add a placeholder in the UI for a plot named <em>hourlyPlot</em>.</p>
 <p><strong>Exercise:</strong> To remind yourself that we are still merely constructing HTML and not creating actual plots yet, run the above <code>plotOutput()</code> function in the console to see that all it does is create some HTML.</p>
 </div>
 <div id="output-for-a-table-summary-of-the-results" class="section level2">
 <h2>Output for a table summary of the results</h2>
-<p>Below the plot, we will have a table that shows all the results. To get a table, we use the <code>tableOutput()</code> function.</p>
+<p>Below the plot, we will have a table that shows a summary of the number of employees per department currently included in the plot. To get a table, we use the <code>tableOutput()</code> function.</p>
 <p>Here is a simple way to create a UI element that will hold a table output:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tableOutput</span>(<span class="st">&quot;results&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">tableOutput</span>(<span class="st">&quot;employTable&quot;</span>)</code></pre></div>
 <p>Add this output to the <code>mainPanel()</code> as well. Maybe add a couple <code>br()</code> in between the two outputs, just as a space buffer so that they aren’t too close to each other.</p>
 </div>
 </div>
@@ -586,24 +702,28 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(shiny)
 <span class="kw">library</span>(tidyverse)
 
-abc &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;abc.csv&quot;</span>)
+employ &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;employees-wage.csv&quot;</span>)
 
 ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(
-  <span class="kw">titlePanel</span>(<span class="st">&quot;Virginia ABC Store prices&quot;</span>),
+  <span class="kw">titlePanel</span>(<span class="st">&quot;City of Chicago Wage Employees&quot;</span>),
   <span class="kw">sidebarLayout</span>(
     <span class="kw">sidebarPanel</span>(
-      <span class="kw">sliderInput</span>(<span class="st">&quot;priceInput&quot;</span>, <span class="st">&quot;Price&quot;</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="dv">100</span>,
-                  <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">40</span>), <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>),
-      <span class="kw">radioButtons</span>(<span class="st">&quot;typeInput&quot;</span>, <span class="st">&quot;Product type&quot;</span>,
-                   <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Mixers&quot;</span>, <span class="st">&quot;Rimmers&quot;</span>, <span class="st">&quot;Spirits&quot;</span>, <span class="st">&quot;Wine&quot;</span>),
-                   <span class="dt">selected =</span> <span class="st">&quot;Spirits&quot;</span>),
-      <span class="kw">selectInput</span>(<span class="st">&quot;proofInput&quot;</span>, <span class="st">&quot;Proof&quot;</span>,
-                  <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;0-40&quot;</span>, <span class="st">&quot;40-80&quot;</span>, <span class="st">&quot;80-120&quot;</span>, <span class="st">&quot;120-160&quot;</span>, <span class="st">&quot;160+&quot;</span>))
+      <span class="kw">sliderInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;wage&quot;</span>,
+                  <span class="dt">label =</span> <span class="st">&quot;Wage range&quot;</span>,
+                  <span class="dt">min =</span> <span class="dv">0</span>,
+                  <span class="dt">max =</span> <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+                  <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)),
+                  <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>),
+      <span class="kw">radioButtons</span>(<span class="dt">inputId =</span> <span class="st">&quot;full_time&quot;</span>,
+                   <span class="dt">label =</span> <span class="st">&quot;Full or part-time&quot;</span>,
+                   <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Full-Time&quot;</span>, <span class="st">&quot;Part-Time&quot;</span>)),
+      <span class="kw">selectInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;department&quot;</span>,
+                  <span class="dt">label =</span> <span class="st">&quot;Department&quot;</span>,
+                  <span class="dt">choices =</span> <span class="kw">sort</span>(<span class="kw">unique</span>(employ<span class="op">$</span>department)),
+                  <span class="dt">multiple =</span> <span class="ot">TRUE</span>)
     ),
-    <span class="kw">mainPanel</span>(
-      <span class="kw">plotOutput</span>(<span class="st">&quot;coolplot&quot;</span>),
-      <span class="kw">tableOutput</span>(<span class="st">&quot;results&quot;</span>)
-    )
+    <span class="kw">mainPanel</span>(<span class="kw">plotOutput</span>(<span class="st">&quot;hourlyPlot&quot;</span>),
+              <span class="kw">tableOutput</span>(<span class="st">&quot;employTable&quot;</span>))
   )
 )
 
@@ -1096,11 +1216,93 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 </div>
 <div id="session-info" class="section level1 toc-ignore">
 <h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## Session info -------------------------------------------------------------</code></pre>
+<pre><code>##  setting  value                       
+##  version  R version 3.5.0 (2018-04-23)
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2018-07-28</code></pre>
+<pre><code>## Packages -----------------------------------------------------------------</code></pre>
+<pre><code>##  package    * version date       source        
+##  assertthat   0.2.0   2017-04-11 CRAN (R 3.5.0)
+##  backports    1.1.2   2017-12-13 CRAN (R 3.5.0)
+##  base       * 3.5.0   2018-04-24 local         
+##  bindr        0.1.1   2018-03-13 CRAN (R 3.5.0)
+##  bindrcpp     0.2.2   2018-03-29 CRAN (R 3.5.0)
+##  broom        0.5.0   2018-07-17 CRAN (R 3.5.0)
+##  cellranger   1.1.0   2016-07-27 CRAN (R 3.5.0)
+##  cli          1.0.0   2017-11-05 CRAN (R 3.5.0)
+##  colorspace   1.3-2   2016-12-14 CRAN (R 3.5.0)
+##  compiler     3.5.0   2018-04-24 local         
+##  crayon       1.3.4   2017-09-16 CRAN (R 3.5.0)
+##  datasets   * 3.5.0   2018-04-24 local         
+##  devtools     1.13.6  2018-06-27 CRAN (R 3.5.0)
+##  digest       0.6.15  2018-01-28 CRAN (R 3.5.0)
+##  dplyr      * 0.7.6   2018-06-29 cran (@0.7.6) 
+##  evaluate     0.11    2018-07-17 CRAN (R 3.5.0)
+##  forcats    * 0.3.0   2018-02-19 CRAN (R 3.5.0)
+##  ggplot2    * 3.0.0   2018-07-03 CRAN (R 3.5.0)
+##  glue         1.3.0   2018-07-17 CRAN (R 3.5.0)
+##  graphics   * 3.5.0   2018-04-24 local         
+##  grDevices  * 3.5.0   2018-04-24 local         
+##  grid         3.5.0   2018-04-24 local         
+##  gtable       0.2.0   2016-02-26 CRAN (R 3.5.0)
+##  haven        1.1.2   2018-06-27 CRAN (R 3.5.0)
+##  hms          0.4.2   2018-03-10 CRAN (R 3.5.0)
+##  htmltools    0.3.6   2017-04-28 CRAN (R 3.5.0)
+##  httpuv       1.4.5   2018-07-19 CRAN (R 3.5.0)
+##  httr         1.3.1   2017-08-20 CRAN (R 3.5.0)
+##  jsonlite     1.5     2017-06-01 CRAN (R 3.5.0)
+##  knitr        1.20    2018-02-20 CRAN (R 3.5.0)
+##  later        0.7.3   2018-06-08 CRAN (R 3.5.0)
+##  lattice      0.20-35 2017-03-25 CRAN (R 3.5.0)
+##  lazyeval     0.2.1   2017-10-29 CRAN (R 3.5.0)
+##  lubridate    1.7.4   2018-04-11 CRAN (R 3.5.0)
+##  magrittr     1.5     2014-11-22 CRAN (R 3.5.0)
+##  memoise      1.1.0   2017-04-21 CRAN (R 3.5.0)
+##  methods    * 3.5.0   2018-04-24 local         
+##  mime         0.5     2016-07-07 CRAN (R 3.5.0)
+##  modelr       0.1.2   2018-05-11 CRAN (R 3.5.0)
+##  munsell      0.5.0   2018-06-12 CRAN (R 3.5.0)
+##  nlme         3.1-137 2018-04-07 CRAN (R 3.5.0)
+##  pillar       1.3.0   2018-07-14 CRAN (R 3.5.0)
+##  pkgconfig    2.0.1   2017-03-21 CRAN (R 3.5.0)
+##  plyr         1.8.4   2016-06-08 CRAN (R 3.5.0)
+##  promises     1.0.1   2018-04-13 CRAN (R 3.5.0)
+##  purrr      * 0.2.5   2018-05-29 CRAN (R 3.5.0)
+##  R6           2.2.2   2017-06-17 CRAN (R 3.5.0)
+##  Rcpp         0.12.18 2018-07-23 CRAN (R 3.5.0)
+##  readr      * 1.1.1   2017-05-16 CRAN (R 3.5.0)
+##  readxl       1.1.0   2018-04-20 CRAN (R 3.5.0)
+##  rlang        0.2.1   2018-05-30 CRAN (R 3.5.0)
+##  rmarkdown    1.10    2018-06-11 CRAN (R 3.5.0)
+##  rprojroot    1.3-2   2018-01-03 CRAN (R 3.5.0)
+##  rstudioapi   0.7     2017-09-07 CRAN (R 3.5.0)
+##  rvest        0.3.2   2016-06-17 CRAN (R 3.5.0)
+##  scales       0.5.0   2017-08-24 CRAN (R 3.5.0)
+##  shiny      * 1.1.0   2018-05-17 CRAN (R 3.5.0)
+##  stats      * 3.5.0   2018-04-24 local         
+##  stringi      1.2.4   2018-07-20 CRAN (R 3.5.0)
+##  stringr    * 1.3.1   2018-05-10 CRAN (R 3.5.0)
+##  tibble     * 1.4.2   2018-01-22 CRAN (R 3.5.0)
+##  tidyr      * 0.8.1   2018-05-18 CRAN (R 3.5.0)
+##  tidyselect   0.2.4   2018-02-26 CRAN (R 3.5.0)
+##  tidyverse  * 1.2.1   2017-11-14 CRAN (R 3.5.0)
+##  tools        3.5.0   2018-04-24 local         
+##  utils      * 3.5.0   2018-04-24 local         
+##  withr        2.1.2   2018-03-15 CRAN (R 3.5.0)
+##  xml2         1.2.0   2018-01-24 CRAN (R 3.5.0)
+##  xtable       1.8-2   2016-02-05 CRAN (R 3.5.0)
+##  yaml         2.1.19  2018-05-01 CRAN (R 3.5.0)</code></pre>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p><a href="https://en.wikipedia.org/wiki/Alcohol_laws_of_the_United_States">Like many U.S. states</a>, Virginia exercises a monopoly over all sales of hard liquor in the state (plus an assortment of some wines).<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Feel free to explore the full employee dataset for <a href="hw10-shiny.html">homework 10</a>, but we will only focus on the wage employees today because there are different variables relevant to wage vs. salaried employees. We don’t want to get into that confusion today.<a href="#fnref1">↩</a></p></li>
 </ol>
 </div>
 

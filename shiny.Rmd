@@ -7,10 +7,10 @@ output:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE, eval = FALSE)
+knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE, eval = TRUE}
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(shiny)
 ```
@@ -29,11 +29,15 @@ Shiny is a package from RStudio that can be used to build interactive web pages 
 
 You can do quite a lot with Shiny: think of it as an easy way to make an interactive web page, and that web page can seamlessly interact with R and display R objects (plots, tables, of anything else you do in R). To get a sense of the wide range of things you can do with Shiny, you can visit [the Shiny gallery](http://shiny.rstudio.com/gallery/), which hosts examples of basic (and complex) Shiny apps.
 
-In this activity, we'll walk through all the steps of building a Shiny app using a dataset that lets you explore the products available at the [Virginia ABC stores](https://www.abc.virginia.gov/products).^[[Like many U.S. states](https://en.wikipedia.org/wiki/Alcohol_laws_of_the_United_States), Virginia exercises a monopoly over all sales of hard liquor in the state (plus an assortment of some wines).] The final version of the app [can be seen here](https://bensoltoff.shinyapps.io/cfss-abc/). Any activity deemed as an exercise throughout this tutorial is not mandatory for building our app, but they are good for getting more practice with Shiny. 
+In this lesson, we'll walk through all the steps of building a Shiny app using a subset of the city of Chicago's [current employee data set](https://data.cityofchicago.org/Administration-Finance/Current-Employee-Names-Salaries-and-Position-Title/xzkq-xp2w). The city annually releases an updated file of all employees of the city government, including information on department, job title, and salary/wage. We will build an app to report information specifically for wage employees. The final version of the app [can be seen here](https://bensoltoff.shinyapps.io/chicago-employees/). Any activity deemed as an exercise throughout this tutorial is not mandatory for building our app, but they are good for getting more practice with Shiny. 
 
 If you want even more practice, another great tutorial is the [official Shiny tutorial](http://shiny.rstudio.com/tutorial/). RStudio also provides a [handy cheatsheet](https://www.rstudio.com/resources/cheatsheets/) to remember all the little details after you already learned the basics.
 
 # Before we begin
+
+```{r employ, include = FALSE}
+employ <- read_csv("https://raw.githubusercontent.com/uc-cfss/shiny-demo/master/employees-wage.csv")
+```
 
 You'll need to have the `shiny` package, so install it.
 
@@ -49,6 +53,8 @@ runExample("01_hello")
 ```
 
 If the example app is running, press *Escape* to close the app, and you are ready to build your first Shiny app!
+
+To follow along with this lesson, fork and clone the [`shiny-demo`](https://github.com/uc-cfss/shiny-demo) Git repository which contains the data files for city employees.
 
 # Shiny app basics 
 
@@ -99,20 +105,20 @@ You can also create a new Shiny app using RStudio's menu by selecting *File > Ne
 
 # Load the dataset
 
-The dataset we'll be using contains information about all the products sold by the Virginia ABC stores and was previously scraped by [taber](https://github.com/taber/Virginia-ABC-Data). The processed dataset we'll be using in this app is available [here](http://cfss.uchicago.edu/data/abc.csv). Download it now and place this file in the same folder as your Shiny app. Make sure the file is named `abc.csv`.
+The raw dataset contains information about all employees of the city of Chicago (`employees-all.csv`). The processed dataset we'll be using in this app is the subset of employees who are **wage** employees (paid hourly), as opposed to **salaried** employees. This subset is in the `employees-wage.csv` file.^[Feel free to explore the full employee dataset for [homework 10](hw10-shiny.html), but we will only focus on the wage employees today because there are different variables relevant to wage vs. salaried employees. We don't want to get into that confusion today.]
 
-Add a line in your app to load the data into a variable called `abc`. It should look something like this (be sure to to add `library(tidyverse)` or `library(readr)` to the script so you can use the `read_csv` function):
+Add a line in your app to load the data into a variable called `employ`. It should look something like this (be sure to to add `library(tidyverse)` or `library(readr)` to the script so you can use the `read_csv` function):
 
 ```r
-abc <- read_csv("abc.csv")
+employ <- read_csv("employees-wage.csv")
 ```
 
-Place this line in your app as the second line, just after `library(shiny)` and `library(tidyverse)`.  Make sure the file path and file name are correct, otherwise your app won't run. Try to run the app to make sure the file can be loaded without errors.
+Place this line in your app as the third line, just after `library(shiny)` and `library(tidyverse)`. Make sure the file path and file name are correct, otherwise your app won't run. Try to run the app to make sure the file can be loaded without errors.
 
 If you want to verify that the app can successfully read the data, you can add a `print()` statement after reading the data. This won't make anything happen in your Shiny app, but you will see a summary of the dataset printed in the console, which should let you know that the dataset was indeed loaded correctly. You can place the following line after reading the data:
 
 ```r
-print(str(abc))
+print(glimpse(employ))
 ```
 
 Once you get confirmation that the data is properly loaded, you can remove that line.
@@ -128,7 +134,7 @@ Let's start populating our app with some elements visually. This is usually the 
 You can place R strings inside `fluidPage()` to render text.
 
 ```r
-fluidPage("Virginia ABC Stores", "prices")
+fluidPage("City of Chicago Wage Employees", "hourly wage")
 ```
 
 Replace the line in your app that assigns an empty `fluidPage()` into `ui` with the one above, and run the app.
@@ -150,11 +156,11 @@ Just as a demonstration, try replacing the `fluidPage()` function in your UI wit
 ```r
 ui <- fluidPage(
   h1("My app"),
-  "Virginia",
-  "ABC",
+  "Chiacgo",
+  "Wage Employees",
   br(),
-  "Store",
-  strong("prices")
+  "Hourly",
+  strong("wage")
 )
 ```
 
@@ -172,7 +178,7 @@ Overwrite the `fluidPage()` that you experimented with so far, and replace it wi
 
 ```r
 fluidPage(
-  titlePanel("Virginia ABC Store Prices")
+  titlePanel("City of Chicago Wage Employees")
 )
 ```
 
@@ -199,10 +205,10 @@ So far our complete app looks like this (hopefully this isn't a surprise to you)
 library(shiny)
 library(tidyverse)
 
-abc <- read_csv("abc.csv")
+employ <- read_csv("employees-wage.csv")
 
 ui <- fluidPage(
-  titlePanel("Virginia ABC Store prices"),
+  titlePanel("City of Chicago Wage Employees"),
   sidebarLayout(
     sidebarPanel("our inputs will go here"),
     mainPanel("the results will go here")
@@ -230,7 +236,7 @@ print(ui)
 
 ~~~
 <div class="container-fluid">
-  <h2>Virginia ABC Store prices</h2>
+  <h2>City of Chicago Wage Employees</h2>
   <div class="row">
     <div class="col-sm-4">
       <form class="well">our inputs will go here</form>
@@ -252,67 +258,101 @@ All input functions have the same first two arguments: `inputId` and `label`. Th
 
 **Exercise:** Read the documentation of `?numericInput` and try adding a numeric input to the UI. Experiment with the different arguments. Run the app and see how you can interact with this input. Then try different inputs types.
 
-## Input for price
+## Input for hourly wage
 
-The first input we want to have is for specifying a price range (minimum and maximum price). The most sensible types of input for this are either `numericInput()` or `sliderInput()` since they are both used for selecting numbers. If we use `numericInput()`, we'd have to use two inputs, one for the minimum value and one for the maximum. Looking at the documentation for `sliderInput()`, you'll see that by supplying a vector of length two as the `value` argument, it can be used to specify a range rather than a single number. This sounds like what we want in this case, so we'll use `sliderInput()`. 
+The first input we want to have is for specifying a wage range (minimum and maximum hourly wage). The most sensible types of input for this are either `numericInput()` or `sliderInput()` since they are both used for selecting numbers. If we use `numericInput()`, we'd have to use two inputs, one for the minimum value and one for the maximum. Looking at the documentation for `sliderInput()`, you'll see that by supplying a vector of length two as the `value` argument, it can be used to specify a range rather than a single number. This sounds like what we want in this case, so we'll use `sliderInput()`.
 
-To create a slider input, a maximum value needs to be provided. We could use the maximum price in the dataset, which is \$5,002, but I doubt I'd ever buy something that expensive. I think \$100 is a more reasonable max price for me, and about 94% of the products in this dataset are below \$100, so let's use that as our max.
+To create a slider input, a maximum value needs to be provided. We could manually determine the highest hourly wage rate in the dataset and hardcode this into the app. But we're already using R, so let's calculate it dynamically. That is, write a short piece of R code to determine the largest value in the `wage` column. `max()` does exactly that.
+
+```{r max}
+max(employ$wage, na.rm = TRUE)
+```
 
 By looking at the documentation for the slider input function, the following piece of code can be constructed.
 
 ```r
-sliderInput("priceInput", "Price", min = 0, max = 100,
-            value = c(25, 40), pre = "$")
+sliderInput(inputId = "wage",
+            label = "Wage range",
+            min = 0,
+            max = max(employ$wage, na.rm = TRUE),
+            value = c(0, max(employ$wage, na.rm = TRUE)),
+            pre = "$")
 ```
 
 Place the code for the slider input inside `sidebarPanel()` (replace the text we wrote earlier with this input).
 
 **Exercise:** Run the code of the `sliderInput()` in the R console and see what it returns. Change some of the parameters of `sliderInput()`, and see how that changes the result.  It's important to truly understand that all these functions in the UI are simply a convenient way to write HTML, as is apparent whenever you run these functions on their own.
 
-## Input for product type
+## Input for full/part-time
 
-Usually when going to the liquor store you know what kind of alcohol you want, and you don't want to waste your time in the wrong section.  The same is true in our app, we should be able to choose what type of product we want.
+While many employees of the city are full-time workers, a large portion only work for the city part-time. Part-time workers are more likely to be seasonal employees, and as such their hourly wages may systematically differ from full-time employees. It will be helpful to include an option to filter the datset between these two types of employees.
 
-For this we want some kind of a text input. But allowing the user to enter text freely isn't the right solution because we want to restrict the user to only a few choices.  We could either use radio buttons or a select box for our purpose. Let's use radio buttons for now since there are only a few options, so take a look at the documentation for `radioButtons()` and come up with a reasonable input function code.  It should look like this:
+For this we want some kind of a text input. But allowing the user to enter text freely isn't the right solution because we want to restrict the user to only two choices. We could either use radio buttons or a select box for our purpose. Let's use radio buttons for now since there are only two options, so take a look at the documentation for `radioButtons()` and come up with a reasonable input function code. It should look like this:
 
 ```r
-radioButtons("typeInput", "Product type",
-            choices = c("Mixers", "Rimmers", "Spirits", "Wine"),
-            selected = "Spirits")
+radioButtons(inputId = "full_time",
+             label = "Full or part-time",
+             choices = c("Full-Time", "Part-Time"))
 ```
 
 Add this input code inside `sidebarPanel()`, after the previous input (separate them with a comma).
 
-> If you look at that input function and think "what if there were 100 types, listing them by hand would not be fun, there's got to be a better way!", then you're right.  This is where [`uiOutput()`](#using-uioutput-to-create-ui-elements-dynamically) comes in handy, but we'll talk about that later.
+## Input for department
 
-## Input for proof category
+Different departments will offer different wage structures depending on the value of the skills in demand. The city classifies wage employees into `r n_distinct(employ$department)` distinct departments:
 
-I should probably decide how drunk I want to get by selecting the proof of the alcohol. We could use a `sliderInput()` since proof is numeric, but I've also simplified it by creating a categorical variable by binning the products' proofs. The most appropriate input type in this case is probably the select box. Look at the documentation for `selectInput()` and create an input function. Let's have 0-40, 40-80, 80-120, 120-160, and 160+ as the options.
-
-```r
-selectInput("proofInput", "Proof",
-            choices = c("0-40", "40-80", "80-120", "120-160", "160+"))
+```{r departments, echo = FALSE}
+count(employ, department) %>%
+  knitr::kable(col.names = c("Department", "Number of Employees"))
 ```
 
-Add this function as well to your app.  If you followed along, your entire app should have this code:
+The most appropriate input type in this case is probably the select box `selectInput()`. However we don't want to write out the entire vector by hand:
+
+```{r departments-c, echo = FALSE}
+employ$department %>%
+  unique %>%
+  sort %>%
+  stringr::str_c(collapse = '", "') %>%
+  stringr::str_c('c("', ., '")') %>%
+  cat
+```
+
+Instead, like before we'll extract these values directly from the data frame:
+
+```r
+selectInput(inputId = "department",
+            label = "Department",
+            choices = sort(unique(employ$department)),
+            multiple = TRUE)
+```
+
+> Set `multiple = TRUE` so the user can select more than one department at a time.
+
+Add this function as well to your app. If you followed along, your entire app should have this code:
 
 ```r
 library(shiny)
 library(tidyverse)
 
-abc <- read_csv("abc.csv")
+employ <- read_csv("employees-wage.csv")
 
 ui <- fluidPage(
-  titlePanel("Virginia ABC Store prices"),
+  titlePanel("City of Chicago Wage Employees"),
   sidebarLayout(
     sidebarPanel(
-      sliderInput("priceInput", "Price", min = 0, max = 100,
-                  value = c(25, 40), pre = "$"),
-      radioButtons("typeInput", "Product type",
-                   choices = c("Mixers", "Rimmers", "Spirits", "Wine"),
-                   selected = "Spirits"),
-      selectInput("proofInput", "Proof",
-                  choices = c("0-40", "40-80", "80-120", "120-160", "160+"))
+      sliderInput(inputId = "wage",
+                  label = "Wage range",
+                  min = 0,
+                  max = max(employ$wage, na.rm = TRUE),
+                  value = c(0, max(employ$wage, na.rm = TRUE)),
+                  pre = "$"),
+      radioButtons(inputId = "full_time",
+                   label = "Full or part-time",
+                   choices = c("Full-Time", "Part-Time")),
+      selectInput(inputId = "department",
+                  label = "Department",
+                  choices = sort(unique(employ$department)),
+                  multiple = TRUE)
     ),
     mainPanel("the results will go here")
   )
@@ -333,26 +373,26 @@ Shiny provides several output functions, one for each type of output. Similarly 
 
 ## Output for a plot of the results
 
-At the top of the main panel we'll have a plot showing some visualization of the results. Since we want a plot, the function we use is `plotOutput()`.
+At the top of the main panel we'll have a plot showing the distribution of hourly wages. Since we want a plot, the function we use is `plotOutput()`.
 
 Add the following code into the `mainPanel()` (replace the existing text):
 
 ```r
-plotOutput("coolplot")
+plotOutput("hourlyPlot")
 ```
 
-This will add a placeholder in the UI for a plot named *coolplot*.
+This will add a placeholder in the UI for a plot named *hourlyPlot*.
 
 **Exercise:** To remind yourself that we are still merely constructing HTML and not creating actual plots yet, run the above `plotOutput()` function in the console to see that all it does is create some HTML.
 
 ## Output for a table summary of the results
 
-Below the plot, we will have a table that shows all the results.  To get a table, we use the `tableOutput()` function.
+Below the plot, we will have a table that shows a summary of the number of employees per department currently included in the plot. To get a table, we use the `tableOutput()` function.
 
 Here is a simple way to create a UI element that will hold a table output:
 
 ```r
-tableOutput("results")
+tableOutput("employTable")
 ```
 
 Add this output to the `mainPanel()` as well. Maybe add a couple `br()` in between the two outputs, just as a space buffer so that they aren't too close to each other.
@@ -365,24 +405,28 @@ If you've followed along, your app should now have this code:
 library(shiny)
 library(tidyverse)
 
-abc <- read_csv("abc.csv")
+employ <- read_csv("employees-wage.csv")
 
 ui <- fluidPage(
-  titlePanel("Virginia ABC Store prices"),
+  titlePanel("City of Chicago Wage Employees"),
   sidebarLayout(
     sidebarPanel(
-      sliderInput("priceInput", "Price", min = 0, max = 100,
-                  value = c(25, 40), pre = "$"),
-      radioButtons("typeInput", "Product type",
-                   choices = c("Mixers", "Rimmers", "Spirits", "Wine"),
-                   selected = "Spirits"),
-      selectInput("proofInput", "Proof",
-                  choices = c("0-40", "40-80", "80-120", "120-160", "160+"))
+      sliderInput(inputId = "wage",
+                  label = "Wage range",
+                  min = 0,
+                  max = max(employ$wage, na.rm = TRUE),
+                  value = c(0, max(employ$wage, na.rm = TRUE)),
+                  pre = "$"),
+      radioButtons(inputId = "full_time",
+                   label = "Full or part-time",
+                   choices = c("Full-Time", "Part-Time")),
+      selectInput(inputId = "department",
+                  label = "Department",
+                  choices = sort(unique(employ$department)),
+                  multiple = TRUE)
     ),
-    mainPanel(
-      plotOutput("coolplot"),
-      tableOutput("results")
-    )
+    mainPanel(plotOutput("hourlyPlot"),
+              tableOutput("employTable"))
   )
 )
 
