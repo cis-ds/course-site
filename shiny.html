@@ -737,89 +737,89 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <p>If you look at the server function, you’ll notice that it is always defined with two arguments: <code>input</code> and <code>output</code>. You <em>must</em> define these two arguments! Both <code>input</code> and <code>output</code> are list-like objects. As the names suggest, <code>input</code> is a list you will read values <em>from</em> and <code>output</code> is a list you will write values <em>to</em>. <code>input</code> will contain the values of all the different inputs at any given time, and <code>output</code> is where you will save output objects (such as tables and plots) to display in your app.</p>
 <div id="building-an-output" class="section level2">
 <h2>Building an output</h2>
-<p>Recall that we created two output placeholders: <em>coolplot</em> (a plot) and <em>results</em> (a table). We need to write code in R that will tell Shiny what kind of plot or table to display. There are three rules to build an output in Shiny.</p>
+<p>Recall that we created two output placeholders: <em>hourlyPlot</em> (a plot) and <em>employTable</em> (a table). We need to write code in R that will tell Shiny what kind of plot or table to display. There are three rules to build an output in Shiny.</p>
 <ol style="list-style-type: decimal">
 <li>Save the output object into the <code>output</code> list (remember the app template - every server function has an <code>output</code> argument)<br />
 </li>
 <li>Build the object with a <code>render*</code> function, where <code>*</code> is the type of output</li>
 <li>Access input values using the <code>input</code> list (every server function has an <code>input</code> argument)</li>
 </ol>
-<p>The third rule is only required if you want your output to depend on some input, so let’s first see how to build a very basic output using only the first two rules. We’ll create a plot and send it to the <em>coolplot</em> output.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+<p>The third rule is only required if you want your output to depend on some input, so let’s first see how to build a very basic output using only the first two rules. We’ll create a plot and send it to the <em>hourlyPlot</em> output.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
   <span class="kw">plot</span>(<span class="kw">rnorm</span>(<span class="dv">100</span>))
 })</code></pre></div>
-<p>This simple code shows the first two rules: we’re creating a plot inside the <code>renderPlot()</code> function, and assigning it to <em>coolplot</em> in the <code>output</code> list. Remember that every output created in the UI must have a unique ID, now we see why. In order to attach an R object to an output with ID <em>x</em>, we assign the R object to <code>output$x</code>.</p>
-<p>Since <em>coolplot</em> was defined as a <code>plotOutput</code>, we must use the <code>renderPlot</code> function, and we must create a plot inside the <code>renderPlot</code> function.</p>
+<p>This simple code shows the first two rules: we’re creating a plot inside the <code>renderPlot()</code> function, and assigning it to <em>hourlyPlot</em> in the <code>output</code> list. Remember that every output created in the UI must have a unique ID, now we see why. In order to attach an R object to an output with ID <em>x</em>, we assign the R object to <code>output$x</code>.</p>
+<p>Since <em>hourlyPlot</em> was defined as a <code>plotOutput</code>, we must use the <code>renderPlot</code> function, and we must create a plot inside the <code>renderPlot</code> function.</p>
 <p>If you add the code above inside the server function, you should see a plot with 100 random points in the app.</p>
 <p><strong>Exercise:</strong> The code inside <code>renderPlot()</code> doesn’t have to be only one line, it can be as long as you’d like as long as it returns a plot. Try making a more complex plot using <code>ggplot2</code>. The plot doesn’t have to use our dataset, it could be anything, just to make sure you can use <code>renderPlot()</code>.</p>
 </div>
 <div id="making-an-output-react-to-an-input" class="section level2">
 <h2>Making an output react to an input</h2>
-<p>Now we’ll take the plot one step further. Instead of always plotting the same plot (100 random numbers), let’s use the minimum price selected as the number of points to show. It doesn’t make too much sense, but it’s just to learn how to make an output depend on an input.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
-  <span class="kw">plot</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>priceInput[<span class="dv">1</span>]))
+<p>Now we’ll take the plot one step further. Instead of always plotting the same plot (100 random numbers), let’s use the minimum wage selected as the number of points to show. It doesn’t make too much sense, but it’s just to learn how to make an output depend on an input.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+  <span class="kw">plot</span>(<span class="kw">rnorm</span>(input<span class="op">$</span>wage[<span class="dv">1</span>]))
 })</code></pre></div>
-<p>Replace the previous code in your server function with this code, and run the app. Whenever you choose a new minimum price range, the plot will update with a new number of points. Notice that the only thing different in the code is that instead of using the number <code>100</code> we are using <code>input$priceInput[1]</code>.</p>
-<p>What does this mean? Just like the variable <code>output</code> contains a list of all the outputs (and we need to assign code into them), the variable <code>input</code> contains a list of all the inputs that are defined in the UI. <code>input$priceInput</code> return a vector of length 2 containing the minimum and maximum price. Whenever the user manipulates the slider in the app, these values are updated, and whatever code relies on it gets re-evaluated. This is a concept known as <a href="#reactivity-101"><strong>reactivity</strong></a>, which we will get to in a few minutes.</p>
-<p>Notice that these short 3 lines of code are using all the 3 rules for building outputs: we are saving to the <code>output</code> list (<code>output$coolplot &lt;-</code>), we are using a <code>render*</code> function to build the output (<code>renderPlot({})</code>), and we are accessing an input value (<code>input$priceInput[1]</code>).</p>
+<p>Replace the previous code in your server function with this code, and run the app. Whenever you choose a new minimum price range, the plot will update with a new number of points. Notice that the only thing different in the code is that instead of using the number <code>100</code> we are using <code>input$wage[1]</code>.</p>
+<p>What does this mean? Just like the variable <code>output</code> contains a list of all the outputs (and we need to assign code into them), the variable <code>input</code> contains a list of all the inputs that are defined in the UI. <code>input$wage</code> return a vector of length 2 containing the minimum and maximum wage. Whenever the user manipulates the slider in the app, these values are updated, and whatever code relies on it gets re-evaluated. This is a concept known as <a href="#reactivity-101"><strong>reactivity</strong></a>, which we will get to in a few minutes.</p>
+<p>Notice that these short 3 lines of code are using all the 3 rules for building outputs: we are saving to the <code>output</code> list (<code>output$hourlyPlot &lt;-</code>), we are using a <code>render*</code> function to build the output (<code>renderPlot({})</code>), and we are accessing an input value (<code>input$wage[1]</code>).</p>
 </div>
 <div id="building-the-plot-output" class="section level2">
 <h2>Building the plot output</h2>
-<p>Now we have all the knowledge required to build a plot visualizing some aspect of the data. We’ll create a simple histogram of the alcohol content of the products by using the same 3 rules to create a plot output.</p>
+<p>Now we have all the knowledge required to build a plot visualizing some aspect of the data. We’ll create a simple histogram of the hourly wage rate for employees by using the same 3 rules to create a plot output.</p>
 <p>First we need to make sure <code>ggplot2</code> is loaded, so add a <code>library(ggplot2)</code> at the top (or just continue to use <code>library(tidyverse)</code>.</p>
-<p>Next we’ll return a histogram of bottle size <code>Size</code> from <code>renderPlot()</code>. Let’s start with just a histogram of the whole data, unfiltered.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
-  <span class="kw">ggplot</span>(abc, <span class="kw">aes</span>(Size)) <span class="op">+</span>
+<p>Next we’ll return a histogram of hourly wage <code>wage</code> from <code>renderPlot()</code>. Let’s start with just a histogram of the whole data, unfiltered.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+  <span class="kw">ggplot</span>(employ, <span class="kw">aes</span>(wage)) <span class="op">+</span>
 <span class="st">    </span><span class="kw">geom_histogram</span>()
 })</code></pre></div>
 <p>If you run the app with this code inside your server, you should see a histogram in the app. But if you change the input values, nothing happens yet, so the next step is to actually filter the dataset based on the inputs.</p>
-<p>Recall that we have 3 inputs: <code>priceInput</code>, <code>typeInput</code>, and <code>proofInput</code>. We can filter the data based on the values of these three inputs. We’ll use <code>dplyr</code> functions to filter the data, so be sure to include <code>dplyr</code> at the top. Then we’ll plot the filtered data instead of the original data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
-  filtered &lt;-<span class="st"> </span>abc <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">filter</span>(CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-           CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
-           Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
-           ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput
-    )
-  <span class="kw">ggplot</span>(filtered, <span class="kw">aes</span>(Size)) <span class="op">+</span>
+<p>Recall that we have 3 inputs: <code>wage</code>, <code>full_time</code>, and <code>department</code>. We can filter the data based on the values of these three inputs. For now, only filter for <code>wage</code> and <code>full_time</code> – we’ll return to <code>department</code> in a little bit. We’ll use <code>dplyr</code> functions to filter the data, so be sure to include <code>library(dplyr)</code> at the top. Then we’ll plot the filtered data instead of the original data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+  employ <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">filter</span>(full_time <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>full_time,
+           wage <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">1</span>]],
+           wage <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">2</span>]]) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(wage)) <span class="op">+</span>
 <span class="st">    </span><span class="kw">geom_histogram</span>()
 })</code></pre></div>
-<p>Place this code in your server function and run the app. If you change any input, you should see the histogram update.</p>
+<p>Place this code in your server function and run the app. If you change the hourly wage or full/part-time inputs, you should see the histogram update.</p>
 <p>Read this code and understand it. You’ve successfully created an interactive app - the plot is changing according to the user’s selection.</p>
 <p>To make sure we’re on the same page, here is what your code should look like at this point:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(shiny)
 <span class="kw">library</span>(tidyverse)
 
-abc &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;abc.csv&quot;</span>)
+employ &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&quot;employees-wage.csv&quot;</span>)
 
 ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(
-  <span class="kw">titlePanel</span>(<span class="st">&quot;Virginia ABC Store prices&quot;</span>),
+  <span class="kw">titlePanel</span>(<span class="st">&quot;City of Chicago Wage Employees&quot;</span>),
   <span class="kw">sidebarLayout</span>(
     <span class="kw">sidebarPanel</span>(
-      <span class="kw">sliderInput</span>(<span class="st">&quot;priceInput&quot;</span>, <span class="st">&quot;Price&quot;</span>, <span class="dt">min =</span> <span class="dv">0</span>, <span class="dt">max =</span> <span class="dv">100</span>,
-                  <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">25</span>, <span class="dv">40</span>), <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>),
-      <span class="kw">radioButtons</span>(<span class="st">&quot;typeInput&quot;</span>, <span class="st">&quot;Product type&quot;</span>,
-                   <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Mixers&quot;</span>, <span class="st">&quot;Rimmers&quot;</span>, <span class="st">&quot;Spirits&quot;</span>, <span class="st">&quot;Wine&quot;</span>),
-                   <span class="dt">selected =</span> <span class="st">&quot;Spirits&quot;</span>),
-      <span class="kw">selectInput</span>(<span class="st">&quot;proofInput&quot;</span>, <span class="st">&quot;Proof&quot;</span>,
-                  <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;0-40&quot;</span>, <span class="st">&quot;40-80&quot;</span>, <span class="st">&quot;80-120&quot;</span>, <span class="st">&quot;120-160&quot;</span>, <span class="st">&quot;160+&quot;</span>))
+      <span class="kw">sliderInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;wage&quot;</span>,
+                  <span class="dt">label =</span> <span class="st">&quot;Wage range&quot;</span>,
+                  <span class="dt">min =</span> <span class="dv">0</span>,
+                  <span class="dt">max =</span> <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),
+                  <span class="dt">value =</span> <span class="kw">c</span>(<span class="dv">0</span>, <span class="kw">max</span>(employ<span class="op">$</span>wage, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)),
+                  <span class="dt">pre =</span> <span class="st">&quot;$&quot;</span>),
+      <span class="kw">radioButtons</span>(<span class="dt">inputId =</span> <span class="st">&quot;full_time&quot;</span>,
+                   <span class="dt">label =</span> <span class="st">&quot;Full or part-time&quot;</span>,
+                   <span class="dt">choices =</span> <span class="kw">c</span>(<span class="st">&quot;Full-Time&quot;</span>, <span class="st">&quot;Part-Time&quot;</span>)),
+      <span class="kw">selectInput</span>(<span class="dt">inputId =</span> <span class="st">&quot;department&quot;</span>,
+                  <span class="dt">label =</span> <span class="st">&quot;Department&quot;</span>,
+                  <span class="dt">choices =</span> <span class="kw">sort</span>(<span class="kw">unique</span>(employ<span class="op">$</span>department)),
+                  <span class="dt">multiple =</span> <span class="ot">TRUE</span>)
     ),
-    <span class="kw">mainPanel</span>(
-      <span class="kw">plotOutput</span>(<span class="st">&quot;coolplot&quot;</span>),
-      <span class="kw">tableOutput</span>(<span class="st">&quot;results&quot;</span>)
-    )
+    <span class="kw">mainPanel</span>(<span class="kw">plotOutput</span>(<span class="st">&quot;hourlyPlot&quot;</span>),
+              <span class="kw">tableOutput</span>(<span class="st">&quot;employTable&quot;</span>))
   )
 )
 
 server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output) {
-  output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
-    filtered &lt;-<span class="st"> </span>abc <span class="op">%&gt;%</span>
-<span class="st">      </span><span class="kw">filter</span>(CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-             CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
-             Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
-             ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput
-      )
-    <span class="kw">ggplot</span>(filtered, <span class="kw">aes</span>(Size)) <span class="op">+</span>
+  output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+    employ <span class="op">%&gt;%</span>
+<span class="st">      </span><span class="kw">filter</span>(full_time <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>full_time,
+             wage <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">1</span>]],
+             wage <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">2</span>]]) <span class="op">%&gt;%</span>
+<span class="st">      </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(wage)) <span class="op">+</span>
 <span class="st">      </span><span class="kw">geom_histogram</span>()
   })
 }
@@ -830,18 +830,16 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 </div>
 <div id="building-the-table-output" class="section level2">
 <h2>Building the table output</h2>
-<p>Building the next output should be much easier now that we’ve done it once. The other output we have was called <code>results</code> (as defined in the UI) and should be a table of all the products that match the filters. Since it’s a table output, we should use the <code>renderTable()</code> function. We’ll do the exact same filtering on the data, and then simply return the data as a data.frame. Shiny will know that it needs to display it as a table because it’s defined as a <code>tableOutput</code>.</p>
+<p>Building the next output should be much easier now that we’ve done it once. The other output we have was called <code>employTable</code> (as defined in the UI) and should be a table summarizing the number of employees per department in the filtered data frame. Since it’s a table output, we should use the <code>renderTable()</code> function. We’ll do the exact same filtering on the data, and then simply return the summarized data as a data.frame. Shiny will know that it needs to display it as a table because it’s defined as a <code>tableOutput</code>.</p>
 <p>The code for creating the table output should make sense to you without too much explanation:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>results &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
-  filtered &lt;-<span class="st"> </span>abc <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">filter</span>(CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-           CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
-           Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
-           ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput
-    )
-  filtered
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>employTable &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
+  employ <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">filter</span>(full_time <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>full_time,
+           wage <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">1</span>]],
+           wage <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">2</span>]]) <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">count</span>(department)
 })</code></pre></div>
-<p>Add this code to your server. Don’t overwrite the previous definition of <code>output$coolplot</code>, just add this code before or after that, but inside the server function. Run your app, and be amazed! You can now see a table showing all the products at the Virginia ABC store that match your criteria.</p>
+<p>Add this code to your server. Don’t overwrite the previous definition of <code>output$hourlyPlot</code>, just add this code before or after that, but inside the server function. Run your app, and be amazed! You can now see a table showing the number of wage employees per department that match your criteria.</p>
 <blockquote>
 <p>Notice that in building <code>ui</code>, we are using a predefined function called <code>fluidPage()</code> so all of our different elements for the UI are separated by commas. This is because each element for the page is an argument for the <code>fluidPage()</code> function. In building <code>server</code>, we are writing a new function. For this reason we don’t have to separate each element with a comma. We just write it like we would any other function!</p>
 </blockquote>
@@ -865,15 +863,15 @@ x &lt;-<span class="st"> </span><span class="dv">10</span></code></pre></div>
 <p>The above render function accesses two different inputs: <code>input$mycolor</code> and <code>input$mynumber</code>. This means that this code block depends on <em>both</em> of these variables, so whenever either one of the two inputs is updated, the code gets re-executed with the new input values and <code>output$someoutput</code> is updated.</p>
 <div id="creating-and-accessing-reactive-variables" class="section level2">
 <h2>Creating and accessing reactive variables</h2>
-<p>One very important thing to remember about reactive variables (such as the <code>input</code> list) is that <strong>they can only be used inside reactive contexts</strong>. Any <code>render*</code> function is a reactive context, so you can always use <code>input$x</code> or any other reactive variable inside render functions. There are two other common reactive contexts that we’ll get to in a minute: <code>reactive({})</code> and <code>observe({})</code>. To show you what this means, let’s try accessing the price input value in the server function, without explicitly being inside a reactive context. Simply add <code>print(input$priceInput)</code> inside the <code>server</code> function, and you will get an error when running the app:</p>
+<p>One very important thing to remember about reactive variables (such as the <code>input</code> list) is that <strong>they can only be used inside reactive contexts</strong>. Any <code>render*</code> function is a reactive context, so you can always use <code>input$x</code> or any other reactive variable inside render functions. There are two other common reactive contexts that we’ll get to in a minute: <code>reactive({})</code> and <code>observe({})</code>. To show you what this means, let’s try accessing the price input value in the server function, without explicitly being inside a reactive context. Simply add <code>print(input$wage)</code> inside the <code>server</code> function, and you will get an error when running the app:</p>
 <pre><code>Operation not allowed without an active reactive context. (You tried to do something that can only be done from inside a reactive expression or observer.)</code></pre>
-<p>Shiny is very clear about what the error is: we are trying to access a reactive variable outside of a reactive context. To fix this, we can use the <code>observe({})</code> function to access the <code>input</code> variable. Inside the server, replace <code>print(input$priceInput)</code> with <code>observe({ print(input$priceInput) })</code>, and now the app should run fine. Note that this <code>observe({})</code> statement <em>depends</em> on <code>input$priceInput</code>, so whenever you change the value of the price, the code inside this <code>observe({})</code> will run again, and the new value will be printed. This is actually a very simple yet useful debugging technique in Shiny: often you want to know what value a reactive variable holds, so you need to remember to wrap the <code>cat(input$x)</code> or <code>print(input$x)</code> by an <code>observe({})</code>.</p>
-<p>So far we only saw one reactive variable: the <code>input</code> list. You can also create your own reactive variables using the <code>reactive({})</code> function. The <code>reactive({})</code> function is similar to <code>observe({})</code> in that it is also a reactive context, which means that it will get re-run whenever any of the reactive variables in it get updated. The difference between them is that <code>reactive({})</code> returns a value. To see it in action, let’s create a variable called <code>priceDiff</code> that will be the difference between the maximum and minimum price selected. If you try to naively define <code>priceDiff &lt;- diff(input$priceInput)</code>, you’ll see the same error as before about doing something outside a reactive context. This is because <code>input$priceInput</code> is a reactive variable, and we can’t use a reactive variable outside a reactive context. Since we want to assign a value, we use the <code>reactive({})</code> function. Try adding the following line to your server:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">priceDiff &lt;-<span class="st"> </span><span class="kw">reactive</span>({
-  <span class="kw">diff</span>(input<span class="op">$</span>priceInput)
+<p>Shiny is very clear about what the error is: we are trying to access a reactive variable outside of a reactive context. To fix this, we can use the <code>observe({})</code> function to access the <code>input</code> variable. Inside the server, replace <code>print(input$wage)</code> with <code>observe({ print(input$wage) })</code>, and now the app should run fine. Note that this <code>observe({})</code> statement <em>depends</em> on <code>input$wage</code>, so whenever you change the value of the price, the code inside this <code>observe({})</code> will run again, and the new value will be printed. This is actually a very simple yet useful debugging technique in Shiny: often you want to know what value a reactive variable holds, so you need to remember to wrap the <code>cat(input$x)</code> or <code>print(input$x)</code> by an <code>observe({})</code>.</p>
+<p>So far we only saw one reactive variable: the <code>input</code> list. You can also create your own reactive variables using the <code>reactive({})</code> function. The <code>reactive({})</code> function is similar to <code>observe({})</code> in that it is also a reactive context, which means that it will get re-run whenever any of the reactive variables in it get updated. The difference between them is that <code>reactive({})</code> returns a value. To see it in action, let’s create a variable called <code>wageDiff</code> that will be the difference between the maximum and minimum wage selected. If you try to naively define <code>wageDiff &lt;- diff(input$wage)</code>, you’ll see the same error as before about doing something outside a reactive context. This is because <code>input$wage</code> is a reactive variable, and we can’t use a reactive variable outside a reactive context. Since we want to assign a value, we use the <code>reactive({})</code> function. Try adding the following line to your server:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">wageDiff &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+  <span class="kw">diff</span>(input<span class="op">$</span>wage)
 })</code></pre></div>
-<p>Now your app will run. If you want to access a reactive variable defined with <code>reactive({})</code>, <strong>you must add parentheses after the variable name, as if it’s a function</strong>. To demonstrate this, add <code>observe({ print(priceDiff()) })</code> to your server function. Notice that we use <code>priceDiff()</code> rather than <code>priceDiff</code>. It’s very important to remember this, because you can get confusing unclear errors if you simply try to access a custom reactive variable without the parentheses.</p>
-<p>You can think of reactivity as causing a chain reaction: when one reactive value changes, anything that depends on it will get updated. If any of the updated values are themselves reactive variables, then any reactive contexts that depend on those variables will also get updated in turn. As a concrete example, let’s think about what happens when you change the value of the <code>priceInput</code> on the page. Since <code>input$priceInput</code> is a reactive variable, any expression that uses it will get updated. This means the two render functions from earlier will execute because they both depend on <code>input$priceInput</code>, as well as the <code>priceDiff</code> variable because it also depends on it. But since <code>priceDiff</code> is itself a reactive variable, Shiny will check if there is anything that depends on <code>priceDiff</code>, and indeed there is - the <code>observe({})</code> function that prints the value of <code>priceDiff</code>. So once <code>priceDiff</code> gets updated, the <code>observe({})</code> function will run, and the value will get printed.</p>
+<p>Now your app will run. If you want to access a reactive variable defined with <code>reactive({})</code>, <strong>you must add parentheses after the variable name, as if it’s a function</strong>. To demonstrate this, add <code>observe({ print(wageDiff()) })</code> to your server function. Notice that we use <code>wageDiff()</code> rather than <code>wageDiff</code>. It’s very important to remember this, because you can get confusing unclear errors if you simply try to access a custom reactive variable without the parentheses.</p>
+<p>You can think of reactivity as causing a chain reaction: when one reactive value changes, anything that depends on it will get updated. If any of the updated values are themselves reactive variables, then any reactive contexts that depend on those variables will also get updated in turn. As a concrete example, let’s think about what happens when you change the value of the <code>wage</code> on the page. Since <code>input$wage</code> is a reactive variable, any expression that uses it will get updated. This means the two render functions from earlier will execute because they both depend on <code>input$wage</code>, as well as the <code>wageDiff</code> variable because it also depends on it. But since <code>wageDiff</code> is itself a reactive variable, Shiny will check if there is anything that depends on <code>wageDiff</code>, and indeed there is - the <code>observe({})</code> function that prints the value of <code>wageDiff</code>. So once <code>wageDiff</code> gets updated, the <code>observe({})</code> function will run, and the value will get printed.</p>
 <p>Reactivity is usually the hardest part about Shiny to understand, so if you don’t quite get it, don’t feel bad. Try reading this section again, and I promise that with time and experience you will get more comfortable with reactivity. Once you do feel more confident with reactivity, it may be a good idea to read more advanced documentation describing reactivity, since this section greatly simplifies ideas to make them more understandable. A great resource is RStudio’s <a href="http://shiny.rstudio.com/articles/understanding-reactivity.html">tutorial on reactivity</a>.</p>
 <p>Before continuing to the next section, you can remove all the <code>observe({})</code> and <code>reactive({})</code> functions we wrote in this section since they were all just for learning purposes.</p>
 <p><strong>Exercise:</strong> Read this section again and really understand what a reactive variable means, what the 3 main reactive contexts are, how you can define reactive variables, and how a reactivity chain of events works.</p>
@@ -881,37 +879,39 @@ x &lt;-<span class="st"> </span><span class="dv">10</span></code></pre></div>
 <div id="using-reactive-variables-to-reduce-code-duplication" class="section level2">
 <h2>Using reactive variables to reduce code duplication</h2>
 <p>You may have noticed that we have the exact same code filtering the dataset in two places, once in each render function. We can solve that problem by defining a reactive variable that will hold the filtered dataset, and use that variable in the render functions.</p>
-<p>The first step would be to create the reactive variable. The following code should be added to the server function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">filtered &lt;-<span class="st"> </span><span class="kw">reactive</span>({
-  abc <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">filter</span>(CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-           CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
-           Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
-           ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput
-    )
+<p>The first step would be to create the reactive variable. The following code should be added to the <code>server()</code> function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">employ_filter &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+  employ <span class="op">%&gt;%</span>
+<span class="st">    </span><span class="kw">filter</span>(
+      <span class="co"># filter by full or part-time</span>
+      full_time <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>full_time,
+      <span class="co"># filter by hourly wage</span>
+      wage <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">1</span>]],
+      wage <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">2</span>]])    
 })</code></pre></div>
-<p>The variable <code>filtered</code> is being defined exactly like before, except the body is wrapped by a <code>reactive({})</code>, and it’s defined in the server function instead of inside the individual render functions. Now that we have our reactive variable, we can use it in the output render functions. Try it yourself, and when you think you’re done, check the code below. Don’t forget that in order to access the value of a reactive expression, you must follow the name of the variable with parentheses! This is how your server function should look like now.</p>
+<p>The variable <code>employ_filter</code> is being defined exactly like before, except the body is wrapped by a <code>reactive({})</code>, and it’s defined in the server function instead of inside the individual render functions. Now that we have our reactive variable, we can use it in the output render functions. Try it yourself, and when you think you’re done, check the code below. Don’t forget that in order to access the value of a reactive expression, you must follow the name of the variable with parentheses! This is how your server function should look like now.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">server &lt;-<span class="st"> </span><span class="cf">function</span>(input, output) {
-  filtered &lt;-<span class="st"> </span><span class="kw">reactive</span>({
-    abc <span class="op">%&gt;%</span>
+  employ_filter &lt;-<span class="st"> </span><span class="kw">reactive</span>({
+    employ <span class="op">%&gt;%</span>
 <span class="st">      </span><span class="kw">filter</span>(
-        CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-        CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
-        Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
-        ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput
-      )
+        <span class="co"># filter by full or part-time</span>
+        full_time <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>full_time,
+        <span class="co"># filter by hourly wage</span>
+        wage <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">1</span>]],
+        wage <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[[<span class="dv">2</span>]])    
   })
   
-  output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
-    <span class="kw">ggplot</span>(<span class="kw">filtered</span>(), <span class="kw">aes</span>(Size)) <span class="op">+</span>
+  output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+    <span class="kw">ggplot</span>(<span class="kw">employ_filter</span>(), <span class="kw">aes</span>(wage)) <span class="op">+</span>
 <span class="st">      </span><span class="kw">geom_histogram</span>()
   })
-  
-  output<span class="op">$</span>results &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
-    <span class="kw">filtered</span>()
+
+  output<span class="op">$</span>employTable &lt;-<span class="st"> </span><span class="kw">renderTable</span>({
+    <span class="kw">employ_filter</span>() <span class="op">%&gt;%</span>
+<span class="st">      </span><span class="kw">count</span>(department)
   })
 }</code></pre></div>
-<p>As a reminder, Shiny creates a dependency tree with all the reactive expressions to know what value depends on what other value. For example, when the price input changes, Shiny looks at what values depend on price, and sees that <code>filtered</code> is a reactive expression that depends on the price input, so it re-evaluates <code>filtered</code>. Then, because <code>filtered</code> is changed, Shiny now looks to see what expressions depend on <code>filtered</code>, and it finds that the two render functions use <code>filtered</code>. So Shiny re-executes the two render functions as well.</p>
+<p>As a reminder, Shiny creates a dependency tree with all the reactive expressions to know what value depends on what other value. For example, when the wage input changes, Shiny looks at what values depend on <code>input$wage</code>, and sees that <code>employ_filter</code> is a reactive expression that depends on the price input, so it re-evaluates <code>employ_filter</code>. Then, because <code>employ_filter</code> is changed, Shiny now looks to see what expressions depend on <code>employ_filter</code>, and it finds that the two render functions use <code>employ_filter</code>. So Shiny re-executes the two render functions as well.</p>
 </div>
 </div>
 <div id="using-uioutput-to-create-ui-elements-dynamically" class="section level1">
@@ -948,12 +948,12 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
               <span class="kw">sort</span>(<span class="kw">unique</span>(abc<span class="op">$</span>Subtype)),
               <span class="dt">selected =</span> <span class="st">&quot;Whiskey&quot;</span>)
 })</code></pre></div>
-<p>Finally to make sure the data properly updates, change <code>filtered</code> in the <code>server</code> function to:</p>
+<p>Finally to make sure the data properly updates, change <code>employ_filter</code> in the <code>server</code> function to:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">filtered &lt;-<span class="st"> </span><span class="kw">reactive</span>({
   abc <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">filter</span>(
-      CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-      CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
+      CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[<span class="dv">1</span>],
+      CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[<span class="dv">2</span>],
       Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
       ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput,
       Subtype <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>subtypeInput
@@ -963,8 +963,8 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 </div>
 <div id="errors-showing-up-and-quickly-disappearing" class="section level2">
 <h2>Errors showing up and quickly disappearing</h2>
-<p>You might notice that when you first run the app, each of the two outputs are throwing an error message, but the error message goes away after a second. The problem is that when the app initializes, <code>filtered</code> is trying to access the subtype input, but the subtype input hasn’t been created yet. After Shiny finishes loading fully and the subtype input is generated, <code>filtered</code> tries accessing it again, this time it’s successful, and the error goes away.</p>
-<p>Once we understand why the error is happening, fixing it is simple. Inside the <code>filtered</code> reactive function, we should check if the sub-type input exists, and if not then just return <code>NULL</code>.</p>
+<p>You might notice that when you first run the app, each of the two outputs are throwing an error message, but the error message goes away after a second. The problem is that when the app initializes, <code>employ_filter</code> is trying to access the subtype input, but the subtype input hasn’t been created yet. After Shiny finishes loading fully and the subtype input is generated, <code>employ_filter</code> tries accessing it again, this time it’s successful, and the error goes away.</p>
+<p>Once we understand why the error is happening, fixing it is simple. Inside the <code>employ_filter</code> reactive function, we should check if the sub-type input exists, and if not then just return <code>NULL</code>.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">filtered &lt;-<span class="st"> </span><span class="kw">reactive</span>({
   <span class="cf">if</span>(<span class="kw">is.null</span>(input<span class="op">$</span>subtypeInput)) {
     <span class="kw">return</span>(<span class="ot">NULL</span>)
@@ -972,15 +972,15 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
   
   abc <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">filter</span>(
-      CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-      CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
+      CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[<span class="dv">1</span>],
+      CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[<span class="dv">2</span>],
       Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
       ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput,
       Subtype <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>subtypeInput
     )
 })</code></pre></div>
 <p>Now when the render function tries to access the data, they will get a <code>NULL</code> value before the app is fully loaded. You will still get an error, because the <code>ggplot</code> function will not work with a <code>NULL</code> dataset, so we also need to make a similar check in the <code>renderPlot()</code> function. Only once the data is loaded, we can try to plot.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
   <span class="cf">if</span> (<span class="kw">is.null</span>(<span class="kw">filtered</span>())) {
     <span class="kw">return</span>()
   }
@@ -1004,7 +1004,7 @@ ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(<span class="
                 <span class="kw">sidebarLayout</span>(
                   <span class="kw">sidebarPanel</span>(
                     <span class="kw">sliderInput</span>(
-                      <span class="st">&quot;priceInput&quot;</span>,
+                      <span class="st">&quot;wage&quot;</span>,
                       <span class="st">&quot;Price&quot;</span>,
                       <span class="dt">min =</span> <span class="dv">0</span>,
                       <span class="dt">max =</span> <span class="dv">100</span>,
@@ -1024,7 +1024,7 @@ ui &lt;-<span class="st"> </span><span class="kw">fluidPage</span>(<span class="
                     ),
                     <span class="kw">uiOutput</span>(<span class="st">&quot;subtypeInput&quot;</span>)
                   ),
-                  <span class="kw">mainPanel</span>(<span class="kw">plotOutput</span>(<span class="st">&quot;coolplot&quot;</span>),
+                  <span class="kw">mainPanel</span>(<span class="kw">plotOutput</span>(<span class="st">&quot;hourlyPlot&quot;</span>),
                             <span class="kw">tableOutput</span>(<span class="st">&quot;results&quot;</span>))
                 ))
 
@@ -1036,8 +1036,8 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
     
     abc <span class="op">%&gt;%</span>
 <span class="st">      </span><span class="kw">filter</span>(
-        CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">1</span>],
-        CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>priceInput[<span class="dv">2</span>],
+        CurrentPrice <span class="op">&gt;=</span><span class="st"> </span>input<span class="op">$</span>wage[<span class="dv">1</span>],
+        CurrentPrice <span class="op">&lt;=</span><span class="st"> </span>input<span class="op">$</span>wage[<span class="dv">2</span>],
         Type <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>typeInput,
         ProofBin <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>proofInput,
         Subtype <span class="op">==</span><span class="st"> </span>input<span class="op">$</span>subtypeInput
@@ -1050,7 +1050,7 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
                 <span class="dt">selected =</span> <span class="st">&quot;Whiskey&quot;</span>)
   })
   
-  output<span class="op">$</span>coolplot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
+  output<span class="op">$</span>hourlyPlot &lt;-<span class="st"> </span><span class="kw">renderPlot</span>({
     <span class="cf">if</span> (<span class="kw">is.null</span>(<span class="kw">filtered</span>())) {
       <span class="kw">return</span>()
     }
@@ -1155,7 +1155,7 @@ server &lt;-<span class="st"> </span><span class="cf">function</span>(input, out
 <div id="scoping-rules-in-shiny-apps" class="section level2">
 <h2>Scoping rules in Shiny apps</h2>
 <p>Scoping is very important to understand in Shiny once you want to support more than one user at a time. Since your app can be hosted online, multiple users can use your app simultaneously. If there are any variables (such as datasets or global parameters) that should be shared by all users, then you can safely define them globally. But any variable that should be specific to each user’s session should be not be defined globally.</p>
-<p>You can think of the <code>server</code> function as a sandbox for each user. Any code outside of the server function is run once and is shared by all the instances of your Shiny app. Any code inside the server is run once <em>for every user that visits your app</em>. This means that any user-specific variables should be defined inside server. If you look at the code in our Virginia ABC Store app, you’ll see that we followed this rule: the raw dataset was loaded outside the server and is therefore available to all users, but the <code>filtered</code> object is constructed inside the server so that every user has their own version of it. If <code>filtered</code> was a global variable, then when one user changes the values in your app, all other users connected to your app would see the change happen.</p>
+<p>You can think of the <code>server</code> function as a sandbox for each user. Any code outside of the server function is run once and is shared by all the instances of your Shiny app. Any code inside the server is run once <em>for every user that visits your app</em>. This means that any user-specific variables should be defined inside server. If you look at the code in our Virginia ABC Store app, you’ll see that we followed this rule: the raw dataset was loaded outside the server and is therefore available to all users, but the <code>employ_filter</code> object is constructed inside the server so that every user has their own version of it. If <code>employ_filter</code> was a global variable, then when one user changes the values in your app, all other users connected to your app would see the change happen.</p>
 <p>You can learn more about the scoping rules in Shiny <a href="http://shiny.rstudio.com/articles/scoping.html">here</a>.</p>
 </div>
 <div id="use-global.r-to-define-objects-available-to-both-ui.r-and-server.r" class="section level2">

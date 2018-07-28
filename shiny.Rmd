@@ -83,7 +83,7 @@ After saving the file, RStudio should recognize that this is a Shiny app, and yo
 
 If you don't see the *Run App* button, it means you either have a very old version of RStudio, don't have Shiny installed, or didn't follow the file naming conventions.
 
-Click the *Run App* button, and now your app should run. You won't see much because it's an empty app, but you should see that the console has some text printed in the form of `Listening on http://127.0.0.1:5274` and that a little stop sign appeared at the top of the console.  You'll also notice that you can't run any commands in the console. This is because R is busy--your R session is currently powering a Shiny app and listening for user interaction (which won't happen because the app has nothing in it yet).
+Click the *Run App* button, and now your app should run. You won't see much because it's an empty app, but you should see that the console has some text printed in the form of `Listening on http://127.0.0.1:5274` and that a little stop sign appeared at the top of the console. You'll also notice that you can't run any commands in the console. This is because R is busy--your R session is currently powering a Shiny app and listening for user interaction (which won't happen because the app has nothing in it yet).
 
 Click the stop button to stop the app, or press the *Escape* key.
 
@@ -95,7 +95,7 @@ You may have noticed that when you click the *Run App* button, all it's doing is
 
 ## Alternate way to create a Shiny app: separate UI and server files
 
-Another way to define a Shiny app is by separating the UI and server code into two files: `ui.R` and `server.R`. This is the preferable way to write Shiny apps when the app is complex and involves more code, but in this tutorial we'll stick to the simple single file.  If you want to break up your app into these two files, you simply put all code that is assigned to the `ui` variable in `ui.R` and all the code assigned to the `server` function in `server.R`. When RStudio sees these two files in the same folder, it will know you're writing a Shiny app. 
+Another way to define a Shiny app is by separating the UI and server code into two files: `ui.R` and `server.R`. This is the preferable way to write Shiny apps when the app is complex and involves more code, but in this tutorial we'll stick to the simple single file. If you want to break up your app into these two files, you simply put all code that is assigned to the `ui` variable in `ui.R` and all the code assigned to the `server` function in `server.R`. When RStudio sees these two files in the same folder, it will know you're writing a Shiny app. 
 
 **Exercise:** Try making a new Shiny app by creating the two files `ui.R` and `server.R`. Remember that they have to be in the same folder. Also remember to put them in a *new, isolated* folder (not where your `app.R` already exists).
 
@@ -281,7 +281,7 @@ sliderInput(inputId = "wage",
 
 Place the code for the slider input inside `sidebarPanel()` (replace the text we wrote earlier with this input).
 
-**Exercise:** Run the code of the `sliderInput()` in the R console and see what it returns. Change some of the parameters of `sliderInput()`, and see how that changes the result.  It's important to truly understand that all these functions in the UI are simply a convenient way to write HTML, as is apparent whenever you run these functions on their own.
+**Exercise:** Run the code of the `sliderInput()` in the R console and see what it returns. Change some of the parameters of `sliderInput()`, and see how that changes the result. It's important to truly understand that all these functions in the UI are simply a convenient way to write HTML, as is apparent whenever you run these functions on their own.
 
 ## Input for full/part-time
 
@@ -443,23 +443,23 @@ If you look at the server function, you'll notice that it is always defined with
 
 ## Building an output
 
-Recall that we created two output placeholders: *coolplot* (a plot) and *results* (a table). We need to write code in R that will tell Shiny what kind of plot or table to display. There are three rules to build an output in Shiny. 
+Recall that we created two output placeholders: *hourlyPlot* (a plot) and *employTable* (a table). We need to write code in R that will tell Shiny what kind of plot or table to display. There are three rules to build an output in Shiny. 
 
 1. Save the output object into the `output` list (remember the app template - every server function has an `output` argument)  
 2. Build the object with a `render*` function, where `*` is the type of output
 3. Access input values using the `input` list (every server function has an `input` argument)
 
-The third rule is only required if you want your output to depend on some input, so let's first see how to build a very basic output using only the first two rules. We'll create a plot and send it to the *coolplot* output. 
+The third rule is only required if you want your output to depend on some input, so let's first see how to build a very basic output using only the first two rules. We'll create a plot and send it to the *hourlyPlot* output. 
 
 ```r
-output$coolplot <- renderPlot({
+output$hourlyPlot <- renderPlot({
   plot(rnorm(100))
 })
 ```
 
-This simple code shows the first two rules: we're creating a plot inside the `renderPlot()` function, and assigning it to *coolplot* in the `output` list. Remember that every output created in the UI must have a unique ID, now we see why. In order to attach an R object to an output with ID *x*, we assign the R object to `output$x`.
+This simple code shows the first two rules: we're creating a plot inside the `renderPlot()` function, and assigning it to *hourlyPlot* in the `output` list. Remember that every output created in the UI must have a unique ID, now we see why. In order to attach an R object to an output with ID *x*, we assign the R object to `output$x`.
 
-Since *coolplot* was defined as a `plotOutput`, we must use the `renderPlot` function, and we must create a plot inside the `renderPlot` function.
+Since *hourlyPlot* was defined as a `plotOutput`, we must use the `renderPlot` function, and we must create a plot inside the `renderPlot` function.
 
 If you add the code above inside the server function, you should see a plot with 100 random points in the app.
 
@@ -467,54 +467,51 @@ If you add the code above inside the server function, you should see a plot with
 
 ## Making an output react to an input
 
-Now we'll take the plot one step further. Instead of always plotting the same plot (100 random numbers), let's use the minimum price selected as the number of points to show. It doesn't make too much sense, but it's just to learn how to make an output depend on an input.
-
+Now we'll take the plot one step further. Instead of always plotting the same plot (100 random numbers), let's use the minimum wage selected as the number of points to show. It doesn't make too much sense, but it's just to learn how to make an output depend on an input.
 
 ```r
-output$coolplot <- renderPlot({
-  plot(rnorm(input$priceInput[1]))
+output$hourlyPlot <- renderPlot({
+  plot(rnorm(input$wage[1]))
 })
 ```
 
-Replace the previous code in your server function with this code, and run the app. Whenever you choose a new minimum price range, the plot will update with a new number of points. Notice that the only thing different in the code is that instead of using the number `100` we are using `input$priceInput[1]`. 
+Replace the previous code in your server function with this code, and run the app. Whenever you choose a new minimum price range, the plot will update with a new number of points. Notice that the only thing different in the code is that instead of using the number `100` we are using `input$wage[1]`. 
 
-What does this mean? Just like the variable `output` contains a list of all the outputs (and we need to assign code into them), the variable `input` contains a list of all the inputs that are defined in the UI. `input$priceInput` return a vector of length 2 containing the minimum and maximum price. Whenever the user manipulates the slider in the app, these values are updated, and whatever code relies on it gets re-evaluated. This is a concept known as [**reactivity**](#reactivity-101), which we will get to in a few minutes.
+What does this mean? Just like the variable `output` contains a list of all the outputs (and we need to assign code into them), the variable `input` contains a list of all the inputs that are defined in the UI. `input$wage` return a vector of length 2 containing the minimum and maximum wage. Whenever the user manipulates the slider in the app, these values are updated, and whatever code relies on it gets re-evaluated. This is a concept known as [**reactivity**](#reactivity-101), which we will get to in a few minutes.
 
-Notice that these short 3 lines of code are using all the 3 rules for building outputs: we are saving to the `output` list (`output$coolplot <-`), we are using a `render*` function to build the output (`renderPlot({})`), and we are accessing an input value (`input$priceInput[1]`). 
+Notice that these short 3 lines of code are using all the 3 rules for building outputs: we are saving to the `output` list (`output$hourlyPlot <-`), we are using a `render*` function to build the output (`renderPlot({})`), and we are accessing an input value (`input$wage[1]`). 
 
 ## Building the plot output
 
-Now we have all the knowledge required to build a plot visualizing some aspect of the data. We'll create a simple histogram of the alcohol content of the products by using the same 3 rules to create a plot output.
+Now we have all the knowledge required to build a plot visualizing some aspect of the data. We'll create a simple histogram of the hourly wage rate for employees by using the same 3 rules to create a plot output.
 
 First we need to make sure `ggplot2` is loaded, so add a `library(ggplot2)` at the top (or just continue to use `library(tidyverse)`.
 
-Next we'll return a histogram of bottle size `Size` from `renderPlot()`. Let's start with just a histogram of the whole data, unfiltered.
+Next we'll return a histogram of hourly wage `wage` from `renderPlot()`. Let's start with just a histogram of the whole data, unfiltered.
 
 ```r
-output$coolplot <- renderPlot({
-  ggplot(abc, aes(Size)) +
+output$hourlyPlot <- renderPlot({
+  ggplot(employ, aes(wage)) +
     geom_histogram()
 })
 ```
 
-If you run the app with this code inside your server, you should see a histogram in the app.  But if you change the input values, nothing happens yet, so the next step is to actually filter the dataset based on the inputs.
+If you run the app with this code inside your server, you should see a histogram in the app. But if you change the input values, nothing happens yet, so the next step is to actually filter the dataset based on the inputs.
 
-Recall that we have 3 inputs: `priceInput`, `typeInput`, and `proofInput`. We can filter the data based on the values of these three inputs. We'll use `dplyr` functions to filter the data, so be sure to include `dplyr` at the top. Then we'll plot the filtered data instead of the original data.
+Recall that we have 3 inputs: `wage`, `full_time`, and `department`. We can filter the data based on the values of these three inputs. For now, only filter for `wage` and `full_time` -- we'll return to `department` in a little bit. We'll use `dplyr` functions to filter the data, so be sure to include `library(dplyr)` at the top. Then we'll plot the filtered data instead of the original data.
 
 ```r
-output$coolplot <- renderPlot({
-  filtered <- abc %>%
-    filter(CurrentPrice >= input$priceInput[1],
-           CurrentPrice <= input$priceInput[2],
-           Type == input$typeInput,
-           ProofBin == input$proofInput
-    )
-  ggplot(filtered, aes(Size)) +
+output$hourlyPlot <- renderPlot({
+  employ %>%
+    filter(full_time == input$full_time,
+           wage >= input$wage[[1]],
+           wage <= input$wage[[2]]) %>%
+    ggplot(aes(wage)) +
     geom_histogram()
 })
 ```
 
-Place this code in your server function and run the app. If you change any input, you should see the histogram update.
+Place this code in your server function and run the app. If you change the hourly wage or full/part-time inputs, you should see the histogram update.
 
 Read this code and understand it. You've successfully created an interactive app - the plot is changing according to the user's selection.
 
@@ -524,36 +521,38 @@ To make sure we're on the same page, here is what your code should look like at 
 library(shiny)
 library(tidyverse)
 
-abc <- read_csv("abc.csv")
+employ <- read_csv("employees-wage.csv")
 
 ui <- fluidPage(
-  titlePanel("Virginia ABC Store prices"),
+  titlePanel("City of Chicago Wage Employees"),
   sidebarLayout(
     sidebarPanel(
-      sliderInput("priceInput", "Price", min = 0, max = 100,
-                  value = c(25, 40), pre = "$"),
-      radioButtons("typeInput", "Product type",
-                   choices = c("Mixers", "Rimmers", "Spirits", "Wine"),
-                   selected = "Spirits"),
-      selectInput("proofInput", "Proof",
-                  choices = c("0-40", "40-80", "80-120", "120-160", "160+"))
+      sliderInput(inputId = "wage",
+                  label = "Wage range",
+                  min = 0,
+                  max = max(employ$wage, na.rm = TRUE),
+                  value = c(0, max(employ$wage, na.rm = TRUE)),
+                  pre = "$"),
+      radioButtons(inputId = "full_time",
+                   label = "Full or part-time",
+                   choices = c("Full-Time", "Part-Time")),
+      selectInput(inputId = "department",
+                  label = "Department",
+                  choices = sort(unique(employ$department)),
+                  multiple = TRUE)
     ),
-    mainPanel(
-      plotOutput("coolplot"),
-      tableOutput("results")
-    )
+    mainPanel(plotOutput("hourlyPlot"),
+              tableOutput("employTable"))
   )
 )
 
 server <- function(input, output) {
-  output$coolplot <- renderPlot({
-    filtered <- abc %>%
-      filter(CurrentPrice >= input$priceInput[1],
-             CurrentPrice <= input$priceInput[2],
-             Type == input$typeInput,
-             ProofBin == input$proofInput
-      )
-    ggplot(filtered, aes(Size)) +
+  output$hourlyPlot <- renderPlot({
+    employ %>%
+      filter(full_time == input$full_time,
+             wage >= input$wage[[1]],
+             wage <= input$wage[[2]]) %>%
+      ggplot(aes(wage)) +
       geom_histogram()
   })
 }
@@ -567,31 +566,29 @@ shinyApp(ui = ui, server = server)
 
 ## Building the table output
 
-Building the next output should be much easier now that we've done it once.  The other output we have was called `results` (as defined in the UI) and should be a table of all the products that match the filters.  Since it's a table output, we should use the `renderTable()` function. We'll do the exact same filtering on the data, and then simply return the data as a data.frame. Shiny will know that it needs to display it as a table because it's defined as a `tableOutput`.
+Building the next output should be much easier now that we've done it once. The other output we have was called `employTable` (as defined in the UI) and should be a table summarizing the number of employees per department in the filtered data frame. Since it's a table output, we should use the `renderTable()` function. We'll do the exact same filtering on the data, and then simply return the summarized data as a data.frame. Shiny will know that it needs to display it as a table because it's defined as a `tableOutput`.
 
 The code for creating the table output should make sense to you without too much explanation:
 
 ```r
-output$results <- renderTable({
-  filtered <- abc %>%
-    filter(CurrentPrice >= input$priceInput[1],
-           CurrentPrice <= input$priceInput[2],
-           Type == input$typeInput,
-           ProofBin == input$proofInput
-    )
-  filtered
+output$employTable <- renderTable({
+  employ %>%
+    filter(full_time == input$full_time,
+           wage >= input$wage[[1]],
+           wage <= input$wage[[2]]) %>%
+    count(department)
 })
 ```
 
-Add this code to your server. Don't overwrite the previous definition of `output$coolplot`, just add this code before or after that, but inside the server function. Run your app, and be amazed! You can now see a table showing all the products at the Virginia ABC store that match your criteria. 
+Add this code to your server. Don't overwrite the previous definition of `output$hourlyPlot`, just add this code before or after that, but inside the server function. Run your app, and be amazed! You can now see a table showing the number of wage employees per department that match your criteria. 
 
 > Notice that in building `ui`, we are using a predefined function called `fluidPage()` so all of our different elements for the UI are separated by commas. This is because each element for the page is an argument for the `fluidPage()` function. In building `server`, we are writing a new function. For this reason we don't have to separate each element with a comma. We just write it like we would any other function!
 
 **Exercise:** Add a new output. Either a new plot, a new table, or some piece of text that changes based on the inputs. For example, you could add a text output (`textOutput()` in the UI, `renderText()` in the server) that says how many results were found. If you choose to do this, I recommend first adding the output to the UI, then building the output in the server with static text to make sure you have the syntax correct. Only once you can see the text output in your app you should make it reflect the inputs. Pro-tip: since `textOutput()` is written in the UI, you can wrap it in other UI functions. For example, `h2(textOutput(...))` will result in larger text.
 
-# Reactivity 101
+# Reactivity 101 {#reactivity-101}
 
-Shiny uses a concept called **reactive** programming. This is what enables your outputs to *react* to changes in inputs.  Reactivity in Shiny is complex, but as an extreme oversimplification, it means that when the value of a variable `x` changes, then anything that relies on `x` gets re-evaluated.  Notice how this is very different from what you are used to in R.  Consider the following code:
+Shiny uses a concept called **reactive** programming. This is what enables your outputs to *react* to changes in inputs. Reactivity in Shiny is complex, but as an extreme oversimplification, it means that when the value of a variable `x` changes, then anything that relies on `x` gets re-evaluated. Notice how this is very different from what you are used to in R. Consider the following code:
 
 ```r
 x <- 5
@@ -599,11 +596,11 @@ y <- x + 1
 x <- 10
 ```
 
-What is the value of `y`? It's 6.  But in reactive programming, if `x` and `y` are reactive variables, then the value of `y` would be 11 because it would be updated whenever `x` is changed. This is a very powerful technique that is very useful for creating the responsiveness of Shiny apps, but it might be a bit weird at first because it's a very different concept from what you're used to.
+What is the value of `y`? It's 6. But in reactive programming, if `x` and `y` are reactive variables, then the value of `y` would be 11 because it would be updated whenever `x` is changed. This is a very powerful technique that is very useful for creating the responsiveness of Shiny apps, but it might be a bit weird at first because it's a very different concept from what you're used to.
 
 Only *reactive* variables behave this way, and in Shiny all inputs are automatically reactive. That's why you can always use `input$x` in render functions, and you can be sure that whatever output depends on `x` will use the updated value of `x` whenever `x` changes.
 
-You might be wondering what it means to "depend" on a variable. This is not the official terminology, but it simply means that the variable is referenced in the code. So by merely accessing the value of a reactive variable, it causes the current code block to "depend" on that variable.  Consider the following sample code to create a plot with a specific number of points in a specific color:
+You might be wondering what it means to "depend" on a variable. This is not the official terminology, but it simply means that the variable is referenced in the code. So by merely accessing the value of a reactive variable, it causes the current code block to "depend" on that variable. Consider the following sample code to create a plot with a specific number of points in a specific color:
 
 ```r
 output$someoutput <- renderPlot({
@@ -617,25 +614,25 @@ The above render function accesses two different inputs: `input$mycolor` and `in
 
 ## Creating and accessing reactive variables
 
-One very important thing to remember about reactive variables (such as the `input` list) is that **they can only be used inside reactive contexts**. Any `render*` function is a reactive context, so you can always use `input$x` or any other reactive variable inside render functions. There are two other common reactive contexts that we'll get to in a minute: `reactive({})` and `observe({})`. To show you what this means, let's try accessing the price input value in the server function, without explicitly being inside a reactive context. Simply add `print(input$priceInput)` inside the `server` function, and you will get an error when running the app:
+One very important thing to remember about reactive variables (such as the `input` list) is that **they can only be used inside reactive contexts**. Any `render*` function is a reactive context, so you can always use `input$x` or any other reactive variable inside render functions. There are two other common reactive contexts that we'll get to in a minute: `reactive({})` and `observe({})`. To show you what this means, let's try accessing the price input value in the server function, without explicitly being inside a reactive context. Simply add `print(input$wage)` inside the `server` function, and you will get an error when running the app:
 
 ~~~
 Operation not allowed without an active reactive context. (You tried to do something that can only be done from inside a reactive expression or observer.)
 ~~~
 
-Shiny is very clear about what the error is: we are trying to access a reactive variable outside of a reactive context. To fix this, we can use the `observe({})` function to access the `input` variable.  Inside the server, replace `print(input$priceInput)` with `observe({ print(input$priceInput) })`, and now the app should run fine. Note that this `observe({})` statement *depends* on `input$priceInput`, so whenever you change the value of the price, the code inside this `observe({})` will run again, and the new value will be printed. This is actually a very simple yet useful debugging technique in Shiny: often you want to know what value a reactive variable holds, so you need to remember to wrap the `cat(input$x)` or `print(input$x)` by an `observe({})`.
+Shiny is very clear about what the error is: we are trying to access a reactive variable outside of a reactive context. To fix this, we can use the `observe({})` function to access the `input` variable. Inside the server, replace `print(input$wage)` with `observe({ print(input$wage) })`, and now the app should run fine. Note that this `observe({})` statement *depends* on `input$wage`, so whenever you change the value of the price, the code inside this `observe({})` will run again, and the new value will be printed. This is actually a very simple yet useful debugging technique in Shiny: often you want to know what value a reactive variable holds, so you need to remember to wrap the `cat(input$x)` or `print(input$x)` by an `observe({})`.
 
-So far we only saw one reactive variable: the `input` list. You can also create your own reactive variables using the `reactive({})` function. The `reactive({})` function is similar to `observe({})` in that it is also a reactive context, which means that it will get re-run whenever any of the reactive variables in it get updated. The difference between them is that `reactive({})` returns a value. To see it in action, let's create a variable called `priceDiff` that will be the difference between the maximum and minimum price selected. If you try to naively define `priceDiff <- diff(input$priceInput)`, you'll see the same error as before about doing something outside a reactive context. This is because `input$priceInput` is a reactive variable, and we can't use a reactive variable outside a reactive context. Since we want to assign a value, we use the `reactive({})` function. Try adding the following line to your server:
+So far we only saw one reactive variable: the `input` list. You can also create your own reactive variables using the `reactive({})` function. The `reactive({})` function is similar to `observe({})` in that it is also a reactive context, which means that it will get re-run whenever any of the reactive variables in it get updated. The difference between them is that `reactive({})` returns a value. To see it in action, let's create a variable called `wageDiff` that will be the difference between the maximum and minimum wage selected. If you try to naively define `wageDiff <- diff(input$wage)`, you'll see the same error as before about doing something outside a reactive context. This is because `input$wage` is a reactive variable, and we can't use a reactive variable outside a reactive context. Since we want to assign a value, we use the `reactive({})` function. Try adding the following line to your server:
 
 ```r
-priceDiff <- reactive({
-  diff(input$priceInput)
+wageDiff <- reactive({
+  diff(input$wage)
 })
 ```
 
-Now your app will run. If you want to access a reactive variable defined with `reactive({})`, **you must add parentheses after the variable name, as if it's a function**. To demonstrate this, add `observe({ print(priceDiff()) })` to your server function. Notice that we use `priceDiff()` rather than `priceDiff`. It's very important to remember this, because you can get confusing unclear errors if you simply try to access a custom reactive variable without the parentheses.
+Now your app will run. If you want to access a reactive variable defined with `reactive({})`, **you must add parentheses after the variable name, as if it's a function**. To demonstrate this, add `observe({ print(wageDiff()) })` to your server function. Notice that we use `wageDiff()` rather than `wageDiff`. It's very important to remember this, because you can get confusing unclear errors if you simply try to access a custom reactive variable without the parentheses.
 
-You can think of reactivity as causing a chain reaction: when one reactive value changes, anything that depends on it will get updated. If any of the updated values are themselves reactive variables, then any reactive contexts that depend on those variables will also get updated in turn. As a concrete example, let's think about what happens when you change the value of the `priceInput` on the page. Since `input$priceInput` is a reactive variable, any expression that uses it will get updated. This means the two render functions from earlier will execute because they both depend on `input$priceInput`, as well as the `priceDiff` variable because it also depends on it. But since `priceDiff` is itself a reactive variable, Shiny will check if there is anything that depends on `priceDiff`, and indeed there is - the `observe({})` function that prints the value of `priceDiff`. So once `priceDiff` gets updated, the `observe({})` function will run, and the value will get printed.
+You can think of reactivity as causing a chain reaction: when one reactive value changes, anything that depends on it will get updated. If any of the updated values are themselves reactive variables, then any reactive contexts that depend on those variables will also get updated in turn. As a concrete example, let's think about what happens when you change the value of the `wage` on the page. Since `input$wage` is a reactive variable, any expression that uses it will get updated. This means the two render functions from earlier will execute because they both depend on `input$wage`, as well as the `wageDiff` variable because it also depends on it. But since `wageDiff` is itself a reactive variable, Shiny will check if there is anything that depends on `wageDiff`, and indeed there is - the `observe({})` function that prints the value of `wageDiff`. So once `wageDiff` gets updated, the `observe({})` function will run, and the value will get printed.
 
 Reactivity is usually the hardest part about Shiny to understand, so if you don't quite get it, don't feel bad. Try reading this section again, and I promise that with time and experience you will get more comfortable with reactivity. Once you do feel more confident with reactivity, it may be a good idea to read more advanced documentation describing reactivity, since this section greatly simplifies ideas to make them more understandable. A great resource is RStudio's [tutorial on reactivity](http://shiny.rstudio.com/articles/understanding-reactivity.html).
 
@@ -647,53 +644,54 @@ Before continuing to the next section, you can remove all the `observe({})` and 
 
 You may have noticed that we have the exact same code filtering the dataset in two places, once in each render function. We can solve that problem by defining a reactive variable that will hold the filtered dataset, and use that variable in the render functions.
 
-The first step would be to create the reactive variable. The following code should be added to the server function.
-
+The first step would be to create the reactive variable. The following code should be added to the `server()` function.
 
 ```r
-filtered <- reactive({
-  abc %>%
-    filter(CurrentPrice >= input$priceInput[1],
-           CurrentPrice <= input$priceInput[2],
-           Type == input$typeInput,
-           ProofBin == input$proofInput
-    )
+employ_filter <- reactive({
+  employ %>%
+    filter(
+      # filter by full or part-time
+      full_time == input$full_time,
+      # filter by hourly wage
+      wage >= input$wage[[1]],
+      wage <= input$wage[[2]])    
 })
+
 ```
 
-The variable `filtered` is being defined exactly like before, except the body is wrapped by a `reactive({})`, and it's defined in the server function instead of inside the individual render functions. Now that we have our reactive variable, we can use it in the output render functions.  Try it yourself, and when you think you're done, check the code below. Don't forget that in order to access the value of a reactive expression, you must follow the name of the variable with parentheses! This is how your server function should look like now.  
-
+The variable `employ_filter` is being defined exactly like before, except the body is wrapped by a `reactive({})`, and it's defined in the server function instead of inside the individual render functions. Now that we have our reactive variable, we can use it in the output render functions. Try it yourself, and when you think you're done, check the code below. Don't forget that in order to access the value of a reactive expression, you must follow the name of the variable with parentheses! This is how your server function should look like now. 
 
 ```r
 server <- function(input, output) {
-  filtered <- reactive({
-    abc %>%
+  employ_filter <- reactive({
+    employ %>%
       filter(
-        CurrentPrice >= input$priceInput[1],
-        CurrentPrice <= input$priceInput[2],
-        Type == input$typeInput,
-        ProofBin == input$proofInput
-      )
+        # filter by full or part-time
+        full_time == input$full_time,
+        # filter by hourly wage
+        wage >= input$wage[[1]],
+        wage <= input$wage[[2]])    
   })
   
-  output$coolplot <- renderPlot({
-    ggplot(filtered(), aes(Size)) +
+  output$hourlyPlot <- renderPlot({
+    ggplot(employ_filter(), aes(wage)) +
       geom_histogram()
   })
-  
-  output$results <- renderTable({
-    filtered()
+
+  output$employTable <- renderTable({
+    employ_filter() %>%
+      count(department)
   })
 }
 ```
 
-As a reminder, Shiny creates a dependency tree with all the reactive expressions to know what value depends on what other value. For example, when the price input changes, Shiny looks at what values depend on price, and sees that `filtered` is a reactive expression that depends on the price input, so it re-evaluates `filtered`. Then, because `filtered` is changed, Shiny now looks to see what expressions depend on `filtered`, and it finds that the two render functions use `filtered`. So Shiny re-executes the two render functions as well.
+As a reminder, Shiny creates a dependency tree with all the reactive expressions to know what value depends on what other value. For example, when the wage input changes, Shiny looks at what values depend on `input$wage`, and sees that `employ_filter` is a reactive expression that depends on the price input, so it re-evaluates `employ_filter`. Then, because `employ_filter` is changed, Shiny now looks to see what expressions depend on `employ_filter`, and it finds that the two render functions use `employ_filter`. So Shiny re-executes the two render functions as well.
 
 # Using uiOutput() to create UI elements dynamically
 
 One of the output functions you can add in the UI is `uiOutput()`. According to the naming convention (e.g.. `plotOutput()` is an output to render a plot), this is an output used to render more UI. This may sound a bit confusing, but it's actually very useful. It's usually used to create inputs (or any other UI) from the server, or in other words - you can create inputs dynamically.
 
-Any input that you normally create in the UI is created when the app starts, and it cannot be changed. But what if one of your inputs depends on another input? In that case, you want to be able to create an input dynamically, in the server, and you would use `uiOutput()`.  `uiOutput()` can be used to create *any* UI element, but it's most often used to create input UI elements. The same rules regarding building outputs apply, which means the output (which is a UI element in this case) is created with the function `renderUI()`.
+Any input that you normally create in the UI is created when the app starts, and it cannot be changed. But what if one of your inputs depends on another input? In that case, you want to be able to create an input dynamically, in the server, and you would use `uiOutput()`. `uiOutput()` can be used to create *any* UI element, but it's most often used to create input UI elements. The same rules regarding building outputs apply, which means the output (which is a UI element in this case) is created with the function `renderUI()`.
 
 ## Basic example of uiOutput()
 
@@ -739,14 +737,14 @@ output$subtypeInput <- renderUI({
 })
 ```
 
-Finally to make sure the data properly updates, change `filtered` in the `server` function to:
+Finally to make sure the data properly updates, change `employ_filter` in the `server` function to:
 
 ```r
 filtered <- reactive({
   abc %>%
     filter(
-      CurrentPrice >= input$priceInput[1],
-      CurrentPrice <= input$priceInput[2],
+      CurrentPrice >= input$wage[1],
+      CurrentPrice <= input$wage[2],
       Type == input$typeInput,
       ProofBin == input$proofInput,
       Subtype == input$subtypeInput
@@ -758,9 +756,9 @@ Now if you run the app, you should be able to see the different sub-types of alc
 
 ## Errors showing up and quickly disappearing
 
-You might notice that when you first run the app, each of the two outputs are throwing an error message, but the error message goes away after a second. The problem is that when the app initializes, `filtered` is trying to access the subtype input, but the subtype input hasn't been created yet. After Shiny finishes loading fully and the subtype input is generated, `filtered` tries accessing it again, this time it's successful, and the error goes away.
+You might notice that when you first run the app, each of the two outputs are throwing an error message, but the error message goes away after a second. The problem is that when the app initializes, `employ_filter` is trying to access the subtype input, but the subtype input hasn't been created yet. After Shiny finishes loading fully and the subtype input is generated, `employ_filter` tries accessing it again, this time it's successful, and the error goes away.
 
-Once we understand why the error is happening, fixing it is simple. Inside the `filtered` reactive function, we should check if the sub-type input exists, and if not then just return `NULL`.
+Once we understand why the error is happening, fixing it is simple. Inside the `employ_filter` reactive function, we should check if the sub-type input exists, and if not then just return `NULL`.
 
 ```r
 filtered <- reactive({
@@ -770,8 +768,8 @@ filtered <- reactive({
   
   abc %>%
     filter(
-      CurrentPrice >= input$priceInput[1],
-      CurrentPrice <= input$priceInput[2],
+      CurrentPrice >= input$wage[1],
+      CurrentPrice <= input$wage[2],
       Type == input$typeInput,
       ProofBin == input$proofInput,
       Subtype == input$subtypeInput
@@ -779,11 +777,11 @@ filtered <- reactive({
 })
 ```
 
-Now when the render function tries to access the data, they will get a `NULL` value before the app is fully loaded.  You will still get an error, because the `ggplot` function will not work with a `NULL` dataset, so we also need to make a similar check in the `renderPlot()` function. Only once the data is loaded, we can try to plot.
+Now when the render function tries to access the data, they will get a `NULL` value before the app is fully loaded. You will still get an error, because the `ggplot` function will not work with a `NULL` dataset, so we also need to make a similar check in the `renderPlot()` function. Only once the data is loaded, we can try to plot.
 
 
 ```r
-output$coolplot <- renderPlot({
+output$hourlyPlot <- renderPlot({
   if (is.null(filtered())) {
     return()
   }
@@ -811,7 +809,7 @@ ui <- fluidPage(titlePanel("Virginia ABC Store prices"),
                 sidebarLayout(
                   sidebarPanel(
                     sliderInput(
-                      "priceInput",
+                      "wage",
                       "Price",
                       min = 0,
                       max = 100,
@@ -831,7 +829,7 @@ ui <- fluidPage(titlePanel("Virginia ABC Store prices"),
                     ),
                     uiOutput("subtypeInput")
                   ),
-                  mainPanel(plotOutput("coolplot"),
+                  mainPanel(plotOutput("hourlyPlot"),
                             tableOutput("results"))
                 ))
 
@@ -843,8 +841,8 @@ server <- function(input, output) {
     
     abc %>%
       filter(
-        CurrentPrice >= input$priceInput[1],
-        CurrentPrice <= input$priceInput[2],
+        CurrentPrice >= input$wage[1],
+        CurrentPrice <= input$wage[2],
         Type == input$typeInput,
         ProofBin == input$proofInput,
         Subtype == input$subtypeInput
@@ -857,7 +855,7 @@ server <- function(input, output) {
                 selected = "Whiskey")
   })
   
-  output$coolplot <- renderPlot({
+  output$hourlyPlot <- renderPlot({
     if (is.null(filtered())) {
       return()
     }
@@ -880,9 +878,9 @@ Remember how every single app is a web page powered by an R session on a compute
 
 ## Host on shinyapps.io
 
-RStudio provides a service called [shinyapps.io](http://www.shinyapps.io/) which lets you host your apps for free. It is integrated seamlessly into RStudio so that you can publish your apps with the click of a button, and it has a free version.  The free version allows a certain number of apps per user and a certain number of activity on each app, but it should be good enough for most of you. It also lets you see some basic stats about usage of your app.
+RStudio provides a service called [shinyapps.io](http://www.shinyapps.io/) which lets you host your apps for free. It is integrated seamlessly into RStudio so that you can publish your apps with the click of a button, and it has a free version. The free version allows a certain number of apps per user and a certain number of activity on each app, but it should be good enough for most of you. It also lets you see some basic stats about usage of your app.
 
-Hosting your app on shinyapps.io is the easy and recommended way of getting your app online.  Go to [www.shinyapps.io](http://www.shinyapps.io/) and sign up for an account. When you're ready to publish your app, click on the "Publish Application" button in RStudio and follow their instructions. You might be asked to install a couple packages if it's your first time.
+Hosting your app on shinyapps.io is the easy and recommended way of getting your app online. Go to [www.shinyapps.io](http://www.shinyapps.io/) and sign up for an account. When you're ready to publish your app, click on the "Publish Application" button in RStudio and follow their instructions. You might be asked to install a couple packages if it's your first time.
 
 [![Shiny publish](images/shiny-publish.png)](images/shiny-publish.png)
 
@@ -955,7 +953,7 @@ Whenever you use `tableOutput()` + `renderTable()`, the table that Shiny creates
 
 ## Use isolate() function to remove a dependency on a reactive variable
 
-When you have multiple reactive variables inside a reactive context, the whole code block will get re-executed whenever *any* of the reactive variables change because all the variables become dependencies of the code. If you want to suppress this behavior and cause a reactive variable to not be a dependency, you can wrap the code that uses that variable inside the `isolate()` function.  Any reactive variables that are inside `isolate()` will not result in the code re-executing when their value is changed. Read more about this behavior with `?isolate`.
+When you have multiple reactive variables inside a reactive context, the whole code block will get re-executed whenever *any* of the reactive variables change because all the variables become dependencies of the code. If you want to suppress this behavior and cause a reactive variable to not be a dependency, you can wrap the code that uses that variable inside the `isolate()` function. Any reactive variables that are inside `isolate()` will not result in the code re-executing when their value is changed. Read more about this behavior with `?isolate`.
 
 ## Use `update*Input()` functions to update input values programmatically
 
@@ -981,7 +979,7 @@ Note that we used an additional argument `session` when defining the `server` fu
 
 Scoping is very important to understand in Shiny once you want to support more than one user at a time. Since your app can be hosted online, multiple users can use your app simultaneously. If there are any variables (such as datasets or global parameters) that should be shared by all users, then you can safely define them globally. But any variable that should be specific to each user's session should be not be defined globally.
 
-You can think of the `server` function as a sandbox for each user. Any code outside of the server function is run once and is shared by all the instances of your Shiny app. Any code inside the server is run once *for every user that visits your app*. This means that any user-specific variables should be defined inside server. If you look at the code in our Virginia ABC Store app, you'll see that we followed this rule: the raw dataset was loaded outside the server and is therefore available to all users, but the `filtered` object is constructed inside the server so that every user has their own version of it.  If `filtered` was a global variable, then when one user changes the values in your app, all other users connected to your app would see the change happen.
+You can think of the `server` function as a sandbox for each user. Any code outside of the server function is run once and is shared by all the instances of your Shiny app. Any code inside the server is run once *for every user that visits your app*. This means that any user-specific variables should be defined inside server. If you look at the code in our Virginia ABC Store app, you'll see that we followed this rule: the raw dataset was loaded outside the server and is therefore available to all users, but the `employ_filter` object is constructed inside the server so that every user has their own version of it. If `employ_filter` was a global variable, then when one user changes the values in your app, all other users connected to your app would see the change happen.
 
 You can learn more about the scoping rules in Shiny [here](http://shiny.rstudio.com/articles/scoping.html).
 
@@ -1014,7 +1012,7 @@ If you do want to add some JavaScript or use common JavaScript functions in your
 
 # Awesome add-on packages to Shiny
 
-Many people have written packages that enhance Shiny in some way or add extra functionality.  Here is a list of several popular packages that people often use together with Shiny:
+Many people have written packages that enhance Shiny in some way or add extra functionality. Here is a list of several popular packages that people often use together with Shiny:
 
 * [`shinyjs`](https://github.com/daattali/shinyjs): Easily improve the user interaction and user experience in your Shiny apps in seconds
 * [`shinythemes`](http://rstudio.github.io/shinythemes/): Easily alter the appearance of your app
