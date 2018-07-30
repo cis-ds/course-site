@@ -97,7 +97,7 @@ The result is stored in a complex list that contains a lot of important informat
 
 ## Generating predicted values
 
-We can use `sim1_mod` to generate **predicted values**, or the expected value for $Y$ given our knowledge of hypothetical observations with values for $X$, based on the estimated parameters using the `data_grid()` and `add_predictions()` functions from the `modelr` package. `data_grid()` generates an evenly spaced grid of data points covering the region where observed data lies. The first argument is a data frame, and subsequent arguments identify unique columns and generates all possible combinations.
+We can use `sim1_mod` to generate **predicted values**, or the expected value for $Y$ given our knowledge of hypothetical observations with values for $X$, based on the estimated parameters using `modelr::data_grid()` and `broom::augment()`.^[`package::function()` notation. So `data_grid()` can be found in the `modelr` package, while `augment()` is in `broom`.] `data_grid()` generates an evenly spaced grid of data points covering the region where observed data lies. The first argument is a data frame, and subsequent arguments identify unique columns and generates all possible combinations.
 
 ```{r add-predict-data}
 grid <- sim1 %>% 
@@ -105,11 +105,10 @@ grid <- sim1 %>%
 grid
 ```
 
-`add_predictions()` takes a data frame and a model, and uses the model to generate predictions for each observation in the data frame.
+`augment()` takes a model object and a data frame, and uses the model to generate predictions for each observation in the data frame.^[Far more detail about `augment()` and the other core `broom` functions coming shortly.]
 
 ```{r add-predict}
-grid <- grid %>% 
-  add_predictions(sim1_mod) 
+grid <- augment(sim1_mod, newdata = grid)
 grid
 ```
 
@@ -118,22 +117,21 @@ Using this information, we can draw the best-fit line without using `geom_smooth
 ```{r plot-lm-predict}
 ggplot(sim1, aes(x)) +
   geom_point(aes(y = y)) +
-  geom_line(aes(y = pred), data = grid, color = "red", size = 1) +
-  geom_point(aes(y = pred), data = grid, color = "blue", size = 3)
+  geom_line(aes(y = .fitted), data = grid, color = "red", size = 1) +
+  geom_point(aes(y = .fitted), data = grid, color = "blue", size = 3)
 ```
 
 This looks like the line from before, but without the confidence interval. This is a bit more involved of a process, but it can work with any type of model you create - not just very basic, linear models.
 
 ## Residuals
 
-We can also calculate the **residuals**, or that distance between the actual and predicted values of $y$.
+We can also calculate the **residuals**, or that distance between the actual and predicted values of $y$. To do that, we again use `augment()` but do not input a new data frame:
 
 ```{r resids}
-sim1 <- sim1 %>% 
-  add_residuals(sim1_mod)
-sim1
+sim1_resid <- augment(sim1_mod)
+sim1_resid
 
-ggplot(sim1, aes(resid)) + 
+ggplot(sim1_resid, aes(.resid)) + 
   geom_freqpoly(binwidth = 0.5)
 ```
 
@@ -168,13 +166,12 @@ grid <- gapminder %>%
   data_grid(year, country) 
 grid
 
-grid <- grid %>% 
-  add_predictions(gapminder_mod) 
+grid <- augment(gapminder_mod, newdata = grid) 
 grid
 
 ggplot(gapminder, aes(year, group = country)) +
   geom_line(aes(y = lifeExp), alpha = .2) +
-  geom_line(aes(y = pred), data = grid, color = "red", size = 1)
+  geom_line(aes(y = .fitted), data = grid, color = "red", size = 1)
 ```
 
 So it appears that there is a positive trend - that is, over time life expectancy is rising. But we can also see a lot of variation in that trend - some countries are doing much better than others. We'll come back to that in a bit.
@@ -211,7 +208,7 @@ augment(gapminder_mod) %>%
   as_tibble()
 ```
 
-`augment()` will only return statistics to the original data used to estimate the model, so it cannot be used like `add_predictions()` to generate predictions for new data.
+`augment()` will return statistics to the original data used to estimate the model, however if you supply a data frame under the `newdata` argument, it will return a more limited set of statistics.
 
 ### `glance()`
 

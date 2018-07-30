@@ -188,27 +188,17 @@ titanic_age <- titanic %>%
 titanic_age
 ```
 
-Next we could use the `add_predictions` function to produce the predicted probabilities. [This worked very well for linear models](stat002_linear_models.html#generating_predicted_values); unfortunately it is not perfect for logistic regression. This is because, in truth, logistic regression directly estimates the [**log-odds**](https://wiki.lesswrong.com/wiki/Log_odds) for the outcome. Instead, we want the plain old predicted probability. To do this, use this custom function to convert from log-odds to predicted probabilties:[^augment]
-
-```{r logit}
-logit2prob <- function(x){
-  exp(x) / (1 + exp(x))
-}
-```
+Next we use the `broom::augment()` function to produce the predicted probabilities. By default, `augment()` will generate predicted values in terms of the [**log-odds**](https://wiki.lesswrong.com/wiki/Log_odds) for the outcome. To get predicted probabilities, we explicitly specify the scale of the predicted values with `type.predict = "response'`:
 
 ```{r extract_modelr, depends="make_age_pred"}
-library(modelr)
-
-titanic_age <- titanic_age %>%
-  add_predictions(survive_age) %>%
-  mutate(pred = logit2prob(pred))
+titanic_age <- augment(survive_age, type.predict = "response")
 titanic_age
 ```
 
 With this information, we can now plot the logistic regression line using the estimated model (and not just `ggplot2::geom_smooth()`):
 
 ```{r plot_pred, depends="make_age_pred"}
-ggplot(titanic_age, aes(Age, pred)) +
+ggplot(titanic_age, aes(Age, .fitted)) +
   geom_line() +
   labs(title = "Relationship Between Age and Surviving the Titanic",
        y = "Predicted Probability of Survival")
@@ -227,17 +217,16 @@ summary(survive_age_woman)
 The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of gender. Likewise, it also tells us the relationship between gender and survival, after controlling for the effects of age. To get a better visualization of this, let's use `data_grid()` and `add_predictions()` again:
 
 ```{r survive_age_woman_pred}
-titanic_age_sex <- titanic %>%
-  data_grid(Age, Sex) %>%
-  add_predictions(survive_age_woman) %>%
-  mutate(pred = logit2prob(pred))
+titanic_age_sex <- augment(survive_age_woman,
+                           newdata = data_grid(titanic, Age, Sex),
+                           type.predict = "response")
 titanic_age_sex
 ```
 
 With these predicted probabilities, we can now plot the separate effects of age and gender:
 
 ```{r survive_age_woman_plot, dependson="survive_age_woman"}
-ggplot(titanic_age_sex, aes(Age, pred, color = Sex)) +
+ggplot(titanic_age_sex, aes(Age, .fitted, color = Sex)) +
   geom_line() +
   labs(title = "Probability of Surviving the Titanic",
        y = "Predicted Probability of Survival",
@@ -280,21 +269,19 @@ ggplot(sim_line, aes(x, y)) +
 
 These can be accounted for in a logistic regression:
 
-```{r}
+```{r titanic-square}
 survive_age_square <- glm(Survived ~ Age + I(Age^2), data = titanic,
                           family = binomial)
 summary(survive_age_square)
 
-titanic_age %>%
-  add_predictions(survive_age) %>%
-  mutate(pred = logit2prob(pred)) %>%
-  ggplot(aes(Age, pred)) +
+augment(survive_age_square,
+        newdata = data_grid(titanic, Age),
+        type.predict = "response") %>%
+  ggplot(aes(Age, .fitted)) +
   geom_line() +
   labs(title = "Relationship Between Age and Surviving the Titanic",
        y = "Predicted Probability of Survival")
 ```
-
-Here the parabolic term ($\text{age}^2$) is not actually meaningful. In other contexts it may be so.
 
 ## Interactive terms
 
@@ -318,15 +305,14 @@ summary(survive_age_woman_x)
 As before, let's estimate predicted probabilities and plot the interactive effects of age and gender.
 
 ```{r age_woman_cross_pred, dependson="age_woman_cross"}
-titanic_age_sex_x <- titanic %>%
-  data_grid(Age, Sex) %>%
-  add_predictions(survive_age_woman_x) %>%
-  mutate(pred = logit2prob(pred))
+titanic_age_sex_x <- augment(survive_age_woman_x,
+                             newdata = data_grid(titanic, Age, Sex),
+                             type.predict = "response")
 titanic_age_sex_x
 ```
 
 ```{r age_woman_plot, dependson="age_woman_cross"}
-ggplot(titanic_age_sex_x, aes(Age, pred, color = Sex)) +
+ggplot(titanic_age_sex_x, aes(Age, .fitted, color = Sex)) +
   geom_line() +
   labs(title = "Probability of Surviving the Titanic",
        y = "Predicted Probability of Survival",
@@ -342,26 +328,22 @@ You may think then that it makes sense to throw in interaction terms (and quadra
 How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a $.5$ cut-point), then see what percentage of predictions were the same as the actual survivals?
 
 ```{r accuracy_age, dependson="titanic_age_glm"}
-age_accuracy <- titanic %>%
-  add_predictions(survive_age) %>%
-  mutate(pred = logit2prob(pred),
-         pred = as.numeric(pred > .5))
+age_accuracy <- augment(survive_age, type.predict = "response") %>%
+  mutate(.pred = as.numeric(.fitted > .5))
 
-mean(age_accuracy$Survived != age_accuracy$pred, na.rm = TRUE)
+mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE)
 ```
 
-$`r formatC(mean(age_accuracy$Survived != age_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $`r formatC((1 - mean(titanic$Survived, na.rm = TRUE)) * 100, digits = 3)`\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
+$`r formatC(mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $`r formatC((1 - mean(titanic$Survived, na.rm = TRUE)) * 100, digits = 3)`\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
 
 ```{r accuracy_age_gender_x, dependson="age_woman_cross"}
-x_accuracy <- titanic %>%
-  add_predictions(survive_age_woman_x) %>%
-  mutate(pred = logit2prob(pred),
-         pred = as.numeric(pred > .5))
+x_accuracy <- augment(survive_age_woman_x, type.predict = "response") %>%
+  mutate(.pred = as.numeric(.fitted > .5))
 
-mean(x_accuracy$Survived != x_accuracy$pred, na.rm = TRUE)
+mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE)
 ```
 
-This model is much better. Just by knowing an individual's age and gender, our model is incorrect only `r formatC(mean(x_accuracy$Survived != x_accuracy$pred, na.rm = TRUE) * 100, digits = 3)`% of the time.
+This model is much better. Just by knowing an individual's age and gender, our model is incorrect only `r formatC(mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`% of the time.
 
 # Exercise: logistic regression with `mental_health`
 
@@ -387,14 +369,13 @@ mental_health
     tidy(mh_model)
     
     # estimate predicted probabilities
-    mh_health <- mental_health %>%
-      data_grid(mhealth) %>%
-      add_predictions(mh_model) %>%
-      mutate(pred = logit2prob(pred))
+    mh_health <- augment(mh_model,
+                         newdata = data_grid(mental_health, mhealth),
+                         type.predict = "response")
     mh_health
     
     # graph the line
-    ggplot(mh_health, aes(mhealth, pred)) +
+    ggplot(mh_health, aes(mhealth, .fitted)) +
       geom_line() +
       labs(title = "Relationship Between Mental Health and Voter Turnout",
            y = "Predicted Probability of Voting") +
@@ -410,13 +391,10 @@ mental_health
       <p>
 
     ```{r mh-model-error, dependson="mental-health"}
-    mh_model_accuracy <- mental_health %>%
-      as_tibble() %>%
-      add_predictions(mh_model) %>%
-      mutate(pred = logit2prob(pred),
-             pred = as.numeric(pred > .5))
+    mh_model_accuracy <- augment(mh_model, type.predict = "response") %>%
+      mutate(.pred = as.numeric(.fitted > .5))
     
-    (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$pred,
+    (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$.pred,
                           na.rm = TRUE))
     ```    
       </p>
@@ -435,13 +413,10 @@ mental_health
     tidy(mh_model_all)
     
     # calculate error rate
-    mh_model_all_accuracy <- mental_health %>%
-      as_tibble() %>%
-      add_predictions(mh_model_all) %>%
-      mutate(pred = logit2prob(pred),
-             pred = as.numeric(pred > .5))
+    mh_model_all_accuracy <- augment(mh_model_all, type.predict = "response") %>%
+      mutate(.pred = as.numeric(.fitted > .5))
     
-    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 != mh_model_all_accuracy$pred,
+    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 != mh_model_all_accuracy$.pred,
                               na.rm = TRUE))
     ```
     
@@ -449,27 +424,7 @@ mental_health
       </p>
     </details>
 
-
 # Session Info {.toc-ignore}
 
 ```{r child='_sessioninfo.Rmd'}
 ```
-
-[^augment]: Alternatively, we can use `broom::augment` to add predicted probabilities for the original dataset:
-
-    ```{r augment_broom, depends="make_age_pred"}
-    library(broom)
-
-    augment(survive_age,
-            newdata = titanic_age,
-            type.predict = "response") %>%
-      as_tibble()
-    ```
-
-    * `newdata = titanic` - produces a data frame containing all the original variables + the predicted probability for the observation
-    * `type.predict = "response"` - ensures we get the predicted probabilities, not the logged version
-
-
-
-
-
