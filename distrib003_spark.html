@@ -129,6 +129,9 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
 }
@@ -371,210 +374,6 @@ div.tocify {
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(sparklyr)
 sc &lt;-<span class="st"> </span><span class="kw">spark_connect</span>(<span class="dt">master =</span> <span class="st">&quot;local&quot;</span>)</code></pre></div>
 </div>
-<div id="reading-data" class="section level2">
-<h2>Reading data</h2>
-<p>You can copy R data frames into Spark using the <code>dplyr::copy_to()</code> function. Let’s prepare the Spark cluster by loading two data frames from the <code>babynames</code> package:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;babynames&quot;</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(babynames)
-babynames_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, babynames, <span class="st">&quot;babynames&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
-applicants_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, applicants, <span class="st">&quot;applicants&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>)
-
-babynames_tbl</code></pre></div>
-<pre><code>## # Source:   table&lt;babynames&gt; [?? x 5]
-## # Database: spark_connection
-##     year sex   name          n   prop
-##    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;  &lt;dbl&gt;
-##  1 1880. F     Mary       7065 0.0724
-##  2 1880. F     Anna       2604 0.0267
-##  3 1880. F     Emma       2003 0.0205
-##  4 1880. F     Elizabeth  1939 0.0199
-##  5 1880. F     Minnie     1746 0.0179
-##  6 1880. F     Margaret   1578 0.0162
-##  7 1880. F     Ida        1472 0.0151
-##  8 1880. F     Alice      1414 0.0145
-##  9 1880. F     Bertha     1320 0.0135
-## 10 1880. F     Sarah      1288 0.0132
-## # ... with more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">applicants_tbl</code></pre></div>
-<pre><code>## # Source:   table&lt;applicants&gt; [?? x 3]
-## # Database: spark_connection
-##     year sex    n_all
-##    &lt;int&gt; &lt;chr&gt;  &lt;int&gt;
-##  1  1880 F      97604
-##  2  1880 M     118399
-##  3  1881 F      98855
-##  4  1881 M     108282
-##  5  1882 F     115696
-##  6  1882 M     122031
-##  7  1883 F     120059
-##  8  1883 M     112478
-##  9  1884 F     137586
-## 10  1884 M     122739
-## # ... with more rows</code></pre>
-</div>
-<div id="using-dplyr" class="section level2">
-<h2>Using <code>dplyr</code></h2>
-<p>Interacting with a Spark database uses the same <code>dplyr</code> functions as you would with a data frame or SQL database. For example, let’s plot the total US births recorded from the Social Security Administration, by gender:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">birthsYearly &lt;-<span class="st"> </span>applicants_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sex =</span> <span class="kw">if_else</span>(sex <span class="op">==</span><span class="st"> &quot;M&quot;</span>, <span class="st">&quot;male&quot;</span>, <span class="st">&quot;female&quot;</span>),
-         <span class="dt">n_all =</span> n_all <span class="op">/</span><span class="st"> </span><span class="dv">1000000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">collect</span>()
-
-<span class="kw">ggplot</span>(birthsYearly, <span class="kw">aes</span>(year, n_all, <span class="dt">fill =</span> sex)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_area</span>(<span class="dt">position =</span> <span class="st">&quot;stack&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Total US Births&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Millions&quot;</span>,
-       <span class="dt">fill =</span> <span class="ot">NULL</span>,
-       <span class="dt">caption =</span> <span class="st">&quot;Source: SSA&quot;</span>)</code></pre></div>
-<p><img src="distrib003_spark_files/figure-html/total-us-birth-spark-1.png" width="672" /></p>
-<p>Note that this code is extremely similar to if we ran it with a traditional data frame. The only difference is that we do not have to <code>collect()</code> the final table:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">birthsYearly &lt;-<span class="st"> </span>applicants <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sex =</span> <span class="kw">if_else</span>(sex <span class="op">==</span><span class="st"> &quot;M&quot;</span>, <span class="st">&quot;male&quot;</span>, <span class="st">&quot;female&quot;</span>),
-         <span class="dt">n_all =</span> n_all <span class="op">/</span><span class="st"> </span><span class="dv">1000000</span>)
-
-<span class="kw">ggplot</span>(birthsYearly, <span class="kw">aes</span>(year, n_all, <span class="dt">fill =</span> sex)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_area</span>(<span class="dt">position =</span> <span class="st">&quot;stack&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_fill_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Total US Births&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Millions&quot;</span>,
-       <span class="dt">fill =</span> <span class="ot">NULL</span>,
-       <span class="dt">caption =</span> <span class="st">&quot;Source: SSA&quot;</span>)</code></pre></div>
-<p><img src="distrib003_spark_files/figure-html/total-us-birth-df-1.png" width="672" /></p>
-<p>We can also use Spark and <code>dplyr</code> to create a <a href="https://www.red-gate.com/simple-talk/sql/t-sql-programming/look-up-tables-in-sql/"><strong>lookup table</strong></a>. A lookup table summarizes some entity or relationship in a database; while it is not required to exist in the database schema, it can be useful to store these summary tables for easy access later. Here let’s create a lookup table that stores information on the top 1000 baby names since 1986:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(topNames_tbl &lt;-<span class="st"> </span>babynames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1986</span>) <span class="op">%&gt;%</span><span class="st">  </span>
-<span class="st">  </span><span class="kw">group_by</span>(name, sex) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">count =</span> <span class="kw">as.numeric</span>(<span class="kw">sum</span>(n))) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(count <span class="op">&gt;</span><span class="st"> </span><span class="dv">1000</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(name, sex))</code></pre></div>
-<pre><code>## # Source:   lazy query [?? x 2]
-## # Database: spark_connection
-## # Groups:   name
-##         name   sex
-##        &lt;chr&gt; &lt;chr&gt;
-##  1   Jessica     F
-##  2    Ashley     F
-##  3  Jennifer     F
-##  4    Nicole     F
-##  5   Heather     F
-##  6 Elizabeth     F
-##  7     Megan     F
-##  8   Melissa     F
-##  9  Danielle     F
-## 10       Amy     F
-## # ... with more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(filteredNames_tbl &lt;-<span class="st"> </span>babynames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(year <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1986</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(topNames_tbl))</code></pre></div>
-<pre><code>## # Source:   lazy query [?? x 5]
-## # Database: spark_connection
-##     year   sex  name     n         prop
-##    &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt; &lt;int&gt;        &lt;dbl&gt;
-##  1  1998     F Aanya     5 2.580377e-06
-##  2  1999     F Aanya     5 2.569595e-06
-##  3  2000     F Aanya     7 3.509720e-06
-##  4  2001     F Aanya    20 1.010320e-05
-##  5  2002     F Aanya    20 1.013399e-05
-##  6  2003     F Aanya    24 1.197048e-05
-##  7  2004     F Aanya    39 1.934463e-05
-##  8  2005     F Aanya    39 1.923544e-05
-##  9  2006     F Aanya    92 4.405580e-05
-## 10  2007     F Aanya   125 5.913224e-05
-## # ... with more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(yearlyNames_tbl &lt;-<span class="st"> </span>filteredNames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(year, name, sex) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">count =</span> <span class="kw">as.numeric</span>(<span class="kw">sum</span>(n))))</code></pre></div>
-<pre><code>## # Source:   lazy query [?? x 4]
-## # Database: spark_connection
-## # Groups:   year, name
-##     year     name   sex count
-##    &lt;dbl&gt;    &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
-##  1  1986  Abagail     F    23
-##  2  1986     Abbi     F    37
-##  3  1987     Abbi     F    40
-##  4  1986 Abbygail     F     7
-##  5  2002  Addelyn     F    12
-##  6  1987    Addie     F   101
-##  7  1987  Addison     F    43
-##  8  1995  Addisyn     F     5
-##  9  1996  Addisyn     F     6
-## 10  1990  Addyson     F     5
-## # ... with more rows</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">sdf_register</span>(yearlyNames_tbl, <span class="st">&quot;yearlyNames&quot;</span>)</code></pre></div>
-<pre><code>## # Source:   table&lt;yearlyNames&gt; [?? x 4]
-## # Database: spark_connection
-##     year     name   sex count
-##    &lt;dbl&gt;    &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;
-##  1  1986  Abagail     F    23
-##  2  1986     Abbi     F    37
-##  3  1987     Abbi     F    40
-##  4  1986 Abbygail     F     7
-##  5  2002  Addelyn     F    12
-##  6  1987    Addie     F   101
-##  7  1987  Addison     F    43
-##  8  1995  Addisyn     F     5
-##  9  1996  Addisyn     F     6
-## 10  1990  Addyson     F     5
-## # ... with more rows</code></pre>
-<blockquote>
-<p>Notice the use of <code>inner_join()</code> to create <code>filteredNames_tbl</code>. This is a great use of a <a href="datawrangle_relational_data.html">filtering join operation</a>.</p>
-</blockquote>
-<p><code>sdf_register()</code> is necessary to add <code>yearlyNames_tbl</code> to the Spark cluster. Otherwise it only exists internally within the R session.</p>
-<p>Now that we have our lookup table, we can use it to visualize the most popular baby names from specific years. For instance, here are the top 5 male and female names from 1986 and their popularity trend over time:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">topNames1986_tbl &lt;-<span class="st"> </span>yearlyNames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">1986</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(name, sex) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">count =</span> <span class="kw">sum</span>(count)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(sex) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rank =</span> <span class="kw">min_rank</span>(<span class="kw">desc</span>(count))) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(rank <span class="op">&lt;</span><span class="st"> </span><span class="dv">5</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">arrange</span>(sex, rank) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(name, sex, rank) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">sdf_register</span>(<span class="st">&quot;topNames1986&quot;</span>)
-
-topNames1986Yearly &lt;-<span class="st"> </span>yearlyNames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(<span class="kw">select</span>(topNames1986_tbl, sex, name)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sex =</span> <span class="kw">if_else</span>(sex <span class="op">==</span><span class="st"> &quot;M&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">collect</span>()
-
-<span class="kw">ggplot</span>(topNames1986Yearly, <span class="kw">aes</span>(year, count, <span class="dt">color =</span> name)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">facet_grid</span>(<span class="op">~</span><span class="st"> </span>sex) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Most Popular Names of 1986&quot;</span>,
-       <span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Number of children born&quot;</span>,
-       <span class="dt">caption =</span> <span class="st">&quot;Source: SSA&quot;</span>)</code></pre></div>
-<p><img src="distrib003_spark_files/figure-html/names-1986-1.png" width="672" /></p>
-<p>Now what about the most popular names from 2014? Because we already generated the lookup table, we can reuse the same code with just a couple of modifications:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">topNames2014_tbl &lt;-<span class="st"> </span>yearlyNames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(year <span class="op">==</span><span class="st"> </span><span class="dv">2014</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(name, sex) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">summarize</span>(<span class="dt">count =</span> <span class="kw">sum</span>(count)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">group_by</span>(sex) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rank =</span> <span class="kw">min_rank</span>(<span class="kw">desc</span>(count))) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(rank <span class="op">&lt;</span><span class="st"> </span><span class="dv">5</span>) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">arrange</span>(sex, rank) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">select</span>(name, sex, rank) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">sdf_register</span>(<span class="st">&quot;topNames2014&quot;</span>)
-
-topNames2014Yearly &lt;-<span class="st"> </span>yearlyNames_tbl <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">inner_join</span>(<span class="kw">select</span>(topNames2014_tbl, sex, name)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">sex =</span> <span class="kw">if_else</span>(sex <span class="op">==</span><span class="st"> &quot;M&quot;</span>, <span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">collect</span>()
-
-<span class="kw">ggplot</span>(topNames2014Yearly, <span class="kw">aes</span>(year, count, <span class="dt">color =</span> name)) <span class="op">+</span>
-<span class="st">  </span><span class="kw">facet_grid</span>(<span class="op">~</span><span class="st"> </span>sex) <span class="op">+</span>
-<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
-<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>) <span class="op">+</span>
-<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Most Popular Names of 2014&quot;</span>,
-       <span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
-       <span class="dt">y =</span> <span class="st">&quot;Number of children born&quot;</span>,
-       <span class="dt">caption =</span> <span class="st">&quot;Source: SSA&quot;</span>)</code></pre></div>
-<p><img src="distrib003_spark_files/figure-html/names-2014-1.png" width="672" /></p>
-<p>There really isn’t much new here, so I’m not going to hammer this point home any further. Read <a href="http://spark.rstudio.com/dplyr.html"><em>Manipulating Data with dplyr</em></a> for more information on Spark-specific examples of <code>dplyr</code> code.</p>
-</div>
 </div>
 <div id="machine-learning-with-spark" class="section level1">
 <h1>Machine learning with Spark</h1>
@@ -586,18 +385,18 @@ topNames2014Yearly &lt;-<span class="st"> </span>yearlyNames_tbl <span class="op
 (titanic_tbl &lt;-<span class="st"> </span><span class="kw">copy_to</span>(sc, titanic<span class="op">::</span>titanic_train, <span class="st">&quot;titanic&quot;</span>, <span class="dt">overwrite =</span> <span class="ot">TRUE</span>))</code></pre></div>
 <pre><code>## # Source:   table&lt;titanic&gt; [?? x 12]
 ## # Database: spark_connection
-##    PassengerId Survived Pclass Name   Sex     Age SibSp Parch Ticket  Fare
-##          &lt;int&gt;    &lt;int&gt;  &lt;int&gt; &lt;chr&gt;  &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;
-##  1           1        0      3 Braun… male    22.     1     0 A/5 2…  7.25
-##  2           2        1      1 Cumin… fema…   38.     1     0 PC 17… 71.3 
-##  3           3        1      3 Heikk… fema…   26.     0     0 STON/…  7.92
-##  4           4        1      1 Futre… fema…   35.     1     0 113803 53.1 
-##  5           5        0      3 Allen… male    35.     0     0 373450  8.05
-##  6           6        0      3 Moran… male   NaN      0     0 330877  8.46
-##  7           7        0      1 McCar… male    54.     0     0 17463  51.9 
-##  8           8        0      3 Palss… male     2.     3     1 349909 21.1 
-##  9           9        1      3 Johns… fema…   27.     0     2 347742 11.1 
-## 10          10        1      2 Nasse… fema…   14.     1     0 237736 30.1 
+##    PassengerId Survived Pclass Name  Sex     Age SibSp Parch Ticket  Fare
+##          &lt;int&gt;    &lt;int&gt;  &lt;int&gt; &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;chr&gt;  &lt;dbl&gt;
+##  1           1        0      3 Brau… male     22     1     0 A/5 2…  7.25
+##  2           2        1      1 Cumi… fema…    38     1     0 PC 17… 71.3 
+##  3           3        1      3 Heik… fema…    26     0     0 STON/…  7.92
+##  4           4        1      1 Futr… fema…    35     1     0 113803 53.1 
+##  5           5        0      3 Alle… male     35     0     0 373450  8.05
+##  6           6        0      3 Mora… male    NaN     0     0 330877  8.46
+##  7           7        0      1 McCa… male     54     0     0 17463  51.9 
+##  8           8        0      3 Pals… male      2     3     1 349909 21.1 
+##  9           9        1      3 John… fema…    27     0     2 347742 11.1 
+## 10          10        1      2 Nass… fema…    14     1     0 237736 30.1 
 ## # ... with more rows, and 2 more variables: Cabin &lt;chr&gt;, Embarked &lt;chr&gt;</code></pre>
 </div>
 <div id="tidy-the-data" class="section level2">
@@ -616,7 +415,7 @@ topNames2014Yearly &lt;-<span class="st"> </span>yearlyNames_tbl <span class="op
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">titanic2_tbl &lt;-<span class="st"> </span>titanic_tbl <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Family_Size =</span> SibSp <span class="op">+</span><span class="st"> </span>Parch <span class="op">+</span><span class="st"> </span>1L) <span class="op">%&gt;%</span><span class="st"> </span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Pclass =</span> <span class="kw">as.character</span>(Pclass)) <span class="op">%&gt;%</span>
-<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(Embarked)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span><span class="kw">is.na</span>(Embarked), Embarked <span class="op">!=</span><span class="st"> &quot;&quot;</span>) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">mutate</span>(<span class="dt">Age =</span> <span class="kw">if_else</span>(<span class="kw">is.na</span>(Age), <span class="kw">mean</span>(Age), Age)) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">sdf_register</span>(<span class="st">&quot;titanic2&quot;</span>)</code></pre></div>
 </div>
@@ -661,15 +460,15 @@ ml_formula &lt;-<span class="st"> </span><span class="kw">formula</span>(Survive
 
 <span class="co"># Train a logistic regression model</span>
 (ml_log &lt;-<span class="st"> </span><span class="kw">ml_logistic_regression</span>(train_tbl, ml_formula))</code></pre></div>
-<pre><code>## Call: Survived ~ Pclass_2 + Pclass_3 + Sex_male + Age + SibSp + Parch + Fare + Embarked_Q + Embarked_S + Family_Sizes_1 + Family_Sizes_2
+<pre><code>## Formula: Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked + Family_Sizes
 ## 
 ## Coefficients:
-##    (Intercept)       Pclass_2       Pclass_3       Sex_male            Age 
-##    3.696483969   -1.102340720   -2.053772367   -2.786065613   -0.035430315 
-##          SibSp          Parch           Fare     Embarked_Q     Embarked_S 
-##    0.158164571    0.457385475    0.002038998    0.214551594   -0.159123177 
-## Family_Sizes_1 Family_Sizes_2 
-##   -0.306388170   -3.749909900</code></pre>
+##    (Intercept)       Pclass_3       Pclass_1       Sex_male            Age 
+##   -0.941224041   -0.951432266    1.102333020   -2.786064873   -0.035430214 
+##          SibSp          Parch           Fare     Embarked_S     Embarked_C 
+##    0.158166815    0.457386427    0.002039045   -0.373681708   -0.214559272 
+## Family_Sizes_0 Family_Sizes_1 
+##    3.749924209    3.443534112</code></pre>
 </div>
 <div id="other-machine-learning-algorithms" class="section level3">
 <h3>Other machine learning algorithms</h3>
@@ -703,7 +502,7 @@ ml_models &lt;-<span class="st"> </span><span class="kw">list</span>(
 
 <span class="co"># Create a function for scoring</span>
 score_test_data &lt;-<span class="st"> </span><span class="cf">function</span>(model, <span class="dt">data =</span> test_tbl){
-  pred &lt;-<span class="st"> </span><span class="kw">sdf_predict</span>(model, data)
+  pred &lt;-<span class="st"> </span><span class="kw">sdf_predict</span>(data, model)
   <span class="kw">select</span>(pred, Survived, prediction)
 }
 
@@ -733,7 +532,7 @@ calculate_lift &lt;-<span class="st"> </span><span class="cf">function</span>(sc
 
 <span class="co"># Initialize results</span>
 ml_gains &lt;-<span class="st"> </span><span class="kw">data_frame</span>(
-  <span class="dt">bin =</span> <span class="dv">1</span><span class="op">:</span><span class="dv">10</span>,
+  <span class="dt">bin =</span> <span class="kw">seq</span>(<span class="dt">from =</span> <span class="dv">1</span>, <span class="dt">to =</span> <span class="dv">10</span>),
   <span class="dt">prop =</span> <span class="kw">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dt">len =</span> <span class="dv">10</span>),
   <span class="dt">model =</span> <span class="st">&quot;Base&quot;</span>
 )
@@ -785,14 +584,14 @@ perf_metrics &lt;-<span class="st"> </span><span class="kw">data_frame</span>(
   )
 perf_metrics</code></pre></div>
 <pre><code>## # A tibble: 6 x 3
-##                    model      AUC Accuracy
-##                    &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;
-## 1               Logistic 81.00928 82.43902
-## 2          Decision Tree 87.78392 79.51220
-## 3          Random Forest 86.90500 82.43902
-## 4 Gradient Boosted Trees 85.89769 79.51220
-## 5            Naive Bayes 66.47738 69.26829
-## 6             Neural Net 77.32076 78.04878</code></pre>
+##   model                    AUC Accuracy
+##   &lt;chr&gt;                  &lt;dbl&gt;    &lt;dbl&gt;
+## 1 Logistic                81.0     82.4
+## 2 Decision Tree           85.0     77.6
+## 3 Random Forest           87.5     80.5
+## 4 Gradient Boosted Trees  82.9     80  
+## 5 Naive Bayes             66.5     69.3
+## 6 Neural Net              79.8     80.5</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Plot results</span>
 <span class="kw">gather</span>(perf_metrics, metric, value, AUC, Accuracy) <span class="op">%&gt;%</span>
 <span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">reorder</span>(model, value), value, <span class="dt">fill =</span> metric)) <span class="op">+</span><span class="st"> </span>
@@ -812,10 +611,8 @@ feature_importance &lt;-<span class="st"> </span><span class="kw">data_frame</sp
 
 <span class="co"># Calculate feature importance</span>
 <span class="cf">for</span>(i <span class="cf">in</span> <span class="kw">c</span>(<span class="st">&quot;Decision Tree&quot;</span>, <span class="st">&quot;Random Forest&quot;</span>, <span class="st">&quot;Gradient Boosted Trees&quot;</span>)){
-  feature_importance &lt;-<span class="st"> </span><span class="kw">ml_tree_feature_importance</span>(sc, ml_models[[i]]) <span class="op">%&gt;%</span>
+  feature_importance &lt;-<span class="st"> </span><span class="kw">ml_tree_feature_importance</span>(ml_models[[i]]) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">mutate</span>(<span class="dt">Model =</span> i) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">importance =</span> <span class="kw">as.numeric</span>(<span class="kw">levels</span>(importance))[importance]) <span class="op">%&gt;%</span>
-<span class="st">    </span><span class="kw">mutate</span>(<span class="dt">feature =</span> <span class="kw">as.character</span>(feature)) <span class="op">%&gt;%</span>
 <span class="st">    </span><span class="kw">rbind</span>(feature_importance, .)
 }
 
@@ -913,9 +710,9 @@ result <span class="op">%&gt;%</span>
   |                                                                       
   |                                                                 |   0%
   |                                                                       
-  |=                                                                |   1%
+  |==========                                                       |  16%
   |                                                                       
-  |========================                                         |  37%
+  |=======================                                          |  36%
   |                                                                       
   |=================================================================| 100%</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">glm_model</code></pre></div>
@@ -923,37 +720,37 @@ result <span class="op">%&gt;%</span>
 ## ==============
 ## 
 ## H2OBinomialModel: glm
-## Model ID:  GLM_model_R_1503421695031_1 
+## Model ID:  GLM_model_R_1533584133727_1 
 ## GLM Model: summary
 ##     family  link                                regularization
-## 1 binomial logit Elastic Net (alpha = 0.5, lambda = 0.003129 )
+## 1 binomial logit Elastic Net (alpha = 0.5, lambda = 0.003769 )
 ##                                                                    lambda_search
-## 1 nlambda = 100, lambda.max = 0.248, lambda.min = 0.003129, lambda.1se = 0.03515
+## 1 nlambda = 100, lambda.max = 0.248, lambda.min = 0.003769, lambda.1se = 0.04647
 ##   number_of_predictors_total number_of_active_predictors
 ## 1                          4                           4
-##   number_of_iterations                                   training_frame
-## 1                   68 frame_rdd_13566_a40ade0b999e58d83ef2c902891449bb
+##   number_of_iterations                                  training_frame
+## 1                   68 frame_rdd_1587_96878623c9e400cda39dcecd6cd642f9
 ## 
 ## Coefficients: glm coefficients
 ##       names coefficients standardized_coefficients
-## 1 Intercept    -0.236119                 -0.454621
-## 2       Age    -0.022417                 -0.290716
-## 3     SibSp    -0.289895                 -0.319958
-## 4     Parch     0.101851                  0.082169
-## 5      Fare     0.017416                  0.865539
+## 1 Intercept    -0.241407                 -0.455300
+## 2       Age    -0.022114                 -0.286781
+## 3     SibSp    -0.284721                 -0.314248
+## 4     Parch     0.099701                  0.080435
+## 5      Fare     0.017221                  0.855823
 ## 
 ## H2OBinomialMetrics: glm
 ## ** Reported on training data. **
 ## 
-## MSE:  0.2084469
-## RMSE:  0.4565598
-## LogLoss:  0.6122621
+## MSE:  0.2085768
+## RMSE:  0.4567021
+## LogLoss:  0.6123183
 ## Mean Per-Class Error:  0.3641755
-## AUC:  0.7074815
-## Gini:  0.414963
-## R^2:  0.117433
-## Residual Deviance:  1088.602
-## AIC:  1098.602
+## AUC:  0.7074119
+## Gini:  0.4148237
+## R^2:  0.1168829
+## Residual Deviance:  1088.702
+## AIC:  1098.702
 ## 
 ## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
 ##          0   1    Error      Rate
@@ -963,16 +760,16 @@ result <span class="op">%&gt;%</span>
 ## 
 ## Maximum Metrics: Maximum metrics at their respective thresholds
 ##                         metric threshold    value idx
-## 1                       max f1  0.322308 0.594152 268
-## 2                       max f2  0.172284 0.759268 395
-## 3                 max f0point5  0.400116 0.645032 173
-## 4                 max accuracy  0.400116 0.724409 173
-## 5                max precision  0.999640 1.000000   0
-## 6                   max recall  0.172284 1.000000 395
-## 7              max specificity  0.999640 1.000000   0
-## 8             max absolute_mcc  0.399184 0.393883 174
-## 9   max min_per_class_accuracy  0.346658 0.632353 236
-## 10 max mean_per_class_accuracy  0.399184 0.677215 174
+## 1                       max f1  0.322735 0.594152 274
+## 2                       max f2  0.174742 0.759268 395
+## 3                 max f0point5  0.400317 0.645032 167
+## 4                 max accuracy  0.400317 0.724409 167
+## 5                max precision  0.999604 1.000000   0
+## 6                   max recall  0.174742 1.000000 395
+## 7              max specificity  0.999604 1.000000   0
+## 8             max absolute_mcc  0.397960 0.394010 169
+## 9   max min_per_class_accuracy  0.347797 0.632353 237
+## 10 max mean_per_class_accuracy  0.397960 0.677775 169
 ## 
 ## Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`
 ## 
@@ -980,78 +777,78 @@ result <span class="op">%&gt;%</span>
 ## ** Reported on cross-validation data. **
 ## ** 10-fold cross-validation on training data (Metrics computed for combined holdout predictions) **
 ## 
-## MSE:  0.2108965
-## RMSE:  0.4592347
-## LogLoss:  0.6189053
-## Mean Per-Class Error:  0.4220026
-## AUC:  0.6925587
-## Gini:  0.3851173
-## R^2:  0.1070613
-## Residual Deviance:  1100.414
-## AIC:  1110.414
+## MSE:  0.2103472
+## RMSE:  0.4586363
+## LogLoss:  0.6176314
+## Mean Per-Class Error:  0.3668997
+## AUC:  0.6979696
+## Gini:  0.3959391
+## R^2:  0.1093869
+## Residual Deviance:  1098.149
+## AIC:  1108.149
 ## 
 ## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
 ##          0   1    Error      Rate
-## 0      147 402 0.732240  =402/549
-## 1       38 302 0.111765   =38/340
-## Totals 185 704 0.494938  =440/889
+## 0      306 243 0.442623  =243/549
+## 1       99 241 0.291176   =99/340
+## Totals 405 484 0.384702  =342/889
 ## 
 ## Maximum Metrics: Maximum metrics at their respective thresholds
 ##                         metric threshold    value idx
-## 1                       max f1  0.297723 0.578544 304
-## 2                       max f2  0.152770 0.757238 395
-## 3                 max f0point5  0.413114 0.625000 151
-## 4                 max accuracy  0.413114 0.713161 151
-## 5                max precision  0.999707 1.000000   0
-## 6                   max recall  0.152770 1.000000 395
-## 7              max specificity  0.999707 1.000000   0
-## 8             max absolute_mcc  0.399255 0.368296 167
-## 9   max min_per_class_accuracy  0.346688 0.623529 228
-## 10 max mean_per_class_accuracy  0.392200 0.670556 173
+## 1                       max f1  0.332285 0.584951 256
+## 2                       max f2  0.164938 0.757238 397
+## 3                 max f0point5  0.410410 0.635666 155
+## 4                 max accuracy  0.410410 0.718785 155
+## 5                max precision  0.999566 1.000000   0
+## 6                   max recall  0.164938 1.000000 397
+## 7              max specificity  0.999566 1.000000   0
+## 8             max absolute_mcc  0.410410 0.379702 155
+## 9   max min_per_class_accuracy  0.347794 0.626471 234
+## 10 max mean_per_class_accuracy  0.391898 0.665793 176
 ## 
 ## Gains/Lift Table: Extract with `h2o.gainsLift(&lt;model&gt;, &lt;data&gt;)` or `h2o.gainsLift(&lt;model&gt;, valid=&lt;T/F&gt;, xval=&lt;T/F&gt;)`
 ## Cross-Validation Metrics Summary: 
 ##                 mean          sd cv_1_valid cv_2_valid cv_3_valid
-## accuracy   0.6500479 0.041881736  0.6363636  0.6091954 0.71428573
-## auc       0.71170306 0.032053903 0.74575895  0.6638825 0.70077866
-## err        0.3499521 0.041881736 0.36363637  0.3908046  0.2857143
-## err_count       31.0   3.7549968       36.0       34.0       26.0
-## f0point5   0.5726497 0.045476418 0.53505534  0.5106383 0.56213015
+## accuracy  0.63119614  0.06307615  0.7241379  0.6164383  0.5604396
+## auc         0.697506 0.012945521  0.7143243  0.7164484  0.6745037
+## err        0.3688039  0.06307615 0.27586207 0.38356164 0.43956044
+## err_count       33.1   7.1445785       24.0       28.0       40.0
+## f0point5   0.5722698 0.060826268  0.6804734   0.519802 0.49122807
 ##           cv_4_valid cv_5_valid cv_6_valid cv_7_valid cv_8_valid
-## accuracy  0.55172414  0.6835443   0.682243  0.5833333  0.7582418
-## auc       0.70297295  0.7615283  0.7119403  0.6064706 0.74852073
-## err       0.44827586  0.3164557   0.317757 0.41666666 0.24175824
-## err_count       39.0       25.0       34.0       35.0       22.0
-## f0point5    0.542522 0.62211984 0.58189654  0.5252101 0.72192514
+## accuracy  0.64102566  0.5851064  0.6321839  0.5145631  0.7659575
+## auc        0.7204484  0.6894608  0.6960888 0.70873016  0.6763953
+## err       0.35897437 0.41489363  0.3678161  0.4854369 0.23404256
+## err_count       28.0       39.0       32.0       50.0       22.0
+## f0point5  0.58035713  0.5102041 0.62691134        0.5   0.648855
 ##           cv_9_valid cv_10_valid
-## accuracy  0.61904764      0.6625
-## auc         0.719496   0.7556818
-## err        0.3809524      0.3375
-## err_count       32.0        27.0
-## f0point5         0.5       0.625
+## accuracy   0.7619048   0.5102041
+## auc       0.71033657   0.6683239
+## err       0.23809524  0.48979592
+## err_count       20.0        48.0
+## f0point5  0.71428573   0.4505814
 ## 
 ## ---
-##                         mean          sd cv_1_valid cv_2_valid  cv_3_valid
-## precision          0.5381394 0.055250388  0.4915254 0.47058824  0.54285717
-## r2                 0.0975009 0.031127375  0.1564119 0.10831892 0.086596675
-## recall             0.8112482 0.086222775 0.82857144  0.7741935   0.6551724
-## residual_deviance  109.25886   5.4304786   114.6542  104.17874   106.71968
-## rmse              0.45955113 0.008883104  0.4390905 0.45223105  0.44533285
-## specificity        0.5446867  0.11514253    0.53125 0.51785713   0.7419355
-##                   cv_4_valid cv_5_valid cv_6_valid  cv_7_valid  cv_8_valid
-## precision          0.4868421  0.5869565     0.5625  0.49019608   0.7297297
-## r2                 0.1278114 0.09742886 0.13443607 0.027979773 0.121132664
-## recall                   1.0  0.8181818      0.675   0.7352941   0.6923077
-## residual_deviance  108.03258  101.55076  128.32715  111.066345   112.77616
-## rmse               0.4617127 0.46854305 0.45012507  0.48393032  0.46393192
-## specificity             0.22  0.5869565  0.6865672        0.48   0.8076923
-##                    cv_9_valid cv_10_valid
-## precision          0.44642857  0.57377046
-## r2                0.008515219  0.10637745
-## recall             0.96153843   0.9722222
-## residual_deviance   103.23352  102.049416
-## rmse               0.46032485   0.4702888
-## specificity        0.46551725   0.4090909</code></pre>
+##                          mean          sd cv_1_valid cv_2_valid cv_3_valid
+## precision           0.5521237  0.08956931  0.6969697 0.47727272 0.44444445
+## r2                0.096584015  0.03642278 0.10460072 0.17654212 0.12414865
+## recall             0.79432774  0.11962224  0.6216216  0.8076923  0.8484849
+## residual_deviance   109.42742    8.513386 110.295204  82.159256  108.05521
+## rmse                0.4597633 0.012583554  0.4678159 0.43454367  0.4499298
+## specificity         0.5254098  0.17090847        0.8  0.5106383 0.39655173
+##                   cv_4_valid cv_5_valid  cv_6_valid  cv_7_valid cv_8_valid
+## precision          0.5416667 0.46153846  0.57746476  0.44444445       0.68
+## r2                0.04922971 0.11551149 0.002793408 0.114162624 0.10185099
+## recall                0.8125 0.88235295  0.95348835         1.0  0.5483871
+## residual_deviance  103.13872  112.29031   121.82668  125.416626  110.64748
+## rmse               0.4796198 0.45189062  0.49926817  0.45871195 0.44555104
+## specificity        0.5217391 0.41666666   0.3181818  0.20634921  0.8730159
+##                   cv_9_valid cv_10_valid
+## precision                0.8   0.3974359
+## r2                0.14953384 0.027466604
+## recall                   0.5     0.96875
+## residual_deviance  99.188934   121.25578
+## rmse               0.4478431   0.4624589
+## specificity        0.9230769  0.28787878</code></pre>
 <p>We get lots of information back about the model. Many of these statistics can be extracted and stored as tidy data frames or used to create visualizations.</p>
 </div>
 </div>
@@ -1067,102 +864,103 @@ result <span class="op">%&gt;%</span>
 <h1>Session Info</h1>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
 <pre><code>##  setting  value                       
-##  version  R version 3.4.3 (2017-11-30)
+##  version  R version 3.5.1 (2018-07-02)
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2018-04-24                  
+##  date     2018-08-06                  
 ## 
-##  package    * version    date       source                             
-##  assertthat   0.2.0      2017-04-11 CRAN (R 3.4.0)                     
-##  babynames  * 0.3.0      2017-04-14 CRAN (R 3.4.0)                     
-##  backports    1.1.2      2017-12-13 CRAN (R 3.4.3)                     
-##  base       * 3.4.3      2017-12-07 local                              
-##  base64enc    0.1-3      2015-07-28 CRAN (R 3.4.0)                     
-##  bindr        0.1.1      2018-03-13 CRAN (R 3.4.3)                     
-##  bindrcpp     0.2.2.9000 2018-04-08 Github (krlmlr/bindrcpp@bd5ae73)   
-##  bitops       1.0-6      2013-08-17 CRAN (R 3.4.0)                     
-##  broom        0.4.4      2018-03-29 CRAN (R 3.4.3)                     
-##  cellranger   1.1.0      2016-07-27 CRAN (R 3.4.0)                     
-##  cli          1.0.0      2017-11-05 CRAN (R 3.4.2)                     
-##  colorspace   1.3-2      2016-12-14 CRAN (R 3.4.0)                     
-##  compiler     3.4.3      2017-12-07 local                              
-##  config       0.3        2018-03-27 CRAN (R 3.4.4)                     
-##  crayon       1.3.4      2017-10-03 Github (gaborcsardi/crayon@b5221ab)
-##  datasets   * 3.4.3      2017-12-07 local                              
-##  DBI          0.8        2018-03-02 CRAN (R 3.4.3)                     
-##  dbplyr       1.2.1      2018-02-19 CRAN (R 3.4.3)                     
-##  devtools     1.13.5     2018-02-18 CRAN (R 3.4.3)                     
-##  digest       0.6.15     2018-01-28 CRAN (R 3.4.3)                     
-##  dplyr      * 0.7.4.9003 2018-04-08 Github (tidyverse/dplyr@b7aaa95)   
-##  evaluate     0.10.1     2017-06-24 CRAN (R 3.4.1)                     
-##  forcats    * 0.3.0      2018-02-19 CRAN (R 3.4.3)                     
-##  foreign      0.8-69     2017-06-22 CRAN (R 3.4.3)                     
-##  ggplot2    * 2.2.1.9000 2018-04-24 Github (tidyverse/ggplot2@3c9c504) 
-##  glue         1.2.0      2017-10-29 CRAN (R 3.4.2)                     
-##  graphics   * 3.4.3      2017-12-07 local                              
-##  grDevices  * 3.4.3      2017-12-07 local                              
-##  grid         3.4.3      2017-12-07 local                              
-##  gtable       0.2.0      2016-02-26 CRAN (R 3.4.0)                     
-##  h2o        * 3.16.0.2   2017-12-01 CRAN (R 3.4.3)                     
-##  haven        1.1.1      2018-01-18 CRAN (R 3.4.3)                     
-##  hms          0.4.2      2018-03-10 CRAN (R 3.4.3)                     
-##  htmltools    0.3.6      2017-04-28 CRAN (R 3.4.0)                     
-##  httpuv       1.3.6.2    2018-03-02 CRAN (R 3.4.3)                     
-##  httr         1.3.1      2017-08-20 CRAN (R 3.4.1)                     
-##  jsonlite     1.5        2017-06-01 CRAN (R 3.4.0)                     
-##  knitr        1.20       2018-02-20 CRAN (R 3.4.3)                     
-##  lattice      0.20-35    2017-03-25 CRAN (R 3.4.3)                     
-##  lazyeval     0.2.1      2017-10-29 CRAN (R 3.4.2)                     
-##  lubridate    1.7.4      2018-04-11 CRAN (R 3.4.3)                     
-##  magrittr     1.5        2014-11-22 CRAN (R 3.4.0)                     
-##  memoise      1.1.0      2017-04-21 CRAN (R 3.4.0)                     
-##  methods    * 3.4.3      2017-12-07 local                              
-##  mime         0.5        2016-07-07 CRAN (R 3.4.0)                     
-##  mnormt       1.5-5      2016-10-15 CRAN (R 3.4.0)                     
-##  modelr       0.1.1      2017-08-10 local                              
-##  munsell      0.4.3      2016-02-13 CRAN (R 3.4.0)                     
-##  nlme         3.1-137    2018-04-07 CRAN (R 3.4.4)                     
-##  openssl      1.0.1      2018-03-03 CRAN (R 3.4.3)                     
-##  parallel     3.4.3      2017-12-07 local                              
-##  pillar       1.2.1      2018-02-27 CRAN (R 3.4.3)                     
-##  pkgconfig    2.0.1      2017-03-21 CRAN (R 3.4.0)                     
-##  plyr         1.8.4      2016-06-08 CRAN (R 3.4.0)                     
-##  psych        1.8.3.3    2018-03-30 CRAN (R 3.4.4)                     
-##  purrr      * 0.2.4      2017-10-18 CRAN (R 3.4.2)                     
-##  R6           2.2.2      2017-06-17 CRAN (R 3.4.0)                     
-##  rappdirs     0.3.1      2016-03-28 CRAN (R 3.4.0)                     
-##  Rcpp         0.12.16    2018-03-13 CRAN (R 3.4.4)                     
-##  RCurl        1.95-4.10  2018-01-04 CRAN (R 3.4.3)                     
-##  readr      * 1.1.1      2017-05-16 CRAN (R 3.4.0)                     
-##  readxl       1.0.0      2017-04-18 CRAN (R 3.4.0)                     
-##  reshape2     1.4.3      2017-12-11 CRAN (R 3.4.3)                     
-##  rlang        0.2.0.9001 2018-04-24 Github (r-lib/rlang@82b2727)       
-##  rmarkdown    1.9        2018-03-01 CRAN (R 3.4.3)                     
-##  rprojroot    1.3-2      2018-01-03 CRAN (R 3.4.3)                     
-##  rsparkling * 0.2.3      2018-03-08 CRAN (R 3.4.4)                     
-##  rstudioapi   0.7        2017-09-07 CRAN (R 3.4.1)                     
-##  rvest        0.3.2      2016-06-17 CRAN (R 3.4.0)                     
-##  scales       0.5.0.9000 2018-04-24 Github (hadley/scales@d767915)     
-##  shiny        1.0.5      2017-08-23 cran (@1.0.5)                      
-##  sparklyr   * 0.7.0      2018-01-23 CRAN (R 3.4.3)                     
-##  stats      * 3.4.3      2017-12-07 local                              
-##  stringi      1.1.7      2018-03-12 CRAN (R 3.4.3)                     
-##  stringr    * 1.3.0      2018-02-19 CRAN (R 3.4.3)                     
-##  tibble     * 1.4.2      2018-01-22 CRAN (R 3.4.3)                     
-##  tidyr      * 0.8.0      2018-01-29 CRAN (R 3.4.3)                     
-##  tidyselect   0.2.4      2018-02-26 CRAN (R 3.4.3)                     
-##  tidyverse  * 1.2.1      2017-11-14 CRAN (R 3.4.2)                     
-##  titanic    * 0.1.0      2015-08-31 CRAN (R 3.4.0)                     
-##  tools        3.4.3      2017-12-07 local                              
-##  utf8         1.1.3      2018-01-03 CRAN (R 3.4.3)                     
-##  utils      * 3.4.3      2017-12-07 local                              
-##  withr        2.1.2      2018-04-24 Github (jimhester/withr@79d7b0d)   
-##  xml2         1.2.0      2018-01-24 CRAN (R 3.4.3)                     
-##  xtable       1.8-2      2016-02-05 CRAN (R 3.4.0)                     
-##  yaml         2.1.18     2018-03-08 CRAN (R 3.4.4)</code></pre>
+##  package      * version    date       source                            
+##  assertthat     0.2.0      2017-04-11 CRAN (R 3.5.0)                    
+##  backports      1.1.2      2017-12-13 CRAN (R 3.5.0)                    
+##  base         * 3.5.1      2018-07-05 local                             
+##  base64enc      0.1-3      2015-07-28 CRAN (R 3.5.0)                    
+##  bindr          0.1.1      2018-03-13 CRAN (R 3.5.0)                    
+##  bindrcpp     * 0.2.2      2018-03-29 CRAN (R 3.5.0)                    
+##  bitops         1.0-6      2013-08-17 CRAN (R 3.5.0)                    
+##  broom          0.5.0      2018-07-17 CRAN (R 3.5.0)                    
+##  cellranger     1.1.0      2016-07-27 CRAN (R 3.5.0)                    
+##  cli            1.0.0      2017-11-05 CRAN (R 3.5.0)                    
+##  codetools      0.2-15     2016-10-05 CRAN (R 3.5.1)                    
+##  colorspace     1.3-2      2016-12-14 CRAN (R 3.5.0)                    
+##  compiler       3.5.1      2018-07-05 local                             
+##  config         0.3        2018-03-27 CRAN (R 3.5.0)                    
+##  crayon         1.3.4      2017-09-16 CRAN (R 3.5.0)                    
+##  datasets     * 3.5.1      2018-07-05 local                             
+##  DBI            1.0.0      2018-05-02 CRAN (R 3.5.0)                    
+##  dbplyr         1.2.2      2018-07-25 CRAN (R 3.5.0)                    
+##  devtools       1.13.6     2018-06-27 CRAN (R 3.5.0)                    
+##  digest         0.6.15     2018-01-28 CRAN (R 3.5.0)                    
+##  dplyr        * 0.7.6      2018-06-29 cran (@0.7.6)                     
+##  evaluate       0.11       2018-07-17 CRAN (R 3.5.0)                    
+##  fansi          0.2.3      2018-05-06 CRAN (R 3.5.0)                    
+##  forcats      * 0.3.0      2018-02-19 CRAN (R 3.5.0)                    
+##  ggplot2      * 3.0.0      2018-07-03 CRAN (R 3.5.0)                    
+##  glue           1.3.0      2018-07-17 CRAN (R 3.5.0)                    
+##  graphics     * 3.5.1      2018-07-05 local                             
+##  grDevices    * 3.5.1      2018-07-05 local                             
+##  grid           3.5.1      2018-07-05 local                             
+##  gtable         0.2.0      2016-02-26 CRAN (R 3.5.0)                    
+##  h2o          * 3.20.0.2   2018-06-17 CRAN (R 3.5.0)                    
+##  haven          1.1.2      2018-06-27 CRAN (R 3.5.0)                    
+##  hms            0.4.2      2018-03-10 CRAN (R 3.5.0)                    
+##  htmltools      0.3.6.9001 2018-07-30 Github (rstudio/htmltools@3aee819)
+##  httpuv         1.4.5      2018-07-19 CRAN (R 3.5.0)                    
+##  httr           1.3.1      2017-08-20 CRAN (R 3.5.0)                    
+##  jsonlite       1.5        2017-06-01 CRAN (R 3.5.0)                    
+##  knitr          1.20       2018-02-20 CRAN (R 3.5.0)                    
+##  labeling       0.3        2014-08-23 CRAN (R 3.5.0)                    
+##  later          0.7.3      2018-06-08 CRAN (R 3.5.0)                    
+##  lattice        0.20-35    2017-03-25 CRAN (R 3.5.1)                    
+##  lazyeval       0.2.1      2017-10-29 CRAN (R 3.5.0)                    
+##  lubridate      1.7.4      2018-04-11 CRAN (R 3.5.0)                    
+##  magrittr       1.5        2014-11-22 CRAN (R 3.5.0)                    
+##  memoise        1.1.0      2017-04-21 CRAN (R 3.5.0)                    
+##  methods      * 3.5.1      2018-07-05 local                             
+##  mime           0.5        2016-07-07 CRAN (R 3.5.0)                    
+##  modelr         0.1.2      2018-05-11 CRAN (R 3.5.0)                    
+##  munsell        0.5.0      2018-06-12 CRAN (R 3.5.0)                    
+##  nlme           3.1-137    2018-04-07 CRAN (R 3.5.1)                    
+##  openssl        1.0.2      2018-07-30 CRAN (R 3.5.1)                    
+##  parallel       3.5.1      2018-07-05 local                             
+##  pillar         1.3.0      2018-07-14 CRAN (R 3.5.0)                    
+##  pkgconfig      2.0.1      2017-03-21 CRAN (R 3.5.0)                    
+##  plyr           1.8.4      2016-06-08 CRAN (R 3.5.0)                    
+##  promises       1.0.1      2018-04-13 CRAN (R 3.5.0)                    
+##  purrr        * 0.2.5      2018-05-29 CRAN (R 3.5.0)                    
+##  R6             2.2.2      2017-06-17 CRAN (R 3.5.0)                    
+##  rappdirs       0.3.1      2016-03-28 CRAN (R 3.5.0)                    
+##  RColorBrewer   1.1-2      2014-12-07 CRAN (R 3.5.0)                    
+##  Rcpp           0.12.18    2018-07-23 CRAN (R 3.5.0)                    
+##  RCurl          1.95-4.11  2018-07-15 CRAN (R 3.5.0)                    
+##  readr        * 1.1.1      2017-05-16 CRAN (R 3.5.0)                    
+##  readxl         1.1.0      2018-04-20 CRAN (R 3.5.0)                    
+##  rlang          0.2.1      2018-05-30 CRAN (R 3.5.0)                    
+##  rmarkdown      1.10       2018-06-11 CRAN (R 3.5.0)                    
+##  rprojroot      1.3-2      2018-01-03 CRAN (R 3.5.0)                    
+##  rsparkling   * 0.2.4      2018-05-22 CRAN (R 3.5.0)                    
+##  rstudioapi     0.7        2017-09-07 CRAN (R 3.5.0)                    
+##  rvest          0.3.2      2016-06-17 CRAN (R 3.5.0)                    
+##  scales         0.5.0      2017-08-24 CRAN (R 3.5.0)                    
+##  shiny          1.1.0      2018-05-17 CRAN (R 3.5.0)                    
+##  sparklyr     * 0.8.4      2018-05-25 CRAN (R 3.5.0)                    
+##  stats        * 3.5.1      2018-07-05 local                             
+##  stringi        1.2.4      2018-07-20 CRAN (R 3.5.0)                    
+##  stringr      * 1.3.1      2018-05-10 CRAN (R 3.5.0)                    
+##  tibble       * 1.4.2      2018-01-22 CRAN (R 3.5.0)                    
+##  tidyr        * 0.8.1      2018-05-18 CRAN (R 3.5.0)                    
+##  tidyselect     0.2.4      2018-02-26 CRAN (R 3.5.0)                    
+##  tidyverse    * 1.2.1      2017-11-14 CRAN (R 3.5.0)                    
+##  titanic      * 0.1.0      2015-08-31 CRAN (R 3.5.0)                    
+##  tools          3.5.1      2018-07-05 local                             
+##  utf8           1.1.4      2018-05-24 CRAN (R 3.5.0)                    
+##  utils        * 3.5.1      2018-07-05 local                             
+##  withr          2.1.2      2018-03-15 CRAN (R 3.5.0)                    
+##  xml2           1.2.0      2018-01-24 CRAN (R 3.5.0)                    
+##  xtable         1.8-2      2016-02-05 CRAN (R 3.5.0)                    
+##  yaml           2.2.0      2018-07-25 CRAN (R 3.5.0)</code></pre>
 </div>
 <div class="footnotes">
 <hr />

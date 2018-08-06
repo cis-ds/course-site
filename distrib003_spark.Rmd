@@ -60,143 +60,6 @@ library(sparklyr)
 sc <- spark_connect(master = "local")
 ```
 
-## Reading data
-
-You can copy R data frames into Spark using the `dplyr::copy_to()` function. Let's prepare the Spark cluster by loading two data frames from the `babynames` package:
-
-```r
-install.packages("babynames")
-```
-
-```{r load-babynames, cache = FALSE}
-library(babynames)
-babynames_tbl <- copy_to(sc, babynames, "babynames", overwrite = TRUE)
-applicants_tbl <- copy_to(sc, applicants, "applicants", overwrite = TRUE)
-
-babynames_tbl
-applicants_tbl
-```
-
-## Using `dplyr`
-
-Interacting with a Spark database uses the same `dplyr` functions as you would with a data frame or SQL database. For example, let's plot the total US births recorded from the Social Security Administration, by gender:
-
-```{r total-us-birth-spark}
-birthsYearly <- applicants_tbl %>%
-  mutate(sex = if_else(sex == "M", "male", "female"),
-         n_all = n_all / 1000000) %>%
-  collect()
-
-ggplot(birthsYearly, aes(year, n_all, fill = sex)) +
-  geom_area(position = "stack") +
-  scale_fill_brewer(type = "qual") +
-  labs(title = "Total US Births",
-       y = "Millions",
-       fill = NULL,
-       caption = "Source: SSA")
-```
-
-Note that this code is extremely similar to if we ran it with a traditional data frame. The only difference is that we do not have to `collect()` the final table:
-
-```{r total-us-birth-df}
-birthsYearly <- applicants %>%
-  mutate(sex = if_else(sex == "M", "male", "female"),
-         n_all = n_all / 1000000)
-
-ggplot(birthsYearly, aes(year, n_all, fill = sex)) +
-  geom_area(position = "stack") +
-  scale_fill_brewer(type = "qual") +
-  labs(title = "Total US Births",
-       y = "Millions",
-       fill = NULL,
-       caption = "Source: SSA")
-```
-
-We can also use Spark and `dplyr` to create a [**lookup table**](https://www.red-gate.com/simple-talk/sql/t-sql-programming/look-up-tables-in-sql/). A lookup table summarizes some entity or relationship in a database; while it is not required to exist in the database schema, it can be useful to store these summary tables for easy access later. Here let's create a lookup table that stores information on the top 1000 baby names since 1986:
-
-```{r lookup-tbl}
-(topNames_tbl <- babynames_tbl %>%
-  filter(year >= 1986) %>%  
-  group_by(name, sex) %>%
-  summarize(count = as.numeric(sum(n))) %>%
-  filter(count > 1000) %>%
-  select(name, sex))
-
-(filteredNames_tbl <- babynames_tbl %>%
-  filter(year >= 1986) %>%
-  inner_join(topNames_tbl))
-
-(yearlyNames_tbl <- filteredNames_tbl %>%
-  group_by(year, name, sex) %>%
-  summarize(count = as.numeric(sum(n))))
-
-sdf_register(yearlyNames_tbl, "yearlyNames")
-```
-
-> Notice the use of `inner_join()` to create `filteredNames_tbl`. This is a great use of a [filtering join operation](datawrangle_relational_data.html).
-
-`sdf_register()` is necessary to add `yearlyNames_tbl` to the Spark cluster. Otherwise it only exists internally within the R session.
-
-Now that we have our lookup table, we can use it to visualize the most popular baby names from specific years. For instance, here are the top 5 male and female names from 1986 and their popularity trend over time:
-
-```{r names-1986}
-topNames1986_tbl <- yearlyNames_tbl %>%
-  filter(year == 1986) %>%
-  group_by(name, sex) %>%
-  summarize(count = sum(count)) %>%
-  group_by(sex) %>%
-  mutate(rank = min_rank(desc(count))) %>%
-  filter(rank < 5) %>%
-  arrange(sex, rank) %>%
-  select(name, sex, rank) %>%
-  sdf_register("topNames1986")
-
-topNames1986Yearly <- yearlyNames_tbl %>%
-  inner_join(select(topNames1986_tbl, sex, name)) %>%
-  mutate(sex = if_else(sex == "M", "Male", "Female")) %>%
-  collect()
-
-ggplot(topNames1986Yearly, aes(year, count, color = name)) +
-  facet_grid(~ sex) +
-  geom_line() +
-  scale_color_brewer(type = "qual") +
-  labs(title = "Most Popular Names of 1986",
-       x = "Year",
-       y = "Number of children born",
-       caption = "Source: SSA")
-```
-
-Now what about the most popular names from 2014? Because we already generated the lookup table, we can reuse the same code with just a couple of modifications:
-
-```{r names-2014}
-topNames2014_tbl <- yearlyNames_tbl %>%
-  filter(year == 2014) %>%
-  group_by(name, sex) %>%
-  summarize(count = sum(count)) %>%
-  group_by(sex) %>%
-  mutate(rank = min_rank(desc(count))) %>%
-  filter(rank < 5) %>%
-  arrange(sex, rank) %>%
-  select(name, sex, rank) %>%
-  sdf_register("topNames2014")
-
-topNames2014Yearly <- yearlyNames_tbl %>%
-  inner_join(select(topNames2014_tbl, sex, name)) %>%
-  mutate(sex = if_else(sex == "M", "Male", "Female")) %>%
-  collect()
-
-ggplot(topNames2014Yearly, aes(year, count, color = name)) +
-  facet_grid(~ sex) +
-  geom_line() +
-  scale_color_brewer(type = "qual") +
-  labs(title = "Most Popular Names of 2014",
-       x = "Year",
-       y = "Number of children born",
-       caption = "Source: SSA")
-```
-
-There really isn't much new here, so I'm not going to hammer this point home any further. Read [*Manipulating Data with dplyr*](http://spark.rstudio.com/dplyr.html) for more information on Spark-specific examples of `dplyr` code.
-
 # Machine learning with Spark
 
 You can use `sparklyr` to fit a wide range of machine learning algorithms in Apache Spark. Rather than using `caret::train()`, you use a set of `ml_` functions depending on which algorithm you want to employ.
@@ -229,7 +92,7 @@ We use `sdf_register()` at the end of the operation to store the table in the Sp
 titanic2_tbl <- titanic_tbl %>% 
   mutate(Family_Size = SibSp + Parch + 1L) %>% 
   mutate(Pclass = as.character(Pclass)) %>%
-  filter(!is.na(Embarked)) %>%
+  filter(!is.na(Embarked), Embarked != "") %>%
   mutate(Age = if_else(is.na(Age), mean(Age), Age)) %>%
   sdf_register("titanic2")
 ```
@@ -319,7 +182,7 @@ ml_models <- list(
 
 # Create a function for scoring
 score_test_data <- function(model, data = test_tbl){
-  pred <- sdf_predict(model, data)
+  pred <- sdf_predict(data, model)
   select(pred, Survived, prediction)
 }
 
@@ -426,10 +289,8 @@ feature_importance <- data_frame()
 
 # Calculate feature importance
 for(i in c("Decision Tree", "Random Forest", "Gradient Boosted Trees")){
-  feature_importance <- ml_tree_feature_importance(sc, ml_models[[i]]) %>%
+  feature_importance <- ml_tree_feature_importance(ml_models[[i]]) %>%
     mutate(Model = i) %>%
-    mutate(importance = as.numeric(levels(importance))[importance]) %>%
-    mutate(feature = as.character(feature)) %>%
     rbind(feature_importance, .)
 }
 
