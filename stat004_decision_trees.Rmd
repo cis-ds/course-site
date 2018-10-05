@@ -48,7 +48,7 @@ titanic %>%
 I want to predict who lives and who dies during this event. Instead of using [logistic regression](stat003_logistic_regression.html), I'm going to calculate a decision tree based on a passenger's age and gender. Here's what that decision tree looks like:
 
 ```{r titanic_tree, echo = FALSE}
-library(tree)
+library(partykit)
 
 titanic_tree_data <- titanic %>%
   mutate(Survived = if_else(Survived == 1, "Survived",
@@ -57,10 +57,14 @@ titanic_tree_data <- titanic %>%
          Survived = as.factor(Survived),
          Sex = as.factor(Sex))
 
-titanic_tree <- tree(Survived ~ Age + Sex, data = titanic_tree_data)
-
-plot(titanic_tree)
-text(titanic_tree, pretty = 0)
+titanic_tree <- ctree(Survived ~ Age + Sex, data = titanic_tree_data)
+plot(titanic_tree,
+     ip_args = list(
+       pval = FALSE,
+       id = FALSE),
+     tp_args = list(
+       id = FALSE)
+)
 ```
 
 Some key terminology:
@@ -74,20 +78,20 @@ To make a prediction for a specific passenger, we start the decision tree from t
 So for a 50 year old female passenger:
 
 * Start at the first internal node. The passenger in question is a female, so take the branch to the left.
-* We reach a terminal node ("Survived"). We would predict the passenger in question survived the sinking of the Titanic.
+* We reach a terminal node. The majority of passengers in this node from the dataset survived, so for any given individual we would predict that passenger survived the sinking of the Titanic.
 
 For a 20 year old male passenger:
 
 * Start at the first internal node - the passenger in question is a male, so take the branch to the right.
-* The passenger in question is not less than 13 years old (R would say the condition is `FALSE`), so take the branch to the right.
-* We reach a terminal node ("Died"). We would predict the passenger in question died in the sinking of the Titanic.
+* The passenger in question is not less than or equal to 6 years old (R would say the condition is `FALSE`), so take the branch to the right.
+* We reach a terminal node. The majority of passengers in this node from the dataset died, so for any given individual we would predict that passenger did not survive the sinking of the Titanic.
 
 ## Estimating a decision tree
 
-First we need to load the `tree` library and prepare the data. `tree` is somewhat finicky about how data must be formatted in order to estimate the tree. For the Titanic data, we need to convert all qualitiative variables to [**factors**](http://r4ds.had.co.nz/factors.html) using the `as.factor()` function. To make interpretation easier, I also recoded `Survived` from its `0/1` coding to explicitly identify which passengers survived and which died.
+First we need to load the `partykit` library and prepare the data. `partykit` is somewhat finicky about how data must be formatted in order to estimate the tree. For the Titanic data, we need to convert all qualitiative variables to [**factors**](http://r4ds.had.co.nz/factors.html) using the `as.factor()` function. To make interpretation easier, I also recoded `Survived` from its `0/1` coding to explicitly identify which passengers survived and which died.
 
 ```{r titanic_tree_prep}
-library(tree)
+library(partykit)
 
 titanic_tree_data <- titanic %>%
   mutate(Survived = if_else(Survived == 1, "Survived", "Died"),
@@ -96,31 +100,37 @@ titanic_tree_data <- titanic %>%
 titanic_tree_data
 ```
 
-Now we can use the `tree()` function to estimate the model. The format looks exactly like `lm()` or `glm()` - first we specify the formula that defines the model, then we specify where the data is stored:
+Now we can use the `ctree()` function to estimate the model. The format looks exactly like `lm()` or `glm()` - first we specify the formula that defines the model, then we specify where the data is stored:
 
 ```{r titanic_tree_estimate, dependson = "titanic_tree_prep"}
-titanic_tree <- tree(Survived ~ Age + Sex, data = titanic_tree_data)
-summary(titanic_tree)
+titanic_tree <- ctree(Survived ~ Age + Sex, data = titanic_tree_data)
+titanic_tree
+
+# misclassification/error rate
+# check whether predicted values match actual values, calculate the
+# mean of that boolean vector, then subtract from 1 to get the error
+# rate (original value identifies accuracy rate)
+1 - mean(predict(titanic_tree) == titanic_tree_data$Survived, na.rm = TRUE)
 ```
 
 ```{r titanic_tree_summary, include = FALSE}
-misclass <- formatC(summary(titanic_tree)$misclass[1] / summary(titanic_tree)$misclass[2] * 100, digits = 3)
+misclass <- formatC((1 - mean(predict(titanic_tree) == titanic_tree_data$Survived, na.rm = TRUE)) * 100, digits = 3)
 ```
 
-The `summary()` function provides several important statistics:
+Printing the tree-object provides a text-based view of the entire decision tree and some additional statisics.
 
 * There are three terminal nodes in the tree
-* **Residual mean deviance** is an estimate of model fit. It is usually helpful in comparing the effectiveness of different models.
-* This decision tree misclassifies $`r misclass`\%$ of the training set observations
+* There are two internal nodes in the tree
+* At each terminal node, we identify the number of observations and the misclassification (error) rate.
+* Overall, this decision tree misclassifies $`r misclass`\%$ of the training set observations
 
 That's all well in good, but decision trees are meant to be viewed. Let's plot it!
 
 ```{r titanic_tree_plot, dependson="titanic_tree_estimate"}
 plot(titanic_tree)
-text(titanic_tree, pretty = 0)
 ```
 
-`tree()` does not use `ggplot2` to graph the results; instead it relies on the base `graphics` package. `plot(titanic_tree)` draws the branches and `text(titanic_tree, pretty = 0)` adds the text labeling each node.^[`pretty = 0` cleans up the formatting of the text some.]
+`partykit` does not use `ggplot2` to graph the results, so the syntax is a bit different. `plot(titanic_tree)` draws the branches and the nodes, and provides some additional information - most explicitly, at the terminal nodes the plot identifies the relative proportion of each possible outcome given the training data. Use `?plot.party` to view the documentation of this function and how to customize the appearance of the plot.
 
 ### Build a more complex tree
 
@@ -132,29 +142,47 @@ titanic_tree_full_data <- titanic %>%
                            if_else(Survived == 0, "Died", NA_character_))) %>%
   mutate_if(is.character, as.factor)
 
-titanic_tree_full <- tree(Survived ~ Pclass + Sex + Age + SibSp +
-                       Parch + Fare + Embarked, data = titanic_tree_full_data)
-summary(titanic_tree_full)
+titanic_tree_full <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
+                             Parch + Fare + Embarked,
+                           data = titanic_tree_full_data)
+titanic_tree_full
 
-plot(titanic_tree_full)
-text(titanic_tree_full, pretty = 0)
+# error rate
+1 - mean(predict(titanic_tree_full) == titanic_tree_data$Survived,
+         na.rm = TRUE)
+
+plot(titanic_tree_full,
+     ip_args = list(
+       pval = FALSE,
+       id = FALSE),
+     tp_args = list(
+       id = FALSE)
+)
 ```
 
 Now we've built a more complicated decision tree. Fortunately it is still pretty interpretable. Notice that some of the variables we included in the model (`Parch` and `Embarked`) ended up being dropped from the final model. This is because to build the tree and ensure it is not overly complicated, the algorithm goes through a process of iteration and **pruning** to remove twigs or branches that result in a complicated model that does not provide significant improvement in overall model accuracy. You can tweak these parameters to ensure the model keeps all the variables, but could result in a nasty looking picture:
 
 ```{r titanic_tree_complicated, dependson="titanic_tree_full"}
-titanic_tree_messy <- tree(Survived ~ Pclass + Sex + Age + SibSp +
-                             Parch + Fare + Embarked,
-                           data = titanic_tree_full_data,
-                           control = tree.control(
-                             nobs = nrow(titanic_tree_full_data),
-                             mindev = 0,
-                             minsize = 10)
+titanic_tree_messy <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
+                              Parch + Fare + Embarked,
+                            data = titanic_tree_full_data,
+                            control = ctree_control(
+                              alpha = 0.5,
+                              splittry = 5L)
 )
-summary(titanic_tree_messy)
+titanic_tree_messy
 
-plot(titanic_tree_messy)
-text(titanic_tree_messy, pretty = 0)
+# error rate
+1 - mean(predict(titanic_tree_messy) == titanic_tree_data$Survived,
+         na.rm = TRUE)
+
+plot(titanic_tree_messy,
+     ip_args = list(
+       pval = FALSE,
+       id = FALSE),
+     tp_args = list(
+       id = FALSE)
+)
 ```
 
 The misclassification error rate for this model is much lower than the previous versions, but it is also much less interpretable. Depending on your audience and how you want to present the results of your statistical model, you need to determine the optimal trade-off between accuracy and interpretability.
@@ -327,25 +355,11 @@ mental_health
              female = as.factor(female))
     
     # estimate model
-    mh_tree <- tree(vote96 ~ ., data = mh_tree_data)
+    mh_tree <- ctree(vote96 ~ ., data = mh_tree_data)
     
     # plot the tree
     plot(mh_tree)
-    text(mh_tree, pretty = 0)
     ```
-    
-    Under the decision tree method, mental health is not even used to predict whether an individual voted. `tree()` pruned `mhealth` from the tree because it did not provide significant value added to justify inclusion in the final model.
-    
-    ```{r mh-tree-big, dependson="mental-health"}
-    mh_tree_big <- tree(vote96 ~ ., data = mh_tree_data,
-                        control = tree.control(nobs = nrow(mh_tree_data),
-                                              mindev = 0, minsize = 100))
-    
-    plot(mh_tree_big)
-    text(mh_tree_big, pretty = 0)
-    ```
-    
-    If you force `tree()` to keep more nodes, `mhealth` is retained though the resulting graph is more complicated.
     
       </p>
     </details>
@@ -357,16 +371,14 @@ mental_health
       <p>
 
     ```{r mh-tree-accuracy, dependson="mental-health"}
-    summary(mh_tree)
-    summary(mh_tree_big)
+    # node-specific error rates
+    mh_tree
+    
+    # overall error rate
+    (misclass <- formatC((1 - mean(predict(mh_tree) == mh_tree_data$vote96, na.rm = TRUE)) * 100, digits = 3))
     ```
 
-    ```{r mh-tree-summary, include = FALSE, dependson="mental-health"}
-    tree_misclass <- formatC(summary(mh_tree)$misclass[1] / summary(mh_tree)$misclass[2] * 100, digits = 3)
-    tree_big_misclass <- formatC(summary(mh_tree_big)$misclass[1] / summary(mh_tree_big)$misclass[2] * 100, digits = 3)
-    ```
-    
-    The first model isn't too bad. It's misclassification error rate is $`r tree_misclass`\%$ (based on the original data). The second model does marginally better ($`r tree_big_misclass`\%$), but also generates a lot more terminal nodes.
+    The model isn't too bad. It's misclassification error rate is $`r misclass`\%$ (based on the original data).
     
       </p>
     </details>
