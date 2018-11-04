@@ -15,7 +15,7 @@ library(tidyverse)
 library(knitr)
 library(stringr)
 library(broom)
-library(tweenr)
+library(datasauRus)
 library(gganimate)
 
 theme_set(theme_gray(base_size = 18))
@@ -23,13 +23,8 @@ theme_set(theme_gray(base_size = 18))
 
 ----
 
-```{r datasaurus-import, echo = FALSE, message = FALSE}
-datasaurus <- read_tsv("../data/DatasaurusDozen.tsv") %>%
-  mutate(dataset = as_factor(dataset))
-```
-
-```{r datasaurus-sum-stats, echo = FALSE, dependson = "datasaurus-import"}
-datasaurus %>%
+```{r datasaurus-sum-stats, echo = FALSE}
+datasaurus_dozen %>%
   group_by(dataset) %>%
   summarize(n = n(),
             x_mean = mean(x),
@@ -46,9 +41,9 @@ datasaurus %>%
 
 ----
 
-```{r datasaurus-lm, echo = FALSE, results = "asis", dependson = "import-datasaurus"}
+```{r datasaurus-lm, echo = FALSE, results = "asis"}
 # estimate linear model
-datasaurus_model <- datasaurus %>%
+datasaurus_model <- datasaurus_dozen %>%
   group_by(dataset) %>%
   nest() %>%
   mutate(model = map(data, ~ lm(y ~ x, data = .x)),
@@ -57,7 +52,6 @@ datasaurus_model <- datasaurus %>%
 
 # plot model estimates
 datasaurus_model %>%
-  mutate(dataset = as.factor(as.numeric(dataset))) %>%
   ggplot(aes(fct_rev(term), estimate, color = dataset)) +
   geom_pointrange(aes(ymin = estimate - 1.96 * std.error,
                       ymax = estimate + 1.96 * std.error),
@@ -67,33 +61,27 @@ datasaurus_model %>%
        x = NULL,
        y = "Estimated parameter") +
   coord_flip() +
+  theme_minimal() +
   theme(legend.position = "none")
 ```
 
 ----
 
-```{r datasaurus-graph, dependson = 'datasaurus-import', echo = FALSE, fig.show = "animate", warning = FALSE, interval = 0.067}
-n_datasaurus <- datasaurus %>%
-  group_by(dataset) %>%
-  nest() %>%
-  add_row(dataset = "dino", data = list(.$data[[1]]))
-
-tween_datasaurus <- tween_states(n_datasaurus$data, tweenlength = 1,
-  statelength = 0.5, ease = "sine-out", nframe = 200) %>%
-  as.tibble()
-
-p <- ggplot(tween_datasaurus, aes(x = x, y = y)) +
-  geom_point(aes(frame = .frame))
-
-gganimate(p, title_frame = FALSE)
+```{r datasaurus-graph, echo = FALSE, warning = FALSE}
+ggplot(datasaurus_dozen, aes(x = x, y = y))+
+  geom_point() +
+  theme_minimal() +
+  transition_states(dataset, 3, 1) + 
+  ease_aes('cubic-in-out')
 ```
 
 ----
 
-```{r datasaurus-graph-static, dependson = 'datasaurus-import', echo = FALSE, fig.height = 8, fig.width = 8}
-ggplot(datasaurus, aes(x, y)) +
+```{r datasaurus-graph-static, echo = FALSE, fig.height = 8, fig.width = 8}
+ggplot(datasaurus_dozen, aes(x = x, y = y))+
   facet_wrap(~ dataset) +
-  geom_point()
+  geom_point() +
+  theme_minimal()
 ```
 
 ## Grammar
