@@ -75,11 +75,6 @@ titanic_tree_full_data <- titanic %>%
 titanic_tree_full <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
                              Parch + Fare + Embarked,
                            data = titanic_tree_full_data)
-titanic_tree_full
-
-# error rate
-1 - mean(predict(titanic_tree_full) == titanic_tree_data$Survived,
-         na.rm = TRUE)
 
 plot(titanic_tree_full,
      ip_args = list(
@@ -100,11 +95,6 @@ titanic_tree_messy <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
                               alpha = 0.5,
                               splittry = 5L)
 )
-titanic_tree_messy
-
-# error rate
-1 - mean(predict(titanic_tree_messy) == titanic_tree_data$Survived,
-         na.rm = TRUE)
 
 plot(titanic_tree_messy,
      ip_args = list(
@@ -127,7 +117,7 @@ plot(titanic_tree_messy,
 
 ![](https://c402277.ssl.cf1.rackcdn.com/photos/946/images/story_full_width/forests-why-matter_63516847.jpg?1345534028)
 
-## Sampling with replacement {.scrollable}
+## Sampling {.scrollable}
 
 ```{r sampling, echo = TRUE}
 (numbers <- seq(from = 1, to = 10))
@@ -194,13 +184,13 @@ str(age_sex_rf, max.level = 1)
 
 ## Model statistics
 
-```{r rf_finalmodel, dependson="rf_estimate"}
+```{r rf_finalmodel, dependson="rf_estimate", echo = TRUE}
 age_sex_rf$finalModel
 ```
 
 ## Results of a single tree
 
-```{r getTree}
+```{r getTree, echo = TRUE}
 randomForest::getTree(age_sex_rf$finalModel, labelVar = TRUE)
 ```
 
@@ -260,7 +250,7 @@ auto_train <- training(auto_split)
 auto_test <- testing(auto_split)
 ```
 
-## Train model
+## Train model {.scrollable}
 
 ```{r auto_lm, dependson="auto_split", echo = TRUE}
 auto_lm <- glm(mpg ~ horsepower, data = auto_train)
@@ -274,7 +264,7 @@ summary(auto_lm)
   mean(.resid2))
 ```
 
-## Test model
+## Test model {.scrollable}
 
 ```{r mse-test, dependson = "auto_lm", echo = TRUE}
 (test_mse <- augment(auto_lm, newdata = auto_test) %>%
@@ -368,12 +358,14 @@ logit2prob <- function(x){
 titanic_split <- initial_split(data = titanic, prop = 0.5)
 
 # fit model to training data
-train_model <- glm(Survived ~ Age * Sex, data = training(titanic_split),
+train_model <- glm(Survived ~ Age * Sex,
+                   data = training(titanic_split),
                    family = binomial)
 summary(train_model)
 
 # calculate predictions using validation set
-x_test_accuracy <- augment(train_model, newdata = testing(titanic_split)) %>% 
+x_test_accuracy <- augment(train_model,
+                           newdata = testing(titanic_split)) %>% 
   as_tibble() %>%
   mutate(pred = logit2prob(.fitted),
          pred = as.numeric(pred > .5))
@@ -439,7 +431,7 @@ assessment(first_resample)
 
 1. Obtain the analysis data set (i.e. the $n-1$ training set)
 1. Fit a linear regression model
-1. Predict the test data (also known as the **assessment** data, the $1$ test set) using the `broom` package
+1. Predict the assessment data set using the `broom` package
 1. Determine the MSE for each sample
 
 ## Holdout results
@@ -479,7 +471,7 @@ loocv_data %>%
   summarize(mse = mean(mse))
 ```
 
-## Compare polynomial terms {.scrollable}
+## Compare polynomial terms
 
 ```{r loocv_poly, dependson="Auto"}
 # modified function to estimate model with varying highest order polynomial
@@ -510,7 +502,6 @@ poly_mse <- function(i, loocv_data){
 
 cv_mse <- data_frame(terms = seq(from = 1, to = 5),
                      mse_loocv = map_dbl(terms, poly_mse, loocv_data))
-cv_mse
 
 ggplot(cv_mse, aes(terms, mse_loocv)) +
   geom_line() +
@@ -544,7 +535,8 @@ holdout_results <- function(splits) {
 
 titanic_loocv <- loo_cv(titanic) %>%
   mutate(results = map(splits, holdout_results),
-         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred, na.rm = TRUE)))
+         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred,
+                                              na.rm = TRUE)))
 mean(titanic_loocv$error_rate, na.rm = TRUE)
 ```
 
@@ -657,7 +649,8 @@ holdout_results <- function(splits) {
 
 titanic_cv10 <- vfold_cv(data = titanic, v = 10) %>%
   mutate(results = map(splits, holdout_results),
-         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred, na.rm = TRUE)))
+         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred,
+                                              na.rm = TRUE)))
 mean(titanic_cv10$error_rate, na.rm = TRUE)
 ```
 
