@@ -24,6 +24,7 @@ library(tidytext)
 library(manifestoR)
 library(httr)
 library(rtweet)
+library(viridis)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = 18))
@@ -62,6 +63,20 @@ theme_set(theme_minimal(base_size = 18))
 * Collects and organizes political party manifestos from around the world
 * Over 1000 parties from 1945 until today in over 50 countries on five continents
 * [`manifestoR`](https://github.com/ManifestoProject/manifestoR)
+
+## API authentication
+
+* Key/token
+* Obtain key
+* Store in `.Rprofile`
+
+    ```{r rprofile, eval = FALSE}
+    # in .Rprofile
+    options("this_is_my_key" = XXXX)
+    
+    # later, in the R script:
+    key <- getOption("this_is_my_key")
+    ```
 
 ## Load library and set API key
 
@@ -107,6 +122,71 @@ mpds %>%
        y = "Ideological position",
        color = NULL) +
   theme(legend.position = "bottom")
+```
+
+## Census data with `tidycensus`
+
+* API to access data from US Census Bureau
+    * Decennial census
+    * American Community Survey
+* Returns tidy data frames with (optional) `sf` geometry
+* Search for variables with `load_variables()`
+
+## Store API key
+
+```{r tidycensus}
+library(tidycensus)
+```
+
+```r
+census_api_key("YOUR API KEY GOES HERE")
+```
+
+## Obtain ACS data
+
+```{r income-usa}
+usa_inc <- get_acs(geography = "state", 
+                   variables = c(medincome = "B19013_001"), 
+                   year = 2016)
+usa_inc
+```
+
+## Visualize ACS data {.scrollable}
+
+```{r income-usa-plot, fig.asp = 1.2}
+usa_inc %>%
+  ggplot(aes(x = reorder(NAME, estimate), y = estimate)) +
+  geom_pointrange(aes(ymin = estimate - moe,
+                     ymax = estimate + moe),
+                  size = .25) +
+  coord_flip() +
+  labs(title = "Household income by state",
+       subtitle = "2012-2016 American Community Survey",
+       x = "",
+       y = "ACS estimate (bars represent margin of error)") +
+  theme_minimal(base_size = 14)
+```
+
+## Obtain `sf` data frame {.scrollable}
+
+```{r loudoun-sf, message = FALSE}
+loudoun <- get_acs(state = "VA",
+                   county = "Loudoun",
+                   geography = "tract", 
+                   variables = c(medincome = "B19013_001"), 
+                   year = 2016,
+                   geometry = TRUE)
+loudoun
+```
+
+## Draw a map
+
+```{r loudoun-sf-plot, fig.asp = 0.65}
+ggplot(data = loudoun) +
+  geom_sf(aes(fill = estimate, color = estimate)) + 
+  coord_sf(crs = 26911) + 
+  scale_fill_viridis(option = "magma") + 
+  scale_color_viridis(option = "magma")
 ```
 
 ## Twitter API
@@ -209,7 +289,7 @@ http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013&plot=short&r=xml
 omdb_key <- getOption("omdb_key")
 
 # create url
-request <- str_c("http://www.omdbapi.com/?apikey=", "omdb_key", "&", "t=", "Sharknado", "&", "y=", "2013", "&", "plot=", "short", "&", "r=", "xml")
+request <- str_c("http://www.omdbapi.com/?apikey=", omdb_key, "&", "t=", "Sharknado", "&", "y=", "2013", "&", "plot=", "short", "&", "r=", "xml")
 request
 ```
 
@@ -225,7 +305,7 @@ omdb <- function(Key, Title, Year, Plot, Format){
   str_c(baseurl, args)
 }
 
-omdb("omdb_key", "Sharknado", "2013", "short", "xml")
+omdb(omdb_key, "Sharknado", "2013", "short", "xml")
 ```
 
 ## Obtain data with `curl`
