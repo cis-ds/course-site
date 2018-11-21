@@ -23,34 +23,27 @@ Today let's practice our `tidytext` skills with a basic analysis of song titles.
 
 # Download population data for U.S. states
 
-> To import the data in-class, just use `read_csv("http://cfss.uchicago.edu/data/pop2014.csv")`
+> To import the data in-class, just use `read_csv("http://cfss.uchicago.edu/data/pop2016.csv")`
 
-First let's use the `acs` package to access the U.S. Census Bureau API and obtain population numbers for each state in 2014. This will help us later to normalize state mentions based on relative population size.^[For instance, California has a lot more people than Rhode Island so it makes sense that California would be mentioned more often in popular songs. But per capita, are these mentions different?]
+First let's use the `acs` package to access the U.S. Census Bureau API and obtain population numbers for each state in 2016. This will help us later to normalize state mentions based on relative population size.^[For instance, California has a lot more people than Rhode Island so it makes sense that California would be mentioned more often in popular songs. But per capita, are these mentions different?]
 
 ```{r acs-pop}
-# retrieve state populations in 2014 from Census Bureau
-stategeo <- geo.make(state = "*")
-popfetch <- acs.fetch(geography = stategeo, 
-                      endyear = 2014,
-                      span = 5, 
-                      table.number = "B01003",
-                      col.names = "pretty",
-                      key = getOption("census_key"))
-
-# convert to data frame and keep only relevant columns/rows
-pop_df <- popfetch %>%
-  estimate %>%
-  reshape2::melt() %>%
-  as_tibble %>%
-  mutate(state_name = tolower(Var1),
-         pop2014 = value) %>%
-  select(state_name, pop2014) %>%
-  filter(state_name != "puerto rico") %>%
-  write_csv("data/pop2014.csv")
+# retrieve state populations in 2016 from Census Bureau ACS
+library(tidycensus)
+pop_df <- get_acs(geography = "state", year = 2016,
+                    variables = c(population = "B01003_001")) %>%
+  # remove moe and tidy the data frame
+  select(-moe) %>%
+  spread(variable, estimate) %>%
+  # clean the data to match with the structure of the lyrics data
+  rename(state_name = NAME) %>%
+  mutate(state_name = str_to_lower(state_name)) %>%
+  filter(state_name != "Puerto Rico") %>%
+  write_csv("data/pop2016.csv")
 
 # do these results make sense?
 pop_df %>% 
-  arrange(desc(pop2014)) %>%
+  arrange(desc(population)) %>%
   top_n(10)
 ```
 
@@ -68,9 +61,8 @@ download("https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_19
 ```
 
 ```{r lyrics-import}
-# import into R
 song_lyrics <- read_csv("data/billboard_lyrics_1964-2015.csv")
-names(song_lyrics)
+glimpse(song_lyrics)
 ```
 
 # Find and visualize the state names in the song lyrics
@@ -139,7 +131,7 @@ tidy_lyrics
 ```{r state-counts-poprel}
 pop_df <- pop_df %>% 
   left_join(state_counts) %>% 
-  mutate(rate = n / pop2014 * 1e6)
+  mutate(rate = n / population * 1e6)
 
 pop_df %>%
   arrange(desc(rate)) %>%
