@@ -287,9 +287,12 @@ chapters_lda_gamma
 ```
 
 ```{r chapters_lda_gamma_plot, fig.width=8, fig.height=6}
-ggplot(chapters_lda_gamma, aes(gamma, fill = factor(topic))) +
-  geom_histogram() +
-  facet_wrap(~ title, nrow = 2)
+# reorder titles in order of topic 1, topic 2, etc before plotting
+chapters_lda_gamma %>%
+  mutate(title = reorder(title, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  facet_wrap(~ title)
 ```
 
 ```{r chapter_classifications, include = FALSE}
@@ -317,7 +320,7 @@ book_topics
 
 ## Mis-identification
 
-```{r misidentification, echo = TRUE, dependson="book_topics"}
+```{r misidentification, dependson="book_topics"}
 chapter_classifications %>%
   inner_join(book_topics, by = "topic") %>%
   count(title, consensus) %>%
