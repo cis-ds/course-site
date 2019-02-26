@@ -61,55 +61,13 @@ ggplot(data = usa_48) +
 
 ## `fiftystater`
 
-Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately a new package is available that has already done the work for you. [`fiftystater`](https://cran.r-project.org/web/packages/fiftystater/vignettes/fiftystater.html) includes the `fifty_states` data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `devtools::install_github("wmurphyrd/fiftystater")`.
+Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`albersusa`](https://github.com/hrbrmstr/albersusa) includes the `usa_sf()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `devtools::install_github("hrbrmstr/albersusa")`.
 
-`fifty_states` is an ordinary data frame with one row for each point: 
+```{r albersusa}
+library(albersusa)
+usa_sf()
 
-```{r fiftystater}
-library(fiftystater)
-
-data("fifty_states")
-as_tibble(fifty_states)
-```
-
-That is, each row defines a boundary point. The boundary for a state is created by drawing a line connecting each point. We need to convert this points-based data frame to a simple features data frame where each feature is a state.^[Modified from [Convert a fortified data.frame back to sf object](https://stackoverflow.com/questions/49526198/convert-a-fortified-data-frame-back-to-sf-object) on StackOverflow.] First we convert the data frame to a simple features data frame using `st_as_sf()`. This creates a simple features data frame where each feature is a boundary point, like before.
-
-```{r fiftystater-sf-point}
-st_as_sf(fifty_states, coords = c("long", "lat"))
-```
-
-Next we group the simple features data frame by `id` and `piece` (these variables define each distinct land mass within a state), combine them together using `summarize()`, and convert them to polygons:
-
-```{r fiftystater-sf-polygon}
-st_as_sf(fifty_states, coords = c("long", "lat")) %>% 
-  # convert sets of points to polygons
-  group_by(id, piece) %>% 
-  summarize(do_union = FALSE) %>%
-  st_cast("POLYGON")
-```
-
-Finally, we combine together all the pieces of land comprising each state. For example, Alabama is a single contiguous landmass, whereas Alaska is `r st_as_sf(fifty_states, coords = c("long", "lat")) %>% group_by(id, piece) %>% summarize(do_union = FALSE) %>% st_cast("POLYGON") %>% filter(id == "alaska") %>% nrow()` distinct pieces of land. This is another `group_by() %>% summarize()` operation, but only aggregating on `id`.
-
-```{r fiftystater-sf-multipolygon}
-# convert fifty_states to an sf data frame
-(sf_fifty <- st_as_sf(fifty_states, coords = c("long", "lat")) %>% 
-   # convert sets of points to polygons
-   group_by(id, piece) %>% 
-   summarize(do_union = FALSE) %>%
-   st_cast("POLYGON") %>%
-   # convert polygons to multipolygons for states with discontinuous regions
-   group_by(id) %>%
-   summarize())
-```
-
-Finally we set the projection method^[Run `?st_crs` from the console to read the documentation for this function and understand how this number is determined.] and draw the map:
-
-```{r fiftystater-proj}
-st_crs(sf_fifty) <- 4326
-```
-
-```{r fiftystater-sf-plot}
-ggplot(data = sf_fifty) +
+ggplot(data = usa_sf()) +
   geom_sf()
 ```
 
