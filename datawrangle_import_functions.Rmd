@@ -12,6 +12,7 @@ knitr::opts_chunk$set(cache = TRUE)
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
+library(here)
 theme_set(theme_minimal())
 
 # set seed for reproducibility
@@ -46,8 +47,8 @@ One of the main advantages of `readr` functions over base R functions is that [t
 library(microbenchmark)
 
 results_small <- microbenchmark(
-  read.csv = read.csv("data/sim-data-small.csv"),
-  read_csv = read_csv("data/sim-data-small.csv")
+  read.csv = read.csv(here("data", "sim-data-small.csv")),
+  read_csv = read_csv(here("data", "sim-data-small.csv"))
 )
 ```
 
@@ -63,8 +64,8 @@ autoplot(results_small) +
 library(microbenchmark)
 
 results_large <- microbenchmark(
-  read.csv = read.csv("data/sim-data-large.csv"),
-  read_csv = read_csv("data/sim-data-large.csv")
+  read.csv = read.csv(here("data", "sim-data-large.csv")),
+  read_csv = read_csv(here("data", "sim-data-large.csv"))
 )
 ```
 
@@ -98,17 +99,17 @@ challenge
 
 ```{r rds, dependson = "challenge", message = FALSE}
 # write to csv
-write_csv(challenge, "data/challenge.csv")
+write_csv(challenge, here("data", "challenge.csv"))
 
 # write to/read from rds
-write_rds(challenge, "data/challenge.rds")
-read_rds("data/challenge.rds")
+write_rds(challenge, here("data", "challenge.csv"))
+read_rds(here("data", "challenge.csv"))
 
 # compare file size
-file.info("data/challenge.csv")$size %>%
+file.info(here("data", "challenge.rds"))$size %>%
   utils:::format.object_size("auto")
 
-file.info("data/challenge.rds")$size %>%
+file.info(here("data", "challenge.csv"))$size %>%
   utils:::format.object_size("auto")
 
 # compare read speeds
@@ -120,7 +121,7 @@ microbenchmark(
       y = col_date()
     )
   ),
-  read_rds = read_rds("data/challenge.rds")
+  read_rds = read_rds(here("data", "challenge.rds"))
 ) %>%
   autoplot +
   labs(y = "Time [microseconds], logged")
@@ -135,8 +136,8 @@ The `feather` package implements a binary file format that is cross-compatible w
 ```{r feather, dependson = "challenge", message = FALSE}
 library(feather)
 
-write_feather(challenge, "data/challenge.feather")
-read_feather("data/challenge.feather")
+write_feather(challenge, here("data", "challenge.feather"))
+read_feather(here("data", "challenge.feather"))
 
 # compare read speeds
 microbenchmark(
@@ -147,8 +148,8 @@ microbenchmark(
       y = col_date()
     )
   ),
-  read_rds = read_rds("data/challenge.rds"),
-  read_feather = read_feather("data/challenge.feather")
+  read_rds = read_rds(here("data", "challenge.rds")),
+  read_feather = read_feather(here("data", "challenge.feather"))
 ) %>%
   autoplot +
   scale_y_continuous(labels = scales::comma) +
@@ -190,15 +191,15 @@ library(haven)
 
 # SAS
 read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
-write_sas(mtcars, "data/mtcars.sas7bdat")
+write_sas(mtcars, here("data", "mtcars.sas7bdat"))
 
 # SPSS
 read_sav(system.file("examples", "iris.sav", package = "haven"))
-write_sav(mtcars, "data/mtcars.sav")
+write_sav(mtcars, here("data", "mtcars.sav"))
 
 # Stata
 read_dta(system.file("examples", "iris.dta", package = "haven"))
-write_dta(mtcars, "data/mtcars.dta")
+write_dta(mtcars, here("data", "mtcars.dta"))
 ```
 
 That said, if you can obtain your data file in a plain `.csv` or `.tsv` file format, **I strongly recommend it**. SAS, SPSS, and Stata files represent labeled data and missing values differently from R. `haven` attempts to bridge the gap and preserve as much information as possible, but I frequently find myself stripping out all the label information and rebuilding it using `dplyr` functions and the codebook for the data file.
@@ -209,7 +210,3 @@ That said, if you can obtain your data file in a plain `.csv` or `.tsv` file for
 
 ```{r child='_sessioninfo.Rmd'}
 ```
-
-
-
-
