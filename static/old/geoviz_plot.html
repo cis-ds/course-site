@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Drawing vector maps with ggplot2 and sf</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-45631879-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-45631879-2');
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("geoviz_plot.Rmd");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Drawing vector maps with <code>ggplot2</code> and <code>sf</code></h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(sf)
+<span class="kw">library</span>(here)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<p>Unlike <a href="geoviz_ggmap.html">raster image maps</a>, vector maps require you to obtain <a href="geoviz_import_data.html">spatial data files</a> which contain detailed information necessary to draw all the components of a map (e.g. points, lines, polygons). Once you successfully import that data into R, <code>ggplot2</code> works with simple features data frames to easily generate geospatial visualizations using all the core elements and approaches of <code>ggplot()</code>.</p>
+<div id="import-usa-state-boundaries" class="section level1">
+<h1>Import USA state boundaries</h1>
+<p>First we will import a spatial data file containing the boundaries of all 50 states in the United States<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> using <code>sf::st_read()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usa &lt;-<span class="st"> </span><span class="kw">st_read</span>(<span class="st">&quot;data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp&quot;</span>)</code></pre></div>
+<pre><code>## Reading layer `cb_2013_us_state_20m&#39; from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/uc-cfss.github.io/data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp&#39; using driver `ESRI Shapefile&#39;
+## Simple feature collection with 52 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -179 ymin: 17.9 xmax: 180 ymax: 71.4
+## epsg (SRID):    4269
+## proj4string:    +proj=longlat +datum=NAD83 +no_defs</code></pre>
+</div>
+<div id="draw-the-boundaries" class="section level1">
+<h1>Draw the boundaries</h1>
+<p><code>ggplot2</code> contains a geometric object specifically for simple feature objects called <code>geom_sf()</code>. This works reasonably well when you need to draw <strong>polygons</strong>, like our state boundaries. Support for simple features in <code>ggplot2</code> is under active development, so you may not find adequate support for plotting line or point features. To draw the map, we pass the simple features data frame as the <code>data</code> argument.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>()</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/geom-sf-1.png" width="672" /></p>
+<p>Because simple features data frames are standardized with the <code>geometry</code> column always containing information on the geographic coordinates of the features, we do not need to specify additional parameters for <code>aes()</code>. Notice a problem with the map above: it wastes a lot of space. This is caused by the presence of Alaska and Hawaii in the dataset. The Aleutian Islands cross the the 180th meridian, requiring the map to show the Eastern hemisphere. Likewise, Hawaii is substantially distant from the continental United States.</p>
+<div id="plot-a-subset-of-a-map" class="section level2">
+<h2>Plot a subset of a map</h2>
+<p>One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use <code>filter()</code> from <code>dplyr</code> to exclude these four states/territories.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(usa_<span class="dv">48</span> &lt;-<span class="st"> </span>usa <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="op">!</span>(NAME <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Alaska&quot;</span>, <span class="st">&quot;District of Columbia&quot;</span>, <span class="st">&quot;Hawaii&quot;</span>, <span class="st">&quot;Puerto Rico&quot;</span>))))</code></pre></div>
+<pre><code>## Simple feature collection with 48 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -125 ymin: 24.5 xmax: -66.9 ymax: 49.4
+## epsg (SRID):    4269
+## proj4string:    +proj=longlat +datum=NAD83 +no_defs
+## First 10 features:
+##    STATEFP  STATENS    AFFGEOID GEOID STUSPS        NAME LSAD    ALAND
+## 1       01 01779775 0400000US01    01     AL     Alabama   00 1.31e+11
+## 2       05 00068085 0400000US05    05     AR    Arkansas   00 1.35e+11
+## 3       06 01779778 0400000US06    06     CA  California   00 4.03e+11
+## 4       09 01779780 0400000US09    09     CT Connecticut   00 1.25e+10
+## 5       12 00294478 0400000US12    12     FL     Florida   00 1.39e+11
+## 6       13 01705317 0400000US13    13     GA     Georgia   00 1.49e+11
+## 7       16 01779783 0400000US16    16     ID       Idaho   00 2.14e+11
+## 8       17 01779784 0400000US17    17     IL    Illinois   00 1.44e+11
+## 9       18 00448508 0400000US18    18     IN     Indiana   00 9.28e+10
+## 10      20 00481813 0400000US20    20     KS      Kansas   00 2.12e+11
+##      AWATER                       geometry
+## 1  4.59e+09 MULTIPOLYGON (((-88.3 30.2,...
+## 2  2.96e+09 MULTIPOLYGON (((-94.6 36.5,...
+## 3  2.05e+10 MULTIPOLYGON (((-119 33.5, ...
+## 4  1.82e+09 MULTIPOLYGON (((-73.7 41.1,...
+## 5  3.14e+10 MULTIPOLYGON (((-80.7 24.9,...
+## 6  4.95e+09 MULTIPOLYGON (((-85.6 35, -...
+## 7  2.40e+09 MULTIPOLYGON (((-117 44.4, ...
+## 8  6.20e+09 MULTIPOLYGON (((-91.5 40.2,...
+## 9  1.54e+09 MULTIPOLYGON (((-88.1 37.9,...
+## 10 1.35e+09 MULTIPOLYGON (((-102 40, -1...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>()</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/usa-subset-1.png" width="672" /></p>
+<p>Since the map is a <code>ggplot()</code> object, it can easily be modified like any other <code>ggplot()</code> graph. We could change the color of the map and the borders:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">fill =</span> <span class="st">&quot;palegreen&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/usa-fill-1.png" width="672" /></p>
+</div>
+<div id="fiftystater" class="section level2">
+<h2><code>fiftystater</code></h2>
+<p>Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as <strong>insets</strong> to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. <a href="https://github.com/hrbrmstr/albersusa"><code>albersusa</code></a> includes the <code>usa_sf()</code> function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using <code>devtools::install_github(&quot;hrbrmstr/albersusa&quot;)</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(albersusa)
+<span class="kw">usa_sf</span>()</code></pre></div>
+<pre><code>## Simple feature collection with 51 features and 13 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -125 ymin: 20.6 xmax: -66.9 ymax: 49.4
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+## First 10 features:
+##         geo_id fips_state                 name lsad census_area iso_3166_2
+## 1  0400000US04         04              Arizona           113594         AZ
+## 2  0400000US05         05             Arkansas            52035         AR
+## 3  0400000US06         06           California           155779         CA
+## 4  0400000US08         08             Colorado           103642         CO
+## 5  0400000US09         09          Connecticut             4842         CT
+## 6  0400000US11         11 District of Columbia               61         DC
+## 7  0400000US13         13              Georgia            57513         GA
+## 8  0400000US17         17             Illinois            55519         IL
+## 9  0400000US18         18              Indiana            35826         IN
+## 10 0400000US22         22            Louisiana            43204         LA
+##      census pop_estimataes_base pop_2010 pop_2011 pop_2012 pop_2013
+## 1   6392017             6392310  6411999  6472867  6556236  6634997
+## 2   2915918             2915958  2922297  2938430  2949300  2958765
+## 3  37253956            37254503 37336011 37701901 38062780 38431393
+## 4   5029196             5029324  5048575  5119661  5191709  5272086
+## 5   3574097             3574096  3579345  3590537  3594362  3599341
+## 6    601723              601767   605210   620427   635040   649111
+## 7   9687653             9688681  9714464  9813201  9919000  9994759
+## 8  12830632            12831587 12840097 12858725 12873763 12890552
+## 9   6483802             6484192  6490308  6516560  6537632  6570713
+## 10  4533372             4533479  4545581  4575972  4604744  4629284
+##    pop_2014                       geometry
+## 1   6731484 MULTIPOLYGON (((-113 37, -1...
+## 2   2966369 MULTIPOLYGON (((-94 33, -94...
+## 3  38802500 MULTIPOLYGON (((-120 34, -1...
+## 4   5355866 MULTIPOLYGON (((-107 41, -1...
+## 5   3596677 MULTIPOLYGON (((-72.4 42, -...
+## 6    658893 MULTIPOLYGON (((-77 38.8, -...
+## 7  10097343 MULTIPOLYGON (((-84.8 35, -...
+## 8  12880580 MULTIPOLYGON (((-89.4 42.5,...
+## 9   6596855 MULTIPOLYGON (((-84.8 40.4,...
+## 10  4649676 MULTIPOLYGON (((-88.9 29.8,...</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> <span class="kw">usa_sf</span>()) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>()</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/albersusa-1.png" width="672" /></p>
+</div>
+</div>
+<div id="add-data-to-the-map" class="section level1">
+<h1>Add data to the map</h1>
+<p>Region boundaries serve as the background in geospatial data visualization - so now we need to add data. Some types of geographic data (points and symbols) are overlaid on top of the boundaries, whereas other data (fill) are incorporated into the region layer itself.</p>
+<div id="points" class="section level2">
+<h2>Points</h2>
+<p>Let’s use our <code>usa_48</code> map data to add some points. The <code>airports</code> data frame in the <code>nycflights13</code> package includes geographic info on airports in the United States.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nycflights13)
+airports</code></pre></div>
+<pre><code>## # A tibble: 1,458 x 8
+##    faa   name                   lat    lon   alt    tz dst   tzone        
+##    &lt;chr&gt; &lt;chr&gt;                &lt;dbl&gt;  &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;        
+##  1 04G   Lansdowne Airport     41.1  -80.6  1044    -5 A     America/New_…
+##  2 06A   Moton Field Municip…  32.5  -85.7   264    -6 A     America/Chic…
+##  3 06C   Schaumburg Regional   42.0  -88.1   801    -6 A     America/Chic…
+##  4 06N   Randall Airport       41.4  -74.4   523    -5 A     America/New_…
+##  5 09J   Jekyll Island Airpo…  31.1  -81.4    11    -5 A     America/New_…
+##  6 0A9   Elizabethton Munici…  36.4  -82.2  1593    -5 A     America/New_…
+##  7 0G6   Williams County Air…  41.5  -84.5   730    -5 A     America/New_…
+##  8 0G7   Finger Lakes Region…  42.9  -76.8   492    -5 A     America/New_…
+##  9 0P2   Shoestring Aviation…  39.8  -76.6  1000    -5 U     America/New_…
+## 10 0S9   Jefferson County In…  48.1 -123.    108    -8 A     America/Los_…
+## # ... with 1,448 more rows</code></pre>
+<p>Each airport has it’s geographic location encoded through <code>lat</code> and <code>lon</code>. To draw these points on the map, basically we draw a scatterplot with <code>x = lon</code> and <code>y = lat</code>. In fact we could simply do that:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(airports, <span class="kw">aes</span>(lon, lat)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>()</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/scatter-1.png" width="672" /></p>
+<p>Let’s overlay it with the mapped state borders:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> airports, <span class="kw">aes</span>(<span class="dt">x =</span> lon, <span class="dt">y =</span> lat), <span class="dt">shape =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/flights-usa-1.png" width="672" /></p>
+<p>Slight problem. We have airports listed outside of the continental United States. There are a couple ways to rectify this. Unfortunately <code>airports</code> does not include a variable identifying state so the <code>filter()</code> operation is not that simple. The easiest solution is to crop the limits of the graph using <code>coord_sf()</code> to only show the mainland:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> airports, <span class="kw">aes</span>(<span class="dt">x =</span> lon, <span class="dt">y =</span> lat), <span class="dt">shape =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">130</span>, <span class="op">-</span><span class="dv">60</span>),
+           <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">50</span>))</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/crop-1.png" width="672" /></p>
+<p>Alternatively, we can use <code>st_as_sf()</code> to convert <code>airports</code> to a simple features data frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">airports_sf &lt;-<span class="st"> </span><span class="kw">st_as_sf</span>(airports, <span class="dt">coords =</span> <span class="kw">c</span>(<span class="st">&quot;lon&quot;</span>, <span class="st">&quot;lat&quot;</span>))
+<span class="kw">st_crs</span>(airports_sf) &lt;-<span class="st"> </span><span class="dv">4326</span>   <span class="co"># set the coordinate reference system</span>
+airports_sf</code></pre></div>
+<pre><code>## Simple feature collection with 1458 features and 6 fields
+## geometry type:  POINT
+## dimension:      XY
+## bbox:           xmin: -177 ymin: 19.7 xmax: 174 ymax: 72.3
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+## # A tibble: 1,458 x 7
+##    faa   name              alt    tz dst   tzone                  geometry
+##    &lt;chr&gt; &lt;chr&gt;           &lt;int&gt; &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;               &lt;POINT [°]&gt;
+##  1 04G   Lansdowne Airp…  1044    -5 A     America/N…         (-80.6 41.1)
+##  2 06A   Moton Field Mu…   264    -6 A     America/C…         (-85.7 32.5)
+##  3 06C   Schaumburg Reg…   801    -6 A     America/C…           (-88.1 42)
+##  4 06N   Randall Airport   523    -5 A     America/N…         (-74.4 41.4)
+##  5 09J   Jekyll Island …    11    -5 A     America/N…         (-81.4 31.1)
+##  6 0A9   Elizabethton M…  1593    -5 A     America/N…         (-82.2 36.4)
+##  7 0G6   Williams Count…   730    -5 A     America/N…         (-84.5 41.5)
+##  8 0G7   Finger Lakes R…   492    -5 A     America/N…         (-76.8 42.9)
+##  9 0P2   Shoestring Avi…  1000    -5 U     America/N…         (-76.6 39.8)
+## 10 0S9   Jefferson Coun…   108    -8 A     America/L…          (-123 48.1)
+## # ... with 1,448 more rows</code></pre>
+<p><code>coords</code> tells <code>st_as_sf()</code> which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second <code>geom_sf()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="dt">data =</span> airports_sf, <span class="dt">shape =</span> <span class="dv">1</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">130</span>, <span class="op">-</span><span class="dv">60</span>),
+           <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">50</span>))</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/flights-sf-plot-1.png" width="672" /></p>
+</div>
+<div id="symbols" class="section level2">
+<h2>Symbols</h2>
+<p>We can change the size or type of symbols on the map. For instance, we can draw a <strong>bubble plot</strong> (also known as a <strong>proportional symbol map</strong>) and encode the altitude of the airport through the size channel:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> airports, <span class="kw">aes</span>(<span class="dt">x =</span> lon, <span class="dt">y =</span> lat, <span class="dt">size =</span> alt),
+             <span class="dt">fill =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">alpha =</span> .<span class="dv">2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">130</span>, <span class="op">-</span><span class="dv">60</span>),
+           <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">50</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_size_area</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/airport-alt-1.png" width="672" /></p>
+<p>Circle area is proportional to the airport’s altitude (in feet). Or we could scale it based on the number of arriving flights in <code>flights</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">airports_n &lt;-<span class="st"> </span>flights <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">count</span>(dest) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">left_join</span>(airports, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;dest&quot;</span> =<span class="st"> &quot;faa&quot;</span>))
+
+<span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_sf</span>() <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> airports_n, <span class="kw">aes</span>(<span class="dt">x =</span> lon, <span class="dt">y =</span> lat, <span class="dt">size =</span> n),
+             <span class="dt">fill =</span> <span class="st">&quot;grey&quot;</span>, <span class="dt">color =</span> <span class="st">&quot;black&quot;</span>, <span class="dt">alpha =</span> .<span class="dv">2</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">xlim =</span> <span class="kw">c</span>(<span class="op">-</span><span class="dv">130</span>, <span class="op">-</span><span class="dv">60</span>),
+           <span class="dt">ylim =</span> <span class="kw">c</span>(<span class="dv">20</span>, <span class="dv">50</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_size_area</span>(<span class="dt">guide =</span> <span class="ot">FALSE</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/airport-dest-1.png" width="672" /></p>
+<blockquote>
+<p><code>airports</code> contains a list of virtually all commercial airports in the United States. However <code>flights</code> only contains data on flights departing from New York City airports (JFK, LaGuardia, or Newark) and only services a few airports around the country.</p>
+</blockquote>
+</div>
+<div id="fill-choropleths" class="section level2">
+<h2>Fill (choropleths)</h2>
+<p><strong>Choropleth maps</strong> encode information by assigning shades of colors to defined areas on a map (e.g. countries, states, counties, zip codes). There are lots of ways to tweak and customize these graphs, which is generally a good idea because remember that color is one of the harder-to-decode channels.</p>
+<p>We will continue to use the <code>usa_48</code> simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the <code>census_bureau</code> folder. Let’s also normalize our measure by the total population to get the rate of foreign-born individuals in the population:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(fb_state &lt;-<span class="st"> </span><span class="kw">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;census_bureau&quot;</span>, <span class="st">&quot;ACS_13_5YR_B05012_state&quot;</span>, <span class="st">&quot;ACS_13_5YR_B05012.csv&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">   </span><span class="kw">read_csv</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rate =</span> HD01_VD03 <span class="op">/</span><span class="st"> </span>HD01_VD01))</code></pre></div>
+<pre><code>## # A tibble: 51 x 10
+##    GEO.id GEO.id2 `GEO.display-la… HD01_VD01 HD02_VD01 HD01_VD02 HD02_VD02
+##    &lt;chr&gt;  &lt;chr&gt;   &lt;chr&gt;                &lt;dbl&gt; &lt;lgl&gt;         &lt;dbl&gt;     &lt;dbl&gt;
+##  1 04000… 01      Alabama            4799277 NA          4631045      2881
+##  2 04000… 02      Alaska              720316 NA           669941      1262
+##  3 04000… 04      Arizona            6479703 NA          5609835      7725
+##  4 04000… 05      Arkansas           2933369 NA          2799972      2568
+##  5 04000… 06      California        37659181 NA         27483342     30666
+##  6 04000… 08      Colorado           5119329 NA          4623809      5778
+##  7 04000… 09      Connecticut        3583561 NA          3096374      5553
+##  8 04000… 10      Delaware            908446 NA           831683      2039
+##  9 04000… 11      District of Col…    619371 NA           534142      2017
+## 10 04000… 12      Florida           19091156 NA         15392410     16848
+## # … with 41 more rows, and 3 more variables: HD01_VD03 &lt;dbl&gt;,
+## #   HD02_VD03 &lt;dbl&gt;, rate &lt;dbl&gt;</code></pre>
+<div id="join-the-data" class="section level3">
+<h3>Join the data</h3>
+<p>Now that we have our data, we want to draw it on the map. <code>fb_state</code> contains one row per state, as does <code>usa_48</code>. Since there is a one-to-one match between the data frames, we join the data frames together first, then use that single data frame to draw the map. This differs from the approach above for drawing points because a point feature is not the same thing as a polygon feature. That is, there were more airports then there were states. Because the spatial data is stored in a data frame with one row per state, all we need to do is merge the data frames together on a column that uniquely identifies each row in each data frame.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(usa_fb &lt;-<span class="st"> </span>usa_<span class="dv">48</span> <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">left_join</span>(fb_state, <span class="dt">by =</span> <span class="kw">c</span>(<span class="st">&quot;STATEFP&quot;</span> =<span class="st"> &quot;GEO.id2&quot;</span>)))</code></pre></div>
+<pre><code>## Simple feature collection with 48 features and 18 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -125 ymin: 24.5 xmax: -66.9 ymax: 49.4
+## epsg (SRID):    4269
+## proj4string:    +proj=longlat +datum=NAD83 +no_defs
+## First 10 features:
+##    STATEFP  STATENS    AFFGEOID GEOID STUSPS        NAME LSAD    ALAND
+## 1       01 01779775 0400000US01    01     AL     Alabama   00 1.31e+11
+## 2       05 00068085 0400000US05    05     AR    Arkansas   00 1.35e+11
+## 3       06 01779778 0400000US06    06     CA  California   00 4.03e+11
+## 4       09 01779780 0400000US09    09     CT Connecticut   00 1.25e+10
+## 5       12 00294478 0400000US12    12     FL     Florida   00 1.39e+11
+## 6       13 01705317 0400000US13    13     GA     Georgia   00 1.49e+11
+## 7       16 01779783 0400000US16    16     ID       Idaho   00 2.14e+11
+## 8       17 01779784 0400000US17    17     IL    Illinois   00 1.44e+11
+## 9       18 00448508 0400000US18    18     IN     Indiana   00 9.28e+10
+## 10      20 00481813 0400000US20    20     KS      Kansas   00 2.12e+11
+##      AWATER      GEO.id GEO.display-label HD01_VD01 HD02_VD01 HD01_VD02
+## 1  4.59e+09 0400000US01           Alabama   4799277      &lt;NA&gt;   4631045
+## 2  2.96e+09 0400000US05          Arkansas   2933369      &lt;NA&gt;   2799972
+## 3  2.05e+10 0400000US06        California  37659181      &lt;NA&gt;  27483342
+## 4  1.82e+09 0400000US09       Connecticut   3583561      &lt;NA&gt;   3096374
+## 5  3.14e+10 0400000US12           Florida  19091156      &lt;NA&gt;  15392410
+## 6  4.95e+09 0400000US13           Georgia   9810417      &lt;NA&gt;   8859747
+## 7  2.40e+09 0400000US16             Idaho   1583364      &lt;NA&gt;   1489560
+## 8  6.20e+09 0400000US17          Illinois  12848554      &lt;NA&gt;  11073828
+## 9  1.54e+09 0400000US18           Indiana   6514861      &lt;NA&gt;   6206801
+## 10 1.35e+09 0400000US20            Kansas   2868107      &lt;NA&gt;   2677007
+##    HD02_VD02 HD01_VD03 HD02_VD03   rate                       geometry
+## 1       2881    168232      2881 0.0351 MULTIPOLYGON (((-88.3 30.2,...
+## 2       2568    133397      2568 0.0455 MULTIPOLYGON (((-94.6 36.5,...
+## 3      30666  10175839     30666 0.2702 MULTIPOLYGON (((-119 33.5, ...
+## 4       5553    487187      5553 0.1360 MULTIPOLYGON (((-73.7 41.1,...
+## 5      16848   3698746     16848 0.1937 MULTIPOLYGON (((-80.7 24.9,...
+## 6       7988    950670      7988 0.0969 MULTIPOLYGON (((-85.6 35, -...
+## 7       2528     93804      2528 0.0592 MULTIPOLYGON (((-117 44.4, ...
+## 8      10091   1774726     10093 0.1381 MULTIPOLYGON (((-91.5 40.2,...
+## 9       4499    308060      4500 0.0473 MULTIPOLYGON (((-88.1 37.9,...
+## 10      3095    191100      3100 0.0666 MULTIPOLYGON (((-102 40, -1...</code></pre>
+</div>
+<div id="draw-the-map" class="section level3">
+<h3>Draw the map</h3>
+<p>With the newly combined data frame, use <code>geom_sf()</code> and define the <code>fill</code> aesthetic based on the column in <code>usa_fb</code> you want to visualize.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_fb) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> rate))</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/geom-map-state-1.png" width="672" /></p>
+</div>
+<div id="bin-data-to-discrete-intervals" class="section level3">
+<h3>Bin data to discrete intervals</h3>
+<p>When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keep the variable continuous is technically more precise, <a href="https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf">the human eye cannot usually distinguish between two colors which are very similar to one another.</a> By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While <code>cut()</code> is a base R function for converting continuous variables into discrete values, <code>ggplot2</code> offers two functions that explicitly define how we want to bin the numeric vector (column).</p>
+<p><code>cut_interval()</code> makes <code>n</code> groups with equal range:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usa_fb <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rate_cut =</span> <span class="kw">cut_interval</span>(rate, <span class="dv">6</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> rate_cut))</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/cut-interval-1.png" width="672" /></p>
+<p>Whereas <code>cut_number()</code> makes <code>n</code> groups with (approximately) equal numbers of observations:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usa_fb <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">rate_cut =</span> <span class="kw">cut_number</span>(rate, <span class="dv">6</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> rate_cut))</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/cut-number-1.png" width="672" /></p>
+<blockquote>
+<p>See <a href="https://gis.stackexchange.com/questions/86668/should-i-use-a-discrete-or-continuous-scale-for-coloring-a-chloropleth">this StackOverflow thread</a> for a more in-depth discussion on the merits of bucketizing a continuous variable and whether to use <code>cut_interval()</code> or <code>cut_number()</code>.</p>
+</blockquote>
+</div>
+</div>
+</div>
+<div id="changing-map-projection" class="section level1">
+<h1>Changing map projection</h1>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen>
+</iframe>
+<div class="figure">
+<img src="https://imgs.xkcd.com/comics/mercator_projection.png" alt="Mercator Projection" />
+<p class="caption"><a href="https://xkcd.com/2082/">Mercator Projection</a></p>
+</div>
+<p>Representing portions of the globe on a flat surface can be challenging. Depending on how you project the map, you can distort or emphasize certain features of the map. Fortunately, <code>ggplot()</code> includes the <code>coord_sf()</code> function which allows us to easily implement different projection methods. In order to implement coordinate transformations, you need to know the <strong>coordinate reference system</strong> that defines the projection method. The “easiest” approach is to provide what is known as the <code>proj4string</code> that defines the projection method. <a href="https://proj4.org/">PROJ4</a> is a generic coordinate transformation software that allows you to convert between projection methods. If you get really into geospatial analysis and visualization, it is helpful to learn this system.</p>
+<p>For our purposes here, <code>proj4string</code> is a character string in R that defines the coordinate system and includes parameters specific to a given coordinate transformation. PROJ4 includes <a href="https://proj4.org/operations/projections/index.html">some documentation on common projection methods</a> that can get you started. Some projection methods are relatively simple and require just the name of the projection, like for a <a href="https://proj4.org/operations/projections/merc.html">Mercator projection</a> (<code>&quot;+proj=merc&quot;</code>):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">map_proj_base &lt;-<span class="st"> </span><span class="kw">ggplot</span>(<span class="dt">data =</span> usa_<span class="dv">48</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">map_proj_base <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="st">&quot;+proj=merc&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Mercator projection&quot;</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/mercator-1.png" width="672" /></p>
+<p>Other coordinate systems require specification of the <strong>standard lines</strong>, or lines that define areas of the surface of the map that are tangent to the globe. These include <a href="http://spatialreference.org/ref/sr-org/gall-peters-orthographic-projection/proj4/">Gall-Peters</a>, <a href="https://proj4.org/operations/projections/aea.html">Albers equal-area</a>, and <a href="https://proj4.org/operations/projections/laea.html">Lambert azimuthal</a>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">map_proj_base <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="st">&quot;+proj=cea +lon_0=0 +lat_ts=45&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Gall-Peters projection&quot;</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/projection-rest-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">map_proj_base <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="st">&quot;+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Albers equal-area projection&quot;</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/projection-rest-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">map_proj_base <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="st">&quot;+proj=laea +lat_0=35 +lon_0=-100&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">ggtitle</span>(<span class="st">&quot;Lambert azimuthal projection&quot;</span>)</code></pre></div>
+<p><img src="geoviz_plot_files/figure-html/projection-rest-3.png" width="672" /></p>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## ─ Session info ──────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 3.5.2 (2018-12-20)
+##  os       macOS Mojave 10.14.3        
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2019-03-02                  
+## 
+## ─ Packages ──────────────────────────────────────────────────────────────
+##  package      * version    date       lib
+##  albersusa    * 0.3.1      2019-02-26 [1]
+##  assertthat     0.2.0      2017-04-11 [2]
+##  backports      1.1.3      2018-12-14 [2]
+##  base64enc      0.1-3      2015-07-28 [2]
+##  bindr          0.1.1      2018-03-13 [2]
+##  bindrcpp     * 0.2.2      2018-03-29 [1]
+##  broom          0.5.1      2018-12-05 [2]
+##  callr          3.1.1      2018-12-21 [2]
+##  cellranger     1.1.0      2016-07-27 [2]
+##  class          7.3-15     2019-01-01 [2]
+##  classInt       0.3-1      2018-12-18 [2]
+##  cli            1.0.1      2018-09-25 [1]
+##  codetools      0.2-16     2018-12-24 [2]
+##  colorspace     1.4-0      2019-01-13 [2]
+##  crayon         1.3.4      2017-09-16 [2]
+##  DBI            1.0.0      2018-05-02 [2]
+##  desc           1.2.0      2018-05-01 [2]
+##  devtools       2.0.1      2018-10-26 [1]
+##  digest         0.6.18     2018-10-10 [1]
+##  dplyr        * 0.8.0.1    2019-02-15 [1]
+##  e1071          1.7-0.1    2019-01-21 [1]
+##  evaluate       0.13       2019-02-12 [2]
+##  fansi          0.4.0      2018-10-05 [2]
+##  fiftystater  * 1.0.1      2016-11-14 [2]
+##  forcats      * 0.4.0      2019-02-17 [2]
+##  foreign        0.8-71     2018-07-20 [2]
+##  fs             1.2.6      2018-08-23 [1]
+##  generics       0.0.2      2018-11-29 [1]
+##  ggplot2      * 3.1.0      2018-10-25 [1]
+##  glue           1.3.0      2018-07-17 [2]
+##  gtable         0.2.0      2016-02-26 [2]
+##  haven          2.1.0      2019-02-19 [2]
+##  here         * 0.1        2017-05-28 [2]
+##  hms            0.4.2      2018-03-10 [2]
+##  htmltools      0.3.6      2017-04-28 [1]
+##  httr           1.4.0      2018-12-11 [2]
+##  jsonlite       1.6        2018-12-07 [2]
+##  knitr          1.21       2018-12-10 [2]
+##  lattice        0.20-38    2018-11-04 [2]
+##  lazyeval       0.2.1      2017-10-29 [2]
+##  lubridate      1.7.4      2018-04-11 [2]
+##  magrittr       1.5        2014-11-22 [2]
+##  maptools       0.9-5      2019-02-18 [1]
+##  memoise        1.1.0      2017-04-21 [2]
+##  modelr         0.1.4      2019-02-18 [2]
+##  munsell        0.5.0      2018-06-12 [2]
+##  nlme           3.1-137    2018-04-07 [2]
+##  nycflights13 * 1.0.0      2018-06-26 [2]
+##  pillar         1.3.1      2018-12-15 [2]
+##  pkgbuild       1.0.2      2018-10-16 [1]
+##  pkgconfig      2.0.2      2018-08-16 [2]
+##  pkgload        1.0.2      2018-10-29 [1]
+##  plyr           1.8.4      2016-06-08 [2]
+##  prettyunits    1.0.2      2015-07-13 [2]
+##  processx       3.2.1      2018-12-05 [2]
+##  ps             1.3.0      2018-12-21 [2]
+##  purrr        * 0.3.0      2019-01-27 [2]
+##  R6             2.4.0      2019-02-14 [1]
+##  Rcpp           1.0.0      2018-11-07 [1]
+##  readr        * 1.3.1      2018-12-21 [2]
+##  readxl         1.3.0      2019-02-15 [2]
+##  remotes        2.0.2      2018-10-30 [1]
+##  rgdal          1.3-9      2019-02-21 [1]
+##  rgeos          0.4-2      2018-11-08 [1]
+##  rlang          0.3.1      2019-01-08 [1]
+##  rmarkdown      1.11       2018-12-08 [2]
+##  rprojroot      1.3-2      2018-01-03 [2]
+##  rstudioapi     0.9.0      2019-01-09 [1]
+##  rvest          0.3.2      2016-06-17 [2]
+##  scales         1.0.0      2018-08-09 [1]
+##  sessioninfo    1.1.1      2018-11-05 [1]
+##  sf           * 0.7-3      2019-02-21 [1]
+##  sp             1.3-1      2018-06-05 [2]
+##  stringi        1.3.1      2019-02-13 [1]
+##  stringr      * 1.4.0      2019-02-10 [1]
+##  testthat       2.0.1      2018-10-13 [2]
+##  tibble       * 2.0.1      2019-01-12 [2]
+##  tidyr        * 0.8.2.9000 2019-02-11 [1]
+##  tidyselect     0.2.5      2018-10-11 [1]
+##  tidyverse    * 1.2.1      2017-11-14 [2]
+##  units          0.6-2      2018-12-05 [1]
+##  usethis        1.4.0      2018-08-14 [1]
+##  utf8           1.1.4      2018-05-24 [2]
+##  withr          2.1.2      2018-03-15 [2]
+##  xfun           0.5        2019-02-20 [1]
+##  xml2           1.2.0      2018-01-24 [2]
+##  yaml           2.2.0      2018-07-25 [2]
+##  source                             
+##  Github (hrbrmstr/albersusa@5b933bf)
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.1)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.1)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.1)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  Github (tidyverse/tidyr@0b27690)   
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.2)                     
+##  CRAN (R 3.5.0)                     
+##  CRAN (R 3.5.0)                     
+## 
+## [1] /Users/soltoffbc/Library/R/3.5/library
+## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Plus the District of Columbia and Puerto Rico<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Issues of political sovereignty aside, these entities are frequently excluded from maps depending on the data to be incorporated. You can always choose to leave them in the map.<a href="#fnref2">↩</a></p></li>
+</ol>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRHJhd2luZyB2ZWN0b3IgbWFwcyB3aXRoIGBnZ3Bsb3QyYCBhbmQgYHNmYCIKb3V0cHV0OgogIGh0bWxfZG9jdW1lbnQ6CiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQotLS0KCmBgYHtyIHNldHVwLCBpbmNsdWRlID0gRkFMU0V9CmtuaXRyOjpvcHRzX2NodW5rJHNldChjYWNoZSA9IFRSVUUsIHdhcm5pbmcgPSBGQUxTRSwgbWVzc2FnZSA9IEZBTFNFKQpgYGAKCmBgYHtyIHBhY2thZ2VzLCBjYWNoZSA9IEZBTFNFLCBtZXNzYWdlID0gRkFMU0V9CmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KHNmKQpsaWJyYXJ5KGhlcmUpCgpvcHRpb25zKGRpZ2l0cyA9IDMpCnNldC5zZWVkKDEyMzQpCnRoZW1lX3NldCh0aGVtZV9taW5pbWFsKCkpCmBgYAoKVW5saWtlIFtyYXN0ZXIgaW1hZ2UgbWFwc10oZ2Vvdml6X2dnbWFwLmh0bWwpLCB2ZWN0b3IgbWFwcyByZXF1aXJlIHlvdSB0byBvYnRhaW4gW3NwYXRpYWwgZGF0YSBmaWxlc10oZ2Vvdml6X2ltcG9ydF9kYXRhLmh0bWwpIHdoaWNoIGNvbnRhaW4gZGV0YWlsZWQgaW5mb3JtYXRpb24gbmVjZXNzYXJ5IHRvIGRyYXcgYWxsIHRoZSBjb21wb25lbnRzIG9mIGEgbWFwIChlLmcuIHBvaW50cywgbGluZXMsIHBvbHlnb25zKS4gT25jZSB5b3Ugc3VjY2Vzc2Z1bGx5IGltcG9ydCB0aGF0IGRhdGEgaW50byBSLCBgZ2dwbG90MmAgd29ya3Mgd2l0aCBzaW1wbGUgZmVhdHVyZXMgZGF0YSBmcmFtZXMgdG8gZWFzaWx5IGdlbmVyYXRlIGdlb3NwYXRpYWwgdmlzdWFsaXphdGlvbnMgdXNpbmcgYWxsIHRoZSBjb3JlIGVsZW1lbnRzIGFuZCBhcHByb2FjaGVzIG9mIGBnZ3Bsb3QoKWAuCgojIEltcG9ydCBVU0Egc3RhdGUgYm91bmRhcmllcwoKRmlyc3Qgd2Ugd2lsbCBpbXBvcnQgYSBzcGF0aWFsIGRhdGEgZmlsZSBjb250YWluaW5nIHRoZSBib3VuZGFyaWVzIG9mIGFsbCA1MCBzdGF0ZXMgaW4gdGhlIFVuaXRlZCBTdGF0ZXNeW1BsdXMgdGhlIERpc3RyaWN0IG9mIENvbHVtYmlhIGFuZCBQdWVydG8gUmljb10gdXNpbmcgYHNmOjpzdF9yZWFkKClgOgoKYGBge3IgaW1wb3J0LXVzYX0KdXNhIDwtIHN0X3JlYWQoImRhdGEvY2Vuc3VzX2J1cmVhdS9jYl8yMDEzX3VzX3N0YXRlXzIwbS9jYl8yMDEzX3VzX3N0YXRlXzIwbS5zaHAiKQpgYGAKCiMgRHJhdyB0aGUgYm91bmRhcmllcwoKYGdncGxvdDJgIGNvbnRhaW5zIGEgZ2VvbWV0cmljIG9iamVjdCBzcGVjaWZpY2FsbHkgZm9yIHNpbXBsZSBmZWF0dXJlIG9iamVjdHMgY2FsbGVkIGBnZW9tX3NmKClgLiBUaGlzIHdvcmtzIHJlYXNvbmFibHkgd2VsbCB3aGVuIHlvdSBuZWVkIHRvIGRyYXcgKipwb2x5Z29ucyoqLCBsaWtlIG91ciBzdGF0ZSBib3VuZGFyaWVzLiBTdXBwb3J0IGZvciBzaW1wbGUgZmVhdHVyZXMgaW4gYGdncGxvdDJgIGlzIHVuZGVyIGFjdGl2ZSBkZXZlbG9wbWVudCwgc28geW91IG1heSBub3QgZmluZCBhZGVxdWF0ZSBzdXBwb3J0IGZvciBwbG90dGluZyBsaW5lIG9yIHBvaW50IGZlYXR1cmVzLiBUbyBkcmF3IHRoZSBtYXAsIHdlIHBhc3MgdGhlIHNpbXBsZSBmZWF0dXJlcyBkYXRhIGZyYW1lIGFzIHRoZSBgZGF0YWAgYXJndW1lbnQuCgpgYGB7ciBnZW9tLXNmfQpnZ3Bsb3QoZGF0YSA9IHVzYSkgKwogIGdlb21fc2YoKQpgYGAKCkJlY2F1c2Ugc2ltcGxlIGZlYXR1cmVzIGRhdGEgZnJhbWVzIGFyZSBzdGFuZGFyZGl6ZWQgd2l0aCB0aGUgYGdlb21ldHJ5YCBjb2x1bW4gYWx3YXlzIGNvbnRhaW5pbmcgaW5mb3JtYXRpb24gb24gdGhlIGdlb2dyYXBoaWMgY29vcmRpbmF0ZXMgb2YgdGhlIGZlYXR1cmVzLCB3ZSBkbyBub3QgbmVlZCB0byBzcGVjaWZ5IGFkZGl0aW9uYWwgcGFyYW1ldGVycyBmb3IgYGFlcygpYC4gTm90aWNlIGEgcHJvYmxlbSB3aXRoIHRoZSBtYXAgYWJvdmU6IGl0IHdhc3RlcyBhIGxvdCBvZiBzcGFjZS4gVGhpcyBpcyBjYXVzZWQgYnkgdGhlIHByZXNlbmNlIG9mIEFsYXNrYSBhbmQgSGF3YWlpIGluIHRoZSBkYXRhc2V0LiBUaGUgQWxldXRpYW4gSXNsYW5kcyBjcm9zcyB0aGUgdGhlIDE4MHRoIG1lcmlkaWFuLCByZXF1aXJpbmcgdGhlIG1hcCB0byBzaG93IHRoZSBFYXN0ZXJuIGhlbWlzcGhlcmUuIExpa2V3aXNlLCBIYXdhaWkgaXMgc3Vic3RhbnRpYWxseSBkaXN0YW50IGZyb20gdGhlIGNvbnRpbmVudGFsIFVuaXRlZCBTdGF0ZXMuCgojIyBQbG90IGEgc3Vic2V0IG9mIGEgbWFwCgpPbmUgc29sdXRpb24gaXMgdG8gcGxvdCBqdXN0IHRoZSBsb3dlciA0OCBzdGF0ZXMuIFRoYXQgaXMsIGV4Y2x1ZGUgQWxhc2thIGFuZCBIYXdhaWksIGFzIHdlbGwgYXMgREMgYW5kIFB1ZXJ0byBSaWNvLl5bSXNzdWVzIG9mIHBvbGl0aWNhbCBzb3ZlcmVpZ250eSBhc2lkZSwgdGhlc2UgZW50aXRpZXMgYXJlIGZyZXF1ZW50bHkgZXhjbHVkZWQgZnJvbSBtYXBzIGRlcGVuZGluZyBvbiB0aGUgZGF0YSB0byBiZSBpbmNvcnBvcmF0ZWQuIFlvdSBjYW4gYWx3YXlzIGNob29zZSB0byBsZWF2ZSB0aGVtIGluIHRoZSBtYXAuXSBCZWNhdXNlIHNpbXBsZSBmZWF0dXJlcyBkYXRhIGZyYW1lcyBjb250YWluIG9uZSByb3cgcGVyIGZlYXR1cmUgYW5kIGluIHRoaXMgZXhhbXBsZSBhIGZlYXR1cmUgaXMgZGVmaW5lZCBhcyBhIHN0YXRlLCB3ZSBjYW4gdXNlIGBmaWx0ZXIoKWAgZnJvbSBgZHBseXJgIHRvIGV4Y2x1ZGUgdGhlc2UgZm91ciBzdGF0ZXMvdGVycml0b3JpZXMuCgpgYGB7ciB1c2Etc3Vic2V0fQoodXNhXzQ4IDwtIHVzYSAlPiUKICBmaWx0ZXIoIShOQU1FICVpbiUgYygiQWxhc2thIiwgIkRpc3RyaWN0IG9mIENvbHVtYmlhIiwgIkhhd2FpaSIsICJQdWVydG8gUmljbyIpKSkpCgpnZ3Bsb3QoZGF0YSA9IHVzYV80OCkgKwogIGdlb21fc2YoKQpgYGAKClNpbmNlIHRoZSBtYXAgaXMgYSBgZ2dwbG90KClgIG9iamVjdCwgaXQgY2FuIGVhc2lseSBiZSBtb2RpZmllZCBsaWtlIGFueSBvdGhlciBgZ2dwbG90KClgIGdyYXBoLiBXZSBjb3VsZCBjaGFuZ2UgdGhlIGNvbG9yIG9mIHRoZSBtYXAgYW5kIHRoZSBib3JkZXJzOgoKYGBge3IgdXNhLWZpbGx9CmdncGxvdChkYXRhID0gdXNhXzQ4KSArCiAgZ2VvbV9zZihmaWxsID0gInBhbGVncmVlbiIsIGNvbG9yID0gImJsYWNrIikKYGBgCgojIyBgZmlmdHlzdGF0ZXJgCgpSYXRoZXIgdGhhbiBleGNsdWRpbmcgdGhlbSBlbnRpcmVseSwgbW9zdCBtYXBzIG9mIHRoZSBVbml0ZWQgU3RhdGVzIHBsYWNlIEFsYXNrYSBhbmQgSGF3YWlpIGFzICoqaW5zZXRzKiogdG8gdGhlIHNvdXRoIG9mIENhbGlmb3JuaWEuIFVudGlsIHJlY2VudGx5LCBpbiBSIHRoaXMgd2FzIGFuIGV4dHJlbWVseSB0ZWRpb3VzIHRhc2sgdGhhdCByZXF1aXJlZCBtYW51YWxseSBjaGFuZ2luZyB0aGUgbGF0aXR1ZGUgYW5kIGxvbmdpdHVkZSBjb29yZGluYXRlcyBmb3IgdGhlc2Ugc3RhdGVzIHRvIHBsYWNlIHRoZW0gaW4gdGhlIGNvcnJlY3QgbG9jYXRpb24uIEZvcnR1bmF0ZWx5IHNldmVyYWwgcGFja2FnZXMgYXJlIG5vdyBhdmFpbGFibGUgdGhhdCBoYXZlIGFscmVhZHkgZG9uZSB0aGUgd29yayBmb3IgeW91LiBbYGFsYmVyc3VzYWBdKGh0dHBzOi8vZ2l0aHViLmNvbS9ocmJybXN0ci9hbGJlcnN1c2EpIGluY2x1ZGVzIHRoZSBgdXNhX3NmKClgIGZ1bmN0aW9uIHdoaWNoIHJldHVybnMgYSBzaW1wbGUgZmVhdHVyZXMgZGF0YSBmcmFtZSB3aGljaCBjb250YWlucyBhZGp1c3RlZCBjb29yZGluYXRlcyBmb3IgQWxhc2thIGFuZCBIYXdhaWkgdG8gcGxvdCB0aGVtIHdpdGggdGhlIG1haW5sYW5kLiBJdCBjYW4gYmUgaW5zdGFsbGVkIGZyb20gR2l0SHViIHVzaW5nIGBkZXZ0b29sczo6aW5zdGFsbF9naXRodWIoImhyYnJtc3RyL2FsYmVyc3VzYSIpYC4KCmBgYHtyIGFsYmVyc3VzYX0KbGlicmFyeShhbGJlcnN1c2EpCnVzYV9zZigpCgpnZ3Bsb3QoZGF0YSA9IHVzYV9zZigpKSArCiAgZ2VvbV9zZigpCmBgYAoKIyBBZGQgZGF0YSB0byB0aGUgbWFwCgpSZWdpb24gYm91bmRhcmllcyBzZXJ2ZSBhcyB0aGUgYmFja2dyb3VuZCBpbiBnZW9zcGF0aWFsIGRhdGEgdmlzdWFsaXphdGlvbiAtIHNvIG5vdyB3ZSBuZWVkIHRvIGFkZCBkYXRhLiBTb21lIHR5cGVzIG9mIGdlb2dyYXBoaWMgZGF0YSAocG9pbnRzIGFuZCBzeW1ib2xzKSBhcmUgb3ZlcmxhaWQgb24gdG9wIG9mIHRoZSBib3VuZGFyaWVzLCB3aGVyZWFzIG90aGVyIGRhdGEgKGZpbGwpIGFyZSBpbmNvcnBvcmF0ZWQgaW50byB0aGUgcmVnaW9uIGxheWVyIGl0c2VsZi4KCiMjIFBvaW50cwoKTGV0J3MgdXNlIG91ciBgdXNhXzQ4YCBtYXAgZGF0YSB0byBhZGQgc29tZSBwb2ludHMuIFRoZSBgYWlycG9ydHNgIGRhdGEgZnJhbWUgaW4gdGhlIGBueWNmbGlnaHRzMTNgIHBhY2thZ2UgaW5jbHVkZXMgZ2VvZ3JhcGhpYyBpbmZvIG9uIGFpcnBvcnRzIGluIHRoZSBVbml0ZWQgU3RhdGVzLgoKYGBge3IgbnljZmxpZ2h0c30KbGlicmFyeShueWNmbGlnaHRzMTMpCmFpcnBvcnRzCmBgYAoKRWFjaCBhaXJwb3J0IGhhcyBpdCdzIGdlb2dyYXBoaWMgbG9jYXRpb24gZW5jb2RlZCB0aHJvdWdoIGBsYXRgIGFuZCBgbG9uYC4gVG8gZHJhdyB0aGVzZSBwb2ludHMgb24gdGhlIG1hcCwgYmFzaWNhbGx5IHdlIGRyYXcgYSBzY2F0dGVycGxvdCB3aXRoIGB4ID0gbG9uYCBhbmQgYHkgPSBsYXRgLiBJbiBmYWN0IHdlIGNvdWxkIHNpbXBseSBkbyB0aGF0OgoKYGBge3Igc2NhdHRlcn0KZ2dwbG90KGFpcnBvcnRzLCBhZXMobG9uLCBsYXQpKSArCiAgZ2VvbV9wb2ludCgpCmBgYAoKTGV0J3Mgb3ZlcmxheSBpdCB3aXRoIHRoZSBtYXBwZWQgc3RhdGUgYm9yZGVyczoKCmBgYHtyIGZsaWdodHMtdXNhfQpnZ3Bsb3QoZGF0YSA9IHVzYV80OCkgKyAKICBnZW9tX3NmKCkgKyAKICBnZW9tX3BvaW50KGRhdGEgPSBhaXJwb3J0cywgYWVzKHggPSBsb24sIHkgPSBsYXQpLCBzaGFwZSA9IDEpCmBgYAoKU2xpZ2h0IHByb2JsZW0uIFdlIGhhdmUgYWlycG9ydHMgbGlzdGVkIG91dHNpZGUgb2YgdGhlIGNvbnRpbmVudGFsIFVuaXRlZCBTdGF0ZXMuIFRoZXJlIGFyZSBhIGNvdXBsZSB3YXlzIHRvIHJlY3RpZnkgdGhpcy4gVW5mb3J0dW5hdGVseSBgYWlycG9ydHNgIGRvZXMgbm90IGluY2x1ZGUgYSB2YXJpYWJsZSBpZGVudGlmeWluZyBzdGF0ZSBzbyB0aGUgYGZpbHRlcigpYCBvcGVyYXRpb24gaXMgbm90IHRoYXQgc2ltcGxlLiBUaGUgZWFzaWVzdCBzb2x1dGlvbiBpcyB0byBjcm9wIHRoZSBsaW1pdHMgb2YgdGhlIGdyYXBoIHVzaW5nIGBjb29yZF9zZigpYCB0byBvbmx5IHNob3cgdGhlIG1haW5sYW5kOgoKYGBge3IgY3JvcH0KZ2dwbG90KGRhdGEgPSB1c2FfNDgpICsgCiAgZ2VvbV9zZigpICsgCiAgZ2VvbV9wb2ludChkYXRhID0gYWlycG9ydHMsIGFlcyh4ID0gbG9uLCB5ID0gbGF0KSwgc2hhcGUgPSAxKSArCiAgY29vcmRfc2YoeGxpbSA9IGMoLTEzMCwgLTYwKSwKICAgICAgICAgICB5bGltID0gYygyMCwgNTApKQpgYGAKCkFsdGVybmF0aXZlbHksIHdlIGNhbiB1c2UgYHN0X2FzX3NmKClgIHRvIGNvbnZlcnQgYGFpcnBvcnRzYCB0byBhIHNpbXBsZSBmZWF0dXJlcyBkYXRhIGZyYW1lLgoKYGBge3IgZmxpZ2h0cy1zZn0KYWlycG9ydHNfc2YgPC0gc3RfYXNfc2YoYWlycG9ydHMsIGNvb3JkcyA9IGMoImxvbiIsICJsYXQiKSkKc3RfY3JzKGFpcnBvcnRzX3NmKSA8LSA0MzI2ICAgIyBzZXQgdGhlIGNvb3JkaW5hdGUgcmVmZXJlbmNlIHN5c3RlbQphaXJwb3J0c19zZgpgYGAKCmBjb29yZHNgIHRlbGxzIGBzdF9hc19zZigpYCB3aGljaCBjb2x1bW5zIGNvbnRhaW4gdGhlIGdlb2dyYXBoaWMgY29vcmRpbmF0ZXMgb2YgZWFjaCBhaXJwb3J0LiBUbyBncmFwaCB0aGUgcG9pbnRzIG9uIHRoZSBtYXAsIHdlIHVzZSBhIHNlY29uZCBgZ2VvbV9zZigpYDoKCmBgYHtyIGZsaWdodHMtc2YtcGxvdH0KZ2dwbG90KCkgKyAKICBnZW9tX3NmKGRhdGEgPSB1c2FfNDgpICsgCiAgZ2VvbV9zZihkYXRhID0gYWlycG9ydHNfc2YsIHNoYXBlID0gMSkgKwogIGNvb3JkX3NmKHhsaW0gPSBjKC0xMzAsIC02MCksCiAgICAgICAgICAgeWxpbSA9IGMoMjAsIDUwKSkKYGBgCgojIyBTeW1ib2xzCgpXZSBjYW4gY2hhbmdlIHRoZSBzaXplIG9yIHR5cGUgb2Ygc3ltYm9scyBvbiB0aGUgbWFwLiBGb3IgaW5zdGFuY2UsIHdlIGNhbiBkcmF3IGEgKipidWJibGUgcGxvdCoqIChhbHNvIGtub3duIGFzIGEgKipwcm9wb3J0aW9uYWwgc3ltYm9sIG1hcCoqKSBhbmQgZW5jb2RlIHRoZSBhbHRpdHVkZSBvZiB0aGUgYWlycG9ydCB0aHJvdWdoIHRoZSBzaXplIGNoYW5uZWw6CgpgYGB7ciBhaXJwb3J0LWFsdH0KZ2dwbG90KGRhdGEgPSB1c2FfNDgpICsgCiAgZ2VvbV9zZigpICsgCiAgZ2VvbV9wb2ludChkYXRhID0gYWlycG9ydHMsIGFlcyh4ID0gbG9uLCB5ID0gbGF0LCBzaXplID0gYWx0KSwKICAgICAgICAgICAgIGZpbGwgPSAiZ3JleSIsIGNvbG9yID0gImJsYWNrIiwgYWxwaGEgPSAuMikgKwogIGNvb3JkX3NmKHhsaW0gPSBjKC0xMzAsIC02MCksCiAgICAgICAgICAgeWxpbSA9IGMoMjAsIDUwKSkgKwogIHNjYWxlX3NpemVfYXJlYShndWlkZSA9IEZBTFNFKQpgYGAKCkNpcmNsZSBhcmVhIGlzIHByb3BvcnRpb25hbCB0byB0aGUgYWlycG9ydCdzIGFsdGl0dWRlIChpbiBmZWV0KS4gT3Igd2UgY291bGQgc2NhbGUgaXQgYmFzZWQgb24gdGhlIG51bWJlciBvZiBhcnJpdmluZyBmbGlnaHRzIGluIGBmbGlnaHRzYDoKCmBgYHtyIGFpcnBvcnQtZGVzdH0KYWlycG9ydHNfbiA8LSBmbGlnaHRzICU+JQogIGNvdW50KGRlc3QpICU+JQogIGxlZnRfam9pbihhaXJwb3J0cywgYnkgPSBjKCJkZXN0IiA9ICJmYWEiKSkKCmdncGxvdChkYXRhID0gdXNhXzQ4KSArIAogIGdlb21fc2YoKSArIAogIGdlb21fcG9pbnQoZGF0YSA9IGFpcnBvcnRzX24sIGFlcyh4ID0gbG9uLCB5ID0gbGF0LCBzaXplID0gbiksCiAgICAgICAgICAgICBmaWxsID0gImdyZXkiLCBjb2xvciA9ICJibGFjayIsIGFscGhhID0gLjIpICsKICBjb29yZF9zZih4bGltID0gYygtMTMwLCAtNjApLAogICAgICAgICAgIHlsaW0gPSBjKDIwLCA1MCkpICsKICBzY2FsZV9zaXplX2FyZWEoZ3VpZGUgPSBGQUxTRSkKYGBgCgo+IGBhaXJwb3J0c2AgY29udGFpbnMgYSBsaXN0IG9mIHZpcnR1YWxseSBhbGwgY29tbWVyY2lhbCBhaXJwb3J0cyBpbiB0aGUgVW5pdGVkIFN0YXRlcy4gSG93ZXZlciBgZmxpZ2h0c2Agb25seSBjb250YWlucyBkYXRhIG9uIGZsaWdodHMgZGVwYXJ0aW5nIGZyb20gTmV3IFlvcmsgQ2l0eSBhaXJwb3J0cyAoSkZLLCBMYUd1YXJkaWEsIG9yIE5ld2FyaykgYW5kIG9ubHkgc2VydmljZXMgYSBmZXcgYWlycG9ydHMgYXJvdW5kIHRoZSBjb3VudHJ5LgoKIyMgRmlsbCAoY2hvcm9wbGV0aHMpCgoqKkNob3JvcGxldGggbWFwcyoqIGVuY29kZSBpbmZvcm1hdGlvbiBieSBhc3NpZ25pbmcgc2hhZGVzIG9mIGNvbG9ycyB0byBkZWZpbmVkIGFyZWFzIG9uIGEgbWFwIChlLmcuIGNvdW50cmllcywgc3RhdGVzLCBjb3VudGllcywgemlwIGNvZGVzKS4gVGhlcmUgYXJlIGxvdHMgb2Ygd2F5cyB0byB0d2VhayBhbmQgY3VzdG9taXplIHRoZXNlIGdyYXBocywgd2hpY2ggaXMgZ2VuZXJhbGx5IGEgZ29vZCBpZGVhIGJlY2F1c2UgcmVtZW1iZXIgdGhhdCBjb2xvciBpcyBvbmUgb2YgdGhlIGhhcmRlci10by1kZWNvZGUgY2hhbm5lbHMuCgpXZSB3aWxsIGNvbnRpbnVlIHRvIHVzZSB0aGUgYHVzYV80OGAgc2ltcGxlIGZlYXR1cmVzIGRhdGEgZnJhbWUgYW5kIGRyYXcgYSBjaG9yb3BsZXRoIGZvciB0aGUgbnVtYmVyIG9mIGZvcmVpZ24tYm9ybiBpbmRpdmlkdWFscyBpbiBlYWNoIHN0YXRlLiBXZSBnZXQgdGhvc2UgZmlsZXMgZnJvbSB0aGUgYGNlbnN1c19idXJlYXVgIGZvbGRlci4gTGV0J3MgYWxzbyBub3JtYWxpemUgb3VyIG1lYXN1cmUgYnkgdGhlIHRvdGFsIHBvcHVsYXRpb24gdG8gZ2V0IHRoZSByYXRlIG9mIGZvcmVpZ24tYm9ybiBpbmRpdmlkdWFscyBpbiB0aGUgcG9wdWxhdGlvbjoKCmBgYHtyIGltcG9ydC1mb3JlaWdufQooZmJfc3RhdGUgPC0gaGVyZSgiZGF0YSIsICJjZW5zdXNfYnVyZWF1IiwgIkFDU18xM181WVJfQjA1MDEyX3N0YXRlIiwgIkFDU18xM181WVJfQjA1MDEyLmNzdiIpICU+JQogICByZWFkX2NzdigpICU+JQogIG11dGF0ZShyYXRlID0gSEQwMV9WRDAzIC8gSEQwMV9WRDAxKSkKYGBgCgojIyMgSm9pbiB0aGUgZGF0YQoKTm93IHRoYXQgd2UgaGF2ZSBvdXIgZGF0YSwgd2Ugd2FudCB0byBkcmF3IGl0IG9uIHRoZSBtYXAuIGBmYl9zdGF0ZWAgY29udGFpbnMgb25lIHJvdyBwZXIgc3RhdGUsIGFzIGRvZXMgYHVzYV80OGAuIFNpbmNlIHRoZXJlIGlzIGEgb25lLXRvLW9uZSBtYXRjaCBiZXR3ZWVuIHRoZSBkYXRhIGZyYW1lcywgd2Ugam9pbiB0aGUgZGF0YSBmcmFtZXMgdG9nZXRoZXIgZmlyc3QsIHRoZW4gdXNlIHRoYXQgc2luZ2xlIGRhdGEgZnJhbWUgdG8gZHJhdyB0aGUgbWFwLiBUaGlzIGRpZmZlcnMgZnJvbSB0aGUgYXBwcm9hY2ggYWJvdmUgZm9yIGRyYXdpbmcgcG9pbnRzIGJlY2F1c2UgYSBwb2ludCBmZWF0dXJlIGlzIG5vdCB0aGUgc2FtZSB0aGluZyBhcyBhIHBvbHlnb24gZmVhdHVyZS4gVGhhdCBpcywgdGhlcmUgd2VyZSBtb3JlIGFpcnBvcnRzIHRoZW4gdGhlcmUgd2VyZSBzdGF0ZXMuIEJlY2F1c2UgdGhlIHNwYXRpYWwgZGF0YSBpcyBzdG9yZWQgaW4gYSBkYXRhIGZyYW1lIHdpdGggb25lIHJvdyBwZXIgc3RhdGUsIGFsbCB3ZSBuZWVkIHRvIGRvIGlzIG1lcmdlIHRoZSBkYXRhIGZyYW1lcyB0b2dldGhlciBvbiBhIGNvbHVtbiB0aGF0IHVuaXF1ZWx5IGlkZW50aWZpZXMgZWFjaCByb3cgaW4gZWFjaCBkYXRhIGZyYW1lLgoKYGBge3IgdXNhLWZvcmVpZ24tam9pbn0KKHVzYV9mYiA8LSB1c2FfNDggJT4lCiAgbGVmdF9qb2luKGZiX3N0YXRlLCBieSA9IGMoIlNUQVRFRlAiID0gIkdFTy5pZDIiKSkpCmBgYAoKIyMjIERyYXcgdGhlIG1hcAoKV2l0aCB0aGUgbmV3bHkgY29tYmluZWQgZGF0YSBmcmFtZSwgdXNlIGBnZW9tX3NmKClgIGFuZCBkZWZpbmUgdGhlIGBmaWxsYCBhZXN0aGV0aWMgYmFzZWQgb24gdGhlIGNvbHVtbiBpbiBgdXNhX2ZiYCB5b3Ugd2FudCB0byB2aXN1YWxpemUuCgpgYGB7ciBnZW9tLW1hcC1zdGF0ZX0KZ2dwbG90KGRhdGEgPSB1c2FfZmIpICsKICBnZW9tX3NmKGFlcyhmaWxsID0gcmF0ZSkpCmBgYAoKIyMjIEJpbiBkYXRhIHRvIGRpc2NyZXRlIGludGVydmFscwoKV2hlbiBjcmVhdGluZyBhIGhlYXRtYXAgd2l0aCBhIGNvbnRpbnVvdXMgdmFyaWFibGUsIG9uZSBtdXN0IGRlY2lkZSB3aGV0aGVyIHRvIGtlZXAgdGhlIHZhcmlhYmxlIGFzIGNvbnRpbnVvdXMgb3IgY29sbGFwc2UgaXQgaW50byBhIHNlcmllcyBvZiBiaW5zIHdpdGggZGlzY3JldGUgY29sb3JzLiBXaGlsZSBrZWVwIHRoZSB2YXJpYWJsZSBjb250aW51b3VzIGlzIHRlY2huaWNhbGx5IG1vcmUgcHJlY2lzZSwgW3RoZSBodW1hbiBleWUgY2Fubm90IHVzdWFsbHkgZGlzdGluZ3Vpc2ggYmV0d2VlbiB0d28gY29sb3JzIHdoaWNoIGFyZSB2ZXJ5IHNpbWlsYXIgdG8gb25lIGFub3RoZXIuXShodHRwczovL3d3dy5wZXJjZXB0dWFsZWRnZS5jb20vYXJ0aWNsZXMvdmlzdWFsX2J1c2luZXNzX2ludGVsbGlnZW5jZS9oZWF0bWFwc190b19iaW5fb3Jfbm90LnBkZikgQnkgY29udmVydGluZyB0aGUgdmFyaWFibGUgdG8gYSBkaXNjcmV0ZSB2YXJpYWJsZSwgeW91IGVhc2lseSBkaXN0aW5ndWlzaCBiZXR3ZWVuIHRoZSBkaWZmZXJlbnQgbGV2ZWxzLiBJZiB5b3UgZGVjaWRlIHRvIGNvbnZlcnQgYSBjb250aW51b3VzIHZhcmlhYmxlIHRvIGEgZGlzY3JldGUgdmFyaWFibGUsIHlvdSB3aWxsIG5lZWQgdG8gZGVjaWRlIGhvdyB0byBkbyB0aGlzLiBXaGlsZSBgY3V0KClgIGlzIGEgYmFzZSBSIGZ1bmN0aW9uIGZvciBjb252ZXJ0aW5nIGNvbnRpbnVvdXMgdmFyaWFibGVzIGludG8gZGlzY3JldGUgdmFsdWVzLCBgZ2dwbG90MmAgb2ZmZXJzIHR3byBmdW5jdGlvbnMgdGhhdCBleHBsaWNpdGx5IGRlZmluZSBob3cgd2Ugd2FudCB0byBiaW4gdGhlIG51bWVyaWMgdmVjdG9yIChjb2x1bW4pLgoKYGN1dF9pbnRlcnZhbCgpYCBtYWtlcyBgbmAgZ3JvdXBzIHdpdGggZXF1YWwgcmFuZ2U6CgpgYGB7ciBjdXQtaW50ZXJ2YWx9CnVzYV9mYiAlPiUKICBtdXRhdGUocmF0ZV9jdXQgPSBjdXRfaW50ZXJ2YWwocmF0ZSwgNikpICU+JQogIGdncGxvdCgpICsKICBnZW9tX3NmKGFlcyhmaWxsID0gcmF0ZV9jdXQpKQpgYGAKCldoZXJlYXMgYGN1dF9udW1iZXIoKWAgbWFrZXMgYG5gIGdyb3VwcyB3aXRoIChhcHByb3hpbWF0ZWx5KSBlcXVhbCBudW1iZXJzIG9mIG9ic2VydmF0aW9uczoKCmBgYHtyIGN1dC1udW1iZXJ9CnVzYV9mYiAlPiUKICBtdXRhdGUocmF0ZV9jdXQgPSBjdXRfbnVtYmVyKHJhdGUsIDYpKSAlPiUKICBnZ3Bsb3QoKSArCiAgZ2VvbV9zZihhZXMoZmlsbCA9IHJhdGVfY3V0KSkKYGBgCgo+IFNlZSBbdGhpcyBTdGFja092ZXJmbG93IHRocmVhZF0oaHR0cHM6Ly9naXMuc3RhY2tleGNoYW5nZS5jb20vcXVlc3Rpb25zLzg2NjY4L3Nob3VsZC1pLXVzZS1hLWRpc2NyZXRlLW9yLWNvbnRpbnVvdXMtc2NhbGUtZm9yLWNvbG9yaW5nLWEtY2hsb3JvcGxldGgpIGZvciBhIG1vcmUgaW4tZGVwdGggZGlzY3Vzc2lvbiBvbiB0aGUgbWVyaXRzIG9mIGJ1Y2tldGl6aW5nIGEgY29udGludW91cyB2YXJpYWJsZSBhbmQgd2hldGhlciB0byB1c2UgYGN1dF9pbnRlcnZhbCgpYCBvciBgY3V0X251bWJlcigpYC4KCiMgQ2hhbmdpbmcgbWFwIHByb2plY3Rpb24KCjxpZnJhbWUgd2lkdGg9IjU2MCIgaGVpZ2h0PSIzMTUiIHNyYz0iaHR0cHM6Ly93d3cueW91dHViZS5jb20vZW1iZWQvdlZYLVByQlJ0VFk/cmVsPTAiIGZyYW1lYm9yZGVyPSIwIiBhbGxvd2Z1bGxzY3JlZW4+PC9pZnJhbWU+CgohW1tNZXJjYXRvciBQcm9qZWN0aW9uXShodHRwczovL3hrY2QuY29tLzIwODIvKV0oaHR0cHM6Ly9pbWdzLnhrY2QuY29tL2NvbWljcy9tZXJjYXRvcl9wcm9qZWN0aW9uLnBuZykKClJlcHJlc2VudGluZyBwb3J0aW9ucyBvZiB0aGUgZ2xvYmUgb24gYSBmbGF0IHN1cmZhY2UgY2FuIGJlIGNoYWxsZW5naW5nLiBEZXBlbmRpbmcgb24gaG93IHlvdSBwcm9qZWN0IHRoZSBtYXAsIHlvdSBjYW4gZGlzdG9ydCBvciBlbXBoYXNpemUgY2VydGFpbiBmZWF0dXJlcyBvZiB0aGUgbWFwLiBGb3J0dW5hdGVseSwgYGdncGxvdCgpYCBpbmNsdWRlcyB0aGUgYGNvb3JkX3NmKClgIGZ1bmN0aW9uIHdoaWNoIGFsbG93cyB1cyB0byBlYXNpbHkgaW1wbGVtZW50IGRpZmZlcmVudCBwcm9qZWN0aW9uIG1ldGhvZHMuIEluIG9yZGVyIHRvIGltcGxlbWVudCBjb29yZGluYXRlIHRyYW5zZm9ybWF0aW9ucywgeW91IG5lZWQgdG8ga25vdyB0aGUgKipjb29yZGluYXRlIHJlZmVyZW5jZSBzeXN0ZW0qKiB0aGF0IGRlZmluZXMgdGhlIHByb2plY3Rpb24gbWV0aG9kLiBUaGUgImVhc2llc3QiIGFwcHJvYWNoIGlzIHRvIHByb3ZpZGUgd2hhdCBpcyBrbm93biBhcyB0aGUgYHByb2o0c3RyaW5nYCB0aGF0IGRlZmluZXMgdGhlIHByb2plY3Rpb24gbWV0aG9kLiBbUFJPSjRdKGh0dHBzOi8vcHJvajQub3JnLykgaXMgYSBnZW5lcmljIGNvb3JkaW5hdGUgdHJhbnNmb3JtYXRpb24gc29mdHdhcmUgdGhhdCBhbGxvd3MgeW91IHRvIGNvbnZlcnQgYmV0d2VlbiBwcm9qZWN0aW9uIG1ldGhvZHMuIElmIHlvdSBnZXQgcmVhbGx5IGludG8gZ2Vvc3BhdGlhbCBhbmFseXNpcyBhbmQgdmlzdWFsaXphdGlvbiwgaXQgaXMgaGVscGZ1bCB0byBsZWFybiB0aGlzIHN5c3RlbS4KCkZvciBvdXIgcHVycG9zZXMgaGVyZSwgYHByb2o0c3RyaW5nYCBpcyBhIGNoYXJhY3RlciBzdHJpbmcgaW4gUiB0aGF0IGRlZmluZXMgdGhlIGNvb3JkaW5hdGUgc3lzdGVtIGFuZCBpbmNsdWRlcyBwYXJhbWV0ZXJzIHNwZWNpZmljIHRvIGEgZ2l2ZW4gY29vcmRpbmF0ZSB0cmFuc2Zvcm1hdGlvbi4gUFJPSjQgaW5jbHVkZXMgW3NvbWUgZG9jdW1lbnRhdGlvbiBvbiBjb21tb24gcHJvamVjdGlvbiBtZXRob2RzXShodHRwczovL3Byb2o0Lm9yZy9vcGVyYXRpb25zL3Byb2plY3Rpb25zL2luZGV4Lmh0bWwpIHRoYXQgY2FuIGdldCB5b3Ugc3RhcnRlZC4gU29tZSBwcm9qZWN0aW9uIG1ldGhvZHMgYXJlIHJlbGF0aXZlbHkgc2ltcGxlIGFuZCByZXF1aXJlIGp1c3QgdGhlIG5hbWUgb2YgdGhlIHByb2plY3Rpb24sIGxpa2UgZm9yIGEgW01lcmNhdG9yIHByb2plY3Rpb25dKGh0dHBzOi8vcHJvajQub3JnL29wZXJhdGlvbnMvcHJvamVjdGlvbnMvbWVyYy5odG1sKSAoYCIrcHJvaj1tZXJjImApOgoKYGBge3IgcHJvamVjdGlvbnN9Cm1hcF9wcm9qX2Jhc2UgPC0gZ2dwbG90KGRhdGEgPSB1c2FfNDgpICsKICBnZW9tX3NmKCkKYGBgCgpgYGB7ciBtZXJjYXRvcn0KbWFwX3Byb2pfYmFzZSArCiAgY29vcmRfc2YoY3JzID0gIitwcm9qPW1lcmMiKSArCiAgZ2d0aXRsZSgiTWVyY2F0b3IgcHJvamVjdGlvbiIpCmBgYAoKT3RoZXIgY29vcmRpbmF0ZSBzeXN0ZW1zIHJlcXVpcmUgc3BlY2lmaWNhdGlvbiBvZiB0aGUgKipzdGFuZGFyZCBsaW5lcyoqLCBvciBsaW5lcyB0aGF0IGRlZmluZSBhcmVhcyBvZiB0aGUgc3VyZmFjZSBvZiB0aGUgbWFwIHRoYXQgYXJlIHRhbmdlbnQgdG8gdGhlIGdsb2JlLiBUaGVzZSBpbmNsdWRlIFtHYWxsLVBldGVyc10oaHR0cDovL3NwYXRpYWxyZWZlcmVuY2Uub3JnL3JlZi9zci1vcmcvZ2FsbC1wZXRlcnMtb3J0aG9ncmFwaGljLXByb2plY3Rpb24vcHJvajQvKSwgW0FsYmVycyBlcXVhbC1hcmVhXShodHRwczovL3Byb2o0Lm9yZy9vcGVyYXRpb25zL3Byb2plY3Rpb25zL2FlYS5odG1sKSwgYW5kIFtMYW1iZXJ0IGF6aW11dGhhbF0oaHR0cHM6Ly9wcm9qNC5vcmcvb3BlcmF0aW9ucy9wcm9qZWN0aW9ucy9sYWVhLmh0bWwpLgoKYGBge3IgcHJvamVjdGlvbi1yZXN0fQptYXBfcHJval9iYXNlICsKICBjb29yZF9zZihjcnMgPSAiK3Byb2o9Y2VhICtsb25fMD0wICtsYXRfdHM9NDUiKSArCiAgZ2d0aXRsZSgiR2FsbC1QZXRlcnMgcHJvamVjdGlvbiIpCgptYXBfcHJval9iYXNlICsKICBjb29yZF9zZihjcnMgPSAiK3Byb2o9YWVhICtsYXRfMT0yNSArbGF0XzI9NTAgK2xvbl8wPS0xMDAiKSArCiAgZ2d0aXRsZSgiQWxiZXJzIGVxdWFsLWFyZWEgcHJvamVjdGlvbiIpCgptYXBfcHJval9iYXNlICsKICBjb29yZF9zZihjcnMgPSAiK3Byb2o9bGFlYSArbGF0XzA9MzUgK2xvbl8wPS0xMDAiKSArCiAgZ2d0aXRsZSgiTGFtYmVydCBhemltdXRoYWwgcHJvamVjdGlvbiIpCmBgYAoKIyBTZXNzaW9uIEluZm8gey50b2MtaWdub3JlfQoKYGBge3IgY2hpbGQ9J19zZXNzaW9uaW5mby5SbWQnfQpgYGAK</div>
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

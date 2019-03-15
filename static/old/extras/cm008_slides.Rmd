@@ -1,0 +1,359 @@
+---
+title: "Vectors and iteration"
+author: |
+  | MACS 30500
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+
+library(tidyverse)
+set.seed(1234)
+theme_set(theme_minimal(base_size = 18))
+```
+
+----
+
+![](http://r4ds.had.co.nz/diagrams/data-structures-overview.png)
+
+## Logical vectors
+
+```{r parse-logical}
+parse_logical(c(TRUE, TRUE, FALSE, TRUE, NA))
+```
+
+## Numeric vectors
+
+```{r parse-numeric}
+parse_integer(c(1, 5, 3, 4, 12423))
+parse_double(c(4.2, 4, 6, 53.2))
+```
+
+## Character vectors
+
+```{r parse-character}
+parse_character(c("Goodnight Moon", "Runaway Bunny", "Big Red Barn"))
+```
+
+## Scalars
+
+```{r recycle}
+(x <- sample(10))
+x + c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+x + 100
+```
+
+## Vector recycling
+
+```{r recycle-bad}
+# create a sequence of numbers between 1 and 10
+(x1 <- seq(from = 1, to = 2))
+(x2 <- seq(from = 1, to = 10))
+
+# add together two sequences of numbers
+x1 + x2
+```
+
+## Subsetting vectors
+
+```{r subset-vec}
+x <- c("one", "two", "three", "four", "five")
+```
+
+* With positive integers
+
+    ```{r subset-pos, collapse = TRUE}
+    x[c(3, 2, 5)]
+    ```
+
+* With negative integers
+
+    ```{r subset-neg, collapse = TRUE}
+    x[c(-1, -3, -5)]
+    ```
+
+* Don't mix positive and negative
+
+    ```{r subset-both, collapse = TRUE, error = TRUE}
+    x[c(-1, 1)]
+    ```
+
+## Subset with a logical vector
+
+```{r subset-logic}
+(x <- c(10, 3, NA, 5, 8, 1, NA))
+
+# All non-missing values of x
+!is.na(x)
+x[!is.na(x)]
+
+# All even (or missing!) values of x
+x[x %% 2 == 0]
+```
+
+## Exercise on subsetting vectors
+
+![](http://cdn-mf1.heartyhosting.com/sites/mensfitness.com/files/styles/gallery_slideshow_image/public/kb_swing_main.jpg?itok=q4o2Qp7c)
+
+## Lists
+
+```{r list}
+x <- list(1, 2, 3)
+x
+```
+
+## Lists: `str()`
+
+```{r str}
+str(x)
+
+x_named <- list(a = 1, b = 2, c = 3)
+str(x_named)
+```
+
+## Store a mix of objects
+
+```{r list-mix}
+y <- list("a", 1L, 1.5, TRUE)
+str(y)
+```
+    
+## Nested lists
+
+```{r list-list}
+z <- list(list(1, 2), list(3, 4))
+str(z)
+```
+
+## Secret lists
+
+```{r list-df}
+str(diamonds)
+```
+
+----
+
+![](http://r4ds.had.co.nz/diagrams/lists-subsetting.png)
+
+## Exercise on subsetting lists
+
+![](http://blog.codyapp.com/wp-content/uploads/2013/04/basic_free_weights_workout_beginners.jpg)
+
+## Iteration
+
+```{r df-rnorm}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+```
+
+```{r median-per-column, collapse = TRUE}
+median(df$a)
+median(df$b)
+median(df$c)
+median(df$d)
+```
+
+## Iteration with `for` loop
+
+```{r for-loop}
+output <- vector(mode = "double", length = ncol(df))
+for (i in seq_along(df)) {
+  output[[i]] <- median(df[[i]])
+}
+output
+```
+
+## Output {.scrollable}
+
+```r
+output <- vector(mode = "double", length = ncol(df))
+```
+
+```{r vector}
+vector(mode = "double", length = ncol(df))
+vector(mode = "logical", length = ncol(df))
+vector(mode = "character", length = ncol(df))
+vector(mode = "list", length = ncol(df))
+```
+
+## Sequence
+
+```r
+i in seq_along(df)
+```
+
+```{r seq-along}
+seq_along(df)
+```
+
+## Body
+
+```r
+output[[i]] <- median(df[[i]])
+```
+
+## Preallocation {.scrollable}
+
+```{r preallocate, message = FALSE}
+x <- rnorm(1000, mean = 0, sd = 1)
+str(x)
+
+# load microbenchmark library to time code
+library(microbenchmark)
+
+microbenchmark(
+  # don't preallocate
+  `No preallocation` = {
+    output <- vector("numeric", 0)
+    
+    for (i in seq_along(x)) {
+      output <- c(output, x[[i]] + 1)
+    }
+  },
+  # preallocate
+  `Preallocation` = {
+    output <- vector("numeric", length(x))
+    
+    for (i in seq_along(x)) {
+      output[[i]] <- x[[i]] + 1
+    }
+  }) %>%
+  autoplot +
+  scale_y_log10(breaks = c(2, 4, 8, 16, 32)) +
+  labs(y = "Time [milliseconds]")
+```
+
+## Exercise on writing `for` loops
+
+![](https://www.nasa.gov/sites/default/files/thumbnails/image/brc_05081.jpg)
+
+## Map functions
+
+* Why `for` loops are good
+* Why `map()` functions may be better
+* Types of `map()` functions
+    * `map()` makes a list
+    * `map_lgl()` makes a logical vector
+    * `map_int()` makes an integer vector
+    * `map_dbl()` makes a double vector
+    * `map_chr()` makes a character vector
+
+## Map functions
+
+```{r}
+map_dbl(df, mean)
+map_dbl(df, median)
+map_dbl(df, sd)
+```
+
+## Map functions
+
+```{r}
+map_dbl(df, mean, na.rm = TRUE)
+```
+
+## Map functions
+
+```{r}
+df %>%
+  map_dbl(mean, na.rm = TRUE)
+```
+
+## Exercise on writing `map()` functions
+
+![](https://media1.popsugar-assets.com/files/thumbor/4_izl974qirHsI_l3kKvaqHNbDY/fit-in/2048xorig/filters:format_auto-!!-:strip_icc-!!-/2015/03/27/653/n/1922729/b9e9de6a_edit_img_image_845239_1422815400_cover-arms/i/Best-Dumbbell-Arm-Exercises.jpg)
+
+## Scoped verbs
+
+```{r mtcars-mean-single-column}
+mtcars %>%
+  summarize(mpg = mean(mpg))
+```
+
+## Scoped verbs
+
+```{r mtcars-mean-all-columns}
+mtcars %>%
+  summarize(mpg = mean(mpg),
+            cyl = mean(cyl),
+            disp = mean(disp),
+            hp = mean(hp),
+            drat = mean(drat),
+            wt = mean(wt),
+            qsec = mean(qsec),
+            vs = mean(vs),
+            am = mean(am),
+            gear = mean(gear),
+            carb = mean(carb))
+```
+
+## Scoped verbs
+
+* `_if` - conditionally pick variables
+* `_at` - pick variables using the same syntax as `select()`
+* `_all` - operate on all variables
+
+## `summarize_all()` {.scrollable}
+
+```{r summarize-all}
+summarize_all(mtcars, .funs = mean)
+```
+
+```{r summarize-all-funs}
+summarize_all(mtcars, .funs = funs(min, max))
+```
+
+```{r summarize-all-group-by}
+mtcars %>%
+  group_by(gear) %>%
+  summarize_all(.funs = mean)
+```
+
+## `summarize_at()` {.scrollable}
+
+```{r summarize-at}
+summarize_at(mtcars, .vars = vars(-mpg), .funs = mean)
+```
+
+```{r summarize-at-unique}
+summarize_at(mtcars, .vars = vars(mpg), .funs = funs(min, max))
+summarize_at(mtcars, .vars = vars(mpg, wt), .funs = min)
+summarize_at(mtcars, .vars = vars(-mpg), .funs = funs(min, max))
+```
+
+## `summarize_if()` {.scrollable}
+
+```{r summarize-if}
+starwars
+
+starwars %>%
+  group_by(species) %>%
+  summarize_if(.predicate = is.numeric, .funs = mean, na.rm = TRUE)
+```
+
+## Mutate
+
+```{r mutate-all}
+mutate_all(mtcars, .funs = log10)
+```
+
+## Filter {.scrollable}
+
+```{r filter-all-at}
+library(nycflights13)
+
+# Rows where any value is missing
+filter_all(weather, .vars_predicate = any_vars(is.na(.)))
+
+# Rows where all wind variables are missing
+filter_at(weather, .vars = vars(starts_with("wind")),
+          .vars_predicate = all_vars(is.na(.)))
+```

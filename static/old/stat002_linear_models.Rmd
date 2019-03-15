@@ -1,0 +1,398 @@
+---
+title: "Statistical learning: linear regression"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(modelr)
+library(broom)
+library(rcfss)
+set.seed(1234)
+
+theme_set(theme_minimal())
+```
+
+# Linear models using `ggplot2`
+
+Linear models are the simplest to understand. They adopt a generic form
+
+$$y = \beta_0 + \beta_1 * x$$
+
+where $y$ is the **outcome of interest**, $x$ is the **explanatory** or **predictor** variable, and $\beta_0$ and $\beta_1$ are **parameters** that vary to capture different patterns. Given the empirical values you have for $x$ and $y$, you generate a **fitted model** that finds the values for the parameters that best fit the data.
+
+```{r sim-plot}
+ggplot(sim1, aes(x, y)) + 
+  geom_point()
+```
+
+This looks like a linear relationship. We could randomly generate parameters for the formula $y = \beta_0 + \beta_1 * x$ to try and explain or predict the relationship between $x$ and $y$:
+
+```{r sim-random-fit}
+models <- tibble(
+  a1 = runif(250, -20, 40),
+  a2 = runif(250, -5, 5)
+)
+
+ggplot(sim1, aes(x, y)) + 
+  geom_abline(aes(intercept = a1, slope = a2), data = models, alpha = 1/4) +
+  geom_point()
+```
+
+But obviously some parameters are better than others. We need a definition that can be used to differentiate good parameters from bad parameters. One approach widely used is called **least squares** - it means that the overall solution minimizes the sum of the squares of the errors made in the results of every single equation. The errors are simply the vertical difference between the actual values for $y$ and the predicted values for $y$.
+
+```{r sim-error, echo = FALSE}
+dist1 <- sim1 %>% 
+  mutate(
+    dodge = rep(c(-1, 0, 1) / 20, 10),
+    x1 = x + dodge,
+    pred = 7 + x1 * 1.5
+  )
+
+ggplot(dist1, aes(x1, y)) + 
+  geom_abline(intercept = 7, slope = 1.5, color = "grey40") +
+  geom_point(color = "grey40") +
+  geom_linerange(aes(ymin = y, ymax = pred), color = "#3366FF")
+```
+
+[R for Data Science](http://r4ds.had.co.nz/model-basics.html) walks you through the steps to perform all these calculations manually by writing your own functions. I encourage you to read through and practice some of this code, especially if you have no experience with linear models.
+
+However for our purposes here I will assume you at least get the basics of this process. You can use `ggplot2` to draw the best-fit line:
+
+```{r sim-plot-lm}
+ggplot(sim1, aes(x, y)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+The line in blue is the best-fit line, with 95% confidence intervals in grey indicating a range of values so defined that there is a 95% probability that the true value of a parameter lies within it. If you want to learn more about the precise definition of confidence intervals and the debate over how useful they actually are, you should take a statistics class.
+
+# Estimating a linear model using `lm()`
+
+But drawing a picture is not always good enough. What if you want to know the actual values of the estimated parameters? To do that, we use the `lm()` function:
+
+```{r sim-lm}
+sim1_mod <- lm(y ~ x, data = sim1)
+coef(sim1_mod)
+```
+
+The `lm()` function takes two parameters. The first is a *formula* specifying the equation to be estimated (`lm()` translates `y ~ x` into $y = \beta_0 + \beta_1 * x$). The second is of course the data frame containing the variables.
+
+Note that we have now begun to leave the `tidyverse` universe. `lm()` is part of the base R program, and the result of `lm()` is decidedly **not tidy**.
+
+```{r lm-str}
+str(sim1_mod)
+```
+
+The result is stored in a complex list that contains a lot of important information, some of which you may recognize but most of it you do not. Here I will show you tools for extracting useful information from `lm()`.
+
+## Generating predicted values
+
+We can use `sim1_mod` to generate **predicted values**, or the expected value for $Y$ given our knowledge of hypothetical observations with values for $X$, based on the estimated parameters using `modelr::data_grid()` and `broom::augment()`.^[`package::function()` notation. So `data_grid()` can be found in the `modelr` package, while `augment()` is in `broom`.] `data_grid()` generates an evenly spaced grid of data points covering the region where observed data lies. The first argument is a data frame, and subsequent arguments identify unique columns and generates all possible combinations.
+
+```{r add-predict-data}
+grid <- sim1 %>% 
+  data_grid(x) 
+grid
+```
+
+`augment()` takes a model object and a data frame, and uses the model to generate predictions for each observation in the data frame.^[Far more detail about `augment()` and the other core `broom` functions coming shortly.]
+
+```{r add-predict}
+grid <- augment(sim1_mod, newdata = grid)
+grid
+```
+
+Using this information, we can draw the best-fit line without using `geom_smooth()`, and instead build it directly from the predicted values.
+
+```{r plot-lm-predict}
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = .fitted), data = grid, color = "red", size = 1) +
+  geom_point(aes(y = .fitted), data = grid, color = "blue", size = 3)
+```
+
+This looks like the line from before, but without the confidence interval. This is a bit more involved of a process, but it can work with any type of model you create - not just very basic, linear models.
+
+## Residuals
+
+We can also calculate the **residuals**, or that distance between the actual and predicted values of $y$. To do that, we again use `augment()` but do not input a new data frame:
+
+```{r resids}
+sim1_resid <- augment(sim1_mod)
+sim1_resid
+
+ggplot(sim1_resid, aes(.resid)) + 
+  geom_freqpoly(binwidth = 0.5)
+```
+
+Reviewing your residuals can be helpful. Sometimes your model is better at predicting some types of observations better than others. This could help you isolate further patterns and improve the predictive accuracy of your model.
+
+# Estimating a linear model(s) using `gapminder`
+
+## Overall model
+
+Recall the `gapminder` dataset, which includes measures of life expectancy over time for all countries in the world.
+
+```{r load-gapminder}
+library(gapminder)
+gapminder
+```
+
+Let's say we want to try and understand how life expectancy changes over time. We could visualize the data using a line graph:
+
+```{r lifeExp-by-country}
+gapminder %>% 
+  ggplot(aes(year, lifeExp, group = country)) +
+    geom_line(alpha = 1/3)
+```
+
+But this is incredibly noise. Why not estimate a simple linear model that summarizes this trend?
+
+```{r lifeExp-mod}
+gapminder_mod <- lm(lifeExp ~ year, data = gapminder)
+summary(gapminder_mod)
+
+grid <- gapminder %>% 
+  data_grid(year, country) 
+grid
+
+grid <- augment(gapminder_mod, newdata = grid) 
+grid
+
+ggplot(gapminder, aes(year, group = country)) +
+  geom_line(aes(y = lifeExp), alpha = .2) +
+  geom_line(aes(y = .fitted), data = grid, color = "red", size = 1)
+```
+
+So it appears that there is a positive trend - that is, over time life expectancy is rising. But we can also see a lot of variation in that trend - some countries are doing much better than others. We'll come back to that in a bit.
+
+## Extracting model statistics
+
+Model objects are not very pretty in R. Recall the complicated data structure I mentioned above:
+
+```{r model-str}
+str(gapminder_mod)
+```
+
+In order to extract model statistics and use them in a **tidy** manner, we can use a set of functions from the `broom` package. For these functions, the input is always the model object itself, not the original data frame.
+
+### `tidy()`
+
+`tidy()` constructs a data frame that summarizes the model's statistical findings. This includes **coefficients** and **p-values** for each parameter in a regression model. Note that depending on the statistical learning method employed, the statistics stored in the columns may vary.
+
+```{r tidy}
+tidy(gapminder_mod)
+
+tidy(gapminder_mod) %>%
+  str()
+```
+
+Notice that the structure of the resulting object is a tidy data frame. Every row contains a single parameter, every column contains a single statistic, and every cell contains exactly one value.
+
+### `augment()`
+
+`augment()` adds columns to the original data that was modeled. This could include predictions, residuals, and other observation-level statistics.
+
+```{r augment}
+augment(gapminder_mod) %>%
+  as_tibble()
+```
+
+`augment()` will return statistics to the original data used to estimate the model, however if you supply a data frame under the `newdata` argument, it will return a more limited set of statistics.
+
+### `glance()`
+
+`glance()` constructs a concise one-row summary of the model. This typically contains values such as $R^2$, adjusted $R^2$, and residual standard error that are computed once for the entire model.
+
+```{r glance}
+glance(gapminder_mod)
+```
+
+While `broom` may not work with every model in R, it is compatible with a wide range of common statistical models. A full list of models with which `broom` is compatible can be found on the [GitHub page for the package](https://github.com/dgrtwo/broom).
+
+## Separate model for USA
+
+What if instead we wanted to fit a separate model for the United States? We can filter `gapminder` for that country and perform the analysis only on U.S. observations.
+
+```{r gapminder-us}
+gapminder %>%
+  filter(country == "United States") %>%
+  ggplot(aes(year, lifeExp)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "United States")
+```
+
+## Separate models for each country using `map()` and nested data frames
+
+What if we want to estimate separate models for **every country**? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned a couple of weeks ago how to [iterate using `for` loops](program_iteration.html#writing_for_loops). We could do this using a `for` loop, but this will take a bunch of code. Instead, let's use the [`map()` functions we already learned](program_iteration.html#map_functions), but add an additional component on top of that.
+
+Instead of repeating an action for each **column** (variable), we want to repeat an action for each **country**, a subset of rows. To do that, we need a new data structure: the **nested data frame**. To create a nested data frame we start with a grouped data frame, and "nest" it:
+
+```{r nest}
+by_country <- gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+
+by_country
+```
+
+This looks very different from what you've seen in data frames before. Typically every cell in a data frame is a single value. But here, each element in the `data` column is actually **another data frame**. This demonstrates the benefits of lists - they can be used recursively to store other lists, which is exactly what data frames are.
+
+Now we have one row per country, with the variables associated with each country stored in their own column. All the original data is still in this nested data frame, just stored in a different way. Note that to see the values of the variables in `data`, we use the special notation we learned previously:
+
+```{r nest-view}
+by_country$data[[1]]
+```
+
+It's hard to see the overall structure, but it's easy to use the `map()` functions to access this data and analyze it. We create a model fitting function:
+
+```{r model-function}
+country_model <- function(df) {
+  lm(lifeExp ~ year, data = df)
+}
+```
+
+And we want to apply it to each country. That is exactly what `map()` is designed for.
+
+```{r map-model}
+models <- map(by_country$data, country_model)
+```
+
+And because `models` is a list and we just saw how to create list-columns, we could store the models as a new column in `by_country` to keep all the data and analysis together.
+
+```{r map-model-column}
+by_country <- by_country %>%
+  mutate(model = map(data, country_model))
+by_country
+```
+
+Now if we filter or change the order of the observations, `models` also changes order.
+
+```{r map-model-filter}
+by_country %>% 
+  filter(continent == "Europe")
+```
+
+### Unnesting
+
+What if we want to compute residuals for 142 countries and 142 models? We still use the `add_residuals()` function, but we have to combine it with a `map()` function call. Because `add_residuals()` requires two arguments (`data` and `model`), we use the `map2()` function. `map2()` allows us to `map()` over two sets of inputs rather than the normal one:
+
+```{r map2}
+by_country <- by_country %>% 
+  mutate(
+    resids = map2(data, model, add_residuals)
+  )
+by_country
+```
+
+What if you want to plot the residuals? We need to **unnest** the residuals. `unnest()` makes each element of the list its own row:
+
+```{r unnest}
+resids <- unnest(by_country, resids)
+resids
+
+resids %>% 
+  ggplot(aes(year, resid)) +
+    geom_line(aes(group = country), alpha = 1 / 3) + 
+    geom_smooth(se = FALSE)
+```
+
+# Exercise: linear regression with `scorecard`
+
+Recall the `scorecard` data set which contains information on U.S. institutions of higher learning.
+
+```{r scorecard}
+library(rcfss)
+scorecard
+```
+
+Answer the following questions using the statistical modeling tools you have learned.
+
+1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-point}
+    ggplot(scorecard, aes(admrate, cost)) +
+      geom_point() +
+      geom_smooth(method = "lm")
+    ```    
+      </p>
+    </details>
+
+1. Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-mod}
+    scorecard_mod <- lm(cost ~ admrate, data = scorecard)
+    tidy(scorecard_mod)
+    ```
+    
+      </p>
+    </details>
+
+1. Estimate separate linear regression models of the relationship between admission rate and cost for each type of college. Report the estimated parameters and standard errors in a tidy data frame.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-sep-lm}
+    # model-building function
+    type_model <- function(df) {
+      lm(cost ~ admrate, data = df)
+    }
+    
+    # nest the data frame
+    by_type <- scorecard %>%
+      group_by(type) %>%
+      nest()
+    by_type
+    
+    # estimate the models
+    by_type <- by_type %>%
+      mutate(model = map(data, type_model))
+    by_type
+    
+    # extract the parameters and print a tidy data frame
+    by_type %>%
+      mutate(results = map(model, tidy)) %>%
+      unnest(results)
+    ```
+    
+    The same approach by using an anonymous function with the [one-sided formula format](http://r4ds.had.co.nz/iteration.html#shortcuts):
+    
+    ```{r scorecard-sep-anon, eval = FALSE}
+    by_type %>%
+      mutate(model = map(data, ~lm(cost ~ admrate, data = .)),
+             results = map(model, tidy)) %>%
+      unnest(results)
+    ```
+    
+      </p>
+    </details>
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```
+
+
+
+

@@ -1,0 +1,61 @@
+---
+title: "Syllabus"
+output:
+  html_document:
+    code_download: false
+---
+
+```{r include = FALSE}
+library(readxl)
+library(dplyr)
+library(lubridate)
+library(stringr)
+library(here)
+```
+
+```{r include = FALSE}
+# import excel table with topics
+rawdat <- here("course_admin", "schedule.xlsx") %>%
+  read_excel()
+
+# clean up table and extract date info
+cdat <- rawdat %>%
+  mutate(wday = wday(date, label = TRUE),
+         month = month(date, label = TRUE),
+         day = day(date),
+         date = paste(wday, month, day),
+         date = ifelse(is.na(wday), NA, date),
+         link_it = as.logical(link_it),
+         notes = sprintf("%s: %s", cm, topic))
+
+# identify links to course modules
+cmdat <- data_frame(html = list.files(pattern = '^(cm|setup|git).*html$'))
+cmdat <- cmdat %>% mutate(cm = str_extract(html, "(cm|setup|git)[0-9]+"))
+cdat <- cdat %>% left_join(cmdat)
+
+# add links to notes column
+cdat$notes[cdat$link_it] <-
+  str_replace(cdat$notes[cdat$link_it],
+              "((cm[0-9]{3})|((setup|git)[0-9]{2}))", '<a href="LINK">\\1</a>')
+cdat$notes[cdat$link_it] <-
+  str_replace(cdat$notes[cdat$link_it], "LINK", cdat$html[cdat$link_it])
+```
+
+```{r results = 'asis', echo = FALSE}
+cdat %>%
+  select(date, notes) %>%
+  knitr::kable(col.names = c("Date", "Topic"))
+```
+
+## Homework
+
+* [Homework 01: Edit README.md](hw01-edit-README.html)
+* [Homework 02: Exploring and visualizing data](hw02-explore-data.html)
+* [Homework 03: Wrangling and visualizing data](hw03-wrangle-data.html)
+* [Homework 04: Programming in R](hw04-programming.html)
+* [Homework 05: Generating reproducible research](hw05-reproducible-research.html)
+* [Homework 06: Statistical learning](hw06-stat-learn.html)
+* [Homework 07: Geospatial visualization](hw07-geospatial.html)
+* [Homework 08: Collecting and analyzing data from the web](hw08-webdata.html)
+* [Homework 09: Analyzing text data](hw09-text_analysis.html)
+* [Homework 10: Build a Shiny application](hw10-shiny.html)

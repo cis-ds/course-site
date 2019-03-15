@@ -1,0 +1,659 @@
+---
+title: "Statistical learning: classification and cross-validation"
+author: |
+  | MACS 30500
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      echo = FALSE,
+                      interval = .4)
+
+set.seed(1234)
+
+library(tidyverse)
+library(modelr)
+library(rsample)
+library(magrittr)
+library(here)
+
+theme_set(theme_minimal(base_size = 18))
+```
+
+----
+
+![](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
+
+## {.scrollable}
+
+![](https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg)
+
+## {.scrollable}
+
+![[Should I Have a Cookie?](http://iwastesomuchtime.com/58217)](http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif)
+
+## Interpreting a decision tree
+
+```{r titanic_data, include = FALSE}
+library(titanic)
+titanic <- titanic_train %>%
+  as_tibble()
+```
+
+```{r titanic_tree, echo = FALSE}
+library(partykit)
+
+titanic_tree_data <- titanic %>%
+  mutate(Survived = if_else(Survived == 1, "Survived",
+                           if_else(Survived == 0,
+                                   "Died", NA_character_)),
+         Survived = as.factor(Survived),
+         Sex = as.factor(Sex))
+
+titanic_tree <- ctree(Survived ~ Age + Sex, data = titanic_tree_data)
+plot(titanic_tree,
+     ip_args = list(
+       pval = FALSE,
+       id = FALSE),
+     tp_args = list(
+       id = FALSE)
+)
+```
+
+## A more complex tree
+
+```{r titanic_tree_full}
+titanic_tree_full_data <- titanic %>%
+  mutate(Survived = if_else(Survived == 1, "Survived",
+                           if_else(Survived == 0, "Died", NA_character_))) %>%
+  mutate_if(is.character, as.factor)
+
+titanic_tree_full <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
+                             Parch + Fare + Embarked,
+                           data = titanic_tree_full_data)
+
+plot(titanic_tree_full,
+     ip_args = list(
+       pval = FALSE,
+       id = FALSE),
+     tp_args = list(
+       id = FALSE)
+)
+```
+
+## A more complexier tree
+
+```{r titanic_tree_complicated, dependson="titanic_tree_full"}
+titanic_tree_messy <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
+                              Parch + Fare + Embarked,
+                            data = titanic_tree_full_data,
+                            control = ctree_control(
+                              alpha = 0.5,
+                              splittry = 5L)
+)
+
+plot(titanic_tree_messy,
+     ip_args = list(
+       pval = FALSE,
+       id = FALSE),
+     tp_args = list(
+       id = FALSE)
+)
+```
+
+## Benefits/drawbacks to decision trees
+
++ Easy to explain
++ Easy to interpret/visualize
++ Good for qualitative predictors
+- Lower accuracy rates
+- Non-robust
+
+## Random forests
+
+![](https://c402277.ssl.cf1.rackcdn.com/photos/946/images/story_full_width/forests-why-matter_63516847.jpg?1345534028)
+
+## Sampling {.scrollable}
+
+```{r sampling, echo = TRUE}
+(numbers <- seq(from = 1, to = 10))
+
+# sample without replacement
+rerun(5, sample(numbers, replace = FALSE))
+
+# sample with replacement
+rerun(5, sample(numbers, replace = TRUE))
+```
+
+## Random forests
+
+* Bootstrapping
+* Reduces variance
+* Bagging
+* Random forest
+    * Reliability
+
+## Estimating statistical models using `caret`
+
+* Not part of `tidyverse` (yet)
+* Aggregator of hundreds of statistical learning algorithms
+* Provides a single unified interface to disparate range of functions
+    * Similar to `scikit-learn` for Python
+
+## `train()` {.scrollable}
+
+```{r caret_glm, echo = TRUE}
+library(caret)
+
+titanic_clean <- titanic %>%
+  filter(!is.na(Survived), !is.na(Age))
+
+caret_glm <- train(Survived ~ Age, data = titanic_clean,
+                   method = "glm",
+                   family = binomial,
+                   trControl = trainControl(method = "none"))
+summary(caret_glm)
+```
+
+## Estimating a random forest
+
+```{r rf_prep_data, dependson="titanic_tree_full", include = FALSE}
+titanic_rf_data <- titanic_tree_full_data %>%
+  select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked) %>%
+  na.omit()
+titanic_rf_data
+```
+
+```{r rf_estimate, dependson="rf_prep_data", echo = TRUE}
+age_sex_rf <- train(Survived ~ Age + Sex, data = titanic_rf_data,
+                   method = "rf",
+                   ntree = 200,
+                   trControl = trainControl(method = "oob"))
+age_sex_rf
+```
+
+## Structure of `train()` object {.scrollable}
+
+```{r rf_str, dependson="rf_estimate"}
+str(age_sex_rf, max.level = 1)
+```
+
+## Model statistics
+
+```{r rf_finalmodel, dependson="rf_estimate", echo = TRUE}
+age_sex_rf$finalModel
+```
+
+## Results of a single tree
+
+```{r getTree, echo = TRUE}
+randomForest::getTree(age_sex_rf$finalModel, labelVar = TRUE)
+```
+
+## Variable importance
+
+```{r rf_import, dependson="rf_estimate"}
+randomForest::varImpPlot(age_sex_rf$finalModel)
+```
+
+## Exercise: depression and voting {.scrollable}
+
+![](https://i.pinimg.com/564x/24/81/96/24819625c9636fcfab5000a47811d93b--favorite-quotes-offices.jpg)
+
+## Resampling methods
+
+* Evaluating model fit/predictive power
+* How to avoid overfitting the data
+
+## Validation set
+
+* Randomly split data into two distinct sets
+    * Training set
+    * Test set
+* Train model on training set
+* Evaluate fit on test set
+
+## Regression
+
+```{r auto, include = FALSE}
+library(ISLR)
+
+Auto <- as_tibble(Auto)
+Auto
+```
+
+```{r auto_plot_lm, dependson="auto"}
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE)
+```
+
+## Mean squared error
+
+$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
+
+* $y_i =$ the observed response value for the $i$th observation
+* $\hat{f}(x_i) =$ the predicted response value for the $i$th observation given by $\hat{f}$
+* $n =$ the total number of observations
+
+## Split data
+
+```{r auto_split, echo = TRUE}
+set.seed(1234)
+
+auto_split <- initial_split(data = Auto, prop = 0.5)
+auto_train <- training(auto_split)
+auto_test <- testing(auto_split)
+```
+
+## Train model {.scrollable}
+
+```{r auto_lm, dependson="auto_split", echo = TRUE}
+auto_lm <- glm(mpg ~ horsepower, data = auto_train)
+summary(auto_lm)
+```
+
+```{r mse-train, dependson = "auto_lm", echo = TRUE}
+(train_mse <- augment(auto_lm, newdata = auto_train) %>%
+  mutate(.resid = mpg - .fitted,
+         .resid2 = .resid ^ 2) %$%
+  mean(.resid2))
+```
+
+## Test model {.scrollable}
+
+```{r mse-test, dependson = "auto_lm", echo = TRUE}
+(test_mse <- augment(auto_lm, newdata = auto_test) %>%
+  mutate(.resid = mpg - .fitted,
+         .resid2 = .resid ^ 2) %$%
+  mean(.resid2))
+```
+
+## Compare models {.scrollable}
+
+```{r mse-poly, dependson = "auto_split"}
+# visualize each model
+ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point(alpha = .1) +
+  geom_smooth(aes(color = "1"),
+              method = "glm",
+              formula = y ~ poly(x, i = 1),
+              se = FALSE) +
+  geom_smooth(aes(color = "2"),
+              method = "glm",
+              formula = y ~ poly(x, i = 2),
+              se = FALSE) +
+  geom_smooth(aes(color = "3"),
+              method = "glm",
+              formula = y ~ poly(x, i = 3),
+              se = FALSE) +
+  geom_smooth(aes(color = "4"),
+              method = "glm",
+              formula = y ~ poly(x, i = 4),
+              se = FALSE) +
+  geom_smooth(aes(color = "5"),
+              method = "glm",
+              formula = y ~ poly(x, i = 5),
+              se = FALSE) +
+  scale_color_brewer(type = "qual", palette = "Dark2") +
+  labs(x = "Horsepower",
+       y = "MPG",
+       color = "Highest-order\npolynomial")
+
+# function to estimate model using training set and generate fit statistics
+# using the test set
+poly_results <- function(train, test, i) {
+  # Fit the model to the training set
+  mod <- glm(mpg ~ poly(horsepower, i), data = train)
+  
+  # `augment` will save the predictions with the test data set
+  res <- augment(mod, newdata = test) %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the test data set with the additional columns
+  res
+}
+
+# function to return MSE for a specific higher-order polynomial term
+poly_mse <- function(i, train, test){
+  poly_results(train, test, i) %$%
+    mean(.resid ^ 2)
+}
+
+cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                     mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+
+ggplot(cv_mse, aes(terms, mse_test)) +
+  geom_line() +
+  labs(title = "Comparing quadratic linear models",
+       subtitle = "Using validation set",
+       x = "Highest-order polynomial",
+       y = "Mean Squared Error")
+```
+
+## Classification
+
+```{r age_woman_cross, echo = TRUE}
+survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+summary(survive_age_woman_x)
+```
+
+## Test error rate {.scrollable}
+
+```{r logit}
+# function to convert log-odds to probabilities
+logit2prob <- function(x){
+  exp(x) / (1 + exp(x))
+}
+```
+
+```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE, echo = TRUE}
+# split the data into training and validation sets
+titanic_split <- initial_split(data = titanic, prop = 0.5)
+
+# fit model to training data
+train_model <- glm(Survived ~ Age * Sex,
+                   data = training(titanic_split),
+                   family = binomial)
+summary(train_model)
+
+# calculate predictions using validation set
+x_test_accuracy <- augment(train_model,
+                           newdata = testing(titanic_split)) %>% 
+  as_tibble() %>%
+  mutate(pred = logit2prob(.fitted),
+         pred = as.numeric(pred > .5))
+
+# calculate test error rate
+mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
+```
+
+## Drawbacks to validation sets
+
+```{r auto_variable_mse}
+mse_variable <- function(Auto){
+  auto_split <- initial_split(Auto, prop = 0.5)
+  auto_train <- training(auto_split)
+  auto_test <- testing(auto_split)
+  
+  cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                       mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+  
+  return(cv_mse)
+}
+
+rerun(10, mse_variable(Auto)) %>%
+  bind_rows(.id = "id") %>%
+  ggplot(aes(terms, mse_test, color = id)) +
+  geom_line() +
+  labs(title = "Variability of MSE estimates",
+       subtitle = "Using the validation set approach",
+       x = "Degree of Polynomial",
+       y = "Mean Squared Error") +
+  theme(legend.position = "none")
+```
+
+## Leave-one-out cross-validation
+
+$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$
+
+* Extension of validation set to repeatedly split data and average results
+* Minimizes bias of estimated error rate
+* Low variance
+* Highly computationally intensive
+
+## `rsample::loo_cv()`
+
+```{r loocv-data, dependson="Auto", echo = TRUE}
+loocv_data <- loo_cv(Auto)
+loocv_data
+```
+
+## Splits {.scrollable}
+
+```{r rsplit, dependson = "loocv-data", echo = TRUE}
+first_resample <- loocv_data$splits[[1]]
+first_resample
+```
+
+```{r rsplit-extract, echo = TRUE}
+training(first_resample)
+assessment(first_resample)
+```
+
+## Holdout results
+
+1. Obtain the analysis data set (i.e. the $n-1$ training set)
+1. Fit a linear regression model
+1. Predict the assessment data set using the `broom` package
+1. Determine the MSE for each sample
+
+## Holdout results
+
+```{r loocv-function, dependson = "Auto", echo = TRUE}
+holdout_results <- function(splits) {
+  # Fit the model to the n-1
+  mod <- glm(mpg ~ horsepower, data = analysis(splits))
+  
+  # Save the heldout observation
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = holdout) %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
+}
+```
+
+## Holdout results {.scrollable}
+
+```{r loocv-function-test, dependson = "loocv-function", echo = TRUE}
+holdout_results(loocv_data$splits[[1]])
+```
+
+```{r loocv, dependson = c("Auto", "loocv-function"), echo = TRUE}
+loocv_data$results <- map(loocv_data$splits, holdout_results)
+loocv_data$mse <- map_dbl(loocv_data$results, ~ mean(.$.resid ^ 2))
+loocv_data
+```
+
+```{r loocv-test-mse, dependson = c("Auto", "loocv-function"), echo = TRUE}
+loocv_data %>%
+  summarize(mse = mean(mse))
+```
+
+## Compare polynomial terms
+
+```{r loocv_poly, dependson="Auto"}
+# modified function to estimate model with varying highest order polynomial
+holdout_results <- function(splits, i) {
+  # Fit the model to the n-1
+  mod <- glm(mpg ~ poly(horsepower, i), data = analysis(splits))
+  
+  # Save the heldout observation
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = holdout) %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
+}
+
+# function to return MSE for a specific higher-order polynomial term
+poly_mse <- function(i, loocv_data){
+  loocv_mod <- loocv_data %>%
+    mutate(results = map(splits, holdout_results, i),
+           mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+  
+  mean(loocv_mod$mse)
+}
+
+cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                     mse_loocv = map_dbl(terms, poly_mse, loocv_data))
+
+ggplot(cv_mse, aes(terms, mse_loocv)) +
+  geom_line() +
+  labs(title = "Comparing quadratic linear models",
+       subtitle = "Using LOOCV",
+       x = "Highest-order polynomial",
+       y = "Mean Squared Error")
+```
+
+## LOOCV in classification {.scrollable}
+
+```{r titanic-loocv, echo = TRUE}
+# function to generate assessment statistics for titanic model
+holdout_results <- function(splits) {
+  # Fit the model to the n-1
+  mod <- glm(Survived ~ Age * Sex, data = analysis(splits),
+             family = binomial)
+  
+  # Save the heldout observation
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = assessment(splits)) %>% 
+    as_tibble() %>%
+    mutate(pred = logit2prob(.fitted),
+           pred = as.numeric(pred > .5))
+
+  # Return the assessment data set with the additional columns
+  res
+}
+
+titanic_loocv <- loo_cv(titanic) %>%
+  mutate(results = map(splits, holdout_results),
+         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred,
+                                              na.rm = TRUE)))
+mean(titanic_loocv$error_rate, na.rm = TRUE)
+```
+
+## Exercise: LOOCV in linear regression
+
+![](https://thealexcreed.files.wordpress.com/2014/05/liftbitch.jpg)
+
+## $k$-fold cross-validation
+
+$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
+
+* Split data into $k$ folds
+* Repeat training/test process for each fold
+* LOOCV: $k=n$
+
+## k-fold CV in linear regression {.scrollable}
+
+```{r 10_fold_auto, echo = TRUE}
+# modified function to estimate model with varying highest order polynomial
+holdout_results <- function(splits, i) {
+  # Fit the model to the training set
+  mod <- glm(mpg ~ poly(horsepower, i), data = analysis(splits))
+  
+  # Save the heldout observations
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = holdout) %>%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
+}
+
+# function to return MSE for a specific higher-order polynomial term
+poly_mse <- function(i, vfold_data){
+  vfold_mod <- vfold_data %>%
+    mutate(results = map(splits, holdout_results, i),
+           mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+  
+  mean(vfold_mod$mse)
+}
+
+# split Auto into 10 folds
+auto_cv10 <- vfold_cv(data = Auto, v = 10)
+
+cv_mse <- data_frame(terms = seq(from = 1, to = 5),
+                     mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
+cv_mse
+```
+
+```{r 10_fold_auto_loocv, dependson=c("10_fold_auto","loocv_poly")}
+auto_loocv <- loo_cv(Auto)
+
+data_frame(terms = seq(from = 1, to = 5),
+           `10-fold` = map_dbl(terms, poly_mse, auto_cv10),
+           LOOCV = map_dbl(terms, poly_mse, auto_loocv)
+) %>%
+  gather(method, MSE, -terms) %>%
+  ggplot(aes(terms, MSE, color = method)) +
+  geom_line() +
+  labs(title = "MSE estimates",
+       x = "Degree of Polynomial",
+       y = "Mean Squared Error",
+       color = "CV Method")
+```
+
+## Computational speed of LOOCV
+
+```{r loocv_time}
+library(profvis)
+
+profvis({
+  data_frame(terms = seq(from = 1, to = 5),
+             mse_vfold = map_dbl(terms, poly_mse, auto_loocv))
+})
+```
+
+## Computational speed of 10-fold CV
+
+```{r kfold_time}
+profvis({
+  data_frame(terms = seq(from = 1, to = 5),
+             mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
+})
+```
+
+## k-fold CV in logistic regression {.scrollable}
+
+```{r titanic_kfold, echo = TRUE }
+# function to generate assessment statistics for titanic model
+holdout_results <- function(splits) {
+  # Fit the model to the training set
+  mod <- glm(Survived ~ Age * Sex, data = analysis(splits),
+             family = binomial)
+  
+  # Save the heldout observations
+  holdout <- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res <- augment(mod, newdata = assessment(splits)) %>% 
+    as_tibble() %>%
+    mutate(pred = logit2prob(.fitted),
+           pred = as.numeric(pred > .5))
+
+  # Return the assessment data set with the additional columns
+  res
+}
+
+titanic_cv10 <- vfold_cv(data = titanic, v = 10) %>%
+  mutate(results = map(splits, holdout_results),
+         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred,
+                                              na.rm = TRUE)))
+mean(titanic_cv10$error_rate, na.rm = TRUE)
+```
+
+## Exercise: k-fold CV
+
+![](http://crossfitaggieland.com/wp-content/uploads/2015/01/pet4.jpeg)

@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Drawing raster maps with ggmap</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-45631879-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-45631879-2');
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("geoviz_ggmap.Rmd");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Drawing raster maps with <code>ggmap</code></h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(ggmap)
+<span class="kw">library</span>(RColorBrewer)
+<span class="kw">library</span>(gridExtra)
+<span class="kw">library</span>(here)
+
+<span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">3</span>)
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<div id="ggmap" class="section level1">
+<h1><code>ggmap</code></h1>
+<p><a href="https://github.com/dkahle/ggmap"><code>ggmap</code></a> is a package for R that retrieves raster map tiles from online mapping services like <a href="https://www.google.com/maps">Google Maps</a> and plots them using the <code>ggplot2</code> framework. The map tiles are <strong>raster</strong> because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.</p>
+<blockquote>
+<p>Google has <a href="https://developers.google.com/maps/documentation/geocoding/usage-and-billing">recently changed its API requirements</a>, and <strong>ggmap</strong> users are now required to provide an API key <em>and</em> enable billing. We will learn far more about APIs <a href="cm015.html">next week</a>. In the meantime, I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.</p>
+</blockquote>
+</div>
+<div id="obtain-map-images" class="section level1">
+<h1>Obtain map images</h1>
+<p><code>ggmap</code> supports open-source map providers such as <a href="https://www.openstreetmap.org/">OpenStreetMap</a> and <a href="http://maps.stamen.com/#terrain/12/37.7706/-122.3782">Stamen Maps</a>, as well as the proprietary Google Maps. Obtaining map tiles requires use of the <code>get_map()</code> function. There are two formats for specifying the mapping region you wish to obtain:</p>
+<ol style="list-style-type: decimal">
+<li>Bounding box</li>
+<li>Center/zoom</li>
+</ol>
+<div id="specifying-map-regions" class="section level2">
+<h2>Specifying map regions</h2>
+<div id="bounding-box" class="section level3">
+<h3>Bounding box</h3>
+<p><strong>Bounding box</strong> requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># store bounding box coordinates</span>
+chi_bb &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">left =</span> <span class="op">-</span><span class="fl">87.936287</span>,
+            <span class="dt">bottom =</span> <span class="fl">41.679835</span>,
+            <span class="dt">right =</span> <span class="op">-</span><span class="fl">87.447052</span>,
+            <span class="dt">top =</span> <span class="fl">42.000835</span>)
+
+chicago_stamen &lt;-<span class="st"> </span><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> chi_bb,
+                                <span class="dt">zoom =</span> <span class="dv">11</span>)
+chicago_stamen</code></pre></div>
+<pre><code>## 627x712 terrain map image from Stamen Maps.  see ?ggmap to plot it.</code></pre>
+<p>To view the map, use <code>ggmap()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago_stamen)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-plot-1.png" width="672" /></p>
+<p>The <code>zoom</code> argument in <code>get_stamenmap()</code> controls the level of detail in the map. The larger the number, the greater the detail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> chi_bb,
+              <span class="dt">zoom =</span> <span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-zoom-in-1.png" width="672" /></p>
+<p>The smaller the number, the lesser the detail.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_stamenmap</span>(<span class="dt">bbox =</span> chi_bb,
+              <span class="dt">zoom =</span> <span class="dv">10</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/bb-chicago-stamen-zoom-out-1.png" width="672" /></p>
+<p>Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.</p>
+<blockquote>
+<p>Use <a href="http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000">bboxfinder.com</a> to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.</p>
+</blockquote>
+</div>
+<div id="centerzoom" class="section level3">
+<h3>Center/zoom</h3>
+<p>While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the <strong>center</strong> coordinate of the map (a single longitude/latitude location) and the level of <strong>zoom</strong> or detail. <code>zoom</code> is an integer value from <code>3</code> (continent) to <code>21</code> (building). This means the level of detail is hardcoded to the size of the mapping region. The default <code>zoom</code> level is <code>10</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># store center coordinate</span>
+chi_center &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>)
+
+chicago_google &lt;-<span class="st"> </span><span class="kw">get_googlemap</span>(<span class="dt">center =</span> chi_center)
+<span class="kw">ggmap</span>(chicago_google)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_googlemap</span>(<span class="dt">center =</span> chi_center,
+              <span class="dt">zoom =</span> <span class="dv">12</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-2.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">get_googlemap</span>(<span class="dt">center =</span> chi_center,
+              <span class="dt">zoom =</span> <span class="dv">8</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggmap</span>()</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/center-zoom-chicago-3.png" width="672" /></p>
+<blockquote>
+<p>Use <a href="https://www.findlatitudeandlongitude.com/">Find Latitude and Longitude</a> to get the exact GPS coordinates of the center location.</p>
+</blockquote>
+</div>
+</div>
+<div id="types-of-map-tiles" class="section level2">
+<h2>Types of map tiles</h2>
+<p>Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:</p>
+<p><img src="geoviz_ggmap_files/figure-html/stamen-maptype-1.png" width="576" /></p>
+<p>Google Maps is a bit more limited, but still offers a few major types:</p>
+<p><img src="geoviz_ggmap_files/figure-html/google-maptype-1.png" width="672" /></p>
+<p>See the documentation for the <code>get_*map()</code> function for the exact code necessary to get each type of map.</p>
+<blockquote>
+<p><code>get_map()</code> is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of <code>get_googlemap()</code>, <code>get_stamenmap()</code>, and <code>getopenstreetmap()</code> and can become a bit jumbled. Use at your own risk.</p>
+</blockquote>
+</div>
+</div>
+<div id="import-crime-data" class="section level1">
+<h1>Import crime data</h1>
+<p>Now that we can obtain map tiles and draw them using <code>ggmap()</code>, let’s explore how to add data to the map. The city of Chicago has <a href="https://data.cityofchicago.org/">an excellent data portal</a> publishing a large volume of public records. Here we’ll look at <a href="https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr">crime data from 2017</a>.<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> I previously downloaded a <code>.csv</code> file containing all the records, which I import using <code>read_csv()</code>:</p>
+<blockquote>
+<p>If you are copying-and-pasting code from this demonstration, change this line of code to <code>crimes &lt;- read_csv(&quot;https://cfss.uchicago.edu/data/Crimes_-_2017.csv&quot;)</code> to download the file from the course website.</p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">crimes &lt;-<span class="st"> </span>here<span class="op">::</span><span class="kw">here</span>(<span class="st">&quot;data&quot;</span>, <span class="st">&quot;Crimes_-_2017.csv&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">read_csv</span>()
+<span class="kw">glimpse</span>(crimes)</code></pre></div>
+<pre><code>## Observations: 267,345
+## Variables: 22
+## $ ID                     &lt;dbl&gt; 11094370, 11118031, 11134189, 11156462, 1…
+## $ `Case Number`          &lt;chr&gt; &quot;JA440032&quot;, &quot;JA470589&quot;, &quot;JA491697&quot;, &quot;JA52…
+## $ Date                   &lt;chr&gt; &quot;09/21/2017 12:15:00 AM&quot;, &quot;10/12/2017 07:…
+## $ Block                  &lt;chr&gt; &quot;072XX N CALIFORNIA AVE&quot;, &quot;055XX W GRAND …
+## $ IUCR                   &lt;chr&gt; &quot;1122&quot;, &quot;1345&quot;, &quot;4651&quot;, &quot;1110&quot;, &quot;0265&quot;, &quot;…
+## $ `Primary Type`         &lt;chr&gt; &quot;DECEPTIVE PRACTICE&quot;, &quot;CRIMINAL DAMAGE&quot;, …
+## $ Description            &lt;chr&gt; &quot;COUNTERFEIT CHECK&quot;, &quot;TO CITY OF CHICAGO …
+## $ `Location Description` &lt;chr&gt; &quot;CURRENCY EXCHANGE&quot;, &quot;JAIL / LOCK-UP FACI…
+## $ Arrest                 &lt;lgl&gt; TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,…
+## $ Domestic               &lt;lgl&gt; FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,…
+## $ Beat                   &lt;chr&gt; &quot;2411&quot;, &quot;2515&quot;, &quot;0922&quot;, &quot;2514&quot;, &quot;1221&quot;, &quot;…
+## $ District               &lt;chr&gt; &quot;024&quot;, &quot;025&quot;, &quot;009&quot;, &quot;025&quot;, &quot;012&quot;, &quot;002&quot;,…
+## $ Ward                   &lt;dbl&gt; 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, 32…
+## $ `Community Area`       &lt;dbl&gt; 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, 24…
+## $ `FBI Code`             &lt;chr&gt; &quot;10&quot;, &quot;14&quot;, &quot;26&quot;, &quot;11&quot;, &quot;02&quot;, &quot;15&quot;, &quot;03&quot;,…
+## $ `X Coordinate`         &lt;dbl&gt; 1156443, 1138788, 1159425, 1138653, 11612…
+## $ `Y Coordinate`         &lt;dbl&gt; 1947707, 1913480, 1875711, 1920720, 19052…
+## $ Year                   &lt;dbl&gt; 2017, 2017, 2017, 2017, 2017, 2017, 2017,…
+## $ `Updated On`           &lt;chr&gt; &quot;03/01/2018 03:52:35 PM&quot;, &quot;03/01/2018 03:…
+## $ Latitude               &lt;dbl&gt; 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41.7,…
+## $ Longitude              &lt;dbl&gt; -87.7, -87.8, -87.7, -87.8, -87.7, -87.6,…
+## $ Location               &lt;chr&gt; &quot;(42.012293397, -87.699714109)&quot;, &quot;(41.918…</code></pre>
+<p>Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the <code>Longitude</code> and <code>Latitude</code> columns respectively.</p>
+</div>
+<div id="plot-high-level-map-of-crime" class="section level1">
+<h1>Plot high-level map of crime</h1>
+<p>Let’s start with a simple high-level overview of reported crime in Chicago. First we need a map for the entire city.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chicago &lt;-<span class="st"> </span><span class="kw">get_googlemap</span>(<span class="dt">center =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.65</span>, <span class="dt">lat =</span> <span class="fl">41.855</span>),
+                        <span class="dt">zoom =</span> <span class="dv">11</span>)
+<span class="kw">ggmap</span>(chicago)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/import-chicago-1.png" width="672" /></p>
+<div id="using-geom_point" class="section level2">
+<h2>Using <code>geom_point()</code></h2>
+<p>Since each row is a single reported incident of crime, we could use <code>geom_point()</code> to map the location of every crime in the dataset. Because <code>ggmap()</code> uses the map tiles (here, defined by <code>chicago</code>) as the basic input, we specify <code>data</code> and <code>mapping</code> inside of <code>geom_point()</code>, rather than inside <code>ggplot()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
+             <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                           <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-1.png" width="672" /></p>
+<p>What went wrong? All we get is a sea of black.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">nrow</span>(crimes)</code></pre></div>
+<pre><code>## [1] 267345</code></pre>
+<p>Oh yeah. There were 267345 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> crimes,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                 <span class="dt">y =</span> Latitude),
+             <span class="dt">size =</span> .<span class="dv">25</span>,
+             <span class="dt">alpha =</span> .<span class="dv">01</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-point-alpha-1.png" width="672" /></p>
+<p>Better, but still not quite as useful as it could be.</p>
+</div>
+<div id="using-stat_density_2d" class="section level2">
+<h2>Using <code>stat_density_2d()</code></h2>
+<p>Instead of relying on <code>geom_point()</code> and plotting the raw data, a better approach is to create a <strong>heatmap</strong>. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in <code>ggplot2</code> to generate this kind of plot is <code>geom_density_2d()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/kde-contour-1.png" width="672" /></p>
+<p>By default, <code>geom_density_2d()</code> draws a <a href="https://en.wikipedia.org/wiki/Contour_line"><strong>contour plot</strong></a> with lines of constant value. That is, each line represents approximately the same frequency of crime all along that specific line. Contour plots are frequently used in maps (known as <strong>topographic maps</strong>) to denote elevation.</p>
+<div class="figure">
+<img src="images/contour-map.jpg" alt="The Cadillac Mountains. Source: US Geological Survey" />
+<p class="caption">The Cadillac Mountains. Source: <a href="https://www.usgs.gov/media/images/cadillacmountainss">US Geological Survey</a></p>
+</div>
+<p>Rather than drawing lines, instead we can fill in the graph so that we use the <code>fill</code> aesthetic to draw bands of crime density. To do that, we use the related function <code>stat_density_2d()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> <span class="kw">stat</span>(level)),
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/kde-fill-1.png" width="672" /></p>
+<p>Note the two new arguments:</p>
+<ul>
+<li><code>geom = &quot;polygon&quot;</code> - change the <a href="dataviz_grammar_of_graphics.html#geometric_objects">geometric object</a> to be drawn from a <code>density_2d</code> geom to a <code>polygon</code> geom</li>
+<li><code>fill = stat(level)</code> - the value for the <code>fill</code> aesthetic is the <code>level</code> calculated within <code>stat_density_2d()</code>, which we access using the <code>stat()</code> notation.</li>
+</ul>
+<p>This is an improvement, but we can adjust some additional settings to make the graph visually more useful. Specifically,</p>
+<ul>
+<li>Increase the number of <code>bins</code>, or unique bands of color allowed on the graph</li>
+<li>Make the heatmap semi-transparent using <code>alpha</code> so we can still view the underlying map</li>
+<li>Change the color palette to better distinguish between high and low crime areas. Here I use <code>brewer.pal()</code> from the <code>RColorBrewer</code> package to create a custom color palette using reds and yellows.</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes,
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> <span class="kw">stat</span>(level)),
+                  <span class="dt">alpha =</span> .<span class="dv">2</span>,
+                  <span class="dt">bins =</span> <span class="dv">25</span>,
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-density-1.png" width="672" /></p>
+<p>From this map, a couple trends are noticeable:</p>
+<ul>
+<li>The downtown region has the highest crime incidence rate. Not surprising given its population density during the workday.</li>
+<li>There are clusters of crime on the south and west sides. Also not surprising if you know anything about the city of Chicago.</li>
+</ul>
+</div>
+<div id="looking-for-variation" class="section level2">
+<h2>Looking for variation</h2>
+<p>Because <code>ggmap</code> is built on <code>ggplot2</code>, we can use the core features of <code>ggplot2</code> to modify the graph. One major feature is faceting. Let’s focus our analysis on four types of crimes with similar frequency of reported incidents<a href="#fn2" class="footnoteRef" id="fnref2"><sup>2</sup></a> and facet by type of crime:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">stat_density_2d</span>(<span class="dt">data =</span> crimes <span class="op">%&gt;%</span>
+<span class="st">                    </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;BURGLARY&quot;</span>, <span class="st">&quot;MOTOR VEHICLE THEFT&quot;</span>,
+                                                 <span class="st">&quot;NARCOTICS&quot;</span>, <span class="st">&quot;ROBBERY&quot;</span>)),
+                  <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                      <span class="dt">y =</span> Latitude,
+                      <span class="dt">fill =</span> <span class="kw">stat</span>(level)),
+                  <span class="dt">alpha =</span> .<span class="dv">4</span>,
+                  <span class="dt">bins =</span> <span class="dv">10</span>,
+                  <span class="dt">geom =</span> <span class="st">&quot;polygon&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_fill_gradientn</span>(<span class="dt">colors =</span> <span class="kw">brewer.pal</span>(<span class="dv">7</span>, <span class="st">&quot;YlOrRd&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">facet_wrap</span>(<span class="op">~</span><span class="st"> `</span><span class="dt">Primary Type</span><span class="st">`</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-crime-wday-1.png" width="672" /></p>
+<p>There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.</p>
+</div>
+</div>
+<div id="locations-of-murders" class="section level1">
+<h1>Locations of murders</h1>
+<p>While <code>geom_point()</code> was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let’s limit our analysis strictly to reported incidents of homicide in 2017.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(homicides &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">==</span><span class="st"> &quot;HOMICIDE&quot;</span>))</code></pre></div>
+<pre><code>## # A tibble: 671 x 22
+##        ID `Case Number` Date  Block IUCR  `Primary Type` Description
+##     &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;      
+##  1 2.31e4 JA149608      02/1… 001X… 0110  HOMICIDE       FIRST DEGR…
+##  2 2.39e4 JA530946      11/3… 088X… 0110  HOMICIDE       FIRST DEGR…
+##  3 2.34e4 JA302423      06/1… 047X… 0110  HOMICIDE       FIRST DEGR…
+##  4 2.34e4 JA312425      06/1… 006X… 0110  HOMICIDE       FIRST DEGR…
+##  5 2.37e4 JA490016      10/2… 048X… 0110  HOMICIDE       FIRST DEGR…
+##  6 2.32e4 JA210752      04/0… 013X… 0110  HOMICIDE       FIRST DEGR…
+##  7 2.36e4 JA461918      10/0… 018X… 0110  HOMICIDE       FIRST DEGR…
+##  8 2.36e4 JA461918      10/0… 018X… 0110  HOMICIDE       FIRST DEGR…
+##  9 1.08e7 JA138326      02/0… 013X… 0142  HOMICIDE       RECKLESS H…
+## 10 2.35e4 JA364517      07/2… 047X… 0110  HOMICIDE       FIRST DEGR…
+## # … with 661 more rows, and 15 more variables: `Location
+## #   Description` &lt;chr&gt;, Arrest &lt;lgl&gt;, Domestic &lt;lgl&gt;, Beat &lt;chr&gt;,
+## #   District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;, `FBI Code` &lt;chr&gt;,
+## #   `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;, Year &lt;dbl&gt;, `Updated
+## #   On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;</code></pre>
+<p>We can draw a map of the city with all homicides indicated on the map using <code>geom_point()</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(chicago) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> Longitude,
+                           <span class="dt">y =</span> Latitude),
+             <span class="dt">size =</span> <span class="dv">1</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/homicide-city-1.png" width="672" /></p>
+<p>Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we’ll examine North Lawndale and Kenwood.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># North Lawndale is the highest homicides in 2017</span>
+<span class="co"># Compare to Kenwood</span>
+north_lawndale &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.714401</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.858768</span>),
+                     <span class="dt">zoom =</span> <span class="dv">14</span>)
+
+kenwood &lt;-<span class="st"> </span><span class="kw">get_map</span>(<span class="dt">location =</span> <span class="kw">c</span>(<span class="dt">lon =</span> <span class="op">-</span><span class="fl">87.59320836086425</span>,
+                                <span class="dt">lat =</span> <span class="fl">41.80965352973664</span>),
+                   <span class="dt">zoom =</span> <span class="dv">15</span>)
+
+<span class="kw">ggmap</span>(north_lawndale)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/get-high-low-murder-maps-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/get-high-low-murder-maps-2.png" width="672" /></p>
+<p>To plot homicides specifically in these neighborhoods, change <code>ggmap(chicago)</code> to the appropriate map tile:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-murder-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> homicides,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude))</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-murder-2.png" width="672" /></p>
+<p>North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though <code>homicides</code> contained data for homicides across the entire city, <code>ggmap()</code> automatically cropped the graph to keep just the homicides that occurred within the bounding box.</p>
+<p>All the other aesthetic customizations of <code>geom_point()</code> work with <code>ggmap</code>. So we could expand these neighborhood maps to include all violent crime categories<a href="#fn3" class="footnoteRef" id="fnref3"><sup>3</sup></a> and distinguish each type by <code>color</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(violent &lt;-<span class="st"> </span>crimes <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(<span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span> <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;HOMICIDE&quot;</span>,
+                               <span class="st">&quot;CRIM SEXUAL ASSAULT&quot;</span>,
+                               <span class="st">&quot;ROBBERY&quot;</span>)))</code></pre></div>
+<pre><code>## # A tibble: 14,146 x 22
+##        ID `Case Number` Date  Block IUCR  `Primary Type` Description
+##     &lt;dbl&gt; &lt;chr&gt;         &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;          &lt;chr&gt;      
+##  1 1.12e7 JA531910      12/0… 022X… 0265  CRIM SEXUAL A… AGGRAVATED…
+##  2 1.10e7 JA322389      06/2… 003X… 031A  ROBBERY        ARMED: HAN…
+##  3 1.12e7 JA545986      12/1… 007X… 031A  ROBBERY        ARMED: HAN…
+##  4 1.12e7 JA546734      12/1… 007X… 031A  ROBBERY        ARMED: HAN…
+##  5 1.12e7 JB147188      10/0… 092X… 0281  CRIM SEXUAL A… NON-AGGRAV…
+##  6 1.12e7 JB147599      08/2… 001X… 0281  CRIM SEXUAL A… NON-AGGRAV…
+##  7 2.31e4 JA149608      02/1… 001X… 0110  HOMICIDE       FIRST DEGR…
+##  8 1.10e7 JA378592      08/0… 038X… 0313  ROBBERY        ARMED: OTH…
+##  9 1.12e7 JA538651      12/0… 092X… 031A  ROBBERY        ARMED: HAN…
+## 10 1.12e7 JB149656      12/2… 005X… 0330  ROBBERY        AGGRAVATED 
+## # … with 14,136 more rows, and 15 more variables: `Location
+## #   Description` &lt;chr&gt;, Arrest &lt;lgl&gt;, Domestic &lt;lgl&gt;, Beat &lt;chr&gt;,
+## #   District &lt;chr&gt;, Ward &lt;dbl&gt;, `Community Area` &lt;dbl&gt;, `FBI Code` &lt;chr&gt;,
+## #   `X Coordinate` &lt;dbl&gt;, `Y Coordinate` &lt;dbl&gt;, Year &lt;dbl&gt;, `Updated
+## #   On` &lt;chr&gt;, Latitude &lt;dbl&gt;, Longitude &lt;dbl&gt;, Location &lt;chr&gt;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(north_lawndale) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
+                 <span class="dt">color =</span> <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-violent-1.png" width="672" /></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggmap</span>(kenwood) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>(<span class="dt">data =</span> violent,
+             <span class="kw">aes</span>(<span class="dt">x =</span> Longitude, <span class="dt">y =</span> Latitude,
+                 <span class="dt">color =</span> <span class="st">`</span><span class="dt">Primary Type</span><span class="st">`</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_brewer</span>(<span class="dt">type =</span> <span class="st">&quot;qual&quot;</span>, <span class="dt">palette =</span> <span class="st">&quot;Dark2&quot;</span>)</code></pre></div>
+<p><img src="geoviz_ggmap_files/figure-html/plot-violent-2.png" width="672" /></p>
+</div>
+<div id="additional-resources" class="section level1 toc-ignore">
+<h1>Additional resources</h1>
+<ul>
+<li><a href="https://journal.r-project.org/archive/2013/RJ-2013-014/RJ-2013-014.pdf">Kahle, D., &amp; Wickham, H. (2013). <code>ggmap</code>: Spatial Visualization with ggplot2. <em>R Journal</em>, 5(1).</a></li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## ─ Session info ──────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 3.5.2 (2018-12-20)
+##  os       macOS Mojave 10.14.3        
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2019-03-02                  
+## 
+## ─ Packages ──────────────────────────────────────────────────────────────
+##  package      * version    date       lib source                          
+##  assertthat     0.2.0      2017-04-11 [2] CRAN (R 3.5.0)                  
+##  backports      1.1.3      2018-12-14 [2] CRAN (R 3.5.0)                  
+##  base64enc      0.1-3      2015-07-28 [2] CRAN (R 3.5.0)                  
+##  bindr          0.1.1      2018-03-13 [2] CRAN (R 3.5.0)                  
+##  bindrcpp     * 0.2.2      2018-03-29 [1] CRAN (R 3.5.0)                  
+##  bitops         1.0-6      2013-08-17 [2] CRAN (R 3.5.0)                  
+##  broom          0.5.1      2018-12-05 [2] CRAN (R 3.5.0)                  
+##  callr          3.1.1      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  cellranger     1.1.0      2016-07-27 [2] CRAN (R 3.5.0)                  
+##  class          7.3-15     2019-01-01 [2] CRAN (R 3.5.2)                  
+##  classInt       0.3-1      2018-12-18 [2] CRAN (R 3.5.0)                  
+##  cli            1.0.1      2018-09-25 [1] CRAN (R 3.5.0)                  
+##  codetools      0.2-16     2018-12-24 [2] CRAN (R 3.5.2)                  
+##  colorspace     1.4-0      2019-01-13 [2] CRAN (R 3.5.2)                  
+##  crayon         1.3.4      2017-09-16 [2] CRAN (R 3.5.0)                  
+##  DBI            1.0.0      2018-05-02 [2] CRAN (R 3.5.0)                  
+##  desc           1.2.0      2018-05-01 [2] CRAN (R 3.5.0)                  
+##  devtools       2.0.1      2018-10-26 [1] CRAN (R 3.5.1)                  
+##  digest         0.6.18     2018-10-10 [1] CRAN (R 3.5.0)                  
+##  dplyr        * 0.8.0.1    2019-02-15 [1] CRAN (R 3.5.2)                  
+##  e1071          1.7-0.1    2019-01-21 [1] CRAN (R 3.5.2)                  
+##  evaluate       0.13       2019-02-12 [2] CRAN (R 3.5.2)                  
+##  fansi          0.4.0      2018-10-05 [2] CRAN (R 3.5.0)                  
+##  forcats      * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)                  
+##  fs             1.2.6      2018-08-23 [1] CRAN (R 3.5.0)                  
+##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.5.0)                  
+##  ggmap        * 3.0.0      2019-02-04 [1] CRAN (R 3.5.2)                  
+##  ggplot2      * 3.1.0      2018-10-25 [1] CRAN (R 3.5.0)                  
+##  glue           1.3.0      2018-07-17 [2] CRAN (R 3.5.0)                  
+##  gridExtra    * 2.3        2017-09-09 [2] CRAN (R 3.5.0)                  
+##  gtable         0.2.0      2016-02-26 [2] CRAN (R 3.5.0)                  
+##  haven          2.1.0      2019-02-19 [2] CRAN (R 3.5.2)                  
+##  here         * 0.1        2017-05-28 [2] CRAN (R 3.5.0)                  
+##  hms            0.4.2      2018-03-10 [2] CRAN (R 3.5.0)                  
+##  htmltools      0.3.6      2017-04-28 [1] CRAN (R 3.5.0)                  
+##  httr           1.4.0      2018-12-11 [2] CRAN (R 3.5.0)                  
+##  jpeg           0.1-8      2014-01-23 [1] CRAN (R 3.5.0)                  
+##  jsonlite       1.6        2018-12-07 [2] CRAN (R 3.5.0)                  
+##  knitr          1.21       2018-12-10 [2] CRAN (R 3.5.1)                  
+##  labeling       0.3        2014-08-23 [2] CRAN (R 3.5.0)                  
+##  lattice        0.20-38    2018-11-04 [2] CRAN (R 3.5.2)                  
+##  lazyeval       0.2.1      2017-10-29 [2] CRAN (R 3.5.0)                  
+##  lubridate    * 1.7.4      2018-04-11 [2] CRAN (R 3.5.0)                  
+##  magrittr       1.5        2014-11-22 [2] CRAN (R 3.5.0)                  
+##  MASS           7.3-51.1   2018-11-01 [2] CRAN (R 3.5.2)                  
+##  memoise        1.1.0      2017-04-21 [2] CRAN (R 3.5.0)                  
+##  modelr         0.1.4      2019-02-18 [2] CRAN (R 3.5.2)                  
+##  munsell        0.5.0      2018-06-12 [2] CRAN (R 3.5.0)                  
+##  nlme           3.1-137    2018-04-07 [2] CRAN (R 3.5.2)                  
+##  pillar         1.3.1      2018-12-15 [2] CRAN (R 3.5.0)                  
+##  pkgbuild       1.0.2      2018-10-16 [1] CRAN (R 3.5.0)                  
+##  pkgconfig      2.0.2      2018-08-16 [2] CRAN (R 3.5.1)                  
+##  pkgload        1.0.2      2018-10-29 [1] CRAN (R 3.5.0)                  
+##  plyr           1.8.4      2016-06-08 [2] CRAN (R 3.5.0)                  
+##  png            0.1-7      2013-12-03 [2] CRAN (R 3.5.0)                  
+##  prettyunits    1.0.2      2015-07-13 [2] CRAN (R 3.5.0)                  
+##  processx       3.2.1      2018-12-05 [2] CRAN (R 3.5.0)                  
+##  ps             1.3.0      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  purrr        * 0.3.0      2019-01-27 [2] CRAN (R 3.5.2)                  
+##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.5.2)                  
+##  RColorBrewer * 1.1-2      2014-12-07 [2] CRAN (R 3.5.0)                  
+##  Rcpp           1.0.0      2018-11-07 [1] CRAN (R 3.5.0)                  
+##  readr        * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  readxl         1.3.0      2019-02-15 [2] CRAN (R 3.5.2)                  
+##  remotes        2.0.2      2018-10-30 [1] CRAN (R 3.5.0)                  
+##  RgoogleMaps    1.4.3      2018-11-07 [1] CRAN (R 3.5.0)                  
+##  rjson          0.2.20     2018-06-08 [1] CRAN (R 3.5.0)                  
+##  rlang          0.3.1      2019-01-08 [1] CRAN (R 3.5.2)                  
+##  rmarkdown      1.11       2018-12-08 [2] CRAN (R 3.5.0)                  
+##  rprojroot      1.3-2      2018-01-03 [2] CRAN (R 3.5.0)                  
+##  rstudioapi     0.9.0      2019-01-09 [1] CRAN (R 3.5.2)                  
+##  rvest          0.3.2      2016-06-17 [2] CRAN (R 3.5.0)                  
+##  scales         1.0.0      2018-08-09 [1] CRAN (R 3.5.0)                  
+##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.5.0)                  
+##  sf           * 0.7-3      2019-02-21 [1] CRAN (R 3.5.2)                  
+##  stringi        1.3.1      2019-02-13 [1] CRAN (R 3.5.2)                  
+##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.5.2)                  
+##  testthat       2.0.1      2018-10-13 [2] CRAN (R 3.5.0)                  
+##  tibble       * 2.0.1      2019-01-12 [2] CRAN (R 3.5.2)                  
+##  tidyr        * 0.8.2.9000 2019-02-11 [1] Github (tidyverse/tidyr@0b27690)
+##  tidyselect     0.2.5      2018-10-11 [1] CRAN (R 3.5.0)                  
+##  tidyverse    * 1.2.1      2017-11-14 [2] CRAN (R 3.5.0)                  
+##  units          0.6-2      2018-12-05 [1] CRAN (R 3.5.0)                  
+##  usethis        1.4.0      2018-08-14 [1] CRAN (R 3.5.0)                  
+##  utf8           1.1.4      2018-05-24 [2] CRAN (R 3.5.0)                  
+##  withr          2.1.2      2018-03-15 [2] CRAN (R 3.5.0)                  
+##  xfun           0.5        2019-02-20 [1] CRAN (R 3.5.2)                  
+##  xml2           1.2.0      2018-01-24 [2] CRAN (R 3.5.0)                  
+##  yaml           2.2.0      2018-07-25 [2] CRAN (R 3.5.0)                  
+## 
+## [1] /Users/soltoffbc/Library/R/3.5/library
+## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a href="https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2">Full documentation of the data from the larger 2001-present crime dataset.</a>.<a href="#fnref1">↩</a></p></li>
+<li id="fn2"><p>Specifically burglary, motor vehicle theft, narcotics, and robbery.<a href="#fnref2">↩</a></p></li>
+<li id="fn3"><p>Specifcally homicides, criminal sexual assault, and robbery. <a href="http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html">Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant</a>, but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.<a href="#fnref3">↩</a></p></li>
+</ol>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiRHJhd2luZyByYXN0ZXIgbWFwcyB3aXRoIGBnZ21hcGAiCm91dHB1dDoKICBodG1sX2RvY3VtZW50OgogICAgdG9jOiB0cnVlCiAgICB0b2NfZmxvYXQ6IHRydWUKLS0tCgpgYGB7ciBzZXR1cCwgaW5jbHVkZSA9IEZBTFNFfQprbml0cjo6b3B0c19jaHVuayRzZXQoY2FjaGUgPSBUUlVFLCB3YXJuaW5nID0gRkFMU0UsIG1lc3NhZ2UgPSBGQUxTRSkKYGBgCgpgYGB7ciBwYWNrYWdlcywgY2FjaGUgPSBGQUxTRSwgbWVzc2FnZSA9IEZBTFNFfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKbGlicmFyeShnZ21hcCkKbGlicmFyeShSQ29sb3JCcmV3ZXIpCmxpYnJhcnkoZ3JpZEV4dHJhKQpsaWJyYXJ5KGhlcmUpCgpvcHRpb25zKGRpZ2l0cyA9IDMpCnNldC5zZWVkKDEyMzQpCnRoZW1lX3NldCh0aGVtZV9taW5pbWFsKCkpCmBgYAoKIyBgZ2dtYXBgCgpbYGdnbWFwYF0oaHR0cHM6Ly9naXRodWIuY29tL2RrYWhsZS9nZ21hcCkgaXMgYSBwYWNrYWdlIGZvciBSIHRoYXQgcmV0cmlldmVzIHJhc3RlciBtYXAgdGlsZXMgZnJvbSBvbmxpbmUgbWFwcGluZyBzZXJ2aWNlcyBsaWtlIFtHb29nbGUgTWFwc10oaHR0cHM6Ly93d3cuZ29vZ2xlLmNvbS9tYXBzKSBhbmQgcGxvdHMgdGhlbSB1c2luZyB0aGUgYGdncGxvdDJgIGZyYW1ld29yay4gVGhlIG1hcCB0aWxlcyBhcmUgKipyYXN0ZXIqKiBiZWNhdXNlIHRoZXkgYXJlIHN0YXRpYyBpbWFnZSBmaWxlcyBnZW5lcmF0ZWQgcHJldmlvdXNseSBieSB0aGUgbWFwcGluZyBzZXJ2aWNlLiBZb3UgZG8gbm90IG5lZWQgYW55IGRhdGEgZmlsZXMgY29udGFpbmluZyBpbmZvcm1hdGlvbiBvbiB0aGluZ3MgbGlrZSBzY2FsZSwgcHJvamVjdGlvbiwgYm91bmRhcmllcywgZXRjLiBiZWNhdXNlIHRoYXQgaW5mb3JtYXRpb24gaXMgYWxyZWFkeSBjcmVhdGVkIGJ5IHRoZSBtYXAgdGlsZS4gVGhpcyBzZXZlcmVseSBsaW1pdHMgeW91ciBhYmlsaXR5IHRvIHJlZHJhdyBvciBjaGFuZ2UgdGhlIGFwcGVhcmFuY2Ugb2YgdGhlIGdlb2dyYXBoaWMgbWFwLCBob3dldmVyIHRoZSB0cmFkZW9mZiBtZWFucyB5b3UgY2FuIGltbWVkaWF0ZWx5IGZvY3VzIG9uIGluY29ycG9yYXRpbmcgYWRkaXRpb25hbCBkYXRhIGludG8gdGhlIG1hcC4KCj4gR29vZ2xlIGhhcyBbcmVjZW50bHkgY2hhbmdlZCBpdHMgQVBJIHJlcXVpcmVtZW50c10oaHR0cHM6Ly9kZXZlbG9wZXJzLmdvb2dsZS5jb20vbWFwcy9kb2N1bWVudGF0aW9uL2dlb2NvZGluZy91c2FnZS1hbmQtYmlsbGluZyksIGFuZCAqKmdnbWFwKiogdXNlcnMgYXJlIG5vdyByZXF1aXJlZCB0byBwcm92aWRlIGFuIEFQSSBrZXkgKmFuZCogZW5hYmxlIGJpbGxpbmcuIFdlIHdpbGwgbGVhcm4gZmFyIG1vcmUgYWJvdXQgQVBJcyBbbmV4dCB3ZWVrXShjbTAxNS5odG1sKS4gSW4gdGhlIG1lYW50aW1lLCBJIHdvdWxkIG5vdCByZWNvbW1lbmQgdHJ5aW5nIHRvIHVzZSBHb29nbGUgTWFwcyB0byBvYnRhaW4gbWFwIGltYWdlcy4gVGhlIGNvZGUgYmVsb3cgd291bGQgd29yayBmb3IgeW91LCBidXQgR29vZ2xlIG5vdyBjaGFyZ2VzIHlvdSBlYWNoIHRpbWUgeW91IG9idGFpbiBhIG1hcCBpbWFnZS4gU3RpY2sgdG8gdGhlIG90aGVyIHByb3ZpZGVycyBzdWNoIGFzIFN0YW1lbiBNYXBzLgoKIyBPYnRhaW4gbWFwIGltYWdlcwoKYGdnbWFwYCBzdXBwb3J0cyBvcGVuLXNvdXJjZSBtYXAgcHJvdmlkZXJzIHN1Y2ggYXMgW09wZW5TdHJlZXRNYXBdKGh0dHBzOi8vd3d3Lm9wZW5zdHJlZXRtYXAub3JnLykgYW5kIFtTdGFtZW4gTWFwc10oaHR0cDovL21hcHMuc3RhbWVuLmNvbS8jdGVycmFpbi8xMi8zNy43NzA2Ly0xMjIuMzc4MiksIGFzIHdlbGwgYXMgdGhlIHByb3ByaWV0YXJ5IEdvb2dsZSBNYXBzLiBPYnRhaW5pbmcgbWFwIHRpbGVzIHJlcXVpcmVzIHVzZSBvZiB0aGUgYGdldF9tYXAoKWAgZnVuY3Rpb24uIFRoZXJlIGFyZSB0d28gZm9ybWF0cyBmb3Igc3BlY2lmeWluZyB0aGUgbWFwcGluZyByZWdpb24geW91IHdpc2ggdG8gb2J0YWluOgoKMS4gQm91bmRpbmcgYm94CjEuIENlbnRlci96b29tCgojIyBTcGVjaWZ5aW5nIG1hcCByZWdpb25zCgojIyMgQm91bmRpbmcgYm94CgoqKkJvdW5kaW5nIGJveCoqIHJlcXVpcmVzIHRoZSB1c2VyIHRvIHNwZWNpZnkgdGhlIGZvdXIgY29ybmVycyBvZiB0aGUgYm94IGRlZmluaW5nIHRoZSBtYXAgcmVnaW9uLiBGb3IgaW5zdGFuY2UsIHRvIG9idGFpbiBhIG1hcCBvZiBDaGljYWdvIHVzaW5nIFN0YW1lbiBNYXBzOgoKYGBge3IgYmItY2hpY2Fnby1zdGFtZW59CiMgc3RvcmUgYm91bmRpbmcgYm94IGNvb3JkaW5hdGVzCmNoaV9iYiA8LSBjKGxlZnQgPSAtODcuOTM2Mjg3LAogICAgICAgICAgICBib3R0b20gPSA0MS42Nzk4MzUsCiAgICAgICAgICAgIHJpZ2h0ID0gLTg3LjQ0NzA1MiwKICAgICAgICAgICAgdG9wID0gNDIuMDAwODM1KQoKY2hpY2Fnb19zdGFtZW4gPC0gZ2V0X3N0YW1lbm1hcChiYm94ID0gY2hpX2JiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIHpvb20gPSAxMSkKY2hpY2Fnb19zdGFtZW4KYGBgCgpUbyB2aWV3IHRoZSBtYXAsIHVzZSBgZ2dtYXAoKWA6CgpgYGB7ciBiYi1jaGljYWdvLXN0YW1lbi1wbG90fQpnZ21hcChjaGljYWdvX3N0YW1lbikKYGBgCgpUaGUgYHpvb21gIGFyZ3VtZW50IGluIGBnZXRfc3RhbWVubWFwKClgIGNvbnRyb2xzIHRoZSBsZXZlbCBvZiBkZXRhaWwgaW4gdGhlIG1hcC4gVGhlIGxhcmdlciB0aGUgbnVtYmVyLCB0aGUgZ3JlYXRlciB0aGUgZGV0YWlsLgoKYGBge3IgYmItY2hpY2Fnby1zdGFtZW4tem9vbS1pbn0KZ2V0X3N0YW1lbm1hcChiYm94ID0gY2hpX2JiLAogICAgICAgICAgICAgIHpvb20gPSAxMikgJT4lCiAgZ2dtYXAoKQpgYGAKClRoZSBzbWFsbGVyIHRoZSBudW1iZXIsIHRoZSBsZXNzZXIgdGhlIGRldGFpbC4KCmBgYHtyIGJiLWNoaWNhZ28tc3RhbWVuLXpvb20tb3V0fQpnZXRfc3RhbWVubWFwKGJib3ggPSBjaGlfYmIsCiAgICAgICAgICAgICAgem9vbSA9IDEwKSAlPiUKICBnZ21hcCgpCmBgYAoKClRyaWFsIGFuZCBlcnJvciB3aWxsIGhlbHAgeW91IGRlY2lkZSBvbiB0aGUgYXBwcm9wcmlhdGUgbGV2ZWwgb2YgZGV0YWlsIGRlcGVuZGluZyBvbiB3aGF0IGRhdGEgeW91IG5lZWQgdG8gdmlzdWFsaXplIG9uIHRoZSBtYXAuCgo+IFVzZSBbYmJveGZpbmRlci5jb21dKGh0dHA6Ly9iYm94ZmluZGVyLmNvbS8jMC4wMDAwMDAsMC4wMDAwMDAsMC4wMDAwMDAsMC4wMDAwMDApIHRvIGRldGVybWluZSB0aGUgZXhhY3QgbG9uZ2l0dWRlL2xhdGl0dWRlIGNvb3JkaW5hdGVzIGZvciB0aGUgYm91bmRpbmcgYm94IHlvdSB3aXNoIHRvIG9idGFpbi4KCiMjIyBDZW50ZXIvem9vbQoKV2hpbGUgU3RhbWVuIE1hcHMgYW5kIE9wZW5TdHJlZXRNYXAgcmVxdWlyZSB0aGUgYm91bmRpbmcgYm94IGZvcm1hdCBmb3Igb2J0YWluaW5nIG1hcCB0aWxlcyBhbmQgYWxsb3cgeW91IHRvIGluY3JlYXNlIG9yIGRlY3JlYXNlIHRoZSBsZXZlbCBvZiBkZXRhaWwgd2l0aGluIGEgc2luZ2xlIGJvdW5kaW5nIGJveCwgR29vZ2xlIE1hcHMgcmVxdWlyZXMgc3BlY2lmeWluZyB0aGUgKipjZW50ZXIqKiBjb29yZGluYXRlIG9mIHRoZSBtYXAgKGEgc2luZ2xlIGxvbmdpdHVkZS9sYXRpdHVkZSBsb2NhdGlvbikgYW5kIHRoZSBsZXZlbCBvZiAqKnpvb20qKiBvciBkZXRhaWwuIGB6b29tYCBpcyBhbiBpbnRlZ2VyIHZhbHVlIGZyb20gYDNgIChjb250aW5lbnQpIHRvIGAyMWAgKGJ1aWxkaW5nKS4gVGhpcyBtZWFucyB0aGUgbGV2ZWwgb2YgZGV0YWlsIGlzIGhhcmRjb2RlZCB0byB0aGUgc2l6ZSBvZiB0aGUgbWFwcGluZyByZWdpb24uIFRoZSBkZWZhdWx0IGB6b29tYCBsZXZlbCBpcyBgMTBgLgoKYGBge3IgY2VudGVyLXpvb20tY2hpY2Fnb30KIyBzdG9yZSBjZW50ZXIgY29vcmRpbmF0ZQpjaGlfY2VudGVyIDwtIGMobG9uID0gLTg3LjY1LCBsYXQgPSA0MS44NTUpCgpjaGljYWdvX2dvb2dsZSA8LSBnZXRfZ29vZ2xlbWFwKGNlbnRlciA9IGNoaV9jZW50ZXIpCmdnbWFwKGNoaWNhZ29fZ29vZ2xlKQoKZ2V0X2dvb2dsZW1hcChjZW50ZXIgPSBjaGlfY2VudGVyLAogICAgICAgICAgICAgIHpvb20gPSAxMikgJT4lCiAgZ2dtYXAoKQoKZ2V0X2dvb2dsZW1hcChjZW50ZXIgPSBjaGlfY2VudGVyLAogICAgICAgICAgICAgIHpvb20gPSA4KSAlPiUKICBnZ21hcCgpCmBgYAoKPiBVc2UgW0ZpbmQgTGF0aXR1ZGUgYW5kIExvbmdpdHVkZV0oaHR0cHM6Ly93d3cuZmluZGxhdGl0dWRlYW5kbG9uZ2l0dWRlLmNvbS8pIHRvIGdldCB0aGUgZXhhY3QgR1BTIGNvb3JkaW5hdGVzIG9mIHRoZSBjZW50ZXIgbG9jYXRpb24uCgojIyBUeXBlcyBvZiBtYXAgdGlsZXMKCkVhY2ggbWFwIHRpbGUgcHJvdmlkZXIgb2ZmZXJzIGEgcmFuZ2Ugb2YgZGlmZmVyZW50IHR5cGVzIG9mIG1hcHMgZGVwZW5kaW5nIG9uIHRoZSBiYWNrZ3JvdW5kIHlvdSB3YW50IGZvciB0aGUgbWFwLiBTdGFtZW4gTWFwcyBvZmZlcnMgc2V2ZXJhbCBkaWZmZXJlbnQgdHlwZXM6CgpgYGB7ciBzdGFtZW4tbWFwdHlwZSwgZmlnLmhlaWdodCA9IDgsIGZpZy53aWR0aCA9IDYsIGVjaG8gPSBGQUxTRX0Kc3RhbWVuX21hcHR5cGUgPC0gZGF0YV9mcmFtZShtYXB0eXBlID0gYygidGVycmFpbiIsICJ0ZXJyYWluLWJhY2tncm91bmQiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0ZXJyYWluLWxhYmVscyIsICJ0ZXJyYWluLWxpbmVzIiwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAidG9uZXIiLCAidG9uZXItMjAxMCIsICJ0b25lci0yMDExIiwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAidG9uZXItYmFja2dyb3VuZCIsICJ0b25lci1oeWJyaWQiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0b25lci1sYWJlbHMiLCAidG9uZXItbGluZXMiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJ0b25lci1saXRlIiwgIndhdGVyY29sb3IiKSkgJT4lCiAgbXV0YXRlKGJiID0gbWFwKG1hcHR5cGUsIH4gZ2V0X3N0YW1lbm1hcChiYm94ID0gY2hpX2JiLCB6b29tID0gMTAsIG1hcHR5cGUgPSAueCkpLAogICAgICAgICBnZ21hcCA9IG1hcDIoYmIsIG1hcHR5cGUsIH4gZ2dtYXAoLngpICsKICAgICAgICAgICAgICAgICAgICAgICAgZ2d0aXRsZSgueSkpKQoKZ3JpZC5hcnJhbmdlKGdyb2JzID0gc3RhbWVuX21hcHR5cGUkZ2dtYXApCmBgYAoKR29vZ2xlIE1hcHMgaXMgYSBiaXQgbW9yZSBsaW1pdGVkLCBidXQgc3RpbGwgb2ZmZXJzIGEgZmV3IG1ham9yIHR5cGVzOgoKYGBge3IgZ29vZ2xlLW1hcHR5cGUsIGVjaG8gPSBGQUxTRX0KZ29vZ2xlX21hcHR5cGUgPC0gZGF0YV9mcmFtZShtYXB0eXBlID0gYygidGVycmFpbiIsICJzYXRlbGxpdGUiLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJyb2FkbWFwIiwgImh5YnJpZCIpKSAlPiUKICBtdXRhdGUoYmIgPSBtYXAobWFwdHlwZSwgfiBnZXRfZ29vZ2xlbWFwKGNlbnRlciA9IGNoaV9jZW50ZXIsIG1hcHR5cGUgPSAueCkpLAogICAgICAgICBnZ21hcCA9IG1hcDIoYmIsIG1hcHR5cGUsIH4gZ2dtYXAoLngpICsKICAgICAgICAgICAgICAgICAgICAgICAgZ2d0aXRsZSgueSkpKQoKZ3JpZC5hcnJhbmdlKGdyb2JzID0gZ29vZ2xlX21hcHR5cGUkZ2dtYXApCmBgYAoKU2VlIHRoZSBkb2N1bWVudGF0aW9uIGZvciB0aGUgYGdldF8qbWFwKClgIGZ1bmN0aW9uIGZvciB0aGUgZXhhY3QgY29kZSBuZWNlc3NhcnkgdG8gZ2V0IGVhY2ggdHlwZSBvZiBtYXAuCgo+IGBnZXRfbWFwKClgIGlzIGEgd3JhcHBlciB0aGF0IGF1dG9tYXRpY2FsbHkgcXVlcmllcyBHb29nbGUgTWFwcywgT3BlblN0cmVldE1hcCwgb3IgU3RhbWVuIE1hcHMgZGVwZW5kaW5nIG9uIHRoZSBmdW5jdGlvbiBhcmd1bWVudHMgYW5kIGlucHV0cy4gV2hpbGUgdXNlZnVsLCBpdCBhbHNvIGNvbWJpbmVzIGFsbCB0aGUgZGlmZmVyZW50IGFyZ3VtZW50cyBvZiBgZ2V0X2dvb2dsZW1hcCgpYCwgYGdldF9zdGFtZW5tYXAoKWAsIGFuZCBgZ2V0b3BlbnN0cmVldG1hcCgpYCBhbmQgY2FuIGJlY29tZSBhIGJpdCBqdW1ibGVkLiBVc2UgYXQgeW91ciBvd24gcmlzay4KCiMgSW1wb3J0IGNyaW1lIGRhdGEKCk5vdyB0aGF0IHdlIGNhbiBvYnRhaW4gbWFwIHRpbGVzIGFuZCBkcmF3IHRoZW0gdXNpbmcgYGdnbWFwKClgLCBsZXQncyBleHBsb3JlIGhvdyB0byBhZGQgZGF0YSB0byB0aGUgbWFwLiBUaGUgY2l0eSBvZiBDaGljYWdvIGhhcyBbYW4gZXhjZWxsZW50IGRhdGEgcG9ydGFsXShodHRwczovL2RhdGEuY2l0eW9mY2hpY2Fnby5vcmcvKSBwdWJsaXNoaW5nIGEgbGFyZ2Ugdm9sdW1lIG9mIHB1YmxpYyByZWNvcmRzLiBIZXJlIHdlJ2xsIGxvb2sgYXQgW2NyaW1lIGRhdGEgZnJvbSAyMDE3XShodHRwczovL2RhdGEuY2l0eW9mY2hpY2Fnby5vcmcvUHVibGljLVNhZmV0eS9DcmltZXMtMjAxNy9kNjJ4LW52ZHIpLl5bW0Z1bGwgZG9jdW1lbnRhdGlvbiBvZiB0aGUgZGF0YSBmcm9tIHRoZSBsYXJnZXIgMjAwMS1wcmVzZW50IGNyaW1lIGRhdGFzZXQuXShodHRwczovL2RhdGEuY2l0eW9mY2hpY2Fnby5vcmcvUHVibGljLVNhZmV0eS9DcmltZXMtMjAwMS10by1wcmVzZW50L2lqenAtcTh0MikuXSBJIHByZXZpb3VzbHkgZG93bmxvYWRlZCBhIGAuY3N2YCBmaWxlIGNvbnRhaW5pbmcgYWxsIHRoZSByZWNvcmRzLCB3aGljaCBJIGltcG9ydCB1c2luZyBgcmVhZF9jc3YoKWA6Cgo+IElmIHlvdSBhcmUgY29weWluZy1hbmQtcGFzdGluZyBjb2RlIGZyb20gdGhpcyBkZW1vbnN0cmF0aW9uLCBjaGFuZ2UgdGhpcyBsaW5lIG9mIGNvZGUgdG8gYGNyaW1lcyA8LSByZWFkX2NzdigiaHR0cHM6Ly9jZnNzLnVjaGljYWdvLmVkdS9kYXRhL0NyaW1lc18tXzIwMTcuY3N2IilgIHRvIGRvd25sb2FkIHRoZSBmaWxlIGZyb20gdGhlIGNvdXJzZSB3ZWJzaXRlLgoKYGBge3IgaW1wb3J0LWNyaW1lc30KY3JpbWVzIDwtIGhlcmU6OmhlcmUoImRhdGEiLCAiQ3JpbWVzXy1fMjAxNy5jc3YiKSAlPiUKICByZWFkX2NzdigpCmdsaW1wc2UoY3JpbWVzKQpgYGAKCkVhY2ggcm93IG9mIHRoZSBkYXRhIGZyYW1lIGlzIGEgc2luZ2xlIHJlcG9ydGVkIGluY2lkZW50IG9mIGNyaW1lLiBHZW9ncmFwaGljIGxvY2F0aW9uIGlzIGVuY29kZWQgaW4gc2V2ZXJhbCB3YXlzLCB0aG91Z2ggbW9zdCBpbXBvcnRhbnRseSBmb3IgdXMgdGhlIGV4YWN0IGxvbmdpdHVkZSBhbmQgbGF0aXR1ZGUgb2YgdGhlIGluY2lkZW50IGlzIGVuY29kZWQgaW4gdGhlIGBMb25naXR1ZGVgIGFuZCBgTGF0aXR1ZGVgIGNvbHVtbnMgcmVzcGVjdGl2ZWx5LgoKIyBQbG90IGhpZ2gtbGV2ZWwgbWFwIG9mIGNyaW1lCgpMZXQncyBzdGFydCB3aXRoIGEgc2ltcGxlIGhpZ2gtbGV2ZWwgb3ZlcnZpZXcgb2YgcmVwb3J0ZWQgY3JpbWUgaW4gQ2hpY2Fnby4gRmlyc3Qgd2UgbmVlZCBhIG1hcCBmb3IgdGhlIGVudGlyZSBjaXR5LgoKYGBge3IgaW1wb3J0LWNoaWNhZ299CmNoaWNhZ28gPC0gZ2V0X2dvb2dsZW1hcChjZW50ZXIgPSBjKGxvbiA9IC04Ny42NSwgbGF0ID0gNDEuODU1KSwKICAgICAgICAgICAgICAgICAgICAgICAgem9vbSA9IDExKQpnZ21hcChjaGljYWdvKQpgYGAKCiMjIFVzaW5nIGBnZW9tX3BvaW50KClgCgpTaW5jZSBlYWNoIHJvdyBpcyBhIHNpbmdsZSByZXBvcnRlZCBpbmNpZGVudCBvZiBjcmltZSwgd2UgY291bGQgdXNlIGBnZW9tX3BvaW50KClgIHRvIG1hcCB0aGUgbG9jYXRpb24gb2YgZXZlcnkgY3JpbWUgaW4gdGhlIGRhdGFzZXQuIEJlY2F1c2UgYGdnbWFwKClgIHVzZXMgdGhlIG1hcCB0aWxlcyAoaGVyZSwgZGVmaW5lZCBieSBgY2hpY2Fnb2ApIGFzIHRoZSBiYXNpYyBpbnB1dCwgd2Ugc3BlY2lmeSBgZGF0YWAgYW5kIGBtYXBwaW5nYCBpbnNpZGUgb2YgYGdlb21fcG9pbnQoKWAsIHJhdGhlciB0aGFuIGluc2lkZSBgZ2dwbG90KClgOgoKYGBge3IgcGxvdC1jcmltZS1wb2ludCwgZGVwZW5kc29uID0gImltcG9ydC1jcmltZXMifQpnZ21hcChjaGljYWdvKSArCiAgZ2VvbV9wb2ludChkYXRhID0gY3JpbWVzLAogICAgICAgICAgICAgbWFwcGluZyA9IGFlcyh4ID0gTG9uZ2l0dWRlLAogICAgICAgICAgICAgICAgICAgICAgICAgICB5ID0gTGF0aXR1ZGUpKQpgYGAKCldoYXQgd2VudCB3cm9uZz8gQWxsIHdlIGdldCBpcyBhIHNlYSBvZiBibGFjay4KCmBgYHtyIG51bS1jcmltZXMsIGRlcGVuZHNvbiA9ICJpbXBvcnQtY3JpbWVzIn0KbnJvdyhjcmltZXMpCmBgYAoKT2ggeWVhaC4gVGhlcmUgd2VyZSBgciBucm93KGNyaW1lcylgIHJlcG9ydGVkIGluY2lkZW50cyBvZiBjcmltZSBpbiB0aGUgY2l0eS4gRWFjaCBpbmNpZGVudCBpcyByZXByZXNlbnRlZCBieSBhIGRvdCBvbiB0aGUgbWFwLiBIb3cgY2FuIHdlIG1ha2UgdGhpcyBtYXAgbW9yZSB1c2FibGU/IE9uZSBvcHRpb24gaXMgdG8gZGVjcmVhc2UgdGhlIHNpemUgYW5kIGluY3JlYXNlIHRoZSB0cmFuc3BhcmFuY3kgb2YgZWFjaCBkYXRhIHBvaW50IHNvIGRlbnNlIGNsdXN0ZXJzIG9mIGNyaW1lIGJlY29tZSBhcHBhcmVudDoKCmBgYHtyIHBsb3QtY3JpbWUtcG9pbnQtYWxwaGEsIGRlcGVuZHNvbiA9ICJpbXBvcnQtY3JpbWVzIn0KZ2dtYXAoY2hpY2FnbykgKwogIGdlb21fcG9pbnQoZGF0YSA9IGNyaW1lcywKICAgICAgICAgICAgIGFlcyh4ID0gTG9uZ2l0dWRlLAogICAgICAgICAgICAgICAgIHkgPSBMYXRpdHVkZSksCiAgICAgICAgICAgICBzaXplID0gLjI1LAogICAgICAgICAgICAgYWxwaGEgPSAuMDEpCmBgYAoKQmV0dGVyLCBidXQgc3RpbGwgbm90IHF1aXRlIGFzIHVzZWZ1bCBhcyBpdCBjb3VsZCBiZS4KCiMjIFVzaW5nIGBzdGF0X2RlbnNpdHlfMmQoKWAKCkluc3RlYWQgb2YgcmVseWluZyBvbiBgZ2VvbV9wb2ludCgpYCBhbmQgcGxvdHRpbmcgdGhlIHJhdyBkYXRhLCBhIGJldHRlciBhcHByb2FjaCBpcyB0byBjcmVhdGUgYSAqKmhlYXRtYXAqKi4gTW9yZSBwcmVjaXNlbHksIHRoaXMgd2lsbCBiZSBhIHR3by1kaW1lbnNpb25hbCBrZXJuZWwgZGVuc2l0eSBlc3RpbWF0aW9uIChLREUpLiBJbiB0aGlzIGNvbnRleHQsIEtERSB3aWxsIHRha2UgYWxsIHRoZSByYXcgZGF0YSAoaS5lLiByZXBvcnRlZCBpbmNpZGVudHMgb2YgY3JpbWUpIGFuZCBjb252ZXJ0IGl0IGludG8gYSBzbW9vdGhlZCBwbG90IHNob3dpbmcgZ2VvZ3JhcGhpYyBjb25jZW50cmF0aW9ucyBvZiBjcmltZS4gVGhlIGNvcmUgZnVuY3Rpb24gaW4gYGdncGxvdDJgIHRvIGdlbmVyYXRlIHRoaXMga2luZCBvZiBwbG90IGlzIGBnZW9tX2RlbnNpdHlfMmQoKWA6CgpgYGB7ciBrZGUtY29udG91ciwgZGVwZW5kc29uID0gImltcG9ydC1jcmltZXMifQpnZ21hcChjaGljYWdvKSArCiAgZ2VvbV9kZW5zaXR5XzJkKGRhdGEgPSBjcmltZXMsCiAgICAgICAgICAgICAgICAgIGFlcyh4ID0gTG9uZ2l0dWRlLAogICAgICAgICAgICAgICAgICAgICAgeSA9IExhdGl0dWRlKSkKYGBgCgpCeSBkZWZhdWx0LCBgZ2VvbV9kZW5zaXR5XzJkKClgIGRyYXdzIGEgWyoqY29udG91ciBwbG90KipdKGh0dHBzOi8vZW4ud2lraXBlZGlhLm9yZy93aWtpL0NvbnRvdXJfbGluZSkgd2l0aCBsaW5lcyBvZiBjb25zdGFudCB2YWx1ZS4gVGhhdCBpcywgZWFjaCBsaW5lIHJlcHJlc2VudHMgYXBwcm94aW1hdGVseSB0aGUgc2FtZSBmcmVxdWVuY3kgb2YgY3JpbWUgYWxsIGFsb25nIHRoYXQgc3BlY2lmaWMgbGluZS4gQ29udG91ciBwbG90cyBhcmUgZnJlcXVlbnRseSB1c2VkIGluIG1hcHMgKGtub3duIGFzICoqdG9wb2dyYXBoaWMgbWFwcyoqKSB0byBkZW5vdGUgZWxldmF0aW9uLgoKIVtUaGUgQ2FkaWxsYWMgTW91bnRhaW5zLiBTb3VyY2U6IFtVUyBHZW9sb2dpY2FsIFN1cnZleV0oaHR0cHM6Ly93d3cudXNncy5nb3YvbWVkaWEvaW1hZ2VzL2NhZGlsbGFjbW91bnRhaW5zcyldKGltYWdlcy9jb250b3VyLW1hcC5qcGcpCgpSYXRoZXIgdGhhbiBkcmF3aW5nIGxpbmVzLCBpbnN0ZWFkIHdlIGNhbiBmaWxsIGluIHRoZSBncmFwaCBzbyB0aGF0IHdlIHVzZSB0aGUgYGZpbGxgIGFlc3RoZXRpYyB0byBkcmF3IGJhbmRzIG9mIGNyaW1lIGRlbnNpdHkuIFRvIGRvIHRoYXQsIHdlIHVzZSB0aGUgcmVsYXRlZCBmdW5jdGlvbiBgc3RhdF9kZW5zaXR5XzJkKClgOgoKYGBge3Iga2RlLWZpbGwsIGRlcGVuZHNvbiA9ICJpbXBvcnQtY3JpbWVzIn0KZ2dtYXAoY2hpY2FnbykgKwogIHN0YXRfZGVuc2l0eV8yZChkYXRhID0gY3JpbWVzLAogICAgICAgICAgICAgICAgICBhZXMoeCA9IExvbmdpdHVkZSwKICAgICAgICAgICAgICAgICAgICAgIHkgPSBMYXRpdHVkZSwKICAgICAgICAgICAgICAgICAgICAgIGZpbGwgPSBzdGF0KGxldmVsKSksCiAgICAgICAgICAgICAgICAgIGdlb20gPSAicG9seWdvbiIpCmBgYAoKTm90ZSB0aGUgdHdvIG5ldyBhcmd1bWVudHM6CgoqIGBnZW9tID0gInBvbHlnb24iYCAtIGNoYW5nZSB0aGUgW2dlb21ldHJpYyBvYmplY3RdKGRhdGF2aXpfZ3JhbW1hcl9vZl9ncmFwaGljcy5odG1sI2dlb21ldHJpY19vYmplY3RzKSB0byBiZSBkcmF3biBmcm9tIGEgYGRlbnNpdHlfMmRgIGdlb20gdG8gYSBgcG9seWdvbmAgZ2VvbQoqIGBmaWxsID0gc3RhdChsZXZlbClgIC0gdGhlIHZhbHVlIGZvciB0aGUgYGZpbGxgIGFlc3RoZXRpYyBpcyB0aGUgYGxldmVsYCBjYWxjdWxhdGVkIHdpdGhpbiBgc3RhdF9kZW5zaXR5XzJkKClgLCB3aGljaCB3ZSBhY2Nlc3MgdXNpbmcgdGhlIGBzdGF0KClgIG5vdGF0aW9uLgoKVGhpcyBpcyBhbiBpbXByb3ZlbWVudCwgYnV0IHdlIGNhbiBhZGp1c3Qgc29tZSBhZGRpdGlvbmFsIHNldHRpbmdzIHRvIG1ha2UgdGhlIGdyYXBoIHZpc3VhbGx5IG1vcmUgdXNlZnVsLiBTcGVjaWZpY2FsbHksCgoqIEluY3JlYXNlIHRoZSBudW1iZXIgb2YgYGJpbnNgLCBvciB1bmlxdWUgYmFuZHMgb2YgY29sb3IgYWxsb3dlZCBvbiB0aGUgZ3JhcGgKKiBNYWtlIHRoZSBoZWF0bWFwIHNlbWktdHJhbnNwYXJlbnQgdXNpbmcgYGFscGhhYCBzbyB3ZSBjYW4gc3RpbGwgdmlldyB0aGUgdW5kZXJseWluZyBtYXAKKiBDaGFuZ2UgdGhlIGNvbG9yIHBhbGV0dGUgdG8gYmV0dGVyIGRpc3Rpbmd1aXNoIGJldHdlZW4gaGlnaCBhbmQgbG93IGNyaW1lIGFyZWFzLiBIZXJlIEkgdXNlIGBicmV3ZXIucGFsKClgIGZyb20gdGhlIGBSQ29sb3JCcmV3ZXJgIHBhY2thZ2UgdG8gY3JlYXRlIGEgY3VzdG9tIGNvbG9yIHBhbGV0dGUgdXNpbmcgcmVkcyBhbmQgeWVsbG93cy4KCmBgYHtyIHBsb3QtY3JpbWUtZGVuc2l0eSwgZGVwZW5kc29uID0gImltcG9ydC1jcmltZXMifQpnZ21hcChjaGljYWdvKSArCiAgc3RhdF9kZW5zaXR5XzJkKGRhdGEgPSBjcmltZXMsCiAgICAgICAgICAgICAgICAgIGFlcyh4ID0gTG9uZ2l0dWRlLAogICAgICAgICAgICAgICAgICAgICAgeSA9IExhdGl0dWRlLAogICAgICAgICAgICAgICAgICAgICAgZmlsbCA9IHN0YXQobGV2ZWwpKSwKICAgICAgICAgICAgICAgICAgYWxwaGEgPSAuMiwKICAgICAgICAgICAgICAgICAgYmlucyA9IDI1LAogICAgICAgICAgICAgICAgICBnZW9tID0gInBvbHlnb24iKSArCiAgc2NhbGVfZmlsbF9ncmFkaWVudG4oY29sb3JzID0gYnJld2VyLnBhbCg3LCAiWWxPclJkIikpCmBgYAoKRnJvbSB0aGlzIG1hcCwgYSBjb3VwbGUgdHJlbmRzIGFyZSBub3RpY2VhYmxlOgoKKiBUaGUgZG93bnRvd24gcmVnaW9uIGhhcyB0aGUgaGlnaGVzdCBjcmltZSBpbmNpZGVuY2UgcmF0ZS4gTm90IHN1cnByaXNpbmcgZ2l2ZW4gaXRzIHBvcHVsYXRpb24gZGVuc2l0eSBkdXJpbmcgdGhlIHdvcmtkYXkuCiogVGhlcmUgYXJlIGNsdXN0ZXJzIG9mIGNyaW1lIG9uIHRoZSBzb3V0aCBhbmQgd2VzdCBzaWRlcy4gQWxzbyBub3Qgc3VycHJpc2luZyBpZiB5b3Uga25vdyBhbnl0aGluZyBhYm91dCB0aGUgY2l0eSBvZiBDaGljYWdvLgoKIyMgTG9va2luZyBmb3IgdmFyaWF0aW9uCgpCZWNhdXNlIGBnZ21hcGAgaXMgYnVpbHQgb24gYGdncGxvdDJgLCB3ZSBjYW4gdXNlIHRoZSBjb3JlIGZlYXR1cmVzIG9mIGBnZ3Bsb3QyYCB0byBtb2RpZnkgdGhlIGdyYXBoLiBPbmUgbWFqb3IgZmVhdHVyZSBpcyBmYWNldGluZy4gTGV0J3MgZm9jdXMgb3VyIGFuYWx5c2lzIG9uIGZvdXIgdHlwZXMgb2YgY3JpbWVzIHdpdGggc2ltaWxhciBmcmVxdWVuY3kgb2YgcmVwb3J0ZWQgaW5jaWRlbnRzXltTcGVjaWZpY2FsbHkgYnVyZ2xhcnksIG1vdG9yIHZlaGljbGUgdGhlZnQsIG5hcmNvdGljcywgYW5kIHJvYmJlcnkuXSBhbmQgZmFjZXQgYnkgdHlwZSBvZiBjcmltZToKCmBgYHtyIHBsb3QtY3JpbWUtd2RheSwgZGVwZW5kc29uID0gImltcG9ydC1jcmltZXMifQpnZ21hcChjaGljYWdvKSArCiAgc3RhdF9kZW5zaXR5XzJkKGRhdGEgPSBjcmltZXMgJT4lCiAgICAgICAgICAgICAgICAgICAgZmlsdGVyKGBQcmltYXJ5IFR5cGVgICVpbiUgYygiQlVSR0xBUlkiLCAiTU9UT1IgVkVISUNMRSBUSEVGVCIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiTkFSQ09USUNTIiwgIlJPQkJFUlkiKSksCiAgICAgICAgICAgICAgICAgIGFlcyh4ID0gTG9uZ2l0dWRlLAogICAgICAgICAgICAgICAgICAgICAgeSA9IExhdGl0dWRlLAogICAgICAgICAgICAgICAgICAgICAgZmlsbCA9IHN0YXQobGV2ZWwpKSwKICAgICAgICAgICAgICAgICAgYWxwaGEgPSAuNCwKICAgICAgICAgICAgICAgICAgYmlucyA9IDEwLAogICAgICAgICAgICAgICAgICBnZW9tID0gInBvbHlnb24iKSArCiAgc2NhbGVfZmlsbF9ncmFkaWVudG4oY29sb3JzID0gYnJld2VyLnBhbCg3LCAiWWxPclJkIikpICsKICBmYWNldF93cmFwKH4gYFByaW1hcnkgVHlwZWApCmBgYAoKVGhlcmUgaXMgYSBsYXJnZSBkaWZmZXJlbmNlIGluIHRoZSBnZW9ncmFwaGljIGRlbnNpdHkgb2YgbmFyY290aWNzIGNyaW1lcyByZWxhdGl2ZSB0byB0aGUgb3RoZXIgY2F0Z29yaWVzLiBXaGlsZSBidXJnbGFyaWVzLCBtb3RvciB2ZWhpY2xlIHRoZWZ0cywgYW5kIHJvYmJlcmllcyBhcmUgcmVhc29uYWJseSBwcmV2YWxlbnQgYWxsIGFjcm9zcyB0aGUgY2l0eSwgdGhlIHZhc3QgbWFqb3JpdHkgb2YgbmFyY290aWNzIGNyaW1lcyBvY2N1ciBpbiB0aGUgd2VzdCBhbmQgc291dGggc2lkZXMgb2YgdGhlIGNpdHkuCgojIExvY2F0aW9ucyBvZiBtdXJkZXJzCgpXaGlsZSBgZ2VvbV9wb2ludCgpYCB3YXMgbm90IGFwcHJvcHJpYXRlIGZvciBncmFwaGluZyBhIGxhcmdlIG51bWJlciBvZiBvYnNlcnZhdGlvbnMgaW4gYSBkZW5zZSBnZW9ncmFwaGljIGxvY2F0aW9uLCBpdCBkb2VzIHdvcmsgcmF0aGVyIHdlbGwgZm9yIGxlc3MgZGVuc2UgYXJlYXMuIE5vdyBsZXQncyBsaW1pdCBvdXIgYW5hbHlzaXMgc3RyaWN0bHkgdG8gcmVwb3J0ZWQgaW5jaWRlbnRzIG9mIGhvbWljaWRlIGluIDIwMTcuCgpgYGB7ciBob21pY2lkZSwgZGVwZW5kc29uID0gImltcG9ydC1jcmltZXMifQooaG9taWNpZGVzIDwtIGNyaW1lcyAlPiUKICBmaWx0ZXIoYFByaW1hcnkgVHlwZWAgPT0gIkhPTUlDSURFIikpCmBgYAoKV2UgY2FuIGRyYXcgYSBtYXAgb2YgdGhlIGNpdHkgd2l0aCBhbGwgaG9taWNpZGVzIGluZGljYXRlZCBvbiB0aGUgbWFwIHVzaW5nIGBnZW9tX3BvaW50KClgOgoKYGBge3IgaG9taWNpZGUtY2l0eSwgZGVwZW5kc29uID0gImhvbWljaWRlIn0KZ2dtYXAoY2hpY2FnbykgKwogIGdlb21fcG9pbnQoZGF0YSA9IGhvbWljaWRlcywKICAgICAgICAgICAgIG1hcHBpbmcgPSBhZXMoeCA9IExvbmdpdHVkZSwKICAgICAgICAgICAgICAgICAgICAgICAgICAgeSA9IExhdGl0dWRlKSwKICAgICAgICAgICAgIHNpemUgPSAxKQpgYGAKCkNvbXBhcmVkIHRvIG91ciBwcmV2aW91cyBvdmVydmlld3MsIGZldyBpZiBhbnkgaG9taWNpZGVzIGFyZSByZXBvcnRlZCBkb3dudG93bi4gV2UgY2FuIGFsc28gbmFycm93IGRvd24gdGhlIGdlb2dyYXBoaWMgbG9jYXRpb24gdG8gbWFwIHNwZWNpZmljIG5laWdoYm9yaG9vZHMgaW4gQ2hpY2Fnby4gRmlyc3Qgd2Ugb2J0YWluIG1hcCB0aWxlcyBmb3IgdGhvc2Ugc3BlY2lmaWMgcmVnaW9ucy4gSGVyZSB3ZSdsbCBleGFtaW5lIE5vcnRoIExhd25kYWxlIGFuZCBLZW53b29kLgoKYGBge3IgZ2V0LWNvbW11bml0eS1hcmVhcywgaW5jbHVkZSA9IEZBTFNFfQpsaWJyYXJ5KHNmKQoKIyBpbXBvcnQgc2hhcGVmaWxlIHdpdGggYXJlYSBuYW1lcyBhbmQgbnVtYmVycwphcmVhcyA8LSBzdF9yZWFkKCJkYXRhL0JvdW5kYXJpZXMgLSBDb21tdW5pdHkgQXJlYXMgKGN1cnJlbnQpL2dlb19leHBvcnRfMzI4Y2RjYmYtMzNiYS00OTk3LThjZTgtOTA5NTNjNmZlYzE5LnNocCIpCgpjcmltZXMgJT4lCiAgZmlsdGVyKGBQcmltYXJ5IFR5cGVgID09ICJIT01JQ0lERSIpICU+JQogIGNvdW50KGBDb21tdW5pdHkgQXJlYWAsIHNvcnQgPSBUUlVFKSAlPiUKICBsZWZ0X2pvaW4oYXJlYXMgJT4lCiAgICAgICAgICAgICAgc2VsZWN0KGNvbW11bml0eSwgYXJlYV9udW1iZSkgJT4lCiAgICAgICAgICAgICAgbXV0YXRlKGFyZWFfbnVtYmUgPSBhcy5udW1lcmljKGFzLmNoYXJhY3RlcihhcmVhX251bWJlKSkpLAogICAgICAgICAgICBieSA9IGMoIkNvbW11bml0eSBBcmVhIiA9ICJhcmVhX251bWJlIikpCmBgYAoKYGBge3IgZ2V0LWhpZ2gtbG93LW11cmRlci1tYXBzfQojIE5vcnRoIExhd25kYWxlIGlzIHRoZSBoaWdoZXN0IGhvbWljaWRlcyBpbiAyMDE3CiMgQ29tcGFyZSB0byBLZW53b29kCm5vcnRoX2xhd25kYWxlIDwtIGdldF9tYXAobG9jYXRpb24gPSBjKGxvbiA9IC04Ny43MTQ0MDEsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGF0ID0gNDEuODU4NzY4KSwKICAgICAgICAgICAgICAgICAgICAgem9vbSA9IDE0KQoKa2Vud29vZCA8LSBnZXRfbWFwKGxvY2F0aW9uID0gYyhsb24gPSAtODcuNTkzMjA4MzYwODY0MjUsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgbGF0ID0gNDEuODA5NjUzNTI5NzM2NjQpLAogICAgICAgICAgICAgICAgICAgem9vbSA9IDE1KQoKZ2dtYXAobm9ydGhfbGF3bmRhbGUpCmdnbWFwKGtlbndvb2QpCmBgYAoKVG8gcGxvdCBob21pY2lkZXMgc3BlY2lmaWNhbGx5IGluIHRoZXNlIG5laWdoYm9yaG9vZHMsIGNoYW5nZSBgZ2dtYXAoY2hpY2FnbylgIHRvIHRoZSBhcHByb3ByaWF0ZSBtYXAgdGlsZToKCmBgYHtyIHBsb3QtbXVyZGVyLCBkZXBlbmRzb24gPSAiaG9taWNpZGUifQpnZ21hcChub3J0aF9sYXduZGFsZSkgKwogIGdlb21fcG9pbnQoZGF0YSA9IGhvbWljaWRlcywKICAgICAgICAgICAgIGFlcyh4ID0gTG9uZ2l0dWRlLCB5ID0gTGF0aXR1ZGUpKQoKZ2dtYXAoa2Vud29vZCkgKwogIGdlb21fcG9pbnQoZGF0YSA9IGhvbWljaWRlcywKICAgICAgICAgICAgIGFlcyh4ID0gTG9uZ2l0dWRlLCB5ID0gTGF0aXR1ZGUpKQpgYGAKCk5vcnRoIExhd25kYWxlIGhhZCB0aGUgbW9zdCByZXBvcnRlZCBob21pY2lkZXMgaW4gMjAxNywgd2hlcmVhcyBLZW53b29kIGhhZCBvbmx5IGEgaGFuZGZ1bC4gQW5kIGV2ZW4gdGhvdWdoIGBob21pY2lkZXNgIGNvbnRhaW5lZCBkYXRhIGZvciBob21pY2lkZXMgYWNyb3NzIHRoZSBlbnRpcmUgY2l0eSwgYGdnbWFwKClgIGF1dG9tYXRpY2FsbHkgY3JvcHBlZCB0aGUgZ3JhcGggdG8ga2VlcCBqdXN0IHRoZSBob21pY2lkZXMgdGhhdCBvY2N1cnJlZCB3aXRoaW4gdGhlIGJvdW5kaW5nIGJveC4KCkFsbCB0aGUgb3RoZXIgYWVzdGhldGljIGN1c3RvbWl6YXRpb25zIG9mIGBnZW9tX3BvaW50KClgIHdvcmsgd2l0aCBgZ2dtYXBgLiBTbyB3ZSBjb3VsZCBleHBhbmQgdGhlc2UgbmVpZ2hib3Job29kIG1hcHMgdG8gaW5jbHVkZSBhbGwgdmlvbGVudCBjcmltZSBjYXRlZ29yaWVzXltTcGVjaWZjYWxseSBob21pY2lkZXMsIGNyaW1pbmFsIHNleHVhbCBhc3NhdWx0LCBhbmQgcm9iYmVyeS4gW0FnZ3JhdmF0ZWQgYXNzYXVsdCBhbmQgYWdncmF2YXRlZCByb2JiZXJ5IGFyZSBhbHNvIGRlZmluZWQgYXMgdmlvbGVudCBjcmltZXMgYnkgdGhlIENoaWNhZ28gUG9saWNlIERlcGFydG1hbnRdKGh0dHA6Ly9naXMuY2hpY2Fnb3BvbGljZS5vcmcvY2xlYXJtYXBfY3JpbWVfc3Vtcy9jcmltZV90eXBlcy5odG1sKSwgYnV0IHRoZSBjb2Rpbmcgc3lzdGVtIGZvciB0aGlzIGRhdGEgc2V0IGRvZXMgbm90IGRpc3Rpbmd1aXNoIGJldHdlZW4gb3JkaW5hcnkgYW5kIGFnZ3JhdmF0ZWQgdHlwZXMgb2YgYXNzYXVsdCBhbmQgcm9iYmVyeS5dIGFuZCBkaXN0aW5ndWlzaCBlYWNoIHR5cGUgYnkgYGNvbG9yYDoKCmBgYHtyIHZpb2xlbnQsIGRlcGVuZHNvbiA9ICJpbXBvcnQtY3JpbWVzIn0KKHZpb2xlbnQgPC0gY3JpbWVzICU+JQogIGZpbHRlcihgUHJpbWFyeSBUeXBlYCAlaW4lIGMoIkhPTUlDSURFIiwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJDUklNIFNFWFVBTCBBU1NBVUxUIiwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICJST0JCRVJZIikpKQpgYGAKCmBgYHtyIHBsb3QtdmlvbGVudCwgZGVwZW5kc29uID0gInZpb2xlbnQifQpnZ21hcChub3J0aF9sYXduZGFsZSkgKwogIGdlb21fcG9pbnQoZGF0YSA9IHZpb2xlbnQsCiAgICAgICAgICAgICBhZXMoeCA9IExvbmdpdHVkZSwgeSA9IExhdGl0dWRlLAogICAgICAgICAgICAgICAgIGNvbG9yID0gYFByaW1hcnkgVHlwZWApKSArCiAgc2NhbGVfY29sb3JfYnJld2VyKHR5cGUgPSAicXVhbCIsIHBhbGV0dGUgPSAiRGFyazIiKQoKZ2dtYXAoa2Vud29vZCkgKwogIGdlb21fcG9pbnQoZGF0YSA9IHZpb2xlbnQsCiAgICAgICAgICAgICBhZXMoeCA9IExvbmdpdHVkZSwgeSA9IExhdGl0dWRlLAogICAgICAgICAgICAgICAgIGNvbG9yID0gYFByaW1hcnkgVHlwZWApKSArCiAgc2NhbGVfY29sb3JfYnJld2VyKHR5cGUgPSAicXVhbCIsIHBhbGV0dGUgPSAiRGFyazIiKQpgYGAKCiMgQWRkaXRpb25hbCByZXNvdXJjZXMgey50b2MtaWdub3JlfQoKKiBbS2FobGUsIEQuLCAmIFdpY2toYW0sIEguICgyMDEzKS4gYGdnbWFwYDogU3BhdGlhbCBWaXN1YWxpemF0aW9uIHdpdGggZ2dwbG90Mi4gKlIgSm91cm5hbCosIDUoMSkuXShodHRwczovL2pvdXJuYWwuci1wcm9qZWN0Lm9yZy9hcmNoaXZlLzIwMTMvUkotMjAxMy0wMTQvUkotMjAxMy0wMTQucGRmKQoKIyBTZXNzaW9uIEluZm8gey50b2MtaWdub3JlfQoKYGBge3IgY2hpbGQ9J19zZXNzaW9uaW5mby5SbWQnfQpgYGAK</div>
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

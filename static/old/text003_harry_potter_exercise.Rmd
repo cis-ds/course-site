@@ -1,0 +1,255 @@
+---
+title: "Practicing sentiment analysis with Harry Potter"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidytext)
+library(wordcloud)
+library(harrypotter)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+# Load Harry Potter text
+
+```r
+devtools::install_github("bradleyboehmke/harrypotter")
+```
+
+```{r hp}
+library(harrypotter)
+
+# names of each book
+hp_books <- c("philosophers_stone", "chamber_of_secrets",
+              "prisoner_of_azkaban", "goblet_of_fire",
+              "order_of_the_phoenix", "half_blood_prince",
+              "deathly_hallows")
+
+# combine books into a list
+hp_words <- list(
+  philosophers_stone,
+  chamber_of_secrets,
+  prisoner_of_azkaban,
+  goblet_of_fire,
+  order_of_the_phoenix,
+  half_blood_prince,
+  deathly_hallows
+) %>%
+  # name each list element
+  set_names(hp_books) %>%
+  # convert each book to a data frame and merge into a single data frame
+  map_df(as_tibble, .id = "book") %>%
+  # convert book to a factor
+  mutate(book = factor(book, levels = hp_books)) %>%
+  # remove empty chapters
+  filter(!is.na(value)) %>%
+  # create a chapter id column
+  group_by(book) %>%
+  mutate(chapter = row_number(book)) %>%
+  # tokenize the data frame
+  unnest_tokens(word, value)
+
+hp_words
+```
+
+# Most frequent words, by book
+
+Remove stop words.
+
+```{r word-freq, fig.asp = 2}
+hp_words %>%
+  # delete stopwords
+  anti_join(stop_words) %>%
+  # summarize count per word per book
+  count(book, word) %>%
+  # highest freq on top
+  arrange(desc(n)) %>% 
+  # identify rank within group
+  group_by(book) %>% # 
+  mutate(top = seq_along(word)) %>%
+  # retain top 15 frequent words
+  filter(top <= 15) %>%
+  # create barplot
+  ggplot(aes(x = -top, y = n, fill = book)) + 
+  geom_col(color = "black") +
+  # print words in plot instead of as axis labels
+  geom_text(aes(label = word), hjust = "left", nudge_y = 100) +
+  labs(title = "Most frequent words in Harry Potter",
+       x = NULL,
+       y = "Word count") +
+  facet_wrap( ~ book) +
+  coord_flip() +
+  theme(legend.position = "none",
+        # rotate x text
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        # remove tick marks and text on y-axis
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+```
+
+# Estimate sentiment
+
+## Generate data frame with sentiment derived from the NRC
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r sentiment-nrc}
+(hp_nrc <- hp_words %>% 
+  inner_join(get_sentiments("nrc")) %>%
+  group_by(book, chapter, sentiment))
+```
+
+  </p>
+</details>
+
+## Visualize which words in the NRC sentiment dictionary appear most frequently
+
+Sometimes words which are defined in a general sentiment dictionary can be outliers in specific contexts. That is, an author may use a word without intending to convey a specific sentiment but the dictionary defines it in a certain way.
+
+We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds) as a quick check to see if there are any outliers in the context of *Harry Potter*.
+
+```{r sentiment-outliers}
+library(wordcloud)
+
+hp_nrc %>%
+  group_by(word) %>%
+  count() %>%
+  with(wordcloud(word, n, max.words = 100))
+```
+
+As we can see, "harry" appears quite frequently in the books. In the vast majority of appearances, "harry" is used to refer to the main character and is not meant to convey a specific sentiment.
+
+```{r sentiment-harry}
+get_sentiments("nrc") %>%
+  filter(word == "harry")
+```
+
+It would be best to remove this word from further sentiment analysis, treating it as if it were another stop word.
+
+```{r sentiment-outlier-remove}
+hp_nrc <- hp_nrc %>%
+  filter(word != "harry")
+```
+
+## Visualize which words appear most frequently for each sentiment type
+
+<details> 
+  <summary>Click for a solution</summary>
+  <p>
+  
+```{r nrc-freq, fig.asp = 1}
+hp_nrc %>%
+  # summarize count per word
+  ungroup %>%
+  count(word, sentiment) %>%
+  # highest freq on top
+  arrange(desc(n)) %>% 
+  # identify rank within group
+  group_by(sentiment) %>% # 
+  mutate(top = seq_along(word)) %>%
+  # retain top 15 frequent words
+  filter(top <= 15) %>%
+  # create barplot
+  ggplot(aes(x = -top, y = n, fill = sentiment)) + 
+  geom_col(color = "black") +
+  # print words in plot instead of as axis labels
+  geom_text(aes(label = word), hjust = "left", nudge_y = 100) +
+  labs(title = "Most frequent words in Harry Potter",
+       x = NULL,
+       y = "Word count") +
+  facet_wrap( ~ sentiment, ncol = 5) +
+  coord_flip() +
+  theme(legend.position = "none",
+        # rotate x text
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        # remove tick marks and text on y-axis
+        axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+```
+
+  </p>
+</details>
+
+## Visualize the positive/negative sentiment for each book over time using the AFINN dictionary
+
+<details> 
+  <summary>Click for a solution</summary>
+  <p>
+  
+```{r affin-over-time}
+hp_words %>% 
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book, chapter) %>%
+  summarize(score = sum(score)) %>%
+  ggplot(aes(chapter, score, fill = book)) +
+  geom_col() +
+  facet_wrap(~ book, scales = "free_x") +
+  labs(title = "Emotional arc of Harry Potter books",
+       subtitle = "AFINN sentiment dictionary",
+       x = "Chapter",
+       y = "Emotional score") +
+  theme(legend.position = "none")
+
+# cumulative score
+hp_words %>% 
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book) %>%
+  mutate(cumscore = cumsum(score)) %>%
+  ggplot(aes(chapter, cumscore, fill = book)) +
+  geom_step() +
+  facet_wrap(~ book, scales = "free_x") +
+  labs(title = "Emotional arc of Harry Potter books",
+       subtitle = "AFINN sentiment dictionary",
+       x = "Chapter",
+       y = "Cumulative emotional score")
+```
+
+  </p>
+</details>
+
+## Visualize the sentimental content of each chapter in each book using the NRC dictionary
+
+<details> 
+  <summary>Click for a solution</summary>
+  <p>
+  
+```{r sentiment-over-time, fig.asp = 1}
+hp_nrc %>%
+  count(sentiment, book, chapter) %>%
+  filter(!(sentiment %in% c("positive", "negative"))) %>%
+  # create area plot
+  ggplot(aes(x = chapter, y = n)) +
+  geom_col(aes(fill = sentiment)) + 
+  # add black smoothing line without standard error
+  geom_smooth(aes(fill = sentiment), method = "loess", se = F, col = 'black') + 
+  theme(legend.position = 'none') +
+  labs(x = "Chapter", y = "Emotion score", # add labels
+       title = "Harry Plotter: Emotions during the saga",
+       subtitle = "Using tidytext and the nrc sentiment dictionary") +
+  # seperate plots per sentiment and book and free up x-axes
+  facet_grid(sentiment ~ book, scale = "free")
+```
+
+  </p>
+</details>
+
+# Acknowledgments {.toc-ignore}
+
+* This page is derived in part from [Harry Plotter: Celebrating the 20 year anniversary with `tidytext` and the `tidyverse` in R](https://paulvanderlaken.com/2017/08/03/harry-plotter-celebrating-the-20-year-anniversary-with-tidytext-the-tidyverse-and-r/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+
+# Session Info {.toc-ignore}
+
+```{r child='_sessioninfo.Rmd'}
+```

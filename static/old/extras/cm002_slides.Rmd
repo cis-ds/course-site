@@ -1,0 +1,180 @@
+---
+title: "Visualizations and the Grammar of Graphics"
+author: |
+  | MACS 30500
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE)
+
+set.seed(1234)
+
+library(tidyverse)
+library(knitr)
+library(stringr)
+library(broom)
+library(datasauRus)
+library(gganimate)
+
+theme_set(theme_gray(base_size = 18))
+```
+
+----
+
+```{r datasaurus-sum-stats, echo = FALSE}
+datasaurus_dozen %>%
+  group_by(dataset) %>%
+  summarize(n = n(),
+            x_mean = mean(x),
+            y_mean = mean(y),
+            x_sd = sd(x),
+            y_sd = sd(y),
+            r2 = cor(x, y)) %>%
+  mutate(id = row_number()) %>%
+  select(id, everything()) %>%
+  select(-dataset) %>%
+  kable(col.names = c("ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$",
+                      "$\\sigma_{X}$", "$\\sigma_{Y}$", "$R$"))
+```
+
+----
+
+```{r datasaurus-lm, echo = FALSE, results = "asis"}
+# estimate linear model
+datasaurus_model <- datasaurus_dozen %>%
+  group_by(dataset) %>%
+  nest() %>%
+  mutate(model = map(data, ~ lm(y ~ x, data = .x)),
+         results = map(model, tidy)) %>%
+  unnest(results)
+
+# plot model estimates
+datasaurus_model %>%
+  ggplot(aes(fct_rev(term), estimate, color = dataset)) +
+  geom_pointrange(aes(ymin = estimate - 1.96 * std.error,
+                      ymax = estimate + 1.96 * std.error),
+                  position = position_dodge(width = 1)) +
+  labs(title = "Linear regression models",
+       subtitle = "With 95% confidence intervals",
+       x = NULL,
+       y = "Estimated parameter") +
+  coord_flip() +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+----
+
+```{r datasaurus-graph, echo = FALSE, warning = FALSE}
+ggplot(datasaurus_dozen, aes(x = x, y = y))+
+  geom_point() +
+  theme_minimal() +
+  transition_states(dataset, 3, 1) + 
+  ease_aes('cubic-in-out')
+```
+
+----
+
+```{r datasaurus-graph-static, echo = FALSE, fig.height = 8, fig.width = 8}
+ggplot(datasaurus_dozen, aes(x = x, y = y))+
+  facet_wrap(~ dataset) +
+  geom_point() +
+  theme_minimal()
+```
+
+## Grammar
+
+> The whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics.
+
+## Grammar of graphics
+
+* "The fundamental principles or rules of an art or science"
+* A grammar used to describe and create a wide range of statistical graphics
+* Layered grammar of graphics
+    * `ggplot2`
+
+----
+
+!["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](../images/minard.png)
+
+## Building Minard's map in R {.scrollable}
+
+```{r minard_data, include = FALSE}
+troops <- read_table("../data/minard-troops.txt")
+cities <- read_table("../data/minard-cities.txt")
+```
+
+```{r minard_print, echo = TRUE}
+troops
+cities
+```
+
+## Minard's grammar
+
+<div id="left">
+* Troops
+    * Latitude
+    * Longitude
+    * Survivors
+    * Advance/retreat
+* Cities
+    * Latitude
+    * Longitude
+    * City name
+</div>
+
+<div id="right">
+* Layer
+    * Data
+    * Mapping
+    * Statistical transformation (stat)
+    * Geometric object (geom)
+    * Position adjustment (position)
+* Scale
+* Coordinate system
+* Faceting
+</div>
+
+## {.scrollable}
+
+```{r plot_troops, echo = TRUE}
+plot_troops <- ggplot(data = troops,
+                      mapping = aes(x = long, y = lat)) +
+  geom_path(aes(size = survivors,
+                color = direction,
+                group = group))
+plot_troops
+```
+
+## {.scrollable}
+
+```{r plot_both, echo = TRUE}
+plot_both <- plot_troops + 
+  geom_text(data = cities, mapping = aes(label = city), size = 4)
+plot_both
+```
+
+## {.scrollable}
+
+```{r plot_polished, echo = TRUE}
+plot_polished <- plot_both +
+  scale_size(range = c(0, 12),
+             breaks = c(10000, 20000, 30000),
+             labels = c("10,000", "20,000", "30,000")) + 
+  scale_color_manual(values = c("tan", "grey50")) +
+  coord_map() +
+  labs(title = "Map of Napoleon's Russian campaign of 1812",
+       x = NULL,
+       y = NULL)
+plot_polished
+```
+
+## {.scrollable}
+
+```{r plot_final, echo = TRUE}
+plot_polished +
+  theme_void() +
+  theme(legend.position = "none")
+```

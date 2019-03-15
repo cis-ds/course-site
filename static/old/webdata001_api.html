@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Getting data from the web: API access</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-45631879-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-45631879-2');
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("webdata001_api.Rmd");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Getting data from the web: API access</h1>
+
+</div>
+
+
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidyverse)
+<span class="kw">library</span>(forcats)
+<span class="kw">library</span>(broom)
+<span class="kw">library</span>(wordcloud)
+<span class="kw">library</span>(tidytext)
+<span class="kw">library</span>(viridis)
+
+<span class="kw">set.seed</span>(<span class="dv">1234</span>)
+<span class="kw">theme_set</span>(<span class="kw">theme_minimal</span>())</code></pre></div>
+<div id="methods-for-obtaining-data-online" class="section level1">
+<h1>Methods for obtaining data online</h1>
+<p>There are many ways to obtain data from the Internet. Four major categories are:</p>
+<ul>
+<li><strong>click-and-download</strong> on the internet as a “flat” file, such as .csv, .xls</li>
+<li><strong>install-and-play</strong> an API for which someone has written a handy R package</li>
+<li><strong>API-query</strong> published with an unwrapped API</li>
+<li><strong>Scraping</strong> implicit in an html website</li>
+</ul>
+<div id="click-and-download" class="section level2">
+<h2>Click-and-Download</h2>
+<p>In the simplest case, the data you need is already on the internet in a tabular format. There are a couple of strategies here:</p>
+<ul>
+<li>Use <code>read.csv</code> or <code>readr::read_csv</code> to read the data straight into R</li>
+<li>Use the <code>downloader</code> package or <code>curl</code> from the shell to download the file and store a local copy, then use <code>read_csv</code> or something similar to read the data into R
+<ul>
+<li>Even if the file disappears from the internet, you have a local copy cached</li>
+</ul></li>
+</ul>
+<p>Even in this instance, files may need cleaning and transformation when you bring them into R.</p>
+</div>
+<div id="data-supplied-on-the-web" class="section level2">
+<h2>Data supplied on the web</h2>
+<p>Many times, the data that you want is not already organized into one or a few tables that you can read directly into R. More frequently, you find this data is given in the form of an API. <strong>A</strong>pplication <strong>P</strong>rogramming <strong>I</strong>nterfaces (APIs) are descriptions of the kind of requests that can be made of a certain piece of software, and descriptions of the kind of answers that are returned. Many sources of data - databases, websites, services - have made all (or part) of their data available via APIs over the internet. Computer programs (“clients”) can make requests of the server, and the server will respond by sending data (or an error message). This client can be many kinds of other programs or websites, including R running from your laptop.</p>
+</div>
+<div id="install-and-play-packages" class="section level2">
+<h2>Install and play packages</h2>
+<p>Many common web services and APIs have been “wrapped”, i.e. R functions have been written around them which send your query to the server and format the response.</p>
+<p>Why do we want this?</p>
+<ul>
+<li>provenance</li>
+<li>reproducible</li>
+<li>updating</li>
+<li>ease</li>
+<li>scaling</li>
+</ul>
+</div>
+</div>
+<div id="sightings-of-birds-rebird" class="section level1">
+<h1>Sightings of birds: <code>rebird</code></h1>
+<p><a href="https://github.com/ropensci/rebird"><code>rebird</code></a> is an R interface for the <a href="http://ebird.org/content/ebird/">ebird</a> database. e-Bird lets birders upload sightings of birds, and allows everyone access to those data.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;rebird&quot;</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(rebird)</code></pre></div>
+<div id="search-birds-by-geography" class="section level2">
+<h2>Search birds by geography</h2>
+<p>The ebird website categorizes some popular locations as “Hotspots”. These are areas where there are both lots of birds and lots of birders. Once such location is at Lincoln Park Zoo in Chicago. You can see data for this site at <a href="http://ebird.org/ebird/hotspot/L1573785" class="uri">http://ebird.org/ebird/hotspot/L1573785</a></p>
+<p>At that link, you can see a page like this:</p>
+<div class="figure">
+<img src="images/lincoln_park_zoo.png" alt="Lincoln Park Zoo" />
+<p class="caption">Lincoln Park Zoo</p>
+</div>
+<p>The data already look to be organized in a data frame! <code>rebird</code> allows us to read these data directly into R.</p>
+<blockquote>
+<p>The ID code for Lincoln Park Zoo is <strong>L1573785</strong></p>
+</blockquote>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ebirdhotspot</span>(<span class="dt">locID =</span> <span class="st">&quot;L1573785&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>()</code></pre></div>
+<pre><code>## # A tibble: 24 x 11
+##          lng                   locName howMany               sciName
+##        &lt;dbl&gt;                     &lt;chr&gt;   &lt;int&gt;                 &lt;chr&gt;
+##  1 -87.63272 Lincoln Park Zoo, Chicago       2 Nycticorax nycticorax
+##  2 -87.63272 Lincoln Park Zoo, Chicago      15    Larus delawarensis
+##  3 -87.63272 Lincoln Park Zoo, Chicago      15       Hirundo rustica
+##  4 -87.63272 Lincoln Park Zoo, Chicago       2  Poecile atricapillus
+##  5 -87.63272 Lincoln Park Zoo, Chicago       1    Sitta carolinensis
+##  6 -87.63272 Lincoln Park Zoo, Chicago      15      Sturnus vulgaris
+##  7 -87.63272 Lincoln Park Zoo, Chicago      13   Agelaius phoeniceus
+##  8 -87.63272 Lincoln Park Zoo, Chicago       8    Quiscalus quiscula
+##  9 -87.63272 Lincoln Park Zoo, Chicago       3        Spinus tristis
+## 10 -87.63272 Lincoln Park Zoo, Chicago      35     Passer domesticus
+## # ... with 14 more rows, and 7 more variables: obsValid &lt;lgl&gt;,
+## #   locationPrivate &lt;lgl&gt;, obsDt &lt;chr&gt;, obsReviewed &lt;lgl&gt;, comName &lt;chr&gt;,
+## #   lat &lt;dbl&gt;, locID &lt;chr&gt;</code></pre>
+<p>We can use the function <code>ebirdgeo</code> to get a list for an area. (Note that South and West are negative):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">chibirds &lt;-<span class="st"> </span><span class="kw">ebirdgeo</span>(<span class="dt">lat =</span> <span class="fl">41.8781</span>, <span class="dt">lng =</span> <span class="op">-</span><span class="fl">87.6298</span>)
+chibirds <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">str</span>()</code></pre></div>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    137 obs. of  11 variables:
+##  $ lng            : num  -87.6 -87.6 -87.6 -87.6 -87.6 ...
+##  $ locName        : chr  &quot;U. of Chicago-University Ave. from 61st to 58th&quot; &quot;U. of Chicago-University Ave. from 61st to 58th&quot; &quot;U. of Chicago-University Ave. from 61st to 58th&quot; &quot;U. of Chicago-University Ave. from 61st to 58th&quot; ...
+##  $ howMany        : int  5 2 2 3 1 3 4 3 7 1 ...
+##  $ sciName        : chr  &quot;Corvus brachyrhynchos&quot; &quot;Passer domesticus&quot; &quot;Chaetura pelagica&quot; &quot;Spizella passerina&quot; ...
+##  $ obsValid       : logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
+##  $ locationPrivate: logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
+##  $ obsDt          : chr  &quot;2017-07-12 08:40&quot; &quot;2017-07-12 08:40&quot; &quot;2017-07-12 08:40&quot; &quot;2017-07-12 08:40&quot; ...
+##  $ obsReviewed    : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
+##  $ comName        : chr  &quot;American Crow&quot; &quot;House Sparrow&quot; &quot;Chimney Swift&quot; &quot;Chipping Sparrow&quot; ...
+##  $ lat            : num  41.8 41.8 41.8 41.8 41.8 ...
+##  $ locID          : chr  &quot;L1242933&quot; &quot;L1242933&quot; &quot;L1242933&quot; &quot;L1242933&quot; ...</code></pre>
+<p><strong>Note</strong>: Check the defaults on this function. e.g. radius of circle, time of year.</p>
+<p>We can also search by “region”, which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters <strong>FR</strong></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">frenchbirds &lt;-<span class="st"> </span><span class="kw">ebirdregion</span>(<span class="st">&quot;FR&quot;</span>)
+
+frenchbirds <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">str</span>()</code></pre></div>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    267 obs. of  11 variables:
+##  $ lng            : num  7.75 -1.17 -1.17 -1.17 -1.17 ...
+##  $ locName        : chr  &quot;Strasbourg (cité)&quot; &quot;Sainte-Eulalie-en-Born &quot; &quot;Sainte-Eulalie-en-Born &quot; &quot;Sainte-Eulalie-en-Born &quot; ...
+##  $ howMany        : int  1 8 1 3 5 2 3 25 1 2 ...
+##  $ sciName        : chr  &quot;Fulica atra&quot; &quot;Hirundo rustica&quot; &quot;Troglodytes troglodytes&quot; &quot;Motacilla alba&quot; ...
+##  $ obsValid       : logi  TRUE TRUE TRUE TRUE TRUE TRUE ...
+##  $ locationPrivate: logi  FALSE TRUE TRUE TRUE TRUE TRUE ...
+##  $ obsDt          : chr  &quot;2017-07-12 12:27&quot; &quot;2017-07-12 07:00&quot; &quot;2017-07-12 07:00&quot; &quot;2017-07-12 07:00&quot; ...
+##  $ obsReviewed    : logi  FALSE FALSE FALSE FALSE FALSE FALSE ...
+##  $ comName        : chr  &quot;Eurasian Coot&quot; &quot;Barn Swallow&quot; &quot;Eurasian Wren&quot; &quot;White Wagtail&quot; ...
+##  $ lat            : num  48.6 44.3 44.3 44.3 44.3 ...
+##  $ locID          : chr  &quot;L3737750&quot; &quot;L6072426&quot; &quot;L6072426&quot; &quot;L6072426&quot; ...</code></pre>
+<p>Find out <em>WHEN</em> a bird has been seen in a certain place! Choosing a name from <code>chibirds</code> above (the Bald Eagle):</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">warbler &lt;-<span class="st"> </span><span class="kw">ebirdgeo</span>(<span class="dt">species =</span> <span class="st">&#39;Setophaga coronata&#39;</span>, <span class="dt">lat =</span> <span class="fl">41.8781</span>, <span class="dt">lng =</span> <span class="op">-</span><span class="fl">87.6298</span>)
+
+warbler <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">str</span>()</code></pre></div>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    0 obs. of  0 variables</code></pre>
+<p><code>rebird</code> <strong>knows where you are</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ebirdgeo</span>(<span class="dt">species =</span> <span class="st">&#39;Setophaga coronata&#39;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>knitr<span class="op">::</span><span class="kw">kable</span>()</code></pre></div>
+<pre><code>## Warning: As a complete lat/long pair was not provided, your location was
+## determined using your computer&#39;s public-facing IP address. This will likely
+## not reflect your physical location if you are using a remote server or
+## proxy.</code></pre>
+</div>
+</div>
+<div id="searching-geographic-info-geonames" class="section level1">
+<h1>Searching geographic info: <code>geonames</code></h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># install.packages(geonames)</span>
+<span class="kw">library</span>(geonames)</code></pre></div>
+<div id="api-authentication" class="section level2">
+<h2>API authentication</h2>
+<p>Many APIs require you to register for access. This allows them to track which users are submitting queries and manage demand - if you submit too many queries too quickly, you might be <strong>rate-limited</strong> and your requests de-prioritized or blocked. Always check the API access policy of the web site to determine what these limits are.</p>
+<p>There are a few things we need to do to be able to use this package to access the geonames API:</p>
+<ol style="list-style-type: decimal">
+<li>go to <a href="http://www.geonames.org/login/">the geonames site</a> and register an account.</li>
+<li>click <a href="http://www.geonames.org/enablefreewebservice">here to enable the free web service</a></li>
+<li>Tell R your geonames username. You could run the line</li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">geonamesUsername =</span> <span class="st">&quot;my_user_name&quot;</span>)</code></pre></div>
+<p>in R. However this is insecure. We don’t want to risk committing this line and pushing it to our public GitHub page! Instead, you should create a file in the same place as your <code>.Rproj</code> file. To do that, run the following command from the R console:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">file.edit</span>(here<span class="op">::</span><span class="kw">here</span>(<span class="st">&quot;.Rprofile&quot;</span>))</code></pre></div>
+<blockquote>
+<p>Note: you need to have the <a href="https://cran.r-project.org/web/packages/here/index.html"><code>here</code></a> package installed for that code to work.</p>
+</blockquote>
+<p>This will create a special file called <code>.Rprofile</code> in the same directory as your <code>.Rproj</code> file (assuming you are working in an R project). The file should open automatically in your RStudio script editor. Add</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">options</span>(<span class="dt">geonamesUsername =</span> <span class="st">&quot;my_user_name&quot;</span>)</code></pre></div>
+<p>to that file, replacing <code>my_user_name</code> with your Geonames username.</p>
+<div id="important" class="section level3">
+<h3>Important</h3>
+<ul>
+<li>Make sure your <code>.Rprofile</code> ends with a blank line</li>
+<li>Make sure <code>.Rprofile</code> is included in your <code>.gitignore</code> file, otherwise it will be synced with Github</li>
+<li>Restart RStudio after modifying <code>.Rprofile</code> in order to load any new keys into memory</li>
+<li>Spelling is important when you set the option in your <code>.Rprofile</code></li>
+<li>You can do a similar process for an arbitrary package or key. For example:</li>
+</ul>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># in .Rprofile</span>
+<span class="kw">options</span>(<span class="st">&quot;this_is_my_key&quot;</span> =<span class="st"> </span>XXXX)
+
+<span class="co"># later, in the R script:</span>
+key &lt;-<span class="st"> </span><span class="kw">getOption</span>(<span class="st">&quot;this_is_my_key&quot;</span>)</code></pre></div>
+<p>This is a simple means to keep your keys private, especially if you are sharing the same authentication across several projects. Remember that using <code>.Rprofile</code> makes your code un-reproducible. In this case, that is exactly what we want!</p>
+</div>
+</div>
+<div id="using-geonames" class="section level2">
+<h2>Using Geonames</h2>
+<p>What can we do? Get access to lots of geographical information via the various <a href="http://www.geonames.org/export/ws-overview.html">“web services”</a></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">countryInfo &lt;-<span class="st"> </span><span class="kw">GNcountryInfo</span>()</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">countryInfo <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">as_tibble</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">str</span>()</code></pre></div>
+<pre><code>## Classes &#39;tbl_df&#39;, &#39;tbl&#39; and &#39;data.frame&#39;:    250 obs. of  17 variables:
+##  $ continent    : chr  &quot;EU&quot; &quot;AS&quot; &quot;AS&quot; &quot;NA&quot; ...
+##  $ capital      : chr  &quot;Andorra la Vella&quot; &quot;Abu Dhabi&quot; &quot;Kabul&quot; &quot;Saint John’s&quot; ...
+##  $ languages    : chr  &quot;ca&quot; &quot;ar-AE,fa,en,hi,ur&quot; &quot;fa-AF,ps,uz-AF,tk&quot; &quot;en-AG&quot; ...
+##  $ geonameId    : chr  &quot;3041565&quot; &quot;290557&quot; &quot;1149361&quot; &quot;3576396&quot; ...
+##  $ south        : chr  &quot;42.4284925987684&quot; &quot;22.6333293914795&quot; &quot;29.377472&quot; &quot;16.996979&quot; ...
+##  $ isoAlpha3    : chr  &quot;AND&quot; &quot;ARE&quot; &quot;AFG&quot; &quot;ATG&quot; ...
+##  $ north        : chr  &quot;42.6560438963&quot; &quot;26.0841598510742&quot; &quot;38.483418&quot; &quot;17.729387&quot; ...
+##  $ fipsCode     : chr  &quot;AN&quot; &quot;AE&quot; &quot;AF&quot; &quot;AC&quot; ...
+##  $ population   : chr  &quot;84000&quot; &quot;4975593&quot; &quot;29121286&quot; &quot;86754&quot; ...
+##  $ east         : chr  &quot;1.78654277783198&quot; &quot;56.3816604614258&quot; &quot;74.879448&quot; &quot;-61.672421&quot; ...
+##  $ isoNumeric   : chr  &quot;020&quot; &quot;784&quot; &quot;004&quot; &quot;028&quot; ...
+##  $ areaInSqKm   : chr  &quot;468.0&quot; &quot;82880.0&quot; &quot;647500.0&quot; &quot;443.0&quot; ...
+##  $ countryCode  : chr  &quot;AD&quot; &quot;AE&quot; &quot;AF&quot; &quot;AG&quot; ...
+##  $ west         : chr  &quot;1.40718671411128&quot; &quot;51.5833282470703&quot; &quot;60.478443&quot; &quot;-61.906425&quot; ...
+##  $ countryName  : chr  &quot;Principality of Andorra&quot; &quot;United Arab Emirates&quot; &quot;Islamic Republic of Afghanistan&quot; &quot;Antigua and Barbuda&quot; ...
+##  $ continentName: chr  &quot;Europe&quot; &quot;Asia&quot; &quot;Asia&quot; &quot;North America&quot; ...
+##  $ currencyCode : chr  &quot;EUR&quot; &quot;AED&quot; &quot;AFN&quot; &quot;XCD&quot; ...</code></pre>
+<p>This country info dataset is very helpful for accessing the rest of the data, because it gives us the standardized codes for country and language.</p>
+</div>
+</div>
+<div id="the-manifesto-project-manifestor" class="section level1">
+<h1>The Manifesto Project: <code>manifestoR</code></h1>
+<p><a href="https://manifesto-project.wzb.eu/">The Manifesto Project</a> collects and organizes political party manifestos from around the world. It currently covers over 1000 parties from 1945 until today in over 50 countries on five continents. We can use the <a href="https://github.com/ManifestoProject/manifestoR"><code>manifestoR</code> package</a> to access the API and download those manifestos for analysis in R.</p>
+<div id="load-library-and-set-api-key" class="section level2">
+<h2>Load library and set API key</h2>
+<p>Accessing data from the Manifesto Project API requires an authentication key. You can create an account and key <a href="https://manifesto-project.wzb.eu/signup">here</a>. Here I store my key in <code>.Rprofile</code> and retrieve it using <code>mp_setapikey()</code>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(manifestoR)
+
+<span class="co"># retrieve API key stored in .Rprofile</span>
+<span class="kw">mp_setapikey</span>(<span class="dt">key =</span> <span class="kw">getOption</span>(<span class="st">&quot;manifesto_key&quot;</span>))</code></pre></div>
+</div>
+<div id="retrieve-the-database" class="section level2">
+<h2>Retrieve the database</h2>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">(mpds &lt;-<span class="st"> </span><span class="kw">mp_maindataset</span>())</code></pre></div>
+<pre><code>## Connecting to Manifesto Project DB API... 
+## Connecting to Manifesto Project DB API... corpus version: 2016-6</code></pre>
+<pre><code>## # A tibble: 4,121 x 173
+##    country countryname oecdmember eumember      edate   date party
+##      &lt;dbl&gt;       &lt;chr&gt;      &lt;dbl&gt;    &lt;dbl&gt;     &lt;date&gt;  &lt;dbl&gt; &lt;dbl&gt;
+##  1      11      Sweden          0        0 1944-09-17 194409 11220
+##  2      11      Sweden          0        0 1944-09-17 194409 11320
+##  3      11      Sweden          0        0 1944-09-17 194409 11420
+##  4      11      Sweden          0        0 1944-09-17 194409 11620
+##  5      11      Sweden          0        0 1944-09-17 194409 11810
+##  6      11      Sweden          0        0 1948-09-19 194809 11220
+##  7      11      Sweden          0        0 1948-09-19 194809 11320
+##  8      11      Sweden          0        0 1948-09-19 194809 11420
+##  9      11      Sweden          0        0 1948-09-19 194809 11620
+## 10      11      Sweden          0        0 1948-09-19 194809 11810
+## # ... with 4,111 more rows, and 166 more variables: partyname &lt;chr&gt;,
+## #   partyabbrev &lt;chr&gt;, parfam &lt;dbl&gt;, coderid &lt;dbl&gt;, manual &lt;dbl&gt;,
+## #   coderyear &lt;dbl&gt;, testresult &lt;dbl&gt;, testeditsim &lt;dbl&gt;, pervote &lt;dbl&gt;,
+## #   voteest &lt;dbl&gt;, presvote &lt;dbl&gt;, absseat &lt;dbl&gt;, totseats &lt;dbl&gt;,
+## #   progtype &lt;dbl&gt;, datasetorigin &lt;dbl&gt;, corpusversion &lt;chr&gt;, total &lt;dbl&gt;,
+## #   peruncod &lt;dbl&gt;, per101 &lt;dbl&gt;, per102 &lt;dbl&gt;, per103 &lt;dbl&gt;,
+## #   per104 &lt;dbl&gt;, per105 &lt;dbl&gt;, per106 &lt;dbl&gt;, per107 &lt;dbl&gt;, per108 &lt;dbl&gt;,
+## #   per109 &lt;dbl&gt;, per110 &lt;dbl&gt;, per201 &lt;dbl&gt;, per202 &lt;dbl&gt;, per203 &lt;dbl&gt;,
+## #   per204 &lt;dbl&gt;, per301 &lt;dbl&gt;, per302 &lt;dbl&gt;, per303 &lt;dbl&gt;, per304 &lt;dbl&gt;,
+## #   per305 &lt;dbl&gt;, per401 &lt;dbl&gt;, per402 &lt;dbl&gt;, per403 &lt;dbl&gt;, per404 &lt;dbl&gt;,
+## #   per405 &lt;dbl&gt;, per406 &lt;dbl&gt;, per407 &lt;dbl&gt;, per408 &lt;dbl&gt;, per409 &lt;dbl&gt;,
+## #   per410 &lt;dbl&gt;, per411 &lt;dbl&gt;, per412 &lt;dbl&gt;, per413 &lt;dbl&gt;, per414 &lt;dbl&gt;,
+## #   per415 &lt;dbl&gt;, per416 &lt;dbl&gt;, per501 &lt;dbl&gt;, per502 &lt;dbl&gt;, per503 &lt;dbl&gt;,
+## #   per504 &lt;dbl&gt;, per505 &lt;dbl&gt;, per506 &lt;dbl&gt;, per507 &lt;dbl&gt;, per601 &lt;dbl&gt;,
+## #   per602 &lt;dbl&gt;, per603 &lt;dbl&gt;, per604 &lt;dbl&gt;, per605 &lt;dbl&gt;, per606 &lt;dbl&gt;,
+## #   per607 &lt;dbl&gt;, per608 &lt;dbl&gt;, per701 &lt;dbl&gt;, per702 &lt;dbl&gt;, per703 &lt;dbl&gt;,
+## #   per704 &lt;dbl&gt;, per705 &lt;dbl&gt;, per706 &lt;dbl&gt;, per1011 &lt;dbl&gt;,
+## #   per1012 &lt;dbl&gt;, per1013 &lt;dbl&gt;, per1014 &lt;dbl&gt;, per1015 &lt;dbl&gt;,
+## #   per1016 &lt;dbl&gt;, per1021 &lt;dbl&gt;, per1022 &lt;dbl&gt;, per1023 &lt;dbl&gt;,
+## #   per1024 &lt;dbl&gt;, per1025 &lt;dbl&gt;, per1026 &lt;dbl&gt;, per1031 &lt;dbl&gt;,
+## #   per1032 &lt;dbl&gt;, per1033 &lt;dbl&gt;, per2021 &lt;dbl&gt;, per2022 &lt;dbl&gt;,
+## #   per2023 &lt;dbl&gt;, per2031 &lt;dbl&gt;, per2032 &lt;dbl&gt;, per2033 &lt;dbl&gt;,
+## #   per2041 &lt;dbl&gt;, per3011 &lt;dbl&gt;, per3051 &lt;dbl&gt;, per3052 &lt;dbl&gt;,
+## #   per3053 &lt;dbl&gt;, ...</code></pre>
+<p><code>mp_maindataset()</code> includes a data frame describing each manifesto included in the database. You can use this database for some exploratory data analysis. For instance, how many manifestos have been published by each political party in Sweden?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mpds <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(countryname <span class="op">==</span><span class="st"> &quot;Sweden&quot;</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">count</span>(partyname) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="kw">fct_reorder</span>(partyname, n), n)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_col</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Political manifestos published in Sweden&quot;</span>,
+       <span class="dt">x =</span> <span class="ot">NULL</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Total (1948-present)&quot;</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/manifesto-dist-1.png" width="672" /></p>
+<p>Or we can use <strong>scaling functions</strong> to identify each party manifesto on an ideological dimension. For example, how have the Democratic and Republican Party manifestos in the United States changed over time?</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mpds <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">filter</span>(party <span class="op">==</span><span class="st"> </span><span class="dv">61320</span> <span class="op">|</span><span class="st"> </span>party <span class="op">==</span><span class="st"> </span><span class="dv">61620</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">ideo =</span> <span class="kw">mp_scale</span>(.)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">select</span>(partyname, edate, ideo) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(edate, ideo, <span class="dt">color =</span> partyname)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_line</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_color_manual</span>(<span class="dt">values =</span> <span class="kw">c</span>(<span class="st">&quot;blue&quot;</span>, <span class="st">&quot;red&quot;</span>)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Ideological scaling of major US political parties&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;Year&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;Ideological position&quot;</span>,
+       <span class="dt">color =</span> <span class="ot">NULL</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">theme</span>(<span class="dt">legend.position =</span> <span class="st">&quot;bottom&quot;</span>)</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/manifestor-usa-1.png" width="672" /></p>
+</div>
+<div id="download-manifestos" class="section level2">
+<h2>Download manifestos</h2>
+<p><code>mp_corpus()</code> can be used to download the original manifestos as full text documents stored as a <a href="text001_workflow.html#extract_documents_and_move_into_a_corpus"><strong>corpus</strong></a>. Once you obtain the corpus, you can perform <a href="cm017.html">text</a> <a href="cm018.html">analysis</a>. As an example, let’s compare the most common words in the Democratic and Republican Party manifestos from the 2012 U.S. presidential election:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># download documents</span>
+(docs &lt;-<span class="st"> </span><span class="kw">mp_corpus</span>(countryname <span class="op">==</span><span class="st"> &quot;United States&quot;</span> <span class="op">&amp;</span><span class="st"> </span>edate <span class="op">&gt;</span><span class="st"> </span><span class="kw">as.Date</span>(<span class="st">&quot;2012-01-01&quot;</span>)))</code></pre></div>
+<pre><code>## Connecting to Manifesto Project DB API... 
+## Connecting to Manifesto Project DB API... corpus version: 2017-1 
+## Connecting to Manifesto Project DB API... 
+## Connecting to Manifesto Project DB API... corpus version: 2017-1 
+## Connecting to Manifesto Project DB API... corpus version: 2017-1 
+## Connecting to Manifesto Project DB API... corpus version: 2017-1</code></pre>
+<pre><code>## &lt;&lt;ManifestoCorpus&gt;&gt;
+## Metadata:  corpus specific: 0, document level (indexed): 0
+## Content:  documents: 2</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate wordcloud of most common terms</span>
+docs <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">tidy</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">party =</span> <span class="kw">factor</span>(party, <span class="dt">levels =</span> <span class="kw">c</span>(<span class="dv">61320</span>, <span class="dv">61620</span>),
+                        <span class="dt">labels =</span> <span class="kw">c</span>(<span class="st">&quot;Democratic Party&quot;</span>, <span class="st">&quot;Republican Party&quot;</span>))) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">unnest_tokens</span>(word, text) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">anti_join</span>(stop_words) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">count</span>(party, word, <span class="dt">sort =</span> <span class="ot">TRUE</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">na.omit</span>() <span class="op">%&gt;%</span>
+<span class="st">  </span>reshape2<span class="op">::</span><span class="kw">acast</span>(word <span class="op">~</span><span class="st"> </span>party, <span class="dt">value.var =</span> <span class="st">&quot;n&quot;</span>, <span class="dt">fill =</span> <span class="dv">0</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">comparison.cloud</span>(<span class="dt">max.words =</span> <span class="dv">200</span>)</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/manifestor-corpus-1.png" width="672" /></p>
+</div>
+</div>
+<div id="census-data-with-tidycensus" class="section level1">
+<h1>Census data with <code>tidycensus</code></h1>
+<p><a href="https://walkerke.github.io/tidycensus/index.html"><code>tidycensus</code></a> provides an interface with the US Census Bureau’s decennial census and American Community APIs and returns tidy data frames with optional simple feature geometry. These APIs require a free key you can obtain <a href="https://api.census.gov/data/key_signup.html">here</a>. Rather than storing your key in <code>.Rprofile</code>, <code>tidycensus</code> includes <code>census_api_key()</code> which automatically stores your key in <code>.Renviron</code>, which is basically a global version of <code>.Rprofile</code>. Anything stored in <code>.Renviron</code> is automatically loaded anytime you initiate R on your computer, regardless of the project or file location. Once you get your key, load it:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(tidycensus)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">census_api_key</span>(<span class="st">&quot;YOUR API KEY GOES HERE&quot;</span>)</code></pre></div>
+<div id="obtaining-data" class="section level2">
+<h2>Obtaining data</h2>
+<p><code>get_decennial()</code> allows you to obtain data from the 1990, 2000, and 2010 decennial US censuses. Let’s look at the number of individuals of Chinese ethnicity by state in 2010:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">china10 &lt;-<span class="st"> </span><span class="kw">get_decennial</span>(<span class="dt">geography =</span> <span class="st">&quot;state&quot;</span>, <span class="dt">variables =</span> <span class="st">&quot;PCT0060007&quot;</span>, <span class="dt">year =</span> <span class="dv">2010</span>)</code></pre></div>
+<pre><code>## Getting data from the 2010 decennial Census</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">china10</code></pre></div>
+<pre><code>## # A tibble: 52 x 4
+##    GEOID NAME                 variable     value
+##    &lt;chr&gt; &lt;chr&gt;                &lt;chr&gt;        &lt;dbl&gt;
+##  1 01    Alabama              PCT0060007    9287
+##  2 02    Alaska               PCT0060007    2268
+##  3 04    Arizona              PCT0060007   32827
+##  4 05    Arkansas             PCT0060007    5101
+##  5 06    California           PCT0060007 1241572
+##  6 08    Colorado             PCT0060007   25589
+##  7 09    Connecticut          PCT0060007   31514
+##  8 10    Delaware             PCT0060007    6103
+##  9 11    District of Columbia PCT0060007    5166
+## 10 12    Florida              PCT0060007   72375
+## # ... with 42 more rows</code></pre>
+<p>The result of <code>get_decennial()</code> is a tidy data frame with one row per geographic unit-variable.</p>
+<ul>
+<li><code>GEOID</code> - identifier for the geographical unit associated with the row</li>
+<li><code>NAME</code> - descriptive name of the geographical unit</li>
+<li><code>variable</code> - the Census variable encoded in the row</li>
+<li><code>value</code> - the value of the variable for that geographic unit</li>
+</ul>
+<p>We can quickly visualize this data frame using <code>ggplot2</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(china10, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(NAME, value), <span class="dt">y =</span> value)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/plot-chinese-1.png" width="672" /></p>
+<p>Of course this graph is not entirely useful since it is based on the raw frequency of Chinese individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">china_pop &lt;-<span class="st"> </span><span class="kw">get_decennial</span>(<span class="dt">geography =</span> <span class="st">&quot;state&quot;</span>,
+                           <span class="dt">variables =</span> <span class="kw">c</span>(<span class="st">&quot;PCT0060007&quot;</span>, <span class="st">&quot;P0010001&quot;</span>),
+                           <span class="dt">year =</span> <span class="dv">2010</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">spread</span>(variable, value) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">mutate</span>(<span class="dt">pct_chinese =</span> PCT0060007 <span class="op">/</span><span class="st"> </span>P0010001)</code></pre></div>
+<pre><code>## Getting data from the 2010 decennial Census</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">china_pop</code></pre></div>
+<pre><code>## # A tibble: 52 x 5
+##    GEOID NAME                 P0010001 PCT0060007 pct_chinese
+##    &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
+##  1 01    Alabama               4779736       9287     0.00194
+##  2 02    Alaska                 710231       2268     0.00319
+##  3 04    Arizona               6392017      32827     0.00514
+##  4 05    Arkansas              2915918       5101     0.00175
+##  5 06    California           37253956    1241572     0.0333 
+##  6 08    Colorado              5029196      25589     0.00509
+##  7 09    Connecticut           3574097      31514     0.00882
+##  8 10    Delaware               897934       6103     0.00680
+##  9 11    District of Columbia   601723       5166     0.00859
+## 10 12    Florida              18801310      72375     0.00385
+## # ... with 42 more rows</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(china_pop, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(NAME, pct_chinese), <span class="dt">y =</span> pct_chinese)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_point</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">scale_y_continuous</span>(<span class="dt">labels =</span> scales<span class="op">::</span>percent) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>()</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/china-total-pop-1.png" width="672" /></p>
+<p><code>get_acs()</code> retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. <code>tidycensus</code> returns both the original estimate and margin of error. Let’s get median household income data from the 2012-2016 ACS for counties in Illinois.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usa_inc &lt;-<span class="st"> </span><span class="kw">get_acs</span>(<span class="dt">geography =</span> <span class="st">&quot;state&quot;</span>, 
+                   <span class="dt">variables =</span> <span class="kw">c</span>(<span class="dt">medincome =</span> <span class="st">&quot;B19013_001&quot;</span>), 
+                   <span class="dt">year =</span> <span class="dv">2016</span>)</code></pre></div>
+<pre><code>## Getting data from the 2012-2016 5-year ACS</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usa_inc</code></pre></div>
+<pre><code>## # A tibble: 52 x 5
+##    GEOID NAME                 variable  estimate   moe
+##    &lt;chr&gt; &lt;chr&gt;                &lt;chr&gt;        &lt;dbl&gt; &lt;dbl&gt;
+##  1 01    Alabama              medincome    44758   314
+##  2 02    Alaska               medincome    74444   809
+##  3 04    Arizona              medincome    51340   231
+##  4 05    Arkansas             medincome    42336   234
+##  5 06    California           medincome    63783   188
+##  6 08    Colorado             medincome    62520   287
+##  7 09    Connecticut          medincome    71755   473
+##  8 10    Delaware             medincome    61017   723
+##  9 11    District of Columbia medincome    72935  1164
+## 10 12    Florida              medincome    48900   200
+## # ... with 42 more rows</code></pre>
+<p>Now we return both an <code>estimate</code> column for the ACS estimate and <code>moe</code> for the margin of error (defaults to 90% confidence interval).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">usa_inc <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw">reorder</span>(NAME, estimate), <span class="dt">y =</span> estimate)) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_pointrange</span>(<span class="kw">aes</span>(<span class="dt">ymin =</span> estimate <span class="op">-</span><span class="st"> </span>moe,
+                     <span class="dt">ymax =</span> estimate <span class="op">+</span><span class="st"> </span>moe),
+                  <span class="dt">size =</span> .<span class="dv">25</span>) <span class="op">+</span>
+<span class="st">  </span><span class="kw">coord_flip</span>() <span class="op">+</span>
+<span class="st">  </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Household income by state&quot;</span>,
+       <span class="dt">subtitle =</span> <span class="st">&quot;2012-2016 American Community Survey&quot;</span>,
+       <span class="dt">x =</span> <span class="st">&quot;&quot;</span>,
+       <span class="dt">y =</span> <span class="st">&quot;ACS estimate (bars represent margin of error)&quot;</span>)</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/income-usa-plot-1.png" width="672" /></p>
+</div>
+<div id="search-for-variables" class="section level2">
+<h2>Search for variables</h2>
+<p><code>get_()</code> requires knowing the variable ID, of which there are thousands. <code>load_variables()</code> downloads a list of variable IDs and labels for a given Census or ACS and dataset. You can then use <code>View()</code> to interactively browse through and filter for variables in RStudio.</p>
+</div>
+<div id="drawing-maps" class="section level2">
+<h2>Drawing maps</h2>
+<p><code>tidycensus</code> also can return <a href="geoviz_import_data.html">simple feature geometry</a> for geographic units along with variables from the decennial Census or ACS, which can then be <a href="geoviz_plot.html">visualized using <code>geom_sf()</code>.</a> Let’s look at median household incomeby Census tracts from the 2012-2016 ACS in Loudoun County, Virginia:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">loudoun &lt;-<span class="st"> </span><span class="kw">get_acs</span>(<span class="dt">state =</span> <span class="st">&quot;VA&quot;</span>,
+                   <span class="dt">county =</span> <span class="st">&quot;Loudoun&quot;</span>,
+                   <span class="dt">geography =</span> <span class="st">&quot;tract&quot;</span>, 
+                   <span class="dt">variables =</span> <span class="kw">c</span>(<span class="dt">medincome =</span> <span class="st">&quot;B19013_001&quot;</span>), 
+                   <span class="dt">year =</span> <span class="dv">2016</span>,
+                   <span class="dt">geometry =</span> <span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## 
+  |                                                                       
+  |                                                                 |   0%
+  |                                                                       
+  |=                                                                |   1%
+  |                                                                       
+  |=                                                                |   2%
+  |                                                                       
+  |==                                                               |   3%
+  |                                                                       
+  |===                                                              |   5%
+  |                                                                       
+  |====                                                             |   6%
+  |                                                                       
+  |=====                                                            |   7%
+  |                                                                       
+  |=====                                                            |   8%
+  |                                                                       
+  |======                                                           |   9%
+  |                                                                       
+  |======                                                           |  10%
+  |                                                                       
+  |=======                                                          |  11%
+  |                                                                       
+  |========                                                         |  12%
+  |                                                                       
+  |========                                                         |  13%
+  |                                                                       
+  |=========                                                        |  14%
+  |                                                                       
+  |==========                                                       |  15%
+  |                                                                       
+  |===========                                                      |  16%
+  |                                                                       
+  |===========                                                      |  17%
+  |                                                                       
+  |============                                                     |  18%
+  |                                                                       
+  |============                                                     |  19%
+  |                                                                       
+  |=============                                                    |  20%
+  |                                                                       
+  |==============                                                   |  21%
+  |                                                                       
+  |==============                                                   |  22%
+  |                                                                       
+  |===============                                                  |  23%
+  |                                                                       
+  |================                                                 |  25%
+  |                                                                       
+  |=================                                                |  26%
+  |                                                                       
+  |==================                                               |  27%
+  |                                                                       
+  |==================                                               |  28%
+  |                                                                       
+  |===================                                              |  29%
+  |                                                                       
+  |===================                                              |  30%
+  |                                                                       
+  |====================                                             |  31%
+  |                                                                       
+  |=====================                                            |  32%
+  |                                                                       
+  |=====================                                            |  33%
+  |                                                                       
+  |======================                                           |  34%
+  |                                                                       
+  |=======================                                          |  35%
+  |                                                                       
+  |========================                                         |  36%
+  |                                                                       
+  |========================                                         |  37%
+  |                                                                       
+  |=========================                                        |  38%
+  |                                                                       
+  |=========================                                        |  39%
+  |                                                                       
+  |==========================                                       |  40%
+  |                                                                       
+  |===========================                                      |  41%
+  |                                                                       
+  |===========================                                      |  42%
+  |                                                                       
+  |============================                                     |  43%
+  |                                                                       
+  |=============================                                    |  44%
+  |                                                                       
+  |=============================                                    |  45%
+  |                                                                       
+  |==============================                                   |  46%
+  |                                                                       
+  |===============================                                  |  47%
+  |                                                                       
+  |===============================                                  |  48%
+  |                                                                       
+  |================================                                 |  49%
+  |                                                                       
+  |================================                                 |  50%
+  |                                                                       
+  |=================================                                |  51%
+  |                                                                       
+  |==================================                               |  52%
+  |                                                                       
+  |==================================                               |  53%
+  |                                                                       
+  |===================================                              |  54%
+  |                                                                       
+  |====================================                             |  55%
+  |                                                                       
+  |=====================================                            |  56%
+  |                                                                       
+  |=====================================                            |  57%
+  |                                                                       
+  |======================================                           |  58%
+  |                                                                       
+  |======================================                           |  59%
+  |                                                                       
+  |=======================================                          |  60%
+  |                                                                       
+  |========================================                         |  61%
+  |                                                                       
+  |========================================                         |  62%
+  |                                                                       
+  |=========================================                        |  63%
+  |                                                                       
+  |==========================================                       |  64%
+  |                                                                       
+  |==========================================                       |  65%
+  |                                                                       
+  |===========================================                      |  66%
+  |                                                                       
+  |============================================                     |  67%
+  |                                                                       
+  |============================================                     |  68%
+  |                                                                       
+  |=============================================                    |  69%
+  |                                                                       
+  |=============================================                    |  70%
+  |                                                                       
+  |==============================================                   |  71%
+  |                                                                       
+  |===============================================                  |  72%
+  |                                                                       
+  |===============================================                  |  73%
+  |                                                                       
+  |================================================                 |  74%
+  |                                                                       
+  |=================================================                |  75%
+  |                                                                       
+  |=================================================                |  76%
+  |                                                                       
+  |==================================================               |  77%
+  |                                                                       
+  |===================================================              |  78%
+  |                                                                       
+  |===================================================              |  79%
+  |                                                                       
+  |====================================================             |  80%
+  |                                                                       
+  |=====================================================            |  81%
+  |                                                                       
+  |=====================================================            |  82%
+  |                                                                       
+  |======================================================           |  83%
+  |                                                                       
+  |=======================================================          |  84%
+  |                                                                       
+  |=======================================================          |  85%
+  |                                                                       
+  |========================================================         |  86%
+  |                                                                       
+  |=========================================================        |  87%
+  |                                                                       
+  |=========================================================        |  88%
+  |                                                                       
+  |==========================================================       |  89%
+  |                                                                       
+  |==========================================================       |  90%
+  |                                                                       
+  |===========================================================      |  91%
+  |                                                                       
+  |============================================================     |  92%
+  |                                                                       
+  |=============================================================    |  94%
+  |                                                                       
+  |==============================================================   |  95%
+  |                                                                       
+  |==============================================================   |  96%
+  |                                                                       
+  |===============================================================  |  97%
+  |                                                                       
+  |================================================================ |  98%
+  |                                                                       
+  |================================================================ |  99%
+  |                                                                       
+  |=================================================================| 100%</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">loudoun</code></pre></div>
+<pre><code>## Simple feature collection with 65 features and 5 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -77.96196 ymin: 38.84645 xmax: -77.32828 ymax: 39.32419
+## epsg (SRID):    4269
+## proj4string:    +proj=longlat +datum=NAD83 +no_defs
+## First 10 features:
+##          GEOID                                           NAME  variable
+## 1  51107610503 Census Tract 6105.03, Loudoun County, Virginia medincome
+## 2  51107610504 Census Tract 6105.04, Loudoun County, Virginia medincome
+## 3  51107611006 Census Tract 6110.06, Loudoun County, Virginia medincome
+## 4  51107611013 Census Tract 6110.13, Loudoun County, Virginia medincome
+## 5  51107611205 Census Tract 6112.05, Loudoun County, Virginia medincome
+## 6  51107610505 Census Tract 6105.05, Loudoun County, Virginia medincome
+## 7  51107610603 Census Tract 6106.03, Loudoun County, Virginia medincome
+## 8  51107611011 Census Tract 6110.11, Loudoun County, Virginia medincome
+## 9  51107611014 Census Tract 6110.14, Loudoun County, Virginia medincome
+## 10 51107611501 Census Tract 6115.01, Loudoun County, Virginia medincome
+##    estimate   moe                       geometry
+## 1    150982  6323 MULTIPOLYGON (((-77.54714 3...
+## 2    108042  4652 MULTIPOLYGON (((-77.56114 3...
+## 3    140365 16252 MULTIPOLYGON (((-77.48743 3...
+## 4    144638 22972 MULTIPOLYGON (((-77.50032 3...
+## 5    101910  9251 MULTIPOLYGON (((-77.39145 3...
+## 6     45226  7533 MULTIPOLYGON (((-77.56454 3...
+## 7     50818  6995 MULTIPOLYGON (((-77.5735 39...
+## 8     96875 14504 MULTIPOLYGON (((-77.51117 3...
+## 9    118077 17241 MULTIPOLYGON (((-77.48567 3...
+## 10    71356 17165 MULTIPOLYGON (((-77.43106 3...</code></pre>
+<p>This looks similar to the previous output but because we set <code>geometry = TRUE</code> it is now a simple features data frame with a <code>geometry</code> column defining the geographic feature. We can visualize it using <code>geom_sf()</code> and <code>viridis::scale_*_viridis()</code> to adjust the color palette.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">ggplot</span>(<span class="dt">data =</span> loudoun) <span class="op">+</span>
+<span class="st">  </span><span class="kw">geom_sf</span>(<span class="kw">aes</span>(<span class="dt">fill =</span> estimate, <span class="dt">color =</span> estimate)) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">coord_sf</span>(<span class="dt">crs =</span> <span class="dv">26911</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_fill_viridis</span>(<span class="dt">option =</span> <span class="st">&quot;magma&quot;</span>) <span class="op">+</span><span class="st"> </span>
+<span class="st">  </span><span class="kw">scale_color_viridis</span>(<span class="dt">option =</span> <span class="st">&quot;magma&quot;</span>)</code></pre></div>
+<p><img src="webdata001_api_files/figure-html/loudoun-sf-plot-1.png" width="672" /></p>
+</div>
+</div>
+<div id="acknowledgments" class="section level1 toc-ignore">
+<h1>Acknowledgments</h1>
+<ul>
+<li>This page is derived in part from <a href="http://stat545.com">“UBC STAT 545A and 547M”</a>, licensed under the <a href="https://creativecommons.org/licenses/by-nc/3.0/">CC BY-NC 3.0 Creative Commons License</a>.</li>
+</ul>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools<span class="op">::</span><span class="kw">session_info</span>()</code></pre></div>
+<pre><code>## ─ Session info ──────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 3.5.2 (2018-12-20)
+##  os       macOS Mojave 10.14.3        
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2019-02-26                  
+## 
+## ─ Packages ──────────────────────────────────────────────────────────────
+##  package      * version    date       lib source                          
+##  assertthat     0.2.0      2017-04-11 [2] CRAN (R 3.5.0)                  
+##  backports      1.1.3      2018-12-14 [2] CRAN (R 3.5.0)                  
+##  base64enc      0.1-3      2015-07-28 [2] CRAN (R 3.5.0)                  
+##  broom        * 0.5.1      2018-12-05 [2] CRAN (R 3.5.0)                  
+##  callr          3.1.1      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  cellranger     1.1.0      2016-07-27 [2] CRAN (R 3.5.0)                  
+##  cli            1.0.1      2018-09-25 [1] CRAN (R 3.5.0)                  
+##  colorspace     1.4-0      2019-01-13 [2] CRAN (R 3.5.2)                  
+##  crayon         1.3.4      2017-09-16 [2] CRAN (R 3.5.0)                  
+##  desc           1.2.0      2018-05-01 [2] CRAN (R 3.5.0)                  
+##  devtools       2.0.1      2018-10-26 [1] CRAN (R 3.5.1)                  
+##  digest         0.6.18     2018-10-10 [1] CRAN (R 3.5.0)                  
+##  dplyr        * 0.8.0.1    2019-02-15 [1] CRAN (R 3.5.2)                  
+##  DT             0.5        2018-11-05 [2] CRAN (R 3.5.0)                  
+##  evaluate       0.13       2019-02-12 [2] CRAN (R 3.5.2)                  
+##  forcats      * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)                  
+##  foreign        0.8-71     2018-07-20 [2] CRAN (R 3.5.2)                  
+##  fs             1.2.6      2018-08-23 [1] CRAN (R 3.5.0)                  
+##  functional     0.6        2014-07-16 [2] CRAN (R 3.5.0)                  
+##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.5.0)                  
+##  ggplot2      * 3.1.0      2018-10-25 [1] CRAN (R 3.5.0)                  
+##  glue           1.3.0      2018-07-17 [2] CRAN (R 3.5.0)                  
+##  gridExtra      2.3        2017-09-09 [2] CRAN (R 3.5.0)                  
+##  gtable         0.2.0      2016-02-26 [2] CRAN (R 3.5.0)                  
+##  haven          2.1.0      2019-02-19 [2] CRAN (R 3.5.2)                  
+##  hms            0.4.2      2018-03-10 [2] CRAN (R 3.5.0)                  
+##  htmltools      0.3.6      2017-04-28 [1] CRAN (R 3.5.0)                  
+##  htmlwidgets    1.3        2018-09-30 [2] CRAN (R 3.5.0)                  
+##  httr           1.4.0      2018-12-11 [2] CRAN (R 3.5.0)                  
+##  janeaustenr    0.1.5      2017-06-10 [2] CRAN (R 3.5.0)                  
+##  jsonlite       1.6        2018-12-07 [2] CRAN (R 3.5.0)                  
+##  knitr          1.21       2018-12-10 [2] CRAN (R 3.5.1)                  
+##  lattice        0.20-38    2018-11-04 [2] CRAN (R 3.5.2)                  
+##  lazyeval       0.2.1      2017-10-29 [2] CRAN (R 3.5.0)                  
+##  lubridate      1.7.4      2018-04-11 [2] CRAN (R 3.5.0)                  
+##  magrittr       1.5        2014-11-22 [2] CRAN (R 3.5.0)                  
+##  manifestoR   * 1.3.0      2018-05-28 [2] CRAN (R 3.5.0)                  
+##  Matrix         1.2-15     2018-11-01 [2] CRAN (R 3.5.2)                  
+##  memoise        1.1.0      2017-04-21 [2] CRAN (R 3.5.0)                  
+##  mnormt         1.5-5      2016-10-15 [2] CRAN (R 3.5.0)                  
+##  modelr         0.1.4      2019-02-18 [2] CRAN (R 3.5.2)                  
+##  munsell        0.5.0      2018-06-12 [2] CRAN (R 3.5.0)                  
+##  nlme           3.1-137    2018-04-07 [2] CRAN (R 3.5.2)                  
+##  NLP          * 0.2-0      2018-10-18 [2] CRAN (R 3.5.0)                  
+##  pillar         1.3.1      2018-12-15 [2] CRAN (R 3.5.0)                  
+##  pkgbuild       1.0.2      2018-10-16 [1] CRAN (R 3.5.0)                  
+##  pkgconfig      2.0.2      2018-08-16 [2] CRAN (R 3.5.1)                  
+##  pkgload        1.0.2      2018-10-29 [1] CRAN (R 3.5.0)                  
+##  plyr           1.8.4      2016-06-08 [2] CRAN (R 3.5.0)                  
+##  prettyunits    1.0.2      2015-07-13 [2] CRAN (R 3.5.0)                  
+##  processx       3.2.1      2018-12-05 [2] CRAN (R 3.5.0)                  
+##  ps             1.3.0      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  psych          1.8.12     2019-01-12 [2] CRAN (R 3.5.2)                  
+##  purrr        * 0.3.0      2019-01-27 [2] CRAN (R 3.5.2)                  
+##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.5.2)                  
+##  RColorBrewer * 1.1-2      2014-12-07 [2] CRAN (R 3.5.0)                  
+##  Rcpp           1.0.0      2018-11-07 [1] CRAN (R 3.5.0)                  
+##  readr        * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  readxl         1.3.0      2019-02-15 [2] CRAN (R 3.5.2)                  
+##  remotes        2.0.2      2018-10-30 [1] CRAN (R 3.5.0)                  
+##  rlang          0.3.1      2019-01-08 [1] CRAN (R 3.5.2)                  
+##  rmarkdown      1.11       2018-12-08 [2] CRAN (R 3.5.0)                  
+##  rprojroot      1.3-2      2018-01-03 [2] CRAN (R 3.5.0)                  
+##  rstudioapi     0.9.0      2019-01-09 [1] CRAN (R 3.5.2)                  
+##  rvest          0.3.2      2016-06-17 [2] CRAN (R 3.5.0)                  
+##  scales         1.0.0      2018-08-09 [1] CRAN (R 3.5.0)                  
+##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.5.0)                  
+##  slam           0.1-44     2018-12-21 [1] CRAN (R 3.5.0)                  
+##  SnowballC      0.6.0      2019-01-15 [2] CRAN (R 3.5.2)                  
+##  stringi        1.3.1      2019-02-13 [1] CRAN (R 3.5.2)                  
+##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.5.2)                  
+##  testthat       2.0.1      2018-10-13 [2] CRAN (R 3.5.0)                  
+##  tibble       * 2.0.1      2019-01-12 [2] CRAN (R 3.5.2)                  
+##  tidyr        * 0.8.2.9000 2019-02-11 [1] Github (tidyverse/tidyr@0b27690)
+##  tidyselect     0.2.5      2018-10-11 [1] CRAN (R 3.5.0)                  
+##  tidytext     * 0.2.0      2018-10-17 [1] CRAN (R 3.5.0)                  
+##  tidyverse    * 1.2.1      2017-11-14 [2] CRAN (R 3.5.0)                  
+##  tm           * 0.7-6      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  tokenizers     0.2.1      2018-03-29 [2] CRAN (R 3.5.0)                  
+##  usethis        1.4.0      2018-08-14 [1] CRAN (R 3.5.0)                  
+##  viridis      * 0.5.1      2018-03-29 [2] CRAN (R 3.5.0)                  
+##  viridisLite  * 0.3.0      2018-02-01 [2] CRAN (R 3.5.0)                  
+##  withr          2.1.2      2018-03-15 [2] CRAN (R 3.5.0)                  
+##  wordcloud    * 2.6        2018-08-24 [2] CRAN (R 3.5.0)                  
+##  xfun           0.5        2019-02-20 [1] CRAN (R 3.5.2)                  
+##  xml2           1.2.0      2018-01-24 [2] CRAN (R 3.5.0)                  
+##  yaml           2.2.0      2018-07-25 [2] CRAN (R 3.5.0)                  
+##  zoo            1.8-4      2018-09-19 [2] CRAN (R 3.5.0)                  
+## 
+## [1] /Users/soltoffbc/Library/R/3.5/library
+## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library</code></pre>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiR2V0dGluZyBkYXRhIGZyb20gdGhlIHdlYjogQVBJIGFjY2VzcyIKb3V0cHV0OgogIGh0bWxfZG9jdW1lbnQ6CiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQotLS0KCmBgYHtyIHNldHVwLCBpbmNsdWRlID0gRkFMU0V9CmtuaXRyOjpvcHRzX2NodW5rJHNldChjYWNoZSA9IFRSVUUpCmBgYAoKYGBge3IgcGFja2FnZXMsIGNhY2hlID0gRkFMU0UsIG1lc3NhZ2UgPSBGQUxTRX0KbGlicmFyeSh0aWR5dmVyc2UpCmxpYnJhcnkoZm9yY2F0cykKbGlicmFyeShicm9vbSkKbGlicmFyeSh3b3JkY2xvdWQpCmxpYnJhcnkodGlkeXRleHQpCmxpYnJhcnkodmlyaWRpcykKCnNldC5zZWVkKDEyMzQpCnRoZW1lX3NldCh0aGVtZV9taW5pbWFsKCkpCmBgYAoKIyBNZXRob2RzIGZvciBvYnRhaW5pbmcgZGF0YSBvbmxpbmUKClRoZXJlIGFyZSBtYW55IHdheXMgdG8gb2J0YWluIGRhdGEgZnJvbSB0aGUgSW50ZXJuZXQuIEZvdXIgbWFqb3IgY2F0ZWdvcmllcyBhcmU6CgoqICoqY2xpY2stYW5kLWRvd25sb2FkKiogb24gdGhlIGludGVybmV0IGFzIGEgImZsYXQiIGZpbGUsIHN1Y2ggYXMgLmNzdiwgLnhscwoqICoqaW5zdGFsbC1hbmQtcGxheSoqIGFuIEFQSSBmb3Igd2hpY2ggc29tZW9uZSBoYXMgd3JpdHRlbiBhIGhhbmR5IFIgcGFja2FnZQoqICoqQVBJLXF1ZXJ5KiogcHVibGlzaGVkIHdpdGggYW4gdW53cmFwcGVkIEFQSQoqICoqU2NyYXBpbmcqKiBpbXBsaWNpdCBpbiBhbiBodG1sIHdlYnNpdGUKCiMjIENsaWNrLWFuZC1Eb3dubG9hZAoKSW4gdGhlIHNpbXBsZXN0IGNhc2UsIHRoZSBkYXRhIHlvdSBuZWVkIGlzIGFscmVhZHkgb24gdGhlIGludGVybmV0IGluIGEgdGFidWxhciBmb3JtYXQuIFRoZXJlIGFyZSBhIGNvdXBsZSBvZiBzdHJhdGVnaWVzIGhlcmU6CgoqIFVzZSBgcmVhZC5jc3ZgIG9yIGByZWFkcjo6cmVhZF9jc3ZgIHRvIHJlYWQgdGhlIGRhdGEgc3RyYWlnaHQgaW50byBSCiogVXNlIHRoZSBgZG93bmxvYWRlcmAgcGFja2FnZSBvciBgY3VybGAgZnJvbSB0aGUgc2hlbGwgdG8gZG93bmxvYWQgdGhlIGZpbGUgYW5kIHN0b3JlIGEgbG9jYWwgY29weSwgdGhlbiB1c2UgYHJlYWRfY3N2YCBvciBzb21ldGhpbmcgc2ltaWxhciB0byByZWFkIHRoZSBkYXRhIGludG8gUgogICAgKiBFdmVuIGlmIHRoZSBmaWxlIGRpc2FwcGVhcnMgZnJvbSB0aGUgaW50ZXJuZXQsIHlvdSBoYXZlIGEgbG9jYWwgY29weSBjYWNoZWQKCkV2ZW4gaW4gdGhpcyBpbnN0YW5jZSwgZmlsZXMgbWF5IG5lZWQgY2xlYW5pbmcgYW5kIHRyYW5zZm9ybWF0aW9uIHdoZW4geW91IGJyaW5nIHRoZW0gaW50byBSLgoKIyMgRGF0YSBzdXBwbGllZCBvbiB0aGUgd2ViCgpNYW55IHRpbWVzLCB0aGUgZGF0YSB0aGF0IHlvdSB3YW50IGlzIG5vdCBhbHJlYWR5IG9yZ2FuaXplZCBpbnRvIG9uZSBvciBhIGZldyB0YWJsZXMgdGhhdCB5b3UgY2FuIHJlYWQgZGlyZWN0bHkgaW50byBSLiBNb3JlIGZyZXF1ZW50bHksIHlvdSBmaW5kIHRoaXMgZGF0YSBpcyBnaXZlbiBpbiB0aGUgZm9ybSBvZiBhbiBBUEkuICoqQSoqcHBsaWNhdGlvbiAqKlAqKnJvZ3JhbW1pbmcgKipJKipudGVyZmFjZXMgKEFQSXMpIGFyZSBkZXNjcmlwdGlvbnMgb2YgdGhlIGtpbmQgb2YgcmVxdWVzdHMgdGhhdCBjYW4gYmUgbWFkZSBvZiBhIGNlcnRhaW4gcGllY2Ugb2Ygc29mdHdhcmUsIGFuZCBkZXNjcmlwdGlvbnMgb2YgdGhlIGtpbmQgb2YgYW5zd2VycyB0aGF0IGFyZSByZXR1cm5lZC4gTWFueSBzb3VyY2VzIG9mIGRhdGEgLSBkYXRhYmFzZXMsIHdlYnNpdGVzLCBzZXJ2aWNlcyAtIGhhdmUgbWFkZSBhbGwgKG9yIHBhcnQpIG9mIHRoZWlyIGRhdGEgYXZhaWxhYmxlIHZpYSBBUElzIG92ZXIgdGhlIGludGVybmV0LiBDb21wdXRlciBwcm9ncmFtcyAoImNsaWVudHMiKSBjYW4gbWFrZSByZXF1ZXN0cyBvZiB0aGUgc2VydmVyLCBhbmQgdGhlIHNlcnZlciB3aWxsIHJlc3BvbmQgYnkgc2VuZGluZyBkYXRhIChvciBhbiBlcnJvciBtZXNzYWdlKS4gVGhpcyBjbGllbnQgY2FuIGJlIG1hbnkga2luZHMgb2Ygb3RoZXIgcHJvZ3JhbXMgb3Igd2Vic2l0ZXMsIGluY2x1ZGluZyBSIHJ1bm5pbmcgZnJvbSB5b3VyIGxhcHRvcC4KCiMjIEluc3RhbGwgYW5kIHBsYXkgcGFja2FnZXMKCk1hbnkgY29tbW9uIHdlYiBzZXJ2aWNlcyBhbmQgQVBJcyBoYXZlIGJlZW4gIndyYXBwZWQiLCBpLmUuIFIgZnVuY3Rpb25zIGhhdmUgYmVlbiB3cml0dGVuIGFyb3VuZCB0aGVtIHdoaWNoIHNlbmQgeW91ciBxdWVyeSB0byB0aGUgc2VydmVyIGFuZCBmb3JtYXQgdGhlIHJlc3BvbnNlLgoKV2h5IGRvIHdlIHdhbnQgdGhpcz8KCiogcHJvdmVuYW5jZQoqIHJlcHJvZHVjaWJsZQoqIHVwZGF0aW5nCiogZWFzZQoqIHNjYWxpbmcKCiMgU2lnaHRpbmdzIG9mIGJpcmRzOiBgcmViaXJkYAoKW2ByZWJpcmRgXShodHRwczovL2dpdGh1Yi5jb20vcm9wZW5zY2kvcmViaXJkKSBpcyBhbiBSIGludGVyZmFjZSBmb3IgdGhlIFtlYmlyZF0oaHR0cDovL2ViaXJkLm9yZy9jb250ZW50L2ViaXJkLykgZGF0YWJhc2UuIGUtQmlyZCBsZXRzIGJpcmRlcnMgdXBsb2FkIHNpZ2h0aW5ncyBvZiBiaXJkcywgYW5kIGFsbG93cyBldmVyeW9uZSBhY2Nlc3MgdG8gdGhvc2UgZGF0YS4KCmBgYHtyIHJlYmlyZC1pbnN0YWxsLCBldmFsID0gRkFMU0V9Cmluc3RhbGwucGFja2FnZXMoInJlYmlyZCIpCmBgYAoKYGBge3IgcmViaXJkLCBtZXNzYWdlID0gRkFMU0V9CmxpYnJhcnkocmViaXJkKQpgYGAKCiMjIFNlYXJjaCBiaXJkcyBieSBnZW9ncmFwaHkKClRoZSBlYmlyZCB3ZWJzaXRlIGNhdGVnb3JpemVzIHNvbWUgcG9wdWxhciBsb2NhdGlvbnMgYXMgIkhvdHNwb3RzIi4gVGhlc2UgYXJlIGFyZWFzIHdoZXJlIHRoZXJlIGFyZSBib3RoIGxvdHMgb2YgYmlyZHMgYW5kIGxvdHMgb2YgYmlyZGVycy4gT25jZSBzdWNoIGxvY2F0aW9uIGlzIGF0IExpbmNvbG4gUGFyayBab28gaW4gQ2hpY2Fnby4gWW91IGNhbiBzZWUgZGF0YSBmb3IgdGhpcyBzaXRlIGF0IFtodHRwOi8vZWJpcmQub3JnL2ViaXJkL2hvdHNwb3QvTDE1NzM3ODVdKGh0dHA6Ly9lYmlyZC5vcmcvZWJpcmQvaG90c3BvdC9MMTU3Mzc4NSkKCkF0IHRoYXQgbGluaywgeW91IGNhbiBzZWUgYSBwYWdlIGxpa2UgdGhpczoKCiFbTGluY29sbiBQYXJrIFpvb10oaW1hZ2VzL2xpbmNvbG5fcGFya196b28ucG5nKQoKVGhlIGRhdGEgYWxyZWFkeSBsb29rIHRvIGJlIG9yZ2FuaXplZCBpbiBhIGRhdGEgZnJhbWUhIGByZWJpcmRgIGFsbG93cyB1cyB0byByZWFkIHRoZXNlIGRhdGEgZGlyZWN0bHkgaW50byBSLgoKPiBUaGUgSUQgY29kZSBmb3IgTGluY29sbiBQYXJrIFpvbyBpcyAqKkwxNTczNzg1KioKCmBgYHtyIHJlYmlyZC1saW5jb2xuLXBhcmt9CmViaXJkaG90c3BvdChsb2NJRCA9ICJMMTU3Mzc4NSIpICU+JQogIGFzX3RpYmJsZSgpCmBgYAoKV2UgY2FuIHVzZSB0aGUgZnVuY3Rpb24gYGViaXJkZ2VvYCB0byBnZXQgYSBsaXN0IGZvciBhbiBhcmVhLiAoTm90ZSB0aGF0IFNvdXRoIGFuZCBXZXN0IGFyZSBuZWdhdGl2ZSk6CgpgYGB7ciByZWJpcmQtbG9jYXRpb259CmNoaWJpcmRzIDwtIGViaXJkZ2VvKGxhdCA9IDQxLjg3ODEsIGxuZyA9IC04Ny42Mjk4KQpjaGliaXJkcyAlPiUKICBhc190aWJibGUoKSAlPiUKICBzdHIoKQpgYGAKCioqTm90ZSoqOiBDaGVjayB0aGUgZGVmYXVsdHMgb24gdGhpcyBmdW5jdGlvbi4gZS5nLiByYWRpdXMgb2YgY2lyY2xlLCB0aW1lIG9mIHllYXIuCgpXZSBjYW4gYWxzbyBzZWFyY2ggYnkgInJlZ2lvbiIsIHdoaWNoIHJlZmVycyB0byBzaG9ydCBjb2RlcyB3aGljaCBzZXJ2ZSBhcyBjb21tb24gc2hvcnRoYW5kcyBmb3IgZGlmZmVyZW50IHBvbGl0aWNhbCB1bml0cy4gRm9yIGV4YW1wbGUsIEZyYW5jZSBpcyByZXByZXNlbnRlZCBieSB0aGUgbGV0dGVycyAqKkZSKioKCmBgYHtyIHJlYmlyZC1mcmFuY2V9CmZyZW5jaGJpcmRzIDwtIGViaXJkcmVnaW9uKCJGUiIpCgpmcmVuY2hiaXJkcyAlPiUKICBhc190aWJibGUoKSAlPiUKICBzdHIoKQpgYGAKCkZpbmQgb3V0ICpXSEVOKiBhIGJpcmQgaGFzIGJlZW4gc2VlbiBpbiBhIGNlcnRhaW4gcGxhY2UhIENob29zaW5nIGEgbmFtZSBmcm9tIGBjaGliaXJkc2AgYWJvdmUgKHRoZSBCYWxkIEVhZ2xlKToKCmBgYHtyIHJlYmlyZC13YXJibGVyfQp3YXJibGVyIDwtIGViaXJkZ2VvKHNwZWNpZXMgPSAnU2V0b3BoYWdhIGNvcm9uYXRhJywgbGF0ID0gNDEuODc4MSwgbG5nID0gLTg3LjYyOTgpCgp3YXJibGVyICU+JQogIGFzX3RpYmJsZSgpICU+JQogIHN0cigpCmBgYAoKYHJlYmlyZGAgKiprbm93cyB3aGVyZSB5b3UgYXJlKio6CgpgYGB7ciByZWJpcmQtd2hlcmUtYW0taX0KZWJpcmRnZW8oc3BlY2llcyA9ICdTZXRvcGhhZ2EgY29yb25hdGEnKSAlPiUKICBhc190aWJibGUoKSAlPiUKICBrbml0cjo6a2FibGUoKQpgYGAKCiMgU2VhcmNoaW5nIGdlb2dyYXBoaWMgaW5mbzogYGdlb25hbWVzYAoKYGBge3IgZ2VvbmFtZXMsIG1lc3NhZ2UgPSBGQUxTRX0KIyBpbnN0YWxsLnBhY2thZ2VzKGdlb25hbWVzKQpsaWJyYXJ5KGdlb25hbWVzKQpgYGAKCiMjIEFQSSBhdXRoZW50aWNhdGlvbgoKTWFueSBBUElzIHJlcXVpcmUgeW91IHRvIHJlZ2lzdGVyIGZvciBhY2Nlc3MuIFRoaXMgYWxsb3dzIHRoZW0gdG8gdHJhY2sgd2hpY2ggdXNlcnMgYXJlIHN1Ym1pdHRpbmcgcXVlcmllcyBhbmQgbWFuYWdlIGRlbWFuZCAtIGlmIHlvdSBzdWJtaXQgdG9vIG1hbnkgcXVlcmllcyB0b28gcXVpY2tseSwgeW91IG1pZ2h0IGJlICoqcmF0ZS1saW1pdGVkKiogYW5kIHlvdXIgcmVxdWVzdHMgZGUtcHJpb3JpdGl6ZWQgb3IgYmxvY2tlZC4gQWx3YXlzIGNoZWNrIHRoZSBBUEkgYWNjZXNzIHBvbGljeSBvZiB0aGUgd2ViIHNpdGUgdG8gZGV0ZXJtaW5lIHdoYXQgdGhlc2UgbGltaXRzIGFyZS4KClRoZXJlIGFyZSBhIGZldyB0aGluZ3Mgd2UgbmVlZCB0byBkbyB0byBiZSBhYmxlIHRvIHVzZSB0aGlzIHBhY2thZ2UgdG8gYWNjZXNzIHRoZSBnZW9uYW1lcyBBUEk6CgoxLiBnbyB0byBbdGhlIGdlb25hbWVzIHNpdGVdKGh0dHA6Ly93d3cuZ2VvbmFtZXMub3JnL2xvZ2luLykgYW5kIHJlZ2lzdGVyIGFuIGFjY291bnQuIAoyLiBjbGljayBbaGVyZSB0byBlbmFibGUgdGhlIGZyZWUgd2ViIHNlcnZpY2VdKGh0dHA6Ly93d3cuZ2VvbmFtZXMub3JnL2VuYWJsZWZyZWV3ZWJzZXJ2aWNlKQozLiBUZWxsIFIgeW91ciBnZW9uYW1lcyB1c2VybmFtZS4gWW91IGNvdWxkIHJ1biB0aGUgbGluZQoKYGBgIHIgCm9wdGlvbnMoZ2VvbmFtZXNVc2VybmFtZSA9ICJteV91c2VyX25hbWUiKQpgYGAgCgppbiBSLiBIb3dldmVyIHRoaXMgaXMgaW5zZWN1cmUuIFdlIGRvbid0IHdhbnQgdG8gcmlzayBjb21taXR0aW5nIHRoaXMgbGluZSBhbmQgcHVzaGluZyBpdCB0byBvdXIgcHVibGljIEdpdEh1YiBwYWdlISBJbnN0ZWFkLCB5b3Ugc2hvdWxkIGNyZWF0ZSBhIGZpbGUgaW4gdGhlIHNhbWUgcGxhY2UgYXMgeW91ciBgLlJwcm9qYCBmaWxlLiBUbyBkbyB0aGF0LCBydW4gdGhlIGZvbGxvd2luZyBjb21tYW5kIGZyb20gdGhlIFIgY29uc29sZToKCmBgYHIKZmlsZS5lZGl0KGhlcmU6OmhlcmUoIi5ScHJvZmlsZSIpKQpgYGAKCj4gTm90ZTogeW91IG5lZWQgdG8gaGF2ZSB0aGUgW2BoZXJlYF0oaHR0cHM6Ly9jcmFuLnItcHJvamVjdC5vcmcvd2ViL3BhY2thZ2VzL2hlcmUvaW5kZXguaHRtbCkgcGFja2FnZSBpbnN0YWxsZWQgZm9yIHRoYXQgY29kZSB0byB3b3JrLgoKVGhpcyB3aWxsIGNyZWF0ZSBhIHNwZWNpYWwgZmlsZSBjYWxsZWQgYC5ScHJvZmlsZWAgaW4gdGhlIHNhbWUgZGlyZWN0b3J5IGFzIHlvdXIgYC5ScHJvamAgZmlsZSAoYXNzdW1pbmcgeW91IGFyZSB3b3JraW5nIGluIGFuIFIgcHJvamVjdCkuIFRoZSBmaWxlIHNob3VsZCBvcGVuIGF1dG9tYXRpY2FsbHkgaW4geW91ciBSU3R1ZGlvIHNjcmlwdCBlZGl0b3IuIEFkZAoKYGBgIHIgCm9wdGlvbnMoZ2VvbmFtZXNVc2VybmFtZSA9ICJteV91c2VyX25hbWUiKQpgYGAgCgp0byB0aGF0IGZpbGUsIHJlcGxhY2luZyBgbXlfdXNlcl9uYW1lYCB3aXRoIHlvdXIgR2VvbmFtZXMgdXNlcm5hbWUuCgojIyMgSW1wb3J0YW50CgoqIE1ha2Ugc3VyZSB5b3VyIGAuUnByb2ZpbGVgIGVuZHMgd2l0aCBhIGJsYW5rIGxpbmUKKiBNYWtlIHN1cmUgYC5ScHJvZmlsZWAgaXMgaW5jbHVkZWQgaW4geW91ciBgLmdpdGlnbm9yZWAgZmlsZSwgb3RoZXJ3aXNlIGl0IHdpbGwgYmUgc3luY2VkIHdpdGggR2l0aHViCiogUmVzdGFydCBSU3R1ZGlvIGFmdGVyIG1vZGlmeWluZyBgLlJwcm9maWxlYCBpbiBvcmRlciB0byBsb2FkIGFueSBuZXcga2V5cyBpbnRvIG1lbW9yeQoqIFNwZWxsaW5nIGlzIGltcG9ydGFudCB3aGVuIHlvdSBzZXQgdGhlIG9wdGlvbiBpbiB5b3VyIGAuUnByb2ZpbGVgCiogWW91IGNhbiBkbyBhIHNpbWlsYXIgcHJvY2VzcyBmb3IgYW4gYXJiaXRyYXJ5IHBhY2thZ2Ugb3Iga2V5LiBGb3IgZXhhbXBsZToKCmBgYHtyIHJwcm9maWxlLCBldmFsID0gRkFMU0V9CiMgaW4gLlJwcm9maWxlCm9wdGlvbnMoInRoaXNfaXNfbXlfa2V5IiA9IFhYWFgpCgojIGxhdGVyLCBpbiB0aGUgUiBzY3JpcHQ6CmtleSA8LSBnZXRPcHRpb24oInRoaXNfaXNfbXlfa2V5IikKYGBgCgpUaGlzIGlzIGEgc2ltcGxlIG1lYW5zIHRvIGtlZXAgeW91ciBrZXlzIHByaXZhdGUsIGVzcGVjaWFsbHkgaWYgeW91IGFyZSBzaGFyaW5nIHRoZSBzYW1lIGF1dGhlbnRpY2F0aW9uIGFjcm9zcyBzZXZlcmFsIHByb2plY3RzLiBSZW1lbWJlciB0aGF0IHVzaW5nIGAuUnByb2ZpbGVgIG1ha2VzIHlvdXIgY29kZSB1bi1yZXByb2R1Y2libGUuIEluIHRoaXMgY2FzZSwgdGhhdCBpcyBleGFjdGx5IHdoYXQgd2Ugd2FudCEKCiMjIFVzaW5nIEdlb25hbWVzCgpXaGF0IGNhbiB3ZSBkbz8gR2V0IGFjY2VzcyB0byBsb3RzIG9mIGdlb2dyYXBoaWNhbCBpbmZvcm1hdGlvbiB2aWEgdGhlIHZhcmlvdXMgWyJ3ZWIgc2VydmljZXMiXShodHRwOi8vd3d3Lmdlb25hbWVzLm9yZy9leHBvcnQvd3Mtb3ZlcnZpZXcuaHRtbCkKCmBgYHtyIGdlb25hbWVzLWNvdW50cnktaW5mb30KY291bnRyeUluZm8gPC0gR05jb3VudHJ5SW5mbygpCmBgYAoKYGBge3IgZ2VvbmFtZXMtc3RyfQpjb3VudHJ5SW5mbyAlPiUKICBhc190aWJibGUoKSAlPiUKICBzdHIoKQpgYGAKClRoaXMgY291bnRyeSBpbmZvIGRhdGFzZXQgaXMgdmVyeSBoZWxwZnVsIGZvciBhY2Nlc3NpbmcgdGhlIHJlc3Qgb2YgdGhlIGRhdGEsIGJlY2F1c2UgaXQgZ2l2ZXMgdXMgdGhlIHN0YW5kYXJkaXplZCBjb2RlcyBmb3IgY291bnRyeSBhbmQgbGFuZ3VhZ2UuICAKCiMgVGhlIE1hbmlmZXN0byBQcm9qZWN0OiBgbWFuaWZlc3RvUmAKCltUaGUgTWFuaWZlc3RvIFByb2plY3RdKGh0dHBzOi8vbWFuaWZlc3RvLXByb2plY3Qud3piLmV1LykgY29sbGVjdHMgYW5kIG9yZ2FuaXplcyBwb2xpdGljYWwgcGFydHkgbWFuaWZlc3RvcyBmcm9tIGFyb3VuZCB0aGUgd29ybGQuIEl0IGN1cnJlbnRseSBjb3ZlcnMgb3ZlciAxMDAwIHBhcnRpZXMgZnJvbSAxOTQ1IHVudGlsIHRvZGF5IGluIG92ZXIgNTAgY291bnRyaWVzIG9uIGZpdmUgY29udGluZW50cy4gV2UgY2FuIHVzZSB0aGUgW2BtYW5pZmVzdG9SYCBwYWNrYWdlXShodHRwczovL2dpdGh1Yi5jb20vTWFuaWZlc3RvUHJvamVjdC9tYW5pZmVzdG9SKSB0byBhY2Nlc3MgdGhlIEFQSSBhbmQgZG93bmxvYWQgdGhvc2UgbWFuaWZlc3RvcyBmb3IgYW5hbHlzaXMgaW4gUi4KCiMjIExvYWQgbGlicmFyeSBhbmQgc2V0IEFQSSBrZXkKCkFjY2Vzc2luZyBkYXRhIGZyb20gdGhlIE1hbmlmZXN0byBQcm9qZWN0IEFQSSByZXF1aXJlcyBhbiBhdXRoZW50aWNhdGlvbiBrZXkuIFlvdSBjYW4gY3JlYXRlIGFuIGFjY291bnQgYW5kIGtleSBbaGVyZV0oaHR0cHM6Ly9tYW5pZmVzdG8tcHJvamVjdC53emIuZXUvc2lnbnVwKS4gSGVyZSBJIHN0b3JlIG15IGtleSBpbiBgLlJwcm9maWxlYCBhbmQgcmV0cmlldmUgaXQgdXNpbmcgYG1wX3NldGFwaWtleSgpYC4KCmBgYHtyIG1hbmlmZXN0b3ItbG9hZCwgbWVzc2FnZSA9IEZBTFNFLCBjYWNoZSA9IEZBTFNFfQpsaWJyYXJ5KG1hbmlmZXN0b1IpCgojIHJldHJpZXZlIEFQSSBrZXkgc3RvcmVkIGluIC5ScHJvZmlsZQptcF9zZXRhcGlrZXkoa2V5ID0gZ2V0T3B0aW9uKCJtYW5pZmVzdG9fa2V5IikpCmBgYAoKIyMgUmV0cmlldmUgdGhlIGRhdGFiYXNlCgpgYGB7ciBtYW5pZmVzdG9yLWRifQoobXBkcyA8LSBtcF9tYWluZGF0YXNldCgpKQpgYGAKCmBtcF9tYWluZGF0YXNldCgpYCBpbmNsdWRlcyBhIGRhdGEgZnJhbWUgZGVzY3JpYmluZyBlYWNoIG1hbmlmZXN0byBpbmNsdWRlZCBpbiB0aGUgZGF0YWJhc2UuIFlvdSBjYW4gdXNlIHRoaXMgZGF0YWJhc2UgZm9yIHNvbWUgZXhwbG9yYXRvcnkgZGF0YSBhbmFseXNpcy4gRm9yIGluc3RhbmNlLCBob3cgbWFueSBtYW5pZmVzdG9zIGhhdmUgYmVlbiBwdWJsaXNoZWQgYnkgZWFjaCBwb2xpdGljYWwgcGFydHkgaW4gU3dlZGVuPwoKYGBge3IgbWFuaWZlc3RvLWRpc3R9Cm1wZHMgJT4lCiAgZmlsdGVyKGNvdW50cnluYW1lID09ICJTd2VkZW4iKSAlPiUKICBjb3VudChwYXJ0eW5hbWUpICU+JQogIGdncGxvdChhZXMoZmN0X3Jlb3JkZXIocGFydHluYW1lLCBuKSwgbikpICsKICBnZW9tX2NvbCgpICsKICBsYWJzKHRpdGxlID0gIlBvbGl0aWNhbCBtYW5pZmVzdG9zIHB1Ymxpc2hlZCBpbiBTd2VkZW4iLAogICAgICAgeCA9IE5VTEwsCiAgICAgICB5ID0gIlRvdGFsICgxOTQ4LXByZXNlbnQpIikgKwogIGNvb3JkX2ZsaXAoKQpgYGAKCk9yIHdlIGNhbiB1c2UgKipzY2FsaW5nIGZ1bmN0aW9ucyoqIHRvIGlkZW50aWZ5IGVhY2ggcGFydHkgbWFuaWZlc3RvIG9uIGFuIGlkZW9sb2dpY2FsIGRpbWVuc2lvbi4gRm9yIGV4YW1wbGUsIGhvdyBoYXZlIHRoZSBEZW1vY3JhdGljIGFuZCBSZXB1YmxpY2FuIFBhcnR5IG1hbmlmZXN0b3MgaW4gdGhlIFVuaXRlZCBTdGF0ZXMgY2hhbmdlZCBvdmVyIHRpbWU/CgpgYGB7ciBtYW5pZmVzdG9yLXVzYX0KbXBkcyAlPiUKICBmaWx0ZXIocGFydHkgPT0gNjEzMjAgfCBwYXJ0eSA9PSA2MTYyMCkgJT4lCiAgbXV0YXRlKGlkZW8gPSBtcF9zY2FsZSguKSkgJT4lCiAgc2VsZWN0KHBhcnR5bmFtZSwgZWRhdGUsIGlkZW8pICU+JQogIGdncGxvdChhZXMoZWRhdGUsIGlkZW8sIGNvbG9yID0gcGFydHluYW1lKSkgKwogIGdlb21fbGluZSgpICsKICBzY2FsZV9jb2xvcl9tYW51YWwodmFsdWVzID0gYygiYmx1ZSIsICJyZWQiKSkgKwogIGxhYnModGl0bGUgPSAiSWRlb2xvZ2ljYWwgc2NhbGluZyBvZiBtYWpvciBVUyBwb2xpdGljYWwgcGFydGllcyIsCiAgICAgICB4ID0gIlllYXIiLAogICAgICAgeSA9ICJJZGVvbG9naWNhbCBwb3NpdGlvbiIsCiAgICAgICBjb2xvciA9IE5VTEwpICsKICB0aGVtZShsZWdlbmQucG9zaXRpb24gPSAiYm90dG9tIikKYGBgCgojIyBEb3dubG9hZCBtYW5pZmVzdG9zCgpgbXBfY29ycHVzKClgIGNhbiBiZSB1c2VkIHRvIGRvd25sb2FkIHRoZSBvcmlnaW5hbCBtYW5pZmVzdG9zIGFzIGZ1bGwgdGV4dCBkb2N1bWVudHMgc3RvcmVkIGFzIGEgWyoqY29ycHVzKipdKHRleHQwMDFfd29ya2Zsb3cuaHRtbCNleHRyYWN0X2RvY3VtZW50c19hbmRfbW92ZV9pbnRvX2FfY29ycHVzKS4gT25jZSB5b3Ugb2J0YWluIHRoZSBjb3JwdXMsIHlvdSBjYW4gcGVyZm9ybSBbdGV4dF0oY20wMTcuaHRtbCkgW2FuYWx5c2lzXShjbTAxOC5odG1sKS4gQXMgYW4gZXhhbXBsZSwgbGV0J3MgY29tcGFyZSB0aGUgbW9zdCBjb21tb24gd29yZHMgaW4gdGhlIERlbW9jcmF0aWMgYW5kIFJlcHVibGljYW4gUGFydHkgbWFuaWZlc3RvcyBmcm9tIHRoZSAyMDEyIFUuUy4gcHJlc2lkZW50aWFsIGVsZWN0aW9uOgoKYGBge3IgbWFuaWZlc3Rvci1jb3JwdXMsIG1lc3NhZ2UgPSBGQUxTRSwgd2FybmluZyA9IEZBTFNFfQojIGRvd25sb2FkIGRvY3VtZW50cwooZG9jcyA8LSBtcF9jb3JwdXMoY291bnRyeW5hbWUgPT0gIlVuaXRlZCBTdGF0ZXMiICYgZWRhdGUgPiBhcy5EYXRlKCIyMDEyLTAxLTAxIikpKQoKIyBnZW5lcmF0ZSB3b3JkY2xvdWQgb2YgbW9zdCBjb21tb24gdGVybXMKZG9jcyAlPiUKICB0aWR5KCkgJT4lCiAgbXV0YXRlKHBhcnR5ID0gZmFjdG9yKHBhcnR5LCBsZXZlbHMgPSBjKDYxMzIwLCA2MTYyMCksCiAgICAgICAgICAgICAgICAgICAgICAgIGxhYmVscyA9IGMoIkRlbW9jcmF0aWMgUGFydHkiLCAiUmVwdWJsaWNhbiBQYXJ0eSIpKSkgJT4lCiAgdW5uZXN0X3Rva2Vucyh3b3JkLCB0ZXh0KSAlPiUKICBhbnRpX2pvaW4oc3RvcF93b3JkcykgJT4lCiAgY291bnQocGFydHksIHdvcmQsIHNvcnQgPSBUUlVFKSAlPiUKICBuYS5vbWl0KCkgJT4lCiAgcmVzaGFwZTI6OmFjYXN0KHdvcmQgfiBwYXJ0eSwgdmFsdWUudmFyID0gIm4iLCBmaWxsID0gMCkgJT4lCiAgY29tcGFyaXNvbi5jbG91ZChtYXgud29yZHMgPSAyMDApCmBgYAoKIyBDZW5zdXMgZGF0YSB3aXRoIGB0aWR5Y2Vuc3VzYAoKW2B0aWR5Y2Vuc3VzYF0oaHR0cHM6Ly93YWxrZXJrZS5naXRodWIuaW8vdGlkeWNlbnN1cy9pbmRleC5odG1sKSBwcm92aWRlcyBhbiBpbnRlcmZhY2Ugd2l0aCB0aGUgVVMgQ2Vuc3VzIEJ1cmVhdSdzIGRlY2VubmlhbCBjZW5zdXMgYW5kIEFtZXJpY2FuIENvbW11bml0eSBBUElzIGFuZCByZXR1cm5zIHRpZHkgZGF0YSBmcmFtZXMgd2l0aCBvcHRpb25hbCBzaW1wbGUgZmVhdHVyZSBnZW9tZXRyeS4gVGhlc2UgQVBJcyByZXF1aXJlIGEgZnJlZSBrZXkgeW91IGNhbiBvYnRhaW4gW2hlcmVdKGh0dHBzOi8vYXBpLmNlbnN1cy5nb3YvZGF0YS9rZXlfc2lnbnVwLmh0bWwpLiBSYXRoZXIgdGhhbiBzdG9yaW5nIHlvdXIga2V5IGluIGAuUnByb2ZpbGVgLCBgdGlkeWNlbnN1c2AgaW5jbHVkZXMgYGNlbnN1c19hcGlfa2V5KClgIHdoaWNoIGF1dG9tYXRpY2FsbHkgc3RvcmVzIHlvdXIga2V5IGluIGAuUmVudmlyb25gLCB3aGljaCBpcyBiYXNpY2FsbHkgYSBnbG9iYWwgdmVyc2lvbiBvZiBgLlJwcm9maWxlYC4gQW55dGhpbmcgc3RvcmVkIGluIGAuUmVudmlyb25gIGlzIGF1dG9tYXRpY2FsbHkgbG9hZGVkIGFueXRpbWUgeW91IGluaXRpYXRlIFIgb24geW91ciBjb21wdXRlciwgcmVnYXJkbGVzcyBvZiB0aGUgcHJvamVjdCBvciBmaWxlIGxvY2F0aW9uLiBPbmNlIHlvdSBnZXQgeW91ciBrZXksIGxvYWQgaXQ6CgpgYGB7ciB0aWR5Y2Vuc3VzfQpsaWJyYXJ5KHRpZHljZW5zdXMpCmBgYAoKYGBgcgpjZW5zdXNfYXBpX2tleSgiWU9VUiBBUEkgS0VZIEdPRVMgSEVSRSIpCmBgYAoKIyMgT2J0YWluaW5nIGRhdGEKCmBnZXRfZGVjZW5uaWFsKClgIGFsbG93cyB5b3UgdG8gb2J0YWluIGRhdGEgZnJvbSB0aGUgMTk5MCwgMjAwMCwgYW5kIDIwMTAgZGVjZW5uaWFsIFVTIGNlbnN1c2VzLiBMZXQncyBsb29rIGF0IHRoZSBudW1iZXIgb2YgaW5kaXZpZHVhbHMgb2YgQ2hpbmVzZSBldGhuaWNpdHkgYnkgc3RhdGUgaW4gMjAxMDoKCmBgYHtyIGdldC1jaGluYX0KY2hpbmExMCA8LSBnZXRfZGVjZW5uaWFsKGdlb2dyYXBoeSA9ICJzdGF0ZSIsIHZhcmlhYmxlcyA9ICJQQ1QwMDYwMDA3IiwgeWVhciA9IDIwMTApCmNoaW5hMTAKYGBgCgpUaGUgcmVzdWx0IG9mIGBnZXRfZGVjZW5uaWFsKClgIGlzIGEgdGlkeSBkYXRhIGZyYW1lIHdpdGggb25lIHJvdyBwZXIgZ2VvZ3JhcGhpYyB1bml0LXZhcmlhYmxlLgoKKiBgR0VPSURgIC0gaWRlbnRpZmllciBmb3IgdGhlIGdlb2dyYXBoaWNhbCB1bml0IGFzc29jaWF0ZWQgd2l0aCB0aGUgcm93CiogYE5BTUVgIC0gZGVzY3JpcHRpdmUgbmFtZSBvZiB0aGUgZ2VvZ3JhcGhpY2FsIHVuaXQKKiBgdmFyaWFibGVgIC0gdGhlIENlbnN1cyB2YXJpYWJsZSBlbmNvZGVkIGluIHRoZSByb3cKKiBgdmFsdWVgIC0gdGhlIHZhbHVlIG9mIHRoZSB2YXJpYWJsZSBmb3IgdGhhdCBnZW9ncmFwaGljIHVuaXQKCldlIGNhbiBxdWlja2x5IHZpc3VhbGl6ZSB0aGlzIGRhdGEgZnJhbWUgdXNpbmcgYGdncGxvdDJgOgoKYGBge3IgcGxvdC1jaGluZXNlLCBmaWcuYXNwID0gMX0KZ2dwbG90KGNoaW5hMTAsIGFlcyh4ID0gcmVvcmRlcihOQU1FLCB2YWx1ZSksIHkgPSB2YWx1ZSkpICsKICBnZW9tX3BvaW50KCkgKwogIGNvb3JkX2ZsaXAoKQpgYGAKCk9mIGNvdXJzZSB0aGlzIGdyYXBoIGlzIG5vdCBlbnRpcmVseSB1c2VmdWwgc2luY2UgaXQgaXMgYmFzZWQgb24gdGhlIHJhdyBmcmVxdWVuY3kgb2YgQ2hpbmVzZSBpbmRpdmlkdWFscy4gQ2FsaWZvcm5pYSBpcyBhdCB0aGUgdG9wIG9mIHRoZSBsaXN0LCBidXQgaXQgaXMgYWxzbyB0aGUgbW9zdCBwb3B1bG91cyBjaXR5LiBJbnN0ZWFkLCB3ZSBjb3VsZCBub3JtYWxpemUgdGhpcyB2YWx1ZSBhcyBhIHBlcmNlbnRhZ2Ugb2YgdGhlIGVudGlyZSBzdGF0ZSBwb3B1bGF0aW9uLiBUbyBkbyB0aGF0LCB3ZSBuZWVkIHRvIHJldHJpZXZlIGFub3RoZXIgdmFyaWFibGU6CgpgYGB7ciBjaGluYS10b3RhbC1wb3AsIGZpZy5hc3AgPSAxfQpjaGluYV9wb3AgPC0gZ2V0X2RlY2VubmlhbChnZW9ncmFwaHkgPSAic3RhdGUiLAogICAgICAgICAgICAgICAgICAgICAgICAgICB2YXJpYWJsZXMgPSBjKCJQQ1QwMDYwMDA3IiwgIlAwMDEwMDAxIiksCiAgICAgICAgICAgICAgICAgICAgICAgICAgIHllYXIgPSAyMDEwKSAlPiUKICBzcHJlYWQodmFyaWFibGUsIHZhbHVlKSAlPiUKICBtdXRhdGUocGN0X2NoaW5lc2UgPSBQQ1QwMDYwMDA3IC8gUDAwMTAwMDEpCmNoaW5hX3BvcAoKZ2dwbG90KGNoaW5hX3BvcCwgYWVzKHggPSByZW9yZGVyKE5BTUUsIHBjdF9jaGluZXNlKSwgeSA9IHBjdF9jaGluZXNlKSkgKwogIGdlb21fcG9pbnQoKSArCiAgc2NhbGVfeV9jb250aW51b3VzKGxhYmVscyA9IHNjYWxlczo6cGVyY2VudCkgKwogIGNvb3JkX2ZsaXAoKQpgYGAKCmBnZXRfYWNzKClgIHJldHJpZXZlcyBkYXRhIGZyb20gdGhlIEFtZXJpY2FuIENvbW11bml0eSBTdXJ2ZXkuIFRoaXMgc3VydmV5IGlzIGFkbWluaXN0ZXJlZCB0byBhIHNhbXBsZSBvZiAzIG1pbGxpb24gaG91c2Vob2xkcyBvbiBhbiBhbm51YWwgYmFzaXMsIHNvIHRoZSBkYXRhIHBvaW50cyBhcmUgZXN0aW1hdGVzIGNoYXJhY3Rlcml6ZWQgYnkgYSBtYXJnaW4gb2YgZXJyb3IuIGB0aWR5Y2Vuc3VzYCByZXR1cm5zIGJvdGggdGhlIG9yaWdpbmFsIGVzdGltYXRlIGFuZCBtYXJnaW4gb2YgZXJyb3IuIExldCdzIGdldCBtZWRpYW4gaG91c2Vob2xkIGluY29tZSBkYXRhIGZyb20gdGhlIDIwMTItMjAxNiBBQ1MgZm9yIGNvdW50aWVzIGluIElsbGlub2lzLgoKYGBge3IgaW5jb21lLXVzYX0KdXNhX2luYyA8LSBnZXRfYWNzKGdlb2dyYXBoeSA9ICJzdGF0ZSIsIAogICAgICAgICAgICAgICAgICAgdmFyaWFibGVzID0gYyhtZWRpbmNvbWUgPSAiQjE5MDEzXzAwMSIpLCAKICAgICAgICAgICAgICAgICAgIHllYXIgPSAyMDE2KQp1c2FfaW5jCmBgYAoKTm93IHdlIHJldHVybiBib3RoIGFuIGBlc3RpbWF0ZWAgY29sdW1uIGZvciB0aGUgQUNTIGVzdGltYXRlIGFuZCBgbW9lYCBmb3IgdGhlIG1hcmdpbiBvZiBlcnJvciAoZGVmYXVsdHMgdG8gOTAlIGNvbmZpZGVuY2UgaW50ZXJ2YWwpLgoKYGBge3IgaW5jb21lLXVzYS1wbG90LCBmaWcuYXNwID0gMX0KdXNhX2luYyAlPiUKICBnZ3Bsb3QoYWVzKHggPSByZW9yZGVyKE5BTUUsIGVzdGltYXRlKSwgeSA9IGVzdGltYXRlKSkgKwogIGdlb21fcG9pbnRyYW5nZShhZXMoeW1pbiA9IGVzdGltYXRlIC0gbW9lLAogICAgICAgICAgICAgICAgICAgICB5bWF4ID0gZXN0aW1hdGUgKyBtb2UpLAogICAgICAgICAgICAgICAgICBzaXplID0gLjI1KSArCiAgY29vcmRfZmxpcCgpICsKICBsYWJzKHRpdGxlID0gIkhvdXNlaG9sZCBpbmNvbWUgYnkgc3RhdGUiLAogICAgICAgc3VidGl0bGUgPSAiMjAxMi0yMDE2IEFtZXJpY2FuIENvbW11bml0eSBTdXJ2ZXkiLAogICAgICAgeCA9ICIiLAogICAgICAgeSA9ICJBQ1MgZXN0aW1hdGUgKGJhcnMgcmVwcmVzZW50IG1hcmdpbiBvZiBlcnJvcikiKQpgYGAKCiMjIFNlYXJjaCBmb3IgdmFyaWFibGVzCgpgZ2V0XygpYCByZXF1aXJlcyBrbm93aW5nIHRoZSB2YXJpYWJsZSBJRCwgb2Ygd2hpY2ggdGhlcmUgYXJlIHRob3VzYW5kcy4gYGxvYWRfdmFyaWFibGVzKClgIGRvd25sb2FkcyBhIGxpc3Qgb2YgdmFyaWFibGUgSURzIGFuZCBsYWJlbHMgZm9yIGEgZ2l2ZW4gQ2Vuc3VzIG9yIEFDUyBhbmQgZGF0YXNldC4gWW91IGNhbiB0aGVuIHVzZSBgVmlldygpYCB0byBpbnRlcmFjdGl2ZWx5IGJyb3dzZSB0aHJvdWdoIGFuZCBmaWx0ZXIgZm9yIHZhcmlhYmxlcyBpbiBSU3R1ZGlvLgoKIyMgRHJhd2luZyBtYXBzCgpgdGlkeWNlbnN1c2AgYWxzbyBjYW4gcmV0dXJuIFtzaW1wbGUgZmVhdHVyZSBnZW9tZXRyeV0oZ2Vvdml6X2ltcG9ydF9kYXRhLmh0bWwpIGZvciBnZW9ncmFwaGljIHVuaXRzIGFsb25nIHdpdGggdmFyaWFibGVzIGZyb20gdGhlIGRlY2VubmlhbCBDZW5zdXMgb3IgQUNTLCB3aGljaCBjYW4gdGhlbiBiZSBbdmlzdWFsaXplZCB1c2luZyBgZ2VvbV9zZigpYC5dKGdlb3Zpel9wbG90Lmh0bWwpIExldCdzIGxvb2sgYXQgbWVkaWFuIGhvdXNlaG9sZCBpbmNvbWVieSBDZW5zdXMgdHJhY3RzIGZyb20gdGhlIDIwMTItMjAxNiBBQ1MgaW4gTG91ZG91biBDb3VudHksIFZpcmdpbmlhOgoKYGBge3IgbG91ZG91bi1zZiwgbWVzc2FnZSA9IEZBTFNFfQpsb3Vkb3VuIDwtIGdldF9hY3Moc3RhdGUgPSAiVkEiLAogICAgICAgICAgICAgICAgICAgY291bnR5ID0gIkxvdWRvdW4iLAogICAgICAgICAgICAgICAgICAgZ2VvZ3JhcGh5ID0gInRyYWN0IiwgCiAgICAgICAgICAgICAgICAgICB2YXJpYWJsZXMgPSBjKG1lZGluY29tZSA9ICJCMTkwMTNfMDAxIiksIAogICAgICAgICAgICAgICAgICAgeWVhciA9IDIwMTYsCiAgICAgICAgICAgICAgICAgICBnZW9tZXRyeSA9IFRSVUUpCmxvdWRvdW4KYGBgCgpUaGlzIGxvb2tzIHNpbWlsYXIgdG8gdGhlIHByZXZpb3VzIG91dHB1dCBidXQgYmVjYXVzZSB3ZSBzZXQgYGdlb21ldHJ5ID0gVFJVRWAgaXQgaXMgbm93IGEgc2ltcGxlIGZlYXR1cmVzIGRhdGEgZnJhbWUgd2l0aCBhIGBnZW9tZXRyeWAgY29sdW1uIGRlZmluaW5nIHRoZSBnZW9ncmFwaGljIGZlYXR1cmUuIFdlIGNhbiB2aXN1YWxpemUgaXQgdXNpbmcgYGdlb21fc2YoKWAgYW5kIGB2aXJpZGlzOjpzY2FsZV8qX3ZpcmlkaXMoKWAgdG8gYWRqdXN0IHRoZSBjb2xvciBwYWxldHRlLgoKYGBge3IgbG91ZG91bi1zZi1wbG90fQpnZ3Bsb3QoZGF0YSA9IGxvdWRvdW4pICsKICBnZW9tX3NmKGFlcyhmaWxsID0gZXN0aW1hdGUsIGNvbG9yID0gZXN0aW1hdGUpKSArIAogIGNvb3JkX3NmKGNycyA9IDI2OTExKSArIAogIHNjYWxlX2ZpbGxfdmlyaWRpcyhvcHRpb24gPSAibWFnbWEiKSArIAogIHNjYWxlX2NvbG9yX3ZpcmlkaXMob3B0aW9uID0gIm1hZ21hIikKYGBgCgojIEFja25vd2xlZGdtZW50cyB7LnRvYy1pZ25vcmV9CgpgYGB7ciBjaGlsZD0nX2Fja19zdGF0NTQ1LlJtZCd9CmBgYAoKIyBTZXNzaW9uIEluZm8gey50b2MtaWdub3JlfQoKYGBge3IgY2hpbGQ9J19zZXNzaW9uaW5mby5SbWQnfQpgYGAK</div>
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

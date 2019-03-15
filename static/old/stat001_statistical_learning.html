@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Statistical learning: the basics</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/readable.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<script src="site_libs/navigation-1.1/sourceembed.js"></script>
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-45631879-2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-45631879-2');
+</script>
+
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 66px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h2 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h3 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h4 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h5 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.section h6 {
+  padding-top: 71px;
+  margin-top: -71px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("stat001_statistical_learning.Rmd");
+});
+</script>
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Computing for the Social Sciences</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="faq.html">FAQ</a>
+</li>
+<li>
+  <a href="syllabus.html">Syllabus</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Statistical learning: the basics</h1>
+
+</div>
+
+
+<div id="what-is-statistical-learning" class="section level1">
+<h1>What is statistical learning?</h1>
+<p><strong>Statistical models</strong> attempt to summarize relationships between variables by reducing the dimensionality of the data. For example, here we have some simulated data on sales of <a href="https://www.shamwow.com/">Shamwow</a> in 200 different markets.</p>
+<div class="figure">
+<img src="images/shamwow.jpg" />
+
+</div>
+<p>Our goal is to improve sales of the Shamwow. Since we cannot directly increase sales of the product (unless we go out and buy it ourselves), our only option is to increase advertising across three potential mediums: newspaper, radio, and TV.</p>
+<p>In this example, the advertising budgets are our <strong>input variables</strong>, also called <strong>independent variables</strong>, <strong>features</strong>, or <strong>predictors</strong>. The sales of Shamwows is the <strong>output</strong>, also called the <strong>dependent variable</strong> or <strong>response</strong>.</p>
+<p>By plotting the variables against one another using a scatterplot, we can see there is some sort of relationship between each medium’s advertising spending and Shamwow sales:</p>
+<p><img src="stat001_statistical_learning_files/figure-html/plot_ad-1.png" width="672" /></p>
+<p>But there seems to be a lot of noise in the data. How can we summarize this? We can do so by estimating a mathematical equation following the general form:</p>
+<p><span class="math display">\[Y = f(X) + \epsilon\]</span></p>
+<p>where <span class="math inline">\(f\)</span> is some fixed, unknown function of the relationship between the independent variable(s) <span class="math inline">\(X\)</span> and the dependent variable <span class="math inline">\(Y\)</span>, with some random error <span class="math inline">\(\epsilon\)</span>.</p>
+<p>Statistical learning refers to the set of approaches for estimating <span class="math inline">\(f\)</span>. There are many potential approaches to defining the functional form of <span class="math inline">\(f\)</span>. One approach widely used is called <strong>least squares</strong> - it means that the overall solution minimizes the sum of the squares of the errors made in the results of the equation. The errors are simply the vertical difference between the actual values for <span class="math inline">\(y\)</span> and the predicted values for <span class="math inline">\(y\)</span>. Applied here, the results would look like:</p>
+<p><img src="stat001_statistical_learning_files/figure-html/plot_ad_fit-1.png" width="672" /></p>
+<p>However statistical learning (and machine learning) allows us to use a wide range of functional forms beyond a simple linear model.</p>
+</div>
+<div id="why-estimate-f" class="section level1">
+<h1>Why estimate <span class="math inline">\(f\)</span>?</h1>
+<p>There are two major goals of statistical modeling:</p>
+<div id="prediction" class="section level2">
+<h2>Prediction</h2>
+<p>Under a system of <strong>prediction</strong>, we use our knowledge of the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> to predict <span class="math inline">\(Y\)</span> for given values of <span class="math inline">\(X\)</span>. Often the function <span class="math inline">\(f\)</span> is treated as a <strong>black box</strong> - we don’t care what the function is, as long as it makes accurate predictions. If we are trying to boost sales of Shamwow, we may not care why specific factors drive an increase in sales - we just want to know how to adjust our advertising budgets to maximize sales.</p>
+</div>
+<div id="inference" class="section level2">
+<h2>Inference</h2>
+<p>Under a system of <strong>inference</strong>, we use our knowledge of <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> to understand the relationship between the variables. Here we are most interested in the explanation, not the prediction. So in the Shamwow example, we may not care about actual sales of the product - instead, we may be economists who wish to understand how advertising spending influences product sales. We don’t care about the actual product, we simply want to learn more about the process and <strong>generalize</strong> it to a wider range of settings.</p>
+</div>
+</div>
+<div id="how-do-we-estimate-f" class="section level1">
+<h1>How do we estimate <span class="math inline">\(f\)</span>?</h1>
+<p>There are two major approaches to estimating <span class="math inline">\(f\)</span>: parametric and non-parametric methods.</p>
+<div id="parametric-methods" class="section level2">
+<h2>Parametric methods</h2>
+<p>Parametric methods involve a two-stage process:</p>
+<ol style="list-style-type: decimal">
+<li>First make an assumption about the functional form of <span class="math inline">\(f\)</span>. For instance, OLS assumes that the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> is <strong>linear</strong>. This greatly simplifies the problem of estimating the model because we know a great deal about the properties of linear models.</li>
+<li>After a model has been selected, we need to <strong>fit</strong> or <strong>train</strong> the model using the actual data. We demonstrated this previously with ordinary least squares. The estimation procedure minimizes the sum of the squares of the differences between the observed responses <span class="math inline">\(Y\)</span> and those predicted by a linear function <span class="math inline">\(\hat{Y}\)</span>.</li>
+</ol>
+<p><img src="stat001_statistical_learning_files/figure-html/plot_parametric-1.png" width="672" /></p>
+<p>This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as <strong>parametric</strong>, because it simplifies the problem of estimating <span class="math inline">\(f\)</span> to estimating a set of parameters in the function:</p>
+<p><span class="math display">\[Y = \beta_0 + \beta_{1}X_1\]</span></p>
+<p>where <span class="math inline">\(Y\)</span> is the sales, <span class="math inline">\(X_1\)</span> is the advertising spending in a given medium (newspaper, radio, or TV), and <span class="math inline">\(\beta_0\)</span> and <span class="math inline">\(\beta_1\)</span> are parameters defining the intercept and slope of the line.</p>
+<p>The downside to parametric methods is that they assume a specific functional form of the relationship between the variables. Sometimes relationships really are linear - often however they are not. They could be curvilinear, parbolic, interactive, etc. Unless we know this <em>a priori</em> or test for all of these potential functional forms, it is possible our parametric method will not accurately summarize the relationship between <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span>.</p>
+</div>
+<div id="non-parametric-methods" class="section level2">
+<h2>Non-parametric methods</h2>
+<p>Non-parametric methods do not make any assumptions about the functional form of <span class="math inline">\(f\)</span>. Instead, they use the data itself to estimate <span class="math inline">\(f\)</span> so that it gets as close as possible to the data points without becoming overly complex. By avoiding any assumptions about the functional form, non-parametric methods avoid the issues caused by parametic models. However, by doing so non-parametric methods require a large set of observations to avoid <strong>overfitting</strong> the data and obtain an accurate estimate of <span class="math inline">\(f\)</span>.</p>
+<p>One non-parametric method is called <strong><span class="math inline">\(K\)</span>-nearest neighbors regression</strong> (KNN regression). Rather than binning the data into discrete and fixed intervals, KNN regression uses a moving average to generate the regression line. Given a value for <span class="math inline">\(K\)</span> and a prediction point <span class="math inline">\(x_0\)</span>, KNN regression identifies the <span class="math inline">\(K\)</span> observations closest to the prediction point <span class="math inline">\(X_0\)</span>, and estimates a local regression line that is the average of these observations values for the outcome <span class="math inline">\(Y\)</span>.</p>
+<p>With <span class="math inline">\(K=1\)</span>, the resulting KNN regression line will fit the training observations extraordinarily well.</p>
+<p><img src="stat001_statistical_learning_files/figure-html/knn-1-1.png" width="672" /></p>
+<p>Perhaps a bit too well. Compare this to <span class="math inline">\(K=9\)</span>:</p>
+<p><img src="stat001_statistical_learning_files/figure-html/knn-9-1.png" width="672" /></p>
+<p>This smoothing line averages over the nine nearest observations; while still a step function, it is smoother than <span class="math inline">\(K=1\)</span>.</p>
+</div>
+</div>
+<div id="classification-vs.regression" class="section level1">
+<h1>Classification vs. regression</h1>
+<p>Variables can be classified as <strong>quantitative</strong> or <strong>qualitative</strong>. Quantitative variables take on numeric values. In contrast, qualitative variables take on different <strong>classes</strong>, or discrete categories. Qualitative variables can have any number of classes, though binary categories are frequent:</p>
+<ul>
+<li>Yes/no</li>
+<li>Male/female</li>
+</ul>
+<p>Problems with a quantitative dependent variable are typically called <strong>regression</strong> problems, whereas qualitative dependent variables are called <strong>classification</strong> problems. Part of this distinction is merely semantic, but different methods may be employed depending on the type of response variable. For instance, you would not use linear regression on a qualitative response variable. Conceptually, how would you define a linear function for a response variable that takes on the values “male” or “female”? It doesn’t make any conceptual sense. Instead, you can employ classification methods such as <strong>logistic regression</strong> to estimate the probability that based on a set of predictors a specific observation is part of a response class.</p>
+<p>That said, whether <strong>predictors</strong> are qualitative or quantitative is not important in determining whether the problem is one of regression or classification. As long as qualitative predictors are properly coded before the analysis is conducted, they can be used for either type of problem.</p>
+</div>
+<div id="session-info" class="section level1 toc-ignore">
+<h1>Session Info</h1>
+<pre><code>## ─ Session info ──────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 3.5.2 (2018-12-20)
+##  os       macOS Mojave 10.14.3        
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2019-03-02                  
+## 
+## ─ Packages ──────────────────────────────────────────────────────────────
+##  package     * version    date       lib source                          
+##  assertthat    0.2.0      2017-04-11 [2] CRAN (R 3.5.0)                  
+##  backports     1.1.3      2018-12-14 [2] CRAN (R 3.5.0)                  
+##  base64enc     0.1-3      2015-07-28 [2] CRAN (R 3.5.0)                  
+##  bindr         0.1.1      2018-03-13 [2] CRAN (R 3.5.0)                  
+##  bindrcpp    * 0.2.2      2018-03-29 [1] CRAN (R 3.5.0)                  
+##  broom       * 0.5.1      2018-12-05 [2] CRAN (R 3.5.0)                  
+##  callr         3.1.1      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  cellranger    1.1.0      2016-07-27 [2] CRAN (R 3.5.0)                  
+##  cli           1.0.1      2018-09-25 [1] CRAN (R 3.5.0)                  
+##  codetools     0.2-16     2018-12-24 [2] CRAN (R 3.5.2)                  
+##  colorspace    1.4-0      2019-01-13 [2] CRAN (R 3.5.2)                  
+##  crayon        1.3.4      2017-09-16 [2] CRAN (R 3.5.0)                  
+##  desc          1.2.0      2018-05-01 [2] CRAN (R 3.5.0)                  
+##  devtools      2.0.1      2018-10-26 [1] CRAN (R 3.5.1)                  
+##  digest        0.6.18     2018-10-10 [1] CRAN (R 3.5.0)                  
+##  dplyr       * 0.8.0.1    2019-02-15 [1] CRAN (R 3.5.2)                  
+##  evaluate      0.13       2019-02-12 [2] CRAN (R 3.5.2)                  
+##  fansi         0.4.0      2018-10-05 [2] CRAN (R 3.5.0)                  
+##  farver        1.1.0      2018-11-20 [1] CRAN (R 3.5.0)                  
+##  FNN         * 1.1.3      2019-02-15 [2] CRAN (R 3.5.2)                  
+##  forcats     * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)                  
+##  fs            1.2.6      2018-08-23 [1] CRAN (R 3.5.0)                  
+##  generics      0.0.2      2018-11-29 [1] CRAN (R 3.5.0)                  
+##  gganimate   * 1.0.1      2019-02-15 [1] CRAN (R 3.5.2)                  
+##  ggplot2     * 3.1.0      2018-10-25 [1] CRAN (R 3.5.0)                  
+##  glue          1.3.0      2018-07-17 [2] CRAN (R 3.5.0)                  
+##  gtable        0.2.0      2016-02-26 [2] CRAN (R 3.5.0)                  
+##  haven         2.1.0      2019-02-19 [2] CRAN (R 3.5.2)                  
+##  here        * 0.1        2017-05-28 [2] CRAN (R 3.5.0)                  
+##  hms           0.4.2      2018-03-10 [2] CRAN (R 3.5.0)                  
+##  htmltools     0.3.6      2017-04-28 [1] CRAN (R 3.5.0)                  
+##  httr          1.4.0      2018-12-11 [2] CRAN (R 3.5.0)                  
+##  jsonlite      1.6        2018-12-07 [2] CRAN (R 3.5.0)                  
+##  knitr         1.21       2018-12-10 [2] CRAN (R 3.5.1)                  
+##  labeling      0.3        2014-08-23 [2] CRAN (R 3.5.0)                  
+##  lattice     * 0.20-38    2018-11-04 [2] CRAN (R 3.5.2)                  
+##  lazyeval      0.2.1      2017-10-29 [2] CRAN (R 3.5.0)                  
+##  lubridate     1.7.4      2018-04-11 [2] CRAN (R 3.5.0)                  
+##  magrittr      1.5        2014-11-22 [2] CRAN (R 3.5.0)                  
+##  memoise       1.1.0      2017-04-21 [2] CRAN (R 3.5.0)                  
+##  modelr        0.1.4      2019-02-18 [2] CRAN (R 3.5.2)                  
+##  munsell       0.5.0      2018-06-12 [2] CRAN (R 3.5.0)                  
+##  nlme          3.1-137    2018-04-07 [2] CRAN (R 3.5.2)                  
+##  pillar        1.3.1      2018-12-15 [2] CRAN (R 3.5.0)                  
+##  pkgbuild      1.0.2      2018-10-16 [1] CRAN (R 3.5.0)                  
+##  pkgconfig     2.0.2      2018-08-16 [2] CRAN (R 3.5.1)                  
+##  pkgload       1.0.2      2018-10-29 [1] CRAN (R 3.5.0)                  
+##  plyr          1.8.4      2016-06-08 [2] CRAN (R 3.5.0)                  
+##  prettyunits   1.0.2      2015-07-13 [2] CRAN (R 3.5.0)                  
+##  processx      3.2.1      2018-12-05 [2] CRAN (R 3.5.0)                  
+##  progress      1.2.0      2018-06-14 [2] CRAN (R 3.5.0)                  
+##  ps            1.3.0      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  purrr       * 0.3.0      2019-01-27 [2] CRAN (R 3.5.2)                  
+##  R6            2.4.0      2019-02-14 [1] CRAN (R 3.5.2)                  
+##  Rcpp          1.0.0      2018-11-07 [1] CRAN (R 3.5.0)                  
+##  readr       * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)                  
+##  readxl        1.3.0      2019-02-15 [2] CRAN (R 3.5.2)                  
+##  remotes       2.0.2      2018-10-30 [1] CRAN (R 3.5.0)                  
+##  rlang         0.3.1      2019-01-08 [1] CRAN (R 3.5.2)                  
+##  rmarkdown     1.11       2018-12-08 [2] CRAN (R 3.5.0)                  
+##  rprojroot     1.3-2      2018-01-03 [2] CRAN (R 3.5.0)                  
+##  rstudioapi    0.9.0      2019-01-09 [1] CRAN (R 3.5.2)                  
+##  rvest         0.3.2      2016-06-17 [2] CRAN (R 3.5.0)                  
+##  scales        1.0.0      2018-08-09 [1] CRAN (R 3.5.0)                  
+##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 3.5.0)                  
+##  stringi       1.3.1      2019-02-13 [1] CRAN (R 3.5.2)                  
+##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 3.5.2)                  
+##  testthat      2.0.1      2018-10-13 [2] CRAN (R 3.5.0)                  
+##  tibble      * 2.0.1      2019-01-12 [2] CRAN (R 3.5.2)                  
+##  tidyr       * 0.8.2.9000 2019-02-11 [1] Github (tidyverse/tidyr@0b27690)
+##  tidyselect    0.2.5      2018-10-11 [1] CRAN (R 3.5.0)                  
+##  tidyverse   * 1.2.1      2017-11-14 [2] CRAN (R 3.5.0)                  
+##  tweenr        1.0.1      2018-12-14 [1] CRAN (R 3.5.0)                  
+##  usethis       1.4.0      2018-08-14 [1] CRAN (R 3.5.0)                  
+##  utf8          1.1.4      2018-05-24 [2] CRAN (R 3.5.0)                  
+##  withr         2.1.2      2018-03-15 [2] CRAN (R 3.5.0)                  
+##  xfun          0.5        2019-02-20 [1] CRAN (R 3.5.2)                  
+##  xml2          1.2.0      2018-01-24 [2] CRAN (R 3.5.0)                  
+##  yaml          2.2.0      2018-07-25 [2] CRAN (R 3.5.0)                  
+## 
+## [1] /Users/soltoffbc/Library/R/3.5/library
+## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library</code></pre>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiU3RhdGlzdGljYWwgbGVhcm5pbmc6IHRoZSBiYXNpY3MiCm91dHB1dDoKICBodG1sX2RvY3VtZW50OgogICAgdG9jOiB0cnVlCiAgICB0b2NfZmxvYXQ6IHRydWUKLS0tCgpgYGB7ciBzZXR1cCwgaW5jbHVkZSA9IEZBTFNFfQprbml0cjo6b3B0c19jaHVuayRzZXQoY2FjaGUgPSBUUlVFLAogICAgICAgICAgICAgICAgICAgICAgZWNobyA9IEZBTFNFLAogICAgICAgICAgICAgICAgICAgICAgbWVzc2FnZSA9IEZBTFNFLAogICAgICAgICAgICAgICAgICAgICAgd2FybmluZyA9IEZBTFNFKQpgYGAKCmBgYHtyIHBhY2thZ2VzLCBjYWNoZSA9IEZBTFNFLCBtZXNzYWdlID0gRkFMU0UsIHdhcm5pbmcgPSBGQUxTRX0KbGlicmFyeSh0aWR5dmVyc2UpCmxpYnJhcnkoRk5OKQpsaWJyYXJ5KGhlcmUpCnRoZW1lX3NldCh0aGVtZV9taW5pbWFsKCkpCmBgYAoKIyBXaGF0IGlzIHN0YXRpc3RpY2FsIGxlYXJuaW5nPwoKKipTdGF0aXN0aWNhbCBtb2RlbHMqKiBhdHRlbXB0IHRvIHN1bW1hcml6ZSByZWxhdGlvbnNoaXBzIGJldHdlZW4gdmFyaWFibGVzIGJ5IHJlZHVjaW5nIHRoZSBkaW1lbnNpb25hbGl0eSBvZiB0aGUgZGF0YS4gRm9yIGV4YW1wbGUsIGhlcmUgd2UgaGF2ZSBzb21lIHNpbXVsYXRlZCBkYXRhIG9uIHNhbGVzIG9mIFtTaGFtd293XShodHRwczovL3d3dy5zaGFtd293LmNvbS8pIGluIDIwMCBkaWZmZXJlbnQgbWFya2V0cy4KCiFbXShpbWFnZXMvc2hhbXdvdy5qcGcpCgpPdXIgZ29hbCBpcyB0byBpbXByb3ZlIHNhbGVzIG9mIHRoZSBTaGFtd293LiBTaW5jZSB3ZSBjYW5ub3QgZGlyZWN0bHkgaW5jcmVhc2Ugc2FsZXMgb2YgdGhlIHByb2R1Y3QgKHVubGVzcyB3ZSBnbyBvdXQgYW5kIGJ1eSBpdCBvdXJzZWx2ZXMpLCBvdXIgb25seSBvcHRpb24gaXMgdG8gaW5jcmVhc2UgYWR2ZXJ0aXNpbmcgYWNyb3NzIHRocmVlIHBvdGVudGlhbCBtZWRpdW1zOiBuZXdzcGFwZXIsIHJhZGlvLCBhbmQgVFYuCgpJbiB0aGlzIGV4YW1wbGUsIHRoZSBhZHZlcnRpc2luZyBidWRnZXRzIGFyZSBvdXIgKippbnB1dCB2YXJpYWJsZXMqKiwgYWxzbyBjYWxsZWQgKippbmRlcGVuZGVudCB2YXJpYWJsZXMqKiwgKipmZWF0dXJlcyoqLCBvciAqKnByZWRpY3RvcnMqKi4gVGhlIHNhbGVzIG9mIFNoYW13b3dzIGlzIHRoZSAqKm91dHB1dCoqLCBhbHNvIGNhbGxlZCB0aGUgKipkZXBlbmRlbnQgdmFyaWFibGUqKiBvciAqKnJlc3BvbnNlKiouCgpCeSBwbG90dGluZyB0aGUgdmFyaWFibGVzIGFnYWluc3Qgb25lIGFub3RoZXIgdXNpbmcgYSBzY2F0dGVycGxvdCwgd2UgY2FuIHNlZSB0aGVyZSBpcyBzb21lIHNvcnQgb2YgcmVsYXRpb25zaGlwIGJldHdlZW4gZWFjaCBtZWRpdW0ncyBhZHZlcnRpc2luZyBzcGVuZGluZyBhbmQgU2hhbXdvdyBzYWxlczoKCmBgYHtyIGdldF9hZCwgaW5jbHVkZSA9IEZBTFNFfQojIGdldCBhZHZlcnRpc2luZyBkYXRhCihhZHZlcnRpc2luZyA8LSBoZXJlKCJkYXRhIiwgIkFkdmVydGlzaW5nLmNzdiIpICU+JQogICByZWFkX2NzdigpICU+JQogICB0YmxfZGYoKSAlPiUKICAgIyByZW1vdmUgaWQgY29sdW1uCiAgIHNlbGVjdCgtWDEpKQpgYGAKCmBgYHtyIHBsb3RfYWQsIGRlcGVuZHNvbj0iZ2V0X2FkIn0KIyBwbG90IHNlcGFyYXRlIGZhY2V0cyBmb3IgcmVsYXRpb25zaGlwIGJldHdlZW4gYWQgc3BlbmRpbmcgYW5kIHNhbGVzCnBsb3RfYWQgPC0gYWR2ZXJ0aXNpbmcgJT4lCiAgZ2F0aGVyKG1ldGhvZCwgc3BlbmQsIC1TYWxlcykgJT4lCiAgZ2dwbG90KGFlcyhzcGVuZCwgU2FsZXMpKSArCiAgZmFjZXRfd3JhcCh+IG1ldGhvZCwgc2NhbGVzID0gImZyZWVfeCIpICsKICBnZW9tX3BvaW50KCkgKwogIGxhYnMoeCA9ICJTcGVuZGluZyAoaW4gdGhvdXNhbmRzIG9mIGRvbGxhcnMpIikKcGxvdF9hZApgYGAKCkJ1dCB0aGVyZSBzZWVtcyB0byBiZSBhIGxvdCBvZiBub2lzZSBpbiB0aGUgZGF0YS4gSG93IGNhbiB3ZSBzdW1tYXJpemUgdGhpcz8gV2UgY2FuIGRvIHNvIGJ5IGVzdGltYXRpbmcgYSBtYXRoZW1hdGljYWwgZXF1YXRpb24gZm9sbG93aW5nIHRoZSBnZW5lcmFsIGZvcm06CgokJFkgPSBmKFgpICsgXGVwc2lsb24kJAoKd2hlcmUgJGYkIGlzIHNvbWUgZml4ZWQsIHVua25vd24gZnVuY3Rpb24gb2YgdGhlIHJlbGF0aW9uc2hpcCBiZXR3ZWVuIHRoZSBpbmRlcGVuZGVudCB2YXJpYWJsZShzKSAkWCQgYW5kIHRoZSBkZXBlbmRlbnQgdmFyaWFibGUgJFkkLCB3aXRoIHNvbWUgcmFuZG9tIGVycm9yICRcZXBzaWxvbiQuCgpTdGF0aXN0aWNhbCBsZWFybmluZyByZWZlcnMgdG8gdGhlIHNldCBvZiBhcHByb2FjaGVzIGZvciBlc3RpbWF0aW5nICRmJC4gVGhlcmUgYXJlIG1hbnkgcG90ZW50aWFsIGFwcHJvYWNoZXMgdG8gZGVmaW5pbmcgdGhlIGZ1bmN0aW9uYWwgZm9ybSBvZiAkZiQuIE9uZSBhcHByb2FjaCB3aWRlbHkgdXNlZCBpcyBjYWxsZWQgKipsZWFzdCBzcXVhcmVzKiogLSBpdCBtZWFucyB0aGF0IHRoZSBvdmVyYWxsIHNvbHV0aW9uIG1pbmltaXplcyB0aGUgc3VtIG9mIHRoZSBzcXVhcmVzIG9mIHRoZSBlcnJvcnMgbWFkZSBpbiB0aGUgcmVzdWx0cyBvZiB0aGUgZXF1YXRpb24uIFRoZSBlcnJvcnMgYXJlIHNpbXBseSB0aGUgdmVydGljYWwgZGlmZmVyZW5jZSBiZXR3ZWVuIHRoZSBhY3R1YWwgdmFsdWVzIGZvciAkeSQgYW5kIHRoZSBwcmVkaWN0ZWQgdmFsdWVzIGZvciAkeSQuIEFwcGxpZWQgaGVyZSwgdGhlIHJlc3VsdHMgd291bGQgbG9vayBsaWtlOgoKYGBge3IgcGxvdF9hZF9maXR9CnBsb3RfYWQgKwogIGdlb21fc21vb3RoKG1ldGhvZCA9ICJsbSIsIHNlID0gRkFMU0UpCmBgYAoKSG93ZXZlciBzdGF0aXN0aWNhbCBsZWFybmluZyAoYW5kIG1hY2hpbmUgbGVhcm5pbmcpIGFsbG93cyB1cyB0byB1c2UgYSB3aWRlIHJhbmdlIG9mIGZ1bmN0aW9uYWwgZm9ybXMgYmV5b25kIGEgc2ltcGxlIGxpbmVhciBtb2RlbC4KCiMgV2h5IGVzdGltYXRlICRmJD8KClRoZXJlIGFyZSB0d28gbWFqb3IgZ29hbHMgb2Ygc3RhdGlzdGljYWwgbW9kZWxpbmc6CgojIyBQcmVkaWN0aW9uCgpVbmRlciBhIHN5c3RlbSBvZiAqKnByZWRpY3Rpb24qKiwgd2UgdXNlIG91ciBrbm93bGVkZ2Ugb2YgdGhlIHJlbGF0aW9uc2hpcCBiZXR3ZWVuICRYJCBhbmQgJFkkIHRvIHByZWRpY3QgJFkkIGZvciBnaXZlbiB2YWx1ZXMgb2YgJFgkLiBPZnRlbiB0aGUgZnVuY3Rpb24gJGYkIGlzIHRyZWF0ZWQgYXMgYSAqKmJsYWNrIGJveCoqIC0gd2UgZG9uJ3QgY2FyZSB3aGF0IHRoZSBmdW5jdGlvbiBpcywgYXMgbG9uZyBhcyBpdCBtYWtlcyBhY2N1cmF0ZSBwcmVkaWN0aW9ucy4gSWYgd2UgYXJlIHRyeWluZyB0byBib29zdCBzYWxlcyBvZiBTaGFtd293LCB3ZSBtYXkgbm90IGNhcmUgd2h5IHNwZWNpZmljIGZhY3RvcnMgZHJpdmUgYW4gaW5jcmVhc2UgaW4gc2FsZXMgLSB3ZSBqdXN0IHdhbnQgdG8ga25vdyBob3cgdG8gYWRqdXN0IG91ciBhZHZlcnRpc2luZyBidWRnZXRzIHRvIG1heGltaXplIHNhbGVzLgoKIyMgSW5mZXJlbmNlCgpVbmRlciBhIHN5c3RlbSBvZiAqKmluZmVyZW5jZSoqLCB3ZSB1c2Ugb3VyIGtub3dsZWRnZSBvZiAkWCQgYW5kICRZJCB0byB1bmRlcnN0YW5kIHRoZSByZWxhdGlvbnNoaXAgYmV0d2VlbiB0aGUgdmFyaWFibGVzLiBIZXJlIHdlIGFyZSBtb3N0IGludGVyZXN0ZWQgaW4gdGhlIGV4cGxhbmF0aW9uLCBub3QgdGhlIHByZWRpY3Rpb24uIFNvIGluIHRoZSBTaGFtd293IGV4YW1wbGUsIHdlIG1heSBub3QgY2FyZSBhYm91dCBhY3R1YWwgc2FsZXMgb2YgdGhlIHByb2R1Y3QgLSBpbnN0ZWFkLCB3ZSBtYXkgYmUgZWNvbm9taXN0cyB3aG8gd2lzaCB0byB1bmRlcnN0YW5kIGhvdyBhZHZlcnRpc2luZyBzcGVuZGluZyBpbmZsdWVuY2VzIHByb2R1Y3Qgc2FsZXMuIFdlIGRvbid0IGNhcmUgYWJvdXQgdGhlIGFjdHVhbCBwcm9kdWN0LCB3ZSBzaW1wbHkgd2FudCB0byBsZWFybiBtb3JlIGFib3V0IHRoZSBwcm9jZXNzIGFuZCAqKmdlbmVyYWxpemUqKiBpdCB0byBhIHdpZGVyIHJhbmdlIG9mIHNldHRpbmdzLgoKIyBIb3cgZG8gd2UgZXN0aW1hdGUgJGYkPwoKVGhlcmUgYXJlIHR3byBtYWpvciBhcHByb2FjaGVzIHRvIGVzdGltYXRpbmcgJGYkOiBwYXJhbWV0cmljIGFuZCBub24tcGFyYW1ldHJpYyBtZXRob2RzLgoKIyMgUGFyYW1ldHJpYyBtZXRob2RzCgpQYXJhbWV0cmljIG1ldGhvZHMgaW52b2x2ZSBhIHR3by1zdGFnZSBwcm9jZXNzOgoKMS4gRmlyc3QgbWFrZSBhbiBhc3N1bXB0aW9uIGFib3V0IHRoZSBmdW5jdGlvbmFsIGZvcm0gb2YgJGYkLiBGb3IgaW5zdGFuY2UsIE9MUyBhc3N1bWVzIHRoYXQgdGhlIHJlbGF0aW9uc2hpcCBiZXR3ZWVuICRYJCBhbmQgJFkkIGlzICoqbGluZWFyKiouIFRoaXMgZ3JlYXRseSBzaW1wbGlmaWVzIHRoZSBwcm9ibGVtIG9mIGVzdGltYXRpbmcgdGhlIG1vZGVsIGJlY2F1c2Ugd2Uga25vdyBhIGdyZWF0IGRlYWwgYWJvdXQgdGhlIHByb3BlcnRpZXMgb2YgbGluZWFyIG1vZGVscy4KMS4gQWZ0ZXIgYSBtb2RlbCBoYXMgYmVlbiBzZWxlY3RlZCwgd2UgbmVlZCB0byAqKmZpdCoqIG9yICoqdHJhaW4qKiB0aGUgbW9kZWwgdXNpbmcgdGhlIGFjdHVhbCBkYXRhLiBXZSBkZW1vbnN0cmF0ZWQgdGhpcyBwcmV2aW91c2x5IHdpdGggb3JkaW5hcnkgbGVhc3Qgc3F1YXJlcy4gVGhlIGVzdGltYXRpb24gcHJvY2VkdXJlIG1pbmltaXplcyB0aGUgc3VtIG9mIHRoZSBzcXVhcmVzIG9mIHRoZSBkaWZmZXJlbmNlcyBiZXR3ZWVuIHRoZSBvYnNlcnZlZCByZXNwb25zZXMgJFkkIGFuZCB0aG9zZSBwcmVkaWN0ZWQgYnkgYSBsaW5lYXIgZnVuY3Rpb24gJFxoYXR7WX0kLgoKYGBge3IgcGxvdF9wYXJhbWV0cmljLCBkZXBlbmRzb249ImdldF9hZCJ9Cm1ldGhvZF9tb2RlbCA8LSBmdW5jdGlvbihkZikgewogIGxtKFNhbGVzIH4gc3BlbmQsIGRhdGEgPSBkZikKfQoKYWRfcHJlZCA8LSBhZHZlcnRpc2luZyAlPiUKICBnYXRoZXIobWV0aG9kLCBzcGVuZCwgLVNhbGVzKSAlPiUKICBncm91cF9ieShtZXRob2QpICU+JQogIG5lc3QoKSAlPiUKICBtdXRhdGUobW9kZWwgPSBtYXAoZGF0YSwgbWV0aG9kX21vZGVsKSwKICAgICAgICAgcHJlZCA9IG1hcChtb2RlbCwgYnJvb206OmF1Z21lbnQpKSAlPiUKICB1bm5lc3QocHJlZCkKCnBsb3RfYWQgKwogIGdlb21fc21vb3RoKG1ldGhvZCA9ICJsbSIsIHNlID0gRkFMU0UpICsKICBnZW9tX2xpbmVyYW5nZShkYXRhID0gYWRfcHJlZCwKICAgICAgICAgICAgICAgICBhZXMoeW1pbiA9IFNhbGVzLCB5bWF4ID0gLmZpdHRlZCksCiAgICAgICAgICAgICAgICAgY29sb3IgPSAiYmx1ZSIsCiAgICAgICAgICAgICAgICAgYWxwaGEgPSAuNSkgCmBgYAoKVGhpcyBpcyBvbmx5IG9uZSBwb3NzaWJsZSBlc3RpbWF0aW9uIHByb2NlZHVyZSwgYnV0IGlzIHBvcHVsYXIgYmVjYXVzZSBpdCBpcyByZWxhdGl2ZWx5IGludHVpdGl2ZS4gVGhpcyBtb2RlbC1iYXNlZCBhcHByb2FjaCBpcyByZWZlcnJlZCB0byBhcyAqKnBhcmFtZXRyaWMqKiwgYmVjYXVzZSBpdCBzaW1wbGlmaWVzIHRoZSBwcm9ibGVtIG9mIGVzdGltYXRpbmcgJGYkIHRvIGVzdGltYXRpbmcgYSBzZXQgb2YgcGFyYW1ldGVycyBpbiB0aGUgZnVuY3Rpb246CgokJFkgPSBcYmV0YV8wICsgXGJldGFfezF9WF8xJCQKCndoZXJlICRZJCBpcyB0aGUgc2FsZXMsICRYXzEkIGlzIHRoZSBhZHZlcnRpc2luZyBzcGVuZGluZyBpbiBhIGdpdmVuIG1lZGl1bSAobmV3c3BhcGVyLCByYWRpbywgb3IgVFYpLCBhbmQgJFxiZXRhXzAkIGFuZCAkXGJldGFfMSQgYXJlIHBhcmFtZXRlcnMgZGVmaW5pbmcgdGhlIGludGVyY2VwdCBhbmQgc2xvcGUgb2YgdGhlIGxpbmUuCgpUaGUgZG93bnNpZGUgdG8gcGFyYW1ldHJpYyBtZXRob2RzIGlzIHRoYXQgdGhleSBhc3N1bWUgYSBzcGVjaWZpYyBmdW5jdGlvbmFsIGZvcm0gb2YgdGhlIHJlbGF0aW9uc2hpcCBiZXR3ZWVuIHRoZSB2YXJpYWJsZXMuIFNvbWV0aW1lcyByZWxhdGlvbnNoaXBzIHJlYWxseSBhcmUgbGluZWFyIC0gb2Z0ZW4gaG93ZXZlciB0aGV5IGFyZSBub3QuIFRoZXkgY291bGQgYmUgY3VydmlsaW5lYXIsIHBhcmJvbGljLCBpbnRlcmFjdGl2ZSwgZXRjLiBVbmxlc3Mgd2Uga25vdyB0aGlzICphIHByaW9yaSogb3IgdGVzdCBmb3IgYWxsIG9mIHRoZXNlIHBvdGVudGlhbCBmdW5jdGlvbmFsIGZvcm1zLCBpdCBpcyBwb3NzaWJsZSBvdXIgcGFyYW1ldHJpYyBtZXRob2Qgd2lsbCBub3QgYWNjdXJhdGVseSBzdW1tYXJpemUgdGhlIHJlbGF0aW9uc2hpcCBiZXR3ZWVuICRYJCBhbmQgJFkkLgoKIyMgTm9uLXBhcmFtZXRyaWMgbWV0aG9kcwoKTm9uLXBhcmFtZXRyaWMgbWV0aG9kcyBkbyBub3QgbWFrZSBhbnkgYXNzdW1wdGlvbnMgYWJvdXQgdGhlIGZ1bmN0aW9uYWwgZm9ybSBvZiAkZiQuIEluc3RlYWQsIHRoZXkgdXNlIHRoZSBkYXRhIGl0c2VsZiB0byBlc3RpbWF0ZSAkZiQgc28gdGhhdCBpdCBnZXRzIGFzIGNsb3NlIGFzIHBvc3NpYmxlIHRvIHRoZSBkYXRhIHBvaW50cyB3aXRob3V0IGJlY29taW5nIG92ZXJseSBjb21wbGV4LiBCeSBhdm9pZGluZyBhbnkgYXNzdW1wdGlvbnMgYWJvdXQgdGhlIGZ1bmN0aW9uYWwgZm9ybSwgbm9uLXBhcmFtZXRyaWMgbWV0aG9kcyBhdm9pZCB0aGUgaXNzdWVzIGNhdXNlZCBieSBwYXJhbWV0aWMgbW9kZWxzLiBIb3dldmVyLCBieSBkb2luZyBzbyBub24tcGFyYW1ldHJpYyBtZXRob2RzIHJlcXVpcmUgYSBsYXJnZSBzZXQgb2Ygb2JzZXJ2YXRpb25zIHRvIGF2b2lkICoqb3ZlcmZpdHRpbmcqKiB0aGUgZGF0YSBhbmQgb2J0YWluIGFuIGFjY3VyYXRlIGVzdGltYXRlIG9mICRmJC4KCk9uZSBub24tcGFyYW1ldHJpYyBtZXRob2QgaXMgY2FsbGVkICoqJEskLW5lYXJlc3QgbmVpZ2hib3JzIHJlZ3Jlc3Npb24qKiAoS05OIHJlZ3Jlc3Npb24pLiBSYXRoZXIgdGhhbiBiaW5uaW5nIHRoZSBkYXRhIGludG8gZGlzY3JldGUgYW5kIGZpeGVkIGludGVydmFscywgS05OIHJlZ3Jlc3Npb24gdXNlcyBhIG1vdmluZyBhdmVyYWdlIHRvIGdlbmVyYXRlIHRoZSByZWdyZXNzaW9uIGxpbmUuIEdpdmVuIGEgdmFsdWUgZm9yICRLJCBhbmQgYSBwcmVkaWN0aW9uIHBvaW50ICR4XzAkLCBLTk4gcmVncmVzc2lvbiBpZGVudGlmaWVzIHRoZSAkSyQgb2JzZXJ2YXRpb25zIGNsb3Nlc3QgdG8gdGhlIHByZWRpY3Rpb24gcG9pbnQgJFhfMCQsIGFuZCBlc3RpbWF0ZXMgYSBsb2NhbCByZWdyZXNzaW9uIGxpbmUgdGhhdCBpcyB0aGUgYXZlcmFnZSBvZiB0aGVzZSBvYnNlcnZhdGlvbnMgdmFsdWVzIGZvciB0aGUgb3V0Y29tZSAkWSQuCgpXaXRoICRLPTEkLCB0aGUgcmVzdWx0aW5nIEtOTiByZWdyZXNzaW9uIGxpbmUgd2lsbCBmaXQgdGhlIHRyYWluaW5nIG9ic2VydmF0aW9ucyBleHRyYW9yZGluYXJpbHkgd2VsbC4KCmBgYHtyIGtubi0xfQphZHZlcnRpc2luZyAlPiUKICBnYXRoZXIobWV0aG9kLCBzcGVuZCwgLVNhbGVzKSAlPiUKICBncm91cF9ieShtZXRob2QpICU+JQogIG5lc3QoKSAlPiUKICBtdXRhdGUoa25uID0gbWFwKGRhdGEsIH4ga25uLnJlZygueCRzcGVuZCwgeSA9IC54JFNhbGVzLCBrID0gMSkpLAogICAgICAgICBwcmVkID0gbWFwKGtubiwgfiAueCRwcmVkKSkgJT4lCiAgdW5uZXN0KGRhdGEsIHByZWQpICU+JQogIGdncGxvdChhZXMoc3BlbmQsIFNhbGVzKSkgKwogIGZhY2V0X3dyYXAofiBtZXRob2QsIHNjYWxlcyA9ICJmcmVlX3giKSArCiAgZ2VvbV9wb2ludChhbHBoYSA9IC4yNSkgKwogIGdlb21fc3RlcChhZXMoeSA9IHByZWQpLCBjb2xvciA9ICJibHVlIikgKwogIGxhYnModGl0bGUgPSAiSy1OZWFyZXN0IE5laWdoYm9yIiwKICAgICAgIHN1YnRpdGxlID0gIksgPSAxIiwKICAgICAgIHggPSAiU3BlbmRpbmcgKGluIHRob3VzYW5kcyBvZiBkb2xsYXJzKSIpCmBgYAoKUGVyaGFwcyBhIGJpdCB0b28gd2VsbC4gQ29tcGFyZSB0aGlzIHRvICRLPTkkOgoKYGBge3Iga25uLTl9CmFkdmVydGlzaW5nICU+JQogIGdhdGhlcihtZXRob2QsIHNwZW5kLCAtU2FsZXMpICU+JQogIGdyb3VwX2J5KG1ldGhvZCkgJT4lCiAgbmVzdCgpICU+JQogIG11dGF0ZShrbm4gPSBtYXAoZGF0YSwgfiBrbm4ucmVnKC54JHNwZW5kLCB5ID0gLngkU2FsZXMsIGsgPSA5KSksCiAgICAgICAgIHByZWQgPSBtYXAoa25uLCB+IC54JHByZWQpKSAlPiUKICB1bm5lc3QoZGF0YSwgcHJlZCkgJT4lCiAgZ2dwbG90KGFlcyhzcGVuZCwgU2FsZXMpKSArCiAgZmFjZXRfd3JhcCh+IG1ldGhvZCwgc2NhbGVzID0gImZyZWVfeCIpICsKICBnZW9tX3BvaW50KGFscGhhID0gLjI1KSArCiAgZ2VvbV9zdGVwKGFlcyh5ID0gcHJlZCksIGNvbG9yID0gImJsdWUiKSArCiAgbGFicyh0aXRsZSA9ICJLLU5lYXJlc3QgTmVpZ2hib3IiLAogICAgICAgc3VidGl0bGUgPSAiSyA9IDkiLAogICAgICAgeCA9ICJTcGVuZGluZyAoaW4gdGhvdXNhbmRzIG9mIGRvbGxhcnMpIikKYGBgCgpUaGlzIHNtb290aGluZyBsaW5lIGF2ZXJhZ2VzIG92ZXIgdGhlIG5pbmUgbmVhcmVzdCBvYnNlcnZhdGlvbnM7IHdoaWxlIHN0aWxsIGEgc3RlcCBmdW5jdGlvbiwgaXQgaXMgc21vb3RoZXIgdGhhbiAkSz0xJC4KCiMgQ2xhc3NpZmljYXRpb24gdnMuIHJlZ3Jlc3Npb24KClZhcmlhYmxlcyBjYW4gYmUgY2xhc3NpZmllZCBhcyAqKnF1YW50aXRhdGl2ZSoqIG9yICoqcXVhbGl0YXRpdmUqKi4gUXVhbnRpdGF0aXZlIHZhcmlhYmxlcyB0YWtlIG9uIG51bWVyaWMgdmFsdWVzLiBJbiBjb250cmFzdCwgcXVhbGl0YXRpdmUgdmFyaWFibGVzIHRha2Ugb24gZGlmZmVyZW50ICoqY2xhc3NlcyoqLCBvciBkaXNjcmV0ZSBjYXRlZ29yaWVzLiBRdWFsaXRhdGl2ZSB2YXJpYWJsZXMgY2FuIGhhdmUgYW55IG51bWJlciBvZiBjbGFzc2VzLCB0aG91Z2ggYmluYXJ5IGNhdGVnb3JpZXMgYXJlIGZyZXF1ZW50OgoKKiBZZXMvbm8KKiBNYWxlL2ZlbWFsZQoKUHJvYmxlbXMgd2l0aCBhIHF1YW50aXRhdGl2ZSBkZXBlbmRlbnQgdmFyaWFibGUgYXJlIHR5cGljYWxseSBjYWxsZWQgKipyZWdyZXNzaW9uKiogcHJvYmxlbXMsIHdoZXJlYXMgcXVhbGl0YXRpdmUgZGVwZW5kZW50IHZhcmlhYmxlcyBhcmUgY2FsbGVkICoqY2xhc3NpZmljYXRpb24qKiBwcm9ibGVtcy4gUGFydCBvZiB0aGlzIGRpc3RpbmN0aW9uIGlzIG1lcmVseSBzZW1hbnRpYywgYnV0IGRpZmZlcmVudCBtZXRob2RzIG1heSBiZSBlbXBsb3llZCBkZXBlbmRpbmcgb24gdGhlIHR5cGUgb2YgcmVzcG9uc2UgdmFyaWFibGUuIEZvciBpbnN0YW5jZSwgeW91IHdvdWxkIG5vdCB1c2UgbGluZWFyIHJlZ3Jlc3Npb24gb24gYSBxdWFsaXRhdGl2ZSByZXNwb25zZSB2YXJpYWJsZS4gQ29uY2VwdHVhbGx5LCBob3cgd291bGQgeW91IGRlZmluZSBhIGxpbmVhciBmdW5jdGlvbiBmb3IgYSByZXNwb25zZSB2YXJpYWJsZSB0aGF0IHRha2VzIG9uIHRoZSB2YWx1ZXMgIm1hbGUiIG9yICJmZW1hbGUiPyBJdCBkb2Vzbid0IG1ha2UgYW55IGNvbmNlcHR1YWwgc2Vuc2UuIEluc3RlYWQsIHlvdSBjYW4gZW1wbG95IGNsYXNzaWZpY2F0aW9uIG1ldGhvZHMgc3VjaCBhcyAqKmxvZ2lzdGljIHJlZ3Jlc3Npb24qKiB0byBlc3RpbWF0ZSB0aGUgcHJvYmFiaWxpdHkgdGhhdCBiYXNlZCBvbiBhIHNldCBvZiBwcmVkaWN0b3JzIGEgc3BlY2lmaWMgb2JzZXJ2YXRpb24gaXMgcGFydCBvZiBhIHJlc3BvbnNlIGNsYXNzLgoKVGhhdCBzYWlkLCB3aGV0aGVyICoqcHJlZGljdG9ycyoqIGFyZSBxdWFsaXRhdGl2ZSBvciBxdWFudGl0YXRpdmUgaXMgbm90IGltcG9ydGFudCBpbiBkZXRlcm1pbmluZyB3aGV0aGVyIHRoZSBwcm9ibGVtIGlzIG9uZSBvZiByZWdyZXNzaW9uIG9yIGNsYXNzaWZpY2F0aW9uLiBBcyBsb25nIGFzIHF1YWxpdGF0aXZlIHByZWRpY3RvcnMgYXJlIHByb3Blcmx5IGNvZGVkIGJlZm9yZSB0aGUgYW5hbHlzaXMgaXMgY29uZHVjdGVkLCB0aGV5IGNhbiBiZSB1c2VkIGZvciBlaXRoZXIgdHlwZSBvZiBwcm9ibGVtLgoKIyBTZXNzaW9uIEluZm8gey50b2MtaWdub3JlfQoKYGBge3IgY2hpbGQ9J19zZXNzaW9uaW5mby5SbWQnfQpgYGAKCgoKCg==</div>
+<p>This work is licensed under the  <a href="http://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0 Creative Commons License</a>.</p>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

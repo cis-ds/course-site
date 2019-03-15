@@ -1,0 +1,816 @@
+---
+title: "Distributed learning"
+author: |
+  | MACS 30500
+  | University of Chicago
+output: rcfss::cfss_slides
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      echo = TRUE)
+
+library(tidyverse)
+library(gapminder)
+library(stringr)
+library(rsparkling)
+library(sparklyr)
+library(h2o)
+
+set.seed(1234)
+
+theme_set(theme_minimal(base_size = 18))
+```
+
+## Distributed computing
+
+![](https://tctechcrunch2011.files.wordpress.com/2015/08/clouds.jpg)
+
+## Structured Query Language (SQL)
+
+* [SQLite](https://www.sqlite.org/)
+* [MySQL](https://www.mysql.com/)
+* [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-2016)
+* [PostgreSQL](https://www.postgresql.org/)
+* [BigQuery](https://cloud.google.com/bigquery/)
+
+## Getting started with SQLite
+
+* `dbplyr`
+* [`RMySQL`](https://github.com/rstats-db/RMySQL#readme)
+* [`RPostgreSQL`](https://CRAN.R-project.org/package=RPostgreSQL)
+* [`RSQLite`](https://github.com/rstats-db/RSQLite)
+* [`odbc`](https://github.com/rstats-db/odbc#odbc)
+* [`bigrquery`](https://github.com/rstats-db/bigrquery)
+
+## Connecting to the database
+
+```{r db-create, cache = FALSE}
+library(dplyr)
+my_db <- DBI::dbConnect(RSQLite::SQLite(), path = ":memory:")
+```
+
+## Adding data to database {.scrollable}
+
+```{r copy-to, cache = FALSE}
+library(nycflights13)
+copy_to(my_db,
+        flights,
+        temporary = FALSE,
+        indexes = list(
+          c("year", "month", "day"),
+          "carrier",
+          "tailnum"
+        )
+)
+```
+
+```{r tbl, cache = FALSE}
+flights_db <- tbl(my_db, "flights")
+flights_db
+```
+
+## Basic verbs {.scrollable}
+
+```{r verbs}
+select(flights_db, year:day, dep_delay, arr_delay)
+filter(flights_db, dep_delay > 240)
+arrange(flights_db, year, month, day)
+mutate(flights_db, speed = air_time / distance)
+summarise(flights_db, delay = mean(dep_time))
+```
+
+## Backend transformation of `dplyr` functions
+
+```{r verbs-sql, message = TRUE}
+select(flights_db, year:day, dep_delay, arr_delay) %>%
+  show_query()
+```
+
+----
+
+![A lazy cat](https://funnyvscute.files.wordpress.com/2014/02/image-463.jpg)
+
+## The laziness of `dbplyr` {.scrollable}
+
+```{r lazy}
+c1 <- filter(flights_db, year == 2013, month == 1, day == 1)
+c2 <- select(c1, year, month, day, carrier, dep_delay, air_time, distance)
+c3 <- mutate(c2, speed = distance / air_time * 60)
+c4 <- arrange(c3, year, month, day, carrier)
+```
+
+```{r lazy-result}
+c4
+```
+
+```{r collect}
+collect(c4)
+```
+
+## Google Bigquery
+
+* Distributed cloud platform for data warehousing and analytics
+* Extremely efficient
+* Large capacity
+* Flexible pricing
+
+## Interacting with Google Bigquery via `dplyr`
+
+```{r bigrquery}
+library(bigrquery)
+
+taxi <- DBI::dbConnect(bigrquery::bigquery(),
+                       project = "nyc-tlc",
+                       dataset = "yellow",
+                       billing = getOption("bigquery_id"))
+taxi
+```
+
+## In 2014, how many trips per taken each month in yellow cabs? {.scrollable}
+
+```sql
+SELECT
+  LEFT(STRING(pickup_datetime), 7) month,
+  COUNT(*) trips
+FROM
+  [nyc-tlc:yellow.trips]
+WHERE
+  YEAR(pickup_datetime) = 2014
+GROUP BY
+  1
+ORDER BY
+  1
+```
+
+```{r trips-by-month}
+system.time({
+  trips_by_month <- taxi %>%
+    tbl("trips") %>%
+    filter(year(pickup_datetime) == 2014) %>%
+    mutate(month = month(pickup_datetime)) %>%
+    count(month) %>%
+    arrange(month) %>%
+    collect()
+})
+trips_by_month
+```
+
+## What is the average speed per hour of day in yellow cabs? {.scrollable}
+
+```{r speed-per-hour}
+system.time({
+  speed_per_hour <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) /
+             3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10) %>%
+    group_by(hour) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(hour) %>%
+    collect()
+})
+
+ggplot(speed_per_hour, aes(hour, speed)) +
+  geom_line() +
+  labs(title = "Average Speed of NYC Yellow Taxis",
+       x = "Hour of day",
+       y = "Average speed, in MPH")
+```
+
+## What is the average speed by day of the week? {.scrollable}
+
+```{r speed-per-day}
+system.time({
+  speed_per_day <- taxi %>%
+    tbl("trips") %>%
+    mutate(hour = hour(pickup_datetime),
+           day = dayofweek(pickup_datetime),
+           trip_duration = (dropoff_datetime - pickup_datetime) /
+             3600000000) %>%
+    mutate(speed = trip_distance / trip_duration) %>%
+    filter(fare_amount / trip_distance >= 2,
+           fare_amount / trip_distance <= 10,
+           hour >= 8,
+           hour <= 18) %>%
+    group_by(day) %>%
+    summarize(speed = mean(speed)) %>%
+    arrange(day) %>%
+    collect()
+})
+speed_per_day
+```
+
+## Split-apply-combine
+
+* **Split** data into pieces
+* **Apply** some function to each piece
+* **Combine** the results back together again
+
+## `dplyr::group_by()` {#group-by .scrollable}
+
+```{r group_by}
+gapminder %>%
+  group_by(continent) %>%
+  summarize(n = n())
+
+gapminder %>%
+  group_by(continent) %>%
+  summarize(avg_lifeExp = mean(lifeExp))
+```
+
+## `for` loops {#for-loops .scrollable}
+
+```{r for_loop}
+countries <- unique(gapminder$country)
+lifeExp_models <- vector("list", length(countries))
+names(lifeExp_models) <- countries
+
+for(i in seq_along(countries)){
+  lifeExp_models[[i]] <- lm(lifeExp ~ year,
+                            data = filter(gapminder,
+                                          country == countries[[i]]))
+}
+head(lifeExp_models)
+```
+
+## `nest()` and `map()` {#nest-map .scrollable}
+
+```{r nest}
+# function to estimate linear model for gapminder subsets
+le_vs_yr <- function(df) {
+  lm(lifeExp ~ year, data = df)
+}
+
+# split data into nests
+(gap_nested <- gapminder %>% 
+   group_by(continent, country) %>% 
+   nest())
+
+# apply a linear model to each nested data frame
+(gap_nested <- gap_nested %>% 
+   mutate(fit = map(data, le_vs_yr)))
+
+# combine the results back into a single data frame
+library(broom)
+(gap_nested <- gap_nested %>% 
+  mutate(tidy = map(fit, tidy)))
+
+(gap_coefs <- gap_nested %>% 
+   select(continent, country, tidy) %>% 
+   unnest(tidy))
+```
+
+## Parallel computing
+
+![From [An introduction to parallel programming using Python's multiprocessing module](http://sebastianraschka.com/Articles/2014_multiprocessing.html)](http://sebastianraschka.com/images/blog/2014/multiprocessing_intro/multiprocessing_scheme.png)
+
+## Parallel computing
+
+* Parallel processing
+* Serial processing
+* Multithreading
+
+## Why use parallel computing
+
+* Imitates real life
+* More efficient (maybe)
+* Tackle larger problems
+* Distributed resources
+
+## Why not to use parallel computing
+
+![Amdahl's Law from [Wikipedia](https://en.wikipedia.org/wiki/Amdahl's_law)](https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/AmdahlsLaw.svg/768px-AmdahlsLaw.svg.png)
+    
+## Why not to use parallel computing
+
+* Limits to efficiency gains
+* Complexity
+* Dependencies
+* Parallel slowdown
+
+## `multidplyr` {#multidplyr}
+
+1. `partition()` to split the dataset across multiple cores
+1. Apply `dplyr` verb to a `party df`
+1. `collect()` the data
+
+## `nycflights13::flights` {#flights .scrollable}
+
+```{r multidplyr}
+library(multidplyr)
+library(nycflights13)
+```
+
+```{r flights_multi}
+flights1 <- partition(flights, flight)
+flights2 <- summarize(flights1, dep_delay = mean(dep_delay, na.rm = TRUE))
+flights3 <- collect(flights2)
+```
+
+```{r flights2}
+flights2
+```
+
+## Performance of `multidplyr`
+
+```{r flights_performance}
+system.time({
+  flights %>% 
+    partition() %>%
+    summarise(mean(dep_delay, na.rm = TRUE)) %>% 
+    collect()
+})
+system.time({
+  flights %>% 
+    group_by() %>%
+    summarise(mean(dep_delay, na.rm = TRUE))
+})
+```
+
+## `gapminder` {#gapminder .scrollable}
+
+### Parallel processing
+
+```{r multi_nest}
+# split data into nests
+gap_nested <- gapminder %>% 
+  group_by(continent, country) %>% 
+  nest()
+
+# partition gap_nested across the cores
+gap_nested_part <- gap_nested %>%
+  partition(country)
+
+# apply a linear model to each nested data frame
+cluster_library(gap_nested_part, "purrr")
+
+system.time({
+  gap_nested_part %>% 
+    mutate(fit = map(data, function(df) lm(lifeExp ~ year, data = df)))
+})
+```
+
+### Serial processing
+
+```{r multi_nest_serial}
+system.time({
+  gap_nested %>% 
+    mutate(fit = map(data, function(df) lm(lifeExp ~ year, data = df)))
+})
+```
+
+## Hadoop and Spark
+
+* Open-source software library for distributed processing of large data sets
+* Typically across clusters of computers
+* Highly scalable
+* Modules
+    * Hadoop Distributed File System (HDFS)
+    * Hadoop MapReduce
+    * Spark
+
+## `sparklyr` {#sparklyr}
+
+* Connect to Spark from R using the `dplyr` interface
+* Interact with SQL databases stored on a Spark cluster
+* Implement distributed [statistical](cm011.html) [learning](cm012.html) algorithms
+
+## Installation
+
+```r
+install.packages("sparklyr")
+```
+
+```r
+library(sparklyr)
+spark_install(version = "2.1.0")
+```
+
+## Connecting to Spark
+
+```{r connect_spark, cache = FALSE}
+library(sparklyr)
+sc <- spark_connect(master = "local")
+```
+
+## Reading data {.scrollable}
+
+```r
+install.packages("babynames")
+```
+
+```{r load-babynames, cache = FALSE}
+library(babynames)
+babynames_tbl <- copy_to(sc, babynames, "babynames", overwrite = TRUE)
+applicants_tbl <- copy_to(sc, applicants, "applicants", overwrite = TRUE)
+
+babynames_tbl
+applicants_tbl
+```
+
+## Using `dplyr` {.scrollable}
+
+```{r total-us-birth-spark}
+birthsYearly <- applicants_tbl %>%
+  mutate(sex = if_else(sex == "M", "male", "female"),
+         n_all = n_all / 1000000) %>%
+  collect()
+
+ggplot(birthsYearly, aes(year, n_all, fill = sex)) +
+  geom_area(position = "stack") +
+  scale_fill_brewer(type = "qual") +
+  labs(title = "Total US Births",
+       y = "Millions",
+       fill = NULL,
+       caption = "Source: SSA")
+```
+
+## Compared to non-DB `dplyr` {.scrollable}
+
+```{r total-us-birth-df}
+birthsYearly <- applicants %>%
+  mutate(sex = if_else(sex == "M", "male", "female"),
+         n_all = n_all / 1000000)
+
+ggplot(birthsYearly, aes(year, n_all, fill = sex)) +
+  geom_area(position = "stack") +
+  scale_fill_brewer(type = "qual") +
+  labs(title = "Total US Births",
+       y = "Millions",
+       fill = NULL,
+       caption = "Source: SSA")
+```
+
+## Lookup table {.scrollable}
+
+```{r lookup-tbl}
+(topNames_tbl <- babynames_tbl %>%
+  filter(year >= 1986) %>%  
+  group_by(name, sex) %>%
+  summarize(count = as.numeric(sum(n))) %>%
+  filter(count > 1000) %>%
+  select(name, sex))
+
+(filteredNames_tbl <- babynames_tbl %>%
+  filter(year >= 1986) %>%
+  inner_join(topNames_tbl))
+
+(yearlyNames_tbl <- filteredNames_tbl %>%
+  group_by(year, name, sex) %>%
+  summarize(count = as.numeric(sum(n))))
+
+sdf_register(yearlyNames_tbl, "yearlyNames")
+```
+
+## Using a lookup table {.scrollable}
+
+```{r names-1986}
+topNames1986_tbl <- yearlyNames_tbl %>%
+  filter(year == 1986) %>%
+  group_by(name, sex) %>%
+  summarize(count = sum(count)) %>%
+  group_by(sex) %>%
+  mutate(rank = min_rank(desc(count))) %>%
+  filter(rank < 5) %>%
+  arrange(sex, rank) %>%
+  select(name, sex, rank) %>%
+  sdf_register("topNames1986")
+
+topNames1986Yearly <- yearlyNames_tbl %>%
+  inner_join(select(topNames1986_tbl, sex, name)) %>%
+  mutate(sex = if_else(sex == "M", "Male", "Female")) %>%
+  collect()
+
+ggplot(topNames1986Yearly, aes(year, count, color = name)) +
+  facet_grid(~ sex) +
+  geom_line() +
+  scale_color_brewer(type = "qual") +
+  labs(title = "Most Popular Names of 1986",
+       x = "Year",
+       y = "Number of children born",
+       caption = "Source: SSA")
+```
+
+## Using a lookup table {.scrollable}
+
+```{r names-2014}
+topNames2014_tbl <- yearlyNames_tbl %>%
+  filter(year == 2014) %>%
+  group_by(name, sex) %>%
+  summarize(count = sum(count)) %>%
+  group_by(sex) %>%
+  mutate(rank = min_rank(desc(count))) %>%
+  filter(rank < 5) %>%
+  arrange(sex, rank) %>%
+  select(name, sex, rank) %>%
+  sdf_register("topNames2014")
+
+topNames2014Yearly <- yearlyNames_tbl %>%
+  inner_join(select(topNames2014_tbl, sex, name)) %>%
+  mutate(sex = if_else(sex == "M", "Male", "Female")) %>%
+  collect()
+
+ggplot(topNames2014Yearly, aes(year, count, color = name)) +
+  facet_grid(~ sex) +
+  geom_line() +
+  scale_color_brewer(type = "qual") +
+  labs(title = "Most Popular Names of 2014",
+       x = "Year",
+       y = "Number of children born",
+       caption = "Source: SSA")
+```
+
+## Machine learning with Spark
+
+* `caret::train()`
+* `sparklyr::ml_()`
+
+## Load the data
+
+```{r load_titanic, cache = FALSE}
+library(titanic)
+(titanic_tbl <- copy_to(sc, titanic::titanic_train, "titanic", overwrite = TRUE))
+```
+
+## Tidy the data
+
+```{r titanic_tidy, cache = FALSE}
+titanic2_tbl <- titanic_tbl %>% 
+  mutate(Family_Size = SibSp + Parch + 1L) %>% 
+  mutate(Pclass = as.character(Pclass)) %>%
+  filter(!is.na(Embarked)) %>%
+  mutate(Age = if_else(is.na(Age), mean(Age), Age)) %>%
+  sdf_register("titanic2")
+```
+
+## Spark ML transforms
+
+```{r titanic_tidy_ml, cache = FALSE}
+titanic_final_tbl <- titanic2_tbl %>%
+  mutate(Family_Size = as.numeric(Family_size)) %>%
+  sdf_mutate(
+    Family_Sizes = ft_bucketizer(Family_Size, splits = c(1,2,5,12))
+    ) %>%
+  mutate(Family_Sizes = as.character(as.integer(Family_Sizes))) %>%
+  sdf_register("titanic_final")
+```
+
+## Train-validation split
+
+```{r titanic_partition, cache = FALSE}
+# Partition the data
+partition <- titanic_final_tbl %>% 
+  mutate(Survived = as.numeric(Survived),
+         SibSp = as.numeric(SibSp),
+         Parch = as.numeric(Parch)) %>%
+  select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked, Family_Sizes) %>%
+  sdf_partition(train = 0.75, test = 0.25, seed = 1234)
+
+# Create table references
+train_tbl <- partition$train
+test_tbl <- partition$test
+```
+
+## Train the models {.scrollable}
+
+```{r titanic_logit}
+# Model survival as a function of several predictors
+ml_formula <- formula(Survived ~ Pclass + Sex + Age + SibSp +
+                        Parch + Fare + Embarked + Family_Sizes)
+
+# Train a logistic regression model
+(ml_log <- ml_logistic_regression(train_tbl, ml_formula))
+```
+
+```{r titanic_models}
+# Decision Tree
+ml_dt <- ml_decision_tree(train_tbl, ml_formula)
+
+# Random Forest
+ml_rf <- ml_random_forest(train_tbl, ml_formula)
+
+# Gradient Boosted Tree
+ml_gbt <- ml_gradient_boosted_trees(train_tbl, ml_formula)
+
+# Naive Bayes
+ml_nb <- ml_naive_bayes(train_tbl, ml_formula)
+
+# Neural Network
+ml_nn <- ml_multilayer_perceptron(train_tbl, ml_formula, layers = c(11, 15, 2))
+```
+
+## Validate the models {.scrollable}
+
+```{r titanic_validate}
+# Bundle the models into a single list object
+ml_models <- list(
+  "Logistic" = ml_log,
+  "Decision Tree" = ml_dt,
+  "Random Forest" = ml_rf,
+  "Gradient Boosted Trees" = ml_gbt,
+  "Naive Bayes" = ml_nb,
+  "Neural Net" = ml_nn
+)
+
+# Create a function for scoring
+score_test_data <- function(model, data = test_tbl){
+  pred <- sdf_predict(model, data)
+  select(pred, Survived, prediction)
+}
+
+# Score all the models
+ml_score <- map(ml_models, score_test_data)
+```
+
+## Model lift {.scrollable}
+
+```{r model-lift}
+# Lift function
+calculate_lift <- function(scored_data) {
+  scored_data %>%
+    mutate(bin = ntile(desc(prediction), 10)) %>% 
+    group_by(bin) %>% 
+    summarize(count = sum(Survived)) %>% 
+    mutate(prop = count / sum(count)) %>% 
+    arrange(bin) %>% 
+    mutate(prop = cumsum(prop)) %>% 
+    select(-count) %>% 
+    collect() %>% 
+    as.data.frame()
+}
+
+# Initialize results
+ml_gains <- data_frame(
+  bin = seq(from = 1, to = 10),
+  prop = seq(0, 1, len = 10),
+  model = "Base"
+)
+
+# Calculate lift
+for(i in names(ml_score)){
+  ml_gains <- ml_score[[i]] %>%
+    calculate_lift %>%
+    mutate(model = i) %>%
+    bind_rows(ml_gains, .)
+}
+
+# Plot results
+ggplot(ml_gains, aes(x = bin, y = prop, color = model)) +
+  geom_point() +
+  geom_line() +
+  scale_color_brewer(type = "qual") +
+  labs(title = "Lift Chart for Predicting Survival",
+       subtitle = "Test Data Set",
+       x = NULL,
+       y = NULL)
+```
+
+## Receiver operating characteristic (ROC) curves
+
+![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/3/36/ROC_space-2.png)
+
+## Receiver operating characteristic (ROC) curves
+
+![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/6/6b/Roccurves.png)
+
+## Calculating AUC {.scrollable}
+
+```{r titanic_eval}
+# Function for calculating accuracy
+calc_accuracy <- function(data, cutpoint = 0.5){
+  data %>% 
+    mutate(prediction = if_else(prediction > cutpoint, 1.0, 0.0)) %>%
+    ml_classification_eval("prediction", "Survived", "accuracy")
+}
+
+# Calculate AUC and accuracy
+perf_metrics <- data_frame(
+  model = names(ml_score),
+  AUC = 100 * map_dbl(ml_score, ml_binary_classification_eval, "Survived", "prediction"),
+  Accuracy = 100 * map_dbl(ml_score, calc_accuracy)
+  )
+perf_metrics
+
+# Plot results
+gather(perf_metrics, metric, value, AUC, Accuracy) %>%
+  ggplot(aes(reorder(model, value), value, fill = metric)) + 
+  geom_bar(stat = "identity", position = "dodge") + 
+  coord_flip() +
+  labs(title = "Performance metrics",
+       x = NULL,
+       y = "Percent")
+```
+
+## Feature importance {.scrollable}
+
+```{r titanic_feature}
+# Initialize results
+feature_importance <- data_frame()
+
+# Calculate feature importance
+for(i in c("Decision Tree", "Random Forest", "Gradient Boosted Trees")){
+  feature_importance <- ml_tree_feature_importance(sc, ml_models[[i]]) %>%
+    mutate(Model = i) %>%
+    mutate(importance = as.numeric(levels(importance))[importance]) %>%
+    mutate(feature = as.character(feature)) %>%
+    rbind(feature_importance, .)
+}
+
+# Plot results
+feature_importance %>%
+  ggplot(aes(reorder(feature, importance), importance, fill = Model)) + 
+  facet_wrap(~Model) +
+  geom_bar(stat = "identity") + 
+  coord_flip() +
+  labs(title = "Feature importance",
+       x = NULL) +
+  theme(legend.position = "none")
+```
+
+## Compare run times
+
+```{r titanic_compare_runtime, echo = FALSE}
+# Number of reps per model
+n <- 10
+
+# Format model formula as character
+format_as_character <- function(x){
+  x <- paste(deparse(x), collapse = "")
+  x <- gsub("\\s+", " ", paste(x, collapse = ""))
+  x
+}
+
+# Create model statements with timers
+format_statements <- function(y){
+  y <- format_as_character(y[[".call"]])
+  y <- gsub('ml_formula', ml_formula_char, y)
+  y <- paste0("system.time(", y, ")")
+  y
+}
+
+# Convert model formula to character
+ml_formula_char <- format_as_character(ml_formula)
+
+# Create n replicates of each model statements with timers
+all_statements <- map_chr(ml_models, format_statements) %>%
+  rep(., n) %>%
+  parse(text = .)
+
+# Evaluate all model statements
+res <- map(all_statements, eval)
+
+# Compile results
+result <- data_frame(model = rep(names(ml_models), n),
+                     time = map_dbl(res, function(x){as.numeric(x["elapsed"])})) 
+
+# Plot
+result %>%
+  ggplot(aes(time, reorder(model, time))) + 
+  geom_boxplot() + 
+  geom_jitter(width = 0.4, aes(color = model)) +
+  scale_color_discrete(guide = FALSE) +
+  labs(title = "Model training times",
+       x = "Seconds",
+       y = NULL)
+```
+
+## Sparkling Water (H2O)
+
+* Limitations of MLlib (in `sparklyr`)
+* H2O
+* `rsparkling`
+
+## Prep data for H2O
+
+```{r h2o, cache = FALSE}
+library(rsparkling)
+library(h2o)
+```
+
+```{r h2o-convert}
+titanic_h2o <- titanic_final_tbl %>% 
+  mutate(Survived = as.numeric(Survived),
+         SibSp = as.numeric(SibSp),
+         Parch = as.numeric(Parch)) %>%
+  select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked, Family_Sizes) %>%
+  as_h2o_frame(sc, ., strict_version_check = FALSE)
+```
+
+## Estimate logistic regression with H2O {.scrollable}
+
+```{r h2o-glm}
+glm_model <- h2o.glm(x = c("Pclass", "Sex", "Age", "SibSp", "Parch",
+                           "Fare", "Embarked", "Family_Sizes"), 
+                     y = "Survived",
+                     family = "binomial",
+                     training_frame = titanic_h2o,
+                     lambda_search = TRUE,
+                     nfolds = 10)
+glm_model
+```
