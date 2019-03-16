@@ -1,5 +1,5 @@
 ---
-active: true
+active: false
 date_format: Jan 2006
 item:
 - certificate_url: https://www.coursera.org

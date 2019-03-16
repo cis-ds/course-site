@@ -1,5 +1,5 @@
 ---
-active: true
+active: false
 date_format: Jan 2006
 experience:
 - company: GenCoin

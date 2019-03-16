@@ -1,5 +1,5 @@
 ---
-active: true
+active: false
 subtitle: ""
 title: Gallery
 weight: 66
