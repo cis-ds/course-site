@@ -3,7 +3,7 @@ date: "2018-09-09T00:00:00-05:00"
 draft: false
 menu:
   setup:
-    name: R/RStudio
+    name: Overview
     weight: 1
 title: "Day 0: Installing Software"
 toc: true
