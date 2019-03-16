@@ -1,15 +1,17 @@
 ---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: R/RStudio
+    weight: 4
 title: "Accessing RStudio Cloud"
-output:
-  html_document:
-    toc: true
-    toc_float: true
-    toc_depth: 2
+toc: true
+type: docs
+aliases: "/setup_cloud.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
+
 
 # R
 
@@ -39,13 +41,18 @@ Rather than installing your own copy of R and RStudio, you can access R and RStu
     
     You should see something that looks like this:
 
-![](images/rstudio-server.png)
+![](/img/rstudio-server.png)
 
 We'll discuss this in more detail later, but the RStudio IDE is divided into 4 separate panes (one of which is hidden for now) which all serve specific functions. For now, to make sure R and RStudio are setup correctly, type `x <- 5 + 2` into the *console* pane (the one on the left side of your screen - this is equivalent to the main window you saw when you opened the base R program, where you can type and run live R code) and execute it by pressing Enter/Return. You just created an object in R called `x`. What does this object contain? Type `print(x)` into the console and press enter again. Your console should now contain the following output:
 
-```{r testrstudio}
+
+```r
 x <- 5 + 2
 print(x)
+```
+
+```
+## [1] 7
 ```
 
 # Using RStudio Cloud
@@ -58,5 +65,5 @@ Unlike using RStudio locally, you cannot [store your username and password](git0
 
 ### Acknowledgments {.toc-ignore}
 
-```{r child='_ack_stat545.Rmd'}
-```
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

@@ -1,14 +1,15 @@
 ---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: R/RStudio
+    weight: 2
 title: "Why R?"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+toc: true
+type: docs
+aliases: "/setup01.html"
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
 
 # Open-source
 
@@ -20,7 +21,7 @@ R is widely used in the physical and social sciences, [as well as in government,
 
 Many developers and social scientists write programs in R. As a result, there is also a large support community available to help troubleshoot problematic code. As seen in the Redmonk programming language rankings (which compare languages' appearances on Github [usage] and StackOverflow [support]), R appears near the top of both rankings.
 
-[![](images/lang.rank_.618-1-1024x708.png)](https://redmonk.com/sogrady/2018/08/10/language-rankings-6-18/)
+[![](/img/lang.rank_.618-1-1024x708.png)](https://redmonk.com/sogrady/2018/08/10/language-rankings-6-18/)
 
 # Lack of point-and-click interface
 
@@ -37,7 +38,7 @@ R, like any computing language, relies on programmatic execution of functions. T
 
 # Why are we not using Python?
 
-[![](images/xkcd_python.png)](https://xkcd.com/353/)
+[![](/img/xkcd_python.png)](https://xkcd.com/353/)
 
 Python was developed in the 1990s as a general-purpose programming language. It [emphasizes simplicity over complexity](https://en.wikipedia.org/wiki/Zen_of_Python) in both its syntax and core functions. As a result, code written in Python is (relatively) easy to read and follow as compared to more complex languages like Perl or Java. As you can see in the above references, Python is just as, if not more, popular than R. It does many things well, like R, but is perhaps better in some aspects:
 
@@ -52,11 +53,10 @@ That said, there are also things it does not do as well as R:
 
 At the end of the day, I don't think it is a debate between learning R vs. Python. Frankly to be a desirable (and therefore highly-compensated) data scientist [you should learn both languages.](https://blog.usejournal.com/python-vs-and-r-for-data-science-833b48ccc91d) R and Python complement each other, and even R/Python luminaries such as [Hadley Wickham](https://twitter.com/hadleywickham) and [Wes McKinney](https://ursalabs.org/) promote the benefits of both languages:
 
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">Python and R are NOT waging war. This is not a helpful characterisation</p>&mdash; Hadley Wickham (@hadleywickham) <a href="https://twitter.com/hadleywickham/status/855035652710309890?ref_src=twsrc%5Etfw">April 20, 2017</a></blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+{{< tweet 855035652710309890 >}}
 
 This course could be taught exclusively in Python (as it was in previous incarnations) or a combination of R and Python (as it was in [fall 2016](https://uc-cfss.github.io/fall2016)). From my past experience, I think the best introduction to computer programming focuses on a single language. Learning two languages simultaneously is extremely difficult. It is better to stick with a single language and syntax. My language of preference is R, so that is what I teach here. Once you complete this course, you will have the basic skills necessary to learn Python on your own.
 
-# Acknowledgements {.toc-ignore}
+# Acknowledgements
 
 * This page is derived in part from ["R vs Python for Data Science: The Winner is …"](http://www.kdnuggets.com/2015/05/r-vs-python-data-science.html).
