@@ -1,11 +1,8 @@
 ---
-title: "FAQ"
-output:
-  html_document:
-    toc: true
-    toc_depth: 2
-    toc_float: true
-    code_download: true
+date: "2018-06-28T00:00:00-05:00"
+draft: false
+title: FAQ
+aliases: "/faq.html"
 ---
 
 # Should I take this course?
