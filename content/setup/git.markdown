@@ -1,14 +1,17 @@
 ---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: Git/GitHub
+    weight: 2
 title: "Install Git"
-output:
-  html_document:
-    toc: TRUE
-    toc_depth: 1
+toc: true
+type: docs
+aliases: "/git01.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
+
 
 # Git Installation: Windows
 
@@ -68,11 +71,10 @@ Fedora/Redhat Linux
 
 `sudo yum install git`
 
+### Acknowledgments
 
-# Acknowledgments {.toc-ignore}
 
-```{r child='_ack_stat545.Rmd'}
-```
-```{r child='_ack_swcgit.Rmd'}
-```
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
+
+* This page is derived in part from ["Version Control with Git"](http://swcarpentry.github.io/git-novice/), licensed under the [CC BY 4.0 Creative Commons License](http://swcarpentry.github.io/git-novice/LICENSE.html).
 * ["Chapter 6: Install Git" from Happy Git and GitHub for the useR](https://happygitwithr.com/install-git.html)

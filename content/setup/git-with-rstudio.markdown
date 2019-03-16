@@ -1,15 +1,17 @@
 ---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: Git/GitHub
+    weight: 6
 title: "Using Git within RStudio"
-output:
-    html_document:
-        toc: TRUE
-        toc_depth: 2
-        toc_float: TRUE
+toc: true
+type: docs
+aliases: "/git05.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
+
 
 **You only have to do this once per machine.**
 
@@ -42,7 +44,7 @@ From RStudio, go to *Tools > Global Options > Git/SVN* and make sure that the bo
 
 On my computer, it looks like this:
 
-![](images/git_exec.png)
+![](/img/git_exec.png)
 
 If you make any changes, **restart RStudio and try the steps at the top of the page again**.
 
@@ -133,7 +135,7 @@ Before you *push* your changes to GitHub, first you should *pull* from GitHub. W
 * Click the blue "Pull" button in the "Git" tab in RStudio. I doubt anything will happen, i.e. you'll get the message "Already up-to-date". This is just to establish a habit.
 * Now click the green "Push" button to send your local changes to GitHub. You should see some message along these lines.
 
-    ```{}
+    ```
     [master dc671f0] blah
      3 files changed, 22 insertions(+)
      create mode 100644 .gitignore
@@ -144,7 +146,7 @@ Before you *push* your changes to GitHub, first you should *pull* from GitHub. W
 
 Now just rinse and repeat. Do work somewhere. Commit it. Push it or pull it depending on where you did it, but get local and remote "synced up".
 
-# Acknowledgments {.toc-ignore}
+### Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
-```
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

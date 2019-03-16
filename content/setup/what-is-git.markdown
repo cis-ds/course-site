@@ -1,11 +1,17 @@
 ---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: Git/GitHub
+    weight: 1
 title: "Why Git?"
-output: html_document
+toc: false
+type: docs
+aliases: "/git00.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
+
 
 In this course (and in your own work), you will be writing lots of programs. Generally the first draft is not the final draft, be it a research paper or a computer script. We want a way to track our changes over time. Perhaps this is to make sure we have a record of what we've already done that doesn't work, so we can avoid doing it again. Or maybe we want to share our code with collaborators who are working on a project with us. How can we do this?
 
@@ -27,10 +33,9 @@ Git can be used locally by you on a single computer to track changes in a projec
 
 Chances are that by now you've seen or even used GitHub. Professionally, you should know how to use Git and GitHub to manage projects and share code. In this class, we will use Git and GitHub to host our [course site](https://github.com/uc-cfss/uc-cfss.github.io), share code, and distribute/collect assignments.
 
+### Acknowledgments
 
-# Acknowledgments {.toc-ignore}
 
-```{r child='_ack_stat545.Rmd'}
-```
-```{r child='_ack_swcgit.Rmd'}
-```
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
+
+* This page is derived in part from ["Version Control with Git"](http://swcarpentry.github.io/git-novice/), licensed under the [CC BY 4.0 Creative Commons License](http://swcarpentry.github.io/git-novice/LICENSE.html).

@@ -1,19 +1,21 @@
 ---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: Git/GitHub
+    weight: 5
 title: "Setup Git and GitHub"
-output:
-    html_document:
-        toc: TRUE
-        toc_depth: 2
-        toc_float: TRUE
+toc: true
+type: docs
+aliases: "/git04.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
+
 
 **You only have to do this once per machine.**
 
-# Make a repository in GitHub
+## Make a repository in GitHub
 
 * Go to [GitHub.com](https://www.github.com) and login.
 * Click the green "New Repository" button
@@ -23,13 +25,14 @@ knitr::opts_chunk$set(cache=TRUE)
     * Click the green "Create repository" button
 * Copy the HTTPS clone URL to your clipboard via the green "Clone or Download" button.
 
-# Clone the repository to your computer
+## Clone the repository to your computer
 
 * Go to the [shell](shell.html) (one way to open: In RStudio, **Tools > Shell**).
 * Determine where you are in the file directory (`pwd`). `cd` to move around. You can clone this repository wherever you want, though eventually you'll want to develop a system for storing your repos in a consistent manner. Here, I stored mine in `/Users/benjamin/Github/`.
 * Clone `myrepo` from GitHub to your computer. Cloning simply downloads a copy of the repository to your computer. Remember the URL you copied? It should contain your GitHub username and the name of your practice repository. Either copy + paste the URL into your shell, or if the clipboard doesn't work retype it manually. Make sure it is accurate.
 
-```{r engine='bash', eval=FALSE}
+
+```bash
 git clone https://github.com/YOUR-USERNAME/YOUR-REPOSITORY.git
 ```
 
@@ -46,7 +49,8 @@ Checking connectivity... done.
 
 * Make this new repository your working directory, list its files, display the README, and get some information on its connection to GitHub.
 
-```{r engine='bash', eval=FALSE}
+
+```bash
 cd myrepo
 ls
 less README.md            # press [q] to quit
@@ -78,11 +82,12 @@ benjamin-laptop:myrepo benjamin$ git remote show origin
     master pushes to master (up to date)
 ```
 
-# Make a local change, commit, and push
+## Make a local change, commit, and push
 
 * Add a line to README and verify that Git notices the change:
 
-```{r engine='bash', eval=FALSE}
+
+```bash
 echo "A line I wrote on my local computer" >> README.md
 git status
 ```
@@ -103,7 +108,8 @@ no changes added to commit (use "git add" and/or "git commit -a")
 
 * Commit this change and push to your remote repo on GitHub.
 
-```{r engine='bash', eval=FALSE}
+
+```bash
 git add -A
 git commit -m "A commit from my local computer"
 git push
@@ -128,24 +134,25 @@ To https://github.com/bensoltoff/myrepo.git
 
 If you have never pushed a commit to GitHub, you will be challenged to enter your username and password. Do this.
 
-# Confirm the local change propagated to the GitHub remote
+## Confirm the local change propagated to the GitHub remote
 
 * Go back to the browser. Make sure you're still viewing your `myrepo` GitHub repository.
 * Refresh the page.
 * You should see the new line "A line I wrote on my local computer" in the README.
 * If you click on "Commits" you should see one with the message "A commit from my local computer."
 
-# Authenticating with GitHub for each push
+## Authenticating with GitHub for each push
 
 While the need to authenticate users is obvious (if there was no authentication, anyone could upload changes to your repository), it can be tedious to enter your username and password every time you want to push a change to GitHub. Fortunately there are a couple different options for caching your credentials which we will review [here](git07.html).
 
-# Clean up
+## Clean up
 
 Since this was simply a test, there is no need to keep `myrepo`. Because we stored the repo on both our computer and GitHub, we need to remove it from both locations.
 
 * Delete the local repository in the shell:
 
-```{r engine='bash', eval=FALSE}
+
+```bash
 cd ..
 rm -rf myrepo/
 ```
@@ -154,7 +161,7 @@ rm -rf myrepo/
     * In the browser, viewing your repository's landing page on GitHub, click on "Settings", near the bottom of the right sidebar.
     * Scroll down, click on "Delete this repository", and follow the instructions
 
-# Acknowledgments {.toc-ignore}
+### Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
-```
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

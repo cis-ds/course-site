@@ -1,16 +1,17 @@
 ---
-title: "Git Clients"
-output:
-  html_document:
-    toc: TRUE
-    toc_depth: 1
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: Git/GitHub
+    weight: 3
+title: "Git clients"
+toc: true
+type: docs
+aliases: "/git02.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
 
-# Why a Git client?
 
 ![["Git" by xkcd](https://xkcd.com/1597/)](https://imgs.xkcd.com/comics/git.png)
 
@@ -24,7 +25,7 @@ It is helpful, and sometimes still necessary, to know how to use the command lin
 
 Because all Git clients are just forming and executing Git commands on your behalf, you don't have to pick a specific one. You can literally do one operation from the command line, do another from RStudio, and another from your Git client, one after the other, and it just works. *Very rarely, both clients will scan the repo at the same time and you’ll get an error message about `.git/index.lock`. Try the operation again at least once before doing any further troubleshooting.*
 
-# Recommendations for Git clients
+## Recommendations for Git clients
 
 I admit that until recently I relied on the [free GitHub client](https://desktop.github.com/) for Windows and Mac. However in researching recommended Git clients, I have [heard](http://stat545.com/git02_git-clients.html) [negative](https://www.slant.co/topics/2089/~git-clients-for-windows) [reviews](http://softwarerecs.stackexchange.com/questions/1308/what-is-a-good-newbie-friendly-graphical-git-client-for-windows) about this client. Specifically, the GitHub client offers lots of hand-holding. **Perhaps too much**. It also cannot handle complex Git operations, and installation of the GitHub client also includes a version of Git that does not play nicely with default settings. In addition, because it is intended to work with Git repositories hosted on GitHub, if you ever decide to share your repositories using an alternative hoster the GitHub client does not play nicely with outsiders.
 
@@ -40,7 +41,7 @@ Other Git clients
 * [GitUp](http://gitup.co/) (Mac only)
 * [Even more choices](https://git-scm.com/downloads/guis)
 
-# Acknowledgments {.toc-ignore}
+### Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
-```
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

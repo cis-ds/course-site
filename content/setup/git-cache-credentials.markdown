@@ -1,25 +1,27 @@
 ---
-title: "Using Git within RStudio"
-output:
-    html_document:
-        toc: TRUE
-        toc_depth: 2
-        toc_float: TRUE
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+menu:
+  setup:
+    parent: Git/GitHub
+    weight: 7
+title: "Cache credentials"
+toc: true
+type: docs
+aliases: "/git07.html"
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
+
 
 **You only have to do this once per machine.**
 
-# Why cache credentials?
+## Why cache credentials?
 
 As you have probably gathered by now, it will be annoying to enter your username and password each time you push changes to GitHub. It may even discourage you from pushing as frequently as you should. By storing your credentials on the computer, you won't have to authenticate yourself manually each time you push to GitHub, and your credentials will be stored in a secure manner.
 
 > As of January 2019, if you install Git using [these instructions](git01.html), it is possible that Git will use a credential helper provided by your operating system. That is, you may not need to do anything special in order to cache your GitHub username and password. Specifically, if you are on macOS or Windows, don’t do anything described here until you have actual proof that it’s necessary, i.e. that you have experienced repeated challenges for your username and password when attempting to push/pull to GitHub.
 
-# Get a test repository
+## Get a test repository
 
 You need a functioning test Git repository. One that exists locally and remotely on GitHub, with the local repo tracking the remote. If you just setup [Git with GitHub](git04.html), you have a test repository. If you setup [Git to work within RStudio](git05.html), you have a test repository. If you already deleted those repositories, set one of them back up again.
 
@@ -43,27 +45,27 @@ benjamin-laptop:Github benjamin $ git branch -vv
 
 We want to see that fetch and push are set to remote URLs that point to your GitHub repo. We also want to see that your local master branch has your GitHub master branch as upstream remote. Gibberish? Just check that your output looks similar to this.
 
-# Verify Git is up-to-date
+## Verify Git is up-to-date
 
 In a shell, enter `git --version` and verify that you have 1.7.10 or newer. If you don't, update Git.
 
-# Turn on the credential helper
+## Turn on the credential helper
 
-## Windows
+### Windows
 
 In the shell, enter `git config --global credential.helper wincred`
 
-## Mac
+### Mac
 
 Find out if the credential helper is already installed. In the shell, enter `git credential-osxkeychain`. You should see something like this: `Usage: git credential-osxkeychain <get|store|erase>`. If you do not, follow step 2 on the [GitHub help page](https://help.github.com/articles/caching-your-github-password-in-git/#platform-mac).
 
 Once you’ve confirmed you have the credential helper, enter `git config --global credential.helper osxkeychain`.
 
-## Linux
+### Linux
 
 In the shell, enter `git config --global credential.helper 'cache --timeout=10000000'` to store your password for ten million seconds (that's roughly 16 weeks).
 
-# Trigger a username/password challenge
+## Trigger a username/password challenge
 
 Change a file in your local repo and commit it. Do that however you wish. Here are shell commands that will work:
 
@@ -91,12 +93,12 @@ You should NOT be asked for your username and password, instead you should see `
 
 Rejoice and close the shell. From now on your "Push" button in RStudio will just work.
 
-# More options: SSH
+## More options: SSH
 
 Secure Shell (SSH) is an alternative method for authenticating trusted computers without using a password. There are some benefits to this approach over HTTPS, however it is generally more complicated to initially set up. If you wish to use this approach, see [here](https://help.github.com/articles/generating-an-ssh-key/) for instructions on generating an SSH key and pairing it with your GitHub account.
 
-# Acknowledgments {.toc-ignore}
+### Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
-```
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
 * ["Chapter 10: Cache credentials for HTTPS" from Happy Git and GitHub for the useR](https://happygitwithr.com/credential-caching.html)
