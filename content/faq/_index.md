@@ -1,11 +1,17 @@
 ---
-date: "2018-06-28T00:00:00-05:00"
+date: "2018-09-09T00:00:00-05:00"
 draft: false
-title: FAQ
+menu:
+  faq:
+    name: Overview
+    weight: 1
+title: "FAQ"
+toc: true
+type: docs
 aliases: "/faq.html"
 ---
 
-# Should I take this course?
+## Should I take this course?
 
 This course is open to any graduate (or advanced undergraduate) at UChicago. I anticipate drawing students from a wide range of departments such as Sociology, Psychology, Political Science, Comparative Human Development, and MAPSS. Typically these students are looking to learn basic computational and analytical skills they can apply to master's theses or dissertation research.
 
@@ -23,7 +29,7 @@ A highly selective sampling of feedback from past course evaluations:
 
 > It's really damn helpful if you want to do any sort of social science research. It's helpful to know how to do any sort of coding just going into the job market with any degree.
 
-# What do I need for this course?
+## What do I need for this course?
 
 **You will need to bring a computer to class each day.** Class sessions are a mix of lecture, demonstration, and live coding. It is essential to have a computer so you can follow along and complete the exercises.
 
@@ -65,7 +71,7 @@ By the end of the first week (or even better, before the course starts), you sho
 
 Comprehensive instructions for downloading and setting up this software can be found [here](setup00.html).
 
-# How will I be evaluated?
+## How will I be evaluated?
 
 Each week students will complete a series of programming assignments linked to lecture materials. These assignments will generally be due the following week prior to Monday's class. Weekly lab sessions will be held to assist students in completing these assignments. While students are encouraged to assist one another in debugging programs and solving problems in these assignments, it is imperative students also learn how to do this for themselves. That is, **students need to understand, write, and submit their own work.**
 
