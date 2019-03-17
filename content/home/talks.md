@@ -19,7 +19,7 @@ design:
   background: {}
   view: 2
 subtitle: ""
-title: Recent & Upcoming Talks
+title: Recent & Upcoming Classes
 weight: 70
 widget: pages
 ---
