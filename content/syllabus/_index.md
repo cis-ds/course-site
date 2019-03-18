@@ -4,4 +4,5 @@ header:
   image: ""
 title: Syllabus
 view: 2
+type: talk
 ---
