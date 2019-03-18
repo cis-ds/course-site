@@ -11,6 +11,7 @@ alias: ["/cm018.html"]
 #   End time can optionally be hidden by prefixing the line with `#`.
 time_start: 2019-05-29T13:30:00
 time_end: 2019-05-29T14:50:00
+all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
 authors: []
