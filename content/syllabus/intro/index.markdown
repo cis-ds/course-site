@@ -1,13 +1,45 @@
 ---
 title: "Introduction to computing for the social sciences"
-output: html_document
+date: 2019-04-01T13:30:00
+publishDate: 2019-03-01T13:30:00
+draft: false
+type: "talk"
+
+alias: ["/cm001.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_start: 2019-04-01T13:30:00
+time_end: 2019-04-01T14:50:00
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Overview of programming, applications to social science, reproducible research, and course logistics."
+
+# Location of event.
+location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: ""
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
 
-# cm001 - October 1, 2018
 
 ## Overview
 

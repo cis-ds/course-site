@@ -1,15 +1,45 @@
 ---
 title: "Debugging and defensive programming"
-output: html_document
+date: 2019-04-29T13:30:00
+publishDate: 2019-03-01T13:30:00
+draft: false
+type: "talk"
+
+alias: ["/cm009.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_start: 2019-04-29T13:30:00
+time_end: 2019-04-29T14:50:00
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Define computer bugs, discuss defensive programming tactics, and practice troubleshooting scripts."
+
+# Location of event.
+location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: ""
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
 
-# cm009 - ~~October 29, 2018~~ October 31, 2018
-
-![](images/great-pumpkin.jpg)
 
 ## Overview
 
