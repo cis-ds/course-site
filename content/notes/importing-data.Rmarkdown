@@ -1,9 +1,17 @@
 ---
 title: "Importing data into R"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/datawrangle_import_functions.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 6
 ---
 
 ```{r setup, include = FALSE}
@@ -19,26 +27,26 @@ theme_set(theme_minimal())
 set.seed(1234)
 ```
 
-# `readr` vs. base R
+## `readr` vs. base R
 
 ```{r data-gen, include = FALSE}
-n_row_s <- 50000
+n_row_s <- 5000
 
 data_small <- data_frame(x = sample(seq(from = 1, to = 4), n_row_s, replace = TRUE),
            y = sample(letters, n_row_s, replace = TRUE),
            z = str_c(sample(letters, n_row_s, replace = TRUE),
                      sample(seq(from = 1, to = 4), n_row_s, replace = TRUE)),
            value = rnorm(n_row_s)) %>%
-  write_csv("data/sim-data-small.csv")
+  write_csv(here("static", "data", "sim-data-small.csv"))
 
-n_row_l <- 5000000
+n_row_l <- 500000
 
 data_large <- data_frame(x = sample(seq(from = 1, to = 4), n_row_l, replace = TRUE),
            y = sample(letters, n_row_l, replace = TRUE),
            z = str_c(sample(letters, n_row_l, replace = TRUE),
                      sample(seq(from = 1, to = 4), n_row_l, replace = TRUE)),
            value = rnorm(n_row_l)) %>%
-  write_csv("data/sim-data-large.csv")
+  write_csv(here("static", "data", "sim-data-large.csv"))
 ```
 
 One of the main advantages of `readr` functions over base R functions is that [they are typically much faster](http://r4ds.had.co.nz/data-import.html#compared-to-base-r). For example, let's import a randomly generated CSV file with `r prettyNum(n_row_s, scientific = FALSE, big.mark = ",")` rows and `ncol(data_small)` columns. How long does it take `read.csv()` to import this file vs. `readr::read_csv()`? To assess the differences, we use the [`microbenchmark`](https://cran.r-project.org/web/packages/microbenchmark/) to run each function 100 times and compare the distributions of the time it takes to complete the data import:
@@ -47,14 +55,14 @@ One of the main advantages of `readr` functions over base R functions is that [t
 library(microbenchmark)
 
 results_small <- microbenchmark(
-  read.csv = read.csv(here("data", "sim-data-small.csv")),
-  read_csv = read_csv(here("data", "sim-data-small.csv"))
+  read.csv = read.csv(here("static", "data", "sim-data-small.csv")),
+  read_csv = read_csv(here("static", "data", "sim-data-small.csv"))
 )
 ```
 
 ```{r compare-speed-small-plot, dependson = "compare-speed-small", message = FALSE}
 autoplot(results_small) +
-  scale_y_log10(breaks = c(25, 50, 100)) +
+  scale_y_log10() +
   labs(y = "Time [milliseconds], logged")
 ```
 
@@ -64,20 +72,20 @@ autoplot(results_small) +
 library(microbenchmark)
 
 results_large <- microbenchmark(
-  read.csv = read.csv(here("data", "sim-data-large.csv")),
-  read_csv = read_csv(here("data", "sim-data-large.csv"))
+  read.csv = read.csv(here("static", "data", "sim-data-large.csv")),
+  read_csv = read_csv(here("static", "data", "sim-data-large.csv"))
 )
 ```
 
 ```{r compare-speed-large-plot, dependson = "compare-speed-large", message = FALSE}
 autoplot(results_large) +
-  scale_y_log10(breaks = c(2.5, 5, 10, 20)) +
-  labs(y = "Time [seconds], logged")
+  scale_y_log10() +
+  labs(y = "Time [milliseconds], logged")
 ```
 
 Here `read_csv()` is far superior to `read.csv()`.
 
-# Alternative file formats
+## Alternative file formats
 
 CSV files, while common, are not the only type of data storage format you will encounter in the wild. Here is a quick primer on other file formats you may encounter and how to import/export them using R. We'll use the `challenge` dataset in `readr` to demonstrate some of these formats.
 
@@ -99,17 +107,17 @@ challenge
 
 ```{r rds, dependson = "challenge", message = FALSE}
 # write to csv
-write_csv(challenge, here("data", "challenge.csv"))
+write_csv(challenge, here("static", "data", "challenge.csv"))
 
 # write to/read from rds
-write_rds(challenge, here("data", "challenge.csv"))
-read_rds(here("data", "challenge.csv"))
+write_rds(challenge, here("static", "data", "challenge.csv"))
+read_rds(here("static", "data", "challenge.csv"))
 
 # compare file size
-file.info(here("data", "challenge.rds"))$size %>%
+file.info(here("static", "data", "challenge.rds"))$size %>%
   utils:::format.object_size("auto")
 
-file.info(here("data", "challenge.csv"))$size %>%
+file.info(here("static", "data", "challenge.csv"))$size %>%
   utils:::format.object_size("auto")
 
 # compare read speeds
@@ -121,7 +129,7 @@ microbenchmark(
       y = col_date()
     )
   ),
-  read_rds = read_rds(here("data", "challenge.rds"))
+  read_rds = read_rds(here("static", "data", "challenge.rds"))
 ) %>%
   autoplot +
   labs(y = "Time [microseconds], logged")
@@ -136,8 +144,8 @@ The `feather` package implements a binary file format that is cross-compatible w
 ```{r feather, dependson = "challenge", message = FALSE}
 library(feather)
 
-write_feather(challenge, here("data", "challenge.feather"))
-read_feather(here("data", "challenge.feather"))
+write_feather(challenge, here("static", "data", "challenge.feather"))
+read_feather(here("static", "data", "challenge.feather"))
 
 # compare read speeds
 microbenchmark(
@@ -148,8 +156,8 @@ microbenchmark(
       y = col_date()
     )
   ),
-  read_rds = read_rds(here("data", "challenge.rds")),
-  read_feather = read_feather(here("data", "challenge.feather"))
+  read_rds = read_rds(here("static", "data", "challenge.rds")),
+  read_feather = read_feather(here("static", "data", "challenge.feather"))
 ) %>%
   autoplot +
   scale_y_continuous(labels = scales::comma) +
@@ -191,22 +199,22 @@ library(haven)
 
 # SAS
 read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
-write_sas(mtcars, here("data", "mtcars.sas7bdat"))
+write_sas(mtcars, here("static", "data", "mtcars.sas7bdat"))
 
 # SPSS
 read_sav(system.file("examples", "iris.sav", package = "haven"))
-write_sav(mtcars, here("data", "mtcars.sav"))
+write_sav(mtcars, here("static", "data", "mtcars.sav"))
 
 # Stata
 read_dta(system.file("examples", "iris.dta", package = "haven"))
-write_dta(mtcars, here("data", "mtcars.dta"))
+write_dta(mtcars, here("static", "data", "mtcars.dta"))
 ```
 
 That said, if you can obtain your data file in a plain `.csv` or `.tsv` file format, **I strongly recommend it**. SAS, SPSS, and Stata files represent labeled data and missing values differently from R. `haven` attempts to bridge the gap and preserve as much information as possible, but I frequently find myself stripping out all the label information and rebuilding it using `dplyr` functions and the codebook for the data file.
 
 > Need to import a SAS, SPSS, or Stata data file? Read [the documentation](http://haven.tidyverse.org/articles/semantics.html) to learn how to best handle value labels and missing values.
 
-# Session Info {.toc-ignore}
+## Session Info
 
-```{r child='_sessioninfo.Rmd'}
+```{r child = here::here("R", "_session-info.Rmd")}
 ```
