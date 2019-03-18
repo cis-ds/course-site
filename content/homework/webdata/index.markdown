@@ -1,7 +1,17 @@
 ---
-title: "Homework 08: Collecting and analyzing data from the web"
-output: html_document
+title: "HW08: Collecting and analyzing data from the web"
+date: 2019-05-20T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: false
+type: post
+alias: ["/hw08-webdata.html"]
+
+summary: "Collect data from the web and analyze it."
+url_code: "https://github.com/uc-cfss/hw08"
 ---
+
+
 
 # Overview
 
@@ -26,21 +36,7 @@ Go [here](https://github.com/uc-cfss/hw08) to fork the repo for homework 08.
 
 We've examined the `gapminder` data quite a bit. One relationship we've looked at (or are about to) is the relationship between population and life expectancy.
 
-```{r, message = FALSE}
-library(tidyverse)
-library(gapminder)
-
-gapminder %>%
-  # convert to population in millions
-  mutate(pop = pop / 1000000) %>%
-  ggplot(aes(pop, lifeExp)) +
-  geom_point(alpha = .2) +
-  geom_smooth() +
-  scale_x_log10() +
-  labs(title = "As population increases, life expectancy increases",
-       x = "Population (in millions)",
-       y = "Average life expectancy")
-```
+<img src="/homework/webdata/index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 For the assignment, I want you to replace **population** with **population density** and evaluate its relationship with average life expectancy. To do this:
 
@@ -82,7 +78,7 @@ Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (b
 
 Check plus: Estimate a statistical model for the `gapminder` question, or do something beyond producing a graph. Implement an advanced statistical learning model or extensive exploratory analysis. Write an API function that uses authentication.
 
-### Acknowledgments {.toc-ignore}
+### Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
-```
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

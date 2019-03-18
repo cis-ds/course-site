@@ -1,7 +1,17 @@
 ---
-title: "Homework 03: Wrangling and visualizing data"
-output: html_document
+title: "HW03: Wrangling and visualizing data"
+date: 2019-04-15T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: false
+type: post
+alias: ["/hw03-wrangle-data.html"]
+
+summary: "Wrangle and explore messy datasets in practical research environments."
+url_code: "https://github.com/uc-cfss/hw03"
 ---
+
+
 
 # Overview
 
@@ -17,12 +27,14 @@ Go [here](https://github.com/uc-cfss/hw03) to fork the repo for homework 03.
 
 In the `rcfss` package, there is a data frame called `dadmom`.
 
-```{r, echo = FALSE, message = FALSE}
-library(tidyverse)
-library(rcfss)
 
-data("dadmom")
-dadmom
+```
+## # A tibble: 3 x 5
+##   famid named  incd namem  incm
+##   <dbl> <chr> <dbl> <chr> <dbl>
+## 1     1 Bill  30000 Bess  15000
+## 2     2 Art   22000 Amy   18000
+## 3     3 Paul  25000 Pat   50000
 ```
 
 Tidy this data frame so that it adheres to the tidy data principles:

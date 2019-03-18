@@ -1,7 +1,17 @@
 ---
-title: "Homework 06: Statistical learning"
-output: html_document
+title: "HW06: Statistical learning"
+date: 2019-05-06T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: false
+type: post
+alias: ["/hw06-stat-learn.html"]
+
+summary: "Implement statistical learning methods for regression and classification."
+url_code: "https://github.com/uc-cfss/hw06"
 ---
+
+
 
 # Overview
 
@@ -15,7 +25,7 @@ Go [here](https://github.com/uc-cfss/hw06) to fork the repo for homework 06.
 
 ![Former Vice President Joe Biden eating an ice cream cone](images/biden.jpg)
 
-<iframe width="853" height="480" src="https://www.youtube.com/embed/NvbMB_GGR6s?rel=0" frameborder="0" allowfullscreen></iframe>
+{{< youtube NvbMB_GGR6s >}}
 
 Using statistical learning and data from the [2008 American National Election Studies survey](http://www.electionstudies.org/), evaluate whether or not Leslie Knope's attitudes towards Joe Biden are part of a broader trend within the American public. Specifically, do women display higher feeling thermometer ratings for Joe Biden than men?^[Feeling thermometers are a common metric in survey research used to gauge attitudes or feelings of warmth towards individuals and institutions. They range from 0-100, with 0 indicating extreme coldness and 100 indicating extreme warmth.] `biden.csv` contains a selection of variables from the larger survey that also allow you to test competing factors that may influence attitudes towards Joe Biden.
 

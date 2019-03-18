@@ -1,7 +1,17 @@
 ---
-title: "Homework 07: Distributed learning and geospatial visualization"
-output: html_document
+title: "HW07: Distributed learning and geospatial visualization"
+date: 2019-05-13T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: true
+type: post
+alias: ["/hw07-distrib-learn-geospatial.html"]
+
+summary: "Implement statistical learning via sparklyr and build a map."
+url_code: "https://github.com/uc-cfss/hw07"
 ---
+
+
 
 # Overview
 
@@ -16,7 +26,7 @@ Go [here](https://github.com/uc-cfss/hw07) to fork the repo for homework 07.
 [Last week](hw06-stat-learn.html) you estimated statistical learning models predicting survival and death on the Titanic. Take the model specification for your best-performing model from the Titanic problem, and estimate it using at least three machine learning algorithms in `sparklyr` (either MLlib or H2O). Calculate the accuracy and AUC metrics for each model. Which algorithm performs the best?
 
 * If you use an `ml_()` function, you need to split the data into training/test sets
-* If you use an `h2o.()` function, you need to either split the data into training/test sets or use $k$-fold CV
+* If you use an `h2o.()` function, you need to either split the data into training/test sets or use `\(k\)`-fold CV
 
 # Part 2: Generating geospatial visualization
 

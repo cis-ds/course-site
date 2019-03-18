@@ -1,7 +1,17 @@
 ---
-title: "Homework 05: Generating reproducible research"
-output: html_document
+title: "HW05: Generating reproducible research"
+date: 2019-04-29T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: false
+type: post
+alias: ["/hw05-reproducible-research.html"]
+
+summary: "Synthesize everything we have learned thus far."
+url_code: "https://github.com/uc-cfss/hw05"
 ---
+
+
 
 # Overview
 
@@ -111,8 +121,7 @@ Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (b
 
 Check plus: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Displays innovative data analysis or coding skills. Graphs and tables are well labeled. Excellent implementation of a consistent style guide. Analysis is insightful. I walk away feeling I learned something.
 
-### Acknowledgments {.toc-ignore}
+### Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
-```
 
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

@@ -1,7 +1,17 @@
 ---
-title: "Homework 04: Programming in R"
-output: html_document
+title: "HW04: Programming in R"
+date: 2019-04-22T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: false
+type: post
+alias: ["/hw04-programming.html"]
+
+summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
+url_code: "https://github.com/uc-cfss/hw04"
 ---
+
+
 
 # Overview
 
@@ -18,17 +28,18 @@ Go [here](https://github.com/uc-cfss/hw04) to fork the repo for homework 04.
     1. Write code that uses one of the `map` functions to do this task.
 1. Calculate the square of each element in vector `x`:
 
-    ```{r x}
-    x <- seq(from = 1, to = 30)
-    x
+    
+    ```
+    ##  [1]  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+    ## [24] 24 25 26 27 28 29 30
     ```
     
     1. Write code that uses a `for` loop to do this task.
     1. Write code that uses one of the `map` functions to do this task.
 1. [Pythagorean theorem](https://en.wikipedia.org/wiki/Pythagorean_theorem)
-    $$a^2 + b^2 = c^2$$
+    `$$a^2 + b^2 = c^2$$`
     * Write a function that, given the lengths of two sides of the triangle, calculates the length of the third side
-    * This function should be flexible - that is, the function works if I give it values for $a$ and $b$, or $b$ and $c$, or $a$ and $c$
+    * This function should be flexible - that is, the function works if I give it values for `\(a\)` and `\(b\)`, or `\(b\)` and `\(c\)`, or `\(a\)` and `\(c\)`
     * If the user only provides the length of one side, the function should [throw an error with `stop()`](http://r4ds.had.co.nz/functions.html). Likewise, if the user provides the lengths of all three sides, the function should throw an error.
     * If the user provides any values other than numeric values, the function should throw an error
 

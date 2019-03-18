@@ -1,7 +1,17 @@
 ---
-title: "Homework 02: Exploring and visualizing data"
-output: html_document
+title: "HW02: Exploring and visualizing data"
+date: 2019-04-08T13:30:00-06:00  # Schedule page publish date
+publishdate: 2019-04-01
+
+draft: false
+type: post
+alias: ["/hw02-explore-data.html"]
+
+summary: "Transform and explore a cleaned dataset on gun deaths in the United States."
+url_code: "https://github.com/uc-cfss/hw02"
 ---
+
+
 
 # Overview
 
@@ -61,28 +71,46 @@ This is just a starting point. Consider adopting your own color scales, [taking 
 
 When presenting tabular data (aka `dplyr::summarize()`), make sure you format it correctly. Use the `kable()` function from the `knitr` package to format the table for the final document. For instance, this is a poorly presented table summarizing where gun deaths occurred:
 
-```{r packages, message = FALSE}
-library(tidyverse)
-library(knitr)
-library(rcfss)
-```
 
-```{r table-bad}
-# calculate total gun deaths by location
-count(gun_deaths, place)
+
+
+```
+## # A tibble: 11 x 2
+##    place                       n
+##    <chr>                   <int>
+##  1 <NA>                     1384
+##  2 Farm                      470
+##  3 Home                    60486
+##  4 Industrial/construction   248
+##  5 Other specified         13751
+##  6 Other unspecified        8867
+##  7 Residential institution   203
+##  8 School/instiution         671
+##  9 Sports                    128
+## 10 Street                  11151
+## 11 Trade/service area       3439
 ```
 
 Instead, use `kable()` to format the table, add a caption, and label the columns:
 
-```{r table-good}
-count(gun_deaths, place) %>%
-  kable(caption = "Gun deaths in the United States (2012-2014), by location",
-        col.names = c("Location", "Number of deaths"))
-```
+
+|Location                | Number of deaths|
+|:-----------------------|----------------:|
+|NA                      |             1384|
+|Farm                    |              470|
+|Home                    |            60486|
+|Industrial/construction |              248|
+|Other specified         |            13751|
+|Other unspecified       |             8867|
+|Residential institution |              203|
+|School/instiution       |              671|
+|Sports                  |              128|
+|Street                  |            11151|
+|Trade/service area      |             3439|
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub `r emo::ji("sad")`
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😩
 
 # Submit the assignment
 
