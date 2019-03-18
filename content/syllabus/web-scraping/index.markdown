@@ -1,0 +1,67 @@
+---
+title: "Getting data from the web: scraping"
+date: 2019-05-22T13:30:00
+publishDate: 2019-03-01T13:30:00
+draft: false
+type: "talk"
+
+alias: ["/cm016.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_start: 2019-05-22T13:30:00
+time_end: 2019-05-22T14:50:00
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Practice scraping content from web pages using rvest."
+
+# Location of event.
+location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: ""
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
+---
+
+
+
+## Overview
+
+* Define HTML and CSS selectors
+* Introduce the `rvest` package
+* Demonstrate how to extract information from HTML pages
+* Demonstrate how to extract tables and convert to data frames
+* Practice scraping data
+
+## Before class
+
+## Slides and links
+
+* [Slides](extras/cm016_slides.html)
+* [Web scraping](webdata005_scraping.html)
+
+* `rvest`
+    * Load the library (`library(rvest)`)
+    * `demo("tripadvisor")` - scraping a Trip Advisor page
+    * `demo("united")` - how to scrape a web page which requires a login
+    * [Scraping IMDB](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
+
+## What you need to do
+
+* Start [homework 8](hw08-webdata.html)

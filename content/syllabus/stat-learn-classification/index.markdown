@@ -1,0 +1,78 @@
+---
+title: "Statistical learning: classification and cross-validation"
+date: 2019-05-08T13:30:00
+publishDate: 2019-03-01T13:30:00
+draft: false
+type: "talk"
+
+alias: ["/cm012.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_start: 2019-05-08T13:30:00
+time_end: 2019-05-08T14:50:00
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Introduce tree-based classification and demonstrate cross-validation."
+
+# Location of event.
+location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: ""
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
+---
+
+
+
+## Overview
+
+* Define a decision tree
+* Demonstrate how to estimate a decision tree
+* Define and estimate a random forest
+* Introduce the `caret` package for statistical learning in R
+* Define resampling method
+* Compare and contrast the validation set approach with leave-one-out and `\(k\)`-fold cross-validation
+* Demonstrate how to conduct cross-validation using `rsample`
+
+## Before class
+
+This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
+
+##### For those with little/no statistics training
+
+* Chapters 1-2, 4 in [Machine Learning with Tree-Based Models in R](https://www.datacamp.com/courses/machine-learning-with-tree-based-models-in-r) - a DataCamp course
+    * If you have not yet created an account on DataCamp, [go here to create your DataCamp account](https://www.datacamp.com/groups/shared_links/ed65341d4657ce236e87a5a953dbfc3fa3aa4225). You must use your UChicago email address or that link will not work.
+
+##### For those with prior statistics training
+
+* Chapters 8.1, 8.2.2, and 5.1 in [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7)
+
+## Slides and links
+
+* [Slides](extras/cm012_slides.html)
+* [Decision trees and random forests](stat004_decision_trees.html)
+* [Resampling methods](stat005_resampling.html)
+
+* [The `caret` Package](https://topepo.github.io/caret/) - introductory book for the `caret` package. Tells you what models you can implement and all the nitty-gritty details to customize `train` for different cross-validation methods.
+* [Working with `rset`s](https://tidymodels.github.io/rsample/articles/Working_with_rsets.html) - documentation for `rsample` and demonstration implementing it for resampling and model assessment
+
+## What you need to do
+
+* [Start homework 6](hw06-stat-learn.html)

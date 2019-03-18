@@ -1,13 +1,45 @@
 ---
 title: "Getting data from the web: API access"
-output: html_document
+date: 2019-05-20T13:30:00
+publishDate: 2019-03-01T13:30:00
+draft: false
+type: "talk"
+
+alias: ["/cm015.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_start: 2019-05-20T13:30:00
+time_end: 2019-05-20T14:50:00
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Define an application program interface, write functions to query APIs, and practice tidying JSON objects."
+
+# Location of event.
+location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: ""
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(cache=TRUE)
-```
 
-# cm015 - November 19, 2018
 
 ## Overview
 
