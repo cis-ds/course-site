@@ -9,7 +9,7 @@ content:
     category: ""
     exclude_featured: false
     exclude_future: false
-    exclude_past: false
+    exclude_past: true
     publication_type: ""
     tag: ""
   offset: 0
@@ -19,7 +19,7 @@ design:
   background: {}
   view: 2
 subtitle: ""
-title: Recent & Upcoming Classes
+title: Upcoming Classes
 weight: 70
 widget: pages
 ---
