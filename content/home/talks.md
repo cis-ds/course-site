@@ -1,10 +1,10 @@
 ---
-active: false
+active: true
 advanced:
   css_class: ""
   css_style: ""
 content:
-  count: 5
+  count: 3
   filters:
     category: ""
     exclude_featured: false
@@ -13,7 +13,7 @@ content:
     publication_type: ""
     tag: ""
   offset: 0
-  order: desc
+  order: asc
   page_type: talk
 design:
   background: {}

@@ -5,4 +5,6 @@ header:
 title: Syllabus
 view: 2
 type: talk
+
+aliases: ["/syllabus/"]
 ---
