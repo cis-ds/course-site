@@ -1,29 +1,31 @@
 ---
-title: "Introduction to computing for the social sciences"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+title: "Introduction to the course"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/intro.html"]
+categories: []
+
+menu:
+  notes:
+    parent: Overview
+    weight: 1
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
-```
 
-# Introduction to the course
 
-## Me (Dr. Benjamin Soltoff)
+## Who am I?
+
+### Me (Dr. Benjamin Soltoff)
 
 I am a lecturer in the [Masters in Computational Social Science](http://macss.uchicago.edu) program. I earned my PhD in political science from [Penn State University](http://polisci.la.psu.edu/) in 2015. [My research interests](https://www.bensoltoff.com) focus on judicial politics, state courts, and agenda-setting. Methodologically I am interested in statistical learning and text analysis. I was first drawn to programming in grad school, starting out in [Stata](http://www.stata.com/) and eventually making the transition to [R](https://www.r-project.org/) and [Python](https://www.python.org/). I learned these programming languages out of necessity - I needed to process, analyze, and code tens of thousands of judicial opinions and extract key information into a tabular format. I am not a computer scientist. I am a social scientist who uses programming and computational tools to answer my research questions.
 
-## Teaching assistants
+### Teaching assistants
 
 * Cristina Sakamoto
 * Mayank Jindal
-
-## Course website
-
-Go to https://cfss.uchicago.edu for the course site. This contains the course objectives, required readings, schedules, slides, etc.
 
 ## Course objectives
 
@@ -46,17 +48,43 @@ We will cover many different topics in this course, including:
 
 This is a hands-on class. You will learn by writing programs and analysis. Don't fear the word "program". A program can be as simple as:
 
-```{r hello-world}
+
+```r
 print("Hello world")
+```
+
+```
+## [1] "Hello world"
 ```
 
 > One line of code, and it performs a very specific task (print the phrase "Hello world" to the screen)
 
 More typically, your programs will perform statistical and graphical analysis on data of a variety of forms. For example, here I analyze a dataset of automobiles to assess the relationship between engine displacement and highway mileage:
 
-```{r auto-example}
+
+```r
 # load packages
 library(tidyverse)
+```
+
+```
+## ── Attaching packages ─────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+```
+
+```
+## ✔ ggplot2 3.1.0       ✔ purrr   0.3.2  
+## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
+## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
+## ✔ readr   1.3.1       ✔ forcats 0.4.0
+```
+
+```
+## ── Conflicts ────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::lag()    masks stats::lag()
+```
+
+```r
 library(broom)
 
 # estimate and print the linear model
@@ -66,7 +94,16 @@ lm(hwy ~ displ, data = mpg) %>%
   knitr::kable(digits = 2,
                col.names = c("Variable", "Estimate", "Standard Error",
                              "T-statistic", "P-Value"))
+```
 
+
+
+|Variable                        | Estimate| Standard Error| T-statistic| P-Value|
+|:-------------------------------|--------:|--------------:|-----------:|-------:|
+|Intercept                       |    35.70|           0.72|       49.55|       0|
+|Engine displacement (in liters) |    -3.53|           0.19|      -18.15|       0|
+
+```r
 # visualize the relationship
 ggplot(data = mpg, aes(displ, hwy)) + 
   geom_point(aes(color = class)) +
@@ -77,30 +114,31 @@ ggplot(data = mpg, aes(displ, hwy)) +
   theme_bw(base_size = 16)
 ```
 
+<img src="/notes/intro-to-course_files/figure-html/auto-example-1.png" width="672" />
+
 But we will start small to build our way up to there.
 
 Class sessions will include a combination of lecture and live-coding. **You need to bring a laptop to class to follow along**, but all class materials (including slides and notes) will be made available before/after class for your review. The emphasis of the class is on application and learning how to implement different computational techniques. However we will sometimes read and discuss examples of interesting and relevant scholarly research that demonstrates the capabilities and range of computational social science.
 
 Lab sessions will be held each Wednesday immediately following class. I strongly encourage you to attend these sessions. Myself or the TA will be available to assist you as you practice specific skills or encounter problems completing the homework assignments.
 
-### Complete the readings
+## Complete the readings
 
 Each class will have assigned readings. **You need to complete these before coming to class.** I will assume you have done so and have at least a basic understanding of the material. My general structure for the class is to spend the first 15-30 minutes lecturing, then the remaining time practicing skills via live-coding and in-class exercises. If you do not come to class prepared, then there is no point in coming to class.
 
-### 15 minute rule
+## 15 minute rule
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/ZS8QHRtzcPg?rel=0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+{{< youtube ZS8QHRtzcPg >}}
 
 You will fail in this class. You will stumble, you will get lost, confused, not understand how to perform a task, not understand why your code is generating an error. But as Alfred so helpfully points out to Bruce Wayne, do not fall to pieces when you fail. Instead, learn to pick yourself up, recover, and learn from the experience. Consider this a lesson not only for this class, but graduate school in general.
 
-<blockquote class="twitter-tweet" data-lang="en"><p lang="en" dir="ltr">15 min rule: when stuck, you HAVE to try on your own for 15 min; after 15 min, you HAVE to ask for help.- Brain AMA <a href="https://t.co/MS7FnjXoGH">pic.twitter.com/MS7FnjXoGH</a></p>&mdash; Rachel Thomas (@math_rachel) <a href="https://twitter.com/math_rachel/status/764931533383749632">August 14, 2016</a></blockquote>
-<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+{{< tweet 764931533383749632 >}}
 
 We will follow the **15 minute rule** in this class. If you encounter a problem in your assignments, spend 15 minutes troubleshooting the problem on your own. Make use of [Google](https://www.google.com) and [StackOverflow](http://stackoverflow.com/) to resolve the error. However, if after 15 minutes you still cannot solve the problem, **ask for help**. We will use [GitHub to ask and answer class-related questions](https://github.com/uc-cfss/Discussion).
 
 > Check out [this guide on how to properly ask questions, including tips and details on what information you should include in your post](hw00_asking_questions.html)
 
-### Plagiarism
+## Plagiarism
 
 I am trying to balance two competing perspectives:
 
@@ -113,47 +151,47 @@ The point is that collaboration in this class is good - **to a point**. You are 
 
 *The bottom line* - if you don't understand what the program is doing and are not prepared to explain it in detail, you should not submit it.
 
-### Evaluations
+## Evaluations
 
 Each week you will complete a series of programming assignments linked to lecture materials. These assignments will generally be due the following week prior to Monday's class. Weekly lab sessions will be held to assist students in completing these assignments. Assignments will initially come with starter code, or an initial version of the program where you need to fill in the blanks to make it work. As the quarter moves on and your skills become more developed, I will provide less help upfront.
 
 Each assignment will be evaluated by myself or the TA, as well as by *two peers*. Peer review is a crucial element to this course, in that by [eating each other's dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food) you will learn to read, debug, and reproduce code and analysis. And while I and the TA are competent users in R, your classmates are not - so make sure your code is [well-documented](intro.html#documentation) so that others with basic knowledge of programming and R can follow along and reuse your code. Be sure to read the instructions for [peer review](hw00_peer-review.html) so you know how to provide useful feedback.
 
-# The computational social science workflow
+## The computational social science workflow
 
-![Data science workflow. Source: [R for Data Science](http://r4ds.had.co.nz/) by Garrett Grolemund and Hadley Wickham.](images/data-science.png)
+![Data science workflow. Source: [R for Data Science](http://r4ds.had.co.nz/) by Garrett Grolemund and Hadley Wickham.](/img/data-science.png)
 
 Computationally driven research follows a specific workflow. This is the ideal - in this course, I want to illustrate and explain to you why each stage is important and how to do it.
 
-## Import
+### Import
 
 First you need to get your data into whatever software package you will use to analyze it. Most of us are familiar with data stored in flat files (e.g. spreadsheets). However a lot of interesting data cannot be obtained in a single specific and simple format. Information you need could be stored in a database, or a web API, or even (god forbid) **printed books**. You need to know how to convert/extract information into your software package of choice.
 
-## Tidy
+### Tidy
 
 Tidying your data means to store it in a standardized form that enables the use of a standard library of functions to analyze the data. When your data is tidy, each column is a variable, and each row is an observation. By storing data in a consistent structure, you can focus your efforts on questions about the data and not constantly wrangling the data into different forms. Contrary to what you might expect, much of a researcher's time is spent wrangling and cleaning data into a tidy format for analysis. While not glamorous, tidying is an important stage.
 
-## Transform
+### Transform
 
 Transforming data can take on different tasks. Typically these include subsetting the data to focus on one specific set of observations, creating new variables that are functions of existing variables, or calculating summary statistics for the data.
 
-## Visualize
+### Visualize
 
 Humans love to visualize information, as it reduces the complexity of the data into an easily interpretable format. There are many different ways to visualize data - knowing how to create specific graphs is important, but even more so is the ability to determine what visualizations are appropriate given the variables you wish to analyze.
 
-## Model
+### Model
 
 Models complement visualizations. While visualizations are intuitive, they do not scale well to complex relationships. Visualizing two (or even three) variables is a straightforward exercise, but once you are dealing with four or more variables visualizations become pointless. Models are fundamentally mathemetical, so they scale well to many variables. However all models make assumptions about the form of relationships, so if you choose an inappropriate functional form the model will not tell you that you are wrong.
 
-## Communicate
+### Communicate
 
 All of the above work will be for naught if you fail to communicate your project to a larger audience. You need to not only understand your data, but also communicate your results to others so that the community can learn from your knowledge.
 
-## Programming
+### Programming
 
 Programming is the tool that encompasses all of the previous stages. You can use programming in all facets of your project. You do not need to be an expert programmer to be a computational social scientist, but learning to program will make your life **much easier**.
 
-# Basic principles of programming
+## Basic principles of programming
 
 A **program** is a series of instructions that specifies how to perform a computation.^[[Downey, Allen. 2012. *Think Python*. 2nd ed.](http://proquestcombo.safaribooksonline.com.proxy.uchicago.edu/book/programming/python/9781491939406)]
 
@@ -171,21 +209,21 @@ Virtually all programs are built using these fundamental components. Obviously t
 
 A **graphical user interface (GUI)** is a visual way of interacting with a computer using elements such as a mouse, icons, and menus.
 
-![Windows 3.1](images/windows_3.1.png)
+![Windows 3.1](/img/windows_3.1.png)
 
-![Mac OSX](images/mac_os_x.png)
+![Mac OSX](/img/mac_os_x.png)
 
-![Android operating system](images/android_phones.jpg)
+![Android operating system](/img/android_phones.jpg)
 
 GUI software runs using all the basic programming elements, but the end user is not aware of any of this. Instructions in GUI software are **implicit** to the user, whereas programming requires the user to make instructions **explicit**.
 
-![Programming in [the shell](shell.html)](images/shell.png)
+![Programming in [the shell](shell.html)](/img/shell.png)
 
 ## Benefits to programming vs. GUI software
 
 Let's demonstrate why you should want to learn to program.^[Example drawn from [*Code and Data for the Social Sciences: A Practitioner's Guide*](https://people.stanford.edu/gentzkow/sites/default/files/codeanddata.pdf).] What are the advantages over GUI software, such as Stata?
 
-![Stata](images/stata14.png)
+![Stata](/img/stata14.png)
 
 Here is a hypothetical assignment for a UChicago undergrad:
 
@@ -197,7 +235,7 @@ Let's see how two students (Jane and Sally) would complete this. Jane will use s
 
 1. Jane finds data files online with total annual ice cream sales in the 50 largest U.S. cities from 2001-2010 and total numbers of crimes (by type) for the 50 largest U.S. cities from 2001-2010. She gets them as spreadsheets and downloads them to her computer, saving them in her main `Downloads` folder which includes everything she's downloaded over the past three years. It probably looks something like this:
 
-    ![](images/downloads_folder.png)
+    ![](/img/downloads_folder.png)
 
 1. Jane opens the files in Excel.
     * Ice cream sales - frozen yogurt is not ice cream. She deletes the column for frozen yogurt sales.
@@ -223,7 +261,7 @@ Let's see how two students (Jane and Sally) would complete this. Jane will use s
 1. Sally creates an [R Markdown](http://rmarkdown.rstudio.com) document for her report and analysis. Because R Markdown combines both code and text, the results from step 3 are automatically added into the final report.
 1. Sally submits the report to the professor. Done!
 
-### Automation
+## Automation
 
 The professor is impressed with Jane and Sally's findings, but wants them to verify the results using new data files for ice cream **and frozen yogurt** sales and crime rates for 2011-2015 before he will determine their grade.
 
@@ -233,7 +271,7 @@ Sally's computational workflow is much better suited to the professor's request 
 
 By automating her workflow, Sally can quickly update her results. Jane has to do all the same work again. Data cleaning alone is a non-trivial challenge for Jane. And the more data files in a project, the more work that has to be done. Sally's program makes cleaning the data files trivial - if she wants to clean the data again, she simply runs the program again.
 
-### Reproducibility
+## Reproducibility
 
 Previously researchers focused on **replication** - can the results be duplicated in a new study with different data? In science it is difficult to replicate articles and research, in part because authors don't provide enough information to easily replicate experiments and studies. Institutional biases also exist against replication - no one wants to publish it, and authors don't like to have their results challenged.
 
@@ -241,7 +279,7 @@ Previously researchers focused on **replication** - can the results be duplicate
 
 Because Jane forgot how she initially filtered the data files, she cannot replicate her original results, much less update them with the new data. There is no way to definitively prove how she got her initial results. And even if Jane does remember, she still has to do the work of cleaning the data all over again. Sally's work is reproducible because she still has all the original data files. Any changes to the files, as well as analysis, are created in the programs she wrote. To reproduce her results, all she needs to do is run the programs again. Anyone who wishes to verify her results can implement her code to reproduce them.
 
-### Version control
+## Version control
 
 Research projects involve lots of edits and revisions, and not just in the final paper. Researchers make lots of individual decisions when writing programs and conducting analysis. Why filter this set of rows and not this other set? Do I compute traditional or robust standard errors?
 
@@ -264,7 +302,7 @@ Or in conjunction with remote servers to store backups of your repository:
 
 If Jane wanted to rollback to an earlier implementation of her linear regression model, she'd have to remember exactly what her settings were. However all Sally needs to do is use VCS when she revises her programs. Then to rollback to an earlier model formulation she just needs to find the earlier version of her program which generates that model.
 
-### Documentation
+## Documentation
 
 Programs include **comments** which are ignored by the computer but are intended for humans reading the code to understand what it does. So if you decide to ignore frozen yogurt sales, you can include this comment in your code to explain why the program drops that column from the data.
 
@@ -274,11 +312,12 @@ Computer code should also be **self-documenting**. That is, the code should be c
 
 Comments are not just for other people reading your code, but also for yourself. The goal here is to future-proof your code. That is, future you should be able to open a program and understand what the code does. If you do not include comments and/or write the code in an interpretable way, you will forget how it works.
 
-#### Badly documented code
+### Badly documented code
 
 This is an example of badly documented code.
 
-```{r sesame-bad, eval = FALSE}
+
+```r
 library(tidyverse)
 library(rtweet)
 tmls <- get_timeline(c("MeCookieMonster", "Grover", "elmo", "CountVonCount"), 3000)
@@ -291,11 +330,12 @@ ts_plot(group_by(tmls, screen_name), "weeks")
 
 This program, although it works, is entirely indecipherable unless you are the original author (and even then you may not fully understand it).
 
-#### Good code
+### Good code
 
 This is a rewritten version of the previous program. Note that it does the exact same thing, but is much more comprehensible.
 
-```{r sesame-good, eval = FALSE}
+
+```r
 # get_to_sesame_street.R
 # Program to retrieve recent tweets from Sesame Street characters
 
@@ -315,16 +355,107 @@ tmls %>%
   ts_plot(by = "weeks")
 ```
 
-```{r sesame-good, echo = FALSE, message = FALSE}
+<img src="/notes/intro-to-course_files/figure-html/sesame-good-1.png" width="672" />
+
+## Session Info
+
+
+
+```r
+devtools::session_info()
 ```
 
-# Software setup instructions
-
-* [Installing software](setup00.html)
-* Local installation
-* RStudio Server
-
-# Session Info {.toc-ignore}
-
-```{r child='_sessioninfo.Rmd'}
+```
+## ─ Session info ──────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 3.5.2 (2018-12-20)
+##  os       macOS Mojave 10.14.3        
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2019-03-19                  
+## 
+## ─ Packages ──────────────────────────────────────────────────────────────
+##  package     * version date       lib source        
+##  askpass       1.1     2019-01-13 [2] CRAN (R 3.5.2)
+##  assertthat    0.2.0   2017-04-11 [2] CRAN (R 3.5.0)
+##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
+##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
+##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
+##  broom       * 0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
+##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
+##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
+##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
+##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
+##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
+##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
+##  curl          3.3     2019-01-10 [2] CRAN (R 3.5.2)
+##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
+##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
+##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
+##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
+##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
+##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
+##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
+##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
+##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
+##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
+##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
+##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
+##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
+##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
+##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
+##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
+##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
+##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
+##  labeling      0.3     2014-08-23 [2] CRAN (R 3.5.0)
+##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.2)
+##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
+##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
+##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
+##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
+##  modelr        0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
+##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
+##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.2)
+##  openssl       1.2.2   2019-03-01 [2] CRAN (R 3.5.2)
+##  pillar        1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
+##  pkgbuild      1.0.2   2018-10-16 [1] CRAN (R 3.5.0)
+##  pkgconfig     2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
+##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
+##  plyr          1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
+##  prettyunits   1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
+##  processx      3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
+##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
+##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
+##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
+##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
+##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
+##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
+##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
+##  rlang         0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
+##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
+##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
+##  rstudioapi    0.9.0   2019-01-09 [1] CRAN (R 3.5.2)
+##  rtweet      * 0.6.8   2018-09-28 [2] CRAN (R 3.5.0)
+##  rvest         0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
+##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
+##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
+##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
+##  tibble      * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
+##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
+##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
+##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
+##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
+##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
+##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
+##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
+##  yaml          2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
+## 
+## [1] /Users/soltoffbc/Library/R/3.5/library
+## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library
 ```
