@@ -1,9 +1,17 @@
 ---
-title: "Spark and `sparklyr`"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+title: "Spark and sparklyr"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/distrib003_spark.html"]
+categories: ["distributed-computing"]
+
+menu:
+  notes:
+    parent: Distributed computing
+    weight: 3
 ---
 
 ```{r setup, include = FALSE}
@@ -22,11 +30,11 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-# Hadoop and Spark
+## Hadoop and Spark
 
 [Apache Hadoop](http://hadoop.apache.org/) is an open-source software library that enables distributed processing of large data sets across clusters of computers. It is highly **scalable**, in that can be loaded on a single server or spread across thousands of separate machines. It includes several modules including the Hadoop Distributed File System (HDFS) for distributed file storage, Hadoop MapReduce for parallel processing of large data sets, and [Spark](http://spark.apache.org/), a general engine for large-scale data processing, including statistical learning.
 
-# `sparklyr` {#sparklyr}
+## `sparklyr` {#sparklyr}
 
 Learning to use Hadoop and Spark can be very complicated. They use their own programming language to specify functions and perform operations. In this class, we will interact with Spark through [`sparklyr`](http://spark.rstudio.com/), a package in R from the same authors of RStudio and the `tidyverse`. This allows us to:
 
@@ -36,7 +44,7 @@ Learning to use Hadoop and Spark can be very complicated. They use their own pro
 
 See [here](http://spark.rstudio.com/) for more detailed instructions for setting up and using `sparklyr`.
 
-## Installation
+### Installation
 
 First you need to install `sparklyr`:
 
@@ -51,7 +59,7 @@ library(sparklyr)
 spark_install(version = "2.1.0")
 ```
 
-## Connecting to Spark
+### Connecting to Spark
 
 You can connect to both local instances of Spark as well as remote Spark clusters. Let's use the `spark_connect()` function to connect to a local cluster built on our computer:
 
@@ -60,7 +68,7 @@ library(sparklyr)
 sc <- spark_connect(master = "local")
 ```
 
-# Machine learning with Spark
+## Machine learning with Spark
 
 You can use `sparklyr` to fit a wide range of machine learning algorithms in Apache Spark. Rather than using `caret::train()`, you use a set of `ml_` functions depending on which algorithm you want to employ.
 
@@ -99,14 +107,14 @@ titanic2_tbl <- titanic_tbl %>%
 
 ### Spark ML transforms
 
-Spark also includes several functions to transform features. We can access several of them [directly through `sparklyr`](http://spark.rstudio.com/reference/sparklyr/latest/index.html). For instance, to transform `Family_Sizes` into bins, use `ft_bucketizer()`. Because this function comes from Spark, it is used within `sdf_mutate()`, not `mutate()`.
+Spark also includes several functions to transform features. We can access several of them [directly through `sparklyr`](http://spark.rstudio.com/reference/sparklyr/latest/index.html). For instance, to transform `Family_Sizes` into bins, use `ft_bucketizer()`.
 
 ```{r titanic_tidy_ml, cache = FALSE}
 titanic_final_tbl <- titanic2_tbl %>%
   mutate(Family_Size = as.numeric(Family_size)) %>%
-  sdf_mutate(
-    Family_Sizes = ft_bucketizer(Family_Size, splits = c(1,2,5,12))
-    ) %>%
+  ft_bucketizer(input_col = "Family_Size",
+                output_col = "Family_Sizes",
+                splits = c(1,2,5,12)) %>%
   mutate(Family_Sizes = as.character(as.integer(Family_Sizes))) %>%
   sdf_register("titanic_final")
 ```
@@ -194,7 +202,7 @@ ml_score <- map(ml_models, score_test_data)
 
 To pick the best model, compare the test set results by examining performance metrics: lift, accuracy, and [area under the curve (AUC)](https://en.wikipedia.org/wiki/Receiver_operating_characteristic).
 
-### Model lift
+## Model lift
 
 **Lift** compares how well the model predicts survival compared to random guessing. The function below calculates the model lift for each scored decile in the test data.
 
@@ -241,7 +249,7 @@ ggplot(ml_gains, aes(x = bin, y = prop, color = model)) +
 
 The lift chart suggests the tree-based models (random forest, gradient boosted trees, and decision tree) provide the best prediction.
 
-### Accuracy and AUC
+## Accuracy and AUC
 
 **Receiver operating characteristic (ROC) curves** are graphical plots that illustrate the performance of a binary classifier. They visualize the relationship between the true positive rate (TPR) against the false positive rate (FPR).
 
@@ -279,7 +287,7 @@ gather(perf_metrics, metric, value, AUC, Accuracy) %>%
 
 Overall it appears the tree-based models performed the best - they had the highest accuracy rates and AUC values.
 
-### Feature importance
+## Feature importance
 
 It is also interesting to compare the features that were identified by each model as being important predictors for survival. The tree models implement feature importance metrics (a la `randomForest::varImpPlot()`. Sex, fare, and age are some of the most important features.
 
@@ -356,7 +364,7 @@ result %>%
 
 ## Sparkling Water (H2O) and machine learning
 
-Where's the LOOCV? Where's the $k$-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. The functions we used above to estimate the models are part of **Spark’s distributed [machine learning library](https://spark.apache.org/docs/latest/mllib-guide.html)** (MLlib). MLlib contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196).^[In refresing my notes for the term, I saw CV was just incorporated into the development version of `sparklyr` but it is not yet deployed on CRAN.] A real drag.
+Where's the LOOCV? Where's the $k$-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. The functions we used above to estimate the models are part of **Spark’s distributed [machine learning library](https://spark.apache.org/docs/latest/mllib-guide.html)** (MLlib). MLlib contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196).^[In refreshing my notes for the term, I saw CV was just incorporated into the development version of `sparklyr` but it is not yet deployed on CRAN.] A real drag.
 
 If you are serious about utilizing Spark and need cross-validation and other more robust machine learning tools, another option is [**H2O**](https://www.h2o.ai/h2o/), an alternative open-source cross-platform machine learning software package. The `rsparkling` package provides functions to access H2O's distributed [machine learning functions](https://www.h2o.ai/h2o/machine-learning/) via `sparklyr`. H2O has many of the same features as MLlib (if not more so through `sparklyr`), however implementing it is a bit more complicated. Hence we focused most our code above on MLlib algorithms.
 
@@ -401,11 +409,11 @@ glm_model
 
 We get lots of information back about the model. Many of these statistics can be extracted and stored as tidy data frames or used to create visualizations.
 
-# Acknowledgments {.toc-ignore}
+### Acknowledgments
 
 * Titanic machine learning example drawn from [Comparison of ML Classifiers Using Sparklyr](https://beta.rstudioconnect.com/content/1518/notebook-classification.html)
 
-# Session Info {.toc-ignore}
+### Session Info
 
-```{r child='_sessioninfo.Rmd'}
+```{r child = here::here("R", "_session-info.Rmd")}
 ```
