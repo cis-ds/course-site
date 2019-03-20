@@ -54,12 +54,12 @@ math: false
 
 ## Before class
 
-* Read [Introduction to geospatial visualization](geoviz_intro.html)
-* Read [Drawing raster maps with `ggmap`](geoviz_ggmap.html)
-* Read [Importing shapefiles using `sf`](geoviz_import_data.html)
-* Read [Drawing vector maps with `ggplot2` and `sf`](geoviz_plot.html)
-* Read [Selecting optimal color palettes](geoviz_color.html)
-* Read [Drawing interactive maps with `leaflet`](geoviz_leaflet.html)
+* Read [Introduction to geospatial visualization](/notes/intro-geospatial-viz/)
+* Read [Drawing raster maps with `ggmap`](/notes/raster-maps-with-ggmap/)
+* Read [Importing shapefiles using `sf`](/notes/simple-features/)
+* Read [Drawing vector maps with `ggplot2` and `sf`](/notes/vector-maps/)
+* Read [Selecting optimal color palettes](/notes/optimal-color-palettes/)
+* Read [Drawing interactive maps with `leaflet`](/notes/leaflet)
 
 ## Slides and links
 
@@ -70,4 +70,4 @@ math: false
 
 ## What you need to do
 
-* Work on [homework 7](hw07-geospatial.html)
+* Work on [homework 7](/homework/geospatial-viz/)

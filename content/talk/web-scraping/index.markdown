@@ -55,7 +55,7 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm016_slides.html)
-* [Web scraping](webdata005_scraping.html)
+* [Web scraping](/notes/web-scraping/)
 
 * `rvest`
     * Load the library (`library(rvest)`)
@@ -65,4 +65,4 @@ math: false
 
 ## What you need to do
 
-* Start [homework 8](hw08-webdata.html)
+* Start [homework 8](/homework/webdata/)

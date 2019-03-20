@@ -17,7 +17,7 @@ As part of this course you will be reviewing, commenting on, and marking other s
 
 * Give thoughtful, constructive and considerate comments
 * Be specific and concise
-* Use [the rubric](hw00_github_rubric.html) for ideas about criteria to evaluate and comment on
+* Use [the rubric](/faq/homework-evaluations/) for ideas about criteria to evaluate and comment on
 * Try to learn something new and, if you succeed, point that out
 * If you can't find anything to praise or that you found helpful, then at least offer some suggestions in a kind way
 * See [here](https://help.github.com/articles/reviewing-proposed-changes-in-a-pull-request/) for useful instructions on how to initiate and submit reviews using GitHub's built-in tools

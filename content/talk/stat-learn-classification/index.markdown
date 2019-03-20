@@ -68,12 +68,12 @@ This is not a math/stats class. In class we will **briefly** summarize how these
 ## Slides and links
 
 * [Slides](extras/cm012_slides.html)
-* [Decision trees and random forests](stat004_decision_trees.html)
-* [Resampling methods](stat005_resampling.html)
+* [Decision trees and random forests](/notes/decision-trees/)
+* [Cross-validation methods](/notes/cross-validation/)
 
 * [The `caret` Package](https://topepo.github.io/caret/) - introductory book for the `caret` package. Tells you what models you can implement and all the nitty-gritty details to customize `train` for different cross-validation methods.
 * [Working with `rset`s](https://tidymodels.github.io/rsample/articles/Working_with_rsets.html) - documentation for `rsample` and demonstration implementing it for resampling and model assessment
 
 ## What you need to do
 
-* [Start homework 6](hw06-stat-learn.html)
+* [Start homework 6](/homework/statistical-learning/)

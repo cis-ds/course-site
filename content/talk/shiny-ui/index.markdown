@@ -54,7 +54,7 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm019_slides.html)
-* [Tutorial from class](shiny.html)
+* [Tutorial from class](/notes/shiny/)
 * [`shiny-demo`](https://github.com/uc-cfss/shiny-demo) - fork and clone this repo to follow along with the in-class exercise
 
 * [Git repo for dating age rule app](https://github.com/bensoltoff/age-rule)

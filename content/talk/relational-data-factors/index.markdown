@@ -60,10 +60,10 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm006_slides.html)
-* [Relational data: a quick review](datawrangle_relational_data.html)
-* [Practice using relational data](datawrangle_relational_data_exercise.html)
-* [Practice transforming and visualizing factors](datawrangle_factors_exercise.html)
+* [Relational data: a quick review](/notes/relational-data/)
+* [Practice using relational data](/notes/relational-data-exercise/)
+* [Practice transforming and visualizing factors](/notes/factors-exercise/)
 
 ## What you need to do
 
-* [Begin homework 3](hw03-wrangle-data.html)
+* [Begin homework 3](/homework/wrangle-data/)

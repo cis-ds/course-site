@@ -27,7 +27,7 @@ aliases: "/git04.html"
 
 ## Clone the repository to your computer
 
-* Go to the [shell](shell.html) (one way to open: In RStudio, **Tools > Shell**).
+* Go to the [shell](/setup/shell/) (one way to open: In RStudio, **Tools > Shell**).
 * Determine where you are in the file directory (`pwd`). `cd` to move around. You can clone this repository wherever you want, though eventually you'll want to develop a system for storing your repos in a consistent manner. Here, I stored mine in `/Users/benjamin/Github/`.
 * Clone `myrepo` from GitHub to your computer. Cloning simply downloads a copy of the repository to your computer. Remember the URL you copied? It should contain your GitHub username and the name of your practice repository. Either copy + paste the URL into your shell, or if the clipboard doesn't work retype it manually. Make sure it is accurate.
 
@@ -143,7 +143,7 @@ If you have never pushed a commit to GitHub, you will be challenged to enter you
 
 ## Authenticating with GitHub for each push
 
-While the need to authenticate users is obvious (if there was no authentication, anyone could upload changes to your repository), it can be tedious to enter your username and password every time you want to push a change to GitHub. Fortunately there are a couple different options for caching your credentials which we will review [here](git07.html).
+While the need to authenticate users is obvious (if there was no authentication, anyone could upload changes to your repository), it can be tedious to enter your username and password every time you want to push a change to GitHub. Fortunately there are a couple different options for caching your credentials which we will review [here](/setup/git-cache-credentials/).
 
 ## Clean up
 

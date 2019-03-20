@@ -81,7 +81,7 @@ Once joined, use your data wrangling and visualization skills to answer the foll
 
 # Submit the assignment
 
-Your assignment should be submitted as three RMarkdown documents. Follow instructions on [homework workflow](hw00_homework_guidelines.html#homework_workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as three RMarkdown documents. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

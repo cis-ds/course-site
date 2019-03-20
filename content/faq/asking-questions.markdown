@@ -34,7 +34,7 @@ Introduce the problem you are having. Include what task you are trying to perfor
 
 Including a [minimal, complete, and verifiable example](http://stackoverflow.com/help/mcve) of the code you are using greatly helps us resolve your problem. You don't need to copy all the code from your program into the comment, but include enough code that we can run it successfully **until the point at which the error occurs**.
 
-Make sure you have [pushed](git05.html#step_4:_push_your_local_changes_online_to_github) your recent commits to the GitHub repo. If it is up-to-date, we can quickly look in or clone your repo to our machines to replicate the problem.
+Make sure you have [pushed](/setup/git-with-rstudio/#step-4-push-your-local-changes-online-to-github) your recent commits to the GitHub repo. If it is up-to-date, we can quickly look in or clone your repo to our machines to replicate the problem.
 
 ## Format your code snippets with `reprex`
 
@@ -77,7 +77,7 @@ count(diamonds, colour)
 #> Error: Column `colour` is unknown
 ```
 
-<sup>Created on 2019-03-17 by the [reprex package](https://reprex.tidyverse.org) (v0.2.1)</sup>
+<sup>Created on 2019-03-20 by the [reprex package](https://reprex.tidyverse.org) (v0.2.1)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
@@ -89,7 +89,7 @@ count(diamonds, colour)
 #> Error: Column `colour` is unknown
 ```
 
-<sup>Created on 2019-03-17 by the [reprex package](https://reprex.tidyverse.org) (v0.2.1)</sup>
+<sup>Created on 2019-03-20 by the [reprex package](https://reprex.tidyverse.org) (v0.2.1)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 

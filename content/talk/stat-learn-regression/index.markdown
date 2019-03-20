@@ -75,9 +75,9 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm011_slides.html)
-* [Statistical learning: the basics](stat001_statistical_learning.html)
-* [Linear regression](stat002_linear_models.html)
-* [Logistic regression](stat003_logistic_regression.html)
+* [Statistical learning: the basics](/notes/statistical-learning/)
+* [Linear regression](/notes/linear-models/)
+* [Logistic regression](/notes/logistic-regression/)
 
 * [Vignette on `broom`](https://cran.r-project.org/web/packages/broom/vignettes/broom.html)
 * [Examples of estimating common statistical models in R](http://www.ats.ucla.edu/stat/dae/)

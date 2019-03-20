@@ -23,7 +23,7 @@ Go [here](https://github.com/uc-cfss/hw10) to fork the repo for homework 10.
 
 # What we've done
 
-We created a Shiny app that lets you search through and generate information on city of Chicago wage employees. We used the [`employees-wage.csv`](https://github.com/uc-cfss/shiny-demo) data file and [this code](shiny.html#final_shiny_app_code) for our app.
+We created a Shiny app that lets you search through and generate information on city of Chicago wage employees. We used the [`employees-wage.csv`](https://github.com/uc-cfss/shiny-demo) data file and [this code](/notes/shiny/#final-shiny-app-code) for our app.
 
 # What you need to do
 
@@ -60,7 +60,7 @@ Your assignment submission includes two components:
 1. A working Shiny app hosted on shinyapps.io
 1. A GitHub repo that includes the underlying source code which created the app.
 
-Follow instructions on [homework workflow](hw00_homework_guidelines.html#homework_workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

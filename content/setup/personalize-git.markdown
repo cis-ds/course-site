@@ -39,7 +39,7 @@ Replace `Benjamin Soltoff` and `ben@bensoltoff.com` with your name and email add
 
 ## Option 2: use the shell
 
-Open the [shell](shell.html) on your computer. From there, type the following commands (replace the relevant parts with your own information):
+Open the [shell](/setup/shell/) on your computer. From there, type the following commands (replace the relevant parts with your own information):
 
 * `git config --global user.name 'Benjamin Soltoff'`
     * This can be your full name, your username on GitHub, whatever you want. Each of your commits will be logged with this name, so make sure it is informative **for others**.

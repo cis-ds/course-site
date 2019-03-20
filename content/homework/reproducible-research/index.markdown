@@ -65,7 +65,7 @@ There are functions in R and programs for the [shell](shell.html) that allow you
       RCurl::getURL("https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv"))
     ```
 
-+ Option 2: in a [shell](shell.html) script using `curl` or `wget`.
++ Option 2: in a [shell](/setup/shell/) script using `curl` or `wget`.
 
     ```bash
     curl -O https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv
@@ -95,19 +95,19 @@ The final output should be a `github_document`, but feel free to use R scripts i
     * You will probably need to spend time data cleaning and tidying. Could be done in the main R Markdown document or in a separate R script. If done in the R Markdown document, consider whether it is necessary to include the code and output in the final document.
 * Render an R Markdown document with your final analysis.
     * You do not need to stuff everything into the final document. Think of this like a traditional report. You might describe how you obtained and prepared the data, but you won't include all the code and output from that process in the final document. But because it is stored in a separate R script and is part of the repo, everything is still completely reproducible.
-    * To emulate RStudio's "Knit" button from a [shell](shell.html):
+    * To emulate RStudio's "Knit" button from a [shell](/setup/shell/):
         `Rscript -e "rmarkdown::render('myAwesomeAnalysis.Rmd')"`
     * To emulate RStudio's "Knit" button within an R script:
         `rmarkdown::render('myAwesomeAnalysis.Rmd)`
 * Experiment with running R code saved in a script from within R Markdown. Here's some official documentation on [code externalization](http://yihui.name/knitr/demo/externalization/).
 * Embed pre-existing figures in an R Markdown document, i.e. an R script creates the figures, then the report incorporates them.
 * Make use of code chunk and YAML options to customize the appearance of your final document
-* Writing your own functions? Implement [defensive](program_style.html) [programming](program_condition_handle.html) to minimize errors (or at least provide informative error messages).
+* Writing your own functions? Implement [defensive](/notes/style-guide/) [programming](/notes/condition-handling/) to minimize errors (or at least provide informative error messages).
 * Use a consistent style when writing your code
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of R scripts, R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](hw00_homework_guidelines.html#homework_workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as a set of R scripts, R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 ## SPECIAL NOTE
 

@@ -59,8 +59,8 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm007_slides.html)
-* [Pipes in R](program_pipes.html)
-* [Practice the pipe](program_pipes_exercise.html)
-* [Functions in R](program_functions.html)
+* [Pipes in R](/notes/pipes/)
+* [Practice the pipe](/notes/pipes-practice/)
+* [Functions in R](/notes/functions/)
 
 ## What you need to do

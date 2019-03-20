@@ -23,7 +23,7 @@ Go [here](https://github.com/uc-cfss/hw07) to fork the repo for homework 07.
 
 # Part 1: Statistical learning in Spark
 
-[Last week](hw06-stat-learn.html) you estimated statistical learning models predicting survival and death on the Titanic. Take the model specification for your best-performing model from the Titanic problem, and estimate it using at least three machine learning algorithms in `sparklyr` (either MLlib or H2O). Calculate the accuracy and AUC metrics for each model. Which algorithm performs the best?
+[Last week](/homework/statistical-learning/) you estimated statistical learning models predicting survival and death on the Titanic. Take the model specification for your best-performing model from the Titanic problem, and estimate it using at least three machine learning algorithms in `sparklyr` (either MLlib or H2O). Calculate the accuracy and AUC metrics for each model. Which algorithm performs the best?
 
 * If you use an `ml_()` function, you need to split the data into training/test sets
 * If you use an `h2o.()` function, you need to either split the data into training/test sets or use `\(k\)`-fold CV
@@ -58,7 +58,7 @@ Once you have your geographic boundaries data (either from an R package or impor
 
 # Submit the assignment
 
-Your assignment should be submitted as one or more R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](hw00_homework_guidelines.html#homework_workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as one or more R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

@@ -59,8 +59,8 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm009_slides.html)
-* [Bugs and styling code](program_style.html)
-* [Debugging and condition handling](program_condition_handle.html)
+* [Bugs and styling code](/notes/style-guide/)
+* [Debugging and condition handling](/notes/condition-handling/)
 
 * [*Naming things*](http://www2.stat.duke.edu/~rcs46/lectures_2015/01-markdown-git/slides/naming-slides/naming-slides.pdf) - by Jenny Bryan. A concise guide to naming files.
 

@@ -22,9 +22,9 @@ I assume you can [pull from and push to GitHub from RStudio](git07.html).
 Homework assignments will be stored in separate Git repositories under the `uc-cfss` organization on GitHub. To complete a homework assignment, you need to:
 
 1. [Fork](https://guides.github.com/activities/forking/) the repository
-1. [Clone](git05.html#step_2:_clone_the_new_github_repository_to_your_computer_via_rstudio) the repository to your computer
-1. Modify the files and [commit changes](git05.html#step_3:_make_local_changes,_save,_commit) to complete your solution.
-1. [Push](git05.html#step_4:_push_your_local_changes_online_to_github)/sync the changes up to GitHub.
+1. [Clone](/setup/git-with-rstudio/#step-2-clone-the-new-github-repository-to-your-computer-via-rstudio) the repository to your computer
+1. Modify the files and [commit changes](/setup/git-with-rstudio/#step-3-make-local-changes-save-commit) to complete your solution.
+1. [Push](/setup/git-with-rstudio/#step-4-push-your-local-changes-online-to-github)/sync the changes up to GitHub.
 1. [Create a pull request](https://help.github.com/articles/creating-a-pull-request) on the original repository to turn in the assignment. **Make sure to include your name in the pull request.**
 
 ## Authoring Markdown files
@@ -90,7 +90,7 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ##  collate  en_US.UTF-8                 
     ##  ctype    en_US.UTF-8                 
     ##  tz       America/Chicago             
-    ##  date     2019-03-17                  
+    ##  date     2019-03-20                  
     ## 
     ## ─ Packages ──────────────────────────────────────────────────────────────
     ##  package     * version date       lib source        
@@ -98,15 +98,15 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
     ##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
     ##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
-    ##  callr         3.1.1   2018-12-21 [2] CRAN (R 3.5.0)
-    ##  cli           1.0.1   2018-09-25 [1] CRAN (R 3.5.0)
+    ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
+    ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
     ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
     ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
     ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
     ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
     ##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
     ##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
-    ##  glue          1.3.0   2018-07-17 [2] CRAN (R 3.5.0)
+    ##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
     ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
     ##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
     ##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
@@ -120,7 +120,7 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
     ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
     ##  rlang         0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
-    ##  rmarkdown     1.11    2018-12-08 [2] CRAN (R 3.5.0)
+    ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
     ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
     ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
     ##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)

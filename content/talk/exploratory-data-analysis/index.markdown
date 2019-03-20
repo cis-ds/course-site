@@ -55,8 +55,8 @@ math: false
 ## Slides and class materials
 
 * [Slides](extras/cm004_slides.html)
-* [Exploratory data analysis](eda_defined.html)
-* [Practice exploring college education (data)](eda_college.html)
+* [Exploratory data analysis](/notes/exploratory-data-analysis/)
+* [Practice exploring college education (data)](/notes/exploratory-data-analysis-practice/)
 
 ### Cheat sheets
 
@@ -65,4 +65,4 @@ math: false
 ## What you need to do
 
 * [Register your GitHub username for the course](https://goo.gl/forms/mvwVaTWfoZN6fn4Z2) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/uc-cfss). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
-* [Begin/finish homework 2](hw02-explore-data.html)
+* [Begin/finish homework 2](/homework/explore-data/)

@@ -53,11 +53,11 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm020_slides.html)
-* [Tutorial from class](shiny.html)
+* [Tutorial from class](/notes/shiny/)
 
 * [Git repo for dating age rule app](https://github.com/bensoltoff/age-rule)
 * [Chicago wage employees sample app](https://bensoltoff.shinyapps.io/chicago-employees/)
 
 ## What you need to do
 
-* Finish [Homework 10](hw10-shiny.html)
+* Finish [Homework 10](/homework/shiny/)

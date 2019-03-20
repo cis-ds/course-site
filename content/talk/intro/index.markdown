@@ -53,7 +53,7 @@ math: false
 ## Slides and class materials
 
 * [Slides](extras/cm001_slides.html)
-* [Introduction to computing for the social sciences](intro.html)
+* [Introduction to computing for the social sciences](/notes/intro-to-course/)
 
 ### Additional readings
 
@@ -62,7 +62,7 @@ math: false
 
 ## What you need to do
 
-* [Install and setup software](setup00.html)
+* [Install and setup software](/setup/)
 * [Register your GitHub username for the course](https://goo.gl/forms/96MlxifdxxNJxuHt2)
 * [If you are not currently registered, complete this petition to enroll in the course](https://goo.gl/forms/ZERPvUxvPxX5SZnj2)
-* [Begin homework 1](hw01-edit-README.html)
+* [Begin homework 1](/homework/edit-readme/)

@@ -15,7 +15,7 @@ aliases: "/faq.html"
 
 This course is open to any graduate (or advanced undergraduate) at UChicago. I anticipate drawing students from a wide range of departments such as Sociology, Psychology, Political Science, Comparative Human Development, and MAPSS. Typically these students are looking to learn basic computational and analytical skills they can apply to master's theses or dissertation research.
 
-If you have never programmed before or don't even know what the [shell](shell.html) is, **prepare for a shock**. This class will prove to be immensely beneficial if you stick with it, but that will require you to commit for the full 10 weeks. I do not presume any prior programming experience, so everyone starts from the same knowledge level. I guarantee that the first few weeks and assignments will be rough - but the good news is that they will be rough for everyone! Your classmates are struggling with you and you can lean on one another to get through the worst part of the learning curve.
+If you have never programmed before or don't even know what the [shell](/setup/shell/) is, **prepare for a shock**. This class will prove to be immensely beneficial if you stick with it, but that will require you to commit for the full 10 weeks. I do not presume any prior programming experience, so everyone starts from the same knowledge level. I guarantee that the first few weeks and assignments will be rough - but the good news is that they will be rough for everyone! Your classmates are struggling with you and you can lean on one another to get through the worst part of the learning curve.
 
 A highly selective sampling of feedback from past course evaluations:
 
@@ -69,7 +69,7 @@ By the end of the first week (or even better, before the course starts), you sho
 * [RStudio's IDE](https://www.rstudio.com/products/RStudio/) - this is a powerful user interface for programming in R. You could use base R, but you would regret it.
 * [Git](https://git-scm.com/) - Git is a [version control system](https://en.wikipedia.org/wiki/Version_control) which is used to manage projects and track changes in computer files. Once installed, it can be integrated into RStudio to manage your course assignments and other projects.
 
-Comprehensive instructions for downloading and setting up this software can be found [here](setup00.html).
+Comprehensive instructions for downloading and setting up this software can be found [here](/setup/).
 
 ## How will I be evaluated?
 
@@ -77,10 +77,10 @@ Each week students will complete a series of programming assignments linked to l
 
 Each homework will be evaluated by either myself or the TA, as well as by **two peer reviewers**. Each of you is required to provide two peer reviews for each assignment; failure to complete these reviews will result in a deduction of your final grade.
 
-* [General guidelines for submitting homework](hw00_homework_guidelines.html)
-* [Evaluation criteria for homework](hw00_homework_grading.html)
-* [How to perform peer review](hw00_peer-review.html)
-* [How to properly ask for help](hw00_asking_questions.html)
+* [General guidelines for submitting homework](/faq/homework-guidelines/)
+* [Evaluation criteria for homework](/faq/homework-evaluations/)
+* [How to perform peer review](/faq/peer-evaluations/)
+* [How to properly ask for help](/faq/asking-questions/)
 
 ## Statement on Disabilities
 

@@ -70,9 +70,9 @@ math: false
 ## Slides and links
 
 * [Slides](extras/cm013_slides.html)
-* [Accessing databases using `dbplyr`](distrib001_database.html)
-* [Split-apply-combine and parallel computing](distrib002_sac.html)
-* [Spark and `sparklyr`](distrib003_spark.html)
+* [Accessing databases using `dbplyr`](/notes/sql-databases/)
+* [Split-apply-combine and parallel computing](/notes/split-apply-combine/)
+* [Spark and `sparklyr`](/notes/sparklyr/)
 
 * [The split-apply-combine strategy for data analysis](http://www.jstatsoft.org/v40/i01/paper) - paper by Hadley Wickham establishing a general overview of split-apply-combine problems. Note that the `plyr` package is now deprecated in favor of `dplyr` and the other `tidyverse` packages
 * [Accessing databases using `dbplyr`](https://cran.r-project.org/web/packages/dbplyr/vignettes/dbplyr.html)
