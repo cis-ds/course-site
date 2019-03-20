@@ -1,7 +1,7 @@
 ---
 title: "HW02: Exploring and visualizing data"
 date: 2019-04-08T13:30:00-06:00  # Schedule page publish date
-publishdate: 2019-04-01
+publishdate: 2019-03-01
 
 draft: false
 type: post
@@ -110,7 +110,7 @@ Instead, use `kable()` to format the table, add a caption, and label the columns
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😞
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😢
 
 # Submit the assignment
 

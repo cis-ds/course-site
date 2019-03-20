@@ -1,7 +1,7 @@
 ---
 title: "HW01: Edit README.md"
 date: 2019-04-01T13:30:00-06:00  # Schedule page publish date
-publishdate: 2019-04-01
+publishdate: 2019-03-01
 
 draft: false
 type: post
