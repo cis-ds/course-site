@@ -800,8 +800,8 @@ if(file.exists(here("static", "extras", "ap_lda_compare.Rdata"))){
 
 
 ```r
-data_frame(k = n_topics,
-           perplex = map_dbl(ap_lda_compare, perplexity)) %>%
+tibble(k = n_topics,
+       perplex = map_dbl(ap_lda_compare, perplexity)) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
   geom_line() +
@@ -809,11 +809,6 @@ data_frame(k = n_topics,
        subtitle = "Optimal number of topics (smaller is better)",
        x = "Number of topics",
        y = "Perplexity")
-```
-
-```
-## Warning: `data_frame()` is deprecated, use `tibble()`.
-## This warning is displayed once per session.
 ```
 
 <img src="/notes/topic-modeling_files/figure-html/ap_lda_compare_viz-1.png" width="672" />
@@ -1014,7 +1009,6 @@ devtools::session_info()
 ##  digest        0.6.18  2018-10-10 [1]
 ##  dplyr       * 0.8.0.1 2019-02-15 [1]
 ##  evaluate      0.13    2019-02-12 [2]
-##  fansi         0.4.0   2018-10-05 [2]
 ##  forcats     * 0.4.0   2019-02-17 [2]
 ##  fs            1.2.6   2018-08-23 [1]
 ##  generics      0.0.2   2018-11-29 [1]
@@ -1051,7 +1045,6 @@ devtools::session_info()
 ##  plyr          1.8.4   2016-06-08 [2]
 ##  prettyunits   1.0.2   2015-07-13 [2]
 ##  processx      3.3.0   2019-03-10 [2]
-##  proxy         0.4-23  2019-03-05 [1]
 ##  ps            1.3.0   2018-12-21 [2]
 ##  purrr       * 0.3.2   2019-03-15 [2]
 ##  R6            2.4.0   2019-02-14 [1]
@@ -1059,8 +1052,6 @@ devtools::session_info()
 ##  readr       * 1.3.1   2018-12-21 [2]
 ##  readxl        1.3.1   2019-03-13 [2]
 ##  remotes       2.0.2   2018-10-30 [1]
-##  reshape2      1.4.3   2017-12-11 [2]
-##  RJSONIO       1.3-1.1 2018-11-14 [2]
 ##  rlang         0.3.1   2019-01-08 [1]
 ##  rmarkdown     1.12    2019-03-14 [1]
 ##  rprojroot     1.3-2   2018-01-03 [2]
@@ -1082,7 +1073,6 @@ devtools::session_info()
 ##  tokenizers    0.2.1   2018-03-29 [2]
 ##  topicmodels * 0.2-8   2018-12-21 [2]
 ##  usethis       1.4.0   2018-08-14 [1]
-##  utf8          1.1.4   2018-05-24 [2]
 ##  withr         2.1.2   2018-03-15 [2]
 ##  xfun          0.5     2019-02-20 [1]
 ##  xml2          1.2.0   2018-01-24 [2]
@@ -1104,7 +1094,6 @@ devtools::session_info()
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       
@@ -1141,15 +1130,12 @@ devtools::session_info()
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.2)                       
@@ -1165,7 +1151,6 @@ devtools::session_info()
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.2)                       
 ##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       
 ##  CRAN (R 3.5.0)                       

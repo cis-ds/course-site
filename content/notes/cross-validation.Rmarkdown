@@ -170,8 +170,8 @@ poly_mse <- function(i, train, test){
     mean(.resid ^ 2)
 }
 
-cv_mse <- data_frame(terms = seq(from = 1, to = 5),
-                     mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+cv_mse <- tibble(terms = seq(from = 1, to = 5),
+                 mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
 
 ggplot(cv_mse, aes(terms, mse_test)) +
   geom_line() +
@@ -244,8 +244,8 @@ There are two main problems with validation sets:
       auto_train <- training(auto_split)
       auto_test <- testing(auto_split)
       
-      cv_mse <- data_frame(terms = seq(from = 1, to = 5),
-                           mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+      cv_mse <- tibble(terms = seq(from = 1, to = 5),
+                       mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
       
       return(cv_mse)
     }
@@ -373,8 +373,8 @@ poly_mse <- function(i, loocv_data){
   mean(loocv_mod$mse)
 }
 
-cv_mse <- data_frame(terms = seq(from = 1, to = 5),
-                     mse_loocv = map_dbl(terms, poly_mse, loocv_data))
+cv_mse <- tibble(terms = seq(from = 1, to = 5),
+                 mse_loocv = map_dbl(terms, poly_mse, loocv_data))
 cv_mse
 
 ggplot(cv_mse, aes(terms, mse_loocv)) +
@@ -547,8 +547,8 @@ poly_mse <- function(i, vfold_data){
 # split Auto into 10 folds
 auto_cv10 <- vfold_cv(data = Auto, v = 10)
 
-cv_mse <- data_frame(terms = seq(from = 1, to = 5),
-                     mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
+cv_mse <- tibble(terms = seq(from = 1, to = 5),
+                 mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
 cv_mse
 ```
 
@@ -557,9 +557,10 @@ How do these results compare to the LOOCV values?
 ```{r 10_fold_auto_loocv, dependson=c("10_fold_auto","loocv_poly")}
 auto_loocv <- loo_cv(Auto)
 
-data_frame(terms = seq(from = 1, to = 5),
-           `10-fold` = map_dbl(terms, poly_mse, auto_cv10),
-           LOOCV = map_dbl(terms, poly_mse, auto_loocv)
+tibble(
+  terms = seq(from = 1, to = 5),
+  `10-fold` = map_dbl(terms, poly_mse, auto_cv10),
+  LOOCV = map_dbl(terms, poly_mse, auto_loocv)
 ) %>%
   gather(method, MSE, -terms) %>%
   ggplot(aes(terms, MSE, color = method)) +
