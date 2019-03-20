@@ -37,7 +37,7 @@ The sinking of [RMS Titanic](https://en.wikipedia.org/wiki/RMS_Titanic) provided
 
 * A tragic love story
 
-    ![[Titanic (1997)](https://en.wikipedia.org/wiki/Titanic_(1997_film))](http://i.giphy.com/KSeT85Vtym7m.gif)
+    ![[Titanic (1997)](https://en.wikipedia.org/wiki/Titanic_(1997_film))](https://i.giphy.com/KSeT85Vtym7m.gif)
     
 Why did Jack have to die? Why couldn't he have made it onto a lifeboat like Cal? We may never know the answer, but we can generalize the question a bit: why did some people survive the sinking of the Titanic while others did not?
 

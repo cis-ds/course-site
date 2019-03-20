@@ -30,7 +30,7 @@ What if data is present on a website, but isn't provided in an API at all? It is
 
 HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, [which is also valid XML](http://www.w3.org/TR/html5/the-xhtml-syntax.html))
 
-![[tags](https://xkcd.com/1144/)](http://imgs.xkcd.com/comics/tags.png)
+![[tags](https://xkcd.com/1144/)](https://imgs.xkcd.com/comics/tags.png)
 
 ## Process
 
@@ -615,10 +615,8 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  curl          3.3     2019-01-10 [2] CRAN (R 3.5.2)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
 ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
@@ -665,7 +663,6 @@ devtools::session_info()
 ##  rstudioapi    0.9.0   2019-01-09 [1] CRAN (R 3.5.2)
 ##  rvest       * 0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
 ##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
-##  selectr       0.4-1   2018-04-06 [2] CRAN (R 3.5.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
 ##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)

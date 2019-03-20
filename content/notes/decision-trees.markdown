@@ -32,7 +32,7 @@ theme_set(theme_minimal())
 
 ![Are you old? A helpful decision tree](https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg)
 
-![[Should I Have a Cookie?](http://iwastesomuchtime.com/58217)](http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif)
+![[Should I Have a Cookie?](http://iwastesomuchtime.com/58217)](/img/cookie.gif)
 
 **Decision trees** are intuitive concepts for making decisions. They are also useful methods for regression and classification. They work by splitting the observations into a number of regions, and predictions are made based on the mean or mode of the training observations in that region.
 
