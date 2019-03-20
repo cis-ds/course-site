@@ -1,0 +1,56 @@
+---
+# About/Biography widget.
+widget: "blank"
+active: true
+date: 2018-12-13T00:00:00
+
+# Order that this section will appear in.
+weight: 10
+
+design:
+  columns: "1"
+
+output:
+  blogdown::html_page:
+    toc: false
+    number_sections: false
+---
+
+# MACS 30500^[aka ENST 20550/MACS 20500/MAPS 30500/PLSC 30235/SOCI 20278/SOCI 40176] - Computing for the Social Sciences
+
+* Instructor: [Benjamin Soltoff](http://www.bensoltoff.com), Lecturer in [Computational Social Science](http://macss.uchicago.edu)
+* Teaching Assistants
+    * Deblina Mukherjee
+    * Coltan Scrivner
+* Meeting day/time: MW 1:30-2:50pm (Saieh Hall of Economics 247)
+* Online course discussion: [GitHub discussion repo](https://github.com/uc-cfss/Discussion)
+* Open lab sessions
+    * W 3:00-4:20pm (Saieh Hall of Economics 247)
+    * Th 2-3:20pm (Pick Hall 118)
+    * F 1:30-2:50pm (Saieh Hall of Economics 247)
+* Office hours: M 10-12pm (McGiffert House 209)
+* Prerequisites: None
+* Requirements: Bring your own laptop
+
+# Course Description
+
+This is an applied course for social scientists with little-to-no programming experience who wish to harness growing digital and computational resources. The focus of the course is on generating **reproducible research** through the use of programming languages and version control software. Major emphasis is placed on a pragmatic understanding of core principles of programming and packaged implementations of methods. Students will leave the course with basic computational skills implemented through many computational methods and approaches to social science; while students will not become expert programmers, they will gain the knowledge of how to adapt and expand these skills as they are presented with new questions, methods, and data.
+
+# Course Objectives
+
+By the end of the course, students will:
+
+* Construct and execute basic programs in R using elementary programming techniques and [`tidyverse`](http://tidyverse.org/) packages (e.g. loops, conditional statements, user-defined functions)
+* Apply stylistic principles of coding to generate reusable, interpretable code
+* Debug programs for errors
+* Identify and use external libraries to expand on base functions
+* Generate reproducible research with [R Markdown](http://rmarkdown.rstudio.com/)
+* Implement statistical learning algorithms
+* Utilize cross validation methods
+* Visualize information and data using appropriate graphical techniques
+* Import data from files or the internet
+* Munge raw data into a tidy format
+* Scrape websites to collect data for analysis
+* Parse and analyze text documents
+* Implement programs via distributed computing platforms
+* Create interactive web pages using [`flexdashboard`](http://rmarkdown.rstudio.com/flexdashboard/) and [Shiny](http://shiny.rstudio.com/)
