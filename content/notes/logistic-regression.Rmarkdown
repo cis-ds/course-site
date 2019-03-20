@@ -1,9 +1,17 @@
 ---
-title: "Statistical learning: logistic regression"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+title: "Logistic regression"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/stat003_logistic_regression.html"]
+categories: ["stat-learn"]
+
+menu:
+  notes:
+    parent: Statistical learning
+    weight: 3
 ---
 
 ```{r setup, include = FALSE}
@@ -21,13 +29,15 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-# Classification problems
+## Classification problems
 
 The sinking of [RMS Titanic](https://en.wikipedia.org/wiki/RMS_Titanic) provided the world with many things:
 
 * A fundamental shock to the world as its faith in supposedly indestructible technology was shattered by a chunk of ice
 * Perhaps the best romantic ballad of all time
-    <iframe width="560" height="315" src="https://www.youtube.com/embed/WNIPqafd4As?start=175" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+    {{< youtube  WNIPqafd4As >}}
+
 * A tragic love story
 
     ![[Titanic (1997)](https://en.wikipedia.org/wiki/Titanic_(1997_film))](http://i.giphy.com/KSeT85Vtym7m.gif)
@@ -117,37 +127,37 @@ What happens if a 200 year old person is on the Titanic? They would have a $-.1$
 
 Or what if we didn't want to predict survival, but instead predict the port from which an individual departed (Cherbourg, Queenstown, or Southampton)? We could try and code this as a numeric response variable:
 
-Numeric value | Port
---|---
-1 | Cherbourg
-2 | Queenstown
-3 | Southampton
+| Numeric value | Port |
+|---------------|-------------|
+| 1 | Cherbourg |
+| 2 | Queenstown |
+| 3 | Southampton |
 
 But why not instead code it:
 
-Numeric value | Port
---|---
-1 | Queenstown
-2 | Cherbourg
-3 | Southampton
+| Numeric value | Port |
+|---------------|-------------|
+| 1 | Queenstown |
+| 2 | Cherbourg |
+| 3 | Southampton |
 
 Or even:
 
-Numeric value | Port
---|---
-1 | Southampton
-2 | Cherbourg
-3 | Queenstown
+| Numeric value | Port |
+|---------------|-------------|
+| 1 | Southampton |
+| 2 | Cherbourg |
+| 3 | Queenstown |
 
 **There is no inherent ordering to this variable**. Any claimed linear relationship between a predictor and port of embarkation is completely dependent on how we convert the classes to numeric values.
 
-# Logistic regression
+## Logistic regression
 
 Rather than modeling the response $Y$ directly, logistic regression instead models the **probability** that $Y$ belongs to a particular category. In our first Titanic example, the probability of survival can be written as:
 
-$$P(\text{survival} = \text{Yes} | \text{age})$$
+$$\Pr(\text{survival} = \text{Yes} | \text{age})$$
 
-The values of $P(\text{survival} = \text{Yes} | \text{age})$ (or simply $p(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $p(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
+The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $\Pr(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
 
 We can estimate the logistic regression model using the `glm` function.
 
@@ -286,7 +296,7 @@ augment(survive_age_square,
 ## Interactive terms
 
 Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and gender example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
-    $$P(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}$$]
+    $$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}$$]
 
 $$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
 
@@ -323,7 +333,7 @@ And now our minds are blown once again! For women, as age increases the probabil
 
 You may think then that it makes sense to throw in interaction terms (and quadratic terms) willy-nilly to all your regression models since we never know for sure if the relationship is strictly linear and independent. You could do that, but once you start adding more predictors (3, 4, 5, etc.) that will get very difficult to keep track of (five-way interactions are extremely difficult to interpret - even three-way get to be problematic). The best advice is to use theory and your domain knowledge as your guide. Do you have a reason to believe the relationship should be interactive? If so, test for it. If not, don't.
 
-# Comparing models
+## Comparing models
 
 How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a $.5$ cut-point), then see what percentage of predictions were the same as the actual survivals?
 
@@ -345,7 +355,7 @@ mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE)
 
 This model is much better. Just by knowing an individual's age and gender, our model is incorrect only `r formatC(mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`% of the time.
 
-# Exercise: logistic regression with `mental_health`
+## Exercise: logistic regression with `mental_health`
 
 Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
@@ -381,6 +391,7 @@ mental_health
            y = "Predicted Probability of Voting") +
       scale_y_continuous(limits = c(0, 1))
     ```    
+    
       </p>
     </details>
 
@@ -397,6 +408,7 @@ mental_health
     (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$.pred,
                           na.rm = TRUE))
     ```    
+    
       </p>
     </details>
 
@@ -421,10 +433,11 @@ mental_health
     ```
     
     The model with all predictors has a `r formatC((mh_model_err - mh_model_all_err) * 100, digits = 3)`% lower error rate than predictions based only on mental health.
+    
       </p>
     </details>
+    
+### Session Info
 
-# Session Info {.toc-ignore}
-
-```{r child='_sessioninfo.Rmd'}
+```{r child = here::here("R", "_session-info.Rmd")}
 ```

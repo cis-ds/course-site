@@ -1,9 +1,17 @@
 ---
-title: "Statistical learning: resampling methods"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+title: "Cross-validation methods"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/stat005_resampling.html"]
+categories: ["stat-learn"]
+
+menu:
+  notes:
+    parent: Statistical learning
+    weight: 5
 ---
 
 ```{r setup, include = FALSE}
@@ -24,11 +32,9 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-# Resampling methods
+**Cross-validation methods** are essential to test and evaluate statistical models. Because you likely do not have the resources or capabilities to repeatedly sample from your population of interest, instead you can repeatedly draw from your original sample to obtain additional information about your model. For instance, you could repeatedly draw samples from your data, estimate a linear regression model on each sample, and then examine how the estimated model differs across each sample. This allows you to assess the variability and stability of your model in a way not possible if you can only fit the model once.
 
-Resampling methods are essential to test and evaluate statistical models. Because you likely do not have the resources or capabilities to repeatedly sample from your population of interest, instead you can repeatedly draw from your original sample to obtain additional information about your model. For instance, you could repeatedly draw samples from your data, estimate a linear regression model on each sample, and then examine how the estimated model differs across each sample. This allows you to assess the variability and stability of your model in a way not possible if you can only fit the model once.
-
-# Validation set
+## Validation set
 
 One issue with using the same data to both fit and evaluate our model is that we will bias our model towards fitting the data that we have. We may fit our function to create the results we expect or desire, rather than the "true" function. Instead, we can split our data into distinct **training** and **validation** sets. The training set can be used repeatedly to explore or train different models. Once we have a stable model, we can apply it to the validation set of held-out data to determine (unbiasedly) whether the model makes accurate predictions.
 
@@ -259,7 +265,7 @@ There are two main problems with validation sets:
 
 1. If you don't have a large data set, you'll have to dramatically shrink the size of your training set. Most statistical learning methods perform better with more observations - if you don't have enough data in the training set, you might overestimate the error rate in the test set.
 
-# Leave-one-out cross-validation
+## Leave-one-out cross-validation
 
 An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the test set, and keep all remaining observations in the training set. The statistical learning method is fit on the $n-1$ training set. You then use the held-out observation to calculate the $MSE = (y_1 - \hat{y}_1)^2$ which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
 
@@ -499,7 +505,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       </p>
     </details>
 
-# k-fold cross-validation
+## $k$-fold cross-validation
 
 A less computationally-intensive approach to cross validation is **$k$-fold cross-validation**. Rather than dividing the data into $n$ groups, one divides the observations into $k$ groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining $k-1$ folds. This process is repeated $k$ times, with each fold serving as the validation set precisely once. The $k$-fold CV estimate is calculated by averaging the MSE values for each fold:
 
@@ -507,7 +513,7 @@ $$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
 As you may have noticed, LOOCV is a special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
 
-## k-fold CV in linear regression
+## $k$-fold CV in linear regression
 
 Let's go back to the `Auto` data set. Instead of LOOCV, let's use 10-fold CV to compare the different polynomial models.
 
@@ -568,29 +574,20 @@ Pretty much the same results.
 
 ## Computational speed of LOOCV vs. $k$-fold CV
 
-### LOOCV
+```{r loocv-kfold-time}
+library(microbenchmark)
 
-```{r loocv_time}
-library(profvis)
+results_cv <- microbenchmark(
+  LOOCV = poly_mse(i = 1, vfold_data = auto_loocv),
+  `10-fold CV` = poly_mse(i = 1, vfold_data = auto_cv10)
+)
 
-profvis({
-  data_frame(terms = seq(from = 1, to = 5),
-             mse_vfold = map_dbl(terms, poly_mse, auto_loocv))
-})
-```
-
-### 10-fold CV
-
-```{r kfold_time}
-profvis({
-  data_frame(terms = seq(from = 1, to = 5),
-             mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
-})
+autoplot(results_cv)
 ```
 
 On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimating $k=10$ models is going to be much easier than estimating $k=`r nrow(Auto)`$ models.
 
-## k-fold CV in logistic regression
+## $k$-fold CV in logistic regression
 
 You've gotten the idea by now, but let's do it one more time on our interactive Titanic model.
 
@@ -622,7 +619,7 @@ mean(titanic_cv10$error_rate, na.rm = TRUE)
 
 Not a large difference from the LOOCV approach, but it take much less time to compute.
 
-## Exercise: k-fold CV
+## Exercise: $k$-fold CV
 
 1. Estimate the 10-fold CV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](stat002_linear_models.html#exercise:_linear_regression_with_scorecard).
 
@@ -702,7 +699,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
       </p>
     </details>
 
-# Session Info {.toc-ignore}
+### Session Info
 
-```{r child='_sessioninfo.Rmd'}
+```{r child = here::here("R", "_session-info.Rmd")}
 ```
