@@ -1,9 +1,17 @@
 ---
-title: "Getting data from the web: API access"
-output:
-  html_document:
-    toc: true
-    toc_float: true
+title: "Using APIs to get data"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/webdata001_api.html"]
+categories: ["webdata"]
+
+menu:
+  notes:
+    parent: Getting data from the web
+    weight: 1
 ---
 
 ```{r setup, include = FALSE}
@@ -21,8 +29,6 @@ library(viridis)
 set.seed(1234)
 theme_set(theme_minimal())
 ```
-
-# Methods for obtaining data online
 
 There are many ways to obtain data from the Internet. Four major categories are:
 
@@ -57,7 +63,7 @@ Why do we want this?
 * ease
 * scaling
 
-# Sightings of birds: `rebird`
+## Sightings of birds: `rebird`
 
 [`rebird`](https://github.com/ropensci/rebird) is an R interface for the [ebird](http://ebird.org/content/ebird/) database. e-Bird lets birders upload sightings of birds, and allows everyone access to those data.
 
@@ -75,57 +81,46 @@ The ebird website categorizes some popular locations as "Hotspots". These are ar
 
 At that link, you can see a page like this:
 
-![Lincoln Park Zoo](images/lincoln_park_zoo.png)
+![Lincoln Park Zoo](/img/lincoln_park_zoo.png)
 
 The data already look to be organized in a data frame! `rebird` allows us to read these data directly into R.
 
 > The ID code for Lincoln Park Zoo is **L1573785**
 
 ```{r rebird-lincoln-park}
-ebirdhotspot(locID = "L1573785") %>%
+ebirdhotspot(locID = "L1573785", key = getOption("EBIRD_KEY")) %>%
   as_tibble()
 ```
 
 We can use the function `ebirdgeo` to get a list for an area. (Note that South and West are negative):
 
 ```{r rebird-location}
-chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298)
+chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298, key = getOption("EBIRD_KEY"))
 chibirds %>%
   as_tibble() %>%
-  str()
+  glimpse()
 ```
 
 **Note**: Check the defaults on this function. e.g. radius of circle, time of year.
 
-We can also search by "region", which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters **FR**
+We can also search by "region", which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters **FR**:
 
 ```{r rebird-france}
-frenchbirds <- ebirdregion("FR")
+frenchbirds <- ebirdregion("FR", key = getOption("EBIRD_KEY"))
 
 frenchbirds %>%
   as_tibble() %>%
-  str()
-```
-
-Find out *WHEN* a bird has been seen in a certain place! Choosing a name from `chibirds` above (the Bald Eagle):
-
-```{r rebird-warbler}
-warbler <- ebirdgeo(species = 'Setophaga coronata', lat = 41.8781, lng = -87.6298)
-
-warbler %>%
-  as_tibble() %>%
-  str()
+  glimpse()
 ```
 
 `rebird` **knows where you are**:
 
 ```{r rebird-where-am-i}
-ebirdgeo(species = 'Setophaga coronata') %>%
-  as_tibble() %>%
-  knitr::kable()
+ebirdgeo(key = getOption("EBIRD_KEY")) %>%
+  as_tibble()
 ```
 
-# Searching geographic info: `geonames`
+## Searching geographic info: `geonames`
 
 ```{r geonames, message = FALSE}
 # install.packages(geonames)
@@ -191,12 +186,12 @@ countryInfo <- GNcountryInfo()
 ```{r geonames-str}
 countryInfo %>%
   as_tibble() %>%
-  str()
+  glimpse()
 ```
 
 This country info dataset is very helpful for accessing the rest of the data, because it gives us the standardized codes for country and language.  
 
-# The Manifesto Project: `manifestoR`
+## The Manifesto Project: `manifestoR`
 
 [The Manifesto Project](https://manifesto-project.wzb.eu/) collects and organizes political party manifestos from around the world. It currently covers over 1000 parties from 1945 until today in over 50 countries on five continents. We can use the [`manifestoR` package](https://github.com/ManifestoProject/manifestoR) to access the API and download those manifestos for analysis in R.
 
@@ -269,7 +264,7 @@ docs %>%
   comparison.cloud(max.words = 200)
 ```
 
-# Census data with `tidycensus`
+## Census data with `tidycensus`
 
 [`tidycensus`](https://walkerke.github.io/tidycensus/index.html) provides an interface with the US Census Bureau's decennial census and American Community APIs and returns tidy data frames with optional simple feature geometry. These APIs require a free key you can obtain [here](https://api.census.gov/data/key_signup.html). Rather than storing your key in `.Rprofile`, `tidycensus` includes `census_api_key()` which automatically stores your key in `.Renviron`, which is basically a global version of `.Rprofile`. Anything stored in `.Renviron` is automatically loaded anytime you initiate R on your computer, regardless of the project or file location. Once you get your key, load it:
 
@@ -283,11 +278,11 @@ census_api_key("YOUR API KEY GOES HERE")
 
 ## Obtaining data
 
-`get_decennial()` allows you to obtain data from the 1990, 2000, and 2010 decennial US censuses. Let's look at the number of individuals of Chinese ethnicity by state in 2010:
+`get_decennial()` allows you to obtain data from the 1990, 2000, and 2010 decennial US censuses. Let's look at the number of individuals of Asian ethnicity by state in 2010:
 
-```{r get-china}
-china10 <- get_decennial(geography = "state", variables = "PCT0060007", year = 2010)
-china10
+```{r get-asia}
+asia10 <- get_decennial(geography = "state", variables = "P008006", year = 2010)
+asia10
 ```
 
 The result of `get_decennial()` is a tidy data frame with one row per geographic unit-variable.
@@ -299,23 +294,23 @@ The result of `get_decennial()` is a tidy data frame with one row per geographic
 
 We can quickly visualize this data frame using `ggplot2`:
 
-```{r plot-chinese, fig.asp = 1}
-ggplot(china10, aes(x = reorder(NAME, value), y = value)) +
+```{r plot-asia, dependson = "get-asia", fig.asp = 1}
+ggplot(asia10, aes(x = reorder(NAME, value), y = value)) +
   geom_point() +
   coord_flip()
 ```
 
-Of course this graph is not entirely useful since it is based on the raw frequency of Chinese individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:
+Of course this graph is not entirely useful since it is based on the raw frequency of Asian individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:
 
-```{r china-total-pop, fig.asp = 1}
-china_pop <- get_decennial(geography = "state",
-                           variables = c("PCT0060007", "P0010001"),
-                           year = 2010) %>%
+```{r asia-total-pop, fig.asp = 1}
+asia_pop <- get_decennial(geography = "state",
+                          variables = c("P008006", "P008001"),
+                          year = 2010) %>%
   spread(variable, value) %>%
-  mutate(pct_chinese = PCT0060007 / P0010001)
-china_pop
+  mutate(pct_asia = P008006 / P008001)
+asia_pop
 
-ggplot(china_pop, aes(x = reorder(NAME, pct_chinese), y = pct_chinese)) +
+ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
   geom_point() +
   scale_y_continuous(labels = scales::percent) +
   coord_flip()
@@ -353,19 +348,22 @@ usa_inc %>%
 
 `tidycensus` also can return [simple feature geometry](geoviz_import_data.html) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](geoviz_plot.html) Let's look at median household incomeby Census tracts from the 2012-2016 ACS in Loudoun County, Virginia:
 
-```{r loudoun-sf, message = FALSE}
+```{r loudoun-sf, message = FALSE, results = "hide"}
 loudoun <- get_acs(state = "VA",
                    county = "Loudoun",
                    geography = "tract", 
                    variables = c(medincome = "B19013_001"), 
                    year = 2016,
                    geometry = TRUE)
+```
+
+```{r loudoun-sf-print, dependson = "loudoun-sf"}
 loudoun
 ```
 
 This looks similar to the previous output but because we set `geometry = TRUE` it is now a simple features data frame with a `geometry` column defining the geographic feature. We can visualize it using `geom_sf()` and `viridis::scale_*_viridis()` to adjust the color palette.
 
-```{r loudoun-sf-plot}
+```{r loudoun-sf-plot, dependson = "loudoun-sf"}
 ggplot(data = loudoun) +
   geom_sf(aes(fill = estimate, color = estimate)) + 
   coord_sf(crs = 26911) + 
@@ -373,12 +371,12 @@ ggplot(data = loudoun) +
   scale_color_viridis(option = "magma")
 ```
 
-# Acknowledgments {.toc-ignore}
+## Acknowledgments
 
-```{r child='_ack_stat545.Rmd'}
+```{r child = here::here("R", "_ack_stat545.Rmd")}
 ```
 
-# Session Info {.toc-ignore}
+## Session Info
 
-```{r child='_sessioninfo.Rmd'}
+```{r child = here::here("R", "_session-info.Rmd")}
 ```
