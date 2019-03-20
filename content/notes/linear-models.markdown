@@ -557,7 +557,7 @@ gapminder %>%
 
 ## Separate models for each country using `map()` and nested data frames
 
-What if we want to estimate separate models for **every country**? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned a couple of weeks ago how to [iterate using `for` loops](program_iteration.html#writing_for_loops). We could do this using a `for` loop, but this will take a bunch of code. Instead, let's use the [`map()` functions we already learned](program_iteration.html#map_functions), but add an additional component on top of that.
+What if we want to estimate separate models for **every country**? We could do this manually, creating a new data frame for each country. But this is tedious and repetitive. We learned a couple of weeks ago how to [iterate using `for` loops](/notes/iteration/#writing-for-loops). We could do this using a `for` loop, but this will take a bunch of code. Instead, let's use the [`map()` functions we already learned](/notes/iteration/#map-functions), but add an additional component on top of that.
 
 Instead of repeating an action for each **column** (variable), we want to repeat an action for each **country**, a subset of rows. To do that, we need a new data structure: the **nested data frame**. To create a nested data frame we start with a grouped data frame, and "nest" it:
 

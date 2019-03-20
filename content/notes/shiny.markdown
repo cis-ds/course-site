@@ -100,7 +100,7 @@ You can also create a new Shiny app using RStudio's menu by selecting *File > Ne
 
 ## Load the dataset
 
-The raw dataset contains information about all employees of the city of Chicago (`employees-all.csv`). The processed dataset we'll be using in this app is the subset of employees who are **wage** employees (paid hourly), as opposed to **salaried** employees. This subset is in the `employees-wage.csv` file.^[Feel free to explore the full employee dataset for [homework 10](hw10-shiny.html), but we will only focus on the wage employees today because there are different variables relevant to wage vs. salaried employees. We don't want to get into that confusion today.]
+The raw dataset contains information about all employees of the city of Chicago (`employees-all.csv`). The processed dataset we'll be using in this app is the subset of employees who are **wage** employees (paid hourly), as opposed to **salaried** employees. This subset is in the `employees-wage.csv` file.^[Feel free to explore the full employee dataset for [homework 10](/homework/shiny/), but we will only focus on the wage employees today because there are different variables relevant to wage vs. salaried employees. We don't want to get into that confusion today.]
 
 Add a line in your app to load the data into a variable called `employ`. It should look something like this (be sure to to add `library(tidyverse)` or `library(readr)` to the script so you can use the `read_csv` function):
 
@@ -1139,10 +1139,8 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  curl          3.3     2019-01-10 [2] CRAN (R 3.5.2)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
 ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
@@ -1156,7 +1154,6 @@ devtools::session_info()
 ##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
 ##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
 ##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
-##  highr         0.7     2018-06-09 [2] CRAN (R 3.5.0)
 ##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
 ##  httpuv        1.5.0   2019-03-15 [2] CRAN (R 3.5.2)

@@ -83,7 +83,7 @@ ggplot(Auto, aes(horsepower, mpg)) +
 
 <img src="/notes/cross-validation_files/figure-html/auto_plot_lm-1.png" width="672" />
 
-Perhaps by adding [quadratic terms](stat003_logistic_regression.html#quadratic_terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and validation set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
+Perhaps by adding [quadratic terms](/notes/logistic-regression/#quadratic-terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and validation set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
 
 `$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$`
 
@@ -250,7 +250,7 @@ Based on the MSE for the validation set, a polynomial model with a quadratic ter
 
 ## Classification
 
-Recall our efforts to [predict passenger survival during the sinking of the Titanic](stat003_logistic_regression.html#interactive_terms).
+Recall our efforts to [predict passenger survival during the sinking of the Titanic](/notes/logistic-regression/#interactive-terms).
 
 
 ```r
@@ -678,7 +678,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
 
 ## Exercise: LOOCV in linear regression
 
-1. Estimate the LOOCV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](stat002_linear_models.html#exercise:_linear_regression_with_scorecard).
+1. Estimate the LOOCV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](/notes/linear-models/#exercise-linear-regression-with-scorecard).
 
     <details> 
       <summary>Click for the solution</summary>
@@ -718,7 +718,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       </p>
     </details>
 
-1. Estimate the LOOCV MSE of a [logistic regression model of voter turnout](stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health) using only `mhealth` as the predictor. Compare this to the LOOCV MSE of a logistic regression model using all available predictors. Which is the better model?
+1. Estimate the LOOCV MSE of a [logistic regression model of voter turnout](/notes/logistic-regression/#exercise-logistic-regression-with-mental-health) using only `mhealth` as the predictor. Compare this to the LOOCV MSE of a logistic regression model using all available predictors. Which is the better model?
 
     <details> 
       <summary>Click for the solution</summary>
@@ -917,7 +917,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
 
 ## Exercise: `\(k\)`-fold CV
 
-1. Estimate the 10-fold CV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](stat002_linear_models.html#exercise:_linear_regression_with_scorecard).
+1. Estimate the 10-fold CV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](/notes/linear-models/#exercise-linear-regression-with-scorecard).
 
     <details> 
       <summary>Click for the solution</summary>
@@ -955,7 +955,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
       </p>
     </details>
 
-1. Estimate the 10-fold CV MSE of a [logistic regression model of voter turnout](stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health) using only `mhealth` as the predictor. Compare this to the LOOCV MSE of a logistic regression model using all available predictors. Which is the better model?
+1. Estimate the 10-fold CV MSE of a [logistic regression model of voter turnout](/notes/logistic-regression/#exercise-logistic-regression-with-mental-health) using only `mhealth` as the predictor. Compare this to the LOOCV MSE of a logistic regression model using all available predictors. Which is the better model?
 
     <details> 
       <summary>Click for the solution</summary>
@@ -1033,84 +1033,77 @@ devtools::session_info()
 ##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
-##  package        * version date       lib source        
-##  assertthat       0.2.0   2017-04-11 [2] CRAN (R 3.5.0)
-##  backports        1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
-##  blogdown         0.11    2019-03-11 [1] CRAN (R 3.5.2)
-##  bookdown         0.9     2018-12-21 [1] CRAN (R 3.5.0)
-##  broom          * 0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
-##  callr            3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
-##  cellranger       1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
-##  cli              1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools        0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
-##  colorspace       1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
-##  crayon           1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  desc             1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
-##  devtools         2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
-##  digest           0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
-##  dplyr          * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
-##  evaluate         0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  forcats        * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
-##  fs               1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
-##  generics         0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
-##  ggplot2        * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
-##  glue             1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
-##  gtable           0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
-##  haven            2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
-##  here             0.1     2017-05-28 [2] CRAN (R 3.5.0)
-##  hms              0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
-##  htmltools        0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
-##  htmlwidgets      1.3     2018-09-30 [2] CRAN (R 3.5.0)
-##  httr             1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
-##  ISLR           * 1.2     2017-10-20 [2] CRAN (R 3.5.0)
-##  jsonlite         1.6     2018-12-07 [2] CRAN (R 3.5.0)
-##  knitr            1.22    2019-03-08 [2] CRAN (R 3.5.2)
-##  lattice          0.20-38 2018-11-04 [2] CRAN (R 3.5.2)
-##  lazyeval         0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
-##  lubridate        1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
-##  magrittr       * 1.5     2014-11-22 [2] CRAN (R 3.5.0)
-##  memoise          1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
-##  microbenchmark * 1.4-6   2018-10-18 [2] CRAN (R 3.5.0)
-##  modelr         * 0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
-##  munsell          0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme             3.1-137 2018-04-07 [2] CRAN (R 3.5.2)
-##  pillar           1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
-##  pkgbuild         1.0.2   2018-10-16 [1] CRAN (R 3.5.0)
-##  pkgconfig        2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
-##  pkgload          1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
-##  plyr             1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
-##  prettyunits      1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
-##  processx         3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
-##  profvis        * 0.3.5   2018-02-22 [2] CRAN (R 3.5.0)
-##  ps               1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
-##  purrr          * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
-##  R6               2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss          * 0.1.5   2019-01-24 [1] local         
-##  Rcpp             1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
-##  readr          * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
-##  readxl           1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
-##  remotes          2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang            0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
-##  rmarkdown        1.12    2019-03-14 [1] CRAN (R 3.5.2)
-##  rprojroot        1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
-##  rsample        * 0.0.4   2019-01-07 [1] CRAN (R 3.5.2)
-##  rstudioapi       0.9.0   2019-01-09 [1] CRAN (R 3.5.2)
-##  rvest            0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
-##  scales           1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
-##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
-##  stringi          1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
-##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
-##  testthat         2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
-##  tibble         * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
-##  tidyr          * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
-##  tidyselect       0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
-##  tidyverse      * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
-##  titanic        * 0.1.0   2015-08-31 [2] CRAN (R 3.5.0)
-##  usethis          1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  withr            2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
-##  xfun             0.5     2019-02-20 [1] CRAN (R 3.5.2)
-##  xml2             1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
-##  yaml             2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
+##  package     * version date       lib source        
+##  assertthat    0.2.0   2017-04-11 [2] CRAN (R 3.5.0)
+##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
+##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
+##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
+##  broom       * 0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
+##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
+##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
+##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
+##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
+##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
+##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
+##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
+##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
+##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
+##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
+##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
+##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
+##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
+##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
+##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
+##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
+##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
+##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
+##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
+##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
+##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
+##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
+##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
+##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.2)
+##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
+##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
+##  magrittr    * 1.5     2014-11-22 [2] CRAN (R 3.5.0)
+##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
+##  modelr      * 0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
+##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
+##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.2)
+##  pillar        1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
+##  pkgbuild      1.0.2   2018-10-16 [1] CRAN (R 3.5.0)
+##  pkgconfig     2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
+##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
+##  plyr          1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
+##  prettyunits   1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
+##  processx      3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
+##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
+##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
+##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
+##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
+##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
+##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
+##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
+##  rlang         0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
+##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
+##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
+##  rsample     * 0.0.4   2019-01-07 [1] CRAN (R 3.5.2)
+##  rstudioapi    0.9.0   2019-01-09 [1] CRAN (R 3.5.2)
+##  rvest         0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
+##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
+##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
+##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
+##  tibble      * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
+##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
+##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
+##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
+##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
+##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
+##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
+##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
+##  yaml          2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
 ## 
 ## [1] /Users/soltoffbc/Library/R/3.5/library
 ## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library

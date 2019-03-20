@@ -27,7 +27,7 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-Rather than storing spatial data as [raster image files](geoviz_ggmap.html) which are not easily modifiable, we can instead store spatial data  as **vector** files. Vector files store the underlying geographical features (e.g. points, lines, polygons) as numerical data which software such as R can import and use to draw a map.
+Rather than storing spatial data as [raster image files](/notes/raster-maps-with-ggmap/) which are not easily modifiable, we can instead store spatial data  as **vector** files. Vector files store the underlying geographical features (e.g. points, lines, polygons) as numerical data which software such as R can import and use to draw a map.
 
 There are [many popular file formats for storing spatial data.](https://en.wikipedia.org/wiki/GIS_file_formats#Popular_GIS_file_formats) Here we will look at two common file types, **shapefiles** and **GeoJSON**.
 
@@ -41,7 +41,7 @@ There are [many popular file formats for storing spatial data.](https://en.wikip
 
 ## GeoJSON
 
-**GeoJSON** is a newer format for encoding a variety of geographical data structures using the **J**ava**S**cript **O**bject **N**otation (JSON) file format. JSON formatted data is frequently used in web development and services. We will explore it in more detail when we get to [collecting data from the web.](webdata003_api_by_hand.html#intro_to_json_and_xml) An example of a GeoJSON file is below:
+**GeoJSON** is a newer format for encoding a variety of geographical data structures using the **J**ava**S**cript **O**bject **N**otation (JSON) file format. JSON formatted data is frequently used in web development and services. We will explore it in more detail when we get to [collecting data from the web.](/notes/write-an-api-function/#intro-to-json-and-xml) An example of a GeoJSON file is below:
 
 ```json
 {
@@ -246,7 +246,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -260,7 +260,6 @@ devtools::session_info()
 ##  class         7.3-15  2019-01-01 [2] CRAN (R 3.5.2)
 ##  classInt      0.3-1   2018-12-18 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  DBI           1.0.0   2018-05-02 [2] CRAN (R 3.5.0)

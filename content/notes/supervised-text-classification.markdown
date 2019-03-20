@@ -34,7 +34,7 @@ Alternatively, we can now use statistical learning models to classify text into 
 
 1. Hand-code a small set of documents (say `\(1000\)`) for whatever variable(s) you care about
 1. Train a statistical learning model on the hand-coded data, using the variable as the outcome of interest and the text features of the documents as the predictors
-1. Evaluate the effectiveness of the statistical learning model via a [resampling method](stat004_decision_trees.html)
+1. Evaluate the effectiveness of the statistical learning model via [cross-validation](/notes/cross-validation/)
 1. Once you have trained a model with sufficient predictive accuracy, apply the model to the remaining set of documents that have never been hand-coded (say `\(1000000\)`)
 
 ## Sample set of documents: `USCongress`
@@ -285,7 +285,7 @@ congress_rf <- train(x = as.matrix(congress_dtm),
                      trControl = trainControl(method = "oob"))
 ```
 
-Note the differences from [how we specified them before with a standard data frame](stat004_decision_trees.html#estimating_a_random_forest).
+Note the differences from [how we specified them before with a standard data frame](/notes/decision-tree/#estimating-a-random-forest).
 
 * `x = as.matrix(congress_dtm)` - instead of using a formula, we pass the independent and dependent variables separately into `train()`. `x` needs to be a simple matrix, data frame, or sparse matrix. These are specific types of objects in R. `congress_dtm` is a `DocumentTermMatrix`, so we use `as.matrix()` to convert it to a simple matrix.
 * `y = factor(congress$major)` - we return to the original `congress` data frame to obtain the vector of outcome values for each document. Here, this is the major topic code associated with each bill. The important thing is that the order of documents in `x` remains the same as the order of documents in `y`, so that each document is associated with the correct outcome. Because `congress$major` is a numeric vector, we need to convert it to a factor vector so that we perform classification (and not regression).
@@ -437,9 +437,7 @@ devtools::session_info()
 ##  devtools       2.0.1      2018-10-26 [1] CRAN (R 3.5.1)
 ##  digest         0.6.18     2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr        * 0.8.0.1    2019-02-15 [1] CRAN (R 3.5.2)
-##  e1071          1.7-0.1    2019-01-21 [1] CRAN (R 3.5.2)
 ##  evaluate       0.13       2019-02-12 [2] CRAN (R 3.5.2)
-##  fansi          0.4.0      2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats      * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)
 ##  foreach        1.4.4      2017-12-12 [2] CRAN (R 3.5.0)
 ##  fs             1.2.6      2018-08-23 [1] CRAN (R 3.5.0)
@@ -458,7 +456,6 @@ devtools::session_info()
 ##  janeaustenr    0.1.5      2017-06-10 [2] CRAN (R 3.5.0)
 ##  jsonlite       1.6        2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr          1.22       2019-03-08 [2] CRAN (R 3.5.2)
-##  labeling       0.3        2014-08-23 [2] CRAN (R 3.5.0)
 ##  lattice      * 0.20-38    2018-11-04 [2] CRAN (R 3.5.2)
 ##  lava           1.6.5      2019-02-12 [2] CRAN (R 3.5.2)
 ##  lazyeval       0.2.2      2019-03-15 [2] CRAN (R 3.5.2)
@@ -484,7 +481,6 @@ devtools::session_info()
 ##  ps             1.3.0      2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr        * 0.3.2      2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.5.2)
-##  randomForest   4.6-14     2018-03-25 [2] CRAN (R 3.5.0)
 ##  Rcpp           1.0.0      2018-11-07 [1] CRAN (R 3.5.0)
 ##  readr        * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl         1.3.1      2019-03-13 [2] CRAN (R 3.5.2)
@@ -514,7 +510,6 @@ devtools::session_info()
 ##  tm           * 0.7-6      2018-12-21 [2] CRAN (R 3.5.0)
 ##  tokenizers     0.2.1      2018-03-29 [2] CRAN (R 3.5.0)
 ##  usethis        1.4.0      2018-08-14 [1] CRAN (R 3.5.0)
-##  utf8           1.1.4      2018-05-24 [2] CRAN (R 3.5.0)
 ##  withr          2.1.2      2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun           0.5        2019-02-20 [1] CRAN (R 3.5.2)
 ##  xml2           1.2.0      2018-01-24 [2] CRAN (R 3.5.0)

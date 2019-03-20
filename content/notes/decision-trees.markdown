@@ -62,7 +62,7 @@ titanic %>%
 |           5|        0|      3|Allen, Mr. William Henry                            |male   |  35|     0|     0|373450           |  8.0500|      |S        |
 |           6|        0|      3|Moran, Mr. James                                    |male   |  NA|     0|     0|330877           |  8.4583|      |Q        |
 
-I want to predict who lives and who dies during this event. Instead of using [logistic regression](stat003_logistic_regression.html), I'm going to calculate a decision tree based on a passenger's age and gender. Here's what that decision tree looks like:
+I want to predict who lives and who dies during this event. Instead of using [logistic regression](/notes/logistic-regression/), I'm going to calculate a decision tree based on a passenger's age and gender. Here's what that decision tree looks like:
 
 <img src="/notes/decision-trees_files/figure-html/titanic_tree-1.png" width="672" />
 
@@ -846,7 +846,7 @@ This tells us how much each variable decreases the average **Gini index**, a mea
 
 ## Exercise: random forests with `mental_health`
 
-Recall the [`mental_health` dataset we used to practice logistic regression](stat003_logistic_regression.html#exercise:_logistic_regression_with_mental_health). We could also use decision trees or a random forest approach to predict which individuals voted in the 1996 presidential election based on their mental health. Use the `mental_health` data set in `library(rcfss)` and tree-based methods to predict whether or not an individual voted.^[Update `rcfss` using `devtools::install_github("uc-cfss/rcfss")` if you cannot access the data set.]
+Recall the [`mental_health` dataset we used to practice logistic regression](/notes/logistic-regression/#exercise-logistic-regression-with-mental-health). We could also use decision trees or a random forest approach to predict which individuals voted in the 1996 presidential election based on their mental health. Use the `mental_health` data set in `library(rcfss)` and tree-based methods to predict whether or not an individual voted.^[Update `rcfss` using `devtools::install_github("uc-cfss/rcfss")` if you cannot access the data set.]
 
 
 ```r

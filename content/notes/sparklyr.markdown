@@ -37,7 +37,7 @@ Learning to use Hadoop and Spark can be very complicated. They use their own pro
 
 * Connect to Spark from R using the `dplyr` interface
 * Interact with SQL databases stored on a Spark cluster
-* Implement distributed [statistical](cm011.html) [learning](cm012.html) algorithms
+* Implement distributed [statistical learning](/notes/statistical-learning/) algorithms
 
 See [here](http://spark.rstudio.com/) for more detailed instructions for setting up and using `sparklyr`.
 
@@ -648,7 +648,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version   date       lib source        
@@ -660,10 +660,10 @@ devtools::session_info()
 ##  blogdown      0.11      2019-03-11 [1] CRAN (R 3.5.2)
 ##  bookdown      0.9       2018-12-21 [1] CRAN (R 3.5.0)
 ##  broom         0.5.1     2018-12-05 [2] CRAN (R 3.5.0)
-##  callr         3.1.1     2018-12-21 [2] CRAN (R 3.5.0)
+##  callr         3.2.0     2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0     2016-07-27 [2] CRAN (R 3.5.0)
-##  cli           1.0.1     2018-09-25 [1] CRAN (R 3.5.0)
-##  colorspace    1.4-0     2019-01-13 [2] CRAN (R 3.5.2)
+##  cli           1.1.0     2019-03-19 [1] CRAN (R 3.5.2)
+##  colorspace    1.4-1     2019-03-18 [2] CRAN (R 3.5.2)
 ##  config        0.3       2018-03-27 [2] CRAN (R 3.5.0)
 ##  crayon        1.3.4     2017-09-16 [2] CRAN (R 3.5.0)
 ##  DBI           1.0.0     2018-05-02 [2] CRAN (R 3.5.0)
@@ -680,7 +680,7 @@ devtools::session_info()
 ##  fs            1.2.6     2018-08-23 [1] CRAN (R 3.5.0)
 ##  generics      0.0.2     2018-11-29 [1] CRAN (R 3.5.0)
 ##  ggplot2     * 3.1.0     2018-10-25 [1] CRAN (R 3.5.0)
-##  glue          1.3.0     2018-07-17 [2] CRAN (R 3.5.0)
+##  glue          1.3.1     2019-03-12 [2] CRAN (R 3.5.2)
 ##  gtable        0.2.0     2016-02-26 [2] CRAN (R 3.5.0)
 ##  h2o         * 3.22.1.1  2019-01-10 [2] CRAN (R 3.5.2)
 ##  haven         2.1.0     2019-02-19 [2] CRAN (R 3.5.2)
@@ -692,7 +692,7 @@ devtools::session_info()
 ##  jsonlite      1.6       2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr         1.22      2019-03-08 [2] CRAN (R 3.5.2)
 ##  lattice       0.20-38   2018-11-04 [2] CRAN (R 3.5.2)
-##  lazyeval      0.2.1     2017-10-29 [2] CRAN (R 3.5.0)
+##  lazyeval      0.2.2     2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate     1.7.4     2018-04-11 [2] CRAN (R 3.5.0)
 ##  magrittr      1.5       2014-11-22 [2] CRAN (R 3.5.0)
 ##  memoise       1.1.0     2017-04-21 [2] CRAN (R 3.5.0)
@@ -708,17 +708,17 @@ devtools::session_info()
 ##  prettyunits   1.0.2     2015-07-13 [2] CRAN (R 3.5.0)
 ##  processx      3.3.0     2019-03-10 [2] CRAN (R 3.5.2)
 ##  ps            1.3.0     2018-12-21 [2] CRAN (R 3.5.0)
-##  purrr       * 0.3.1     2019-03-03 [2] CRAN (R 3.5.2)
+##  purrr       * 0.3.2     2019-03-15 [2] CRAN (R 3.5.2)
 ##  r2d3          0.2.3     2018-12-18 [2] CRAN (R 3.5.0)
 ##  R6            2.4.0     2019-02-14 [1] CRAN (R 3.5.2)
 ##  rappdirs      0.3.1     2016-03-28 [2] CRAN (R 3.5.0)
 ##  Rcpp          1.0.0     2018-11-07 [1] CRAN (R 3.5.0)
 ##  RCurl         1.95-4.12 2019-03-04 [2] CRAN (R 3.5.2)
 ##  readr       * 1.3.1     2018-12-21 [2] CRAN (R 3.5.0)
-##  readxl        1.3.0     2019-02-15 [2] CRAN (R 3.5.2)
+##  readxl        1.3.1     2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes       2.0.2     2018-10-30 [1] CRAN (R 3.5.0)
 ##  rlang         0.3.1     2019-01-08 [1] CRAN (R 3.5.2)
-##  rmarkdown     1.11      2018-12-08 [2] CRAN (R 3.5.0)
+##  rmarkdown     1.12      2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2     2018-01-03 [2] CRAN (R 3.5.0)
 ##  rsparkling  * 0.2.18    2019-01-30 [2] CRAN (R 3.5.2)
 ##  rstudioapi    0.9.0     2019-01-09 [1] CRAN (R 3.5.2)
@@ -729,7 +729,7 @@ devtools::session_info()
 ##  stringi       1.3.1     2019-02-13 [1] CRAN (R 3.5.2)
 ##  stringr     * 1.4.0     2019-02-10 [1] CRAN (R 3.5.2)
 ##  testthat      2.0.1     2018-10-13 [2] CRAN (R 3.5.0)
-##  tibble      * 2.0.1     2019-01-12 [2] CRAN (R 3.5.2)
+##  tibble      * 2.1.1     2019-03-16 [2] CRAN (R 3.5.2)
 ##  tidyr       * 0.8.3     2019-03-01 [1] CRAN (R 3.5.2)
 ##  tidyselect    0.2.5     2018-10-11 [1] CRAN (R 3.5.0)
 ##  tidyverse   * 1.2.1     2017-11-14 [2] CRAN (R 3.5.0)

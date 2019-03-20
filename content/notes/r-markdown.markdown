@@ -454,7 +454,7 @@ To run a script saved on your computer, use the `source()` function in the conso
 
 ## Running scripts via the shell
 
-You can also run scripts directly from the [shell](shell.html) using `Rscript`:
+You can also run scripts directly from the [shell](/setup/shell/) using `Rscript`:
 
 ```bash
 Rscript gun-deaths.R
@@ -494,7 +494,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -506,7 +506,6 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)

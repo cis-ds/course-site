@@ -53,7 +53,7 @@ Type `?scorecard` in the console to open up the help file for this data set. Thi
 
 ## Which type of college has the highest average SAT score?
 
-**NOTE: This time, use a graph to visualize your answer, [not a table](datawrangle_transform_college.html#generate_a_data_frame_with_the_average_sat_score_for_each_type_of_college).**
+**NOTE: This time, use a graph to visualize your answer, [not a table](/notes/transform-college/#generate-a-data-frame-with-the-average-sat-score-for-each-type-of-college).**
 
 <details> 
   <summary>Click for the solution</summary>
@@ -340,7 +340,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

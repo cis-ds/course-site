@@ -125,7 +125,7 @@ x + 100
 ##  [1] 102 106 105 108 109 104 101 107 110 103
 ```
 
-This is why [you don't need to write an iterative operation when performing these basic operations](program_functions.html#exercise:_calculate_the_sum_of_squares_of_two_variables) - R automatically converts it for you.
+This is why [you don't need to write an iterative operation when performing these basic operations](/notes/functions#exercise:-calculate-the-sum-of-squares-of-two-variables) - R automatically converts it for you.
 
 Sometimes this isn't so great, because R will also recycle vectors if the lengths are not equal:
 
@@ -710,7 +710,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -722,7 +722,6 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.2)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
