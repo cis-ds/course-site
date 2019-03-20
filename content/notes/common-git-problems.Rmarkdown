@@ -70,7 +70,7 @@ I don't have permission to edit the master repo on Hadley Wickham's account.
 
 How do I fix this? I could go back and clone the correct fork, but if I've already made several commits then I'll lose all my work. Instead, I can change the `upstream` url: this changes the location Git tries to push my changes. To do this:
 
-1. Open up the [shell](shell.html)
+1. Open up the [shell](/setup/shell/)
 1. Change the current working directory to your local project (should use the `cd` command)
 1. List your existing remotes in order to get the name of the remote you want to change.
     ```bash

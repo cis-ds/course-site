@@ -60,7 +60,7 @@ math: false
 
 * [Slides](extras/cm007_slides.html)
 * [Pipes in R](/notes/pipes/)
-* [Practice the pipe](/notes/pipes-practice/)
+* [Practice the pipe](/notes/pipes-exercise/)
 * [Functions in R](/notes/functions/)
 
 ## What you need to do

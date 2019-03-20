@@ -22,7 +22,7 @@ email: "soltoffbc@uchicago.edu"
 name: Benjamin Soltoff
 organizations:
 - name: University of Chicago
-  url: "https:://macss.uchicago.edu"
+  url: "https://macss.uchicago.edu"
 role: Lecturer in Computational Social Science
 social:
 - icon: envelope

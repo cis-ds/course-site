@@ -23,30 +23,30 @@ Before we can do any of this, we need to install all the necessary software and 
 
 If you want to run R on your own computer, follow these instructions.
 
-* [Why R?](setup01.html)
-* [Setup R](setup03.html)
+* [Why R?](/setup/what-is-r/)
+* [Setup R](/setup/r/)
 * Git
-    * [What is Git?](git00.html)
+    * [What is Git?](/setup/what-is-git/)
     * Installation
         * [Register a free GitHub account.](https://github.com/) As a university student, also check to see if you are eligible for [GitHub Education offers](https://education.github.com/). Some of these are very useful, such as unlimited [private repositories](https://help.github.com/articles/what-plan-should-i-choose/). Remember that once you create a GitHub account, you are stuck with that username. Choose something professional and start building a positive social media presence.
-        * [Install Git](git01.html)
-        * [Install Git client](git02.html)
+        * [Install Git](/setup/git/)
+        * [Install Git client](/setup/git-clients/)
     * Configure Git/GitHub
-        * [Personalize Git](git03.html)
-        * [Git -> GitHub](git04.html)
+        * [Personalize Git](/setup/personalize-git/)
+        * [Git -> GitHub](/setup-github/)
     * Configure Git
-        * [Using Git within RStudio](git05.html)
-        * [GitHub credentials and avoiding monotony](git07.html)
-        * [Complete homework 01](hw01-edit-README.html)
+        * [Using Git within RStudio](/setup/git-with-rstudio/)
+        * [GitHub credentials and avoiding monotony](/setup/git-cache-credentials/)
+        * [Complete homework 01](/homework/edit-readme/)
 
 ## Option 2 - use RStudio Cloud
 
 If you want to avoid installing anything on your computer and access R and RStudio through your web browser, follow these instructions.
 
 * R
-    * [Why R?](setup01.html)
-    * [Accessing RStudio Cloud](setup_cloud.html)
+    * [Why R?](/setup/what-is-r/)
+    * [Accessing RStudio Cloud](/setup/r-cloud/)
 * Git
-    * [What is Git?](git00.html)
-    * [Register a free GitHub account](https://github.com/)
-    * [Using Git within RStudio](git05.html#test_drive_rstudio_and_github)
+    * [What is Git?](/setup/what-is-git/)
+    * [Register a free GitHub account.](https://github.com/)
+    * [Using Git within RStudio](/setup/git-with-rstudio/#test-drive-rstudio-and-github)

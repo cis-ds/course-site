@@ -31,7 +31,7 @@ theme_set(theme_minimal())
 
 [`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
 
-> Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. We will learn far more about APIs [next week](cm015.html). In the meantime, I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
+> Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. We will learn far more about APIs [next week](/notes/application-program-interface/). In the meantime, I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
 
 ## Obtain map images
 
@@ -266,7 +266,7 @@ ggmap(chicago) +
 
 Note the two new arguments:
 
-* `geom = "polygon"` - change the [geometric object](dataviz_grammar_of_graphics.html#geometric_objects) to be drawn from a `density_2d` geom to a `polygon` geom
+* `geom = "polygon"` - change the [geometric object](/notes/grammar-of-graphics/#geometric-objects) to be drawn from a `density_2d` geom to a `polygon` geom
 * `fill = stat(level)` - the value for the `fill` aesthetic is the `level` calculated within `stat_density_2d()`, which we access using the `stat()` notation.
 
 This is an improvement, but we can adjust some additional settings to make the graph visually more useful. Specifically,
@@ -496,7 +496,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib
@@ -508,21 +508,14 @@ devtools::session_info()
 ##  broom          0.5.1   2018-12-05 [2]
 ##  callr          3.2.0   2019-03-15 [2]
 ##  cellranger     1.1.0   2016-07-27 [2]
-##  class          7.3-15  2019-01-01 [2]
-##  classInt       0.3-1   2018-12-18 [2]
 ##  cli            1.1.0   2019-03-19 [1]
-##  codetools      0.2-16  2018-12-24 [2]
 ##  colorspace     1.4-1   2019-03-18 [2]
 ##  crayon         1.3.4   2017-09-16 [2]
-##  curl           3.3     2019-01-10 [2]
-##  DBI            1.0.0   2018-05-02 [2]
 ##  desc           1.2.0   2018-05-01 [2]
 ##  devtools       2.0.1   2018-10-26 [1]
 ##  digest         0.6.18  2018-10-10 [1]
 ##  dplyr        * 0.8.0.1 2019-02-15 [1]
-##  e1071          1.7-0.1 2019-01-21 [1]
 ##  evaluate       0.13    2019-02-12 [2]
-##  fansi          0.4.0   2018-10-05 [2]
 ##  forcats      * 0.4.0   2019-02-17 [2]
 ##  fs             1.2.6   2018-08-23 [1]
 ##  generics       0.0.2   2018-11-29 [1]
@@ -538,7 +531,6 @@ devtools::session_info()
 ##  jpeg           0.1-8   2014-01-23 [1]
 ##  jsonlite       1.6     2018-12-07 [2]
 ##  knitr          1.22    2019-03-08 [2]
-##  labeling       0.3     2014-08-23 [2]
 ##  lattice        0.20-38 2018-11-04 [2]
 ##  lazyeval       0.2.2   2019-03-15 [2]
 ##  lubridate      1.7.4   2018-04-11 [2]
@@ -573,7 +565,6 @@ devtools::session_info()
 ##  rvest          0.3.2   2016-06-17 [2]
 ##  scales         1.0.0   2018-08-09 [1]
 ##  sessioninfo    1.1.1   2018-11-05 [1]
-##  sf           * 0.7-3   2019-02-21 [1]
 ##  stringi        1.3.1   2019-02-13 [1]
 ##  stringr      * 1.4.0   2019-02-10 [1]
 ##  testthat       2.0.1   2018-10-13 [2]
@@ -581,9 +572,7 @@ devtools::session_info()
 ##  tidyr        * 0.8.3   2019-03-01 [1]
 ##  tidyselect     0.2.5   2018-10-11 [1]
 ##  tidyverse    * 1.2.1   2017-11-14 [2]
-##  units          0.6-2   2018-12-05 [1]
 ##  usethis        1.4.0   2018-08-14 [1]
-##  utf8           1.1.4   2018-05-24 [2]
 ##  withr          2.1.2   2018-03-15 [2]
 ##  xfun           0.5     2019-02-20 [1]
 ##  xml2           1.2.0   2018-01-24 [2]
@@ -598,11 +587,6 @@ devtools::session_info()
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
@@ -612,8 +596,6 @@ devtools::session_info()
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
@@ -627,7 +609,6 @@ devtools::session_info()
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
@@ -664,12 +645,9 @@ devtools::session_info()
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      

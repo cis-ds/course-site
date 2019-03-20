@@ -61,7 +61,7 @@ math: false
 
 * [Slides](extras/cm018_slides.html)
 * [Text analysis: supervised classification](/notes/supervised-text-classification/)
-* [Text analysis: topic modeling](/notes/topic-models/)
+* [Text analysis: topic modeling](/notes/topic-modeling/)
 
 ## To do for Monday
 

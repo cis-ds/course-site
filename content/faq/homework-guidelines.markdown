@@ -13,7 +13,7 @@ aliases: ["/hw00_homework_guidelines"]
 
 ## GitHub prerequisites
 
-I assume you can [pull from and push to GitHub from RStudio](git07.html).
+I assume you can [pull from and push to GitHub from RStudio](/setup/git-with-rstudio/).
 
 ## Homework workflow
 

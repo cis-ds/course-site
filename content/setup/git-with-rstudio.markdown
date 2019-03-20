@@ -108,7 +108,7 @@ Sometimes you cannot always setup the GitHub repo first, or you already have an 
 
     `git push -u origin master`
 
-* It is possible you will be challenged for username and password here; if so, you will want to [setup credential storing on your machine](git07.html).
+* It is possible you will be challenged for username and password here; if so, you will want to [setup credential storing on your machine](/notes/git-cache-credentials/).
 
 ## Step 3: Make local changes, save, commit
 
