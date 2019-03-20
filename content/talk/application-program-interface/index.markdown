@@ -40,9 +40,7 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
@@ -57,14 +55,14 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Before class
 
-* Read [Getting data from the web: API access](webdata001_api.html)
-* Read [Getting data from the web: writing API queries](webdata003_api_by_hand.html)
+* Read [Getting data from the web: API access](/notes/application-program-interface/)
+* Read [Getting data from the web: writing API queries](/notes/write-an-api-function/)
 
 ## Slides and links
 
 * [Slides](extras/cm015_slides.html)
-* [Practice getting data from the Twitter API](webdata002_twitter_exercise.html)
-* [Simplifying lists with `purrr`](webdata004_simplifying_lists.html)
+* [Practice getting data from the Twitter API](/notes/twitter-api-practice/)
+* [Simplifying lists with `purrr`](/notes/simplify-nested-lists/)
 
 * [More install-and-play API packages for R](https://github.com/ropensci/webservices)
 * [Documentation for `httr`](https://cran.r-project.org/web/packages/httr/)
