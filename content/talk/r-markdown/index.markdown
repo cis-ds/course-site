@@ -2,7 +2,7 @@
 title: "A deep dive into R Markdown"
 date: 2019-05-01T13:30:00
 publishDate: 2019-03-01T13:30:00
-draft: false
+draft: true
 type: "talk"
 
 alias: ["/cm010.html"]

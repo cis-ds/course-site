@@ -1,11 +1,9 @@
 ---
-title: "A deep dive into R Markdown"
+title: "Project management"
 date: 2019-05-01T13:30:00
 publishDate: 2019-03-01T13:30:00
-draft: true
+draft: false
 type: "talk"
-
-alias: ["/cm010.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -18,7 +16,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "All things related to R Markdown, plus a review of R scripts and Git troubleshooting."
+summary: "What I don't want to forget to teach you about R."
 
 # Location of event.
 location: "Room 247, Saieh Hall for Economics, Chicago, IL"
@@ -40,17 +38,16 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
 * Review the importance of reproducibility in scientific research
-* Identify the major components of R Markdown
-* Implement chunk options to customize output
-* Incorporate in-line R code in R Markdown documents
-* Introduce the different R Markdown formats
+* Define a project-oriented workflow
+* Demonstrate how to construct safe filepaths using `here()`
+* Distinguish between R scripts (`.R`) and R Markdown documents (`.Rmd`)
+* Identify R startup procedures
+* Practice generating reproducible examples
 * Identify common problems with Git and explain how to resolve these problems
 
 ## Before class
@@ -64,9 +61,7 @@ knitr::opts_chunk$set(echo = FALSE)
 * [Slides](extras/cm010_slides.html)
 * [A dive into R Markdown](/notes/r-markdown/)
 
-* [R Markdown](http://rmarkdown.rstudio.com/) - the official site for R Markdown. Lots of great explanations of the different formats and options available for each one.
-* [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/) - documentation for `flexdashboard` to create information dashboards using R Markdown
-* [`pipeline-example`](https://github.com/uc-cfss/pipeline-example) - a repo demonstrating how to combine and use R scripts and R Markdown documents. I recommend you fork/clone the repo to your computer, then explore and execute the different files to see how everything works together.
+* [What They Forgot to Teach You About R](https://whattheyforgot.org/)
 
 ## What you need to do
 
