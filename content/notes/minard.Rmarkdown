@@ -1,0 +1,127 @@
+---
+title: "How to build a complicated, layered graphic"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/dataviz_minard.html"]
+categories: ["dataviz"]
+
+menu:
+  notes:
+    parent: Data visualization
+    weight: 3
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+options(digits = 3)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(here)
+```
+
+![["Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813" by Charles Joseph Minard](https://en.wikipedia.org/wiki/Charles_Joseph_Minard)](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)
+
+**Charles Minard's map of Napoleon's disastrous Russian campaign of 1812** is notable for its representation in two dimensions of six types of data: the number of Napoleon's troops; distance; temperature; the latitude and longitude; direction of travel; and location relative to specific dates.^[This exercise is drawn from [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)]
+
+## Building Minard's map in R
+
+```{r minard_data}
+# get data on troop movements and city names
+troops <- here("static", "data", "minard-troops.txt") %>%
+  read_table()
+cities <- here("static", "data", "minard-cities.txt") %>%
+  read_table()
+troops
+cities
+```
+
+### Exercise: Define the grammar of graphics for this graph
+
+<details> 
+  <summary>**Click here for solution**</summary>
+  <p>
+  
+* Layer
+    * Data - `troops`
+    * Mapping
+        * $x$ and $y$ - troop position (`lat` and `long`)
+        * Size - `survivors`
+        * Color - `direction`
+    * Statistical transformation (stat) - `identity`
+    * Geometric object (geom) - `path`
+    * Position adjustment (position) - none
+* Layer
+    * Data - `cities`
+    * Mapping
+        * $x$ and $y$ - city position (`lat` and `long`)
+        * Label - `city`
+    * Statistical transformation (stat) - `identity`
+    * Geometric object (geom) - `text`
+    * Position adjustment (position) - none
+* Scale
+    * Size - range of widths for troop `path`
+    * Color - colors to indicate advancing or retreating troops
+* Coordinate system - map projection (Mercator or something else)
+* Faceting - none
+
+  </p>
+</details>
+
+## Write the R code
+
+First we want to build the layer for the troop movement:
+
+```{r plot_troops}
+plot_troops <- ggplot(data = troops, mapping = aes(x = long, y = lat)) +
+  geom_path(aes(size = survivors,
+                color = direction,
+                group = group))
+plot_troops
+```
+
+Next let's add the cities layer:
+
+```{r plot_cities, dependson = 'plot_troops'}
+plot_both <- plot_troops + 
+  geom_text(data = cities, mapping = aes(label = city), size = 4)
+plot_both
+```
+
+Now that the basic information is on there, we want to clean up the graph and polish the visualization by:
+
+* Adjusting the size scale aesthetics for troop movement to better highlight the loss of troops over the campaign.
+* Change the default colors to mimic Minard's original grey and tan palette.
+* Change the coordinate system to a map-based system that draws the $x$ and $y$ axes at equal intervals.
+* Give the map a title and remove the axis labels.
+
+```{r plot_clean, dependson = 'plot_cities'}
+plot_polished <- plot_both +
+  scale_size(range = c(0, 12),
+             breaks = c(10000, 20000, 30000),
+             labels = c("10,000", "20,000", "30,000")) + 
+  scale_color_manual(values = c("tan", "grey50")) +
+  coord_map() +
+  labs(title = "Map of Napoleon's Russian campaign of 1812",
+       x = NULL,
+       y = NULL)
+plot_polished
+```
+
+Finally we can change the default `ggplot` theme to remove the background and grid lines, as well as the legend:
+
+```{r plot_final, dependson = 'plot_clean'}
+plot_polished +
+  theme_void() +
+  theme(legend.position = "none")
+```
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

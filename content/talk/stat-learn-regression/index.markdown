@@ -1,0 +1,85 @@
+---
+title: "Statistical learning: regression"
+date: 2019-05-06T13:30:00
+publishDate: 2019-03-01T13:30:00
+draft: true
+type: "talk"
+
+alias: ["/cm011.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_start: 2019-05-06T13:30:00
+time_end: 2019-05-06T14:50:00
+all_day: false
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Review the goals of statistical learning, introduce methods for linear regression, and practice working with model objects in R."
+
+# Location of event.
+location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: ""
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
+---
+
+
+
+## Overview
+
+* Review the major goals of statistical learning
+* Explain the difference between parametric and non-parametric methods
+* Introduce linear models and ordinary least squares regression
+* Demonstrate how to estimate a linear model in R using `lm()`
+* Demonstrate how to extract model statistics using [`broom`](https://cran.r-project.org/web/packages/broom/index.html) and [`modelr`](https://github.com/hadley/modelr)
+* Practice estimating and interpreting linear models
+* Demonstrate the use of logistic regression for classification
+* Identify methods for assessing classification model accuracy
+
+## Before class
+
+* Read chapters 22-25 in [R for Data Science](http://r4ds.had.co.nz/)
+* This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
+
+##### For those with little/no statistics training
+
+* Interactive experience with R - [DataCamp](https://www.datacamp.com/home)
+    * [Correlation and Regression](https://www.datacamp.com/courses/correlation-and-regression)
+    * [Multiple and Logistic Regression](https://www.datacamp.com/courses/multiple-and-logistic-regression)
+    * Both modules require a premium DataCamp subscription. Students in this course should have received an email providing a free subscription for the duration of the quarter.
+    * If you have not yet created an account on DataCamp, [go here to create your DataCamp account](https://www.datacamp.com/groups/shared_links/ed65341d4657ce236e87a5a953dbfc3fa3aa4225). You must use your UChicago email address or that link will not work.
+* The fundamentals and theory with no programming element
+    * Chapters 7-8 of [*OpenIntro Statistics*](https://www.openintro.org/stat/textbook.php?stat_book=os) - an open-source statistics textbook written at the level of an introductory undergraduate course on statistics
+
+##### For those with prior statistics training
+
+* Chapters 2-3, 4.1-3 in [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7) - a book on statistical learning written at the level of an advanced undergraduate/master's level course
+
+## Slides and links
+
+* [Slides](extras/cm011_slides.html)
+* [Statistical learning: the basics](/notes/statistical-learning/)
+* [Linear regression](/notes/linear-models/)
+* [Logistic regression](/notes/logistic-regression/)
+
+* [Vignette on `broom`](https://cran.r-project.org/web/packages/broom/vignettes/broom.html)
+* [Examples of estimating common statistical models in R](http://www.ats.ucla.edu/stat/dae/)
+
+## What you need to do

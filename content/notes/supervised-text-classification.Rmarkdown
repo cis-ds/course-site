@@ -1,0 +1,218 @@
+---
+title: "Supervised classification with text data"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/text_classification.html"]
+categories: ["text"]
+
+menu:
+  notes:
+    parent: Text analysis
+    weight: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidytext)
+library(stringr)
+library(caret)
+library(tm)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+A common task in social science involves hand-labeling sets of documents for specific variables (e.g. manual coding). In previous years, this required hiring a set of research assistants and training them to read and evaluate text by hand. It was expensive, prone to error, required extensive data quality checks, and was infeasible if you had an extremely large corpus of text that required classification.
+
+Alternatively, we can now use statistical learning models to classify text into specific sets of categories. This is known as **supervised learning**. The basic process is:
+
+1. Hand-code a small set of documents (say $1000$) for whatever variable(s) you care about
+1. Train a statistical learning model on the hand-coded data, using the variable as the outcome of interest and the text features of the documents as the predictors
+1. Evaluate the effectiveness of the statistical learning model via [cross-validation](/notes/cross-validation/)
+1. Once you have trained a model with sufficient predictive accuracy, apply the model to the remaining set of documents that have never been hand-coded (say $1000000$)
+
+## Sample set of documents: `USCongress`
+
+```{r get-docs}
+# get USCongress data
+data(USCongress, package = "RTextTools")
+
+(congress <- as_tibble(USCongress) %>%
+    mutate(text = as.character(text)))
+```
+
+`USCongress` from the [`RTextTools` package](http://www.rtexttools.com/) contains a sample of hand-labeled bills from the United States Congress. For each bill we have a text description of the bill's purpose (e.g. "To amend the Immigration and Nationality Act in regard to Caribbean-born immigrants.") as well as the bill's [major policy topic code corresponding to the subject of the bill](http://www.comparativeagendas.net/pages/master-codebook). There are 20 major policy topics according to this coding scheme (e.g. Macroeconomics, Civil Rights, Health). These topic codes have been labeled by hand. The current dataset only contains a sample of bills from the 107th Congress (2001-03). If we wanted to obtain policy topic codes for all bills introduced over a longer period, we would have to manually code tens of thousands if not millions of bill descriptions. Clearly a task outside of our capabilities.
+
+Instead, we can build a statistical learning model which predicts the major topic code of a bill given its text description. These notes outline a potential `tidytext` workflow for such an approach.
+
+## Create tidy text data frame
+
+First we convert `USCongress` into a tidy text data frame.
+
+```{r convert-tidytext}
+(congress_tokens <- congress %>%
+   unnest_tokens(output = word, input = text) %>%
+   # remove numbers
+   filter(!str_detect(word, "^[0-9]*$")) %>%
+   # remove stop words
+   anti_join(stop_words) %>%
+   # stem the words
+   mutate(word = SnowballC::wordStem(word)))
+```
+
+Notice there are a few key steps involved here:
+
+* `unnest_tokens(output = word, input = text)` - converts the data frame to a tidy text data frame and automatically converts all tokens to lowercase
+* `filter(!str_detect(word, "^[0-9]*$"))` - removes all tokens which are strictly numbers. Numbers are generally not useful features in classifying documents (though sometimes they may be useful - you can compare results with and without numbers)
+* `anti_join(stop_words)` - remove common stop words that are uninformative and will likely not be useful in predicting major topic codes
+* `mutate(word = SnowballC::wordStem(word)))` - uses the [Porter stemming algorithm](https://tartarus.org/martin/PorterStemmer/) to stem all the tokens to their root word
+
+Most of these steps are to reduce the number of text features in the set of documents. This is necessary because as you increase the number of observations (i.e. documents) and variables/features (i.e. tokens/words), the resulting statistical learning model will become more complex and harder to compute. Given a large enough corpus or set of variables, you may not be able to estimate many statistical learning models with your local computer - you would need to offload the work to a remote computing cluster.
+
+## Create document-term matrix
+
+Tidy text data frames are one-row-per-token, but for statistical learning algorithms we need our data in a one-row-per-document format. That is, a document-term matrix. We can use `cast_dtm()` to create a document-term matrix.
+
+```{r dtm}
+(congress_dtm <- congress_tokens %>%
+   # get count of each token in each document
+   count(ID, word) %>%
+   # create a document-term matrix with all features and tf weighting
+   cast_dtm(document = ID, term = word, value = n))
+```
+
+## Weighting
+
+The default approach is to use [**term frequency** (tf) weighting](http://tidytextmining.com/tfidf.html), or a simple count of how frequently a word occurs in a document. An alternative approach is **term frequency inverse document frequency** (tf-idf), which is the frequency of a term adjusted for how rarely it is used. To generate tf-idf and use this for the document-term matrix, we can change the weighting function in `cast_dtm()`:^[We use `weightTfIdf()` from the `tm` package to calculate the new weights. [`tm`](http://tm.r-forge.r-project.org/) is a robust package in R for text mining and has many useful features for text analysis (though is not part of the `tidyverse`, so it may take some familiarization).]
+
+```{r dtm-tf-idf}
+congress_tokens %>%
+  # get count of each token in each document
+  count(ID, word) %>%
+  # create a document-term matrix with all features and tf-idf weighting
+  cast_dtm(document = ID, term = word, value = n,
+           weighting = tm::weightTfIdf)
+```
+
+For now, let's just continue to use the term frequency approach. But it is a good idea to compare the results of tf vs. tf-idf to see if one method improves model performance over the other method.
+
+## Sparsity
+
+Another approach to reducing model complexity is to remove sparse terms from the model. That is, remove tokens which do not appear across many documents. It is similar to using tf-idf weighting, but directly deletes sparse variables from the document-term matrix. This results in a statistical learning model with a much smaller set of variables.
+
+The `tm` package contains the `removeSparseTerms()` function, which does this task. The first argument is a document-term matrix, and the second argument defines the maximal allowed sparsity in the range from 0 to 1. So for instance, `sparse = .99` would remove any tokens which are missing from more than $99\%$ of the documents in the corpus (i.e. the token must appear in at least $1\%$ of the documents to be retained). Notice the effect changing this value has on the number of variables (tokens) retained in the document-term matrix:
+
+```{r removesparseterms}
+removeSparseTerms(congress_dtm, sparse = .99)
+removeSparseTerms(congress_dtm, sparse = .95)
+removeSparseTerms(congress_dtm, sparse = .90)
+```
+
+It will be tough to build an effective model with just 16 tokens. Normal values for `sparse` are generally around $.99$. Let's use that to create and store our final document-term matrix.
+
+```{r remove-sparse-terms-final}
+congress_dtm <- removeSparseTerms(congress_dtm, sparse = .99)
+```
+
+## Exploratory analysis
+
+Before building a fancy schmancy statistical model, we can first investigate if there are certain terms or tokens associated with each major topic category. We can do this purely with `tidytext` tools: we directly calculate the tf-idf for each term **treating each major topic code as the document**, rather than the individual bill. Then we can visualize the tokens with the highest tf-idf associated with each topic.^[See [here](http://tidytextmining.com/tfidf.html) for a more in-depth explanation of this approach.]
+
+To calculate tf-idf directly in the data frame, first we `count()` the frequency each token appears in bills from each major topic code, then use `bind_tf_idf()` to calculate the tf-idf for each token in each topic:^[Notice our effort to remove numbers was not exactly perfect, but it probably removed a good portion of them.]
+
+```{r bind-tf-idf}
+(congress_tfidf <- congress_tokens %>%
+   count(major, word) %>%
+   bind_tf_idf(term = word, document = major, n = n))
+```
+
+Now all we need to do is plot the words with the highest tf-idf scores for each category. Since there are 20 major topics and a 20 panel facet graph is very dense, let's just look at four of the categories:
+
+```{r plot-tf-idf}
+# sort the data frame and convert word to a factor column
+plot_congress <- congress_tfidf %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word))))
+
+# graph the top 10 tokens for 4 categories
+plot_congress %>%
+  filter(major %in% c(1, 2, 3, 6)) %>%
+  mutate(major = factor(major, levels = c(1, 2, 3, 6),
+                        labels = c("Macroeconomics", "Civil Rights",
+                                   "Health", "Education"))) %>%
+  group_by(major) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  ggplot(aes(word, tf_idf)) +
+  geom_col() +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~major, scales = "free") +
+  coord_flip()
+```
+
+Do these make sense? I think they do (well, some of them). This suggests a statistical learning model may find these tokens useful in predicting major topic codes.
+
+## Estimate model
+
+Now to estimate the model, we return to the `caret` package. Let's try a random forest model first. Here is the syntax for estimating the model:
+
+```r
+congress_rf <- train(x = as.matrix(congress_dtm),
+                     y = factor(congress$major),
+                     method = "rf",
+                     ntree = 200,
+                     trControl = trainControl(method = "oob"))
+```
+
+Note the differences from [how we specified them before with a standard data frame](/notes/decision-trees/#estimating-a-random-forest).
+
+* `x = as.matrix(congress_dtm)` - instead of using a formula, we pass the independent and dependent variables separately into `train()`. `x` needs to be a simple matrix, data frame, or sparse matrix. These are specific types of objects in R. `congress_dtm` is a `DocumentTermMatrix`, so we use `as.matrix()` to convert it to a simple matrix.
+* `y = factor(congress$major)` - we return to the original `congress` data frame to obtain the vector of outcome values for each document. Here, this is the major topic code associated with each bill. The important thing is that the order of documents in `x` remains the same as the order of documents in `y`, so that each document is associated with the correct outcome. Because `congress$major` is a numeric vector, we need to convert it to a factor vector so that we perform classification (and not regression).
+
+Otherwise everything else is the same as before. Notice how long it takes to build a random forest model with 10 trees, compared to a more typical random forest model with 200 trees:
+
+```{r rf-train-10}
+system.time({
+  congress_rf_10 <- train(x = as.matrix(congress_dtm),
+                          y = factor(congress$major),
+                          method = "rf",
+                          ntree = 10,
+                          trControl = trainControl(method = "oob"))
+})
+```
+
+```{r rf-train-200}
+system.time({
+  congress_rf_200 <- train(x = as.matrix(congress_dtm),
+                           y = factor(congress$major),
+                           method = "rf",
+                           ntree = 200,
+                           trControl = trainControl(method = "oob"))
+})
+```
+
+This is why it is important to remove sparse features and simplify the document-term matrix as much as possible - the more text features and observations in the document-term matrix, the longer it takes to train the model.
+
+Otherwise, the result is no different from a model trained on categorical or continuous variables. We can generate the same diagnostics information:
+
+```{r rf-error}
+congress_rf_200$finalModel
+```
+
+```{r rf-varimp}
+randomForest::varImpPlot(congress_rf_200$finalModel)
+```
+
+And if we had a test set of observations (or a set of congressional bills never previously hand-coded), we could use this model to predict their major topic codes.
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

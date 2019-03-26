@@ -1,0 +1,149 @@
+---
+title: "Practice transforming college education (data)"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+alias: ["/datawrangle_transform_college.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 3
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+> If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+```{r scorecard}
+library(rcfss)
+data("scorecard")
+glimpse(scorecard)
+```
+
+> `glimpse()` is part of the `tibble` package and is a transposed version of `print()`: columns run down the page, and data runs across. With a data frame with multiple columns, sometimes there is not enough horizontal space on the screen to print each column. By transposing the data frame, we can see all the columns and the values recorded for the initial rows.
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of the `dplyr` functions to perform the following tasks.
+
+## Generate a data frame of schools with a greater than 40% share of first-generation students
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r filter}
+filter(scorecard, firstgen > .40)
+```
+
+  </p>
+</details>
+
+## Generate a data frame with the 10 most expensive colleges in 2013
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+  We could use a combination of `arrange()` and `slice()` to sort the data frame from most to least expensive, then keep the first 10 rows:
+  
+```{r top-10-arrange-slice}
+arrange(scorecard, desc(cost)) %>%
+  slice(1:10)
+```
+
+ We can also use the `top_n()` function in `dplyr` to accomplish the same thing in one line of code.
+
+```{r top-10-top-n}
+top_n(scorecard, n = 10, wt = cost)
+```
+
+  Notice that the resulting data frame is not sorted in order from most to least expensive - instead it is sorted in the original order from the data frame, but still only contains the 10 most expensive schools based on cost.
+  
+  </p>
+</details>
+
+## Generate a data frame with the average SAT score for each type of college
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r highest-sat}
+scorecard %>%
+  group_by(type) %>%
+  summarize(mean_sat = mean(satavg, na.rm = TRUE))
+```
+
+  </p>
+</details>
+
+## Calculate for each school how many students it takes to pay the average faculty member's salary and generate a data frame with the school's name and the calculated value
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r avg-sal}
+scorecard %>%
+  mutate(ratio = avgfacsal / cost) %>%
+  select(name, ratio)
+```
+
+  </p>
+</details>
+
+## Calculate how many private, nonprofit schools have a smaller cost than the University of Chicago
+
+Hint: the result should be a data frame with one row for the University of Chicago, and a column containing the requested value.
+
+### Report the number as the total number of schools
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r uchicago-raw}
+scorecard %>%
+  filter(type == "Private, nonprofit") %>%
+  arrange(cost) %>%
+  # use row_number() but subtract 1 since UChicago is not cheaper than itself
+  mutate(school_cheaper = row_number() - 1) %>%
+  filter(name == "University of Chicago") %>%
+  glimpse()
+```
+
+  </p>
+</details>
+
+### Report the number as the percentage of schools
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r uchicago-pct}
+scorecard %>%
+  filter(type == "Private, nonprofit") %>%
+  mutate(cost_rank = percent_rank(cost)) %>%
+  filter(name == "University of Chicago") %>%
+  glimpse()
+```
+
+  </p>
+</details>
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

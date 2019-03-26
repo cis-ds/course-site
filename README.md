@@ -1,8 +1,5 @@
 # uc-cfss.github.io
 
-This is the course site for MACS 30500 - Programming for the Social Sciences.
+[![Netlify Status](https://api.netlify.com/api/v1/badges/10736f91-82cc-4e9b-87cc-21ae0f745739/deploy-status)](https://app.netlify.com/sites/stoic-knuth-8eedfa/deploys)
 
-To render, execute [`render.sh`](render.sh). This will:
-
-* Render the website using R Markdown
-* Render all slides in the `extras/` folder
+This is the course site for [MACS 30500 - Programming for the Social Sciences](https://cfss.uchicago.edu).
