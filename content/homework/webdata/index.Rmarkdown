@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: false
 type: post
-alias: ["/hw08-webdata.html"]
+aliases: ["/hw08-webdata.html"]
 
 summary: "Collect data from the web and analyze it."
 url_code: "https://github.com/uc-cfss/hw08"

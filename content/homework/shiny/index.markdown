@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: false
 type: post
-alias: ["/hw10-shiny.html"]
+aliases: ["/hw10-shiny.html"]
 
 summary: "Build/enhance a Shiny application."
 url_code: "https://github.com/uc-cfss/hw10"

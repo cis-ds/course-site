@@ -5,7 +5,7 @@ date: 2019-03-01
 type: docs
 toc: true
 draft: false
-alias: ["/distrib002_sac.html"]
+aliases: ["/distrib002_sac.html"]
 categories: ["distributed-computing"]
 
 menu:
@@ -353,7 +353,7 @@ system.time({
 
 ```
 ##    user  system elapsed 
-##   0.576   0.052   0.780
+##   0.471   0.044   0.665
 ```
 
 ```r
@@ -366,7 +366,7 @@ system.time({
 
 ```
 ##    user  system elapsed 
-##   0.005   0.000   0.007
+##   0.006   0.000   0.006
 ```
 
 That's because there's some overhead associated with sending the data to each node and retrieving the results at the end. For basic `dplyr` verbs, `multidplyr` is unlikely to give you significant speed ups unless you have 10s or 100s of millions of data points. It might however, if you're doing more complex things.
@@ -397,7 +397,7 @@ system.time({
 
 ```
 ##    user  system elapsed 
-##   0.001   0.000   0.072
+##   0.002   0.000   0.054
 ```
 
 Compared to how long running it locally?
@@ -412,7 +412,7 @@ system.time({
 
 ```
 ##    user  system elapsed 
-##   0.085   0.005   0.092
+##   0.082   0.004   0.087
 ```
 
 So it's roughly 2 times faster to run in parallel. Admittedly you saved only a fraction of a second. In relative terms this is great, but in absolute terms it doesn't mean much. This demonstrates it doesn't always make sense to parallelize operations - only do so if you can make significant gains in computation speed. If each country had thousands of observations, the efficiency gains would have been more dramatic.
@@ -432,7 +432,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.2 (2018-12-20)
+##  version  R version 3.5.3 (2019-03-11)
 ##  os       macOS Mojave 10.14.3        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -440,80 +440,161 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-20                  
+##  date     2019-03-28                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.0   2017-04-11 [2] CRAN (R 3.5.0)
-##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
-##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
-##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
-##  broom         0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
-##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
-##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
-##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
-##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
-##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
-##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
-##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
-##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
-##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
-##  gapminder   * 0.3.0   2017-10-31 [1] CRAN (R 3.5.0)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
-##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
-##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
-##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
-##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
-##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
-##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
-##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
-##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
-##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
-##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
-##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.2)
-##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
-##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
-##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
-##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
-##  modelr        0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
-##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.2)
-##  pillar        1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
-##  pkgbuild      1.0.2   2018-10-16 [1] CRAN (R 3.5.0)
-##  pkgconfig     2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
-##  plyr          1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
-##  prettyunits   1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
-##  processx      3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
-##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
-##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
-##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
-##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
-##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
-##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang         0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
-##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
-##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
-##  rstudioapi    0.9.0   2019-01-09 [1] CRAN (R 3.5.2)
-##  rvest         0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
-##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
-##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
-##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
-##  tibble      * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
-##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
-##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
-##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
-##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
-##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
-##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
-##  yaml          2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
+##  package      * version    date       lib
+##  assertthat     0.2.1      2019-03-21 [2]
+##  backports      1.1.3      2018-12-14 [2]
+##  blogdown       0.11       2019-03-11 [1]
+##  bookdown       0.9        2018-12-21 [1]
+##  broom        * 0.5.1      2018-12-05 [2]
+##  callr          3.2.0      2019-03-15 [2]
+##  cellranger     1.1.0      2016-07-27 [2]
+##  cli            1.1.0      2019-03-19 [1]
+##  codetools      0.2-16     2018-12-24 [2]
+##  colorspace     1.4-1      2019-03-18 [2]
+##  crayon         1.3.4      2017-09-16 [2]
+##  desc           1.2.0      2018-05-01 [2]
+##  devtools       2.0.1      2018-10-26 [1]
+##  digest         0.6.18     2018-10-10 [1]
+##  dplyr        * 0.8.0.1    2019-02-15 [1]
+##  evaluate       0.13       2019-02-12 [2]
+##  fansi          0.4.0      2018-10-05 [2]
+##  forcats      * 0.4.0      2019-02-17 [2]
+##  fs             1.2.7      2019-03-19 [1]
+##  gapminder    * 0.3.0      2017-10-31 [1]
+##  generics       0.0.2      2018-11-29 [1]
+##  ggplot2      * 3.1.0      2018-10-25 [1]
+##  glue           1.3.1      2019-03-12 [2]
+##  gtable         0.2.0      2016-02-26 [2]
+##  haven          2.1.0      2019-02-19 [2]
+##  here           0.1        2017-05-28 [2]
+##  hms            0.4.2      2018-03-10 [2]
+##  htmltools      0.3.6      2017-04-28 [1]
+##  httr           1.4.0      2018-12-11 [2]
+##  jsonlite       1.6        2018-12-07 [2]
+##  knitr          1.22       2019-03-08 [2]
+##  lattice        0.20-38    2018-11-04 [2]
+##  lazyeval       0.2.2      2019-03-15 [2]
+##  lubridate      1.7.4      2018-04-11 [2]
+##  magrittr       1.5        2014-11-22 [2]
+##  memoise        1.1.0      2017-04-21 [2]
+##  modelr         0.1.4      2019-02-18 [2]
+##  multidplyr   * 0.0.0.9000 2016-11-23 [2]
+##  munsell        0.5.0      2018-06-12 [2]
+##  nlme           3.1-137    2018-04-07 [2]
+##  nycflights13 * 1.0.0      2018-06-26 [2]
+##  pillar         1.3.1      2018-12-15 [2]
+##  pkgbuild       1.0.3      2019-03-20 [1]
+##  pkgconfig      2.0.2      2018-08-16 [2]
+##  pkgload        1.0.2      2018-10-29 [1]
+##  plyr           1.8.4      2016-06-08 [2]
+##  prettyunits    1.0.2      2015-07-13 [2]
+##  processx       3.3.0      2019-03-10 [2]
+##  ps             1.3.0      2018-12-21 [2]
+##  purrr        * 0.3.2      2019-03-15 [2]
+##  R6             2.4.0      2019-02-14 [1]
+##  Rcpp           1.0.1      2019-03-17 [1]
+##  readr        * 1.3.1      2018-12-21 [2]
+##  readxl         1.3.1      2019-03-13 [2]
+##  remotes        2.0.2      2018-10-30 [1]
+##  rlang          0.3.2      2019-03-21 [1]
+##  rmarkdown      1.12       2019-03-14 [1]
+##  rprojroot      1.3-2      2018-01-03 [2]
+##  rstudioapi     0.10       2019-03-19 [1]
+##  rvest          0.3.2      2016-06-17 [2]
+##  scales         1.0.0      2018-08-09 [1]
+##  sessioninfo    1.1.1      2018-11-05 [1]
+##  stringi        1.4.3      2019-03-12 [1]
+##  stringr      * 1.4.0      2019-02-10 [1]
+##  testthat       2.0.1      2018-10-13 [2]
+##  tibble       * 2.1.1      2019-03-16 [2]
+##  tidyr        * 0.8.3      2019-03-01 [1]
+##  tidyselect     0.2.5      2018-10-11 [1]
+##  tidyverse    * 1.2.1      2017-11-14 [2]
+##  usethis        1.4.0      2018-08-14 [1]
+##  utf8           1.1.4      2018-05-24 [2]
+##  withr          2.1.2      2018-03-15 [2]
+##  xfun           0.5        2019-02-20 [1]
+##  xml2           1.2.0      2018-01-24 [2]
+##  yaml           2.2.0      2018-07-25 [2]
+##  source                            
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.1)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  Github (hadley/multidplyr@f6bece5)
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.1)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.3)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.2)                    
+##  CRAN (R 3.5.0)                    
+##  CRAN (R 3.5.0)                    
 ## 
 ## [1] /Users/soltoffbc/Library/R/3.5/library
 ## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library

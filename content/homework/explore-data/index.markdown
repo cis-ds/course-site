@@ -5,7 +5,7 @@ publishdate: 2019-03-01
 
 draft: false
 type: post
-alias: ["/hw02-explore-data.html"]
+aliases: ["/hw02-explore-data.html"]
 
 summary: "Transform and explore a cleaned dataset on gun deaths in the United States."
 url_code: "https://github.com/uc-cfss/hw02"
@@ -110,7 +110,7 @@ Instead, use `kable()` to format the table, add a caption, and label the columns
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😢
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😔
 
 # Submit the assignment
 

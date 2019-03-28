@@ -5,7 +5,7 @@ date: 2019-03-01
 type: docs
 toc: true
 draft: false
-alias: ["/geoviz_intro.html"]
+aliases: ["/geoviz_intro.html"]
 categories: ["dataviz", "geospatial"]
 
 menu:
@@ -122,7 +122,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.2 (2018-12-20)
+##  version  R version 3.5.3 (2019-03-11)
 ##  os       macOS Mojave 10.14.3        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -130,11 +130,11 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-19                  
+##  date     2019-03-28                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
-##  assertthat    0.2.0   2017-04-11 [2] CRAN (R 3.5.0)
+##  assertthat    0.2.1   2019-03-21 [2] CRAN (R 3.5.3)
 ##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
 ##  bitops        1.0-6   2013-08-17 [2] CRAN (R 3.5.0)
 ##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
@@ -142,20 +142,22 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  broom         0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
-##  class         7.3-15  2019-01-01 [2] CRAN (R 3.5.2)
+##  class         7.3-15  2019-01-01 [2] CRAN (R 3.5.3)
 ##  classInt      0.3-1   2018-12-18 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
+##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
+##  curl          3.3     2019-01-10 [2] CRAN (R 3.5.2)
 ##  DBI           1.0.0   2018-05-02 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
 ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
-##  e1071         1.7-0.1 2019-01-21 [1] CRAN (R 3.5.2)
+##  e1071         1.7-1   2019-03-19 [1] CRAN (R 3.5.2)
 ##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
 ##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
-##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
+##  fs            1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
 ##  ggmap       * 3.0.0   2019-02-04 [1] CRAN (R 3.5.2)
 ##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
@@ -169,16 +171,17 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  jpeg          0.1-8   2014-01-23 [1] CRAN (R 3.5.0)
 ##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
-##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.2)
+##  labeling      0.3     2014-08-23 [2] CRAN (R 3.5.0)
+##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.3)
 ##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
 ##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
 ##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
 ##  modelr        0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
 ##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.2)
+##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.3)
 ##  pillar        1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
-##  pkgbuild      1.0.2   2018-10-16 [1] CRAN (R 3.5.0)
+##  pkgbuild      1.0.3   2019-03-20 [1] CRAN (R 3.5.3)
 ##  pkgconfig     2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
 ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
 ##  plyr          1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
@@ -188,21 +191,21 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
+##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
 ##  RgoogleMaps   1.4.3   2018-11-07 [1] CRAN (R 3.5.0)
 ##  rjson         0.2.20  2018-06-08 [1] CRAN (R 3.5.0)
-##  rlang         0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
+##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
-##  rstudioapi    0.9.0   2019-01-09 [1] CRAN (R 3.5.2)
+##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)
 ##  rvest         0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
 ##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
 ##  sf          * 0.7-3   2019-02-21 [1] CRAN (R 3.5.2)
-##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
+##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.5.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
 ##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
 ##  tibble      * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)

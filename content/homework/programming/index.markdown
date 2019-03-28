@@ -5,7 +5,7 @@ publishdate: 2019-03-01
 
 draft: false
 type: post
-alias: ["/hw04-programming.html"]
+aliases: ["/hw04-programming.html"]
 
 summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
 url_code: "https://github.com/uc-cfss/hw04"

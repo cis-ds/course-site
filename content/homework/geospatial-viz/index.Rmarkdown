@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: false
 type: post
-alias: ["/hw07-geospatial.html"]
+aliases: ["/hw07-geospatial.html"]
 
 summary: "Build a map."
 url_code: "https://github.com/uc-cfss/hw07"

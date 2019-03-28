@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: true
 type: post
-alias: ["/hw07-distrib-learn-geospatial.html"]
+aliases: ["/hw07-distrib-learn-geospatial.html"]
 
 summary: "Implement statistical learning via sparklyr and build a map."
 url_code: "https://github.com/uc-cfss/hw07"

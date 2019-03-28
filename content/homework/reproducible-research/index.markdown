@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: false
 type: post
-alias: ["/hw05-reproducible-research.html"]
+aliases: ["/hw05-reproducible-research.html"]
 
 summary: "Synthesize everything we have learned thus far."
 url_code: "https://github.com/uc-cfss/hw05"

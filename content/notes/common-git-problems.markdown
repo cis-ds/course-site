@@ -5,7 +5,7 @@ date: 2019-03-01
 type: docs
 toc: true
 draft: false
-alias: ["/git_more.html"]
+aliases: ["/git_more.html"]
 categories: ["git", "project-management"]
 
 menu:

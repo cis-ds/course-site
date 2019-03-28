@@ -5,7 +5,7 @@ date: 2019-03-01
 type: docs
 toc: true
 draft: false
-alias: ["/distrib003_spark.html"]
+aliases: ["/distrib003_spark.html"]
 categories: ["distributed-computing"]
 
 menu:
@@ -474,9 +474,7 @@ glm_model <- h2o.glm(x = c("Pclass", "Sex", "Age", "SibSp", "Parch",
   |                                                                       
   |                                                                 |   0%
   |                                                                       
-  |=================                                                |  26%
-  |                                                                       
-  |=======================                                          |  35%
+  |========================                                         |  36%
   |                                                                       
   |=================================================================| 100%
 ```
@@ -490,38 +488,38 @@ glm_model
 ## ==============
 ## 
 ## H2OBinomialModel: glm
-## Model ID:  GLM_model_R_1553109503257_1 
+## Model ID:  GLM_model_R_1553795420603_1 
 ## GLM Model: summary
-##     family  link                                regularization
-## 1 binomial logit Elastic Net (alpha = 0.5, lambda = 0.003769 )
-##                                                                    lambda_search
-## 1 nlambda = 100, lambda.max = 0.248, lambda.min = 0.003769, lambda.1se = 0.04647
+##     family  link                               regularization
+## 1 binomial logit Elastic Net (alpha = 0.5, lambda = 0.00454 )
+##                                                                   lambda_search
+## 1 nlambda = 100, lambda.max = 0.248, lambda.min = 0.00454, lambda.1se = 0.04234
 ##   number_of_predictors_total number_of_active_predictors
 ## 1                          4                           4
 ##   number_of_iterations                                  training_frame
-## 1                   68 frame_rdd_1483_a3f82afa0e1ed2bf202153a802234098
+## 1                   66 frame_rdd_1483_88ddbcb42d2a296fc1b2c1a09d154075
 ## 
 ## Coefficients: glm coefficients
 ##       names coefficients standardized_coefficients
-## 1 Intercept    -0.241407                 -0.455300
-## 2       Age    -0.022114                 -0.286781
-## 3     SibSp    -0.284721                 -0.314248
-## 4     Parch     0.099701                  0.080435
-## 5      Fare     0.017221                  0.855823
+## 1 Intercept    -0.247725                 -0.456082
+## 2       Age    -0.021755                 -0.282125
+## 3     SibSp    -0.278618                 -0.307512
+## 4     Parch     0.097131                  0.078361
+## 5      Fare     0.016993                  0.844486
 ## 
 ## H2OBinomialMetrics: glm
 ## ** Reported on training data. **
 ## 
-## MSE:  0.2085768
-## RMSE:  0.4567021
-## LogLoss:  0.6123183
+## MSE:  0.2087326
+## RMSE:  0.4568726
+## LogLoss:  0.6123973
 ## Mean Per-Class Error:  0.3641755
-## AUC:  0.7074119
-## pr_auc:  0.6090389
-## Gini:  0.4148237
-## R^2:  0.1168829
-## Residual Deviance:  1088.702
-## AIC:  1098.702
+## AUC:  0.7074226
+## pr_auc:  0.6091871
+## Gini:  0.4148452
+## R^2:  0.1162235
+## Residual Deviance:  1088.842
+## AIC:  1098.842
 ## 
 ## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
 ##          0   1    Error      Rate
@@ -531,16 +529,16 @@ glm_model
 ## 
 ## Maximum Metrics: Maximum metrics at their respective thresholds
 ##                         metric threshold    value idx
-## 1                       max f1  0.322735 0.594152 274
-## 2                       max f2  0.174742 0.759268 395
-## 3                 max f0point5  0.400317 0.645032 167
-## 4                 max accuracy  0.400317 0.724409 167
-## 5                max precision  0.999604 1.000000   0
-## 6                   max recall  0.174742 1.000000 395
-## 7              max specificity  0.999604 1.000000   0
-## 8             max absolute_mcc  0.397960 0.394010 169
-## 9   max min_per_class_accuracy  0.347797 0.632353 237
-## 10 max mean_per_class_accuracy  0.397960 0.677775 169
+## 1                       max f1  0.323235 0.594152 268
+## 2                       max f2  0.177828 0.759268 395
+## 3                 max f0point5  0.397845 0.646825 169
+## 4                 max accuracy  0.397845 0.725534 169
+## 5                max precision  0.999557 1.000000   0
+## 6                   max recall  0.177828 1.000000 395
+## 7              max specificity  0.999557 1.000000   0
+## 8             max absolute_mcc  0.397845 0.396588 169
+## 9   max min_per_class_accuracy  0.348824 0.632353 231
+## 10 max mean_per_class_accuracy  0.397845 0.678686 169
 ## 
 ## Gains/Lift Table: Extract with `h2o.gainsLift(<model>, <data>)` or `h2o.gainsLift(<model>, valid=<T/F>, xval=<T/F>)`
 ## 
@@ -548,79 +546,79 @@ glm_model
 ## ** Reported on cross-validation data. **
 ## ** 10-fold cross-validation on training data (Metrics computed for combined holdout predictions) **
 ## 
-## MSE:  0.2114826
-## RMSE:  0.4598724
-## LogLoss:  0.6199436
-## Mean Per-Class Error:  0.376792
-## AUC:  0.6976615
-## pr_auc:  0.5946746
-## Gini:  0.395323
-## R^2:  0.1045799
-## Residual Deviance:  1102.26
-## AIC:  1112.26
+## MSE:  0.2110744
+## RMSE:  0.4594283
+## LogLoss:  0.6200238
+## Mean Per-Class Error:  0.373141
+## AUC:  0.6969088
+## pr_auc:  0.5910164
+## Gini:  0.3938176
+## R^2:  0.1063082
+## Residual Deviance:  1102.402
+## AIC:  1112.402
 ## 
 ## Confusion Matrix (vertical: actual; across: predicted) for F1-optimal threshold:
 ##          0   1    Error      Rate
-## 0      258 291 0.530055  =291/549
-## 1       76 264 0.223529   =76/340
-## Totals 334 555 0.412823  =367/889
+## 0      283 266 0.484517  =266/549
+## 1       89 251 0.261765   =89/340
+## Totals 372 517 0.399325  =355/889
 ## 
 ## Maximum Metrics: Maximum metrics at their respective thresholds
 ##                         metric threshold    value idx
-## 1                       max f1  0.319357 0.589944 269
-## 2                       max f2  0.155489 0.756564 397
-## 3                 max f0point5  0.412287 0.631533 154
-## 4                 max accuracy  0.412287 0.716535 154
-## 5                max precision  0.999569 1.000000   0
-## 6                   max recall  0.155489 1.000000 397
-## 7              max specificity  0.999569 1.000000   0
-## 8             max absolute_mcc  0.412287 0.374194 154
-## 9   max min_per_class_accuracy  0.347410 0.623529 228
-## 10 max mean_per_class_accuracy  0.382690 0.665860 183
+## 1                       max f1  0.323694 0.585764 255
+## 2                       max f2  0.182015 0.759268 389
+## 3                 max f0point5  0.398319 0.629006 158
+## 4                 max accuracy  0.398319 0.715411 158
+## 5                max precision  0.999666 1.000000   0
+## 6                   max recall  0.182015 1.000000 389
+## 7              max specificity  0.999666 1.000000   0
+## 8             max absolute_mcc  0.398319 0.372536 158
+## 9   max min_per_class_accuracy  0.346878 0.635701 223
+## 10 max mean_per_class_accuracy  0.383650 0.669712 174
 ## 
 ## Gains/Lift Table: Extract with `h2o.gainsLift(<model>, <data>)` or `h2o.gainsLift(<model>, valid=<T/F>, xval=<T/F>)`
 ## Cross-Validation Metrics Summary: 
-##                 mean         sd cv_1_valid cv_2_valid cv_3_valid
-## accuracy  0.67382216 0.05371907  0.6494845 0.79310346  0.7108434
-## auc        0.7143657 0.02047168  0.7320955 0.68419355  0.7380952
-## err        0.3261778 0.05371907 0.35051546 0.20689656 0.28915662
-## err_count       29.2   5.699123       34.0       18.0       24.0
-## f0point5  0.59475476 0.04263665 0.58181816 0.64356434  0.5714286
+##                 mean          sd cv_1_valid cv_2_valid cv_3_valid
+## accuracy   0.6363816 0.081763744  0.7352941 0.53571427  0.5121951
+## auc       0.70465577 0.025236415  0.6798419  0.6637249 0.71381384
+## err       0.36361834 0.081763744  0.2647059  0.4642857  0.4878049
+## err_count       32.5    8.113261       18.0       39.0       40.0
+## f0point5  0.58311796  0.06883179  0.5882353  0.4915254  0.5362319
 ##           cv_4_valid cv_5_valid cv_6_valid cv_7_valid cv_8_valid
-## accuracy   0.5974026  0.7356322  0.6818182    0.53125 0.66292137
-## auc        0.6804408 0.77342045 0.73240167 0.68002844  0.6989744
-## err        0.4025974 0.26436782  0.3181818    0.46875 0.33707866
-## err_count       31.0       23.0       28.0       45.0       30.0
-## f0point5   0.5677656  0.6793478  0.6637168 0.46357617 0.61702126
+## accuracy   0.5483871 0.48863637 0.81395346   0.537037  0.7108434
+## auc        0.6968811 0.65290177 0.77008796    0.68125 0.71526057
+## err        0.4516129  0.5113636 0.18604651 0.46296296 0.28915662
+## err_count       42.0       45.0       16.0       50.0       24.0
+## f0point5   0.5092593 0.46686748  0.7723577 0.49202126 0.61290324
 ##           cv_9_valid cv_10_valid
-## accuracy   0.7619048   0.6138614
-## auc        0.7019231  0.72208434
-## err       0.23809524  0.38613862
-## err_count       20.0        39.0
-## f0point5   0.6147541   0.5445545
+## accuracy  0.74311924   0.7386364
+## auc        0.7546584  0.71813726
+## err       0.25688073  0.26136363
+## err_count       28.0        23.0
+## f0point5  0.70388347  0.65789473
 ## 
 ## ---
-##                          mean          sd cv_1_valid cv_2_valid cv_3_valid
-## precision           0.5746387   0.0577743  0.5423729 0.68421054  0.5405405
-## r2                0.093924895 0.027942687 0.13834655 0.07689014 0.08480237
-## recall             0.74195737 0.084318385 0.82051283       0.52  0.7407407
-## residual_deviance    109.2653   6.1174793  116.39724  100.23936  98.463646
-## rmse               0.45880184 0.011297974 0.45513567 0.43478373 0.44818285
-## specificity         0.6175463  0.12832087  0.5344828  0.9032258  0.6964286
-##                     cv_4_valid cv_5_valid cv_6_valid  cv_7_valid
-## precision           0.51666665  0.6756757 0.65217394  0.41791046
-## r2                0.0070083267 0.13999067 0.13880272 0.113784604
-## recall              0.93939394  0.6944444 0.71428573   0.8235294
-## residual_deviance    104.58366  108.24289 108.629776  116.526726
-## rmse                 0.4931345  0.4567396 0.46352398  0.45022926
-## specificity          0.3409091  0.7647059 0.65217394  0.37096775
-##                   cv_8_valid cv_9_valid cv_10_valid
-## precision         0.59183675      0.625         0.5
-## r2                0.06963539 0.07025102  0.09973714
-## recall            0.74358976  0.5769231  0.84615386
-## residual_deviance 115.170456    98.5747   125.82453
-## rmse              0.47857928 0.44576323  0.46194625
-## specificity              0.6  0.8448276  0.46774194
+##                         mean          sd cv_1_valid cv_2_valid  cv_3_valid
+## precision         0.56370723   0.0937683        0.6 0.43939394  0.48051947
+## r2                0.09700534 0.028344909 0.13034455 0.05100168 0.058908857
+## recall            0.78828907 0.118836045 0.54545456  0.9354839         1.0
+## residual_deviance 109.340614   10.753652  76.485695    107.024   107.88405
+## rmse              0.46016112 0.008946765  0.4362696 0.47008047  0.48273537
+## specificity       0.53406245  0.20690754 0.82608694  0.3018868  0.11111111
+##                   cv_4_valid cv_5_valid  cv_6_valid cv_7_valid cv_8_valid
+## precision         0.45833334 0.41333333  0.82608694 0.44047618 0.61290324
+## r2                0.10442999 0.09471381 0.108684175 0.04697987 0.07101416
+## recall             0.9166667    0.96875  0.61290324      0.925 0.61290324
+## residual_deviance  115.83938 106.614815   103.72015  137.37405   104.6229
+## rmse              0.46095178  0.4576983  0.45329356 0.47142404  0.4662394
+## specificity       0.31578946 0.21428572  0.92727274 0.30882353  0.7692308
+##                   cv_9_valid cv_10_valid
+## precision              0.725  0.64102566
+## r2                0.18336025 0.120616004
+## recall             0.6304348   0.7352941
+## residual_deviance  127.44652   106.39462
+## rmse              0.44631138   0.4566074
+## specificity       0.82539684   0.7407407
 ```
 
 We get lots of information back about the model. Many of these statistics can be extracted and stored as tidy data frames or used to create visualizations.
@@ -640,7 +638,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.2 (2018-12-20)
+##  version  R version 3.5.3 (2019-03-11)
 ##  os       macOS Mojave 10.14.3        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -648,12 +646,12 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-20                  
+##  date     2019-03-28                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version   date       lib source        
 ##  askpass        1.1       2019-01-13 [2] CRAN (R 3.5.2)
-##  assertthat     0.2.0     2017-04-11 [2] CRAN (R 3.5.0)
+##  assertthat     0.2.1     2019-03-21 [2] CRAN (R 3.5.3)
 ##  backports      1.1.3     2018-12-14 [2] CRAN (R 3.5.0)
 ##  base64enc      0.1-3     2015-07-28 [2] CRAN (R 3.5.0)
 ##  bitops         1.0-6     2013-08-17 [2] CRAN (R 3.5.0)
@@ -663,7 +661,7 @@ devtools::session_info()
 ##  callr          3.2.0     2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger     1.1.0     2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli            1.1.0     2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools      0.2-16    2018-12-24 [2] CRAN (R 3.5.2)
+##  codetools      0.2-16    2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace     1.4-1     2019-03-18 [2] CRAN (R 3.5.2)
 ##  config         0.3       2018-03-27 [2] CRAN (R 3.5.0)
 ##  crayon         1.3.4     2017-09-16 [2] CRAN (R 3.5.0)
@@ -678,7 +676,7 @@ devtools::session_info()
 ##  fansi          0.4.0     2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats      * 0.4.0     2019-02-17 [2] CRAN (R 3.5.2)
 ##  forge          0.2.0     2019-02-26 [2] CRAN (R 3.5.2)
-##  fs             1.2.6     2018-08-23 [1] CRAN (R 3.5.0)
+##  fs             1.2.7     2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics       0.0.2     2018-11-29 [1] CRAN (R 3.5.0)
 ##  ggplot2      * 3.1.0     2018-10-25 [1] CRAN (R 3.5.0)
 ##  glue           1.3.1     2019-03-12 [2] CRAN (R 3.5.2)
@@ -693,17 +691,17 @@ devtools::session_info()
 ##  jsonlite       1.6       2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr          1.22      2019-03-08 [2] CRAN (R 3.5.2)
 ##  labeling       0.3       2014-08-23 [2] CRAN (R 3.5.0)
-##  lattice        0.20-38   2018-11-04 [2] CRAN (R 3.5.2)
+##  lattice        0.20-38   2018-11-04 [2] CRAN (R 3.5.3)
 ##  lazyeval       0.2.2     2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate      1.7.4     2018-04-11 [2] CRAN (R 3.5.0)
 ##  magrittr       1.5       2014-11-22 [2] CRAN (R 3.5.0)
 ##  memoise        1.1.0     2017-04-21 [2] CRAN (R 3.5.0)
 ##  modelr         0.1.4     2019-02-18 [2] CRAN (R 3.5.2)
 ##  munsell        0.5.0     2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme           3.1-137   2018-04-07 [2] CRAN (R 3.5.2)
-##  openssl        1.2.2     2019-03-01 [2] CRAN (R 3.5.2)
+##  nlme           3.1-137   2018-04-07 [2] CRAN (R 3.5.3)
+##  openssl        1.3       2019-03-22 [2] CRAN (R 3.5.3)
 ##  pillar         1.3.1     2018-12-15 [2] CRAN (R 3.5.0)
-##  pkgbuild       1.0.2     2018-10-16 [1] CRAN (R 3.5.0)
+##  pkgbuild       1.0.3     2019-03-20 [1] CRAN (R 3.5.3)
 ##  pkgconfig      2.0.2     2018-08-16 [2] CRAN (R 3.5.1)
 ##  pkgload        1.0.2     2018-10-29 [1] CRAN (R 3.5.0)
 ##  plyr           1.8.4     2016-06-08 [2] CRAN (R 3.5.0)
@@ -715,21 +713,21 @@ devtools::session_info()
 ##  R6             2.4.0     2019-02-14 [1] CRAN (R 3.5.2)
 ##  rappdirs       0.3.1     2016-03-28 [2] CRAN (R 3.5.0)
 ##  RColorBrewer   1.1-2     2014-12-07 [2] CRAN (R 3.5.0)
-##  Rcpp           1.0.0     2018-11-07 [1] CRAN (R 3.5.0)
+##  Rcpp           1.0.1     2019-03-17 [1] CRAN (R 3.5.2)
 ##  RCurl          1.95-4.12 2019-03-04 [2] CRAN (R 3.5.2)
 ##  readr        * 1.3.1     2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl         1.3.1     2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes        2.0.2     2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang          0.3.1     2019-01-08 [1] CRAN (R 3.5.2)
+##  rlang          0.3.2     2019-03-21 [1] CRAN (R 3.5.3)
 ##  rmarkdown      1.12      2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot      1.3-2     2018-01-03 [2] CRAN (R 3.5.0)
 ##  rsparkling   * 0.2.18    2019-01-30 [2] CRAN (R 3.5.2)
-##  rstudioapi     0.9.0     2019-01-09 [1] CRAN (R 3.5.2)
+##  rstudioapi     0.10      2019-03-19 [1] CRAN (R 3.5.3)
 ##  rvest          0.3.2     2016-06-17 [2] CRAN (R 3.5.0)
 ##  scales         1.0.0     2018-08-09 [1] CRAN (R 3.5.0)
 ##  sessioninfo    1.1.1     2018-11-05 [1] CRAN (R 3.5.0)
 ##  sparklyr     * 1.0.0     2019-02-25 [2] CRAN (R 3.5.2)
-##  stringi        1.3.1     2019-02-13 [1] CRAN (R 3.5.2)
+##  stringi        1.4.3     2019-03-12 [1] CRAN (R 3.5.2)
 ##  stringr      * 1.4.0     2019-02-10 [1] CRAN (R 3.5.2)
 ##  testthat       2.0.1     2018-10-13 [2] CRAN (R 3.5.0)
 ##  tibble       * 2.1.1     2019-03-16 [2] CRAN (R 3.5.2)

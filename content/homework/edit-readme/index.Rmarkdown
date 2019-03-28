@@ -5,7 +5,7 @@ publishdate: 2019-03-01
 
 draft: false
 type: post
-alias: ["/hw01-edit-README.html"]
+aliases: ["/hw01-edit-README.html"]
 
 summary: "Test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown."
 url_code: "https://github.com/uc-cfss/hw01"

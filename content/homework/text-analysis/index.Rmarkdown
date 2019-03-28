@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: false
 type: post
-alias: ["/hw09-text_analysis.html"]
+aliases: ["/hw09-text_analysis.html"]
 
 summary: "Collect text data and analyze it."
 url_code: "https://github.com/uc-cfss/hw09"

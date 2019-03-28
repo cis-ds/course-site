@@ -5,7 +5,7 @@ publishDate: 2019-03-01T13:30:00
 draft: true
 type: "talk"
 
-alias: ["/cm012.html"]
+aliases: ["/cm012.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.

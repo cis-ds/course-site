@@ -5,7 +5,7 @@ date: 2019-03-01
 type: docs
 toc: true
 draft: false
-alias: ["/shiny.html"]
+aliases: ["/shiny.html"]
 categories: ["shiny"]
 
 menu:
@@ -1127,7 +1127,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-26                  
+##  date     2019-03-28                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -1139,10 +1139,8 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  curl          3.3     2019-01-10 [2] CRAN (R 3.5.2)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
 ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
@@ -1156,7 +1154,6 @@ devtools::session_info()
 ##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
 ##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
 ##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
-##  highr         0.8     2019-03-20 [2] CRAN (R 3.5.3)
 ##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
 ##  httpuv        1.5.0   2019-03-15 [2] CRAN (R 3.5.2)

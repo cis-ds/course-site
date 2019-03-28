@@ -5,7 +5,7 @@ date: 2019-03-01
 type: docs
 toc: true
 draft: false
-alias: ["/webdata002_twitter_exercise.html"]
+aliases: ["/webdata002_twitter_exercise.html"]
 categories: ["webdata"]
 
 menu:
@@ -139,20 +139,20 @@ rt
 ```
 
 ```
-## # A tibble: 2,982 x 88
+## # A tibble: 2,943 x 88
 ##    user_id status_id created_at          screen_name text  source
 ##    <chr>   <chr>     <dttm>              <chr>       <chr> <chr> 
-##  1 876066… 11084075… 2019-03-20 16:38:48 nodexl      "nic… Twitt…
-##  2 523216… 11084062… 2019-03-20 16:33:46 martinjhnh… Thes… Twitt…
-##  3 523216… 11058785… 2019-03-13 17:09:22 martinjhnh… One … Twitt…
-##  4 523216… 11076919… 2019-03-18 17:15:22 martinjhnh… #rst… Twitt…
-##  5 523216… 11058425… 2019-03-13 14:46:31 martinjhnh… Some… Twitt…
-##  6 523216… 11080051… 2019-03-19 13:59:43 martinjhnh… "I’m… Twitt…
-##  7 523216… 11065451… 2019-03-15 13:18:10 martinjhnh… Fina… Twitt…
-##  8 523216… 11063188… 2019-03-14 22:18:56 martinjhnh… "Hey… Twitt…
-##  9 483202… 11062405… 2019-03-14 17:08:05 Nitish_Sha… "8 O… Twitt…
-## 10 483202… 11062311… 2019-03-14 16:30:28 Nitish_Sha… "Wha… Twitt…
-## # … with 2,972 more rows, and 82 more variables: display_text_width <dbl>,
+##  1 619751… 11113265… 2019-03-28 17:57:48 azzyazal    Cool… Twitt…
+##  2 469367… 11113252… 2019-03-28 17:52:41 ebovee09    If y… Twitt…
+##  3 887318… 11113250… 2019-03-28 17:52:03 geospacedm… Asth… Twitt…
+##  4 887318… 11090213… 2019-03-22 09:17:54 geospacedm… In m… Twitt…
+##  5 174434… 11113248… 2019-03-28 17:51:12 tjmahr      dply… Twitt…
+##  6 174434… 11087644… 2019-03-21 16:16:50 tjmahr      "I t… Twitt…
+##  7 174434… 11091554… 2019-03-22 18:10:41 tjmahr      I've… Twitt…
+##  8 174434… 11087684… 2019-03-21 16:32:56 tjmahr      "# g… Twitt…
+##  9 343389… 11109362… 2019-03-27 16:06:51 datavisFri… @_Co… Twitt…
+## 10 343389… 11113238… 2019-03-28 17:47:19 datavisFri… Anot… Twitt…
+## # … with 2,933 more rows, and 82 more variables: display_text_width <dbl>,
 ## #   reply_to_status_id <chr>, reply_to_user_id <chr>,
 ## #   reply_to_screen_name <chr>, is_quote <lgl>, is_retweet <lgl>,
 ## #   favorite_count <int>, retweet_count <int>, hashtags <list>,
@@ -340,7 +340,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.2 (2018-12-20)
+##  version  R version 3.5.3 (2019-03-11)
 ##  os       macOS Mojave 10.14.3        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -348,11 +348,12 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-20                  
+##  date     2019-03-28                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source                     
-##  assertthat    0.2.0      2017-04-11 [2] CRAN (R 3.5.0)             
+##  askpass       1.1        2019-01-13 [2] CRAN (R 3.5.2)             
+##  assertthat    0.2.1      2019-03-21 [2] CRAN (R 3.5.3)             
 ##  backports     1.1.3      2018-12-14 [2] CRAN (R 3.5.0)             
 ##  blogdown      0.11       2019-03-11 [1] CRAN (R 3.5.2)             
 ##  bookdown      0.9        2018-12-21 [1] CRAN (R 3.5.0)             
@@ -360,16 +361,19 @@ devtools::session_info()
 ##  callr         3.2.0      2019-03-15 [2] CRAN (R 3.5.2)             
 ##  cellranger    1.1.0      2016-07-27 [2] CRAN (R 3.5.0)             
 ##  cli           1.1.0      2019-03-19 [1] CRAN (R 3.5.2)             
+##  codetools     0.2-16     2018-12-24 [2] CRAN (R 3.5.3)             
 ##  colorspace    1.4-1      2019-03-18 [2] CRAN (R 3.5.2)             
 ##  crayon        1.3.4      2017-09-16 [2] CRAN (R 3.5.0)             
+##  curl          3.3        2019-01-10 [2] CRAN (R 3.5.2)             
 ##  desc          1.2.0      2018-05-01 [2] CRAN (R 3.5.0)             
 ##  devtools      2.0.1      2018-10-26 [1] CRAN (R 3.5.1)             
 ##  digest        0.6.18     2018-10-10 [1] CRAN (R 3.5.0)             
 ##  dplyr       * 0.8.0.1    2019-02-15 [1] CRAN (R 3.5.2)             
 ##  emo           0.0.0.9000 2017-10-03 [2] Github (hadley/emo@9f2e0f2)
 ##  evaluate      0.13       2019-02-12 [2] CRAN (R 3.5.2)             
+##  fansi         0.4.0      2018-10-05 [2] CRAN (R 3.5.0)             
 ##  forcats     * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)             
-##  fs            1.2.6      2018-08-23 [1] CRAN (R 3.5.0)             
+##  fs            1.2.7      2019-03-19 [1] CRAN (R 3.5.3)             
 ##  generics      0.0.2      2018-11-29 [1] CRAN (R 3.5.0)             
 ##  ggplot2     * 3.1.0      2018-10-25 [1] CRAN (R 3.5.0)             
 ##  glue          1.3.1      2019-03-12 [2] CRAN (R 3.5.2)             
@@ -382,8 +386,9 @@ devtools::session_info()
 ##  httr          1.4.0      2018-12-11 [2] CRAN (R 3.5.0)             
 ##  jsonlite      1.6        2018-12-07 [2] CRAN (R 3.5.0)             
 ##  knitr         1.22       2019-03-08 [2] CRAN (R 3.5.2)             
+##  labeling      0.3        2014-08-23 [2] CRAN (R 3.5.0)             
 ##  later         0.8.0      2019-02-11 [2] CRAN (R 3.5.2)             
-##  lattice       0.20-38    2018-11-04 [2] CRAN (R 3.5.2)             
+##  lattice       0.20-38    2018-11-04 [2] CRAN (R 3.5.3)             
 ##  lazyeval      0.2.2      2019-03-15 [2] CRAN (R 3.5.2)             
 ##  lubridate     1.7.4      2018-04-11 [2] CRAN (R 3.5.0)             
 ##  magrittr      1.5        2014-11-22 [2] CRAN (R 3.5.0)             
@@ -392,9 +397,10 @@ devtools::session_info()
 ##  miniUI        0.1.1.1    2018-05-18 [2] CRAN (R 3.5.0)             
 ##  modelr        0.1.4      2019-02-18 [2] CRAN (R 3.5.2)             
 ##  munsell       0.5.0      2018-06-12 [2] CRAN (R 3.5.0)             
-##  nlme          3.1-137    2018-04-07 [2] CRAN (R 3.5.2)             
+##  nlme          3.1-137    2018-04-07 [2] CRAN (R 3.5.3)             
+##  openssl       1.3        2019-03-22 [2] CRAN (R 3.5.3)             
 ##  pillar        1.3.1      2018-12-15 [2] CRAN (R 3.5.0)             
-##  pkgbuild      1.0.2      2018-10-16 [1] CRAN (R 3.5.0)             
+##  pkgbuild      1.0.3      2019-03-20 [1] CRAN (R 3.5.3)             
 ##  pkgconfig     2.0.2      2018-08-16 [2] CRAN (R 3.5.1)             
 ##  pkgload       1.0.2      2018-10-29 [1] CRAN (R 3.5.0)             
 ##  plyr          1.8.4      2016-06-08 [2] CRAN (R 3.5.0)             
@@ -404,19 +410,20 @@ devtools::session_info()
 ##  ps            1.3.0      2018-12-21 [2] CRAN (R 3.5.0)             
 ##  purrr       * 0.3.2      2019-03-15 [2] CRAN (R 3.5.2)             
 ##  R6            2.4.0      2019-02-14 [1] CRAN (R 3.5.2)             
-##  Rcpp          1.0.0      2018-11-07 [1] CRAN (R 3.5.0)             
+##  Rcpp          1.0.1      2019-03-17 [1] CRAN (R 3.5.2)             
 ##  readr       * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)             
 ##  readxl        1.3.1      2019-03-13 [2] CRAN (R 3.5.2)             
 ##  remotes       2.0.2      2018-10-30 [1] CRAN (R 3.5.0)             
-##  rlang         0.3.1      2019-01-08 [1] CRAN (R 3.5.2)             
+##  rlang         0.3.2      2019-03-21 [1] CRAN (R 3.5.3)             
 ##  rmarkdown     1.12       2019-03-14 [1] CRAN (R 3.5.2)             
 ##  rprojroot     1.3-2      2018-01-03 [2] CRAN (R 3.5.0)             
-##  rstudioapi    0.9.0      2019-01-09 [1] CRAN (R 3.5.2)             
+##  rstudioapi    0.10       2019-03-19 [1] CRAN (R 3.5.3)             
+##  rtweet      * 0.6.8      2018-09-28 [2] CRAN (R 3.5.0)             
 ##  rvest         0.3.2      2016-06-17 [2] CRAN (R 3.5.0)             
 ##  scales        1.0.0      2018-08-09 [1] CRAN (R 3.5.0)             
 ##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 3.5.0)             
 ##  shiny         1.2.0      2018-11-02 [2] CRAN (R 3.5.0)             
-##  stringi       1.3.1      2019-02-13 [1] CRAN (R 3.5.2)             
+##  stringi       1.4.3      2019-03-12 [1] CRAN (R 3.5.2)             
 ##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 3.5.2)             
 ##  testthat      2.0.1      2018-10-13 [2] CRAN (R 3.5.0)             
 ##  tibble      * 2.1.1      2019-03-16 [2] CRAN (R 3.5.2)             
@@ -424,6 +431,7 @@ devtools::session_info()
 ##  tidyselect    0.2.5      2018-10-11 [1] CRAN (R 3.5.0)             
 ##  tidyverse   * 1.2.1      2017-11-14 [2] CRAN (R 3.5.0)             
 ##  usethis       1.4.0      2018-08-14 [1] CRAN (R 3.5.0)             
+##  utf8          1.1.4      2018-05-24 [2] CRAN (R 3.5.0)             
 ##  withr         2.1.2      2018-03-15 [2] CRAN (R 3.5.0)             
 ##  xfun          0.5        2019-02-20 [1] CRAN (R 3.5.2)             
 ##  xml2          1.2.0      2018-01-24 [2] CRAN (R 3.5.0)             

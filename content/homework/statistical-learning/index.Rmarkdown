@@ -5,7 +5,7 @@ publishdate: 2019-04-01
 
 draft: false
 type: post
-alias: ["/hw06-stat-learn.html"]
+aliases: ["/hw06-stat-learn.html"]
 
 summary: "Implement statistical learning methods for regression and classification."
 url_code: "https://github.com/uc-cfss/hw06"
