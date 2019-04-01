@@ -24,8 +24,8 @@ I am a lecturer in the [Masters in Computational Social Science](http://macss.uc
 
 ### Teaching assistants
 
-* Cristina Sakamoto
-* Mayank Jindal
+* Deblina Mukherjee
+* Coltan Scrivner
 
 ## Course objectives
 
@@ -376,7 +376,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-01                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -406,7 +406,6 @@ devtools::session_info()
 ##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
 ##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
 ##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
-##  highr         0.8     2019-03-20 [2] CRAN (R 3.5.3)
 ##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
 ##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
