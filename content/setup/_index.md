@@ -15,7 +15,7 @@ This course teaches students how to think programatically and use computational 
 
 In this course, we will learn how to use [R](https://www.r-project.org/) for computational analysis.
 
-# To do
+## To do
 
 Before we can do any of this, we need to install all the necessary software and get it setup and working.
 
