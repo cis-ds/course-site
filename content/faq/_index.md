@@ -8,7 +8,7 @@ menu:
 title: "FAQ"
 toc: true
 type: docs
-aliases: "/faq.html"
+aliases: ["/faq.html"]
 ---
 
 ## Should I take this course?
