@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw01"
 
 # Overview
 
-Due before class Monday October 8th.
+Due before class Monday April 8th.
 
 The goal is to test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown.
 

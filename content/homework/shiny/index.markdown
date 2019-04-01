@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw10"
 
 # Overview
 
-Due by 1:30pm on Monday December 10th.
+Due by 1:30pm on Monday June 10th.
 
 # Fork the `hw10` repository
 

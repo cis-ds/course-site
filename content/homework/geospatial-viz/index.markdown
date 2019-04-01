@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw07"
 
 # Overview
 
-Due before class November 19th.
+Due before class May 20th.
 
 # Fork the `hw07` repository
 

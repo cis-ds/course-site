@@ -1,6 +1,6 @@
 ---
-title: "HW09: Analyzing text data"
-date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
+title: "HW08: Analyzing text data"
+date: 2019-05-20T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw09-text_analysis.html"]
 
 summary: "Collect text data and analyze it."
-url_code: "https://github.com/uc-cfss/hw09"
+url_code: "https://github.com/uc-cfss/hw08"
 ---
 
 
 
 # Overview
 
-Due before class December 3rd.
+Due before class May 27th.
 
-# Fork the `hw09` repository
+# Fork the `hw08` repository
 
-Go [here](https://github.com/uc-cfss/hw09) to fork the repo for homework 09.
+Go [here](https://github.com/uc-cfss/hw08) to fork the repo for homework 08.
 
 # Your mission
 

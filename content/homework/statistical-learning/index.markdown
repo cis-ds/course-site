@@ -1,6 +1,6 @@
 ---
-title: "HW06: Statistical learning"
-date: 2019-05-06T13:30:00-06:00  # Schedule page publish date
+title: "HW09: Statistical learning"
+date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw06-stat-learn.html"]
 
 summary: "Implement statistical learning methods for regression and classification."
-url_code: "https://github.com/uc-cfss/hw06"
+url_code: "https://github.com/uc-cfss/hw09"
 ---
 
 
 
 # Overview
 
-Due before class November 12th.
+Due before class June 3rd.
 
-# Fork the `hw06` repository
+# Fork the `hw09` repository
 
-Go [here](https://github.com/uc-cfss/hw06) to fork the repo for homework 06.
+Go [here](https://github.com/uc-cfss/hw09) to fork the repo for homework 09.
 
 # Part 1: Sexy Joe Biden
 

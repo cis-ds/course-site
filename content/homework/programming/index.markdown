@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw04"
 
 # Overview
 
-Due before class on October 29th.
+Due before class on April 29th.
 
 # Fork the `hw04` repository
 

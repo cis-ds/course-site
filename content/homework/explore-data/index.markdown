@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw02"
 
 # Overview
 
-Due before class on October 15th.
+Due before class on April 15th.
 
 Now that you've demonstrated your software is setup, the goal of this assignment is to practice transforming and exploring data.
 
@@ -110,7 +110,7 @@ Instead, use `kable()` to format the table, add a caption, and label the columns
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😔
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 🙁
 
 # Submit the assignment
 

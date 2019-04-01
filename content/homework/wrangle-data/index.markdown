@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw03"
 
 # Overview
 
-Due before class on October 22nd.
+Due before class on April 22nd.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 
