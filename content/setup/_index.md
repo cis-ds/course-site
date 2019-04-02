@@ -33,7 +33,7 @@ If you want to run R on your own computer, follow these instructions.
         * [Install Git client](/setup/git-clients/)
     * Configure Git/GitHub
         * [Personalize Git](/setup/personalize-git/)
-        * [Git -> GitHub](/setup-github/)
+        * [Git -> GitHub](/setup/github/)
     * Configure Git
         * [Using Git within RStudio](/setup/git-with-rstudio/)
         * [GitHub credentials and avoiding monotony](/setup/git-cache-credentials/)

@@ -55,7 +55,7 @@ Okay, then analyze one of the datasets we've used before.
 
 ## How can I automatically download the data
 
-There are functions in R and programs for the [shell](shell.html) that allow you to do this. For example, if I wanted to download `gapminder` from the [original GitHub repo](https://github.com/jennybc/gapminder):
+There are functions in R and programs for the [shell](/setup/shell/) that allow you to do this. For example, if I wanted to download `gapminder` from the [original GitHub repo](https://github.com/jennybc/gapminder):
 
 + Option 1: via an R script using [downloader::download](https://cran.r-project.org/web/packages/downloader/downloader.pdf) or [RCurl::getURL](http://www.omegahat.net/RCurl/installed/RCurl/html/getURL.html).
 

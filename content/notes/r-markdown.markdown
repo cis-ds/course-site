@@ -84,7 +84,7 @@ When you **knit** the document you send your `.Rmd` file to `knitr`, a package f
 
 ## Text formatting with Markdown
 
-[We have previously practiced formatting text using the Markdown syntax.](hw01-edit-README.html) I will not go into it further, but do note that there is a quick reference guide to Markdown built-in to RStudio. To access it, go to **Help** > **Markdown Quick Reference**.
+[We have previously practiced formatting text using the Markdown syntax.](/homework/edit-readme/) I will not go into it further, but do note that there is a quick reference guide to Markdown built-in to RStudio. To access it, go to **Help** > **Markdown Quick Reference**.
 
 ### Exercise
 
@@ -494,7 +494,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-02                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -506,7 +506,6 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)

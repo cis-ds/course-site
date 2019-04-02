@@ -101,7 +101,7 @@ Now I can push successfully to my fork, then submit a pull request.
 
 ## Resetting from my last commit
 
-What do you need to do if you want to undo your last commit? Use the following [shell](shell.html) commands:
+What do you need to do if you want to undo your last commit? Use the following [shell](/setup/shell/) commands:
 
 ### Undo it completely
 
