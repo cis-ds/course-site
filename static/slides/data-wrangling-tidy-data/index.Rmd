@@ -1,0 +1,339 @@
+---
+title: "Data wrangling: tidy data"
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output:
+  xaringan::moon_reader:
+    css: [default, metropolis, metropolis-fonts]
+    lib_dir: libs
+    nature:
+      beforeInit: "../macros.js"
+      highlightLanguage: r
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE,
+                      fig.retina = 2, fig.width = 12)
+
+library(tidyverse)
+library(nycflights13)
+library(rcfss)
+library(knitr)
+library(here)
+
+library(tidyverse)
+theme_set(theme_minimal(base_size = 20))
+```
+
+# `readr` vs. base R
+
+```{r compare-speed-small, dependson = "data-gen", message = FALSE, echo = FALSE}
+library(microbenchmark)
+
+results_small <- microbenchmark(
+  read.csv = read.csv(here("static", "data", "sim-data-small.csv")),
+  read_csv = read_csv(here("static", "data", "sim-data-small.csv"))
+)
+```
+
+```{r compare-speed-small-plot, dependson = "compare-speed-small", message = FALSE, echo = FALSE}
+autoplot(results_small) +
+  scale_y_log10() +
+  labs(title = str_c("Number of observations:",
+                     nrow(read_csv(here("static", "data", "sim-data-small.csv"))), sep = " "),
+       y = "Time [milliseconds], logged")
+```
+
+---
+
+# `readr` vs. base R
+
+```{r compare-speed-large, dependson = "data-gen", message = FALSE, echo = FALSE}
+results_large <- microbenchmark(
+  read.csv = read.csv(here("static", "data", "sim-data-large.csv")),
+  read_csv = read_csv(here("static", "data", "sim-data-large.csv"))
+)
+```
+
+```{r compare-speed-large-plot, dependson = "compare-speed-large", message = FALSE, echo = FALSE}
+autoplot(results_large) +
+  scale_y_log10() +
+  labs(title = str_c("Number of observations:",
+                     nrow(read_csv(here("static", "data", "sim-data-large.csv"))), sep = " "),
+       y = "Time [milliseconds], logged")
+```
+
+---
+
+# Alternative file formats
+
+* CSV
+* RDS
+* Feather
+* Excel
+* SPSS/Stata
+
+---
+
+# `challenge`
+
+```{r challenge, echo = FALSE}
+challenge <- read_csv(
+  readr_example("challenge.csv"), 
+  col_types = cols(
+    x = col_double(),
+    y = col_date()
+  )
+)
+
+challenge
+```
+
+---
+
+# RDS
+
+```{r rds, dependson = "challenge", include = FALSE}
+# write to csv
+write_csv(challenge, here("static", "data", "challenge.csv"))
+
+# write to/read from rds
+write_rds(challenge, here("static", "data", "challenge.csv"))
+read_rds(here("static", "data", "challenge.csv"))
+```
+
+```{r rds-2, dependson = "challenge", message = FALSE}
+# compare file size
+file.info(here("static", "data", "challenge.rds"))$size %>%
+  utils:::format.object_size("auto")
+
+file.info(here("static", "data", "challenge.csv"))$size %>%
+  utils:::format.object_size("auto")
+```
+
+---
+
+# RDS
+
+```{r rds-3, dependson = "challenge", echo = FALSE}
+# compare read speeds
+microbenchmark(
+  read_csv = read_csv(
+    readr_example("challenge.csv"), 
+    col_types = cols(
+      x = col_double(),
+      y = col_date()
+    )
+  ),
+  read_rds = read_rds(here("static", "data", "challenge.rds"))
+) %>%
+  autoplot +
+  labs(y = "Time [microseconds], logged")
+```
+
+---
+
+# `feather`
+
+```{r feather, dependson = "challenge", include = FALSE}
+library(feather)
+
+write_feather(challenge, here("static", "data", "challenge.feather"))
+read_feather(here("static", "data", "challenge.feather"))
+```
+
+```{r feather-2, dependson = "challenge", message = FALSE, echo = FALSE}
+microbenchmark(
+  read_csv = read_csv(
+    readr_example("challenge.csv"), 
+    col_types = cols(
+      x = col_double(),
+      y = col_date()
+    )
+  ),
+  read_rds = read_rds(here("static", "data", "challenge.rds")),
+  read_feather = read_feather(here("static", "data", "challenge.feather"))
+) %>%
+  autoplot +
+  scale_y_log10(labels = scales::comma) +
+  labs(y = "Time [microseconds], logged")
+```
+
+---
+
+# `readxl`
+
+```{r readxl}
+library(readxl)
+
+xlsx_example <- readxl_example("datasets.xlsx")
+read_excel(xlsx_example)
+```
+
+---
+
+# `readxl`
+
+```{r readxl-sheets, dependson = "readxl"}
+excel_sheets(xlsx_example)
+```
+
+```{r readxl-select-sheet, dependson = "readxl"}
+read_excel(xlsx_example, sheet = "chickwts")
+```
+
+---
+
+# `haven`
+
+## SAS
+
+```{r haven-sas}
+library(haven)
+
+read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
+write_sas(mtcars, here("static", "data", "mtcars.sas7bdat"))
+```
+
+---
+
+# `haven`
+
+## SPSS
+
+```{r haven-spss}
+read_sav(system.file("examples", "iris.sav", package = "haven"))
+write_sav(mtcars, here("static", "data", "mtcars.sav"))
+```
+
+---
+
+# `haven`
+
+## Stata
+
+```{r haven-stata}
+read_dta(system.file("examples", "iris.dta", package = "haven"))
+write_dta(mtcars, here("static", "data", "mtcars.dta"))
+```
+
+---
+
+class: center
+
+# Tidy data
+
+![](http://r4ds.had.co.nz/images/tidy-1.png)
+
+---
+
+# Common tidying tasks
+
+* Gathering
+* Spreading
+* Separating
+* Uniting
+
+---
+
+# Gathering
+
+.pull-left[
+
+```{r spread-columns}
+table4a
+```
+
+]
+
+--
+
+.pull-right[
+
+```{r gather}
+table4a %>% 
+  gather(`1999`, `2000`,
+         key = year, value = cases)
+```
+
+]
+
+---
+
+# Spreading
+
+.pull-left[
+
+```{r spread-rows}
+table2
+```
+
+]
+
+--
+
+.pull-right[
+
+```{r spread}
+table2 %>%
+  spread(key = type, value = count)
+```
+
+]
+
+---
+
+# Separating
+
+.pull-left[
+
+```{r merged-columns}
+table3
+```
+
+]
+
+--
+
+.pull-right[
+
+```{r separate}
+table3 %>% 
+  separate(rate,
+           into = c("cases",
+                    "population"))
+```
+
+]
+
+---
+
+# Uniting
+
+.pull-left[
+
+```{r merged-rows}
+table5
+```
+
+]
+
+--
+
+.pull-right[
+
+```{r unite}
+table5 %>% 
+  unite(new, century, year)
+
+# remove underscore
+table5 %>% 
+  unite(new, century, year, sep = "")
+```
+
+]
