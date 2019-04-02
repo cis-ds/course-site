@@ -72,9 +72,8 @@ math: false
 
 * Chapters 2-3, 4.1-3 in [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7) - a book on statistical learning written at the level of an advanced undergraduate/master's level course
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm011_slides.html)
 * [Statistical learning: the basics](/notes/statistical-learning/)
 * [Linear regression](/notes/linear-models/)
 * [Logistic regression](/notes/logistic-regression/)

@@ -62,9 +62,8 @@ math: false
         * Textual analysis with `tidytext`
         * Visualizations with `ggplot2`
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm017_slides.html)
 * [Text analysis: basic workflow](/notes/text-analysis-workflow/)
 * [Practicing `tidytext` with song titles](/notes/song-titles-exercise/)
 * [Practicing sentiment analysis with Harry Potter](/notes/harry-potter-exercise/)

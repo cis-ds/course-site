@@ -57,9 +57,8 @@ math: false
 * Read chapters 5-7 in [*Tidy Text Mining with R*](http://tidytextmining.com/)
 * Read [Blei, D. M. (2012). Probabilistic topic models. *Communications of the ACM*, 55(4), 77-84.](http://cacm.acm.org/magazines/2012/4/147361-probabilistic-topic-models/fulltext)
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm018_slides.html)
 * [Text analysis: supervised classification](/notes/supervised-text-classification/)
 * [Text analysis: topic modeling](/notes/topic-modeling/)
 

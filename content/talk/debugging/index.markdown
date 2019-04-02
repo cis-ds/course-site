@@ -56,9 +56,8 @@ math: false
 * Skim/read [The `tidyverse` style guide](http://style.tidyverse.org/)
 * Review [21.6 Dealing with failure in *R for Data Science*](http://r4ds.had.co.nz/iteration.html#dealing-with-failure)
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm009_slides.html)
 * [Bugs and styling code](/notes/style-guide/)
 * [Debugging and condition handling](/notes/condition-handling/)
 

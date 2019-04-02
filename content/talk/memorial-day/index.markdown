@@ -46,7 +46,7 @@ math: false
 ## Before class
 
 
-## Slides and links
+## Class materials
 
 
 ## What you need to do

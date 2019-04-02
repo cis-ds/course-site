@@ -52,9 +52,8 @@ math: false
 
 ## Before class
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm016_slides.html)
 * [Web scraping](/notes/web-scraping/)
 
 * `rvest`

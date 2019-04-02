@@ -56,9 +56,8 @@ math: false
 
 * Read chapters 17-19 from [R for Data Science](http://r4ds.had.co.nz/)
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm007_slides.html)
 * [Pipes in R](/notes/pipes/)
 * [Practice the pipe](/notes/pipes-exercise/)
 * [Functions in R](/notes/functions/)

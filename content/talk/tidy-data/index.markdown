@@ -54,9 +54,8 @@ math: false
 
 * Read Chapters 9-12 from [R for Data Science](http://r4ds.had.co.nz/)
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm005_slides.html)
 * [Importing data into R](/notes/importing-data/)
 * [Tidy data](/notes/tidy-data/)
 * [Practice tidying data](/notes/tidy-exercise/)

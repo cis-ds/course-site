@@ -67,9 +67,8 @@ math: false
     
     Last year, 70% of students were able to successfully install these packages without problems. The others ran into problems. Make sure to attempt installing these packages before class so if you have errors we can debug them before you need to use the packages.
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm013_slides.html)
 * [Accessing databases using `dbplyr`](/notes/sql-databases/)
 * [Split-apply-combine and parallel computing](/notes/split-apply-combine/)
 * [Spark and `sparklyr`](/notes/sparklyr/)

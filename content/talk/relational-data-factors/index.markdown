@@ -57,9 +57,8 @@ math: false
 * Read Chapters 13, 15 from [R for Data Science](http://r4ds.had.co.nz/)
     * Do not complete exercises 13.4.6.2-3 -- we will be completing these as in-class exercises
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm006_slides.html)
 * [Relational data: a quick review](/notes/relational-data/)
 * [Practice using relational data](/notes/relational-data-exercise/)
 * [Practice transforming and visualizing factors](/notes/factors-exercise/)

@@ -50,9 +50,8 @@ math: false
 
 ## Before class
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm020_slides.html)
 * [Tutorial from class](/notes/shiny/)
 
 * [Git repo for dating age rule app](https://github.com/bensoltoff/age-rule)

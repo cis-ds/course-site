@@ -56,9 +56,8 @@ math: false
 * Review [chapter 6](http://r4ds.had.co.nz/workflow-scripts.html) in *R for Data Science* for more info on scripts
 * Read [Recovering from Git Predicaments](/notes/common-git-problems/) - some important tips for fixing problems related to Git
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm010_slides.html)
 * [A dive into R Markdown](/notes/r-markdown/)
 
 * [What They Forgot to Teach You About R](https://whattheyforgot.org/)

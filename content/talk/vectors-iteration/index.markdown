@@ -55,9 +55,8 @@ math: false
 
 * Read chapters 14.1-2, 20-21 from [R for Data Science](http://r4ds.had.co.nz/)
 
-## Slides and links
+## Class materials
 
-* [Slides](extras/cm008_slides.html)
 * [Data storage types](/notes/vectors/)
 * [Iteration](/notes/iteration/)
 
