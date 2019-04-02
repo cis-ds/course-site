@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Data transformation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Data transformation
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+class: center
+
+![](/img/xmen_xavier.jpg)
+
+---
+
+class: center
+
+[![](/img/xkcd_computer_problems.png)](https://xkcd.com/722/)
+
+---
+
+# `diamonds`
+
+
+```r
+diamonds
+```
+
+```
+## # A tibble: 53,940 x 10
+##    carat cut       color clarity depth table price     x     y     z
+##    &lt;dbl&gt; &lt;ord&gt;     &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1 0.23  Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2 0.21  Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+##  3 0.23  Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+##  4 0.290 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+##  5 0.31  Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+##  6 0.24  Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+##  7 0.24  Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
+##  8 0.26  Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
+##  9 0.22  Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
+## 10 0.23  Very Good H     VS1      59.4    61   338  4     4.05  2.39
+## # … with 53,930 more rows
+```
+
+--
+
+##### What is the average price of an ideal cut diamond?
+
+1. Identify the *input*
+1. *Select* only the observations which are ideal cut diamonds
+1. Calculate the average value, or *mean*, of price
+
+---
+
+# `diamonds`
+
+### What is the average price of an ideal cut diamond?
+
+
+```r
+data("diamonds")
+diamonds_ideal &lt;- filter(diamonds, cut == "Ideal")
+summarize(diamonds_ideal, avg_price = mean(price))
+```
+
+```
+## # A tibble: 1 x 1
+##   avg_price
+##       &lt;dbl&gt;
+## 1     3458.
+```
+
+---
+
+# `diamonds`
+
+### What is the average price of a diamond for each cut?
+
+--
+
+
+```r
+data("diamonds")
+diamonds_cut &lt;- group_by(diamonds, cut)
+summarize(diamonds_cut, avg_price = mean(price))
+```
+
+```
+## # A tibble: 5 x 2
+##   cut       avg_price
+##   &lt;ord&gt;         &lt;dbl&gt;
+## 1 Fair          4359.
+## 2 Good          3929.
+## 3 Very Good     3982.
+## 4 Premium       4584.
+## 5 Ideal         3458.
+```
+
+---
+
+# `diamonds`
+
+### What is the average carat size and price for each cut of "I" colored diamonds?
+
+--
+
+
+```r
+data("diamonds")
+diamonds_i &lt;- filter(diamonds, color == "I")
+diamonds_i_group &lt;- group_by(diamonds_i, cut)
+summarize(
+  diamonds_i_group,
+  carat = mean(carat),
+  price = mean(price)
+)
+```
+
+```
+## # A tibble: 5 x 3
+##   cut       carat price
+##   &lt;ord&gt;     &lt;dbl&gt; &lt;dbl&gt;
+## 1 Fair      1.20  4685.
+## 2 Good      1.06  5079.
+## 3 Very Good 1.05  5256.
+## 4 Premium   1.14  5946.
+## 5 Ideal     0.913 4452.
+```
+
+---
+
+class: center
+
+![Data science workflow](/img/data-science/base.png)
+
+---
+
+# Verbiage for data transformation
+
+1. The first argument is a data frame
+1. Subsequent arguments describe what to do with the data frame
+1. The result is a new data frame
+
+---
+
+# Key functions in `dplyr`
+
+`function()`  | Action performed
+--------------|--------------------------------------------------------
+`filter()`    | Subsets observations based on their values
+`arrange()`   | Changes the order of observations based on their values
+`select()`    | Selects a subset of columns from the data frame
+`rename()`    | Changes the name of columns in the data frame
+`mutate()`    | Creates new columns (or variables)
+`group_by()`  | Changes the unit of analysis from the complete dataset to individual groups
+`summarize()` | Collapses the data frame to a smaller number of rows which summarize the larger data
+
+---
+
+# American vs. British English
+
+.pull-left[
+
+&lt;blockquote class="twitter-tweet" data-lang="en"&gt;&lt;p lang="en" dir="ltr"&gt;The holy grail: &amp;quot;For consistency, aim to use British (rather than American) spelling.&amp;quot; &lt;a href="https://twitter.com/hashtag/rstats?src=hash"&gt;#rstats&lt;/a&gt; &lt;a href="http://t.co/7qQSWIowcl"&gt;http://t.co/7qQSWIowcl&lt;/a&gt;. Colour is right!&lt;/p&gt;&amp;mdash; Hadley Wickham (@hadleywickham) &lt;a href="https://twitter.com/hadleywickham/status/405707093770244097"&gt;November 27, 2013&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src="http://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
+
+]
+
+--
+
+.pull-right[
+
+&lt;blockquote class="twitter-tweet" data-lang="en"&gt;&lt;p lang="en" dir="ltr"&gt;We have to make America great again!&lt;/p&gt;&amp;mdash; Donald J. Trump (@realDonaldTrump) &lt;a href="https://twitter.com/realDonaldTrump/status/266254611919282177"&gt;November 7, 2012&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src="http://platform.twitter.com/widgets.js" charset="utf-8"&gt;&lt;/script&gt;
+
+]
+
+--
+
+* `summarize()` = `summarise()`
+* `color()` = `colour()`
+
+---
+
+# Saving transformed data (`&lt;-`)
+
+## Printed, but not saved
+
+
+```r
+filter(diamonds, cut == "Ideal")
+```
+
+```
+## # A tibble: 21,551 x 10
+##    carat cut   color clarity depth table price     x     y     z
+##    &lt;dbl&gt; &lt;ord&gt; &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1  0.23 Ideal E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2  0.23 Ideal J     VS1      62.8    56   340  3.93  3.9   2.46
+##  3  0.31 Ideal J     SI2      62.2    54   344  4.35  4.37  2.71
+##  4  0.3  Ideal I     SI2      62      54   348  4.31  4.34  2.68
+##  5  0.33 Ideal I     SI2      61.8    55   403  4.49  4.51  2.78
+##  6  0.33 Ideal I     SI2      61.2    56   403  4.49  4.5   2.75
+##  7  0.33 Ideal J     SI1      61.1    56   403  4.49  4.55  2.76
+##  8  0.23 Ideal G     VS1      61.9    54   404  3.93  3.95  2.44
+##  9  0.32 Ideal I     SI1      60.9    55   404  4.45  4.48  2.72
+## 10  0.3  Ideal I     SI2      61      59   405  4.3   4.33  2.63
+## # … with 21,541 more rows
+```
+
+--
+
+## Saved, but not printed
+
+
+```r
+diamonds_ideal &lt;- filter(diamonds, cut == "Ideal")
+```
+
+--
+
+## Saved and printed
+
+
+```r
+# saved and printed
+(diamonds_ideal &lt;- filter(diamonds, cut == "Ideal"))
+```
+
+```
+## # A tibble: 21,551 x 10
+##    carat cut   color clarity depth table price     x     y     z
+##    &lt;dbl&gt; &lt;ord&gt; &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1  0.23 Ideal E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2  0.23 Ideal J     VS1      62.8    56   340  3.93  3.9   2.46
+##  3  0.31 Ideal J     SI2      62.2    54   344  4.35  4.37  2.71
+##  4  0.3  Ideal I     SI2      62      54   348  4.31  4.34  2.68
+##  5  0.33 Ideal I     SI2      61.8    55   403  4.49  4.51  2.78
+##  6  0.33 Ideal I     SI2      61.2    56   403  4.49  4.5   2.75
+##  7  0.33 Ideal J     SI1      61.1    56   403  4.49  4.55  2.76
+##  8  0.23 Ideal G     VS1      61.9    54   404  3.93  3.95  2.44
+##  9  0.32 Ideal I     SI1      60.9    55   404  4.45  4.48  2.72
+## 10  0.3  Ideal I     SI2      61      59   405  4.3   4.33  2.63
+## # … with 21,541 more rows
+```
+
+---
+
+# Missing values
+
+
+```r
+NA &gt; 5
+```
+
+```
+## [1] NA
+```
+
+```r
+10 == NA
+```
+
+```
+## [1] NA
+```
+
+```r
+NA + 10
+```
+
+```
+## [1] NA
+```
+
+---
+
+# `na.rm` argument
+
+
+```r
+df &lt;- tibble(x = c(1, NA, 3))
+filter(df, x &gt; 1)
+```
+
+```
+## # A tibble: 1 x 1
+##       x
+##   &lt;dbl&gt;
+## 1     3
+```
+
+```r
+filter(df, is.na(x) | x &gt; 1)
+```
+
+```
+## # A tibble: 2 x 1
+##       x
+##   &lt;dbl&gt;
+## 1    NA
+## 2     3
+```
+
+
+```r
+df &lt;- tibble(
+  x = c(1, 2, 3, 5, NA)
+)
+
+summarize(df, meanx = mean(x))
+```
+
+```
+## # A tibble: 1 x 1
+##   meanx
+##   &lt;dbl&gt;
+## 1    NA
+```
+
+```r
+summarize(df, meanx = mean(x, na.rm = TRUE))
+```
+
+```
+## # A tibble: 1 x 1
+##   meanx
+##   &lt;dbl&gt;
+## 1  2.75
+```
+
+---
+
+# Piping (`%&gt;%`)
+
+## No pipes
+
+
+```r
+by_dest &lt;- group_by(flights, dest)
+delay &lt;- summarise(by_dest,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE)
+)
+delay &lt;- filter(delay, count &gt; 20, dest != "HNL")
+```
+
+---
+
+# Piping (`%&gt;%`)
+
+## With pipes
+
+
+```r
+# Pipes - clear
+delays &lt;- flights %&gt;% 
+  group_by(dest) %&gt;% 
+  summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %&gt;% 
+  filter(count &gt; 20, dest != "HNL")
+```
+
+---
+
+# Errors to avoid with pipes
+
+```r
+delays &lt;- flights %&gt;% 
+  by_dest &lt;- group_by(dest) %&gt;% 
+  delay &lt;- summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %&gt;% 
+  delay &lt;- filter(count &gt; 20, dest != "HNL")
+```
+
+```
+Error: bad assignment: 
+     summarize(count = n(), dist = mean(distance, na.rm = TRUE), delay = mean(arr_delay, 
+         na.rm = TRUE)) %&gt;% delay &lt;- filter(count &gt; 20, dest != "HNL")
+```
+
+---
+
+# Errors to avoid with pipes
+
+
+```r
+delays &lt;- flights %&gt;% 
+  group_by(flights, dest) %&gt;% 
+  summarize(flights,
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %&gt;% 
+  filter(flights, count &gt; 20, dest != "HNL")
+```
+
+```
+## Error: Column `flights` is unknown
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="../macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
