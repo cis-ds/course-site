@@ -32,7 +32,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: ""
+url_slides: "/slides/data-wrangling-relational-data-and-factors/"
 url_video: ""
 url_code: ""
 
