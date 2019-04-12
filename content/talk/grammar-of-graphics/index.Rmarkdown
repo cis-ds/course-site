@@ -9,7 +9,6 @@ aliases: ["/cm002.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_start: 2019-04-03T13:30:00
 time_end: 2019-04-03T14:50:00
 all_day: false
 
