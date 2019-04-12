@@ -22,4 +22,5 @@ subtitle: ""
 title: Upcoming Classes
 weight: 70
 widget: pages
+headless: true
 ---

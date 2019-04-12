@@ -20,6 +20,7 @@ subtitle: ""
 title: Recent Publications
 weight: 90
 widget: pages
+headless: true
 ---
 
 {{% alert note %}}

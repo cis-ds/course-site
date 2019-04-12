@@ -20,6 +20,7 @@ hero_media: hero-academic.png
 title: Academic
 weight: 10
 widget: hero
+headless: true
 ---
 
 **The Best Way to Create the Website You Want from Markdown (or RStudio/Jupyter)**

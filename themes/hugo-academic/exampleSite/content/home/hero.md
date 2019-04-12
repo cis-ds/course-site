@@ -1,6 +1,7 @@
 +++
 # Hero widget.
-widget = "hero"  # Do not modify this line!
+widget = "hero"  # See https://sourcethemes.com/academic/docs/page-builder/
+headless = true  # This file represents a page section.
 active = true  # Activate this widget? true/false
 weight = 10  # Order that this section will appear.
 
@@ -33,7 +34,7 @@ hero_media = "hero-academic.png"
 #   Display link(s) by specifying a URL and label below. Icon is optional for `[cta]`.
 #   Remove a link/note by deleting a cta/note block.
 [cta]
-  url = "post/getting-started/"
+  url = "https://sourcethemes.com/academic/docs/install/"
   label = "Get Started"
   icon_pack = "fas"
   icon = "download"
@@ -47,7 +48,7 @@ hero_media = "hero-academic.png"
   label = '<a id="academic-release" href="https://sourcethemes.com/academic/updates" data-repo="gcushen/hugo-academic">Latest release <!-- V --></a>'
 +++
 
-**The Best Way to Create the Website You Want from Markdown (or RStudio/Jupyter)**
+**The Best Way to Create the Website You Want from Markdown (or Jupyter/RStudio)**
 
 Build **Anything** with Widgets
 

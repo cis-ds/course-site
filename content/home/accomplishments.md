@@ -30,4 +30,5 @@ subtitle: ""
 title: Accomplish&shy;ments
 weight: 50
 widget: accomplishments
+headless: true
 ---

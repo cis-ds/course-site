@@ -13,6 +13,7 @@ subtitle: ""
 title: Demos
 weight: 15
 widget: blank
+headless: true
 ---
 
 Welcome to the **personal demo** of Academic. Other demos available include:

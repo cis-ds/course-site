@@ -27,4 +27,5 @@ item:
   title: Right
 weight: 1
 widget: slider
+headless: true
 ---

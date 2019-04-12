@@ -11,4 +11,5 @@ user_groups:
 - Alumni
 weight: 68
 widget: people
+headless: true
 ---

@@ -22,5 +22,6 @@ subtitle: ""
 title: Projects
 weight: 65
 widget: portfolio
+headless: true
 ---
 

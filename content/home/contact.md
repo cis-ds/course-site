@@ -6,5 +6,6 @@ subtitle: ""
 title: Contact
 weight: 130
 widget: contact
+headless: true
 ---
 

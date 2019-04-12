@@ -19,11 +19,11 @@
 
 {{/* Filters */}}
 {{ if $st.Params.content.filters.tag }}
-  {{ $archive_page = $.Site.GetPage (printf "tags/%s" $st.Params.filters.content.tag) }}
+  {{ $archive_page = $.Site.GetPage (printf "tags/%s" $st.Params.content.filters.tag) }}
   {{ $query = $query | intersect $archive_page.Pages }}
 {{ end }}
 {{ if $st.Params.content.filters.category }}
-  {{ $archive_page = $.Site.GetPage (printf "categories/%s" $st.Params.filters.content.category) }}
+  {{ $archive_page = $.Site.GetPage (printf "categories/%s" $st.Params.content.filters.category) }}
   {{ $query = $query | intersect $archive_page.Pages }}
 {{ end }}
 {{ if $st.Params.content.filters.publication_type }}
@@ -34,15 +34,17 @@
   {{ $query = where $query "Params.featured" "!=" true }}
 {{ end }}
 {{ if $st.Params.content.filters.exclude_past }}
-  {{ $query = where $query "Date" "<=" now }}
+  {{ $query = where $query "Date" ">=" now }}
 {{ end }}
 {{ if $st.Params.content.filters.exclude_future }}
-  {{ $query = where $query "Date" ">" now }}
+  {{ $query = where $query "Date" "<" now }}
 {{ end }}
 
-{{/* Sort (use Hugo default for now) */}}
-{{/* $sort_by := "Date" */}}
-{{/* $query = sort $query $sort_by $items_sort */}}
+{{ $count := len $query }}
+
+{{/* Sort */}}
+{{ $sort_by := "Date" }}
+{{ $query = sort $query $sort_by $items_sort }}
 
 {{/* Offset and Limit */}}
 {{ if gt $items_offset 0 }}
@@ -50,8 +52,6 @@
 {{ else }}
   {{ $query = first $items_count $query }}
 {{ end }}
-
-{{ $count := len $query }}
 
 {{/* Localisation */}}
 {{ $i18n := "" }}
@@ -79,7 +79,7 @@
         {{ partial "li_list" . }}
       {{ else if eq $st.Params.design.view 3 }}
         {{ partial "li_card" . }}
-      {{ else if eq $st.Params.design.view 3 | and (eq $st.Type "publication") }}
+      {{ else if eq $st.Params.design.view 4 | and (eq $items_type "publication") }}
         {{ partial "li_citation" . }}
       {{ else }}
         {{ partial "li_compact" . }}
