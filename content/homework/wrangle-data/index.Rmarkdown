@@ -76,6 +76,7 @@ Once joined, use your data wrangling and visualization skills to answer the foll
 1. In each term, how many of the term's published decisions (decided after oral arguments) were announced in a given month?
     * You may want to skim/read chapter 16 in [R for Data Science](http://r4ds.had.co.nz/dates-and-times.html) as it discusses working with dates and times using the `lubridate` package
     * Let me emphasize: you want to skim/read chapter 16 in [R for Data Science](http://r4ds.had.co.nz/dates-and-times.html) as it discusses working with dates and times using the `lubridate` package
+    * Also note, the Supreme Court's calendar runs on the federal government's [fiscal year](https://en.wikipedia.org/wiki/Fiscal_year#Federal_government). That means the first month of the court's term is October, running through September of the following calendar year.
 
 > You only need to complete one of the two bolded questions. Only complete both if you are feeling particularly masochistic!
 
