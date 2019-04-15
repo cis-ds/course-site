@@ -41,7 +41,8 @@ Graphs generated through EDA are distinct from final graphs. You will typically 
 
 
 ```r
-ggplot(diamonds, aes(carat, price)) +
+ggplot(data = diamonds,
+       mapping = aes(x = carat, y = price)) +
   geom_point() +
   geom_smooth()
 ```
@@ -56,7 +57,8 @@ This is a great exploratory graph: it took just three lines of code and clearly 
 
 
 ```r
-ggplot(diamonds, aes(carat, price)) +
+ggplot(data = diamonds,
+       mapping = aes(x = carat, y = price)) +
   geom_point(alpha = .01) +
   geom_smooth(se = FALSE) +
   scale_y_continuous(labels = scales::dollar) +
@@ -109,7 +111,7 @@ mpg
 ```
 
 ```r
-glimpse(mpg)
+glimpse(x = mpg)
 ```
 
 ```
@@ -138,7 +140,8 @@ Assessing **variation** requires examining the values of a variable as they chan
 
 
 ```r
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram()
 ```
 
@@ -152,7 +155,8 @@ It appears there is a high concentration of vehicles with highway fuel efficienc
 
 
 ```r
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram() +
   geom_rug()
 ```
@@ -169,7 +173,8 @@ By default, `geom_histogram()` bins the observations into 30 intervals of equal 
 
 
 ```r
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram(bins = 50) +
   geom_rug()
 ```
@@ -177,7 +182,8 @@ ggplot(mpg, aes(hwy)) +
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-1.png" width="672" />
 
 ```r
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram(bins = 10) +
   geom_rug()
 ```
@@ -188,7 +194,8 @@ ggplot(mpg, aes(hwy)) +
 
 
 ```r
-ggplot(mpg, aes(class)) +
+ggplot(data = mpg,
+       mapping = aes(x = class)) +
   geom_bar()
 ```
 
@@ -210,7 +217,8 @@ To examine the distribution of a categorical variable, we can use a **bar chart*
 
 
 ```r
-ggplot(mpg, aes(class, hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = class, y = hwy)) +
   geom_boxplot()
 ```
 
@@ -222,7 +230,8 @@ If you have two continuous variables, you may use a **scatterplot** which maps e
 
 
 ```r
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ, y = hwy)) +
   geom_point()
 ```
 
@@ -236,7 +245,8 @@ Sometimes you want to compare the conditional distribution of a variable across 
 
 
 ```r
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram() +
   facet_wrap(~ drv)
 ```
@@ -253,7 +263,8 @@ You may also want to use a multiple windows plot with a two-dimensional graph. F
 
 
 ```r
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ, y = hwy)) +
   geom_point() +
   facet_wrap(~ drv)
 ```
@@ -268,7 +279,10 @@ Depending on the type of graph and variables you wish to encode, there are sever
 
 
 ```r
-ggplot(mpg, aes(displ, hwy, color = class)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ,
+                     y = hwy,
+                     color = class)) +
   geom_point()
 ```
 
@@ -278,7 +292,11 @@ We can even use a fourth channel to communicate another variable (number of cyli
 
 
 ```r
-ggplot(mpg, aes(displ, hwy, color = class, size = cyl)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ,
+                     y = hwy,
+                     color = class,
+                     size = cyl)) +
   geom_point()
 ```
 
@@ -288,7 +306,10 @@ Note that some channels are not always appropriate, even if they can technically
 
 
 ```r
-ggplot(mpg, aes(displ, hwy, shape = class)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ,
+                    y = hwy,
+                    shape = class)) +
   geom_point()
 ```
 
@@ -325,7 +346,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

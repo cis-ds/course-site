@@ -41,7 +41,8 @@ EDA relies heavily on visualizations and graphical interpretations of data. Whil
 Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to [explore how the price of a diamond varies with it's carat size](http://r4ds.had.co.nz/exploratory-data-analysis.html#two-continuous-variables). An appropriate technique would be a scatterplot:
 
 ```{r diamonds-eda}
-ggplot(diamonds, aes(carat, price)) +
+ggplot(data = diamonds,
+       mapping = aes(x = carat, y = price)) +
   geom_point() +
   geom_smooth()
 ```
@@ -49,7 +50,8 @@ ggplot(diamonds, aes(carat, price)) +
 This is a great exploratory graph: it took just three lines of code and clearly establishes an exponential relationship between the carat size and price of a diamond. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
 
 ```{r diamonds-final}
-ggplot(diamonds, aes(carat, price)) +
+ggplot(data = diamonds,
+       mapping = aes(x = carat, y = price)) +
   geom_point(alpha = .01) +
   geom_smooth(se = FALSE) +
   scale_y_continuous(labels = scales::dollar) +
@@ -75,7 +77,7 @@ library(ggplot2)
 data("mpg")
 
 mpg
-glimpse(mpg)
+glimpse(x = mpg)
 ```
 
 Each row represents a model of car sold in a given year.^[The data is a panel structure, so the same model car appears multiple times.] `hwy` identifies the highway miles per gallon for the vehicle.
@@ -87,14 +89,16 @@ Assessing **variation** requires examining the values of a variable as they chan
 ### Histogram
 
 ```{r histogram}
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram()
 ```
 
 It appears there is a high concentration of vehicles with highway fuel efficiency between 20 and 30 mpg, with a smaller number of vehicles between 15-20 and some outliers with high fuel efficiency (larger values indicate more efficient vehicles). To view the actual data points, we use `geom_rug()`:
 
 ```{r rug}
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram() +
   geom_rug()
 ```
@@ -104,11 +108,13 @@ One thing `geom_rug()` does is illustrate that while `hwy` is a continuous varia
 By default, `geom_histogram()` bins the observations into 30 intervals of equal width. You can adjust this using the `bins` parameter:
 
 ```{r histogram-bins}
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram(bins = 50) +
   geom_rug()
 
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram(bins = 10) +
   geom_rug()
 ```
@@ -116,7 +122,8 @@ ggplot(mpg, aes(hwy)) +
 ### Bar chart
 
 ```{r barplot}
-ggplot(mpg, aes(class)) +
+ggplot(data = mpg,
+       mapping = aes(x = class)) +
   geom_bar()
 ```
 
@@ -135,7 +142,8 @@ To examine the distribution of a categorical variable, we can use a **bar chart*
 **Two-dimensional graphs** are visualizations that are naturally designed to visualize two variables. For instance, if you have a discrete variable and a continuous variable, you could use a **box plot** to visualize the distribution of the values of the continuous variable for each category in the discrete variable:
 
 ```{r boxplot}
-ggplot(mpg, aes(class, hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = class, y = hwy)) +
   geom_boxplot()
 ```
 
@@ -144,7 +152,8 @@ Here we see that on average, compact and midsize vehicles have the highest highw
 If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between engine displacement (the physical size of the engine) and highway fuel efficiency:
 
 ```{r scatterplot}
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ, y = hwy)) +
   geom_point()
 ```
 
@@ -155,7 +164,8 @@ As engines get larger, highway fuel efficiency declines.
 Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine variation in highway fuel efficiency separately for type of drive (front wheel, rear wheel, or 4 wheel), we could draw a graph like this:
 
 ```{r histogram-facet}
-ggplot(mpg, aes(hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = hwy)) +
   geom_histogram() +
   facet_wrap(~ drv)
 ```
@@ -165,7 +175,8 @@ Highway fuel efficiency is right-skewed for 4 and rear wheel drive vehicles, whe
 You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between engine displacement and highway fuel efficiency by drive type:
 
 ```{r scatterplot-facet}
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ, y = hwy)) +
   geom_point() +
   facet_wrap(~ drv)
 ```
@@ -177,21 +188,31 @@ If you want to visualize three or more dimensions of data without resorting to 3
 Depending on the type of graph and variables you wish to encode, there are several different channels you can use to encode additional information. For instance, **color** can be used to distinguish between classes in a categorical variable.
 
 ```{r scatterplot-color}
-ggplot(mpg, aes(displ, hwy, color = class)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ,
+                     y = hwy,
+                     color = class)) +
   geom_point()
 ```
 
 We can even use a fourth channel to communicate another variable (number of cylinders) by making use of the size channel:
 
 ```{r scatterplot-color-size}
-ggplot(mpg, aes(displ, hwy, color = class, size = cyl)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ,
+                     y = hwy,
+                     color = class,
+                     size = cyl)) +
   geom_point()
 ```
 
 Note that some channels are not always appropriate, even if they can technically be implemented. For example, instead of using a color channel to visualize `class`, why not distinguish each type of car using the point's shape?
 
 ```{r scatterplot-shape}
-ggplot(mpg, aes(displ, hwy, shape = class)) +
+ggplot(data = mpg,
+       mapping = aes(x = displ,
+                    y = hwy,
+                    shape = class)) +
   geom_point()
 ```
 

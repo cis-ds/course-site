@@ -67,8 +67,8 @@ The best approach to answering this question is a visualization. There are sever
 ```r
 # smoothing line
 flights %>%
-  inner_join(plane_ages) %>%
-  ggplot(aes(age, dep_delay)) +
+  inner_join(y = plane_ages) %>%
+  ggplot(mapping = aes(x = age, y = dep_delay)) +
   geom_smooth()
 ```
 
@@ -89,10 +89,10 @@ flights %>%
 ```r
 # line graph of average delay by age
 flights %>%
-  inner_join(plane_ages) %>%
+  inner_join(y = plane_ages) %>%
   group_by(age) %>%
   summarise(delay = mean(dep_delay, na.rm = TRUE)) %>%
-  ggplot(aes(age, delay)) +
+  ggplot(mapping = aes(x = age, y = delay)) +
   geom_point() +
   geom_line()
 ```
@@ -116,8 +116,8 @@ In this situation, `left_join()` could also be used because `ggplot()` and `mean
 
 ```r
 flights %>%
-  left_join(plane_ages) %>%
-  ggplot(aes(age, dep_delay)) +
+  left_join(y = plane_ages) %>%
+  ggplot(mapping = aes(x = age, y = dep_delay)) +
   geom_smooth()
 ```
 
@@ -137,10 +137,10 @@ flights %>%
 
 ```r
 flights %>%
-  left_join(plane_ages) %>%
+  left_join(y = plane_ages) %>%
   group_by(age) %>%
   summarise(delay = mean(dep_delay, na.rm = TRUE)) %>%
-  ggplot(aes(age, delay)) +
+  ggplot(mapping = aes(x = age, y = delay)) +
   geom_point() +
   geom_line()
 ```
@@ -175,8 +175,8 @@ This is a mutating join, and the basic function you need to use here is `left_jo
 
 ```r
 flights %>%
-  left_join(airports, by = c(dest = "faa")) %>%
-  left_join(airports, by = c(origin = "faa"))
+  left_join(y = airports, by = c(dest = "faa")) %>%
+  left_join(y = airports, by = c(origin = "faa"))
 ```
 
 ```
@@ -210,8 +210,8 @@ airports_lite <- airports %>%
   select(faa, lat, lon)
 
 flights %>%
-  left_join(airports_lite, by = c(dest = "faa")) %>%
-  left_join(airports_lite, by = c(origin = "faa"))
+  left_join(y = airports_lite, by = c(dest = "faa")) %>%
+  left_join(y = airports_lite, by = c(origin = "faa"))
 ```
 
 ```
@@ -243,8 +243,8 @@ airports_lite <- airports %>%
   select(faa, lat, lon)
 
 flights %>%
-  left_join(airports_lite, by = c(dest = "faa")) %>%
-  left_join(airports_lite, by = c(origin = "faa"), suffix = c(".dest", ".origin"))
+  left_join(y = airports_lite, by = c(dest = "faa")) %>%
+  left_join(y = airports_lite, by = c(origin = "faa"), suffix = c(".dest", ".origin"))
 ```
 
 ```
@@ -294,7 +294,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        

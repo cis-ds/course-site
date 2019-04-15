@@ -63,7 +63,8 @@ We could use a **boxplot** to visualize the distribution of SAT scores.
 
 
 ```r
-ggplot(scorecard, aes(type, satavg)) +
+ggplot(data = scorecard,
+       mapping = aes(x = type, y = satavg)) +
   geom_boxplot()
 ```
 
@@ -77,7 +78,8 @@ According to this graph, private, nonprofit schools have the highest average SAT
 
 
 ```r
-ggplot(scorecard, aes(satavg)) +
+ggplot(data = scorecard,
+       mapping = aes(x = satavg)) +
   geom_histogram() +
   facet_wrap(~ type)
 ```
@@ -93,7 +95,8 @@ ggplot(scorecard, aes(satavg)) +
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-histo-freq-1.png" width="672" />
 
 ```r
-ggplot(scorecard, aes(satavg, color = type)) +
+ggplot(data = scorecard,
+       mapping = aes(x = satavg, color = type)) +
   geom_freqpoly()
 ```
 
@@ -111,7 +114,8 @@ Now we can see the averages for each college type are based on widely varying sa
 
 
 ```r
-ggplot(scorecard, aes(type)) +
+ggplot(data = scorecard,
+       mapping = aes(x = type)) +
   geom_bar()
 ```
 
@@ -130,7 +134,8 @@ There are far fewer private, for-profit colleges than the other categories. A bo
 
 ```r
 # geom_point
-ggplot(scorecard, aes(cost, avgfacsal)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost, y = avgfacsal)) +
   geom_point() +
   geom_smooth()
 ```
@@ -151,7 +156,8 @@ ggplot(scorecard, aes(cost, avgfacsal)) +
 
 ```r
 # geom_point with alpha transparency to reveal dense clusters
-ggplot(scorecard, aes(cost, avgfacsal)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost, y = avgfacsal)) +
   geom_point(alpha = .2) +
   geom_smooth()
 ```
@@ -170,7 +176,8 @@ ggplot(scorecard, aes(cost, avgfacsal)) +
 
 ```r
 # geom_hex
-ggplot(scorecard, aes(cost, avgfacsal)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost, y = avgfacsal)) +
   geom_hex() +
   geom_smooth()
 ```
@@ -191,7 +198,10 @@ ggplot(scorecard, aes(cost, avgfacsal)) +
 
 ```r
 # geom_point with smoothing lines for each type
-ggplot(scorecard, aes(cost, avgfacsal, color = type)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost,
+                     y = avgfacsal,
+                     color = type)) +
   geom_point(alpha = .2) +
   geom_smooth()
 ```
@@ -210,7 +220,10 @@ ggplot(scorecard, aes(cost, avgfacsal, color = type)) +
 
 ```r
 # geom_point with facets for each type
-ggplot(scorecard, aes(cost, avgfacsal, color = type)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost,
+                     y = avgfacsal,
+                     color = type)) +
   geom_point(alpha = .2) +
   geom_smooth() +
   facet_grid(. ~ type)
@@ -241,7 +254,8 @@ Two continuous variables suggest a **scatterplot** would be appropriate.
 
 
 ```r
-ggplot(scorecard, aes(pctpell, debt)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
   geom_point()
 ```
 
@@ -255,7 +269,8 @@ Hmm. There seem to be a lot of data points. It isn't really clear if there is a 
 
 
 ```r
-ggplot(scorecard, aes(pctpell, debt)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
   geom_jitter()
 ```
 
@@ -269,7 +284,8 @@ Meh, didn't really do much. What if we make our data points semi-transparent usi
 
 
 ```r
-ggplot(scorecard, aes(pctpell, debt)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
   geom_point(alpha = .2)
 ```
 
@@ -283,7 +299,8 @@ Now we're getting somewhere. I'm beginning to see some dense clusters in the mid
 
 
 ```r
-ggplot(scorecard, aes(pctpell, debt)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
   geom_hex()
 ```
 
@@ -297,7 +314,8 @@ This is getting better. It looks like there might be a downward trend; that is, 
 
 
 ```r
-ggplot(scorecard, aes(pctpell, debt)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
   geom_point(alpha = .2) +
   geom_smooth()
 ```
@@ -340,7 +358,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -360,7 +378,6 @@ devtools::session_info()
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
 ##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  fansi         0.4.0   2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
 ##  fs            1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
@@ -396,7 +413,7 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss       * 0.1.5   2019-01-24 [1] local         
+##  rcfss       * 0.1.5   2019-04-11 [1] local         
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
@@ -417,7 +434,6 @@ devtools::session_info()
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
 ##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  utf8          1.1.4   2018-05-24 [2] CRAN (R 3.5.0)
 ##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
 ##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)

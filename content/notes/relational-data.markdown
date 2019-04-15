@@ -75,7 +75,7 @@ The units of analysis are completely different. Just as it made sense to split [
 
 
 ```r
-(ijsp <- inner_join(superheroes, publishers))
+(ijsp <- inner_join(x = superheroes, y = publishers))
 ```
 
 ```
@@ -221,7 +221,7 @@ We lose Hellboy in the join because, although he appears in `x = superheroes`, h
 
 
 ```r
-(ljsp <- left_join(superheroes, publishers))
+(ljsp <- left_join(x = superheroes, y = publishers))
 ```
 
 ```
@@ -369,7 +369,7 @@ We basically get `x = superheroes` back, but with the addition of variable `yr_f
 
 
 ```r
-(rjsp <- right_join(superheroes, publishers))
+(rjsp <- right_join(x = superheroes, y = publishers))
 ```
 
 ```
@@ -395,7 +395,7 @@ We could also accomplish virtually the same thing using `left_join()` by reversi
 
 
 ```r
-left_join(publishers, superheroes)
+left_join(x = superheroes, y = publishers)
 ```
 
 ```
@@ -404,15 +404,15 @@ left_join(publishers, superheroes)
 
 ```
 ## # A tibble: 7 x 5
-##   publisher yr_founded name     alignment gender
-##   <chr>          <int> <chr>    <chr>     <chr> 
-## 1 DC              1934 Batman   good      male  
-## 2 DC              1934 Joker    bad       male  
-## 3 DC              1934 Catwoman bad       female
-## 4 Marvel          1939 Magneto  bad       male  
-## 5 Marvel          1939 Storm    good      female
-## 6 Marvel          1939 Mystique bad       female
-## 7 Image           1992 <NA>     <NA>      <NA>
+##   name     alignment gender publisher         yr_founded
+##   <chr>    <chr>     <chr>  <chr>                  <int>
+## 1 Magneto  bad       male   Marvel                  1939
+## 2 Storm    good      female Marvel                  1939
+## 3 Mystique bad       female Marvel                  1939
+## 4 Batman   good      male   DC                      1934
+## 5 Joker    bad       male   DC                      1934
+## 6 Catwoman bad       female DC                      1934
+## 7 Hellboy  good      male   Dark Horse Comics         NA
 ```
 
 Doing so returns the same basic data frame, with the column orders reversed. `right_join()` is not used as commonly as `left_join()`, but works well in a piped operation when you perform several functions on `x` but then want to join it with `y` and only keep rows that appear in `y`.
@@ -543,7 +543,7 @@ Doing so returns the same basic data frame, with the column orders reversed. `ri
 
 
 ```r
-(fjsp <- full_join(superheroes, publishers))
+(fjsp <- full_join(x = superheroes, y = publishers))
 ```
 
 ```
@@ -695,7 +695,7 @@ We get all rows of `x = superheroes` plus a new row from `y = publishers`, conta
 
 
 ```r
-(sjsp <- semi_join(superheroes, publishers))
+(sjsp <- semi_join(x = superheroes, y = publishers))
 ```
 
 ```
@@ -840,7 +840,7 @@ We get a similar result as with `inner_join()` but the join result contains only
 
 
 ```r
-(ajsp <- anti_join(superheroes, publishers))
+(ajsp <- anti_join(x = superheroes, y = publishers))
 ```
 
 ```
@@ -994,7 +994,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -1047,7 +1047,7 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss       * 0.1.5   2019-01-24 [1] local         
+##  rcfss       * 0.1.5   2019-04-11 [1] local         
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)

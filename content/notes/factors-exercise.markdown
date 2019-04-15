@@ -69,7 +69,9 @@ month.abb
 
 ```r
 (gun_deaths <- gun_deaths %>%
-  mutate(month = factor(month, levels = seq(from = 1, to = 12), labels = month_levels)))
+  mutate(month = factor(month,
+                        levels = seq(from = 1, to = 12),
+                        labels = month_levels)))
 ```
 
 ```
@@ -100,7 +102,8 @@ month.abb
   
 
 ```r
-ggplot(gun_deaths, aes(month)) +
+ggplot(data = gun_deaths,
+       mapping = aes(x = month)) +
   geom_bar() +
   labs(title = "Gun Deaths in the United States (2012-2014)",
        x = "Month",
@@ -123,7 +126,7 @@ ggplot(gun_deaths, aes(month)) +
 # with geom_col() and fct_reorder()
 gun_deaths %>%
   count(month) %>%
-  ggplot(aes(fct_reorder(month, n), n)) +
+  ggplot(mapping = aes(x = fct_reorder(.f = month, .x = n), y = n)) +
   geom_col() +
   labs(title = "Gun Deaths in the United States (2012-2014)",
        x = "Month",
@@ -134,9 +137,10 @@ gun_deaths %>%
 
 ```r
 # with geom_bar() and fct_infreq()
-ggplot(gun_deaths, aes(month %>%
-                         fct_infreq() %>%
-                         fct_rev())) +
+ggplot(data = gun_deaths,
+       mapping = aes(x = month %>%
+                       fct_infreq() %>%
+                       fct_rev())) +
   geom_bar() +
   labs(title = "Gun Deaths in the United States (2012-2014)",
        x = "Month",
@@ -161,9 +165,9 @@ intent_levels <- c("Accidental", "Homicide", "Suicide", "Undetermined")
 gun_deaths %>%
   filter(!is.na(intent)) %>%
   mutate(intent = parse_factor(intent, levels = intent_levels)) %>%
-  ggplot(aes(intent %>%
-               fct_infreq() %>%
-               fct_rev())) +
+  ggplot(mapping = aes(x = intent %>%
+                         fct_infreq() %>%
+                         fct_rev())) +
   geom_bar() +
   labs(title = "Gun Deaths in the United States (2012-2014)",
        x = "Intent of death",
@@ -192,7 +196,7 @@ gun_deaths %>%
                                "Spring" = c("Apr", "May", "Jun"),
                                "Summer" = c("Jul", "Aug", "Sep"),
                                "Fall" = c("Oct", "Nov", "Dec"))) %>%
-  ggplot(aes(season)) +
+  ggplot(mapping = aes(x = season)) +
   geom_bar() +
   labs(title = "Gun Deaths in the United States (2012-2014)",
        x = "Season",
@@ -223,7 +227,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -277,7 +281,7 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss       * 0.1.5   2019-01-24 [1] local         
+##  rcfss       * 0.1.5   2019-04-11 [1] local         
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)

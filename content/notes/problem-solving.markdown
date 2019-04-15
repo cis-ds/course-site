@@ -34,7 +34,7 @@ In order to translate your goal for the program into clear instructions for the 
 
 ```r
 library(tidyverse)
-glimpse(diamonds)
+glimpse(x = diamonds)
 ```
 
 ```
@@ -67,8 +67,8 @@ Here's how we tell the computer to do this:
 
 ```r
 data("diamonds")
-diamonds_ideal <- filter(diamonds, cut == "Ideal")
-summarize(diamonds_ideal, avg_price = mean(price))
+diamonds_ideal <- filter(.data = diamonds, cut == "Ideal")
+summarize(.data = diamonds_ideal, avg_price = mean(price))
 ```
 
 ```
@@ -97,8 +97,8 @@ Here's how we tell the computer to do this:
 
 ```r
 data("diamonds")
-diamonds_cut <- group_by(diamonds, cut)
-summarize(diamonds_cut, avg_price = mean(price))
+diamonds_cut <- group_by(.data = diamonds, cut)
+summarize(.data = diamonds_cut, avg_price = mean(price))
 ```
 
 ```
@@ -131,10 +131,10 @@ summarize(diamonds_cut, avg_price = mean(price))
 
 ```r
 data("diamonds")
-diamonds_i <- filter(diamonds, color == "I")
-diamonds_i_group <- group_by(diamonds_i, cut)
+diamonds_i <- filter(.data = diamonds, color == "I")
+diamonds_i_group <- group_by(.data = diamonds_i, cut)
 summarize(
-  diamonds_i_group,
+  .data = diamonds_i_group,
   carat = mean(carat),
   price = mean(price)
 )
@@ -173,7 +173,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

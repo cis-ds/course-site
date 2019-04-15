@@ -37,14 +37,14 @@ One of the main advantages of `readr` functions over base R functions is that [t
 library(microbenchmark)
 
 results_small <- microbenchmark(
-  read.csv = read.csv(here("static", "data", "sim-data-small.csv")),
-  read_csv = read_csv(here("static", "data", "sim-data-small.csv"))
+  read.csv = read.csv(file = here("static", "data", "sim-data-small.csv")),
+  read_csv = read_csv(file = here("static", "data", "sim-data-small.csv"))
 )
 ```
 
 
 ```r
-autoplot(results_small) +
+autoplot(object = results_small) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged")
 ```
@@ -58,14 +58,14 @@ autoplot(results_small) +
 library(microbenchmark)
 
 results_large <- microbenchmark(
-  read.csv = read.csv(here("static", "data", "sim-data-large.csv")),
-  read_csv = read_csv(here("static", "data", "sim-data-large.csv"))
+  read.csv = read.csv(file = here("static", "data", "sim-data-large.csv")),
+  read_csv = read_csv(file = here("static", "data", "sim-data-large.csv"))
 )
 ```
 
 
 ```r
-autoplot(results_large) +
+autoplot(object = results_large) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged")
 ```
@@ -81,7 +81,7 @@ CSV files, while common, are not the only type of data storage format you will e
 
 ```r
 challenge <- read_csv(
-  readr_example("challenge.csv"), 
+  readr_example(path = "challenge.csv"), 
   col_types = cols(
     x = col_double(),
     y = col_date()
@@ -115,11 +115,11 @@ challenge
 
 ```r
 # write to csv
-write_csv(challenge, here("static", "data", "challenge.csv"))
+write_csv(x = challenge, path = here("static", "data", "challenge.csv"))
 
 # write to/read from rds
-write_rds(challenge, here("static", "data", "challenge.csv"))
-read_rds(here("static", "data", "challenge.csv"))
+write_rds(x = challenge, path = here("static", "data", "challenge.csv"))
+read_rds(path = here("static", "data", "challenge.csv"))
 ```
 
 ```
@@ -162,13 +162,13 @@ file.info(here("static", "data", "challenge.csv"))$size %>%
 # compare read speeds
 microbenchmark(
   read_csv = read_csv(
-    readr_example("challenge.csv"), 
+    file = readr_example("challenge.csv"), 
     col_types = cols(
       x = col_double(),
       y = col_date()
     )
   ),
-  read_rds = read_rds(here("static", "data", "challenge.rds"))
+  read_rds = read_rds(path = here("static", "data", "challenge.rds"))
 ) %>%
   autoplot +
   labs(y = "Time [microseconds], logged")
@@ -186,8 +186,8 @@ The `feather` package implements a binary file format that is cross-compatible w
 ```r
 library(feather)
 
-write_feather(challenge, here("static", "data", "challenge.feather"))
-read_feather(here("static", "data", "challenge.feather"))
+write_feather(x = challenge, path = here("static", "data", "challenge.feather"))
+read_feather(path = here("static", "data", "challenge.feather"))
 ```
 
 ```
@@ -211,14 +211,14 @@ read_feather(here("static", "data", "challenge.feather"))
 # compare read speeds
 microbenchmark(
   read_csv = read_csv(
-    readr_example("challenge.csv"), 
+    file = readr_example("challenge.csv"), 
     col_types = cols(
       x = col_double(),
       y = col_date()
     )
   ),
-  read_rds = read_rds(here("static", "data", "challenge.rds")),
-  read_feather = read_feather(here("static", "data", "challenge.feather"))
+  read_rds = read_rds(path = here("static", "data", "challenge.rds")),
+  read_feather = read_feather(path = here("static", "data", "challenge.feather"))
 ) %>%
   autoplot +
   scale_y_continuous(labels = scales::comma) +
@@ -237,7 +237,7 @@ microbenchmark(
 ```r
 library(readxl)
 
-xlsx_example <- readxl_example("datasets.xlsx")
+xlsx_example <- readxl_example(path = "datasets.xlsx")
 read_excel(xlsx_example)
 ```
 
@@ -262,7 +262,7 @@ The nice thing about `readxl` is that you can access multiple sheets from the wo
 
 
 ```r
-excel_sheets(xlsx_example)
+excel_sheets(path = xlsx_example)
 ```
 
 ```
@@ -273,7 +273,7 @@ Then specify which worksheet you want by name or number:
 
 
 ```r
-read_excel(xlsx_example, sheet = "chickwts")
+read_excel(path = xlsx_example, sheet = "chickwts")
 ```
 
 ```
@@ -294,7 +294,7 @@ read_excel(xlsx_example, sheet = "chickwts")
 ```
 
 ```r
-read_excel(xlsx_example, sheet = 2)
+read_excel(path = xlsx_example, sheet = 2)
 ```
 
 ```
@@ -323,7 +323,7 @@ read_excel(xlsx_example, sheet = 2)
 library(haven)
 
 # SAS
-read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
+read_sas(data_file = system.file("examples", "iris.sas7bdat", package = "haven"))
 ```
 
 ```
@@ -344,10 +344,10 @@ read_sas(system.file("examples", "iris.sas7bdat", package = "haven"))
 ```
 
 ```r
-write_sas(mtcars, here("static", "data", "mtcars.sas7bdat"))
+write_sas(data = mtcars, path = here("static", "data", "mtcars.sas7bdat"))
 
 # SPSS
-read_sav(system.file("examples", "iris.sav", package = "haven"))
+read_sav(file = system.file("examples", "iris.sav", package = "haven"))
 ```
 
 ```
@@ -368,10 +368,10 @@ read_sav(system.file("examples", "iris.sav", package = "haven"))
 ```
 
 ```r
-write_sav(mtcars, here("static", "data", "mtcars.sav"))
+write_sav(data = mtcars, path = here("static", "data", "mtcars.sav"))
 
 # Stata
-read_dta(system.file("examples", "iris.dta", package = "haven"))
+read_dta(file = system.file("examples", "iris.dta", package = "haven"))
 ```
 
 ```
@@ -392,7 +392,7 @@ read_dta(system.file("examples", "iris.dta", package = "haven"))
 ```
 
 ```r
-write_dta(mtcars, here("static", "data", "mtcars.dta"))
+write_dta(data = mtcars, path = here("static", "data", "mtcars.dta"))
 ```
 
 That said, if you can obtain your data file in a plain `.csv` or `.tsv` file format, **I strongly recommend it**. SAS, SPSS, and Stata files represent labeled data and missing values differently from R. `haven` attempts to bridge the gap and preserve as much information as possible, but I frequently find myself stripping out all the label information and rebuilding it using `dplyr` functions and the codebook for the data file.
@@ -418,79 +418,86 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-04-02                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [2] CRAN (R 3.5.3)
-##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
-##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
-##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
-##  broom         0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
-##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
-##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
-##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
-##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
-##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
-##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
-##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
-##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
-##  fs            1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
-##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
-##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
-##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
-##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
-##  here        * 0.1     2017-05-28 [2] CRAN (R 3.5.0)
-##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
-##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
-##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
-##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
-##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
-##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.3)
-##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
-##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
-##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
-##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
-##  modelr        0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
-##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.3)
-##  pillar        1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
-##  pkgbuild      1.0.3   2019-03-20 [1] CRAN (R 3.5.3)
-##  pkgconfig     2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
-##  plyr          1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
-##  prettyunits   1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
-##  processx      3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
-##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
-##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
-##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
-##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
-##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
-##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
-##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
-##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
-##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)
-##  rvest         0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
-##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
-##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.5.2)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
-##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
-##  tibble      * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
-##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
-##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
-##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
-##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
-##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
-##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
-##  yaml          2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
+##  package        * version date       lib source        
+##  assertthat       0.2.1   2019-03-21 [2] CRAN (R 3.5.3)
+##  backports        1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
+##  blogdown         0.11    2019-03-11 [1] CRAN (R 3.5.2)
+##  bookdown         0.9     2018-12-21 [1] CRAN (R 3.5.0)
+##  broom            0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
+##  callr            3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
+##  cellranger       1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
+##  cli              1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
+##  codetools        0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
+##  colorspace       1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
+##  crayon           1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
+##  desc             1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
+##  devtools         2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
+##  digest           0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
+##  dplyr          * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
+##  ellipsis         0.1.0   2019-02-19 [2] CRAN (R 3.5.2)
+##  evaluate         0.13    2019-02-12 [2] CRAN (R 3.5.2)
+##  fansi            0.4.0   2018-10-05 [2] CRAN (R 3.5.0)
+##  feather        * 0.3.2   2019-01-07 [2] CRAN (R 3.5.2)
+##  forcats        * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
+##  fs               1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
+##  generics         0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
+##  ggplot2        * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
+##  glue             1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
+##  gtable           0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
+##  haven          * 2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
+##  here           * 0.1     2017-05-28 [2] CRAN (R 3.5.0)
+##  hms              0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
+##  htmltools        0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
+##  httr             1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
+##  jsonlite         1.6     2018-12-07 [2] CRAN (R 3.5.0)
+##  knitr            1.22    2019-03-08 [2] CRAN (R 3.5.2)
+##  labeling         0.3     2014-08-23 [2] CRAN (R 3.5.0)
+##  lattice          0.20-38 2018-11-04 [2] CRAN (R 3.5.3)
+##  lazyeval         0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
+##  lubridate        1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
+##  magrittr         1.5     2014-11-22 [2] CRAN (R 3.5.0)
+##  memoise          1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
+##  microbenchmark * 1.4-6   2018-10-18 [2] CRAN (R 3.5.0)
+##  modelr           0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
+##  munsell          0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
+##  nlme             3.1-137 2018-04-07 [2] CRAN (R 3.5.3)
+##  pillar           1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
+##  pkgbuild         1.0.3   2019-03-20 [1] CRAN (R 3.5.3)
+##  pkgconfig        2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
+##  pkgload          1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
+##  plyr             1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
+##  prettyunits      1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
+##  processx         3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
+##  ps               1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
+##  purrr          * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
+##  R6               2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
+##  Rcpp             1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
+##  readr          * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
+##  readxl         * 1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
+##  remotes          2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
+##  rlang            0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rmarkdown        1.12    2019-03-14 [1] CRAN (R 3.5.2)
+##  rprojroot        1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
+##  rstudioapi       0.10    2019-03-19 [1] CRAN (R 3.5.3)
+##  rvest            0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
+##  scales           1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
+##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
+##  stringi          1.4.3   2019-03-12 [1] CRAN (R 3.5.2)
+##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
+##  testthat         2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
+##  tibble         * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
+##  tidyr          * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
+##  tidyselect       0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
+##  tidyverse      * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
+##  usethis          1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
+##  utf8             1.1.4   2018-05-24 [2] CRAN (R 3.5.0)
+##  withr            2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
+##  xfun             0.5     2019-02-20 [1] CRAN (R 3.5.2)
+##  xml2             1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
+##  yaml             2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
 ## 
 ## [1] /Users/soltoffbc/Library/R/3.5/library
 ## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library

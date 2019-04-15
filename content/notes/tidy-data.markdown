@@ -83,7 +83,7 @@ We implement this using the `gather()` function:
 
 ```r
 table4a %>% 
-  gather(`1999`, `2000`, key = year, value = cases)
+  gather(key = year, value = cases, `1999`, `2000`)
 ```
 
 ```
@@ -180,7 +180,7 @@ table3
 
 ```r
 table3 %>% 
-  separate(rate, into = c("cases", "population"))
+  separate(col = rate, into = c("cases", "population"))
 ```
 
 ```
@@ -221,7 +221,7 @@ To bring them back together, use the `unite()` function:
 
 ```r
 table5 %>% 
-  unite(new, century, year)
+  unite(col = new, century, year)
 ```
 
 ```
@@ -239,7 +239,7 @@ table5 %>%
 ```r
 # remove underscore
 table5 %>% 
-  unite(new, century, year, sep = "")
+  unite(col = new, century, year, sep = "")
 ```
 
 ```
@@ -273,7 +273,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

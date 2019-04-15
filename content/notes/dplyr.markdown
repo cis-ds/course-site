@@ -69,7 +69,7 @@ Therefore in this class I will generally stick to American spelling.
 
 
 ```r
-filter(diamonds, cut == "Ideal")  # printed, but not saved
+filter(.data = diamonds, cut == "Ideal")  # printed, but not saved
 ```
 
 ```
@@ -90,8 +90,8 @@ filter(diamonds, cut == "Ideal")  # printed, but not saved
 ```
 
 ```r
-diamonds_ideal <- filter(diamonds, cut == "Ideal")  # saved, but not printed
-(diamonds_ideal <- filter(diamonds, cut == "Ideal"))  # saved and printed
+diamonds_ideal <- filter(.data = diamonds, cut == "Ideal")  # saved, but not printed
+(diamonds_ideal <- filter(.data = diamonds, cut == "Ideal"))  # saved and printed
 ```
 
 ```
@@ -235,13 +235,14 @@ Drawing on [this example from *R for Data Science*](http://r4ds.had.co.nz/transf
 
 
 ```r
-by_dest <- group_by(flights, dest)
-delay <- summarise(by_dest,
+by_dest <- group_by(.data = flights, dest)
+delay <- summarise(
+  .data = by_dest,
   count = n(),
   dist = mean(distance, na.rm = TRUE),
   delay = mean(arr_delay, na.rm = TRUE)
 )
-delay <- filter(delay, count > 20, dest != "HNL")
+delay <- filter(.data = delay, count > 20, dest != "HNL")
 
 ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
   geom_point(aes(size = count), alpha = 1/3) +
@@ -353,7 +354,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-15                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
