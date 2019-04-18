@@ -1,21 +1,22 @@
 ---
 title: "Pipes and functions in R"
-author: |
-  | MACS 30500
-  | University of Chicago
-output: rcfss::cfss_slides
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
 ---
 
-```{r setup, include = FALSE}
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
-                      warning = FALSE)
+                      warning = FALSE,
+                      fig.retina = 2, fig.width = 12)
+
+library(tidyverse)
+library(here)
 
 set.seed(1234)
-library(tidyverse)
+theme_set(theme_minimal(base_size = rcfss::base_size))
 ```
-
-----
 
 > Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
 
@@ -23,7 +24,9 @@ library(tidyverse)
 1. Group the filtered `diamonds` data frame by cut
 1. Summarize the grouped and filtered `diamonds` data frame by calculating the average price
 
-## Intermediate steps
+---
+
+# Intermediate steps
 
 ```{r intermediate}
 diamonds_1 <- filter(diamonds, color == "I")
@@ -31,7 +34,9 @@ diamonds_2 <- group_by(diamonds_1, cut)
 (diamonds_3 <- summarize(diamonds_2, price = mean(price)))
 ```
 
-## Overwrite the original
+---
+
+# Overwrite the original
 
 ```{r overwrite}
 # copy diamonds to diamonds_t just for demonstration purposes
@@ -42,7 +47,9 @@ diamonds_t <- group_by(diamonds_t, cut)
 (diamonds_t <- summarize(diamonds_t, price = mean(price)))
 ```
 
-## Function composition
+---
+
+# Function composition
 
 ```{r function_comp}
 summarize(
@@ -54,13 +61,17 @@ summarize(
 )
 ```
 
-## Function composition
+---
+
+# Function composition
 
 ```{r function-comp-single}
 summarize(group_by(filter(diamonds, color == "I"), cut), price = mean(price))
 ```
 
-## Piping
+---
+
+# Piping
 
 ```{r pipe}
 diamonds %>%
@@ -69,24 +80,32 @@ diamonds %>%
   summarize(price = mean(price))
 ```
 
-## Exercise on piping
+---
+
+# Exercise on piping
 
 ![](https://media3.s-nbcnews.com/j/newscms/2015_18/512061/exercise-outside-woman-stock-today-150427-tease_72497df9c4ab67a1d1a016b22206a5af.today-inline-large.jpg)
 
-## Functions
+---
+
+# Functions
 
 * Easy to reuse
 * Self-documenting
 * Easy-ier to debug
 * [If you have copied and pasted a block of code more than twice, convert it to a function.](http://r4ds.had.co.nz/functions.html#when-should-you-write-a-function)
 
-## Function components
+---
+
+# Function components
 
 * Name
 * Arguments
 * Body
 
-## Rescale function
+---
+
+# Rescale function
 
 ```{r, collapse = TRUE}
 rescale01 <- function(x) {
@@ -103,7 +122,9 @@ rescale01(c(1, 2, 3, NA, 5))
 * Arguments
 * Body
 
-## What is that?
+---
+
+# What is that?
 
 ```{r}
 pythagorean <- function(a, b){
@@ -116,9 +137,11 @@ pythagorean <- function(a, b){
 * Arguments
 * Body
 
-## How to use a function {.scrollable}
+---
 
-```{r, error = TRUE}
+# How to use a function
+
+```{r error = TRUE}
 # print the output of the function
 pythagorean(a = 3, b = 4)
 
@@ -130,11 +153,15 @@ pythagorean(a = 3, b = 4)
 hypotenuse
 ```
 
-## Exercise
+---
+
+# Exercise
 
 ![](https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2015/07/exercise-1200x621.jpg)
 
-## Conditional execution
+---
+
+# Conditional execution
 
 ```{r eval = FALSE}
 if (condition) {
@@ -144,7 +171,9 @@ if (condition) {
 }
 ```
 
-## Conditional execution
+---
+
+# Conditional execution
 
 ```{r eval = FALSE}
 if (this) {
@@ -156,7 +185,9 @@ if (this) {
 }
 ```
 
-## Conditional execution and `cut()`
+---
+
+# Conditional execution and `cut()`
 
 ```{r}
 diamonds %>%
@@ -168,7 +199,9 @@ diamonds %>%
                                        "Large", "Huge")))
 ```
 
-## `if()` versus `if_else()`
+---
+
+# `if()` versus `if_else()`
 
 ```{r}
 library(rcfss)
@@ -177,30 +210,60 @@ data("gun_deaths")
 (educ <- select(gun_deaths, education))
 ```
 
-## `if()` versus `if_else()`
+---
 
-```{r, error = TRUE, collapse = TRUE}
-(educ_if <- educ %>%
+# `if()` versus `if_else()`
+
+```{r}
+educ_if <- educ %>%
   mutate(hsPlus = if(education == "Less than HS"){
     "Less than HS"
   } else{
     "HS+"
-  }))
+  })
 
 count(educ_if, hsPlus)
 ```
 
-## `if()` versus `if_else()`
+---
+
+# `if()` versus `if_else()`
+
+```{r}
+(educ_if <- educ %>%
+   mutate(hsPlus = if (education == "Less than HS") {
+     "Less than HS"
+   } else{
+     "HS+"
+   }))
+```
+
+---
+
+# `if()` versus `if_else()`
 
 ```{r, collapse = TRUE}
 (educ_ifelse <- educ %>%
+   mutate(hsPlus = if_else(education == "Less than HS",
+                           "Less than HS",
+                           "HS+")))
+```
+
+---
+
+# `if()` versus `if_else()`
+
+```{r, collapse = TRUE}
+educ_ifelse <- educ %>%
   mutate(hsPlus = if_else(education == "Less than HS",
                           "Less than HS",
-                          "HS+")))
+                          "HS+"))
 
 count(educ_ifelse, hsPlus)
 ```
 
-## Exercise
+---
+
+# Exercise
 
 ![](https://www.incimages.com/uploaded_files/image/970x450/getty_474548335_172391.jpg)

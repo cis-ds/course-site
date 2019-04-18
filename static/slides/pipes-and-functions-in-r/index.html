@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Pipes and functions in R</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Pipes and functions in R
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+&gt; Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
+
+1. Filter `diamonds` to only keep observations where the color is rated as "I"
+1. Group the filtered `diamonds` data frame by cut
+1. Summarize the grouped and filtered `diamonds` data frame by calculating the average price
+
+---
+
+# Intermediate steps
+
+
+```r
+diamonds_1 &lt;- filter(diamonds, color == "I")
+diamonds_2 &lt;- group_by(diamonds_1, cut)
+(diamonds_3 &lt;- summarize(diamonds_2, price = mean(price)))
+```
+
+```
+## # A tibble: 5 x 2
+##   cut       price
+##   &lt;ord&gt;     &lt;dbl&gt;
+## 1 Fair      4685.
+## 2 Good      5079.
+## 3 Very Good 5256.
+## 4 Premium   5946.
+## 5 Ideal     4452.
+```
+
+---
+
+# Overwrite the original
+
+
+```r
+# copy diamonds to diamonds_t just for demonstration purposes
+diamonds_t &lt;- diamonds
+
+diamonds_t &lt;- filter(diamonds_t, color == "I")
+diamonds_t &lt;- group_by(diamonds_t, cut)
+(diamonds_t &lt;- summarize(diamonds_t, price = mean(price)))
+```
+
+```
+## # A tibble: 5 x 2
+##   cut       price
+##   &lt;ord&gt;     &lt;dbl&gt;
+## 1 Fair      4685.
+## 2 Good      5079.
+## 3 Very Good 5256.
+## 4 Premium   5946.
+## 5 Ideal     4452.
+```
+
+---
+
+# Function composition
+
+
+```r
+summarize(
+  group_by(
+    filter(diamonds, color == "I"),
+    cut
+  ),
+  price = mean(price)
+)
+```
+
+```
+## # A tibble: 5 x 2
+##   cut       price
+##   &lt;ord&gt;     &lt;dbl&gt;
+## 1 Fair      4685.
+## 2 Good      5079.
+## 3 Very Good 5256.
+## 4 Premium   5946.
+## 5 Ideal     4452.
+```
+
+---
+
+# Function composition
+
+
+```r
+summarize(group_by(filter(diamonds, color == "I"), cut), price = mean(price))
+```
+
+```
+## # A tibble: 5 x 2
+##   cut       price
+##   &lt;ord&gt;     &lt;dbl&gt;
+## 1 Fair      4685.
+## 2 Good      5079.
+## 3 Very Good 5256.
+## 4 Premium   5946.
+## 5 Ideal     4452.
+```
+
+---
+
+# Piping
+
+
+```r
+diamonds %&gt;%
+  filter(color == "I") %&gt;%
+  group_by(cut) %&gt;%
+  summarize(price = mean(price))
+```
+
+```
+## # A tibble: 5 x 2
+##   cut       price
+##   &lt;ord&gt;     &lt;dbl&gt;
+## 1 Fair      4685.
+## 2 Good      5079.
+## 3 Very Good 5256.
+## 4 Premium   5946.
+## 5 Ideal     4452.
+```
+
+---
+
+# Exercise on piping
+
+![](https://media3.s-nbcnews.com/j/newscms/2015_18/512061/exercise-outside-woman-stock-today-150427-tease_72497df9c4ab67a1d1a016b22206a5af.today-inline-large.jpg)
+
+---
+
+# Functions
+
+* Easy to reuse
+* Self-documenting
+* Easy-ier to debug
+* [If you have copied and pasted a block of code more than twice, convert it to a function.](http://r4ds.had.co.nz/functions.html#when-should-you-write-a-function)
+
+---
+
+# Function components
+
+* Name
+* Arguments
+* Body
+
+---
+
+# Rescale function
+
+
+```r
+rescale01 &lt;- function(x) {
+  rng &lt;- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+rescale01(c(0, 5, 10))
+## [1] 0.0 0.5 1.0
+rescale01(c(-10, 0, 10))
+## [1] 0.0 0.5 1.0
+rescale01(c(1, 2, 3, NA, 5))
+## [1] 0.00 0.25 0.50   NA 1.00
+```
+
+* Name
+* Arguments
+* Body
+
+---
+
+# What is that?
+
+
+```r
+pythagorean &lt;- function(a, b){
+  hypotenuse &lt;- sqrt(a^2 + b^2)
+  return(hypotenuse)
+}
+```
+
+* Name
+* Arguments
+* Body
+
+---
+
+# How to use a function
+
+
+```r
+# print the output of the function
+pythagorean(a = 3, b = 4)
+```
+
+```
+## [1] 5
+```
+
+```r
+# save the output as a new object
+(tri_c &lt;- pythagorean(a = 3, b = 4))
+```
+
+```
+## [1] 5
+```
+
+```r
+# what happens to the hypotenuse from inside the function?
+pythagorean(a = 3, b = 4)
+```
+
+```
+## [1] 5
+```
+
+```r
+hypotenuse
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'hypotenuse' not found
+```
+
+---
+
+# Exercise
+
+![](https://cdn0.tnwcdn.com/wp-content/blogs.dir/1/files/2015/07/exercise-1200x621.jpg)
+
+---
+
+# Conditional execution
+
+
+```r
+if (condition) {
+  # code executed when condition is TRUE
+} else {
+  # code executed when condition is FALSE
+}
+```
+
+---
+
+# Conditional execution
+
+
+```r
+if (this) {
+  # do that
+} else if (that) {
+  # do something else
+} else {
+  # do something completely different
+}
+```
+
+---
+
+# Conditional execution and `cut()`
+
+
+```r
+diamonds %&gt;%
+  select(carat) %&gt;%
+  mutate(carat_autobin = cut(carat, breaks = 5),
+         carat_manbin = cut(carat,
+                            breaks = c(0, 1, 2, 3, 6),
+                            labels = c("Small", "Medium",
+                                       "Large", "Huge")))
+```
+
+```
+## # A tibble: 53,940 x 3
+##    carat carat_autobin carat_manbin
+##    &lt;dbl&gt; &lt;fct&gt;         &lt;fct&gt;       
+##  1 0.23  (0.195,1.16]  Small       
+##  2 0.21  (0.195,1.16]  Small       
+##  3 0.23  (0.195,1.16]  Small       
+##  4 0.290 (0.195,1.16]  Small       
+##  5 0.31  (0.195,1.16]  Small       
+##  6 0.24  (0.195,1.16]  Small       
+##  7 0.24  (0.195,1.16]  Small       
+##  8 0.26  (0.195,1.16]  Small       
+##  9 0.22  (0.195,1.16]  Small       
+## 10 0.23  (0.195,1.16]  Small       
+## # … with 53,930 more rows
+```
+
+---
+
+# `if()` versus `if_else()`
+
+
+```r
+library(rcfss)
+data("gun_deaths")
+
+(educ &lt;- select(gun_deaths, education))
+```
+
+```
+## # A tibble: 100,798 x 1
+##    education   
+##    &lt;fct&gt;       
+##  1 BA+         
+##  2 Some college
+##  3 BA+         
+##  4 BA+         
+##  5 HS/GED      
+##  6 Less than HS
+##  7 HS/GED      
+##  8 HS/GED      
+##  9 Some college
+## 10 &lt;NA&gt;        
+## # … with 100,788 more rows
+```
+
+---
+
+# `if()` versus `if_else()`
+
+
+```r
+educ_if &lt;- educ %&gt;%
+  mutate(hsPlus = if(education == "Less than HS"){
+    "Less than HS"
+  } else{
+    "HS+"
+  })
+
+count(educ_if, hsPlus)
+```
+
+```
+## # A tibble: 1 x 2
+##   hsPlus      n
+##   &lt;chr&gt;   &lt;int&gt;
+## 1 HS+    100798
+```
+
+---
+
+# `if()` versus `if_else()`
+
+
+```r
+(educ_if &lt;- educ %&gt;%
+   mutate(hsPlus = if (education == "Less than HS") {
+     "Less than HS"
+   } else{
+     "HS+"
+   }))
+```
+
+```
+## # A tibble: 100,798 x 2
+##    education    hsPlus
+##    &lt;fct&gt;        &lt;chr&gt; 
+##  1 BA+          HS+   
+##  2 Some college HS+   
+##  3 BA+          HS+   
+##  4 BA+          HS+   
+##  5 HS/GED       HS+   
+##  6 Less than HS HS+   
+##  7 HS/GED       HS+   
+##  8 HS/GED       HS+   
+##  9 Some college HS+   
+## 10 &lt;NA&gt;         HS+   
+## # … with 100,788 more rows
+```
+
+---
+
+# `if()` versus `if_else()`
+
+
+```r
+(educ_ifelse &lt;- educ %&gt;%
+   mutate(hsPlus = if_else(education == "Less than HS",
+                           "Less than HS",
+                           "HS+")))
+## # A tibble: 100,798 x 2
+##    education    hsPlus      
+##    &lt;fct&gt;        &lt;chr&gt;       
+##  1 BA+          HS+         
+##  2 Some college HS+         
+##  3 BA+          HS+         
+##  4 BA+          HS+         
+##  5 HS/GED       HS+         
+##  6 Less than HS Less than HS
+##  7 HS/GED       HS+         
+##  8 HS/GED       HS+         
+##  9 Some college HS+         
+## 10 &lt;NA&gt;         &lt;NA&gt;        
+## # … with 100,788 more rows
+```
+
+---
+
+# `if()` versus `if_else()`
+
+
+```r
+educ_ifelse &lt;- educ %&gt;%
+  mutate(hsPlus = if_else(education == "Less than HS",
+                          "Less than HS",
+                          "HS+"))
+
+count(educ_ifelse, hsPlus)
+## # A tibble: 3 x 2
+##   hsPlus           n
+##   &lt;chr&gt;        &lt;int&gt;
+## 1 &lt;NA&gt;          1422
+## 2 HS+          77553
+## 3 Less than HS 21823
+```
+
+---
+
+# Exercise
+
+![](https://www.incimages.com/uploaded_files/image/970x450/getty_474548335_172391.jpg)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
