@@ -2,7 +2,7 @@
 title: "Statistical learning: regression"
 date: 2019-05-06T13:30:00
 publishDate: 2019-03-01T13:30:00
-draft: true
+draft: false
 type: "talk"
 
 aliases: ["/cm011.html"]
