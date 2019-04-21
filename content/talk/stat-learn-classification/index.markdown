@@ -55,13 +55,6 @@ math: false
 
 This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
-##### For those with little/no statistics training
-
-* Chapters 1-2, 4 in [Machine Learning with Tree-Based Models in R](https://www.datacamp.com/courses/machine-learning-with-tree-based-models-in-r) - a DataCamp course
-    * If you have not yet created an account on DataCamp, [go here to create your DataCamp account](https://www.datacamp.com/groups/shared_links/ed65341d4657ce236e87a5a953dbfc3fa3aa4225). You must use your UChicago email address or that link will not work.
-
-##### For those with prior statistics training
-
 * Chapters 8.1, 8.2.2, and 5.1 in [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7)
 
 ## Class materials

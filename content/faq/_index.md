@@ -42,7 +42,6 @@ A highly selective sampling of feedback from past course evaluations:
 
 ### Additional resources
 
-* [DataCamp](https://www.datacamp.com/home) - DataCamp offers interactive R and Python courses on topics in data science, statistics, and machine learning. These are a supplement to our primary textbook and lessons. Introductory DataCamp courses are free, whereas premium courses generally cost a fee. As a participant in this course, you have free access to all premium courses for the duration of the term. To activate your account, [click here](https://www.datacamp.com/groups/shared_links/ed65341d4657ce236e87a5a953dbfc3fa3aa4225). Make sure to sign up for an account using your UChicago email address, or the link will not work.
 * [ggplot2: Elegant Graphics for Data Analysis, 2nd Edition](http://link.springer.com.proxy.uchicago.edu/book/10.1007/978-3-319-24277-4) -- Hadley Wickham
     * Excellent resource for the [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/index.html) graphics library.
 * [Advanced R](http://adv-r.had.co.nz/) -- Hadley Wickham
