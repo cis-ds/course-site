@@ -178,45 +178,15 @@ For the validation set:
 
 For a strictly linear model, the MSE for the validation set is 23.38. How does this compare to a quadratic model? We can use the `poly()` function in conjunction with a `map()` iteration to estimate the MSE for a series of models with higher-order polynomial terms:
 
+<img src="/notes/cross-validation_files/figure-html/mse-poly-plot-1.png" width="672" />
 
-```r
-# visualize each model
-ggplot(Auto, aes(horsepower, mpg)) +
-  geom_point(alpha = .1) +
-  geom_smooth(aes(color = "1"),
-              method = "glm",
-              formula = y ~ poly(x, i = 1),
-              se = FALSE) +
-  geom_smooth(aes(color = "2"),
-              method = "glm",
-              formula = y ~ poly(x, i = 2),
-              se = FALSE) +
-  geom_smooth(aes(color = "3"),
-              method = "glm",
-              formula = y ~ poly(x, i = 3),
-              se = FALSE) +
-  geom_smooth(aes(color = "4"),
-              method = "glm",
-              formula = y ~ poly(x, i = 4),
-              se = FALSE) +
-  geom_smooth(aes(color = "5"),
-              method = "glm",
-              formula = y ~ poly(x, i = 5),
-              se = FALSE) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  labs(x = "Horsepower",
-       y = "MPG",
-       color = "Highest-order\npolynomial")
-```
-
-<img src="/notes/cross-validation_files/figure-html/mse-poly-1.png" width="672" />
 
 ```r
 # function to estimate model using training set and generate fit statistics
-# using the test set
+# using the validation set
 poly_results <- function(train, test, i) {
   # Fit the model to the training set
-  mod <- glm(mpg ~ poly(horsepower, i), data = train)
+  mod <- glm(mpg ~ poly(horsepower, degree = i), data = train)
   
   # `augment` will save the predictions with the test data set
   res <- augment(mod, newdata = test) %>%
@@ -233,8 +203,10 @@ poly_mse <- function(i, train, test){
     mean(.resid ^ 2)
 }
 
-cv_mse <- tibble(terms = seq(from = 1, to = 5),
-                 mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+cv_mse <- tibble(
+  terms = seq(from = 1, to = 5),
+  mse_test = map_dbl(terms, poly_mse, auto_train, auto_test)
+)
 
 ggplot(cv_mse, aes(terms, mse_test)) +
   geom_line() +
@@ -244,7 +216,7 @@ ggplot(cv_mse, aes(terms, mse_test)) +
        y = "Mean Squared Error")
 ```
 
-<img src="/notes/cross-validation_files/figure-html/mse-poly-2.png" width="672" />
+<img src="/notes/cross-validation_files/figure-html/mse-poly-1.png" width="672" />
 
 Based on the MSE for the validation set, a polynomial model with a quadratic term ($\text{horsepower}^2$) produces the lowest average error. Adding cubic or higher-order terms is just not necessary.
 
@@ -308,7 +280,7 @@ summary(survive_age_woman_x)
 ## Number of Fisher Scoring iterations: 4
 ```
 
-We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the test set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is `\(0%\)`).
+We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the validation set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is `\(0%\)`).
 
 
 ```r
@@ -378,21 +350,28 @@ This interactive model generates an error rate of 21.7%. We could compare this e
 
 There are two main problems with validation sets:
 
-1. Validation estimates of the test error rates can be highly variable depending on which observations are sampled into the training and test sets. See what happens if we repeat the sampling, estimation, and validation procedure for the `Auto` data set:
+1. Validation estimates of the test error rates can be highly variable depending on which observations are sampled into the training and validation sets. See what happens if we repeat the sampling, estimation, and validation procedure for the `Auto` data set:
 
     
     ```r
+    # function to simulate training/validation set results
     mse_variable <- function(Auto){
+      # split data into training and validation sets
       auto_split <- initial_split(Auto, prop = 0.5)
       auto_train <- training(auto_split)
       auto_test <- testing(auto_split)
       
-      cv_mse <- tibble(terms = seq(from = 1, to = 5),
-                       mse_test = map_dbl(terms, poly_mse, auto_train, auto_test))
+      # estimate series of higher-order polynomial models
+      cv_mse <- tibble(
+        terms = seq(from = 1, to = 5),
+        mse_test = map_dbl(terms, poly_mse, auto_train, auto_test)
+      )
       
       return(cv_mse)
     }
     
+    # repeat this process 10 times, each with a different
+    # training/validation set split
     rerun(10, mse_variable(Auto)) %>%
       bind_rows(.id = "id") %>%
       ggplot(aes(terms, mse_test, color = id)) +
@@ -408,15 +387,15 @@ There are two main problems with validation sets:
     
     Depending on the specific training/test split, our MSE varies by up to 5.
 
-1. If you don't have a large data set, you'll have to dramatically shrink the size of your training set. Most statistical learning methods perform better with more observations - if you don't have enough data in the training set, you might overestimate the error rate in the test set.
+1. If you don't have a large data set, you'll have to dramatically shrink the size of your training set. Most statistical learning methods perform better with more observations - if you don't have enough data in the training set, you might overestimate the error rate in the validation set.
 
 ## Leave-one-out cross-validation
 
-An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the test set, and keep all remaining observations in the training set. The statistical learning method is fit on the `\(n-1\)` training set. You then use the held-out observation to calculate the `\(MSE = (y_1 - \hat{y}_1)^2\)` which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
+An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the validation set, and keep all remaining observations in the training set. The statistical learning method is fit on the `\(n-1\)` training set. You then use the held-out observation to calculate the `\(MSE = (y_1 - \hat{y}_1)^2\)` which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
 
 `$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$`
 
-This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the MSE estimate is highly dependent on the sampling process for training/test sets. LOOCV is also highly flexible and works with any kind of predictive modeling.
+This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the MSE estimate is highly dependent on the sampling process for training/validation sets. LOOCV is also highly flexible and works with any kind of predictive modeling.
 
 Of course the downside is that this method is computationally difficult. You have to estimate `\(n\)` different models - if you have a large `\(n\)` or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.
 
@@ -500,7 +479,7 @@ Given this new `loocv_data` data frame, we write a function that will, for each 
 
 1. Obtain the analysis data set (i.e. the `\(n-1\)` training set)
 1. Fit a linear regression model
-1. Predict the test data (also known as the **assessment** data, the `\(1\)` test set) using the `broom` package
+1. Predict the test data (also known as the **assessment** data, the `\(1\)` validation set) using the `broom` package
 1. Determine the MSE for each sample
 
 
@@ -538,12 +517,12 @@ holdout_results(loocv_data$splits[[1]])
 ## #   .resid <dbl>
 ```
 
-To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the `\(n\)` observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each test set:
+To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the `\(n\)` observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each validation set:
 
 
 ```r
 loocv_data$results <- map(loocv_data$splits, holdout_results)
-loocv_data$mse <- map_dbl(loocv_data$results, ~ mean(.$.resid ^ 2))
+loocv_data$mse <- map_dbl(loocv_data$results, ~ mean(.x$.resid ^ 2))
 loocv_data
 ```
 
@@ -605,13 +584,15 @@ holdout_results <- function(splits, i) {
 poly_mse <- function(i, loocv_data){
   loocv_mod <- loocv_data %>%
     mutate(results = map(splits, holdout_results, i),
-           mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+           mse = map_dbl(results, ~ mean(.x$.resid ^ 2)))
   
   mean(loocv_mod$mse)
 }
 
-cv_mse <- tibble(terms = seq(from = 1, to = 5),
-                 mse_loocv = map_dbl(terms, poly_mse, loocv_data))
+cv_mse <- tibble(
+  terms = seq(from = 1, to = 5),
+  mse_loocv = map_dbl(terms, poly_mse, loocv_data)
+)
 cv_mse
 ```
 
@@ -666,7 +647,7 @@ holdout_results <- function(splits) {
 
 titanic_loocv <- loo_cv(titanic) %>%
   mutate(results = map(splits, holdout_results),
-         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred, na.rm = TRUE)))
+         error_rate = map_dbl(results, ~ mean(.x$Survived != .x$pred, na.rm = TRUE)))
 mean(titanic_loocv$error_rate, na.rm = TRUE)
 ```
 
@@ -707,7 +688,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
     
     scorecard_loocv <- loo_cv(scorecard) %>%
       mutate(results = map(splits, holdout_results),
-             mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+             mse = map_dbl(results, ~ mean(.x$.resid ^ 2)))
     mean(scorecard_loocv$mse, na.rm = TRUE)
     ```
     
@@ -752,7 +733,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
     mh_loocv_lite <- loo_cv(mental_health) %>%
       mutate(results = map(splits, holdout_results,
                            formula = as.formula(vote96 ~ mhealth)),
-             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+             error_rate = map_dbl(results, ~ mean(.x$vote96 != .x$pred, na.rm = TRUE)))
     mean(mh_loocv_lite$error_rate, na.rm = TRUE)
     ```
     
@@ -765,7 +746,7 @@ In a classification problem, the LOOCV tells us the average error rate based on 
     mh_loocv_full <- loo_cv(mental_health) %>%
       mutate(results = map(splits, holdout_results,
                            formula = as.formula(vote96 ~ .)),
-             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+             error_rate = map_dbl(results, ~ mean(.x$vote96 != .x$pred, na.rm = TRUE)))
     mean(mh_loocv_full$error_rate, na.rm = TRUE)
     ```
     
@@ -813,7 +794,7 @@ holdout_results <- function(splits, i) {
 poly_mse <- function(i, vfold_data){
   vfold_mod <- vfold_data %>%
     mutate(results = map(splits, holdout_results, i),
-           mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+           mse = map_dbl(results, ~ mean(.x$.resid ^ 2)))
   
   mean(vfold_mod$mse)
 }
@@ -821,8 +802,10 @@ poly_mse <- function(i, vfold_data){
 # split Auto into 10 folds
 auto_cv10 <- vfold_cv(data = Auto, v = 10)
 
-cv_mse <- tibble(terms = seq(from = 1, to = 5),
-                 mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
+cv_mse <- tibble(
+  terms = seq(from = 1, to = 5),
+  mse_vfold = map_dbl(terms, poly_mse, auto_cv10)
+)
 cv_mse
 ```
 
@@ -906,7 +889,7 @@ holdout_results <- function(splits) {
 
 titanic_cv10 <- vfold_cv(data = titanic, v = 10) %>%
   mutate(results = map(splits, holdout_results),
-         error_rate = map_dbl(results, ~ mean(.$Survived != .$pred, na.rm = TRUE)))
+         error_rate = map_dbl(results, ~ mean(.x$Survived != .x$pred, na.rm = TRUE)))
 mean(titanic_cv10$error_rate, na.rm = TRUE)
 ```
 
@@ -945,7 +928,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
     
     scorecard_cv10 <- vfold_cv(data = scorecard, v = 10) %>%
       mutate(results = map(splits, holdout_results),
-             mse = map_dbl(results, ~ mean(.$.resid ^ 2)))
+             mse = map_dbl(results, ~ mean(.x$.resid ^ 2)))
     mean(scorecard_cv10$mse, na.rm = TRUE)
     ```
     
@@ -988,7 +971,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
     mh_cv10_lite <- vfold_cv(data = mental_health, v = 10) %>%
       mutate(results = map(splits, holdout_results,
                            formula = as.formula(vote96 ~ mhealth)),
-             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+             error_rate = map_dbl(results, ~ mean(.x$vote96 != .x$pred, na.rm = TRUE)))
     mean(mh_cv10_lite$error_rate, na.rm = TRUE)
     ```
     
@@ -1001,7 +984,7 @@ Not a large difference from the LOOCV approach, but it take much less time to co
     mh_cv10_full <- vfold_cv(data = mental_health, v = 10) %>%
       mutate(results = map(splits, holdout_results,
                            formula = as.formula(vote96 ~ .)),
-             error_rate = map_dbl(results, ~ mean(.$vote96 != .$pred, na.rm = TRUE)))
+             error_rate = map_dbl(results, ~ mean(.x$vote96 != .x$pred, na.rm = TRUE)))
     mean(mh_cv10_full$error_rate, na.rm = TRUE)
     ```
     
@@ -1031,7 +1014,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-21                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        
@@ -1051,6 +1034,7 @@ devtools::session_info()
 ##  digest           0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr          * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
 ##  evaluate         0.13    2019-02-12 [2] CRAN (R 3.5.2)
+##  fansi            0.4.0   2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats        * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
 ##  fs               1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics         0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
@@ -1065,6 +1049,7 @@ devtools::session_info()
 ##  ISLR           * 1.2     2017-10-20 [2] CRAN (R 3.5.0)
 ##  jsonlite         1.6     2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr            1.22    2019-03-08 [2] CRAN (R 3.5.2)
+##  labeling         0.3     2014-08-23 [2] CRAN (R 3.5.0)
 ##  lattice          0.20-38 2018-11-04 [2] CRAN (R 3.5.3)
 ##  lazyeval         0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate        1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
@@ -1084,7 +1069,8 @@ devtools::session_info()
 ##  ps               1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr          * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6               2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss          * 0.1.5   2019-01-24 [1] local         
+##  rcfss          * 0.1.5   2019-04-17 [1] local         
+##  RColorBrewer     1.1-2   2014-12-07 [2] CRAN (R 3.5.0)
 ##  Rcpp             1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr          * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl           1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
@@ -1106,6 +1092,7 @@ devtools::session_info()
 ##  tidyverse      * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
 ##  titanic        * 0.1.0   2015-08-31 [2] CRAN (R 3.5.0)
 ##  usethis          1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
+##  utf8             1.1.4   2018-05-24 [2] CRAN (R 3.5.0)
 ##  withr            2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun             0.5     2019-02-20 [1] CRAN (R 3.5.2)
 ##  xml2             1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
