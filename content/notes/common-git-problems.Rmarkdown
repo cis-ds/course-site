@@ -11,7 +11,7 @@ categories: ["git", "project-management"]
 menu:
   notes:
     parent: Project management
-    weight: 1
+    weight: 6
 ---
 
 ## I don't want a bunch of these files committed
@@ -32,8 +32,67 @@ Which files should you commit in your Git repository, and which files are safe t
 
 * Temporary files - files such as `~$*.xls*` or `.utf8.md` that are generated only when a program is open (such as Microsoft Excel) or rendering a script (such as R rendering an R Markdown document)
 * Log files - `.log`
-* Files with private details - for example, [`.Rprofile` which contains proprietary API keys](https://cfss.uchicago.edu/webdata001_api.html#api_authentication). Access to these files should be restricted only to you and no one else. Keep them out of your repository
+* Files with private details - for example, [`.Rprofile` which contains proprietary API keys](/notes/application-program-interface/#api-authentication). Access to these files should be restricted only to you and no one else. Keep them out of your repository
 * Any file greater than 100 megabytes - see above
+
+## How to use `.gitignore`
+
+`.gitignore` is a special file inside a Git repository that tells Git specific types of files/directories that should be **ignored**. The name is literally `.gitignore`. The period at the beginning tells the computer it is a special **system file**. Typically these files are hidden inside File Explorer or Finder.
+
+Any file or directory identified in `.gitignore` cannot be staged or committed to the repository. When you first create a repository on GitHub, you have the option to initialize the repo with a `.gitignore` template. For instance, the template for R is this:
+
+```
+# History files
+.Rhistory
+.Rapp.history
+
+# Session Data files
+.RData
+
+# User-specific files
+.Ruserdata
+
+# Example code in package build process
+*-Ex.R
+
+# Output files from R CMD build
+/*.tar.gz
+
+# Output files from R CMD check
+/*.Rcheck/
+
+# RStudio files
+.Rproj.user/
+
+# produced vignettes
+vignettes/*.html
+vignettes/*.pdf
+
+# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
+.httr-oauth
+
+# knitr and R markdown default cache directories
+*_cache/
+/cache/
+
+# Temporary files created by R markdown
+*.utf8.md
+*.knit.md
+```
+
+You can modify this file in RStudio to include additional arguments. If we wanted to exclude any `.log` files, we could add a new line:
+
+```
+*.log
+```
+
+The `*` tells the computer to identify any file regardless of what its name starts with, as long as it ends in `.log`. Or if there was a directory called `temp` containing only temporary files that are safe to ignore, we could add
+
+```
+temp/
+```
+
+to exclude that folder from the Git repository.
 
 ## Committing large data files
 

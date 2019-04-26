@@ -1,0 +1,95 @@
+---
+title: "R startup procedures"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+categories: ["project-management"]
+
+menu:
+  notes:
+    parent: Project management
+    weight: 5
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+R offers the ability to customize its startup procedures. That is, every time an R process is initiated, users can define custom R code to evaluate before the session begins. This custom code is generally stored in one of two locations:
+
+1. [`.Renviron`](#renviron) - which contains environment variables to be set in R sessions.
+2. [`.Rprofile`](#rprofile) - which contains R code to be run in each session.
+
+## `.Renviron`
+
+The `.Renviron` file is most useful for defining sensitive information such as [API keys](/notes/application-program-interface/#api-authentication) (such as GitHub or Twitter) as well as R specific environment variables like the history size (`R_HISTSIZE=100000`) and default library locations `R_LIBS_USER`.
+
+The `.Renviron` file contains lists of environment variables to set. This is _not_ R code, it uses a format similar to that used on the command line shell.
+
+The easiest way to edit `.Renviron` is by running `usethis::edit_r_environ()`.
+
+A simple example of a `.Renviron` file is
+
+```shell
+R_HISTSIZE=100000
+GITHUB_PAT=abc123
+R_LIBS_USER=~/R/%p/%v
+```
+
+You will not typically need to edit this file manually. For example, `rtweet` [automatically stores your Twitter API authentication information in `.Renviron`](/notes/twitter-api-practice/#oauth-authentication).
+
+## `.Rprofile`
+
+The `.Rprofile` file contains R code to be run when R starts up. It is run after the `.Renviron` file is sourced. You generally have only a single `.Renviron` file on your computer. However you can have multiple `.Rprofile` files stored on a single computer.
+
+* Typically `.Rprofile` is located in the users' home directory (`~/.Rprofile` on MacOS/Linux). This `.Rprofile` is run whenever you start up R.
+* Each R Project folder can also contain a separate `.Rprofile`. This `.Rprofile` is specific to that project and will only be run if you open that R Project in RStudio.
+
+The easiest way to edit `.Rprofile` is by running `usethis::edit_r_profile()`.
+
+Some common things people often add to their `.RProfile`
+
+1. Set a default CRAN mirror
+1. Write a welcome message
+1. Customize their R prompt
+1. Change options, screen width, numeric display
+1. Store API keys/tokens that are necessary for only a single project
+
+### Git tracking of `.Rprofile`
+
+You can commit `.Rprofile` inside of a Git repository, however you should only do this for a private repository or if `.Rprofile` does not contain API keys. If you commit `.Rprofile` to a public repo, anybody can access and view the file. If it contains an API key, anyone can use it to access that API (which is typically a violation of your user agreement, not to mention if it is a paid API you will be charged for these queries).
+
+## Reproducibility
+
+A good rule of thumb is you should only put things in your `.Rprofile` that you run interactively in the R terminal. If it ever appears in a R script or R Markdown file it should **not** be in your `.Rprofile`.
+
+If you set these options in your `.Rprofile`, then try to run one of your scripts on another system without your `.Rprofile` it will no longer be reproducible. Some problematic examples are loading packages used in analysis (such as `dplyr` or `ggplot2`) or changing default options which change the _value_ of outputs, such as `options(stringsAsFactors = FALSE)`. 
+
+In addition because the `.Rprofile` is run by **every** R process (including those started by R itself) it is important to guard most of the code with `interactive()`, so it is only run in interactive sessions (sessions you are controlling with a terminal).
+
+A simple example of a `.Rprofile` is
+
+```r
+options(repos = c(CRAN = "https://cran.rstudio.org"))
+if (interactive()) {
+  options(width = 120)
+}
+```
+
+## Acknowledgments
+
+* Substantial material drawn from [What They Forgot To Teach You About R](https://whattheyforgot.org/) by Jenny Bryan and Jim Hester. Licensed under the licensed under the [CC BY-SA 4.0 Creative Commons License](https://creativecommons.org/licenses/by-sa/4.0/).
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

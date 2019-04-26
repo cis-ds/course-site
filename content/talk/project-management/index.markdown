@@ -53,11 +53,16 @@ math: false
 
 * Read chapters 27-29 in [R for Data Science](http://r4ds.had.co.nz) for more on R Markdown and document formats
 * Review [chapter 6](http://r4ds.had.co.nz/workflow-scripts.html) in *R for Data Science* for more info on scripts
-* Read [Recovering from Git Predicaments](/notes/common-git-problems/) - some important tips for fixing problems related to Git
 
 ## Class materials
 
+* [Saving the source and blank slates](/notes/saving-source)
+* [Project-oriented workflow](/notes/project-oriented-workflow)
+* [Use safe filepaths](/notes/safe-filepaths/)
 * [A dive into R Markdown](/notes/r-markdown/)
+* [R startup procedures](/notes/r-startup/)
+* [Reproducible examples and `reprex`](/faq/asking-questions/#include-a-reproducible-example)
+* [Recovering from common Git predicaments](/notes/common-git-problems/)
 
 ## Additional resources
 
