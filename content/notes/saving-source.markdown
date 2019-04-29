@@ -48,7 +48,7 @@ When you quit R, do not save the workspace to an `.Rdata` file. When you launch,
 
 In RStudio, set this via *Tools > Global Options*.
 
-![](img/rstudio-workspace.png)
+![](/img/rstudio-workspace.png)
 
 ## Restart R often during development
 
@@ -62,6 +62,8 @@ If you use RStudio, use the menu item *Session > Restart R* or the associated ke
 * In R markdown, use Ctrl+Alt+P (Windows and Linux) or Command+Option+P (Mac OS)
 
 ## What's wrong with `rm(list = ls())`?
+
+{{< youtube GiPe1OiKQuk >}}
 
 It's fairly common to see data analysis scripts that begin with this object-nuking command:
 
@@ -120,7 +122,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-04-25                  
+##  date     2019-04-29                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
