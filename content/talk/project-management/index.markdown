@@ -59,8 +59,8 @@ math: false
 * [Saving the source and blank slates](/notes/saving-source)
 * [Project-oriented workflow](/notes/project-oriented-workflow)
 * [Use safe filepaths](/notes/safe-filepaths/)
-* [A dive into R Markdown](/notes/r-markdown/)
 * [R startup procedures](/notes/r-startup/)
+* [A dive into R Markdown](/notes/r-markdown/)
 * [Reproducible examples and `reprex`](/faq/asking-questions/#include-a-reproducible-example)
 * [Recovering from common Git predicaments](/notes/common-git-problems/)
 
