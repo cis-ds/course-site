@@ -1,0 +1,502 @@
+---
+title: "Project management"
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(cache = TRUE,
+                      fig.retina = 2, fig.width = 12)
+
+library(tidyverse)
+library(rcfss)
+library(here)
+
+chunk <- "```"
+inline <- function(x = "") paste0("`` `r ", x, "` ``")
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = rcfss::base_size))
+```
+
+
+# Workspace
+
+* Libraries with `library()`
+* User-created objects
+* Option to save image of current workspace
+* Treat workspaces as disposable
+
+---
+
+![](/img/if-you-liked-it-you-should-have-saved-the-source-for-it.jpg)
+
+---
+
+# Save code, not workspace
+
+* Enforces reproducibility
+* Easy to regenerate on-demand
+* Always save commands
+* Always start R with a blank state
+* Restart R often
+
+---
+
+# Bad approaches
+
+```r
+rm(list = ls())
+```
+
+* Good intent, but poor execution
+* Only deletes user-created objects
+* Enforces hidden dependencies on things you ran before `rm(list = ls())`
+
+---
+
+<iframe width="800" height="500" src="https://www.youtube.com/embed/GiPe1OiKQuk?start=7" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+---
+
+# How to store work
+
+* Split work into projects
+* **We already do this**
+* But why?
+
+---
+
+# `setwd()`
+
+```r
+library(ggplot2)
+setwd("/Users/bensoltoff/cuddly_broccoli/verbose_funicular/foofy/data")
+df <- read.delim("raw_foofy_data.csv")
+p <- ggplot(df, aes(x, y)) + geom_point()
+ggsave("../figs/foofy_scatterplot.png")
+```
+
+---
+
+# Project-based workflow
+
+* File system discipline
+* Working directory intentionality
+* File path discipline
+
+--
+
+## Rationale for workflow
+
+* Ensures portability
+* Reliable, polite behavior
+
+---
+
+# RStudio Projects
+
+* `.Rproj`
+* Opening projects
+* Switching between projects
+
+---
+
+# Use safe filepaths
+
+* Avoid `setwd()`
+* Split work into projects
+* Declare each folder as a project
+* Use `here()`
+
+---
+
+# `here::here()`
+
+```{r}
+library(here)
+here()
+```
+
+--
+
+* Build a file path
+
+```{r, collapse = TRUE}
+here("static", "extras", "awesome.txt")
+cat(readLines(here("static", "extras", "awesome.txt")))
+```
+    
+--
+
+* What if we change the working directory?
+
+```{r, collapse = TRUE}
+setwd(here("static"))
+getwd()
+cat(readLines(here("static", "extras", "awesome.txt")))
+```
+
+---
+
+# How does it know?
+
+* Is a file named `.here` present?
+* Is this an RStudio Project?
+* Is this a checkout from a version control system?
+
+---
+
+# Filepaths and R Markdown
+
+```
+data/
+  scotus.csv
+analysis/
+  exploratory-analysis.Rmd
+final-report.Rmd
+scotus.Rproj
+```
+
+--
+
+* `.Rmd` and assumption of working directory
+* Run `read_csv("data/scotus.csv")`
+
+---
+
+# R startup procedures
+
+* Customized startup
+* `.Renviron`
+* `.Rprofile`
+
+---
+
+# `.Renviron`
+
+* Define sensitive information
+* Set R specific environmental variables
+* Does not use R code syntax
+* `usethis::edit_r_environ()`
+
+--
+
+## Example `.Renviron`
+
+```shell
+R_HISTSIZE=100000
+GITHUB_PAT=abc123
+R_LIBS_USER=~/R/%p/%v
+```
+
+---
+
+# `.Rprofile`
+
+* R code to run when R starts up
+* Runs after `.Renviron`
+* Multiple `.Rprofile` files
+    * Home directory (`~/.Rprofile`)
+    * Each R Project folder
+* `usethis::edit_r_profile()`
+
+---
+
+# Common items in `.Rprofile`
+
+1. Set a default CRAN mirror
+1. Write a welcome message
+1. Customize their R prompt
+1. Change options, screen width, numeric display
+1. Store API keys/tokens that are necessary for only a single project
+
+---
+
+# Git tracking of `.Rprofile`
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/13e1PQJrKtqYKyO0FY" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+---
+
+# Reproducibility and `.Renviron/.Rprofile`
+
+* Does hinder reproducibility
+* Only include interactive code in `.Rprofile`
+
+---
+
+# R Markdown
+
+![](/img/data-science/base.png)
+
+---
+
+# R Markdown basics
+
+```{r plain-text, echo = FALSE, comment = ""}
+cat(htmltools::includeText(here("static", "extras", "gun-deaths.Rmd")))
+```
+
+---
+
+# Major components
+
+1. A **YAML header** surrounded by `---`s
+1. **Chunks** of R code surounded by ` ``` `
+1. Text mixed with simple text formatting using the [Markdown syntax](../hw01-edit-README.html)
+
+---
+
+# Knitting process
+
+.center[
+
+![](http://r4ds.had.co.nz/images/RMarkdownFlow.png)
+
+]
+
+---
+
+# Code chunks
+
+* Naming code chunks
+* Code chunk options
+* `eval = FALSE`
+* `include = FALSE`
+* `echo = FALSE`
+* `message = FALSE` or `warning = FALSE`
+* `results = 'hide'`
+* `error = TRUE`
+
+--
+
+## Global options
+
+```r
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+---
+
+# Inline code
+
+```{r youth, include = FALSE}
+youth <- gun_deaths %>%
+  filter(age <= 65)
+```
+
+> We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65. The distribution of the remainder is shown below:
+
+---
+
+# YAML header
+
+```
+--
+title: "Gun deaths"
+author: "Benjamin Soltoff"
+date: 2017-02-01
+output: html_document
+---
+```
+
+* **Y**et **A**nother **M**arkup **L**anguage
+* Standardized format for storing hierarchical data in a human-readable syntax
+* Defines how `rmarkdown` renders your `.Rmd` file
+
+---
+
+# HTML document
+
+```
+---
+title: "Untitled"
+author: "Benjamin Soltoff"
+date: "February 1, 2017"
+output: html_document
+---
+```
+
+---
+
+# Table of contents
+
+```
+---
+title: "Untitled"
+author: "Benjamin Soltoff"
+date: "February 1, 2017"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+```
+
+---
+
+# Appearance and style
+
+```
+---
+title: "Untitled"
+author: "Benjamin Soltoff"
+date: "February 1, 2017"
+output:
+  html_document:
+    theme: readable
+    highlight: pygments
+---
+```
+
+---
+
+# PDF document
+
+```
+---
+title: "Gun deaths"
+date: 2017-02-01
+output: pdf_document
+---
+```
+
+---
+
+# Presentations
+
+* [ioslides](http://rmarkdown.rstudio.com/ioslides_presentation_format.html)
+* [reveal.js](http://rmarkdown.rstudio.com/revealjs_presentation_format.html)
+* [Slidy](http://rmarkdown.rstudio.com/slidy_presentation_format.html)
+* [Beamer](http://rmarkdown.rstudio.com/beamer_presentation_format.html)
+* [`xaringan`](https://bookdown.org/yihui/rmarkdown/xaringan.html)
+
+---
+
+# R scripts
+
+```{r script, echo = FALSE, comment = ""}
+cat(htmltools::includeText(here("static", "extras", "gun-deaths.R")))
+```
+
+---
+
+# When to use a script
+
+* For troubleshooting
+* Initial stages of project
+* Building a reproducible pipeline
+* It depends
+
+--
+
+## Running scripts
+
+* Interactively
+* Programmatically using `source()`
+
+---
+
+# Reproducible examples
+
+* Minimal
+* Complete
+* Verifiable
+
+---
+
+# `reprex`
+
+```{r include = FALSE}
+demo_code <- c(
+  "library(tidyverse)",
+  "count(diamonds, colour)"
+)
+```
+
+```{r asis = TRUE, echo = FALSE, comment = NA}
+cat(demo_code, sep = "\n")
+```
+
+---
+
+.center[
+
+![](https://memeshappen.com/media/created/One-does-not-simply-understand-git-meme-60285.jpg)
+
+]
+
+---
+
+# Git
+
+## What files to commit
+
+* Source files
+* Markdown files
+* Data files
+
+## What files to not commit
+
+* Temporary files
+* Log files
+* Files with private details
+* Any file greater than 100 megabytes
+
+---
+
+# `.gitignore`
+
+* System file
+* Tells Git which files/directories to ignore
+
+---
+
+# Git LFS
+
+* [Git Large File Storage](https://git-lfs.github.com/)
+* Separate software for tracking large files
+* Integrates with Git
+* Generally charges a fee
+
+---
+
+# Accidentally cloned from the master
+
+<div style="width:100%;height:0;padding-bottom:50%;position:relative;"><iframe src="https://giphy.com/embed/3oxHQKW9lw6rK9kYtq" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+---
+
+# Accidentally cloned from the master
+
+```bash
+remote: Permission to hadley/ggplot2.git denied to bensoltoff.
+fatal: unable to access 'https://github.com/hadley/ggplot2.git/': The requested URL returned error: 403
+```
+
+---
+
+# Resetting from the last commit
+
+* Undoing a commit
+
+---
+
+# Avoiding Git problems
+
+1. Commit early and often
+1. Push regularly to GitHub
+
+---
+
+# Burn it all down
+
+.center[
+
+![[Git (via xkcd)](https://xkcd.com/1597/)](https://imgs.xkcd.com/comics/git.png)
+
+]
