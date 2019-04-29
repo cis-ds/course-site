@@ -35,16 +35,12 @@ theme_set(theme_minimal())
 
 ```r
 addition <- function(x, y){
-  if(!is_numeric(c(x, y))) stop("One of your inputs is not a number.")
+  if(!is.numeric(c(x, y))) stop("One of your inputs is not a number.")
   
   x + y
 }
 
 addition(3, "abc")
-```
-
-```
-## Warning: Deprecated
 ```
 
 ```
@@ -816,7 +812,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-29                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -849,14 +845,11 @@ devtools::session_info()
 ##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
 ##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
-##  labeling      0.3     2014-08-23 [2] CRAN (R 3.5.0)
 ##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.3)
 ##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
 ##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
-##  Matrix        1.2-15  2018-11-01 [2] CRAN (R 3.5.3)
 ##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
-##  mgcv          1.8-27  2019-02-06 [2] CRAN (R 3.5.3)
 ##  modelr        0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
 ##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
 ##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.3)
@@ -870,7 +863,7 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss       * 0.1.5   2019-01-24 [1] local         
+##  rcfss       * 0.1.5   2019-04-17 [1] local         
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)

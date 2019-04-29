@@ -593,31 +593,19 @@ summarize_all(mtcars, .funs = mean)
 ## 1 0.40625 3.6875 2.8125
 ```
 
-If you want to apply multiple summaries, use the `funs()` helper:
+If you want to apply multiple summaries, use store the functions in a `list()`:
 
 
 ```r
-summarize_all(mtcars, .funs = funs(min, max))
+summarize_all(mtcars, .funs = list(min, max))
 ```
 
 ```
-## Warning: funs() is soft deprecated as of dplyr 0.8.0
-## please use list() instead
-## 
-## # Before:
-## funs(name = f(.)
-## 
-## # After: 
-## list(name = ~f(.))
-## This warning is displayed once per session.
-```
-
-```
-##   mpg_min cyl_min disp_min hp_min drat_min wt_min qsec_min vs_min am_min
+##   mpg_fn1 cyl_fn1 disp_fn1 hp_fn1 drat_fn1 wt_fn1 qsec_fn1 vs_fn1 am_fn1
 ## 1    10.4       4     71.1     52     2.76  1.513     14.5      0      0
-##   gear_min carb_min mpg_max cyl_max disp_max hp_max drat_max wt_max
+##   gear_fn1 carb_fn1 mpg_fn2 cyl_fn2 disp_fn2 hp_fn2 drat_fn2 wt_fn2
 ## 1        3        1    33.9       8      472    335     4.93  5.424
-##   qsec_max vs_max am_max gear_max carb_max
+##   qsec_fn2 vs_fn2 am_fn2 gear_fn2 carb_fn2
 ## 1     22.9      1      1        5        8
 ```
 
@@ -659,11 +647,11 @@ By default, the newly created columns have the shortest names needed to uniquely
 
 
 ```r
-summarize_at(mtcars, .vars = vars(mpg), .funs = funs(min, max))
+summarize_at(mtcars, .vars = vars(mpg), .funs = list(min, max))
 ```
 
 ```
-##    min  max
+##    fn1  fn2
 ## 1 10.4 33.9
 ```
 
@@ -677,15 +665,15 @@ summarize_at(mtcars, .vars = vars(mpg, wt), .funs = min)
 ```
 
 ```r
-summarize_at(mtcars, .vars = vars(-mpg), .funs = funs(min, max))
+summarize_at(mtcars, .vars = vars(-mpg), .funs = list(min, max))
 ```
 
 ```
-##   cyl_min disp_min hp_min drat_min wt_min qsec_min vs_min am_min gear_min
+##   cyl_fn1 disp_fn1 hp_fn1 drat_fn1 wt_fn1 qsec_fn1 vs_fn1 am_fn1 gear_fn1
 ## 1       4     71.1     52     2.76  1.513     14.5      0      0        3
-##   carb_min cyl_max disp_max hp_max drat_max wt_max qsec_max vs_max am_max
+##   carb_fn1 cyl_fn2 disp_fn2 hp_fn2 drat_fn2 wt_fn2 qsec_fn2 vs_fn2 am_fn2
 ## 1        1       8      472    335     4.93  5.424     22.9      1      1
-##   gear_max carb_max
+##   gear_fn2 carb_fn2
 ## 1        5        8
 ```
 
@@ -892,7 +880,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-04-29                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        
@@ -912,7 +900,6 @@ devtools::session_info()
 ##  digest           0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr          * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
 ##  evaluate         0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  fansi            0.4.0   2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats        * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
 ##  fs               1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics         0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
@@ -935,7 +922,7 @@ devtools::session_info()
 ##  modelr           0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
 ##  munsell          0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
 ##  nlme             3.1-137 2018-04-07 [2] CRAN (R 3.5.3)
-##  nycflights13   * 1.0.0   2018-06-26 [2] CRAN (R 3.5.0)
+##  nycflights13   * 1.0.0   2018-06-26 [1] CRAN (R 3.5.0)
 ##  pillar           1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
 ##  pkgbuild         1.0.3   2019-03-20 [1] CRAN (R 3.5.3)
 ##  pkgconfig        2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
@@ -965,7 +952,6 @@ devtools::session_info()
 ##  tidyselect       0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
 ##  tidyverse      * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
 ##  usethis          1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  utf8             1.1.4   2018-05-24 [2] CRAN (R 3.5.0)
 ##  withr            2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun             0.5     2019-02-20 [1] CRAN (R 3.5.2)
 ##  xml2             1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
