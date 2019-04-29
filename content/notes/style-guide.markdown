@@ -451,6 +451,12 @@ lm(y ~ x1 + x2, data = data.frame(
 
 **Reindent lines** will add spacing to conditional expression blocks, multi-line functions, expressions which run over multiple lines, and piped operations. Again, it is not perfect but it does some of the formatting work for us.
 
+## `styler`
+
+[`styler`](http://styler.r-lib.org/) is a package that auto-formats R source code to adhere to the `tidyverse` formatting rules. You can re-style a snippet of code, an entire `.R/.Rmd` file, or a directory of `.R/.Rmd` files.
+
+See [the introduction](http://styler.r-lib.org/articles/introducing_styler.html) for examples of how to re-format code using this package.
+
 ## Exercise: style this code
 
 Here's a chunk of code from an exercise from a different class. It is formatted terribly, but as you can see it does work - the computer can interpret it. Use the style guide to clean it up and make it readable.
