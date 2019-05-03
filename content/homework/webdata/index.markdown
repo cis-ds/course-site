@@ -1,6 +1,6 @@
 ---
-title: "HW06: Collecting and analyzing data from the web"
-date: 2019-05-06T13:30:00-06:00  # Schedule page publish date
+title: "HW07: Collecting and analyzing data from the web"
+date: 2019-05-13T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
@@ -8,14 +8,14 @@ type: post
 aliases: ["/hw08-webdata.html"]
 
 summary: "Collect data from the web and analyze it."
-url_code: "https://github.com/uc-cfss/hw06"
+url_code: "https://github.com/uc-cfss/hw07"
 ---
 
 
 
 # Overview
 
-Due before class Monday May 13th.
+Due before class on May 20th.
 
 We learned three ways of collecting data from the internet:
 
@@ -28,9 +28,9 @@ For the homework, you will
 * Combine two existing datasets in a novel (and reproducible!) way
 * Create a new dataset by using an API or web scraping
 
-# Fork the `hw08` repository
+# Fork the `hw07` repository
 
-Go [here](https://github.com/uc-cfss/hw06) to fork the repo for homework 06.
+Go [here](https://github.com/uc-cfss/hw07) to fork the repo for homework 07.
 
 # Part 1: Exploring the `gapminder` data (even more)
 
