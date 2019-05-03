@@ -21,26 +21,47 @@ Due before class June 3rd.
 
 Go [here](https://github.com/uc-cfss/hw09) to fork the repo for homework 09.
 
-# Part 1: Sexy Joe Biden
+# Part 1: President Donald Trump
 
-![Former Vice President Joe Biden eating an ice cream cone](/img/biden.jpg)
+![President Donald Trump's official portrait](https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Donald_Trump_official_portrait.jpg/606px-Donald_Trump_official_portrait.jpg)
 
-{{< youtube NvbMB_GGR6s >}}
+<iframe width='480' height='290' scrolling='no' src='https://www.washingtonpost.com/video/c/embed/3bf16d1e-8caf-11e6-8cdc-4fbb1973b506' frameborder='0' webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
 
-Using statistical learning and data from the [2008 American National Election Studies survey](http://www.electionstudies.org/), evaluate whether or not Leslie Knope's attitudes towards Joe Biden are part of a broader trend within the American public. Specifically, do women display higher feeling thermometer ratings for Joe Biden than men?^[Feeling thermometers are a common metric in survey research used to gauge attitudes or feelings of warmth towards individuals and institutions. They range from 0-100, with 0 indicating extreme coldness and 100 indicating extreme warmth.] `biden.csv` contains a selection of variables from the larger survey that also allow you to test competing factors that may influence attitudes towards Joe Biden.
+Donald Trump was certainly an unconventional candidate for the U.S. presidency. His victory was even more shocking in the context of a taped recording from 2005 released just four weeks before the election. In the video, Trump brags in vulgar terms about kissing, groping, and trying to have sex with women. Many politicians and pundits identified this incident as the end of the Trump campaign. Yet surprisingly, it seemed to have little impact on the election.
 
-* `biden` - ranges from 0-100
+Using statistical learning and data from the [2012 American National Election Studies survey](http://www.electionstudies.org/), evaluate to what extent this video influenced individual attitudes towards then-candidate Trump. The outcome of interest is a **feeling thermometer rating** of Trump. Feeling thermometers are a common metric in survey research used to gauge attitudes or feelings of warmth towards individuals and institutions. They range from 0-100, with 0 indicating extreme coldness and 100 indicating extreme warmth.
+
+Specifically, how do individual perceptions of the importance of this video effect feelings of warmth towards the candidate? `trump.csv` contains a selection of variables from the larger survey that also allow you to test competing factors that may influence attitudes towards Donald Trump.
+
+* `trump` - ranges from 0-100
+* `video` - response to the question
+
+    > In deciding how to vote, how much do you think the information from the video should have mattered to people?
+    
+    * `0` - not at all
+    * `1` - a little
+    * `2` - a moderate amount
+    * `3` - a lot
+    * `4` - a great deal
+    
 * `female` - 1 if individual is female, 0 if individual is male
 * `pid` - party identification
-    * `0` - Democrat
-    * `1` - Independent
-    * `2` - Republican
+    * `0` - Strong Democrat
+    * `1` - Not very strong Democrat
+    * `2` - Independent-Democrat
+    * `3` - Independent
+    * `4` - Independent-Republican
+    * `5` - Not very strong Republican
+    * `6` - Strong Republican
 * `age` - age of respondent in years
-* `educ` - number of years of formal education completed
-    * `17` - 17+ years (aka first year of graduate school and up)
+* `educ` - measure of educational attainment. Some representative values include:
+    * `0` - less than 1st grade
+    * `8` - high school graduate (or GED)
+    * `12` - bachelor's degree
+    * `15` - doctoral degree
 
-1. Estimate a basic (single variable) linear regression model of the relationship between gender and feelings towards Joe Biden. Calculate predicted values, graph the relationship between the two variables using the predicted values, and determine whether there appears to be a significant relationship.
-1. Build the best predictive linear regression model of attitudes towards Joe Biden given the variables you have available. In this context, "best" is defined as the model with the lowest MSE. Compare at least three different model formulations (aka different combinations of variables). Use 10-fold cross-validation to avoid a biased estimate of MSE.
+1. Estimate a basic (single variable) linear regression model of the relationship between the importance of the video and feelings towards Donald Trump. Calculate predicted values, graph the relationship between the two variables using the predicted values, and determine whether there appears to be a significant relationship.
+1. Build the best predictive linear regression model of attitudes towards Donald Trump given the variables you have available. In this context, "best" is defined as the model with the lowest MSE. Compare at least three different model formulations (aka different combinations of variables). Use 10-fold cross-validation to avoid a biased estimate of MSE.
 
 # Part 2: Revisiting the Titanic
 
@@ -48,10 +69,10 @@ We've looked a lot at the [Titanic](/notes/logistic-regression/) [data set](/not
 
 1. Load the Titanic data from `library(titanic)`. Use the `titanic_train` data frame.
 1. Estimate three different logistic regression models with `Survived` as the response variable. You may use any combination of the predictors to estimate these models. **Don't just reuse [the models from the notes](/notes/logistic-regression/#logistic_regression).**
-    1. Calculate the leave-one-out-cross-validation error rate for each model. Which model performs the best?
-1. Now estimate three random forest models. Generate random forests with 500 trees apiece.
-    1. Generate variable importance plots for each random forest model. Which variables seem the most important?
-    1. Calculate the out-of-bag error rate for each random forest model. Which performs the best?
+    1. Calculate the 10-fold cross-validation error rate for each model. Which model performs the best?
+1. Now estimate a random forest model with all available variables (excluding Name, Ticket, and Cabin). Generate random forests with 500 trees apiece.
+    1. Generate a variable importance plots. Which variables seem the most important?
+    1. Calculate the out-of-bag error rate. How does this compare to the 10-fold CV error rate from the logistic regression models?
 
 # Submit the assignment
 
