@@ -20,9 +20,9 @@ menu:
 
 **Statistical models** attempt to summarize relationships between variables by reducing the dimensionality of the data. For example, here we have some simulated data on sales of [Shamwow](https://www.shamwow.com/) in 200 different markets.
 
-![](/img/shamwow.jpg)
+{{< youtube QwRISkyV_B8 >}}
 
-Our goal is to improve sales of the Shamwow. Since we cannot directly increase sales of the product (unless we go out and buy it ourselves), our only option is to increase advertising across three potential mediums: newspaper, radio, and TV.
+Our goal is to improve sales of the Shamwow. Since we cannot directly increase sales of the product (unless we go out and buy it ourselves), our only option is to increase advertising across three potential mediums: internet, newspaper, and TV.
 
 In this example, the advertising budgets are our **input variables**, also called **independent variables**, **features**, or **predictors**. The sales of Shamwows is the **output**, also called the **dependent variable** or **response**.
 
@@ -73,7 +73,7 @@ This is only one possible estimation procedure, but is popular because it is rel
 
 `$$Y = \beta_0 + \beta_{1}X_1$$`
 
-where `\(Y\)` is the sales, `\(X_1\)` is the advertising spending in a given medium (newspaper, radio, or TV), and `\(\beta_0\)` and `\(\beta_1\)` are parameters defining the intercept and slope of the line.
+where `\(Y\)` is the sales, `\(X_1\)` is the advertising spending in a given medium (internet, newspaper, or TV), and `\(\beta_0\)` and `\(\beta_1\)` are parameters defining the intercept and slope of the line.
 
 The downside to parametric methods is that they assume a specific functional form of the relationship between the variables. Sometimes relationships really are linear - often however they are not. They could be curvilinear, parbolic, interactive, etc. Unless we know this *a priori* or test for all of these potential functional forms, it is possible our parametric method will not accurately summarize the relationship between `\(X\)` and `\(Y\)`.
 
@@ -119,7 +119,7 @@ That said, whether **predictors** are qualitative or quantitative is not importa
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-05-06                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -177,7 +177,7 @@ That said, whether **predictors** are qualitative or quantitative is not importa
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)
