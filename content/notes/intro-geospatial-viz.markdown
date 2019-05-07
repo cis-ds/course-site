@@ -130,7 +130,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-05-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -145,10 +145,8 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  class         7.3-15  2019-01-01 [2] CRAN (R 3.5.3)
 ##  classInt      0.3-1   2018-12-18 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-##  curl          3.3     2019-01-10 [2] CRAN (R 3.5.2)
 ##  DBI           1.0.0   2018-05-02 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
 ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
@@ -171,7 +169,6 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  jpeg          0.1-8   2014-01-23 [1] CRAN (R 3.5.0)
 ##  jsonlite      1.6     2018-12-07 [2] CRAN (R 3.5.0)
 ##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
-##  labeling      0.3     2014-08-23 [2] CRAN (R 3.5.0)
 ##  lattice       0.20-38 2018-11-04 [2] CRAN (R 3.5.3)
 ##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
@@ -197,7 +194,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
 ##  RgoogleMaps   1.4.3   2018-11-07 [1] CRAN (R 3.5.0)
 ##  rjson         0.2.20  2018-06-08 [1] CRAN (R 3.5.0)
-##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)

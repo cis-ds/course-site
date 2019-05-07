@@ -155,7 +155,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-04-25                  
+##  date     2019-05-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -167,7 +167,6 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
@@ -182,7 +181,7 @@ devtools::session_info()
 ##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
 ##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
 ##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
-##  here        * 0.1     2017-05-28 [2] CRAN (R 3.5.0)
+##  here          0.1     2017-05-28 [2] CRAN (R 3.5.0)
 ##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
 ##  httr          1.4.0   2018-12-11 [2] CRAN (R 3.5.0)
@@ -210,7 +209,7 @@ devtools::session_info()
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)

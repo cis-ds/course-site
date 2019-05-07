@@ -90,7 +90,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-05-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -120,7 +120,7 @@ devtools::session_info()
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)

@@ -156,7 +156,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-05-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib
@@ -170,10 +170,8 @@ devtools::session_info()
 ##  class          7.3-15  2019-01-01 [2]
 ##  classInt       0.3-1   2018-12-18 [2]
 ##  cli            1.1.0   2019-03-19 [1]
-##  codetools      0.2-16  2018-12-24 [2]
 ##  colorspace     1.4-1   2019-03-18 [2]
 ##  crayon         1.3.4   2017-09-16 [2]
-##  curl           3.3     2019-01-10 [2]
 ##  DBI            1.0.0   2018-05-02 [2]
 ##  desc           1.2.0   2018-05-01 [2]
 ##  devtools       2.0.1   2018-10-26 [1]
@@ -187,7 +185,6 @@ devtools::session_info()
 ##  generics       0.0.2   2018-11-29 [1]
 ##  ggplot2      * 3.1.0   2018-10-25 [1]
 ##  glue           1.3.1   2019-03-12 [2]
-##  gridExtra      2.3     2017-09-09 [2]
 ##  gtable         0.2.0   2016-02-26 [2]
 ##  haven          2.1.0   2019-02-19 [2]
 ##  here           0.1     2017-05-28 [2]
@@ -195,9 +192,7 @@ devtools::session_info()
 ##  htmltools      0.3.6   2017-04-28 [1]
 ##  httr           1.4.0   2018-12-11 [2]
 ##  jsonlite       1.6     2018-12-07 [2]
-##  kimisc         0.4     2017-12-18 [1]
 ##  knitr          1.22    2019-03-08 [2]
-##  labeling       0.3     2014-08-23 [2]
 ##  lattice        0.20-38 2018-11-04 [2]
 ##  lazyeval       0.2.2   2019-03-15 [2]
 ##  lubridate      1.7.4   2018-04-11 [2]
@@ -207,7 +202,7 @@ devtools::session_info()
 ##  modelr         0.1.4   2019-02-18 [2]
 ##  munsell        0.5.0   2018-06-12 [2]
 ##  nlme           3.1-137 2018-04-07 [2]
-##  patchwork    * 0.0.1   2018-09-06 [1]
+##  patchwork    * 0.0.1   2019-05-07 [1]
 ##  pillar         1.3.1   2018-12-15 [2]
 ##  pkgbuild       1.0.3   2019-03-20 [1]
 ##  pkgconfig      2.0.2   2018-08-16 [2]
@@ -225,7 +220,7 @@ devtools::session_info()
 ##  readxl         1.3.1   2019-03-13 [2]
 ##  remotes        2.0.2   2018-10-30 [1]
 ##  rgdal          1.4-3   2019-03-14 [1]
-##  rlang          0.3.2   2019-03-21 [1]
+##  rlang          0.3.4   2019-04-07 [1]
 ##  rmarkdown      1.12    2019-03-14 [1]
 ##  rprojroot      1.3-2   2018-01-03 [2]
 ##  rstudioapi     0.10    2019-03-19 [1]
@@ -246,8 +241,6 @@ devtools::session_info()
 ##  units          0.6-2   2018-12-05 [1]
 ##  usethis        1.4.0   2018-08-14 [1]
 ##  uuid           0.1-2   2015-07-28 [2]
-##  viridis      * 0.5.1   2018-03-29 [2]
-##  viridisLite  * 0.3.0   2018-02-01 [2]
 ##  withr          2.1.2   2018-03-15 [2]
 ##  xfun           0.5     2019-02-20 [1]
 ##  xml2           1.2.0   2018-01-24 [2]
@@ -263,10 +256,8 @@ devtools::session_info()
 ##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.1)                      
@@ -281,16 +272,13 @@ devtools::session_info()
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
@@ -300,7 +288,7 @@ devtools::session_info()
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.3)                      
-##  Github (thomasp85/patchwork@7fb35b1)
+##  Github (thomasp85/patchwork@fd7958b)
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.1)                      
@@ -318,10 +306,10 @@ devtools::session_info()
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.3)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
@@ -333,8 +321,6 @@ devtools::session_info()
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      

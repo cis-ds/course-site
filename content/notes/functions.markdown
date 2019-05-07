@@ -588,7 +588,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-03-28                  
+##  date     2019-05-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -600,7 +600,6 @@ devtools::session_info()
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools     0.2-16  2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
@@ -608,7 +607,6 @@ devtools::session_info()
 ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
 ##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  fansi         0.4.0   2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
 ##  fs            1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
@@ -640,12 +638,11 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-##  rcfss       * 0.1.5   2019-01-24 [1] local         
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang         0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)
@@ -660,7 +657,6 @@ devtools::session_info()
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
 ##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  utf8          1.1.4   2018-05-24 [2] CRAN (R 3.5.0)
 ##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
 ##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
