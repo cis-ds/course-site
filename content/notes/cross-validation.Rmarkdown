@@ -150,7 +150,7 @@ ggplot(Auto, aes(horsepower, mpg)) +
        color = "Highest-order\npolynomial")
 ```
 
-```{r mse-poly, dependson = "auto_split"}
+```{r mse-poly, dependson = c("auto_split", "mse-poly-plot")}
 # function to estimate model using training set and generate fit statistics
 # using the validation set
 poly_results <- function(train, test, i) {
@@ -208,13 +208,6 @@ summary(survive_age_woman_x)
 
 We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the validation set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is $0%$).
 
-```{r logit}
-# function to convert log-odds to probabilities
-logit2prob <- function(x){
-  exp(x) / (1 + exp(x))
-}
-```
-
 ```{r accuracy_age_gender_x_test_set, dependson="age_woman_cross", message = FALSE}
 # split the data into training and validation sets
 titanic_split <- initial_split(data = titanic, prop = 0.5)
@@ -225,10 +218,9 @@ train_model <- glm(Survived ~ Age * Sex, data = training(titanic_split),
 summary(train_model)
 
 # calculate predictions using validation set
-x_test_accuracy <- augment(train_model, newdata = testing(titanic_split)) %>% 
-  as_tibble() %>%
-  mutate(pred = logit2prob(.fitted),
-         pred = as.numeric(pred > .5))
+x_test_accuracy <- augment(train_model, newdata = testing(titanic_split),
+                           type.predict = "response") %>% 
+  mutate(pred = as.numeric(.fitted > .5))
 
 # calculate test error rate
 mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
@@ -266,7 +258,7 @@ There are two main problems with validation sets:
       ggplot(aes(terms, mse_test, color = id)) +
       geom_line() +
       labs(title = "Variability of MSE estimates",
-           subtitle = "Using the validation set approach",
+           subtitle = "10 independent training/validation sets",
            x = "Degree of Polynomial",
            y = "Mean Squared Error") +
       theme(legend.position = "none")
@@ -415,10 +407,9 @@ holdout_results <- function(splits) {
   holdout <- assessment(splits)
   
   # `augment` will save the predictions with the holdout data set
-  res <- augment(mod, newdata = assessment(splits)) %>% 
-    as_tibble() %>%
-    mutate(pred = logit2prob(.fitted),
-           pred = as.numeric(pred > .5))
+  res <- augment(mod, newdata = assessment(splits),
+                 type.predict = "response") %>% 
+    mutate(pred = as.numeric(.fitted > .5))
 
   # Return the assessment data set with the additional columns
   res
@@ -489,10 +480,9 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       holdout <- assessment(splits)
       
       # `augment` will save the predictions with the holdout data set
-      res <- augment(mod, newdata = assessment(splits)) %>% 
-        as_tibble() %>%
-        mutate(pred = logit2prob(.fitted),
-               pred = as.numeric(pred > .5))
+      res <- augment(mod, newdata = assessment(splits),
+                     type.predict = "response") %>% 
+        mutate(pred = as.numeric(.fitted > .5))
       
       # Return the assessment data set with the additional columns
       res
@@ -618,10 +608,9 @@ holdout_results <- function(splits) {
   holdout <- assessment(splits)
   
   # `augment` will save the predictions with the holdout data set
-  res <- augment(mod, newdata = assessment(splits)) %>% 
-    as_tibble() %>%
-    mutate(pred = logit2prob(.fitted),
-           pred = as.numeric(pred > .5))
+  res <- augment(mod, newdata = assessment(splits),
+                 type.predict = "response") %>% 
+    mutate(pred = as.numeric(.fitted > .5))
 
   # Return the assessment data set with the additional columns
   res
@@ -688,10 +677,9 @@ Not a large difference from the LOOCV approach, but it take much less time to co
       holdout <- assessment(splits)
       
       # `augment` will save the predictions with the holdout data set
-      res <- augment(mod, newdata = assessment(splits)) %>% 
-        as_tibble() %>%
-        mutate(pred = logit2prob(.fitted),
-               pred = as.numeric(pred > .5))
+      res <- augment(mod, newdata = assessment(splits),
+                     type.predict = "response") %>% 
+        mutate(pred = as.numeric(.fitted > .5))
       
       # Return the assessment data set with the additional columns
       res

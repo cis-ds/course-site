@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Statistical learning: classification and cross-validation</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Statistical learning: classification and cross-validation
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+.center[
+
+![](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
+
+]
+
+---
+
+.center[
+
+![:scale 35%](https://s-media-cache-ak0.pinimg.com/564x/0b/87/df/0b87df1a54474716384f8ec94b52eab9.jpg)
+
+]
+
+---
+
+.center[
+![:scale 50%](http://data.iwastesomuchtime.com/November-26-2012-17-34-05-cookie.gif)
+
+]
+
+---
+
+# Interpreting a decision tree
+
+
+
+&lt;img src="index_files/figure-html/titanic_tree-1.png" width="864" /&gt;
+
+---
+
+# A more complex tree
+
+&lt;img src="index_files/figure-html/titanic_tree_full-1.png" width="864" /&gt;
+
+---
+
+# A more complex-ier tree
+
+&lt;img src="index_files/figure-html/titanic_tree_complicated-1.png" width="864" /&gt;
+
+---
+
+# Benefits/drawbacks to decision trees
+
++ Easy to explain
++ Easy to interpret/visualize
++ Good for qualitative predictors
+
+- Lower accuracy rates
+- Non-robust
+
+---
+
+# Random forests
+
+![](https://c402277.ssl.cf1.rackcdn.com/photos/946/images/story_full_width/forests-why-matter_63516847.jpg?1345534028)
+
+---
+
+# Sampling 
+
+
+```
+##  [1]  1  2  3  4  5  6  7  8  9 10
+```
+
+--
+
+.pull-left[
+
+##### Sampling without replacement
+
+
+```
+## [[1]]
+##  [1] 10  7  2  3  8  5  6  4  1  9
+## 
+## [[2]]
+##  [1]  4 10  2  6  1  8  5  9  7  3
+## 
+## [[3]]
+##  [1]  9 10  3  5  7  2  8  6  1  4
+## 
+## [[4]]
+##  [1]  7  2  4 10  8  5  3  6  9  1
+## 
+## [[5]]
+##  [1] 10  2  5  8  1  6  4  3  7  9
+```
+
+]
+
+--
+
+.pull-right[
+
+##### Sampling with replacement
+
+
+```
+## [[1]]
+##  [1]  1  5  3 10  3 10  3  6 10 10
+## 
+## [[2]]
+##  [1] 10  4  8  2  2  1  6  6  7  3
+## 
+## [[3]]
+##  [1]  5  6  6 10  2  1  1  1 10  8
+## 
+## [[4]]
+##  [1]  7  4  4  4  7  7 10  9  7  5
+## 
+## [[5]]
+##  [1] 10  5 10  1  4  3  8  3  3  5
+```
+
+]
+
+---
+
+# Random forests
+
+* Bootstrapping
+* Reduces variance
+* Bagging
+* Random forest
+    * Reliability
+
+---
+
+# Estimating statistical models using `caret`
+
+* Not part of `tidyverse` (yet)
+* Aggregator of hundreds of statistical learning algorithms
+* Provides a single unified interface to disparate range of functions
+    * Similar to `scikit-learn` for Python
+
+---
+
+# `train()`
+
+
+```r
+library(caret)
+
+titanic_clean &lt;- titanic %&gt;%
+  filter(!is.na(Survived), !is.na(Age))
+
+caret_glm &lt;- train(Survived ~ Age, data = titanic_clean,
+                   method = "glm",
+                   family = binomial,
+                   trControl = trainControl(method = "none"))
+summary(caret_glm)
+```
+
+```
+## 
+## Call:
+## NULL
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.1488  -1.0361  -0.9544   1.3159   1.5908  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(&gt;|z|)  
+## (Intercept) -0.05672    0.17358  -0.327   0.7438  
+## Age         -0.01096    0.00533  -2.057   0.0397 *
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 964.52  on 713  degrees of freedom
+## Residual deviance: 960.23  on 712  degrees of freedom
+## AIC: 964.23
+## 
+## Number of Fisher Scoring iterations: 4
+```
+
+---
+
+# Estimating a random forest
+
+
+
+
+```r
+titanic_rf &lt;- train(Survived ~ ., data = titanic_rf_data,
+                    method = "rf",
+                    ntree = 200,
+                    trControl = trainControl(method = "oob"))
+titanic_rf
+```
+
+```
+## Random Forest 
+## 
+## 714 samples
+##   7 predictor
+##   2 classes: 'Died', 'Survived' 
+## 
+## No pre-processing
+## Resampling results across tuning parameters:
+## 
+##   mtry  Accuracy   Kappa    
+##   2     0.8109244  0.5977414
+##   5     0.8137255  0.6093803
+##   9     0.7983193  0.5777716
+## 
+## Accuracy was used to select the optimal model using the largest value.
+## The final value used for the model was mtry = 5.
+```
+
+---
+
+# Structure of `train()` object
+
+
+```
+## List of 24
+##  $ method      : chr "rf"
+##  $ modelInfo   :List of 15
+##  $ modelType   : chr "Classification"
+##  $ results     :'data.frame':	3 obs. of  3 variables:
+##  $ pred        : NULL
+##  $ bestTune    :'data.frame':	1 obs. of  1 variable:
+##  $ call        : language train.formula(form = Survived ~ ., data = titanic_rf_data, method = "rf",      ntree = 200, trControl = trainCont| __truncated__
+##  $ dots        :List of 1
+##  $ metric      : chr "Accuracy"
+##  $ control     :List of 26
+##  $ finalModel  :List of 23
+##   ..- attr(*, "class")= chr "randomForest"
+##  $ preProcess  : NULL
+##  $ trainingData:Classes 'tbl_df', 'tbl' and 'data.frame':	714 obs. of  8 variables:
+##   ..- attr(*, "na.action")= 'omit' Named int [1:177] 6 18 20 27 29 30 32 33 37 43 ...
+##   .. ..- attr(*, "names")= chr [1:177] "6" "18" "20" "27" ...
+##  $ resample    : NULL
+##  $ resampledCM : NULL
+##  $ perfNames   : chr [1:2] "Accuracy" "Kappa"
+##  $ maximize    : logi TRUE
+##  $ yLimits     : NULL
+##  $ times       :List of 3
+##  $ levels      : chr [1:2] "Died" "Survived"
+##   ..- attr(*, "ordered")= logi FALSE
+##  $ terms       :Classes 'terms', 'formula'  language Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked
+##   .. ..- attr(*, "variables")= language list(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked)
+##   .. ..- attr(*, "factors")= int [1:8, 1:7] 0 1 0 0 0 0 0 0 0 0 ...
+##   .. .. ..- attr(*, "dimnames")=List of 2
+##   .. ..- attr(*, "term.labels")= chr [1:7] "Pclass" "Sex" "Age" "SibSp" ...
+##   .. ..- attr(*, "order")= int [1:7] 1 1 1 1 1 1 1
+##   .. ..- attr(*, "intercept")= int 1
+##   .. ..- attr(*, "response")= int 1
+##   .. ..- attr(*, ".Environment")=&lt;environment: R_GlobalEnv&gt; 
+##   .. ..- attr(*, "predvars")= language list(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked)
+##   .. ..- attr(*, "dataClasses")= Named chr [1:8] "factor" "numeric" "factor" "numeric" ...
+##   .. .. ..- attr(*, "names")= chr [1:8] "Survived" "Pclass" "Sex" "Age" ...
+##  $ coefnames   : chr [1:9] "Pclass" "Sexmale" "Age" "SibSp" ...
+##  $ contrasts   :List of 2
+##  $ xlevels     :List of 2
+##  - attr(*, "class")= chr [1:2] "train" "train.formula"
+```
+
+---
+
+# Model statistics
+
+
+```r
+titanic_rf$finalModel
+```
+
+```
+## 
+## Call:
+##  randomForest(x = x, y = y, ntree = 200, mtry = param$mtry) 
+##                Type of random forest: classification
+##                      Number of trees: 200
+## No. of variables tried at each split: 5
+## 
+##         OOB estimate of  error rate: 18.91%
+## Confusion matrix:
+##          Died Survived class.error
+## Died      369       55   0.1297170
+## Survived   80      210   0.2758621
+```
+
+---
+
+# Results of a single tree
+
+
+```r
+randomForest::getTree(titanic_rf$finalModel, labelVar = TRUE)
+```
+
+```
+##     left daughter right daughter split var split point status prediction
+## 1               2              3      Fare    15.62085      1       &lt;NA&gt;
+## 2               4              5   Sexmale     0.50000      1       &lt;NA&gt;
+## 3               6              7   Sexmale     0.50000      1       &lt;NA&gt;
+## 4               8              9      Fare    14.12915      1       &lt;NA&gt;
+## 5              10             11       Age    14.00000      1       &lt;NA&gt;
+## 6              12             13    Pclass     2.50000      1       &lt;NA&gt;
+## 7              14             15    Pclass     1.50000      1       &lt;NA&gt;
+## 8              16             17      Fare    10.48125      1       &lt;NA&gt;
+## 9               0              0      &lt;NA&gt;     0.00000     -1       Died
+## 10              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 11             18             19       Age    32.50000      1       &lt;NA&gt;
+## 12             20             21      Fare    29.35625      1       &lt;NA&gt;
+## 13             22             23      Fare    20.66250      1       &lt;NA&gt;
+## 14             24             25       Age    17.50000      1       &lt;NA&gt;
+## 15             26             27       Age     9.50000      1       &lt;NA&gt;
+## 16             28             29 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 17             30             31       Age    36.00000      1       &lt;NA&gt;
+## 18             32             33      Fare     3.24790      1       &lt;NA&gt;
+## 19             34             35    Pclass     2.50000      1       &lt;NA&gt;
+## 20             36             37       Age    43.00000      1       &lt;NA&gt;
+## 21             38             39 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 22             40             41     SibSp     1.50000      1       &lt;NA&gt;
+## 23             42             43       Age     5.50000      1       &lt;NA&gt;
+## 24              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 25             44             45       Age    24.50000      1       &lt;NA&gt;
+## 26             46             47 EmbarkedQ     0.50000      1       &lt;NA&gt;
+## 27             48             49 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 28             50             51      Fare     6.98960      1       &lt;NA&gt;
+## 29             52             53     Parch     1.50000      1       &lt;NA&gt;
+## 30             54             55      Fare    10.82500      1       &lt;NA&gt;
+## 31             56             57       Age    39.00000      1       &lt;NA&gt;
+## 32              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 33             58             59      Fare     9.67290      1       &lt;NA&gt;
+## 34             60             61 EmbarkedC     0.50000      1       &lt;NA&gt;
+## 35             62             63 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 36             64             65       Age    25.50000      1       &lt;NA&gt;
+## 37             66             67      Fare    28.21665      1       &lt;NA&gt;
+## 38              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 39             68             69     Parch     1.50000      1       &lt;NA&gt;
+## 40             70             71 EmbarkedC     0.50000      1       &lt;NA&gt;
+## 41              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 42              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 43              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 44              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 45             72             73       Age    41.00000      1       &lt;NA&gt;
+## 46             74             75     SibSp     2.50000      1       &lt;NA&gt;
+## 47              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 48             76             77      Fare    24.42915      1       &lt;NA&gt;
+## 49             78             79     Parch     0.50000      1       &lt;NA&gt;
+## 50              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 51             80             81       Age    26.25000      1       &lt;NA&gt;
+## 52             82             83     Parch     0.50000      1       &lt;NA&gt;
+## 53              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 54             84             85       Age    24.50000      1       &lt;NA&gt;
+## 55              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 56              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 57              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 58             86             87       Age    28.75000      1       &lt;NA&gt;
+## 59             88             89      Fare    12.25000      1       &lt;NA&gt;
+## 60             90             91       Age    64.00000      1       &lt;NA&gt;
+## 61              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 62              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 63             92             93      Fare     7.91040      1       &lt;NA&gt;
+## 64              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 65             94             95       Age    27.50000      1       &lt;NA&gt;
+## 66             96             97       Age    44.50000      1       &lt;NA&gt;
+## 67              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 68              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 69             98             99       Age    10.00000      1       &lt;NA&gt;
+## 70            100            101       Age    38.50000      1       &lt;NA&gt;
+## 71              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 72            102            103       Age    27.50000      1       &lt;NA&gt;
+## 73            104            105     SibSp     1.50000      1       &lt;NA&gt;
+## 74              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 75              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 76            106            107       Age    15.50000      1       &lt;NA&gt;
+## 77              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 78            108            109      Fare    24.26250      1       &lt;NA&gt;
+## 79              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 80            110            111       Age    20.00000      1       &lt;NA&gt;
+## 81              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 82            112            113      Fare     9.07915      1       &lt;NA&gt;
+## 83              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 84            114            115       Age    21.50000      1       &lt;NA&gt;
+## 85              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 86            116            117      Fare     7.79790      1       &lt;NA&gt;
+## 87            118            119      Fare     7.88540      1       &lt;NA&gt;
+## 88              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 89            120            121       Age    30.50000      1       &lt;NA&gt;
+## 90            122            123       Age    60.50000      1       &lt;NA&gt;
+## 91              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 92              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 93            124            125       Age    43.50000      1       &lt;NA&gt;
+## 94              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 95              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 96            126            127 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 97              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 98              0              0      &lt;NA&gt;     0.00000     -1       Died
+## 99              0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 100           128            129      Fare    19.02500      1       &lt;NA&gt;
+## 101             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 102             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 103           130            131       Age    32.50000      1       &lt;NA&gt;
+## 104           132            133       Age    72.50000      1       &lt;NA&gt;
+## 105             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 106             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 107             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 108             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 109           134            135     SibSp     1.50000      1       &lt;NA&gt;
+## 110             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 111           136            137       Age    21.50000      1       &lt;NA&gt;
+## 112           138            139       Age    18.50000      1       &lt;NA&gt;
+## 113           140            141       Age    19.00000      1       &lt;NA&gt;
+## 114             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 115             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 116           142            143       Age    19.50000      1       &lt;NA&gt;
+## 117           144            145       Age    20.50000      1       &lt;NA&gt;
+## 118             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 119           146            147 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 120             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 121             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 122           148            149      Fare    13.25000      1       &lt;NA&gt;
+## 123             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 124             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 125             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 126             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 127             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 128           150            151       Age    21.00000      1       &lt;NA&gt;
+## 129             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 130           152            153      Fare    41.30000      1       &lt;NA&gt;
+## 131           154            155       Age    35.50000      1       &lt;NA&gt;
+## 132           156            157 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 133             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 134           158            159       Age    33.00000      1       &lt;NA&gt;
+## 135             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 136             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 137             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 138             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 139           160            161       Age    22.50000      1       &lt;NA&gt;
+## 140             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 141             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 142             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 143           162            163 EmbarkedQ     0.50000      1       &lt;NA&gt;
+## 144           164            165     SibSp     0.50000      1       &lt;NA&gt;
+## 145           166            167      Fare     8.54790      1       &lt;NA&gt;
+## 146             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 147             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 148           168            169      Fare    12.63750      1       &lt;NA&gt;
+## 149             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 150             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 151           170            171       Age    25.00000      1       &lt;NA&gt;
+## 152           172            173       Age    29.00000      1       &lt;NA&gt;
+## 153             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 154             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 155           174            175      Fare    30.35000      1       &lt;NA&gt;
+## 156           176            177     Parch     0.50000      1       &lt;NA&gt;
+## 157           178            179      Fare    31.41040      1       &lt;NA&gt;
+## 158           180            181      Fare    64.99790      1       &lt;NA&gt;
+## 159             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 160           182            183      Fare     8.25835      1       &lt;NA&gt;
+## 161           184            185      Fare     7.91040      1       &lt;NA&gt;
+## 162           186            187     SibSp     0.50000      1       &lt;NA&gt;
+## 163             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 164           188            189       Age    19.50000      1       &lt;NA&gt;
+## 165             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 166             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 167           190            191      Fare     9.00625      1       &lt;NA&gt;
+## 168             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 169             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 170             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 171             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 172             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 173             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 174           192            193       Age    36.50000      1       &lt;NA&gt;
+## 175           194            195       Age    39.00000      1       &lt;NA&gt;
+## 176           196            197      Fare    77.96460      1       &lt;NA&gt;
+## 177           198            199     SibSp     0.50000      1       &lt;NA&gt;
+## 178             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 179             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 180           200            201       Age    30.00000      1       &lt;NA&gt;
+## 181             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 182             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 183             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 184             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 185           202            203       Age    25.50000      1       &lt;NA&gt;
+## 186           204            205 EmbarkedS     0.50000      1       &lt;NA&gt;
+## 187           206            207      Fare     7.51250      1       &lt;NA&gt;
+## 188           208            209      Fare     8.35625      1       &lt;NA&gt;
+## 189             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 190             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 191             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 192             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 193             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 194           210            211      Fare    46.33960      1       &lt;NA&gt;
+## 195             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 196             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 197           212            213       Age    47.50000      1       &lt;NA&gt;
+## 198             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 199           214            215      Fare    95.04165      1       &lt;NA&gt;
+## 200           216            217      Fare    41.24790      1       &lt;NA&gt;
+## 201             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 202             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 203             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 204           218            219       Age    22.75000      1       &lt;NA&gt;
+## 205           220            221       Age    26.50000      1       &lt;NA&gt;
+## 206             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 207             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 208           222            223      Fare     7.97290      1       &lt;NA&gt;
+## 209             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 210             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 211           224            225     SibSp     0.50000      1       &lt;NA&gt;
+## 212             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 213             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 214             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 215             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 216             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 217           226            227       Age    27.00000      1       &lt;NA&gt;
+## 218           228            229       Age    21.00000      1       &lt;NA&gt;
+## 219             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 220           230            231      Fare     7.19585      1       &lt;NA&gt;
+## 221           232            233       Age    27.50000      1       &lt;NA&gt;
+## 222             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 223             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 224           234            235       Age    37.00000      1       &lt;NA&gt;
+## 225           236            237     Parch     0.50000      1       &lt;NA&gt;
+## 226             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 227             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 228             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 229           238            239      Fare     7.22710      1       &lt;NA&gt;
+## 230           240            241      Fare     7.13335      1       &lt;NA&gt;
+## 231             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 232             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 233             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 234             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 235             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 236           242            243       Age    37.50000      1       &lt;NA&gt;
+## 237             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 238             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 239             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 240             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 241             0              0      &lt;NA&gt;     0.00000     -1   Survived
+## 242             0              0      &lt;NA&gt;     0.00000     -1       Died
+## 243             0              0      &lt;NA&gt;     0.00000     -1   Survived
+```
+
+---
+
+# Variable importance
+
+&lt;img src="index_files/figure-html/rf_import-1.png" width="864" /&gt;
+
+---
+
+# Exercise: depression and voting
+
+.center[
+
+![:scale 45%](https://i.pinimg.com/564x/24/81/96/24819625c9636fcfab5000a47811d93b--favorite-quotes-offices.jpg)
+
+]
+
+---
+
+# Resampling methods
+
+* Evaluating model fit/predictive power
+* How to avoid overfitting the data
+
+---
+
+# Validation set
+
+* Randomly split data into two distinct sets
+    * Training set
+    * Validation set
+* Train model on training set
+* Evaluate fit on validation set
+
+---
+
+# Regression
+
+
+
+&lt;img src="index_files/figure-html/auto_plot_lm-1.png" width="864" /&gt;
+
+---
+
+# Mean squared error
+
+`$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$`
+
+* `\(y_i =\)` the observed response value for the `\(i\)`th observation
+* `\(\hat{f}(x_i) =\)` the predicted response value for the `\(i\)`th observation given by `\(\hat{f}\)`
+* `\(n =\)` the total number of observations
+
+---
+
+# Split data
+
+
+```r
+set.seed(1234)
+
+auto_split &lt;- initial_split(data = Auto, prop = 0.5)
+auto_train &lt;- training(auto_split)
+auto_test &lt;- testing(auto_split)
+
+dim(Auto)
+```
+
+```
+## [1] 392   9
+```
+
+```r
+dim(auto_train)
+```
+
+```
+## [1] 196   9
+```
+
+```r
+dim(auto_test)
+```
+
+```
+## [1] 196   9
+```
+
+---
+
+# Train model
+
+
+```r
+auto_lm &lt;- glm(mpg ~ horsepower, data = auto_train)
+tidy(auto_lm)
+```
+
+```
+## # A tibble: 2 x 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)   40.1     1.05         38.0 9.08e-92
+## 2 horsepower    -0.158   0.00940     -16.8 1.41e-39
+```
+
+
+```r
+(train_mse &lt;- augment(auto_lm, newdata = auto_train) %&gt;%
+  mutate(.resid = mpg - .fitted,
+         .resid2 = .resid ^ 2) %$%
+  mean(.resid2))
+```
+
+```
+## [1] 24.54843
+```
+
+---
+
+# Validate model
+
+
+```r
+(test_mse &lt;- augment(auto_lm, newdata = auto_test) %&gt;%
+  mutate(.resid = mpg - .fitted,
+         .resid2 = .resid ^ 2) %$%
+  mean(.resid2))
+```
+
+```
+## [1] 23.38243
+```
+
+---
+
+# Compare models
+
+
+
+&lt;img src="index_files/figure-html/mse-poly-1.png" width="864" /&gt;
+
+---
+
+# Classification
+
+
+```r
+survive_age_woman_x &lt;- glm(Survived ~ Age * Sex, data = titanic,
+                           family = binomial)
+tidy(survive_age_woman_x)
+```
+
+```
+## # A tibble: 4 x 5
+##   term        estimate std.error statistic p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 (Intercept)   0.594     0.310       1.91 0.0557 
+## 2 Age           0.0197    0.0106      1.86 0.0624 
+## 3 Sexmale      -1.32      0.408      -3.23 0.00125
+## 4 Age:Sexmale  -0.0411    0.0136     -3.03 0.00241
+```
+
+---
+
+# Test error rate
+
+
+```r
+# split the data into training and validation sets
+titanic_split &lt;- initial_split(data = titanic, prop = 0.5)
+
+# fit model to training data
+train_model &lt;- glm(Survived ~ Age * Sex,
+                   data = training(titanic_split),
+                   family = binomial)
+
+# calculate predictions using validation set
+x_test_accuracy &lt;- augment(train_model,
+                           newdata = testing(titanic_split),
+                           type.predict = "response") %&gt;% 
+  mutate(pred = as.numeric(.fitted &gt; .5))
+
+# calculate test error rate
+mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
+## [1] 0.2166667
+```
+
+---
+
+# Drawbacks to validation sets
+
+&lt;img src="index_files/figure-html/auto_variable_mse-1.png" width="864" /&gt;
+
+---
+
+# Leave-one-out cross-validation
+
+`$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$`
+
+* Extension of validation set to repeatedly split data and average results
+* Minimizes bias of estimated error rate
+* Low variance
+* Highly computationally intensive
+
+---
+
+# `rsample::loo_cv()`
+
+
+```r
+loocv_data &lt;- loo_cv(Auto)
+loocv_data
+```
+
+```
+## # Leave-one-out cross-validation 
+## # A tibble: 392 x 2
+##    splits          id        
+##    &lt;list&gt;          &lt;chr&gt;     
+##  1 &lt;split [391/1]&gt; Resample1 
+##  2 &lt;split [391/1]&gt; Resample2 
+##  3 &lt;split [391/1]&gt; Resample3 
+##  4 &lt;split [391/1]&gt; Resample4 
+##  5 &lt;split [391/1]&gt; Resample5 
+##  6 &lt;split [391/1]&gt; Resample6 
+##  7 &lt;split [391/1]&gt; Resample7 
+##  8 &lt;split [391/1]&gt; Resample8 
+##  9 &lt;split [391/1]&gt; Resample9 
+## 10 &lt;split [391/1]&gt; Resample10
+## # … with 382 more rows
+```
+
+---
+
+# Splits
+
+
+```r
+first_resample &lt;- loocv_data$splits[[1]]
+first_resample
+```
+
+```
+## &lt;391/1/392&gt;
+```
+
+---
+
+# Splits
+
+
+```r
+training(first_resample) %&gt;% glimpse()
+## Observations: 391
+## Variables: 9
+## $ mpg          &lt;dbl&gt; 18, 15, 18, 16, 17, 15, 14, 14, 14, 15, 15, 14, 15,…
+## $ cylinders    &lt;dbl&gt; 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 4, 6, 6, …
+## $ displacement &lt;dbl&gt; 307, 350, 318, 304, 302, 429, 454, 440, 455, 390, 3…
+## $ horsepower   &lt;dbl&gt; 130, 165, 150, 150, 140, 198, 220, 215, 225, 190, 1…
+## $ weight       &lt;dbl&gt; 3504, 3693, 3436, 3433, 3449, 4341, 4354, 4312, 442…
+## $ acceleration &lt;dbl&gt; 12.0, 11.5, 11.0, 12.0, 10.5, 10.0, 9.0, 8.5, 10.0,…
+## $ year         &lt;dbl&gt; 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70, 70,…
+## $ origin       &lt;dbl&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, …
+## $ name         &lt;fct&gt; chevrolet chevelle malibu, buick skylark 320, plymo…
+assessment(first_resample) %&gt;% glimpse()
+## Observations: 1
+## Variables: 9
+## $ mpg          &lt;dbl&gt; 25
+## $ cylinders    &lt;dbl&gt; 4
+## $ displacement &lt;dbl&gt; 113
+## $ horsepower   &lt;dbl&gt; 95
+## $ weight       &lt;dbl&gt; 2228
+## $ acceleration &lt;dbl&gt; 14
+## $ year         &lt;dbl&gt; 71
+## $ origin       &lt;dbl&gt; 3
+## $ name         &lt;fct&gt; toyota corona
+```
+
+---
+
+# Holdout results
+
+1. Obtain the analysis data set (i.e. the `\(n-1\)` training set)
+1. Fit a linear regression model
+1. Predict the assessment data set using the `broom` package
+1. Determine the MSE for each sample
+
+--
+
+
+```r
+holdout_results &lt;- function(splits) {
+  # Fit the model to the n-1
+  mod &lt;- glm(mpg ~ horsepower, data = analysis(splits))
+  
+  # Save the heldout observation
+  holdout &lt;- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res &lt;- augment(mod, newdata = holdout) %&gt;%
+    # calculate residuals for future use
+    mutate(.resid = mpg - .fitted)
+  
+  # Return the assessment data set with the additional columns
+  res
+}
+```
+
+---
+
+# Holdout results
+
+
+```r
+holdout_results(loocv_data$splits[[1]])
+```
+
+```
+## # A tibble: 1 x 12
+##     mpg cylinders displacement horsepower weight acceleration  year origin
+##   &lt;dbl&gt;     &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;  &lt;dbl&gt;        &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt;
+## 1    25         4          113         95   2228           14    71      3
+## # … with 4 more variables: name &lt;fct&gt;, .fitted &lt;dbl&gt;, .se.fit &lt;dbl&gt;,
+## #   .resid &lt;dbl&gt;
+```
+
+---
+
+# Holdout results
+
+
+```r
+loocv_data$results &lt;- map(loocv_data$splits, holdout_results)
+loocv_data$mse &lt;- map_dbl(loocv_data$results, ~ mean(.x$.resid ^ 2))
+loocv_data
+```
+
+```
+## # Leave-one-out cross-validation 
+## # A tibble: 392 x 4
+##    splits          id         results                mse
+##    &lt;list&gt;          &lt;chr&gt;      &lt;list&gt;               &lt;dbl&gt;
+##  1 &lt;split [391/1]&gt; Resample1  &lt;tibble [1 × 12]&gt;  0.00355
+##  2 &lt;split [391/1]&gt; Resample2  &lt;tibble [1 × 12]&gt;  1.25   
+##  3 &lt;split [391/1]&gt; Resample3  &lt;tibble [1 × 12]&gt; 19.6    
+##  4 &lt;split [391/1]&gt; Resample4  &lt;tibble [1 × 12]&gt;  2.42   
+##  5 &lt;split [391/1]&gt; Resample5  &lt;tibble [1 × 12]&gt; 16.7    
+##  6 &lt;split [391/1]&gt; Resample6  &lt;tibble [1 × 12]&gt; 97.0    
+##  7 &lt;split [391/1]&gt; Resample7  &lt;tibble [1 × 12]&gt; 57.7    
+##  8 &lt;split [391/1]&gt; Resample8  &lt;tibble [1 × 12]&gt;  1.77   
+##  9 &lt;split [391/1]&gt; Resample9  &lt;tibble [1 × 12]&gt; 15.3    
+## 10 &lt;split [391/1]&gt; Resample10 &lt;tibble [1 × 12]&gt; 24.2    
+## # … with 382 more rows
+```
+
+---
+
+# Holdout results
+
+
+```r
+loocv_data %&gt;%
+  summarize(mse = mean(mse))
+```
+
+```
+## # A tibble: 1 x 1
+##     mse
+##   &lt;dbl&gt;
+## 1  24.2
+```
+
+---
+
+# Compare polynomial terms
+
+&lt;img src="index_files/figure-html/loocv_poly-1.png" width="864" /&gt;
+
+---
+
+# LOOCV in classification
+
+
+```r
+# function to generate assessment statistics for titanic model
+holdout_results &lt;- function(splits) {
+  # Fit the model to the n-1
+  mod &lt;- glm(Survived ~ Age * Sex, data = analysis(splits),
+             family = binomial)
+  
+  # Save the heldout observation
+  holdout &lt;- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res &lt;- augment(mod, newdata = assessment(splits),
+                 type.predict = "response") %&gt;% 
+    mutate(pred = as.numeric(.fitted &gt; .5))
+
+  # Return the assessment data set with the additional columns
+  res
+}
+```
+
+---
+
+# LOOCV in classification
+
+
+```r
+titanic_loocv &lt;- loo_cv(titanic) %&gt;%
+  mutate(results = map(splits, holdout_results),
+         error_rate = map_dbl(results, ~ mean(.x$Survived != .x$pred,
+                                              na.rm = TRUE)))
+mean(titanic_loocv$error_rate, na.rm = TRUE)
+```
+
+```
+## [1] 0.219888
+```
+
+---
+
+# Exercise: LOOCV in linear regression
+
+.center[
+
+![](https://thealexcreed.files.wordpress.com/2014/05/liftbitch.jpg)
+
+]
+
+---
+
+# `\(k\)`-fold cross-validation
+
+`$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$`
+
+* Split data into `\(k\)` folds
+* Repeat training/test process for each fold
+* LOOCV: `\(k=n\)`
+
+---
+
+# `\(K\)`-fold CV in linear regression
+
+
+
+&lt;img src="index_files/figure-html/10_fold_auto_loocv-1.png" width="864" /&gt;
+
+---
+
+# Computational speed of LOOCV
+
+&lt;img src="index_files/figure-html/loocv-kfold-time-1.png" width="864" /&gt;
+
+---
+
+# `\(K\)`-fold CV in logistic regression
+
+
+```r
+# function to generate assessment statistics for titanic model
+holdout_results &lt;- function(splits) {
+  # Fit the model to the training set
+  mod &lt;- glm(Survived ~ Age * Sex, data = analysis(splits),
+             family = binomial)
+  
+  # Save the heldout observations
+  holdout &lt;- assessment(splits)
+  
+  # `augment` will save the predictions with the holdout data set
+  res &lt;- augment(mod, newdata = assessment(splits),
+                 type.predict = "response") %&gt;% 
+    mutate(pred = as.numeric(.fitted &gt; .5))
+
+  # Return the assessment data set with the additional columns
+  res
+}
+```
+
+---
+
+# `\(K\)`-fold CV in logistic regression
+
+
+```r
+titanic_cv10 &lt;- vfold_cv(data = titanic, v = 10) %&gt;%
+  mutate(results = map(splits, holdout_results),
+         error_rate = map_dbl(results, ~ mean(.x$Survived != .x$pred,
+                                              na.rm = TRUE)))
+mean(titanic_cv10$error_rate, na.rm = TRUE)
+```
+
+```
+## [1] 0.2208052
+```
+
+---
+
+# Exercise: `\(K\)`-fold CV
+
+.center[
+
+![](https://crossfitaggieland.com/wp-content/uploads/2015/01/pet4.jpeg)
+
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

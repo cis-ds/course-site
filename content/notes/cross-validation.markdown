@@ -284,14 +284,6 @@ We can use the same validation set approach to evaluate the model's accuracy. Fo
 
 
 ```r
-# function to convert log-odds to probabilities
-logit2prob <- function(x){
-  exp(x) / (1 + exp(x))
-}
-```
-
-
-```r
 # split the data into training and validation sets
 titanic_split <- initial_split(data = titanic, prop = 0.5)
 
@@ -331,10 +323,9 @@ summary(train_model)
 
 ```r
 # calculate predictions using validation set
-x_test_accuracy <- augment(train_model, newdata = testing(titanic_split)) %>% 
-  as_tibble() %>%
-  mutate(pred = logit2prob(.fitted),
-         pred = as.numeric(pred > .5))
+x_test_accuracy <- augment(train_model, newdata = testing(titanic_split),
+                           type.predict = "response") %>% 
+  mutate(pred = as.numeric(.fitted > .5))
 
 # calculate test error rate
 mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
@@ -377,7 +368,7 @@ There are two main problems with validation sets:
       ggplot(aes(terms, mse_test, color = id)) +
       geom_line() +
       labs(title = "Variability of MSE estimates",
-           subtitle = "Using the validation set approach",
+           subtitle = "10 independent training/validation sets",
            x = "Degree of Polynomial",
            y = "Mean Squared Error") +
       theme(legend.position = "none")
@@ -636,10 +627,9 @@ holdout_results <- function(splits) {
   holdout <- assessment(splits)
   
   # `augment` will save the predictions with the holdout data set
-  res <- augment(mod, newdata = assessment(splits)) %>% 
-    as_tibble() %>%
-    mutate(pred = logit2prob(.fitted),
-           pred = as.numeric(pred > .5))
+  res <- augment(mod, newdata = assessment(splits),
+                 type.predict = "response") %>% 
+    mutate(pred = as.numeric(.fitted > .5))
 
   # Return the assessment data set with the additional columns
   res
@@ -720,10 +710,9 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       holdout <- assessment(splits)
       
       # `augment` will save the predictions with the holdout data set
-      res <- augment(mod, newdata = assessment(splits)) %>% 
-        as_tibble() %>%
-        mutate(pred = logit2prob(.fitted),
-               pred = as.numeric(pred > .5))
+      res <- augment(mod, newdata = assessment(splits),
+                     type.predict = "response") %>% 
+        mutate(pred = as.numeric(.fitted > .5))
       
       # Return the assessment data set with the additional columns
       res
@@ -878,10 +867,9 @@ holdout_results <- function(splits) {
   holdout <- assessment(splits)
   
   # `augment` will save the predictions with the holdout data set
-  res <- augment(mod, newdata = assessment(splits)) %>% 
-    as_tibble() %>%
-    mutate(pred = logit2prob(.fitted),
-           pred = as.numeric(pred > .5))
+  res <- augment(mod, newdata = assessment(splits),
+                 type.predict = "response") %>% 
+    mutate(pred = as.numeric(.fitted > .5))
 
   # Return the assessment data set with the additional columns
   res
@@ -958,10 +946,9 @@ Not a large difference from the LOOCV approach, but it take much less time to co
       holdout <- assessment(splits)
       
       # `augment` will save the predictions with the holdout data set
-      res <- augment(mod, newdata = assessment(splits)) %>% 
-        as_tibble() %>%
-        mutate(pred = logit2prob(.fitted),
-               pred = as.numeric(pred > .5))
+      res <- augment(mod, newdata = assessment(splits),
+                     type.predict = "response") %>% 
+        mutate(pred = as.numeric(.fitted > .5))
       
       # Return the assessment data set with the additional columns
       res
@@ -1014,7 +1001,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-04-21                  
+##  date     2019-05-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        
@@ -1034,7 +1021,6 @@ devtools::session_info()
 ##  digest           0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
 ##  dplyr          * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
 ##  evaluate         0.13    2019-02-12 [2] CRAN (R 3.5.2)
-##  fansi            0.4.0   2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats        * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
 ##  fs               1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
 ##  generics         0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
@@ -1070,12 +1056,11 @@ devtools::session_info()
 ##  purrr          * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6               2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
 ##  rcfss          * 0.1.5   2019-04-17 [1] local         
-##  RColorBrewer     1.1-2   2014-12-07 [2] CRAN (R 3.5.0)
 ##  Rcpp             1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr          * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl           1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
 ##  remotes          2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-##  rlang            0.3.2   2019-03-21 [1] CRAN (R 3.5.3)
+##  rlang            0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown        1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot        1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  rsample        * 0.0.4   2019-01-07 [1] CRAN (R 3.5.2)
@@ -1092,7 +1077,6 @@ devtools::session_info()
 ##  tidyverse      * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
 ##  titanic        * 0.1.0   2015-08-31 [2] CRAN (R 3.5.0)
 ##  usethis          1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-##  utf8             1.1.4   2018-05-24 [2] CRAN (R 3.5.0)
 ##  withr            2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun             0.5     2019-02-20 [1] CRAN (R 3.5.2)
 ##  xml2             1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
