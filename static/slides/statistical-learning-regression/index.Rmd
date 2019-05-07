@@ -62,7 +62,9 @@ plot_ad +
   geom_smooth(method = "lm", se = FALSE)
 ```
 
-Why estimate $f$?
+---
+
+# Why estimate $f$?
 
 * Prediction
 * Inference
@@ -132,7 +134,10 @@ advertising %>%
   gather(method, spend, -Sales) %>%
   group_by(method) %>%
   nest() %>%
-  mutate(knn = map(data, ~ knn.reg(.x$spend, y = .x$Sales, k = 1)),
+  mutate(knn = map(data, ~ knn.reg(train = .x$spend,
+                                   y = .x$Sales,
+                                   test = data.frame(.x$spend),
+                                   k = 1)),
          pred = map(knn, ~ .x$pred)) %>%
   unnest(data, pred) %>%
   ggplot(aes(spend, Sales)) +
@@ -153,7 +158,10 @@ advertising %>%
   gather(method, spend, -Sales) %>%
   group_by(method) %>%
   nest() %>%
-  mutate(knn = map(data, ~ knn.reg(.x$spend, y = .x$Sales, k = 9)),
+  mutate(knn = map(data, ~ knn.reg(train = .x$spend,
+                                   y = .x$Sales,
+                                   test = data.frame(.x$spend),
+                                   k = 9)),
          pred = map(knn, ~ .x$pred)) %>%
   unnest(data, pred) %>%
   ggplot(aes(spend, Sales)) +
@@ -277,14 +285,11 @@ ggplot(gapminder, aes(year, lifeExp, group = country)) +
 
 ```{r lifeExp-mod, echo = FALSE}
 gapminder_mod <- lm(lifeExp ~ year, data = gapminder)
-summary(gapminder_mod)
 
 grid <- gapminder %>% 
   data_grid(year, country) 
-grid
 
 grid <- augment(gapminder_mod, newdata = grid) 
-grid
 
 ggplot(gapminder, aes(year, group = country)) +
   geom_line(aes(y = lifeExp), alpha = .2) +
