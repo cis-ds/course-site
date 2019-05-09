@@ -31,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: ""
+url_slides: "/slides/getting-data-from-the-web-api-access/"
 url_video: ""
 url_code: ""
 
