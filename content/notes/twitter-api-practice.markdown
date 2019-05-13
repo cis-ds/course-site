@@ -62,6 +62,8 @@ library(rtweet)
 
 ## OAuth authentication
 
+> According to the developer of `rtweet`, it is no longer necessary to obtain a developer account and create your own Twitter application to use Twitter's API. You do need a regular Twitter account, but should not have to follow the steps below unless your use of the API becomes excessive or you need additional functionality (such as the ability to create tweets).
+
 OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.
 
 ### Create a Twitter App
@@ -297,8 +299,6 @@ ts_plot(rt, by = "3 hours") +
 ## Exercise: Practice using `rtweet`
 
 1. Create a new R project on your computer. You can use Git or not - it is just for practice in class today
-1. Setup your API key with a Twitter app
-1. Authenticate using the `rtweet` package in R
 1. Find the 1000 most recent tweets by [Katy Perry](https://twitter.com/katyperry), [Kim Kardashian West](https://twitter.com/KimKardashian), and [Ariana Grande](https://twitter.com/ArianaGrande).
 1. Visualize their tweet frequency by week. Who posts most often? Who posts least often?
 
@@ -348,7 +348,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-05-07                  
+##  date     2019-05-13                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source                     
