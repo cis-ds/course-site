@@ -1,15 +1,13 @@
 ---
-title: "Geospatial visualization"
-date: 2019-05-20T13:30:00
+title: "Geospatial visualization: interactive maps"
+date: 2019-05-22T13:30:00
 publishDate: 2019-03-01T13:30:00
 draft: false
 type: "talk"
 
-aliases: ["/cm014.html"]
-
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-05-20T14:50:00
+time_end: 2019-05-22T14:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -17,7 +15,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Define spatial data frames, identify components of geospatial visualizations, and implement maps using ggplot2 and Leaflet."
+summary: "Customize static maps in ggplot and introduce Leaflet for interactive mapping."
 
 # Location of event.
 location: "Room 247, Saieh Hall for Economics, Chicago, IL"
@@ -39,25 +37,16 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
-* Introduce the major components of a geospatial visualization
-* Identify how to draw raster maps using `ggmaps` and `get_map()`
-* Define shapefiles and import spatial data using the `sf` package
-* Draw maps using `ggplot2` and `geom_sf()`
 * Change coordinate systems
 * Generate appropriate color palettes to visualize additional dimensions of data
 * Introduce interactive maps and the `leaflet` package
 
 ## Before class
 
-* Read [Introduction to geospatial visualization](/notes/intro-geospatial-viz/)
-* Read [Drawing raster maps with `ggmap`](/notes/raster-maps-with-ggmap/)
-* Read [Importing shapefiles using `sf`](/notes/simple-features/)
 * Read [Drawing vector maps with `ggplot2` and `sf`](/notes/vector-maps/)
 * Read [Selecting optimal color palettes](/notes/optimal-color-palettes/)
 * Read [Drawing interactive maps with `leaflet`](/notes/leaflet)

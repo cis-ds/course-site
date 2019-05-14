@@ -1,11 +1,11 @@
 ---
-title: "Geospatial visualization"
+title: "Geospatial visualization: raster and vector maps"
 date: 2019-05-20T13:30:00
 publishDate: 2019-03-01T13:30:00
 draft: false
 type: "talk"
 
-aliases: ["/cm014.html"]
+aliases: ["/cm014.html", "/syllabus/geospatial-visualization/"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -17,7 +17,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Define spatial data frames, identify components of geospatial visualizations, and implement maps using ggplot2 and Leaflet."
+summary: "Identify components of geospatial visualizations, define spatial data frames, and implement raster and vector maps using ggplot2."
 
 # Location of event.
 location: "Room 247, Saieh Hall for Economics, Chicago, IL"
@@ -47,9 +47,6 @@ math: false
 * Identify how to draw raster maps using `ggmaps` and `get_map()`
 * Define shapefiles and import spatial data using the `sf` package
 * Draw maps using `ggplot2` and `geom_sf()`
-* Change coordinate systems
-* Generate appropriate color palettes to visualize additional dimensions of data
-* Introduce interactive maps and the `leaflet` package
 
 ## Before class
 
@@ -57,13 +54,11 @@ math: false
 * Read [Drawing raster maps with `ggmap`](/notes/raster-maps-with-ggmap/)
 * Read [Importing shapefiles using `sf`](/notes/simple-features/)
 * Read [Drawing vector maps with `ggplot2` and `sf`](/notes/vector-maps/)
-* Read [Selecting optimal color palettes](/notes/optimal-color-palettes/)
-* Read [Drawing interactive maps with `leaflet`](/notes/leaflet)
 
 ## Class materials
 
+* [Practice drawing raster maps](/notes/raster-maps-practice/)
 * [Mapping data in *The Truthful Art* by Alberto Cairo](http://proquestcombo.safaribooksonline.com.proxy.uchicago.edu/book/databases-and-reporting-tools/9780133440492/part-iii-functional/ch10_html) - excellent chapter on designing data maps with lots of examples. Though really the entire book is useful if you do a lot of work with data visualizations of any type. **UChicago authentication required.**
 
 ## What you need to do
 
-* Work on [homework 7](/homework/geospatial-viz/)

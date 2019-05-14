@@ -63,3 +63,4 @@ math: false
 ## What you need to do
 
 * Start [homework 7](/homework/webdata/)
+* [Obtain an API key from the Census Bureau](https://api.census.gov/data/key_signup.html) - you will need access to their API next week for geospatial visualizations
