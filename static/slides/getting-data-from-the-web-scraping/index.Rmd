@@ -1,46 +1,56 @@
 ---
 title: "Getting data from the web: scraping"
-author: |
-  | MACS 30500
-  | University of Chicago
-output: rcfss::cfss_slides
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
 ---
 
-```{r setup, include = FALSE}
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
-                      warning = FALSE)
+                      warning = FALSE,
+                      fig.retina = 2, fig.width = 12)
 
 library(tidyverse)
 library(rvest)
 
 set.seed(1234)
+theme_set(theme_minimal(base_size = rcfss::base_size))
 ```
 
-## Web scraping
+# Web scraping
 
 * Data on a website with no API
 * Still want a programatic, reproducible way to obtain data
 * Ability to scrape depends on the quality of the website
 
-## HTML
+---
+
+# HTML
+
+.center[
 
 ![[tags](https://xkcd.com/1144/)](http://imgs.xkcd.com/comics/tags.png)
 
-## Process of HTML
+]
+
+---
+
+# Process of HTML
 
 1. The web browser sends a request to the server that hosts the website
 1. The server sends the browser an HTML document
 1. The browser uses instructions in the HTML to render the website
 
-## Components of HTML code
+---
+
+# Components of HTML code
 
 ```html
 <html>
   <head>
     <title>Title</title>
     <link rel="icon" type="icon" href="http://a" />
-    <link rel="icon" type="icon" href="http://b" />
     <script src="https://c.js"></script>
   </head>
   <body>
@@ -53,17 +63,15 @@ set.seed(1234)
         <td>Kristen</td>
         <td>Bell</td>
       </tr>
-      <tr>
-        <td>Idina</td>
-        <td>Menzel</td>
-      </tr>
     </table>
   <img src="http://ia.media-imdb.com/images.png"/>
   </body>
 </html>
 ```
 
-## Components of HTML code
+---
+
+# Components of HTML code
 
 ```html
 <a href="http://github.com">GitHub</a>
@@ -74,12 +82,13 @@ set.seed(1234)
 * `"http://github.com"` - attribute (value)
 * `GitHub` - content
 
-## Nested structure of HTML {.scrollable}
+---
+
+# Nested structure of HTML
 
 * `html`
     * `head`
         * `title`
-        * `link`
         * `link`
         * `script`
     * `body`
@@ -91,17 +100,15 @@ set.seed(1234)
             * `tr`
                 * `td`
                 * `td`
-            * `tr`
-                * `td`
-                * `td`
         * `img`
 
-## Find the content "here" {.scrollable}
+---
+
+# Find the content "here"
 
 * `html`
     * `head`
         * `title`
-        * `link`
         * `link`
         * `script`
     * `body`
@@ -113,28 +120,33 @@ set.seed(1234)
             * `tr`
                 * `td`
                 * `td`
-            * `tr`
-                * `td`
-                * `td`
         * `img`
 
-## Find the source code
+---
 
-![IMDB page for *Frozen*](../images/frozen_bell.png)
+# Find the source code
 
-## Find the source code
+.center[
 
-![HTML tag for "Kristen Bell"](../images/frozen_span.png)
+![scale: 50%](/img/frozen_bell.png)
 
-## HTML only
+]
 
-![HTML only](../images/shiny-css-none.png)
+---
 
-## HTML + CSS
+# HTML only
 
-![HTML + CSS](../images/shiny-css.png)
+![HTML only](/img/shiny-css-none.png)
 
-## CSS code
+---
+
+# HTML + CSS
+
+![HTML + CSS](/img/shiny-css.png)
+
+---
+
+# CSS code
 
 ```css
 span {
@@ -154,7 +166,9 @@ table.data {
 }
 ```
 
-## CSS code
+---
+
+# CSS code
 
 ```html
 <span class="bigname" id="shiny">Shiny</span>
@@ -164,7 +178,9 @@ table.data {
 * `bigname` - class (optional)
 * `shiny` - id (optional)
 
-## CSS selectors
+---
+
+# CSS selectors
 
 ```css
 span
@@ -182,7 +198,9 @@ span.bigname
 #shiny
 ```
 
-## CSS selectors
+---
+
+# CSS selectors
 
 Prefix | Matches
 -------|--------
@@ -192,21 +210,27 @@ none   | tag
 
 > [CSS diner](http://flukeout.github.io)
 
-## Find the CSS selector
+---
 
-![IMDB page for *Frozen*](../images/frozen_bell.png)
+# Find the CSS selector
 
-## Find the CSS selector
+.center[
 
-![](../images/frozen_css.png)
+![scale: 50%](/img/frozen_bell.png)
 
-## `rvest`
+]
+
+---
+
+# `rvest`
 
 1. Download the HTML and turn it into an XML file with `read_html()`
 1. Extract specific nodes with `html_nodes()`
 1. Extract content from nodes with various functions
 
-## Download the HTML
+---
+
+# Download the HTML
 
 ```{r frozen-dl}
 library(rvest)
@@ -214,31 +238,36 @@ frozen <- read_html("http://www.imdb.com/title/tt2294629/")
 frozen
 ```
 
-## Extract nodes
+---
+
+# Extract nodes
 
 ```{r frozen-nodes, dependson = "frozen-dl"}
 itals <- html_nodes(frozen, "em")
 itals
 ```
 
-## Extract content from nodes {.scrollable}
+---
 
-```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes")}
+# Extract content from nodes
+
+```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes"), collapse = TRUE}
 itals
 html_text(itals)
-html_name(itals)
-html_children(itals)
 html_attr(itals, "class")
-html_attrs(itals)
 ```
 
-## Extract content
+---
+
+# Extract content
 
 1. Read in the *Frozen* HTML
 1. Select the nodes that are both `a`s and `id = "titleCast"`
 1. Extract the text from the nodes
 
-## Extract content
+---
+
+# Extract content
 
 ```{r frozen-extract}
 library(rvest)
@@ -247,13 +276,17 @@ cast <- html_nodes(frozen, "#titleCast a")
 html_text(cast)
 ```
 
-## SelectorGadget
+---
+
+# SelectorGadget
 
 * GUI tool used to identify CSS selector combinations from a webpage
 1. Run `vignette("selectorgadget")`
 1. Drag **SelectorGadget** link into your browser's bookmark bar
 
-## Using SelectorGadget
+---
+
+# Using SelectorGadget
 
 1. Navigate to a webpage
 1. Open the SelectorGadget bookmark
@@ -263,23 +296,31 @@ html_text(cast)
 1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
 1. Copy the selector to use with `html_nodes()`
 
-## Practice using SelectorGadget
+---
+
+# Practice using SelectorGadget
 
 > Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
 
-## Practice using SelectorGadget
+---
+
+# Practice using SelectorGadget
 
 ```{r frozen-selectorgadget, dependson = "frozen-extract"}
-cast2 <- html_nodes(frozen, "td:nth-child(2) a")
+cast2 <- html_nodes(frozen, "#titleCast td:nth-child(2) a")
 html_text(cast2)
 ```
 
-## Practice scraping data
+---
+
+# Practice scraping data
 
 1. Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/)
 1. Extract it with `html_nodes()` and `html_text()`
 
-## Practice scraping data
+---
+
+# Practice scraping data
 
 ```{r sterling}
 sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
@@ -293,7 +334,9 @@ sterling %>%
   html_text()
 ```
 
-## Tables
+---
+
+# Tables
 
 ```{r sterling-table, dependson = "sterling"}
 tables <- html_nodes(sterling, css = "table")
@@ -305,13 +348,17 @@ tables %>%
   html_table(header = TRUE)
 ```
 
-## Extract climate statistics
+---
+
+# Extract climate statistics
 
 > Extract the climate statistics of your hometown as a data frame with useful column names
 
-## Extract climate statistics {.scrollable}
+---
 
-```{r sterling-climate}
+# Extract climate statistics
+
+```{r sterling-climate, collapse = TRUE}
 sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
 
 climate <- html_nodes(sterling_climate, css = "table")
@@ -323,8 +370,15 @@ sterling_climate %>%
   html_table(header = TRUE)
 ```
 
-## Random observations on scraping
+---
+
+# Random observations on scraping
 
 * Make sure you've obtained only what you want
 * If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking
 * Confirm that there is no R package and no API
+
+
+
+
+

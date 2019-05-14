@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Getting data from the web: scraping</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Getting data from the web: scraping
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+# Web scraping
+
+* Data on a website with no API
+* Still want a programatic, reproducible way to obtain data
+* Ability to scrape depends on the quality of the website
+
+---
+
+# HTML
+
+.center[
+
+![[tags](https://xkcd.com/1144/)](http://imgs.xkcd.com/comics/tags.png)
+
+]
+
+---
+
+# Process of HTML
+
+1. The web browser sends a request to the server that hosts the website
+1. The server sends the browser an HTML document
+1. The browser uses instructions in the HTML to render the website
+
+---
+
+# Components of HTML code
+
+```html
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Title&lt;/title&gt;
+    &lt;link rel="icon" type="icon" href="http://a" /&gt;
+    &lt;script src="https://c.js"&gt;&lt;/script&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div&gt;
+      &lt;p&gt;Click &lt;b&gt;here&lt;/b&gt; now.&lt;/p&gt;
+      &lt;span&gt;Frozen&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;table style="width:100%"&gt;
+      &lt;tr&gt;
+        &lt;td&gt;Kristen&lt;/td&gt;
+        &lt;td&gt;Bell&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;img src="http://ia.media-imdb.com/images.png"/&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+```
+
+---
+
+# Components of HTML code
+
+```html
+&lt;a href="http://github.com"&gt;GitHub&lt;/a&gt;
+```
+
+* `&lt;a&gt;&lt;/a&gt;` - tag name
+* `href` - attribute (name)
+* `"http://github.com"` - attribute (value)
+* `GitHub` - content
+
+---
+
+# Nested structure of HTML
+
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * `b`
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
+
+---
+
+# Find the content "here"
+
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * &lt;span style="color:red"&gt;**`b`**&lt;/span&gt;
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
+
+---
+
+# Find the source code
+
+.center[
+
+![scale: 50%](/img/frozen_bell.png)
+
+]
+
+---
+
+# HTML only
+
+![HTML only](/img/shiny-css-none.png)
+
+---
+
+# HTML + CSS
+
+![HTML + CSS](/img/shiny-css.png)
+
+---
+
+# CSS code
+
+```css
+span {
+  color: #ffffff;
+}
+
+.num {
+  color: #a8660d;
+}
+
+table.data {
+  width: auto;
+}
+
+#firstname {
+  background-color: yellow;
+}
+```
+
+---
+
+# CSS code
+
+```html
+&lt;span class="bigname" id="shiny"&gt;Shiny&lt;/span&gt;
+```
+
+* `&lt;span&gt;&lt;/span&gt;` - tag name
+* `bigname` - class (optional)
+* `shiny` - id (optional)
+
+---
+
+# CSS selectors
+
+```css
+span
+```
+
+```css
+.bigname
+```
+
+```css
+span.bigname
+```
+
+```css
+#shiny
+```
+
+---
+
+# CSS selectors
+
+Prefix | Matches
+-------|--------
+none   | tag
+.      | class
+#      | id
+
+&gt; [CSS diner](http://flukeout.github.io)
+
+---
+
+# Find the CSS selector
+
+.center[
+
+![scale: 50%](/img/frozen_bell.png)
+
+]
+
+---
+
+# `rvest`
+
+1. Download the HTML and turn it into an XML file with `read_html()`
+1. Extract specific nodes with `html_nodes()`
+1. Extract content from nodes with various functions
+
+---
+
+# Download the HTML
+
+
+```r
+library(rvest)
+frozen &lt;- read_html("http://www.imdb.com/title/tt2294629/")
+frozen
+```
+
+```
+## {xml_document}
+## &lt;html xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml"&gt;
+## [1] &lt;head&gt;\n&lt;meta http-equiv="Content-Type" content="text/html; charset= ...
+## [2] &lt;body id="styleguide-v2" class="fixed"&gt;\n\n            &lt;img height=" ...
+```
+
+---
+
+# Extract nodes
+
+
+```r
+itals &lt;- html_nodes(frozen, "em")
+itals
+```
+
+```
+## {xml_nodeset (1)}
+## [1] &lt;em class="nobr"&gt;Written by\n&lt;a href="/search/title?plot_author=DeAl ...
+```
+
+---
+
+# Extract content from nodes
+
+
+```r
+itals
+## {xml_nodeset (1)}
+## [1] &lt;em class="nobr"&gt;Written by\n&lt;a href="/search/title?plot_author=DeAl ...
+html_text(itals)
+## [1] "Written by\nDeAlan Wilson for ComedyE.com"
+html_attr(itals, "class")
+## [1] "nobr"
+```
+
+---
+
+# Extract content
+
+1. Read in the *Frozen* HTML
+1. Select the nodes that are both `a`s and `id = "titleCast"`
+1. Extract the text from the nodes
+
+---
+
+# Extract content
+
+
+```r
+library(rvest)
+frozen &lt;- read_html("http://www.imdb.com/title/tt2294629/")
+cast &lt;- html_nodes(frozen, "#titleCast a")
+html_text(cast)
+```
+
+```
+##  [1] "Edit"                                              
+##  [2] ""                                                  
+##  [3] " Kristen Bell\n"                                   
+##  [4] "Anna"                                              
+##  [5] ""                                                  
+##  [6] " Idina Menzel\n"                                   
+##  [7] "Elsa"                                              
+##  [8] ""                                                  
+##  [9] " Jonathan Groff\n"                                 
+## [10] "Kristoff"                                          
+## [11] ""                                                  
+## [12] " Josh Gad\n"                                       
+## [13] "Olaf"                                              
+## [14] ""                                                  
+## [15] " Santino Fontana\n"                                
+## [16] "Hans"                                              
+## [17] ""                                                  
+## [18] " Alan Tudyk\n"                                     
+## [19] "Duke"                                              
+## [20] ""                                                  
+## [21] " Ciarán Hinds\n"                                   
+## [22] "Pabbie"                                            
+## [23] "Grandpa"                                           
+## [24] ""                                                  
+## [25] " Chris Williams\n"                                 
+## [26] "Oaken"                                             
+## [27] ""                                                  
+## [28] " Stephen J. Anderson\n"                            
+## [29] ""                                                  
+## [30] " Maia Wilson\n"                                    
+## [31] "Bulda"                                             
+## [32] ""                                                  
+## [33] " Edie McClurg\n"                                   
+## [34] ""                                                  
+## [35] " Robert Pine\n"                                    
+## [36] ""                                                  
+## [37] " Maurice LaMarche\n"                               
+## [38] "King"                                              
+## [39] ""                                                  
+## [40] " Livvy Stubenrauch\n"                              
+## [41] "Young Anna"                                        
+## [42] ""                                                  
+## [43] " Eva Bella\n"                                      
+## [44] "Young Elsa"                                        
+## [45] "See full cast"                                     
+## [46] " \nView production, box office, &amp; company info\n\n"
+```
+
+---
+
+# SelectorGadget
+
+* GUI tool used to identify CSS selector combinations from a webpage
+1. Run `vignette("selectorgadget")`
+1. Drag **SelectorGadget** link into your browser's bookmark bar
+
+---
+
+# Using SelectorGadget
+
+1. Navigate to a webpage
+1. Open the SelectorGadget bookmark
+1. Click on the item to scrape
+1. Click on yellow items you do not want to scrape
+1. Click on additional items that you do want to scrape
+1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
+1. Copy the selector to use with `html_nodes()`
+
+---
+
+# Practice using SelectorGadget
+
+&gt; Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
+
+---
+
+# Practice using SelectorGadget
+
+
+```r
+cast2 &lt;- html_nodes(frozen, "#titleCast td:nth-child(2) a")
+html_text(cast2)
+```
+
+```
+##  [1] " Kristen Bell\n"        " Idina Menzel\n"       
+##  [3] " Jonathan Groff\n"      " Josh Gad\n"           
+##  [5] " Santino Fontana\n"     " Alan Tudyk\n"         
+##  [7] " Ciarán Hinds\n"        " Chris Williams\n"     
+##  [9] " Stephen J. Anderson\n" " Maia Wilson\n"        
+## [11] " Edie McClurg\n"        " Robert Pine\n"        
+## [13] " Maurice LaMarche\n"    " Livvy Stubenrauch\n"  
+## [15] " Eva Bella\n"
+```
+
+---
+
+# Practice scraping data
+
+1. Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/)
+1. Extract it with `html_nodes()` and `html_text()`
+
+---
+
+# Practice scraping data
+
+
+```r
+sterling &lt;- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
+
+col &lt;- html_nodes(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+html_text(col)
+```
+
+```
+## [1] "147.3"
+```
+
+```r
+# or use a piped operation
+sterling %&gt;%
+  html_nodes(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %&gt;%
+  html_text()
+```
+
+```
+## [1] "147.3"
+```
+
+---
+
+# Tables
+
+
+```r
+tables &lt;- html_nodes(sterling, css = "table")
+
+tables %&gt;%
+  # get the first table
+  nth(1) %&gt;%
+  # convert to data frame
+  html_table(header = TRUE)
+```
+
+```
+##     COST OF LIVING Sterling Virginia      USA
+## 1          Overall    147.3    113.8      100
+## 2          Grocery    105.3     98.8      100
+## 3           Health       94    101.5      100
+## 4          Housing    216.9    135.1      100
+## 5 Median Home Cost $402,900 $251,500 $219,700
+## 6        Utilities     98.6     99.3      100
+## 7   Transportation    141.4    115.5      100
+## 8    Miscellaneous    118.2    100.5      100
+```
+
+---
+
+# Extract climate statistics
+
+&gt; Extract the climate statistics of your hometown as a data frame with useful column names
+
+---
+
+# Extract climate statistics
+
+
+```r
+sterling_climate &lt;- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
+
+climate &lt;- html_nodes(sterling_climate, css = "table")
+html_table(climate, header = TRUE, fill = TRUE)[[1]]
+##                         CLIMATE Sterling, Virginia United States
+## 1                Rainfall (in.)               42.0          38.1
+## 2                Snowfall (in.)               21.5          27.8
+## 3            Precipitation Days              116.2         106.2
+## 4                    Sunny Days              197.0         205.0
+## 5                Avg. July High               85.8          85.8
+## 6                 Avg. Jan. Low               23.5          21.7
+## 7 Comfort Index (higher=better)               47.0          54.0
+## 8                      UV Index                4.0           4.3
+## 9                 Elevation ft.              292.0        2443.0
+
+sterling_climate %&gt;%
+  html_nodes(css = "table") %&gt;%
+  nth(1) %&gt;%
+  html_table(header = TRUE)
+##                         CLIMATE Sterling, Virginia United States
+## 1                Rainfall (in.)               42.0          38.1
+## 2                Snowfall (in.)               21.5          27.8
+## 3            Precipitation Days              116.2         106.2
+## 4                    Sunny Days              197.0         205.0
+## 5                Avg. July High               85.8          85.8
+## 6                 Avg. Jan. Low               23.5          21.7
+## 7 Comfort Index (higher=better)               47.0          54.0
+## 8                      UV Index                4.0           4.3
+## 9                 Elevation ft.              292.0        2443.0
+```
+
+---
+
+# Random observations on scraping
+
+* Make sure you've obtained only what you want
+* If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking
+* Confirm that there is no R package and no API
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

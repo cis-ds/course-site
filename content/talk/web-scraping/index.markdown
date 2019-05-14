@@ -31,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: ""
+url_slides: "/slides/getting-data-from-the-web-scraping/"
 url_video: ""
 url_code: ""
 
@@ -54,7 +54,6 @@ math: false
 ## Class materials
 
 * [Web scraping](/notes/web-scraping/)
-
 * `rvest`
     * Load the library (`library(rvest)`)
     * `demo("tripadvisor")` - scraping a Trip Advisor page
@@ -63,4 +62,4 @@ math: false
 
 ## What you need to do
 
-* Start [homework 8](/homework/webdata/)
+* Start [homework 7](/homework/webdata/)
