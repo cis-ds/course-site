@@ -222,8 +222,8 @@ Many APIs require you to register for access. This allows them to track which us
 
 There are a few things we need to do to be able to use this package to access the geonames API:
 
-1. go to [the geonames site](http://www.geonames.org/login/) and register an account. 
-2. click [here to enable the free web service](http://www.geonames.org/enablefreewebservice)
+1. Go to [the geonames site](http://www.geonames.org/login/) and register an account. 
+2. **Click [here to enable the free web service](http://www.geonames.org/enablefreewebservice)**
 3. Tell R your geonames username. You could run the line
 
 ``` r 
@@ -703,7 +703,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-05-17                  
+##  date     2019-05-19                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
@@ -760,7 +760,7 @@ devtools::session_info()
 ##  pkgload        1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
 ##  plyr           1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
 ##  prettyunits    1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
-##  processx       3.3.1   2019-05-08 [2] CRAN (R 3.5.2)
+##  processx       3.3.1   2019-05-08 [1] CRAN (R 3.5.2)
 ##  ps             1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  psych          1.8.12  2019-01-12 [2] CRAN (R 3.5.2)
 ##  purrr        * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
