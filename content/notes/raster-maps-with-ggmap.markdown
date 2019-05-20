@@ -31,7 +31,7 @@ theme_set(theme_minimal())
 
 [`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
 
-> Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. We will learn far more about APIs [next week](/notes/application-program-interface/). In the meantime, I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
+> Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
 
 ## Obtain map images
 
@@ -489,40 +489,40 @@ devtools::session_info()
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 3.5.3 (2019-03-11)
-##  os       macOS Mojave 10.14.3        
+##  os       macOS Mojave 10.14.5        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-05-14                  
+##  date     2019-05-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib
 ##  assertthat     0.2.1   2019-03-21 [2]
-##  backports      1.1.3   2018-12-14 [2]
+##  backports      1.1.4   2019-04-10 [2]
 ##  bitops         1.0-6   2013-08-17 [2]
-##  blogdown       0.11    2019-03-11 [1]
-##  bookdown       0.9     2018-12-21 [1]
-##  broom          0.5.1   2018-12-05 [2]
+##  blogdown       0.12    2019-05-01 [1]
+##  bookdown       0.10    2019-05-10 [1]
+##  broom          0.5.2   2019-04-07 [2]
 ##  callr          3.2.0   2019-03-15 [2]
 ##  cellranger     1.1.0   2016-07-27 [2]
 ##  cli            1.1.0   2019-03-19 [1]
 ##  colorspace     1.4-1   2019-03-18 [2]
 ##  crayon         1.3.4   2017-09-16 [2]
 ##  desc           1.2.0   2018-05-01 [2]
-##  devtools       2.0.1   2018-10-26 [1]
+##  devtools       2.0.2   2019-04-08 [1]
 ##  digest         0.6.18  2018-10-10 [1]
-##  dplyr        * 0.8.0.1 2019-02-15 [1]
+##  dplyr        * 0.8.1   2019-05-14 [1]
 ##  evaluate       0.13    2019-02-12 [2]
 ##  forcats      * 0.4.0   2019-02-17 [2]
-##  fs             1.2.7   2019-03-19 [1]
+##  fs             1.3.1   2019-05-06 [1]
 ##  generics       0.0.2   2018-11-29 [1]
 ##  ggmap        * 3.0.0   2019-02-04 [1]
-##  ggplot2      * 3.1.0   2018-10-25 [1]
+##  ggplot2      * 3.1.1   2019-04-07 [1]
 ##  glue           1.3.1   2019-03-12 [2]
-##  gtable         0.2.0   2016-02-26 [2]
+##  gtable         0.3.0   2019-03-25 [2]
 ##  haven          2.1.0   2019-02-19 [2]
 ##  here         * 0.1     2017-05-28 [2]
 ##  hms            0.4.2   2018-03-10 [2]
@@ -538,16 +538,16 @@ devtools::session_info()
 ##  memoise        1.1.0   2017-04-21 [2]
 ##  modelr         0.1.4   2019-02-18 [2]
 ##  munsell        0.5.0   2018-06-12 [2]
-##  nlme           3.1-137 2018-04-07 [2]
+##  nlme           3.1-140 2019-05-12 [2]
 ##  patchwork    * 0.0.1   2019-05-07 [1]
-##  pillar         1.3.1   2018-12-15 [2]
+##  pillar         1.4.0   2019-05-11 [2]
 ##  pkgbuild       1.0.3   2019-03-20 [1]
 ##  pkgconfig      2.0.2   2018-08-16 [2]
 ##  pkgload        1.0.2   2018-10-29 [1]
 ##  plyr           1.8.4   2016-06-08 [2]
 ##  png            0.1-7   2013-12-03 [2]
 ##  prettyunits    1.0.2   2015-07-13 [2]
-##  processx       3.3.0   2019-03-10 [2]
+##  processx       3.3.1   2019-05-08 [1]
 ##  ps             1.3.0   2018-12-21 [2]
 ##  purrr        * 0.3.2   2019-03-15 [2]
 ##  R6             2.4.0   2019-02-14 [1]
@@ -555,70 +555,70 @@ devtools::session_info()
 ##  Rcpp           1.0.1   2019-03-17 [1]
 ##  readr        * 1.3.1   2018-12-21 [2]
 ##  readxl         1.3.1   2019-03-13 [2]
-##  remotes        2.0.2   2018-10-30 [1]
+##  remotes        2.0.4   2019-04-10 [1]
 ##  RgoogleMaps    1.4.3   2018-11-07 [1]
 ##  rjson          0.2.20  2018-06-08 [1]
 ##  rlang          0.3.4   2019-04-07 [1]
 ##  rmarkdown      1.12    2019-03-14 [1]
 ##  rprojroot      1.3-2   2018-01-03 [2]
 ##  rstudioapi     0.10    2019-03-19 [1]
-##  rvest          0.3.2   2016-06-17 [2]
+##  rvest          0.3.4   2019-05-15 [2]
 ##  scales         1.0.0   2018-08-09 [1]
 ##  sessioninfo    1.1.1   2018-11-05 [1]
 ##  stringi        1.4.3   2019-03-12 [1]
 ##  stringr      * 1.4.0   2019-02-10 [1]
-##  testthat       2.0.1   2018-10-13 [2]
+##  testthat       2.1.1   2019-04-23 [2]
 ##  tibble       * 2.1.1   2019-03-16 [2]
 ##  tidyr        * 0.8.3   2019-03-01 [1]
 ##  tidyselect     0.2.5   2018-10-11 [1]
 ##  tidyverse    * 1.2.1   2017-11-14 [2]
-##  usethis        1.4.0   2018-08-14 [1]
+##  usethis        1.5.0   2019-04-07 [1]
 ##  withr          2.1.2   2018-03-15 [2]
-##  xfun           0.5     2019-02-20 [1]
+##  xfun           0.7     2019-05-14 [1]
 ##  xml2           1.2.0   2018-01-24 [2]
 ##  yaml           2.2.0   2018-07-25 [2]
 ##  source                              
 ##  CRAN (R 3.5.3)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.1)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.3)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.3)                      
+##  CRAN (R 3.5.2)                      
 ##  Github (thomasp85/patchwork@fd7958b)
-##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.3)                      
 ##  CRAN (R 3.5.1)                      
 ##  CRAN (R 3.5.0)                      
@@ -633,24 +633,24 @@ devtools::session_info()
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.3)                      
-##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
-##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.2)                      
+##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.0)                      
-##  CRAN (R 3.5.0)                      
+##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
 ##  CRAN (R 3.5.2)                      
 ##  CRAN (R 3.5.0)                      
