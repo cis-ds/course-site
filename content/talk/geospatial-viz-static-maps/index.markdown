@@ -60,7 +60,7 @@ math: false
 * [Practice drawing raster maps](/notes/raster-maps-practice/)
 * [Practice drawing vector maps](/notes/vector-maps-practice/)
 
-* [Mapping data in *The Truthful Art* by Alberto Cairo](http://proquestcombo.safaribooksonline.com.proxy.uchicago.edu/book/databases-and-reporting-tools/9780133440492/part-iii-functional/ch10_html) - excellent chapter on designing data maps with lots of examples. Though really the entire book is useful if you do a lot of work with data visualizations of any type. **UChicago authentication required.**
+* [Mapping data in *The Truthful Art* by Alberto Cairo](https://uchicago.ares.atlas-sys.com/ares/ares.dll?SessionID=A103809140M&Action=10&Type=10&Value=696335) - excellent chapter on designing data maps with lots of examples. Though really the entire book is useful if you do a lot of work with data visualizations of any type. **UChicago authentication required.**
 
 ## What you need to do
 
