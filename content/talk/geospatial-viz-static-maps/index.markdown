@@ -62,5 +62,9 @@ math: false
 
 * [Mapping data in *The Truthful Art* by Alberto Cairo](https://uchicago.ares.atlas-sys.com/ares/ares.dll?SessionID=A103809140M&Action=10&Type=10&Value=696335) - excellent chapter on designing data maps with lots of examples. Though really the entire book is useful if you do a lot of work with data visualizations of any type. **UChicago authentication required.**
 
+## Additional resources
+
+* [Learn Spatial Analysis](https://spatialanalysis.github.io/) - tutorials and workshops conducted by the Center for Spatial Data Science at the University of Chicago. Lots of materials developed using R.
+
 ## What you need to do
 
