@@ -40,6 +40,53 @@ There are [many popular file formats for storing spatial data.](https://en.wikip
 * `.dbf` stores data associated with the geographic features (e.g. unemployment rate, crime rates, percentage of votes cast for Donald Trump)
 * `.prj` stores information about the projection of the coordinates in the shapefile
 
+When importing a shapefile, you need to ensure all the files are in the same folder. For example, here is the structure of the [Census Bureau's 2013 state boundaries shapefile](https://www.census.gov/cgi-bin/geo/shapefiles/index.php):
+
+```{r twee, include = FALSE}
+# source: https://gist.github.com/jennybc/2bf1dbe6eb1f261dfe60
+
+## quick-and-dirty ersatz Unix tree command in R
+## inspired by this one-liner:
+## ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+## found here (among many other places):
+## http://serverfault.com/questions/143954/how-to-generate-an-ascii-representation-of-a-unix-file-hierarchy
+
+twee <- function(path = getwd(), level = Inf) {
+  fad <-
+    list.files(path = path, recursive = TRUE, no.. = TRUE, include.dirs = TRUE)
+
+  fad_split_up <- strsplit(fad, "/")
+
+  too_deep <- lapply(fad_split_up, length) > level
+  fad_split_up[too_deep] <- NULL
+
+  jfun <- function(x) {
+    n <- length(x)
+    if (n > 1) {
+      x[n - 1] <- "|__"
+    }
+    if (n > 2) {
+      x[1:(n - 2)] <- "   "
+    }
+    x <- if (n == 1) c("-- ", x) else c("   ", x)
+    x
+  }
+  fad_subbed_out <- lapply(fad_split_up, jfun)
+
+  cat(unlist(lapply(fad_subbed_out, paste, collapse = "")), sep = "\n")
+}
+```
+
+```{r shapefile-str, echo = FALSE}
+twee(path = here("static", "data", "census_bureau", "cb_2013_us_county_20m"))
+```
+
+**This is the complete shapefile.** If any of these files are missing, you will get an error importing your shapefile:
+
+```
+## Error in CPL_read_ogr(dsn, layer, query, as.character(options), quiet, : Open failed.
+```
+
 ## GeoJSON
 
 **GeoJSON** is a newer format for encoding a variety of geographical data structures using the **J**ava**S**cript **O**bject **N**otation (JSON) file format. JSON formatted data is frequently used in web development and services. We will explore it in more detail when we get to [collecting data from the web.](/notes/write-an-api-function/#intro-to-json-and-xml) An example of a GeoJSON file is below:
