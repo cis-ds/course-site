@@ -1,31 +1,30 @@
 ---
 title: "Text analysis: fundamentals and sentiment analysis"
-author: |
-  | MACS 30500
-  | University of Chicago
-output: rcfss::cfss_slides
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
 ---
 
-```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE)
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  echo = TRUE,
+  fig.retina = 2, fig.width = 12
+)
 
 library(tidyverse)
-library(lubridate)
-library(stringr)
 library(tidytext)
-library(broom)
 library(scales)
-library(wordcloud)
-library(reshape2)
-library(tidycensus)
+library(here)
+library(patchwork)
 
 set.seed(1234)
-theme_set(theme_minimal(base_size = 18))
+theme_set(theme_minimal(base_size = rcfss::base_size))
 ```
 
-## Basic workflow for text analysis
+# Basic workflow for text analysis
 
 * Obtain your text sources
 * Extract documents and move into a corpus
@@ -33,7 +32,9 @@ theme_set(theme_minimal(base_size = 18))
 * Extract features
 * Perform analysis
 
-## Obtain your text sources
+---
+
+# Obtain your text sources
 
 * Web sites
     * Twitter
@@ -41,12 +42,16 @@ theme_set(theme_minimal(base_size = 18))
 * PDF documents
 * Digital scans of printed materials
 
-## Extract documents and move into a corpus
+---
+
+# Extract documents and move into a corpus
 
 * Text corpus
 * Typically stores the text as a raw character string with metadata and details stored with the text
 
-## Transformation
+---
+
+# Transformation
 
 * Tag segments of speech for part-of-speech (nouns, verbs, adjectives, etc.) or entity recognition (person, place, company, etc.)
 * Standard text processing
@@ -57,15 +62,30 @@ theme_set(theme_minimal(base_size = 18))
     * Remove domain-specific stopwords
     * Stemming
 
-## Extract features
+---
+
+# Extract features
 
 * Convert the text string into some sort of quantifiable measures
 * Bag-of-words model
     * Term frequency vector
     * Term-document matrix
     * Ignores context
+* Word embeddings
 
-## Perform analysis
+---
+
+# Word embeddings
+
+.center[
+
+![](https://blogs.mathworks.com/images/loren/2017/vecs.png)
+
+]
+
+---
+
+# Perform analysis
 
 * Basic
     * Word frequency
@@ -73,46 +93,51 @@ theme_set(theme_minimal(base_size = 18))
     * Dictionary tagging
 * Advanced
     * Document classification
-        * Supervised
-        * Unsupervised
     * Corpora comparison
     * Topic modeling
 
-## [`tidytext`](https://github.com/juliasilge/tidytext)
+---
+
+# [`tidytext`](https://github.com/juliasilge/tidytext)
 
 * Tidy text format
 * Defined as one-term-per-row
 * Differs from the term-document matrix
     * One-document-per-row and one-term-per-column
 
-## Get text corpa
+---
+
+# Get text corpa
 
 ```{r janeausten-corpa}
 library(janeaustenr)
 
-books <- austen_books() %>%
-  group_by(book) %>%
-  mutate(linenumber = row_number(),
-         chapter = cumsum(str_detect(text,
-                                     regex("^chapter [\\divxlc]",
-                                           ignore_case = TRUE)))) %>%
-  ungroup()
-books
+(books <- austen_books() %>%
+    group_by(book) %>%
+    mutate(linenumber = row_number(),
+           chapter = cumsum(str_detect(text,
+                                       regex("^chapter [\\divxlc]",
+                                             ignore_case = TRUE)))) %>%
+    ungroup())
 ```
 
-## Tokenize text
+---
+
+# Tokenize text
 
 ```{r janeausten-token, dependson = "janeausten-corpa"}
-tidy_books <- books %>%
-  unnest_tokens(output = word, input = text)
-tidy_books
+(tidy_books <- books %>%
+   unnest_tokens(output = word, input = text))
 ```
 
-## Download population data for U.S. states
+---
+
+# Download population data for U.S. states
 
 ```{r acs-pop}
 # retrieve state populations in 2016 from Census Bureau
-pop_df <- read_csv("../data/pop2016.csv")
+pop_df <- here("static", "data", "pop2016.csv") %>%
+  read_csv()
 
 # do these results make sense?
 pop_df %>% 
@@ -120,48 +145,58 @@ pop_df %>%
   top_n(10)
 ```
 
-## Retrieve song lyrics
+---
+
+# Retrieve song lyrics
 
 ```{r lyrics-import}
-song_lyrics <- read_csv("../data/billboard_lyrics_1964-2015.csv")
+song_lyrics <- here("static", "data", "billboard_lyrics_1964-2015.csv") %>%
+  read_csv()
 glimpse(song_lyrics)
 ```
 
-----
+---
+
+# Retrieve song lyrics
+
+```{r lyrics-example, dependson = "lyrics-import", echo = FALSE}
+str_wrap(song_lyrics$Lyrics[[1]]) %>%
+  cat()
+```
+
+---
 
 > Use `tidytext` to create a data frame with one row for each token in each song
 
-## Use `tidytext` to create a data frame with one row for each token in each song {.scrollable}
+--
 
 ```{r lyrics-tidy}
-tidy_lyrics <- bind_rows(song_lyrics %>% 
-                           unnest_tokens(output = state_name,
-                                         input = Lyrics),
-                         song_lyrics %>% 
-                           unnest_tokens(output = state_name,
-                                         input = Lyrics, 
-                                         token = "ngrams", n = 2))
-tidy_lyrics
+(tidy_lyrics <- bind_rows(song_lyrics %>% 
+                            unnest_tokens(output = state_name,
+                                          input = Lyrics),
+                          song_lyrics %>% 
+                            unnest_tokens(output = state_name,
+                                          input = Lyrics, 
+                                          token = "ngrams", n = 2)))
 ```
 
-----
+---
 
 > Find all the state names occurring in the song lyrics
 
-## Find all the state names occurring in the song lyrics
+--
 
 ```{r lyrics-state-distinct}
-tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
-  distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE)
-tidy_lyrics
+(tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
+   distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE))
 ```
 
-----
+---
 
 > Calculate the frequency for each state's mention in a song and create a new column for the frequency adjusted by the state's population
 
-## Calculate the frequency for each state's mention in a song and create a new column for the frequency adjusted by the state's population {.scrollable}
-  
+--
+
 ```{r state-counts}
 (state_counts <- tidy_lyrics %>% 
    count(state_name) %>% 
@@ -178,80 +213,88 @@ pop_df %>%
   top_n(10)
 ```
 
-## Make a choropleth map for both the raw frequency counts and relative frequency counts {.scrollable}
+---
 
-```{r state-map, warning = FALSE}
+> Make a choropleth map for both the raw frequency counts and relative frequency counts
+
+```{r state-map, warning = FALSE, echo = FALSE}
 library(statebins)
 
-pop_df %>%
-  mutate(state_name = stringr::str_to_title(state_name),
-         state_name = if_else(state_name == "District Of Columbia",
-                              "District of Columbia", state_name)) %>%
-  statebins_continuous(state_col = "state_name", value_col = "n") +
-  labs(title = "Frequency of states mentioned in song lyrics",
-       subtitle = "Number of mentions") +
-  theme(legend.position = "bottom")
-
-pop_df %>%
-  mutate(state_name = stringr::str_to_title(state_name),
-         state_name = if_else(state_name == "District Of Columbia",
-                              "District of Columbia", state_name)) %>%
-  statebins_continuous(state_col = "state_name", value_col = "rate") +
-  labs(title = "Frequency of states mentioned in song lyrics",
-       subtitle = "Number of mentions per capita") +
-  theme(legend.position = "bottom")
+{
+  pop_df %>%
+    mutate(
+      state_name = stringr::str_to_title(state_name),
+      state_name = if_else(state_name == "District Of Columbia",
+        "District of Columbia", state_name
+      )
+    ) %>%
+    statebins_continuous(state_col = "state_name", value_col = "n") +
+    labs(
+      title = "Frequency of states mentioned in song lyrics",
+      subtitle = "Number of mentions"
+    ) +
+    theme(legend.position = "bottom")
+} + {
+  pop_df %>%
+    mutate(
+      state_name = stringr::str_to_title(state_name),
+      state_name = if_else(state_name == "District Of Columbia",
+        "District of Columbia", state_name
+      )
+    ) %>%
+    statebins_continuous(state_col = "state_name", value_col = "rate") +
+    labs(
+      title = "Frequency of states mentioned in song lyrics",
+      subtitle = "Number of mentions per capita"
+    ) +
+    theme(legend.position = "bottom")
+}
 ```
 
-## Sentiment analysis
+---
+
+# Sentiment analysis
 
 > I am happy
 
-## Dictionaries
+---
+
+# Dictionaries
 
 ```{r bing}
 get_sentiments("bing")
 ```
 
-## Dictionaries
+---
+
+# Dictionaries
 
 ```{r afinn}
 get_sentiments("afinn")
 ```
 
-## Dictionaries
+---
+
+# Dictionaries
 
 ```{r nrc}
 get_sentiments("nrc")
 ```
 
-## Dictionaries
+---
+
+# Dictionaries
 
 ```{r nrc-types}
 get_sentiments("nrc") %>%
   count(sentiment)
 ```
 
-## Calculate sentiment {.scrollable}
+---
 
-```{r janeausten-sentiment, dependson = c("janeausten-corpa", "janeausten-token")}
-tidy_books %>%
-  inner_join(get_sentiments("bing"))
+# Calculate sentiment
 
-tidy_books %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(book, index = linenumber %/% 80, sentiment)
-
-tidy_books %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(book, index = linenumber %/% 80, sentiment) %>%
-  spread(sentiment, n, fill = 0)
-
-tidy_books %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(book, index = linenumber %/% 80, sentiment) %>%
-  spread(sentiment, n, fill = 0) %>%
-  mutate(sentiment = positive - negative)
-
+```{r janeausten-sentiment, dependson = c("janeausten-corpa", "janeausten-token"), echo = FALSE}
 janeaustensentiment <- tidy_books %>%
   inner_join(get_sentiments("bing")) %>%
   count(book, index = linenumber %/% 80, sentiment) %>%
@@ -264,7 +307,9 @@ ggplot(janeaustensentiment, aes(index, sentiment, fill = book)) +
         facet_wrap( ~ book, ncol = 2, scales = "free_x")
 ```
 
-## Load Harry Potter text
+---
+
+# Load Harry Potter text
 
 ```{r hp, echo = FALSE}
 library(harrypotter)
@@ -302,9 +347,11 @@ hp_words <- list(
 hp_words
 ```
 
-## Most frequent words, by book {.scrollable}
+---
 
-```{r word-freq, echo = FALSE, fig.asp = 1.5}
+# Most frequent words, by book
+
+```{r word-freq, echo = FALSE}
 hp_words %>%
   # delete stopwords
   anti_join(stop_words) %>%
@@ -335,6 +382,8 @@ hp_words %>%
         axis.text.y = element_blank())
 ```
 
-## Exercises
+---
+
+# Exercises
 
 ![](https://img.cinemablend.com/filter:scale/quill/b/b/f/b/3/c/bbfb3c1ed393ec47b44de8709af71c8589cfa1db.jpg?mw=600)

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Text analysis: fundamentals and sentiment analysis</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Text analysis: fundamentals and sentiment analysis
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+# Basic workflow for text analysis
+
+* Obtain your text sources
+* Extract documents and move into a corpus
+* Transformation
+* Extract features
+* Perform analysis
+
+---
+
+# Obtain your text sources
+
+* Web sites
+    * Twitter
+* Databases
+* PDF documents
+* Digital scans of printed materials
+
+---
+
+# Extract documents and move into a corpus
+
+* Text corpus
+* Typically stores the text as a raw character string with metadata and details stored with the text
+
+---
+
+# Transformation
+
+* Tag segments of speech for part-of-speech (nouns, verbs, adjectives, etc.) or entity recognition (person, place, company, etc.)
+* Standard text processing
+    * Convert to lower case
+    * Remove punctuation
+    * Remove numbers
+    * Remove stopwords
+    * Remove domain-specific stopwords
+    * Stemming
+
+---
+
+# Extract features
+
+* Convert the text string into some sort of quantifiable measures
+* Bag-of-words model
+    * Term frequency vector
+    * Term-document matrix
+    * Ignores context
+* Word embeddings
+
+---
+
+# Word embeddings
+
+.center[
+
+![](https://blogs.mathworks.com/images/loren/2017/vecs.png)
+
+]
+
+---
+
+# Perform analysis
+
+* Basic
+    * Word frequency
+    * Collocation
+    * Dictionary tagging
+* Advanced
+    * Document classification
+    * Corpora comparison
+    * Topic modeling
+
+---
+
+# [`tidytext`](https://github.com/juliasilge/tidytext)
+
+* Tidy text format
+* Defined as one-term-per-row
+* Differs from the term-document matrix
+    * One-document-per-row and one-term-per-column
+
+---
+
+# Get text corpa
+
+
+```r
+library(janeaustenr)
+
+(books &lt;- austen_books() %&gt;%
+    group_by(book) %&gt;%
+    mutate(linenumber = row_number(),
+           chapter = cumsum(str_detect(text,
+                                       regex("^chapter [\\divxlc]",
+                                             ignore_case = TRUE)))) %&gt;%
+    ungroup())
+```
+
+```
+## # A tibble: 73,422 x 4
+##    text                  book                linenumber chapter
+##    &lt;chr&gt;                 &lt;fct&gt;                    &lt;int&gt;   &lt;int&gt;
+##  1 SENSE AND SENSIBILITY Sense &amp; Sensibility          1       0
+##  2 ""                    Sense &amp; Sensibility          2       0
+##  3 by Jane Austen        Sense &amp; Sensibility          3       0
+##  4 ""                    Sense &amp; Sensibility          4       0
+##  5 (1811)                Sense &amp; Sensibility          5       0
+##  6 ""                    Sense &amp; Sensibility          6       0
+##  7 ""                    Sense &amp; Sensibility          7       0
+##  8 ""                    Sense &amp; Sensibility          8       0
+##  9 ""                    Sense &amp; Sensibility          9       0
+## 10 CHAPTER 1             Sense &amp; Sensibility         10       1
+## # … with 73,412 more rows
+```
+
+---
+
+# Tokenize text
+
+
+```r
+(tidy_books &lt;- books %&gt;%
+   unnest_tokens(output = word, input = text))
+```
+
+```
+## # A tibble: 725,055 x 4
+##    book                linenumber chapter word       
+##    &lt;fct&gt;                    &lt;int&gt;   &lt;int&gt; &lt;chr&gt;      
+##  1 Sense &amp; Sensibility          1       0 sense      
+##  2 Sense &amp; Sensibility          1       0 and        
+##  3 Sense &amp; Sensibility          1       0 sensibility
+##  4 Sense &amp; Sensibility          3       0 by         
+##  5 Sense &amp; Sensibility          3       0 jane       
+##  6 Sense &amp; Sensibility          3       0 austen     
+##  7 Sense &amp; Sensibility          5       0 1811       
+##  8 Sense &amp; Sensibility         10       1 chapter    
+##  9 Sense &amp; Sensibility         10       1 1          
+## 10 Sense &amp; Sensibility         13       1 the        
+## # … with 725,045 more rows
+```
+
+---
+
+# Download population data for U.S. states
+
+
+```r
+# retrieve state populations in 2016 from Census Bureau
+pop_df &lt;- here("static", "data", "pop2016.csv") %&gt;%
+  read_csv()
+
+# do these results make sense?
+pop_df %&gt;% 
+  arrange(desc(population)) %&gt;%
+  top_n(10)
+```
+
+```
+## # A tibble: 10 x 3
+##    GEOID state_name     population
+##    &lt;chr&gt; &lt;chr&gt;               &lt;dbl&gt;
+##  1 06    california       38654206
+##  2 48    texas            26956435
+##  3 12    florida          19934451
+##  4 36    new york         19697457
+##  5 17    illinois         12851684
+##  6 42    pennsylvania     12783977
+##  7 39    ohio             11586941
+##  8 13    georgia          10099320
+##  9 37    north carolina    9940828
+## 10 26    michigan          9909600
+```
+
+---
+
+# Retrieve song lyrics
+
+
+```r
+song_lyrics &lt;- here("static", "data", "billboard_lyrics_1964-2015.csv") %&gt;%
+  read_csv()
+glimpse(song_lyrics)
+```
+
+```
+## Observations: 5,100
+## Variables: 6
+## $ Rank   &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17…
+## $ Song   &lt;chr&gt; "wooly bully", "i cant help myself sugar pie honey bunch"…
+## $ Artist &lt;chr&gt; "sam the sham and the pharaohs", "four tops", "the rollin…
+## $ Year   &lt;dbl&gt; 1965, 1965, 1965, 1965, 1965, 1965, 1965, 1965, 1965, 196…
+## $ Lyrics &lt;chr&gt; "sam the sham miscellaneous wooly bully wooly bully sam t…
+## $ Source &lt;dbl&gt; 3, 1, 1, 1, 1, 1, 3, 5, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, …
+```
+
+---
+
+# Retrieve song lyrics
+
+
+```
+## sam the sham miscellaneous wooly bully wooly bully sam the sham the pharaohs
+## domingo samudio uno dos one two tres quatro matty told hatty about a thing she
+## saw had two big horns and a wooly jaw wooly bully wooly bully wooly bully wooly
+## bully wooly bully hatty told matty lets dont take no chance lets not belseven
+## come and learn to dance wooly bully wooly bully wooly bully wooly bully wooly
+## bully matty told hatty thats the thing to do get you someone really to pull the
+## wool with you wooly bully wooly bully wooly bully wooly bully wooly bully lseven
+## the letter l and the number 7 when typed they form a rough square l7 so the
+## lyrics mean lets not be square
+```
+
+---
+
+&gt; Use `tidytext` to create a data frame with one row for each token in each song
+
+--
+
+
+```r
+(tidy_lyrics &lt;- bind_rows(song_lyrics %&gt;% 
+                            unnest_tokens(output = state_name,
+                                          input = Lyrics),
+                          song_lyrics %&gt;% 
+                            unnest_tokens(output = state_name,
+                                          input = Lyrics, 
+                                          token = "ngrams", n = 2)))
+```
+
+```
+## # A tibble: 3,201,465 x 6
+##     Rank Song        Artist                        Year Source state_name  
+##    &lt;dbl&gt; &lt;chr&gt;       &lt;chr&gt;                        &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;       
+##  1     1 wooly bully sam the sham and the pharao…  1965      3 sam         
+##  2     1 wooly bully sam the sham and the pharao…  1965      3 the         
+##  3     1 wooly bully sam the sham and the pharao…  1965      3 sham        
+##  4     1 wooly bully sam the sham and the pharao…  1965      3 miscellaneo…
+##  5     1 wooly bully sam the sham and the pharao…  1965      3 wooly       
+##  6     1 wooly bully sam the sham and the pharao…  1965      3 bully       
+##  7     1 wooly bully sam the sham and the pharao…  1965      3 wooly       
+##  8     1 wooly bully sam the sham and the pharao…  1965      3 bully       
+##  9     1 wooly bully sam the sham and the pharao…  1965      3 sam         
+## 10     1 wooly bully sam the sham and the pharao…  1965      3 the         
+## # … with 3,201,455 more rows
+```
+
+---
+
+&gt; Find all the state names occurring in the song lyrics
+
+--
+
+
+```r
+(tidy_lyrics &lt;- inner_join(tidy_lyrics, pop_df) %&gt;%
+   distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE))
+```
+
+```
+## # A tibble: 253 x 8
+##     Rank Song         Artist        Year Source state_name GEOID population
+##    &lt;dbl&gt; &lt;chr&gt;        &lt;chr&gt;        &lt;dbl&gt;  &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;      &lt;dbl&gt;
+##  1    12 king of the… roger miller  1965      1 maine      23       1329923
+##  2    29 eve of dest… barry mcgui…  1965      1 alabama    01       4841164
+##  3    49 california … the beach b…  1965      3 california 06      38654206
+##  4    10 california … the mamas  …  1966      3 california 06      38654206
+##  5    77 message to … dionne warw…  1966      1 kentucky   21       4411989
+##  6    61 california … lesley gore   1967      1 california 06      38654206
+##  7     4 sittin on t… otis redding  1968      1 georgia    13      10099320
+##  8    10 tighten up   archie bell…  1968      3 texas      48      26956435
+##  9    25 get back     the beatles…  1969      3 arizona    04       6728577
+## 10    25 get back     the beatles…  1969      3 california 06      38654206
+## # … with 243 more rows
+```
+
+---
+
+&gt; Calculate the frequency for each state's mention in a song and create a new column for the frequency adjusted by the state's population
+
+--
+
+
+```r
+(state_counts &lt;- tidy_lyrics %&gt;% 
+   count(state_name) %&gt;% 
+   arrange(desc(n)))
+```
+
+```
+## # A tibble: 33 x 2
+##    state_name      n
+##    &lt;chr&gt;       &lt;int&gt;
+##  1 new york       64
+##  2 california     34
+##  3 georgia        22
+##  4 tennessee      14
+##  5 texas          14
+##  6 alabama        12
+##  7 mississippi    10
+##  8 kentucky        7
+##  9 hawaii          6
+## 10 illinois        6
+## # … with 23 more rows
+```
+
+
+```r
+pop_df &lt;- pop_df %&gt;% 
+  left_join(state_counts) %&gt;% 
+  mutate(rate = n / population * 1e6)
+
+pop_df %&gt;%
+  arrange(desc(rate)) %&gt;%
+  top_n(10)
+```
+
+```
+## # A tibble: 10 x 5
+##    GEOID state_name  population     n  rate
+##    &lt;chr&gt; &lt;chr&gt;            &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt;
+##  1 15    hawaii         1413673     6  4.24
+##  2 28    mississippi    2989192    10  3.35
+##  3 36    new york      19697457    64  3.25
+##  4 01    alabama        4841164    12  2.48
+##  5 23    maine          1329923     3  2.26
+##  6 13    georgia       10099320    22  2.18
+##  7 47    tennessee      6548009    14  2.14
+##  8 30    montana        1023391     2  1.95
+##  9 31    nebraska       1881259     3  1.59
+## 10 21    kentucky       4411989     7  1.59
+```
+
+---
+
+&gt; Make a choropleth map for both the raw frequency counts and relative frequency counts
+
+&lt;img src="index_files/figure-html/state-map-1.png" width="864" /&gt;
+
+---
+
+# Sentiment analysis
+
+&gt; I am happy
+
+---
+
+# Dictionaries
+
+
+```r
+get_sentiments("bing")
+```
+
+```
+## # A tibble: 6,788 x 2
+##    word        sentiment
+##    &lt;chr&gt;       &lt;chr&gt;    
+##  1 2-faced     negative 
+##  2 2-faces     negative 
+##  3 a+          positive 
+##  4 abnormal    negative 
+##  5 abolish     negative 
+##  6 abominable  negative 
+##  7 abominably  negative 
+##  8 abominate   negative 
+##  9 abomination negative 
+## 10 abort       negative 
+## # … with 6,778 more rows
+```
+
+---
+
+# Dictionaries
+
+
+```r
+get_sentiments("afinn")
+```
+
+```
+## # A tibble: 2,476 x 2
+##    word       score
+##    &lt;chr&gt;      &lt;int&gt;
+##  1 abandon       -2
+##  2 abandoned     -2
+##  3 abandons      -2
+##  4 abducted      -2
+##  5 abduction     -2
+##  6 abductions    -2
+##  7 abhor         -3
+##  8 abhorred      -3
+##  9 abhorrent     -3
+## 10 abhors        -3
+## # … with 2,466 more rows
+```
+
+---
+
+# Dictionaries
+
+
+```r
+get_sentiments("nrc")
+```
+
+```
+## # A tibble: 13,901 x 2
+##    word        sentiment
+##    &lt;chr&gt;       &lt;chr&gt;    
+##  1 abacus      trust    
+##  2 abandon     fear     
+##  3 abandon     negative 
+##  4 abandon     sadness  
+##  5 abandoned   anger    
+##  6 abandoned   fear     
+##  7 abandoned   negative 
+##  8 abandoned   sadness  
+##  9 abandonment anger    
+## 10 abandonment fear     
+## # … with 13,891 more rows
+```
+
+---
+
+# Dictionaries
+
+
+```r
+get_sentiments("nrc") %&gt;%
+  count(sentiment)
+```
+
+```
+## # A tibble: 10 x 2
+##    sentiment        n
+##    &lt;chr&gt;        &lt;int&gt;
+##  1 anger         1247
+##  2 anticipation   839
+##  3 disgust       1058
+##  4 fear          1476
+##  5 joy            689
+##  6 negative      3324
+##  7 positive      2312
+##  8 sadness       1191
+##  9 surprise       534
+## 10 trust         1231
+```
+
+---
+
+# Calculate sentiment
+
+&lt;img src="index_files/figure-html/janeausten-sentiment-1.png" width="864" /&gt;
+
+---
+
+# Load Harry Potter text
+
+
+```
+## # A tibble: 1,089,386 x 3
+## # Groups:   book [7]
+##    book               chapter word   
+##    &lt;fct&gt;                &lt;int&gt; &lt;chr&gt;  
+##  1 philosophers_stone       1 the    
+##  2 philosophers_stone       1 boy    
+##  3 philosophers_stone       1 who    
+##  4 philosophers_stone       1 lived  
+##  5 philosophers_stone       1 mr     
+##  6 philosophers_stone       1 and    
+##  7 philosophers_stone       1 mrs    
+##  8 philosophers_stone       1 dursley
+##  9 philosophers_stone       1 of     
+## 10 philosophers_stone       1 number 
+## # … with 1,089,376 more rows
+```
+
+---
+
+# Most frequent words, by book
+
+&lt;img src="index_files/figure-html/word-freq-1.png" width="864" /&gt;
+
+---
+
+# Exercises
+
+![](https://img.cinemablend.com/filter:scale/quill/b/b/f/b/3/c/bbfb3c1ed393ec47b44de8709af71c8589cfa1db.jpg?mw=600)
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
