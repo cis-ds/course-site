@@ -20,10 +20,12 @@ knitr::opts_chunk$set(cache = TRUE)
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
-library(gutenbergr)
 library(tidytext)
 library(topicmodels)
 library(here)
+library(rjson)
+library(tm)
+library(tictoc)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -93,88 +95,103 @@ So the document generated under the LDA model will be "broccoli panda adorable c
 
 ## LDA with a known topic structure
 
-LDA can be useful if the topic structure of a set of documents is known **a priori**. For instance, suppose you have four books:
+LDA can be useful if the topic structure of a set of documents is known **a priori**. For instance, consider the `USCongress` dataset of legislation introduced in the U.S. Congress from the `RTextTools` package.
 
-* *Great Expectations* by Charles Dickens
-* *The War of the Worlds* by H.G. Wells
-* *Twenty Thousand Leagues Under the Sea* by Jules Verne
-* *Pride and Prejudice* by Jane Austen
+```{r get-docs}
+# get USCongress data
+data(USCongress, package = "RTextTools")
 
-A vandal has broken into your home and torn the books into individual chapters, and left them in one large pile. We can use LDA and topic modeling to discover how the chapters relate to distinct topics (i.e. books).
+# topic labels
+major_topics <- tibble(
+  major = c(1:10, 12:21, 99),
+  label = c("Macroeconomics", "Civil rights, minority issues, civil liberties",
+            "Health", "Agriculture", "Labor and employment", "Education", "Environment",
+            "Energy", "Immigration", "Transportation", "Law, crime, family issues",
+            "Social welfare", "Community development and housing issues",
+            "Banking, finance, and domestic commerce", "Defense",
+            "Space, technology, and communications", "Foreign trade",
+            "International affairs and foreign aid", "Government operations",
+            "Public lands and water management", "Other, miscellaneous")
+) %>%
+  mutate(label = factor(major, levels = major, labels = label))
 
-We'll retrieve these four books using the `gutenbergr` package:
-
-```{r topic_books}
-titles <- c("Twenty Thousand Leagues under the Sea", "The War of the Worlds",
-            "Pride and Prejudice", "Great Expectations")
-
-library(gutenbergr)
-
-books <- gutenberg_works(title %in% titles) %>%
-  gutenberg_download(meta_fields = "title", mirror = "ftp://aleph.gutenberg.org/")
+congress <- as_tibble(USCongress) %>%
+  mutate(text = as.character(text)) %>%
+  left_join(major_topics)
+glimpse(congress)
 ```
 
-As pre-processing, we divide these into chapters, use `unnest_tokens()` from `tidytext` to separate them into words, then remove stop words. We are treating every chapter as a separate "document", each with a name like `Great Expectations_1` or `Pride and Prejudice_11`.
+[Previously](/notes/supervised-text-classification/), we assumed the documents were structured based on their policy content under [the structure](https://www.comparativeagendas.net/pages/master-codebook):
 
-```{r word_counts, dependson = "topic_books"}
-library(tidytext)
-library(stringr)
+```{r major-topics, dependson = "get-docs"}
+major_topics %>%
+  knitr::kable(col.names = c("Topic code", "Policy topic"))
+```
 
-by_chapter <- books %>%
-  group_by(title) %>%
-  mutate(chapter = cumsum(str_detect(text, regex("^chapter ", ignore_case = TRUE)))) %>%
-  ungroup() %>%
-  filter(chapter > 0)
+We can use LDA and topic modeling to discover whether the documents map onto this topic structure without any assumptions about the structure. That is, using just the text **what is the revealed topic structure**?
 
-by_chapter_word <- by_chapter %>%
-  unite(title_chapter, title, chapter) %>%
-  unnest_tokens(word, text)
+As-preprocessing, we use `unnest_tokens()` from `tidytext` to separate them into words, filter out tokens which are purely numbers, remove stop words, and stem each token to its root form.
 
-word_counts <- by_chapter_word %>%
+```{r convert-tidytext, dependson = "get-docs"}
+congress_tokens <- congress %>%
+  unnest_tokens(output = word, input = text) %>%
+  # remove numbers
+  filter(!str_detect(word, "^[0-9]*$")) %>%
+  # remove stop words
   anti_join(stop_words) %>%
-  count(title_chapter, word, sort = TRUE) %>%
-  ungroup()
-
-word_counts
+  # stem the words
+  mutate(word = SnowballC::wordStem(word))
+congress_tokens
 ```
 
 ## Latent Dirichlet allocation with the `topicmodels` package
 
-Right now this data frame is in a tidy form, with one-term-per-document-per-row. However, the `topicmodels` package requires a `DocumentTermMatrix` (from the `tm` package). We can cast a one-token-per-row table into a `DocumentTermMatrix` with `cast_dtm()`:
+Right now this data frame is in a tidy form, with one-term-per-document-per-row. However, the `topicmodels` package requires a `DocumentTermMatrix` (from the `tm` package). We can cast a one-token-per-row table into a `DocumentTermMatrix` with `cast_dtm()`:^[In the process, we also remove tokens which are relatively uninformative based on their [tf-idf scores](https://www.tidytextmining.com/tfidf.html). Otherwise our LDA model will take forever to estimate due to the vast number of unique tokens.]
 
-```{r chapters_dtm}
-chapters_dtm <- word_counts %>%
-  cast_dtm(title_chapter, word, n)
+```{r dtm, dependson = "convert-tidytext"}
+# remove terms with low tf-idf for future LDA model
+congress_tokens_lite <- congress_tokens %>%
+  count(major, word) %>%
+  bind_tf_idf(term = word, document = major, n = n) %>%
+  group_by(major) %>%
+  top_n(40, wt = tf_idf) %>%
+  ungroup %>%
+  count(word) %>%
+  select(-n) %>%
+  left_join(congress_tokens)
 
-chapters_dtm
+congress_dtm <- congress_tokens_lite %>%
+  # get count of each token in each document
+  count(ID, word) %>%
+  # create a document-term matrix with all features and tf weighting
+  cast_dtm(document = ID, term = word, value = n)
+congress_dtm
 ```
 
-Now we are ready to use the [`topicmodels`](https://cran.r-project.org/package=topicmodels) package to create a four topic LDA model.
+Now we are ready to use the [`topicmodels`](https://cran.r-project.org/package=topicmodels) package to create a twenty topic LDA model.
 
-```{r chapters_lda}
+```{r congress-lda, dependson = "dtm"}
 library(topicmodels)
-chapters_lda <- LDA(chapters_dtm, k = 4, control = list(seed = 1234))
-chapters_lda
+congress_lda <- LDA(congress_dtm, k = 20, control = list(seed = 123))
+congress_lda
 ```
 
-* In this case we know there are four topics because there are four books; this is the value of knowing the latent topic structure.
-* `seed = 1234` sets the starting point for the random iteration process. If we don't set a consistent seed, each time we run the script we may estimate slightly different models.
+* In this case we know there are approximately twenty topics because there are twenty major policy codes; this is the value of knowing (or assuming) the latent topic structure.
+* `seed = 123` sets the starting point for the random iteration process. If we don't set a consistent seed, each time we run the script we may estimate slightly different models.
 
 Now `tidytext` gives us the option of **returning** to a tidy analysis, using the `tidy()` and `augment()` verbs borrowed from the [`broom` package](https://github.com/dgrtwo/broom). In particular, we start with the `tidy()` verb.
 
-```{r chapters_lda_td}
-library(tidytext)
-
-chapters_lda_td <- tidy(chapters_lda)
-chapters_lda_td
+```{r congress-lda-td, dependson = "congress-lda"}
+congress_lda_td <- tidy(congress_lda)
+congress_lda_td
 ```
 
 Notice that this has turned the model into a one-topic-per-term-per-row format. For each combination the model has **beta** ($\beta$), the probability of that term being generated from that topic.
 
 We could use `top_n()` from `dplyr` to find the top 5 terms within each topic:
 
-```{r top_terms}
-top_terms <- chapters_lda_td %>%
+```{r top-terms, dependson = "congress-lda-td"}
+top_terms <- congress_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -184,162 +201,129 @@ top_terms
 
 This model lends itself to a visualization:
 
-```{r top_terms_plot, fig.height=6, fig.width=7}
+```{r top-terms-plot, dependson = "top-terms", fig.height = 8}
 top_terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
+  facet_wrap(~ topic, scales = "free", ncol = 4) +
   coord_flip()
 ```
 
-* These topics are pretty clearly associated with the four books:
-    * "nemo", "sea", and "nautilus" belongs to *Twenty Thousand Leagues Under the Sea*
-    * "jane", "darcy", and "elizabeth" belongs to *Pride and Prejudice*
-    * "pip" and "joe" from *Great Expectations*
-    * "martians", "black", and "night" from *The War of the Worlds*
-* Also note that `LDA()` does not assign any label to each topic. They are simply topics 1, 2, 3, and 4. We can infer these are associated with each book, **but it is merely our inference.**
+* Some of these topics are pretty clearly associated with some of the policy topics:
+    * "educ", "school", "secondari", "forc", "elementari" seem to be **Education**
+    * "health", "care", "insur", "medic", "coverag" seem to be **Health**
+    * "water", "park", "indian", "river", "tribe", seem to be **Public lands and water management**
+* Note that `LDA()` does not assign any label to each topic. They are simply topics 1, 2, 3, 4, etc. We can infer these are associated with each book, **but it is merely our inference.**
+* Other topics are less clear. For instance, topic 16 could also be a health care topic. And some of the policy topics are not visible at all. I don't see a clear **Space, technology, and communications** anywhere in the results.
 
 ## Per-document classification
 
-Each chapter was a "document" in this analysis. Thus, we may want to know which topics are associated with each document. Can we put the chapters back together in the correct books?
+Each bill was a "document" in this analysis. Thus, we may want to know which topics are associated with each bill. Using the topic distributions, can we classify each bill into its hand-coded policy topic?
 
-```{r chapters_lda_gamma_raw}
-chapters_lda_gamma <- tidy(chapters_lda, matrix = "gamma")
-chapters_lda_gamma
+```{r congress-lda-gamma-raw, dependson = "congress-lda"}
+congress_gamma <- tidy(congress_lda, matrix = "gamma")
+congress_gamma
 ```
 
-Setting `matrix = "gamma"` returns a tidied version with one-document-per-topic-per-row. Now that we have these document classifiations, we can see how well our unsupervised learning did at distinguishing the four books. First we re-separate the document name into title and chapter:
+Setting `matrix = "gamma"` returns a tidied version with one-document-per-topic-per-row. Now that we have these document classifiations, we can see how well our unsupervised learning did at distinguishing the policy topics.
 
-```{r chapters_lda_gamma}
-chapters_lda_gamma <- chapters_lda_gamma %>%
-  separate(document, c("title", "chapter"), sep = "_", convert = TRUE)
-chapters_lda_gamma
-```
-
-Then we examine what fraction of chapters we got right for each:
-
-```{r chapters_lda_gamma_plot, fig.width=8, fig.height=6}
-# reorder titles in order of topic 1, topic 2, etc before plotting
-chapters_lda_gamma %>%
-  mutate(title = reorder(title, gamma * topic)) %>%
+```{r congress-model-compare, dependson = "uscongress-gamma"}
+congress_tokens_lite %>%
+  mutate(document = as.character(row_number())) %>%
+  # join with the gamma values
+  left_join(congress_gamma) %>%
+  # remove missing values
+  na.omit() %>%
+  group_by(topic, major, label) %>%
+  summarize(gamma = median(gamma)) %>%
+  # plot the topic distributions for each policy topic
   ggplot(aes(factor(topic), gamma)) +
-  geom_boxplot() +
-  facet_wrap(~ title)
+  geom_segment(aes(x = factor(topic), xend = factor(topic), y = 0, yend = gamma), color = "grey50") +
+  geom_point() +
+  facet_wrap(~ label) +
+  labs(x = "LDA topic",
+       y = expression(gamma))
 ```
 
-We notice that almost all of the chapters from *Pride and Prejudice*, *War of the Worlds*, and *Twenty Thousand Leagues Under the Sea* were uniquely identified as a single topic each.
-
-```{r chapter_classifications}
-chapter_classifications <- chapters_lda_gamma %>%
-  group_by(title, chapter) %>%
-  top_n(1, gamma) %>%
-  ungroup() %>%
-  arrange(gamma)
-
-chapter_classifications
-```
-
-We can determine this by finding the consensus book for each, which we note is correct based on our earlier visualization:
-
-```{r book_topics}
-book_topics <- chapter_classifications %>%
-  count(title, topic) %>%
-  group_by(title) %>%
-  top_n(1, n) %>%
-  ungroup() %>%
-  transmute(consensus = title, topic)
-
-book_topics
-```
-
-Then we see which chapters were misidentified:
-
-```{r chapters-misclass}
-chapter_classifications %>%
-  inner_join(book_topics, by = "topic") %>%
-  count(title, consensus) %>%
-  knitr::kable()
-```
-
-We see that only a few chapters from *Great Expectations* were misclassified.
-
-## By word assignments: `augment`
-
-One important step in the topic modeling expectation-maximization algorithm is assigning each word in each document to a topic. The more words in a document are assigned to that topic, generally, the more weight (`gamma`) will go on that document-topic classification.
-
-We may want to take the original document-word pairs and find which words in each document were assigned to which topic. This is the job of the `augment()` verb.
-
-```{r assignments}
-assignments <- augment(chapters_lda, data = chapters_dtm)
-```
-
-We can combine this with the consensus book titles to find which words were incorrectly classified.
-
-```{r assignments2, dependson = "assignments"}
-assignments <- assignments %>%
-  separate(document, c("title", "chapter"), sep = "_", convert = TRUE) %>%
-  inner_join(book_topics, by = c(".topic" = "topic"))
-
-assignments
-```
-
-We can, for example, create a "confusion matrix" using `dplyr::count()` and `tidyr::spread`:
-
-```{r assignments3, dependson = "assignments2"}
-assignments %>%
-  count(title, consensus, wt = count) %>%
-  spread(consensus, n, fill = 0) %>%
-  knitr::kable()
-```
-
-We notice that almost all the words for *Pride and Prejudice*, *Twenty Thousand Leagues Under the Sea*, and *War of the Worlds* were correctly assigned, while *Great Expectations* had a fair amount of misassignment.
-
-What were the most commonly mistaken words?
-
-```{r wrong_words, dependson = "assignments2"}
-wrong_words <- assignments %>%
-  filter(title != consensus)
-
-wrong_words
-
-wrong_words %>%
-  count(title, consensus, term, wt = count) %>%
-  ungroup() %>%
-  arrange(desc(n))
-```
-
-Notice the word "flopson" here; these wrong words do not necessarily appear in the novels they were misassigned to. Indeed, we can confirm "flopson" appears only in *Great Expectations*:
-
-```{r flopson, dependson = "word_counts"}
-word_counts %>%
-  filter(word == "flopson")
-```
-
-The algorithm is stochastic and iterative, and it can accidentally land on a topic that spans multiple books.
+The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for $\gamma$. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
 
 ## LDA with an unknown topic structure
 
 Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is still useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
 
-## Associated Press articles
+## `r/jokes`
 
-The `topicmodels` package includes a document-term matrix of a sample of articles published by the Associated Press in 1992. Let's load them into R and convert them to a tidy format.
+<blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
+<script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
 
-```{r associated_press}
-data("AssociatedPress", package = "topicmodels")
+[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix:
 
-ap_td <- tidy(AssociatedPress)
-ap_td
+```{r jokes}
+# obtain r/jokes and extract values from the JSON file
+jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
+
+jokes <- jokes_json %>%
+  {
+    tibble(
+      id = map_chr(., "id"),
+      title = map_chr(., "title"),
+      body = map_chr(., "body"),
+      score = map_dbl(., "score")
+    )
+  }
+glimpse(jokes)
 ```
 
-`AssociatedPress` is originally in a document-term matrix, exactly what we need for topic modeling. Why tidy it first? Because the original document-term matrix contains stop words - we want to remove them before modeling the data. Let's remove the stop words, then cast the data back into a document-term matrix.
+```{r jokes-dtm, dependson = "jokes"}
+# convert into a document-term matrix
+set.seed(123)
+n_grams <- 1:5                          # extract n-grams for n=1,2,3,4,5
+jokes_lite <- sample_n(jokes, 50000)    # randomly sample only 50,000 jokes
 
-```{r ap_stopwords, dependson = "associated_press"}
-ap_dtm <- ap_td %>%
-  anti_join(stop_words, by = c(term = "word")) %>%
-  cast_dtm(document, term, count)
-ap_dtm
+jokes_tokens <- map_df(n_grams, ~ jokes_lite %>%
+                         # combine title and body
+                         unite(col = joke, title, body, sep = " ") %>%
+                         # tokenize
+                         unnest_tokens(output = word,
+                                       input = joke,
+                                       token = "ngrams",
+                                       n = .x) %>%
+                         mutate(ngram = .x,
+                                token_id = row_number()) %>%
+                         # remove tokens that are missing values
+                         filter(!is.na(word)))
+jokes_tokens
+
+# remove stop words or n-grams beginning or ending with stop word
+jokes_stop_words <- jokes_tokens %>%
+  # separate ngrams into separate columns
+  separate(col = word,
+           into = c("word1", "word2", "word3", "word4", "word5"),
+           sep = " ") %>%
+  # find last word
+  mutate(last = if_else(ngram == 5, word5,
+                        if_else(ngram == 4, word4,
+                                if_else(ngram == 3, word3,
+                                        if_else(ngram == 2, word2, word1))))) %>%
+  # remove tokens where the first or last word is a stop word
+  filter(word1 %in% stop_words$word |
+           last %in% stop_words$word) %>%
+  select(ngram, token_id)
+
+# convert to dtm
+jokes_dtm <- jokes_tokens %>%
+  # remove stop word tokens
+  anti_join(jokes_stop_words) %>%
+  # get count of each token in each document
+  count(id, word) %>%
+  # create a document-term matrix with all features and tf weighting
+  cast_dtm(document = id, term = word, value = n) %>%
+  removeSparseTerms(sparse = .999)
+
+# remove documents with no terms remaining
+jokes_dtm <- jokes_dtm[unique(jokes_dtm$i),]
+jokes_dtm
 ```
 
 ## Selecting $k$
@@ -348,24 +332,25 @@ Remember that for LDA, you need to specify in advance the number of topics in th
 
 ### $k=4$
 
-Let's estimate an LDA model for the Associated Press articles, setting $k=4$.
+Let's estimate an LDA model for the `r/jokes` jokes, setting $k=4$.
 
-```{r ap_topic_4, dependson = "associated_press"}
-ap_lda <- LDA(ap_dtm, k = 4, control = list(seed = 1234))
-ap_lda
+> Warning: many jokes on `r/jokes` are NSFW and contain potentially offensive language/content.
+
+```{r jokes-topic-4, dependson = "jokes-dtm"}
+jokes_lda4 <- LDA(jokes_dtm, k = 4, control = list(seed = 123))
+jokes_lda4
 ```
 
 What do the top terms for each of these topics look like?
 
-```{r ap_4_topn}
-ap_lda_td <- tidy(ap_lda)
+```{r jokes-4-topn, dependson = "jokes-topic-4"}
+jokes_lda4_td <- tidy(jokes_lda4)
 
-top_terms <- ap_lda_td %>%
+top_terms <- jokes_lda4_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-top_terms
 
 top_terms %>%
   mutate(term = reorder(term, beta)) %>%
@@ -375,31 +360,23 @@ top_terms %>%
   coord_flip()
 ```
 
-Fair enough. The four topics generally look to describe:
-
-1. American-Soviet relations
-1. Crime and education
-1. American (domestic) government
-1. [It's the economy, stupid](https://en.wikipedia.org/wiki/It%27s_the_economy,_stupid)
-
 ### $k=12$
 
 What happens if we set $k=12$? How do our results change?
 
-```{r ap_topic_12, dependson = "associated_press"}
-ap_lda <- LDA(ap_dtm, k = 12, control = list(seed = 1234))
-ap_lda
+```{r jokes-topic-12, dependson = "jokes-dtm"}
+jokes_lda12 <- LDA(jokes_dtm, k = 12, control = list(seed = 123))
+jokes_lda12
 ```
 
-```{r ap_12_topn, dependson="ap_topic_12"}
-ap_lda_td <- tidy(ap_lda)
+```{r jokes-12-topn, dependson = "jokes-topic-12"}
+jokes_lda12_td <- tidy(jokes_lda12)
 
-top_terms <- ap_lda_td %>%
+top_terms <- jokes_lda12_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-top_terms
 
 top_terms %>%
   mutate(term = reorder(term, beta)) %>%
@@ -409,21 +386,6 @@ top_terms %>%
   coord_flip()
 ```
 
-Hmm. Well, these topics appear to be more specific, yet not as easily decodeable.
-
-1. Iraq War (I)
-1. Bush's reelection campaign
-1. Federal courts
-1. Apartheid and South Africa
-1. Crime
-1. Economy
-1. ???
-1. Soviet Union
-1. Environment
-1. Stock market
-1. Wildfires?
-1. Bush-Congress relations (maybe domestic policy?)
-
 Alas, this is the problem with LDA. Several different values for $k$ may be plausible, but by increasing $k$ we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
 
 ## Perplexity
@@ -432,36 +394,34 @@ Well, sort of. Some aspects of LDA are driven by gut-thinking (or perhaps [truth
 
 `topicmodels` includes the function `perplexity()` which calculates this value for a given model.
 
-```{r ap_12_perplex, dependson="ap_topic_12"}
-perplexity(ap_lda)
+```{r jokes-topic-12-perplex, dependson="jokes-topic-12"}
+perplexity(jokes_lda12)
 ```
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
 
-Let's estimate a series of LDA models on the Associated Press dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the AP corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the [Research Computing Center](https://rcc.uchicago.edu/).]
+Let's estimate a series of LDA models on the `r/jokes` dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the [Research Computing Center](https://rcc.uchicago.edu/).]
 
-```{r ap_lda_compare, dependson="associated_press", eval = FALSE}
-n_topics <- c(2, 4, 10, 20, 50, 100)
-ap_lda_compare <- n_topics %>%
-  map(LDA, x = ap_dtm, control = list(seed = 1234))
-```
-
-```{r ap_lda_compare_real, dependson="associated_press"}
+```{r jokes-lda-compare, dependson = "jokes-dtm"}
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
-# takes forever to estimate this model - store results and use if available
-if(file.exists(here("static", "extras", "ap_lda_compare.Rdata"))){
-  load(file = here("static", "extras", "ap_lda_compare.Rdata"))
-} else{
-  ap_lda_compare <- n_topics %>%
-    map(LDA, x = ap_dtm, control = list(seed = 1234))
-  save(ap_lda_compare, file = here("static", "extras", "ap_lda_compare.Rdata"))
+# cache the models and only estimate if they don't already exist
+if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
+  load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
+} else {
+  plan(multiprocess)
+
+  tic()
+  jokes_lda_compare <- n_topics %>%
+    future_map(LDA, x = jokes_dtm, control = list(seed = 1234))
+  toc()
+  save(jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
 }
 ```
 
-```{r ap_lda_compare_viz, dependson="ap_lda_compare"} 
+```{r jokes_lda_compare_viz, dependson="jokes_lda_compare"} 
 tibble(k = n_topics,
-       perplex = map_dbl(ap_lda_compare, perplexity)) %>%
+       perplex = map_dbl(jokes_lda_compare, perplexity)) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
   geom_line() +
@@ -473,15 +433,14 @@ tibble(k = n_topics,
 
 It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let's look just at the first 12 topics produced by the model (`ggplot2` has difficulty rendering a graph for 100 separate facets):
 
-```{r ap_100_topn, dependson="ap_lda_compare"}
-ap_lda_td <- tidy(ap_lda_compare[[6]])
+```{r jokes-100-topn, dependson = "jokes-lda-compare"}
+jokes_lda_td <- tidy(jokes_lda_compare[[6]])
 
-top_terms <- ap_lda_td %>%
+top_terms <- jokes_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-top_terms
 
 top_terms %>%
   filter(topic <= 12) %>%
@@ -564,15 +523,15 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
 }
 ```
 
-Let's test it using the $k = 10$ LDA topic model for the AP dataset.
+Let's test it using the $k = 10$ LDA topic model for the `AP`r/jokes` dataset.
 
-```{r ap-10-ldavis, dependson = "ap_lda_compare"}
-ap_10_json <- topicmodels_json_ldavis(fitted = ap_lda_compare[[3]],
-                                       doc_term = ap_dtm)
+```{r jokes-10-ldavis, dependson = "jokes-lda-compare"}
+jokes_10_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[3]],
+                                       doc_term = jokes_dtm)
 ```
 
-```{r ap-10-ldavis-serve, dependson = "ap-100-ldavis", eval = FALSE}
-serVis(ap_10_json)
+```{r jokes-10-ldavis-serve, dependson = "jokes-100-ldavis", eval = FALSE}
+serVis(jokes_10_json)
 ```
 
 ## Acknowledgments

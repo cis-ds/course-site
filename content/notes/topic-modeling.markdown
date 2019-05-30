@@ -19,10 +19,12 @@ menu:
 
 ```r
 library(tidyverse)
-library(gutenbergr)
 library(tidytext)
 library(topicmodels)
 library(here)
+library(rjson)
+library(tm)
+library(tictoc)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -92,49 +94,100 @@ So the document generated under the LDA model will be "broccoli panda adorable c
 
 ## LDA with a known topic structure
 
-LDA can be useful if the topic structure of a set of documents is known **a priori**. For instance, suppose you have four books:
-
-* *Great Expectations* by Charles Dickens
-* *The War of the Worlds* by H.G. Wells
-* *Twenty Thousand Leagues Under the Sea* by Jules Verne
-* *Pride and Prejudice* by Jane Austen
-
-A vandal has broken into your home and torn the books into individual chapters, and left them in one large pile. We can use LDA and topic modeling to discover how the chapters relate to distinct topics (i.e. books).
-
-We'll retrieve these four books using the `gutenbergr` package:
+LDA can be useful if the topic structure of a set of documents is known **a priori**. For instance, consider the `USCongress` dataset of legislation introduced in the U.S. Congress from the `RTextTools` package.
 
 
 ```r
-titles <- c("Twenty Thousand Leagues under the Sea", "The War of the Worlds",
-            "Pride and Prejudice", "Great Expectations")
+# get USCongress data
+data(USCongress, package = "RTextTools")
 
-library(gutenbergr)
+# topic labels
+major_topics <- tibble(
+  major = c(1:10, 12:21, 99),
+  label = c("Macroeconomics", "Civil rights, minority issues, civil liberties",
+            "Health", "Agriculture", "Labor and employment", "Education", "Environment",
+            "Energy", "Immigration", "Transportation", "Law, crime, family issues",
+            "Social welfare", "Community development and housing issues",
+            "Banking, finance, and domestic commerce", "Defense",
+            "Space, technology, and communications", "Foreign trade",
+            "International affairs and foreign aid", "Government operations",
+            "Public lands and water management", "Other, miscellaneous")
+) %>%
+  mutate(label = factor(major, levels = major, labels = label))
 
-books <- gutenberg_works(title %in% titles) %>%
-  gutenberg_download(meta_fields = "title", mirror = "ftp://aleph.gutenberg.org/")
+congress <- as_tibble(USCongress) %>%
+  mutate(text = as.character(text)) %>%
+  left_join(major_topics)
 ```
 
-As pre-processing, we divide these into chapters, use `unnest_tokens()` from `tidytext` to separate them into words, then remove stop words. We are treating every chapter as a separate "document", each with a name like `Great Expectations_1` or `Pride and Prejudice_11`.
+```
+## Joining, by = "major"
+```
+
+```r
+glimpse(congress)
+```
+
+```
+## Observations: 4,449
+## Variables: 7
+## $ ID       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
+## $ cong     <int> 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
+## $ billnum  <int> 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4…
+## $ h_or_sen <fct> HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR,…
+## $ major    <dbl> 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, …
+## $ text     <chr> "To suspend temporarily the duty on Fast Magenta 2 Stag…
+## $ label    <fct> "Foreign trade", "Foreign trade", "Foreign trade", "For…
+```
+
+[Previously](/notes/supervised-text-classification/), we assumed the documents were structured based on their policy content under [the structure](https://www.comparativeagendas.net/pages/master-codebook):
 
 
 ```r
-library(tidytext)
-library(stringr)
+major_topics %>%
+  knitr::kable(col.names = c("Topic code", "Policy topic"))
+```
 
-by_chapter <- books %>%
-  group_by(title) %>%
-  mutate(chapter = cumsum(str_detect(text, regex("^chapter ", ignore_case = TRUE)))) %>%
-  ungroup() %>%
-  filter(chapter > 0)
 
-by_chapter_word <- by_chapter %>%
-  unite(title_chapter, title, chapter) %>%
-  unnest_tokens(word, text)
 
-word_counts <- by_chapter_word %>%
+| Topic code|Policy topic                                   |
+|----------:|:----------------------------------------------|
+|          1|Macroeconomics                                 |
+|          2|Civil rights, minority issues, civil liberties |
+|          3|Health                                         |
+|          4|Agriculture                                    |
+|          5|Labor and employment                           |
+|          6|Education                                      |
+|          7|Environment                                    |
+|          8|Energy                                         |
+|          9|Immigration                                    |
+|         10|Transportation                                 |
+|         12|Law, crime, family issues                      |
+|         13|Social welfare                                 |
+|         14|Community development and housing issues       |
+|         15|Banking, finance, and domestic commerce        |
+|         16|Defense                                        |
+|         17|Space, technology, and communications          |
+|         18|Foreign trade                                  |
+|         19|International affairs and foreign aid          |
+|         20|Government operations                          |
+|         21|Public lands and water management              |
+|         99|Other, miscellaneous                           |
+
+We can use LDA and topic modeling to discover whether the documents map onto this topic structure without any assumptions about the structure. That is, using just the text **what is the revealed topic structure**?
+
+As-preprocessing, we use `unnest_tokens()` from `tidytext` to separate them into words, filter out tokens which are purely numbers, remove stop words, and stem each token to its root form.
+
+
+```r
+congress_tokens <- congress %>%
+  unnest_tokens(output = word, input = text) %>%
+  # remove numbers
+  filter(!str_detect(word, "^[0-9]*$")) %>%
+  # remove stop words
   anti_join(stop_words) %>%
-  count(title_chapter, word, sort = TRUE) %>%
-  ungroup()
+  # stem the words
+  mutate(word = SnowballC::wordStem(word))
 ```
 
 ```
@@ -142,87 +195,104 @@ word_counts <- by_chapter_word %>%
 ```
 
 ```r
-word_counts
+congress_tokens
 ```
 
 ```
-## # A tibble: 104,722 x 3
-##    title_chapter            word        n
-##    <chr>                    <chr>   <int>
-##  1 Great Expectations_57    joe        88
-##  2 Great Expectations_7     joe        70
-##  3 Great Expectations_17    biddy      63
-##  4 Great Expectations_27    joe        58
-##  5 Great Expectations_38    estella    58
-##  6 Great Expectations_2     joe        56
-##  7 Great Expectations_23    pocket     53
-##  8 Great Expectations_15    joe        50
-##  9 Great Expectations_18    joe        50
-## 10 The War of the Worlds_16 brother    50
-## # … with 104,712 more rows
+## # A tibble: 58,820 x 7
+##       ID  cong billnum h_or_sen major label         word       
+##    <int> <int>   <int> <fct>    <dbl> <fct>         <chr>      
+##  1     1   107    4499 HR          18 Foreign trade suspend    
+##  2     1   107    4499 HR          18 Foreign trade temporarili
+##  3     1   107    4499 HR          18 Foreign trade duti       
+##  4     1   107    4499 HR          18 Foreign trade fast       
+##  5     1   107    4499 HR          18 Foreign trade magenta    
+##  6     1   107    4499 HR          18 Foreign trade stage      
+##  7     2   107    4500 HR          18 Foreign trade suspend    
+##  8     2   107    4500 HR          18 Foreign trade temporarili
+##  9     2   107    4500 HR          18 Foreign trade duti       
+## 10     2   107    4500 HR          18 Foreign trade fast       
+## # … with 58,810 more rows
 ```
 
 ## Latent Dirichlet allocation with the `topicmodels` package
 
-Right now this data frame is in a tidy form, with one-term-per-document-per-row. However, the `topicmodels` package requires a `DocumentTermMatrix` (from the `tm` package). We can cast a one-token-per-row table into a `DocumentTermMatrix` with `cast_dtm()`:
+Right now this data frame is in a tidy form, with one-term-per-document-per-row. However, the `topicmodels` package requires a `DocumentTermMatrix` (from the `tm` package). We can cast a one-token-per-row table into a `DocumentTermMatrix` with `cast_dtm()`:^[In the process, we also remove tokens which are relatively uninformative based on their [tf-idf scores](https://www.tidytextmining.com/tfidf.html). Otherwise our LDA model will take forever to estimate due to the vast number of unique tokens.]
 
 
 ```r
-chapters_dtm <- word_counts %>%
-  cast_dtm(title_chapter, word, n)
-
-chapters_dtm
+# remove terms with low tf-idf for future LDA model
+congress_tokens_lite <- congress_tokens %>%
+  count(major, word) %>%
+  bind_tf_idf(term = word, document = major, n = n) %>%
+  group_by(major) %>%
+  top_n(40, wt = tf_idf) %>%
+  ungroup %>%
+  count(word) %>%
+  select(-n) %>%
+  left_join(congress_tokens)
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 193, terms: 18215)>>
-## Non-/sparse entries: 104722/3410773
-## Sparsity           : 97%
-## Maximal term length: 19
+## Joining, by = "word"
+```
+
+```r
+congress_dtm <- congress_tokens_lite %>%
+  # get count of each token in each document
+  count(ID, word) %>%
+  # create a document-term matrix with all features and tf weighting
+  cast_dtm(document = ID, term = word, value = n)
+congress_dtm
+```
+
+```
+## <<DocumentTermMatrix (documents: 4319, terms: 787)>>
+## Non-/sparse entries: 18149/3380904
+## Sparsity           : 99%
+## Maximal term length: 22
 ## Weighting          : term frequency (tf)
 ```
 
-Now we are ready to use the [`topicmodels`](https://cran.r-project.org/package=topicmodels) package to create a four topic LDA model.
+Now we are ready to use the [`topicmodels`](https://cran.r-project.org/package=topicmodels) package to create a twenty topic LDA model.
 
 
 ```r
 library(topicmodels)
-chapters_lda <- LDA(chapters_dtm, k = 4, control = list(seed = 1234))
-chapters_lda
+congress_lda <- LDA(congress_dtm, k = 20, control = list(seed = 123))
+congress_lda
 ```
 
 ```
-## A LDA_VEM topic model with 4 topics.
+## A LDA_VEM topic model with 20 topics.
 ```
 
-* In this case we know there are four topics because there are four books; this is the value of knowing the latent topic structure.
-* `seed = 1234` sets the starting point for the random iteration process. If we don't set a consistent seed, each time we run the script we may estimate slightly different models.
+* In this case we know there are approximately twenty topics because there are twenty major policy codes; this is the value of knowing (or assuming) the latent topic structure.
+* `seed = 123` sets the starting point for the random iteration process. If we don't set a consistent seed, each time we run the script we may estimate slightly different models.
 
 Now `tidytext` gives us the option of **returning** to a tidy analysis, using the `tidy()` and `augment()` verbs borrowed from the [`broom` package](https://github.com/dgrtwo/broom). In particular, we start with the `tidy()` verb.
 
 
 ```r
-library(tidytext)
-
-chapters_lda_td <- tidy(chapters_lda)
-chapters_lda_td
+congress_lda_td <- tidy(congress_lda)
+congress_lda_td
 ```
 
 ```
-## # A tibble: 72,860 x 3
-##    topic term        beta
-##    <int> <chr>      <dbl>
-##  1     1 joe     1.44e-17
-##  2     2 joe     5.96e-61
-##  3     3 joe     9.88e-25
-##  4     4 joe     1.45e- 2
-##  5     1 biddy   5.14e-28
-##  6     2 biddy   5.02e-73
-##  7     3 biddy   4.31e-48
-##  8     4 biddy   4.78e- 3
-##  9     1 estella 2.43e- 6
-## 10     2 estella 4.32e-68
-## # … with 72,850 more rows
+## # A tibble: 15,740 x 3
+##    topic term       beta
+##    <int> <chr>     <dbl>
+##  1     1 duti  3.11e-122
+##  2     2 duti  9.22e- 92
+##  3     3 duti  4.90e-114
+##  4     4 duti  3.09e- 95
+##  5     5 duti  5.42e-123
+##  6     6 duti  1.27e-148
+##  7     7 duti  3.74e- 78
+##  8     8 duti  6.64e-105
+##  9     9 duti  2.86e-  1
+## 10    10 duti  1.08e- 83
+## # … with 15,730 more rows
 ```
 
 Notice that this has turned the model into a one-topic-per-term-per-row format. For each combination the model has **beta** ($\beta$), the probability of that term being generated from that topic.
@@ -231,7 +301,7 @@ We could use `top_n()` from `dplyr` to find the top 5 terms within each topic:
 
 
 ```r
-top_terms <- chapters_lda_td %>%
+top_terms <- congress_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -240,29 +310,20 @@ top_terms
 ```
 
 ```
-## # A tibble: 20 x 3
+## # A tibble: 102 x 3
 ##    topic term         beta
 ##    <int> <chr>       <dbl>
-##  1     1 elizabeth 0.0141 
-##  2     1 darcy     0.00881
-##  3     1 miss      0.00871
-##  4     1 bennet    0.00694
-##  5     1 jane      0.00649
-##  6     2 captain   0.0155 
-##  7     2 nautilus  0.0131 
-##  8     2 sea       0.00884
-##  9     2 nemo      0.00871
-## 10     2 ned       0.00803
-## 11     3 people    0.00679
-## 12     3 martians  0.00646
-## 13     3 time      0.00534
-## 14     3 black     0.00528
-## 15     3 night     0.00449
-## 16     4 joe       0.0145 
-## 17     4 time      0.00685
-## 18     4 pip       0.00683
-## 19     4 looked    0.00637
-## 20     4 miss      0.00623
+##  1     1 secretari  0.337 
+##  2     1 interior   0.116 
+##  3     1 transport  0.0961
+##  4     1 heritag    0.0432
+##  5     1 armi       0.0389
+##  6     2 educ       0.276 
+##  7     2 school     0.113 
+##  8     2 secondari  0.0712
+##  9     2 forc       0.0658
+## 10     2 elementari 0.0647
+## # … with 92 more rows
 ```
 
 This model lends itself to a visualization:
@@ -273,341 +334,202 @@ top_terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-  facet_wrap(~ topic, scales = "free") +
+  facet_wrap(~ topic, scales = "free", ncol = 4) +
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/top_terms_plot-1.png" width="672" />
+<img src="/notes/topic-modeling_files/figure-html/top-terms-plot-1.png" width="672" />
 
-* These topics are pretty clearly associated with the four books:
-    * "nemo", "sea", and "nautilus" belongs to *Twenty Thousand Leagues Under the Sea*
-    * "jane", "darcy", and "elizabeth" belongs to *Pride and Prejudice*
-    * "pip" and "joe" from *Great Expectations*
-    * "martians", "black", and "night" from *The War of the Worlds*
-* Also note that `LDA()` does not assign any label to each topic. They are simply topics 1, 2, 3, and 4. We can infer these are associated with each book, **but it is merely our inference.**
+* Some of these topics are pretty clearly associated with some of the policy topics:
+    * "educ", "school", "secondari", "forc", "elementari" seem to be **Education**
+    * "health", "care", "insur", "medic", "coverag" seem to be **Health**
+    * "water", "park", "indian", "river", "tribe", seem to be **Public lands and water management**
+* Note that `LDA()` does not assign any label to each topic. They are simply topics 1, 2, 3, 4, etc. We can infer these are associated with each book, **but it is merely our inference.**
+* Other topics are less clear. For instance, topic 16 could also be a health care topic. And some of the policy topics are not visible at all. I don't see a clear **Space, technology, and communications** anywhere in the results.
 
 ## Per-document classification
 
-Each chapter was a "document" in this analysis. Thus, we may want to know which topics are associated with each document. Can we put the chapters back together in the correct books?
+Each bill was a "document" in this analysis. Thus, we may want to know which topics are associated with each bill. Using the topic distributions, can we classify each bill into its hand-coded policy topic?
 
 
 ```r
-chapters_lda_gamma <- tidy(chapters_lda, matrix = "gamma")
-chapters_lda_gamma
+congress_gamma <- tidy(congress_lda, matrix = "gamma")
+congress_gamma
 ```
 
 ```
-## # A tibble: 772 x 3
-##    document                 topic     gamma
-##    <chr>                    <int>     <dbl>
-##  1 Great Expectations_57        1 0.0000134
-##  2 Great Expectations_7         1 0.0000146
-##  3 Great Expectations_17        1 0.0000210
-##  4 Great Expectations_27        1 0.0000190
-##  5 Great Expectations_38        1 0.355    
-##  6 Great Expectations_2         1 0.0000171
-##  7 Great Expectations_23        1 0.547    
-##  8 Great Expectations_15        1 0.0124   
-##  9 Great Expectations_18        1 0.0000126
-## 10 The War of the Worlds_16     1 0.0000107
-## # … with 762 more rows
+## # A tibble: 86,380 x 3
+##    document topic  gamma
+##    <chr>    <int>  <dbl>
+##  1 1            1 0.0172
+##  2 2            1 0.0152
+##  3 3            1 0.0233
+##  4 4            1 0.0284
+##  5 5            1 0.0198
+##  6 6            1 0.0773
+##  7 7            1 0.0198
+##  8 8            1 0.0233
+##  9 9            1 0.0233
+## 10 10           1 0.0198
+## # … with 86,370 more rows
 ```
 
-Setting `matrix = "gamma"` returns a tidied version with one-document-per-topic-per-row. Now that we have these document classifiations, we can see how well our unsupervised learning did at distinguishing the four books. First we re-separate the document name into title and chapter:
+Setting `matrix = "gamma"` returns a tidied version with one-document-per-topic-per-row. Now that we have these document classifiations, we can see how well our unsupervised learning did at distinguishing the policy topics.
 
 
 ```r
-chapters_lda_gamma <- chapters_lda_gamma %>%
-  separate(document, c("title", "chapter"), sep = "_", convert = TRUE)
-chapters_lda_gamma
-```
-
-```
-## # A tibble: 772 x 4
-##    title                 chapter topic     gamma
-##    <chr>                   <int> <int>     <dbl>
-##  1 Great Expectations         57     1 0.0000134
-##  2 Great Expectations          7     1 0.0000146
-##  3 Great Expectations         17     1 0.0000210
-##  4 Great Expectations         27     1 0.0000190
-##  5 Great Expectations         38     1 0.355    
-##  6 Great Expectations          2     1 0.0000171
-##  7 Great Expectations         23     1 0.547    
-##  8 Great Expectations         15     1 0.0124   
-##  9 Great Expectations         18     1 0.0000126
-## 10 The War of the Worlds      16     1 0.0000107
-## # … with 762 more rows
-```
-
-Then we examine what fraction of chapters we got right for each:
-
-
-```r
-# reorder titles in order of topic 1, topic 2, etc before plotting
-chapters_lda_gamma %>%
-  mutate(title = reorder(title, gamma * topic)) %>%
+congress_tokens_lite %>%
+  mutate(document = as.character(row_number())) %>%
+  # join with the gamma values
+  left_join(congress_gamma) %>%
+  # remove missing values
+  na.omit() %>%
+  group_by(topic, major, label) %>%
+  summarize(gamma = median(gamma)) %>%
+  # plot the topic distributions for each policy topic
   ggplot(aes(factor(topic), gamma)) +
-  geom_boxplot() +
-  facet_wrap(~ title)
-```
-
-<img src="/notes/topic-modeling_files/figure-html/chapters_lda_gamma_plot-1.png" width="768" />
-
-We notice that almost all of the chapters from *Pride and Prejudice*, *War of the Worlds*, and *Twenty Thousand Leagues Under the Sea* were uniquely identified as a single topic each.
-
-
-```r
-chapter_classifications <- chapters_lda_gamma %>%
-  group_by(title, chapter) %>%
-  top_n(1, gamma) %>%
-  ungroup() %>%
-  arrange(gamma)
-
-chapter_classifications
+  geom_segment(aes(x = factor(topic), xend = factor(topic), y = 0, yend = gamma), color = "grey50") +
+  geom_point() +
+  facet_wrap(~ label) +
+  labs(x = "LDA topic",
+       y = expression(gamma))
 ```
 
 ```
-## # A tibble: 193 x 4
-##    title              chapter topic gamma
-##    <chr>                <int> <int> <dbl>
-##  1 Great Expectations      54     3 0.481
-##  2 Great Expectations      22     4 0.536
-##  3 Great Expectations      23     1 0.547
-##  4 Great Expectations      31     4 0.547
-##  5 Great Expectations      33     4 0.569
-##  6 Great Expectations      47     4 0.580
-##  7 Great Expectations      56     4 0.606
-##  8 Great Expectations      38     4 0.645
-##  9 Great Expectations       3     4 0.660
-## 10 Great Expectations      11     4 0.668
-## # … with 183 more rows
+## Joining, by = "document"
 ```
 
-We can determine this by finding the consensus book for each, which we note is correct based on our earlier visualization:
+<img src="/notes/topic-modeling_files/figure-html/congress-model-compare-1.png" width="672" />
 
-
-```r
-book_topics <- chapter_classifications %>%
-  count(title, topic) %>%
-  group_by(title) %>%
-  top_n(1, n) %>%
-  ungroup() %>%
-  transmute(consensus = title, topic)
-
-book_topics
-```
-
-```
-## # A tibble: 4 x 2
-##   consensus                             topic
-##   <chr>                                 <int>
-## 1 Great Expectations                        4
-## 2 Pride and Prejudice                       1
-## 3 The War of the Worlds                     3
-## 4 Twenty Thousand Leagues under the Sea     2
-```
-
-Then we see which chapters were misidentified:
-
-
-```r
-chapter_classifications %>%
-  inner_join(book_topics, by = "topic") %>%
-  count(title, consensus) %>%
-  knitr::kable()
-```
-
-
-
-|title                                 |consensus                             |  n|
-|:-------------------------------------|:-------------------------------------|--:|
-|Great Expectations                    |Great Expectations                    | 57|
-|Great Expectations                    |Pride and Prejudice                   |  1|
-|Great Expectations                    |The War of the Worlds                 |  1|
-|Pride and Prejudice                   |Pride and Prejudice                   | 61|
-|The War of the Worlds                 |The War of the Worlds                 | 27|
-|Twenty Thousand Leagues under the Sea |Twenty Thousand Leagues under the Sea | 46|
-
-We see that only a few chapters from *Great Expectations* were misclassified.
-
-## By word assignments: `augment`
-
-One important step in the topic modeling expectation-maximization algorithm is assigning each word in each document to a topic. The more words in a document are assigned to that topic, generally, the more weight (`gamma`) will go on that document-topic classification.
-
-We may want to take the original document-word pairs and find which words in each document were assigned to which topic. This is the job of the `augment()` verb.
-
-
-```r
-assignments <- augment(chapters_lda, data = chapters_dtm)
-```
-
-We can combine this with the consensus book titles to find which words were incorrectly classified.
-
-
-```r
-assignments <- assignments %>%
-  separate(document, c("title", "chapter"), sep = "_", convert = TRUE) %>%
-  inner_join(book_topics, by = c(".topic" = "topic"))
-
-assignments
-```
-
-```
-## # A tibble: 104,722 x 6
-##    title              chapter term  count .topic consensus         
-##    <chr>                <int> <chr> <dbl>  <dbl> <chr>             
-##  1 Great Expectations      57 joe      88      4 Great Expectations
-##  2 Great Expectations       7 joe      70      4 Great Expectations
-##  3 Great Expectations      17 joe       5      4 Great Expectations
-##  4 Great Expectations      27 joe      58      4 Great Expectations
-##  5 Great Expectations       2 joe      56      4 Great Expectations
-##  6 Great Expectations      23 joe       1      4 Great Expectations
-##  7 Great Expectations      15 joe      50      4 Great Expectations
-##  8 Great Expectations      18 joe      50      4 Great Expectations
-##  9 Great Expectations       9 joe      44      4 Great Expectations
-## 10 Great Expectations      13 joe      40      4 Great Expectations
-## # … with 104,712 more rows
-```
-
-We can, for example, create a "confusion matrix" using `dplyr::count()` and `tidyr::spread`:
-
-
-```r
-assignments %>%
-  count(title, consensus, wt = count) %>%
-  spread(consensus, n, fill = 0) %>%
-  knitr::kable()
-```
-
-
-
-|title                                 | Great Expectations| Pride and Prejudice| The War of the Worlds| Twenty Thousand Leagues under the Sea|
-|:-------------------------------------|------------------:|-------------------:|---------------------:|-------------------------------------:|
-|Great Expectations                    |              49656|                3908|                  1923|                                    81|
-|Pride and Prejudice                   |                  1|               37231|                     6|                                     4|
-|The War of the Worlds                 |                  0|                   0|                 22561|                                     7|
-|Twenty Thousand Leagues under the Sea |                  0|                   5|                     0|                                 39629|
-
-We notice that almost all the words for *Pride and Prejudice*, *Twenty Thousand Leagues Under the Sea*, and *War of the Worlds* were correctly assigned, while *Great Expectations* had a fair amount of misassignment.
-
-What were the most commonly mistaken words?
-
-
-```r
-wrong_words <- assignments %>%
-  filter(title != consensus)
-
-wrong_words
-```
-
-```
-## # A tibble: 4,617 x 6
-##    title                 chapter term   count .topic consensus             
-##    <chr>                   <int> <chr>  <dbl>  <dbl> <chr>                 
-##  1 Great Expectations         38 broth…     2      1 Pride and Prejudice   
-##  2 Great Expectations         22 broth…     4      1 Pride and Prejudice   
-##  3 Great Expectations         23 miss       2      1 Pride and Prejudice   
-##  4 Great Expectations         22 miss      23      1 Pride and Prejudice   
-##  5 Twenty Thousand Leag…       8 miss       1      1 Pride and Prejudice   
-##  6 Great Expectations         31 miss       1      1 Pride and Prejudice   
-##  7 Great Expectations          5 serge…    37      1 Pride and Prejudice   
-##  8 Great Expectations         46 capta…     1      2 Twenty Thousand Leagu…
-##  9 Great Expectations         32 capta…     1      2 Twenty Thousand Leagu…
-## 10 The War of the Worlds      17 capta…     5      2 Twenty Thousand Leagu…
-## # … with 4,607 more rows
-```
-
-```r
-wrong_words %>%
-  count(title, consensus, term, wt = count) %>%
-  ungroup() %>%
-  arrange(desc(n))
-```
-
-```
-## # A tibble: 3,551 x 4
-##    title              consensus             term         n
-##    <chr>              <chr>                 <chr>    <dbl>
-##  1 Great Expectations Pride and Prejudice   love        44
-##  2 Great Expectations Pride and Prejudice   sergeant    37
-##  3 Great Expectations Pride and Prejudice   lady        32
-##  4 Great Expectations Pride and Prejudice   miss        26
-##  5 Great Expectations The War of the Worlds boat        25
-##  6 Great Expectations The War of the Worlds tide        20
-##  7 Great Expectations The War of the Worlds water       20
-##  8 Great Expectations Pride and Prejudice   father      19
-##  9 Great Expectations Pride and Prejudice   baby        18
-## 10 Great Expectations Pride and Prejudice   flopson     18
-## # … with 3,541 more rows
-```
-
-Notice the word "flopson" here; these wrong words do not necessarily appear in the novels they were misassigned to. Indeed, we can confirm "flopson" appears only in *Great Expectations*:
-
-
-```r
-word_counts %>%
-  filter(word == "flopson")
-```
-
-```
-## # A tibble: 3 x 3
-##   title_chapter         word        n
-##   <chr>                 <chr>   <int>
-## 1 Great Expectations_22 flopson    10
-## 2 Great Expectations_23 flopson     7
-## 3 Great Expectations_33 flopson     1
-```
-
-The algorithm is stochastic and iterative, and it can accidentally land on a topic that spans multiple books.
+The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for `\(\gamma\)`. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
 
 ## LDA with an unknown topic structure
 
 Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is still useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
 
-## Associated Press articles
+## `r/jokes`
 
-The `topicmodels` package includes a document-term matrix of a sample of articles published by the Associated Press in 1992. Let's load them into R and convert them to a tidy format.
+<blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
+<script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
 
-
-```r
-data("AssociatedPress", package = "topicmodels")
-
-ap_td <- tidy(AssociatedPress)
-ap_td
-```
-
-```
-## # A tibble: 302,031 x 3
-##    document term       count
-##       <int> <chr>      <dbl>
-##  1        1 adding         1
-##  2        1 adult          2
-##  3        1 ago            1
-##  4        1 alcohol        1
-##  5        1 allegedly      1
-##  6        1 allen          1
-##  7        1 apparently     2
-##  8        1 appeared       1
-##  9        1 arrested       1
-## 10        1 assault        1
-## # … with 302,021 more rows
-```
-
-`AssociatedPress` is originally in a document-term matrix, exactly what we need for topic modeling. Why tidy it first? Because the original document-term matrix contains stop words - we want to remove them before modeling the data. Let's remove the stop words, then cast the data back into a document-term matrix.
+[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix:
 
 
 ```r
-ap_dtm <- ap_td %>%
-  anti_join(stop_words, by = c(term = "word")) %>%
-  cast_dtm(document, term, count)
-ap_dtm
+# obtain r/jokes and extract values from the JSON file
+jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
+
+jokes <- jokes_json %>%
+  {
+    tibble(
+      id = map_chr(., "id"),
+      title = map_chr(., "title"),
+      body = map_chr(., "body"),
+      score = map_dbl(., "score")
+    )
+  }
+glimpse(jokes)
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 2246, terms: 10134)>>
-## Non-/sparse entries: 259208/22501756
-## Sparsity           : 99%
-## Maximal term length: 18
+## Observations: 194,553
+## Variables: 4
+## $ id    <chr> "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1"…
+## $ title <chr> "I hate how you cant even say black paint anymore", "What'…
+## $ body  <chr> "Now I have to say \"Leroy can you please paint the fence?…
+## $ score <dbl> 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, …
+```
+
+
+```r
+# convert into a document-term matrix
+set.seed(123)
+n_grams <- 1:5                          # extract n-grams for n=1,2,3,4,5
+jokes_lite <- sample_n(jokes, 50000)    # randomly sample only 50,000 jokes
+
+jokes_tokens <- map_df(n_grams, ~ jokes_lite %>%
+                         # combine title and body
+                         unite(col = joke, title, body, sep = " ") %>%
+                         # tokenize
+                         unnest_tokens(output = word,
+                                       input = joke,
+                                       token = "ngrams",
+                                       n = .x) %>%
+                         mutate(ngram = .x,
+                                token_id = row_number()) %>%
+                         # remove tokens that are missing values
+                         filter(!is.na(word)))
+jokes_tokens
+```
+
+```
+## # A tibble: 11,121,984 x 5
+##    id     score word       ngram token_id
+##    <chr>  <dbl> <chr>      <int>    <int>
+##  1 1a7xnd    44 what's         1        1
+##  2 1a7xnd    44 the            1        2
+##  3 1a7xnd    44 difference     1        3
+##  4 1a7xnd    44 between        1        4
+##  5 1a7xnd    44 a              1        5
+##  6 1a7xnd    44 hippie         1        6
+##  7 1a7xnd    44 chick          1        7
+##  8 1a7xnd    44 and            1        8
+##  9 1a7xnd    44 a              1        9
+## 10 1a7xnd    44 hockey         1       10
+## # … with 11,121,974 more rows
+```
+
+```r
+# remove stop words or n-grams beginning or ending with stop word
+jokes_stop_words <- jokes_tokens %>%
+  # separate ngrams into separate columns
+  separate(col = word,
+           into = c("word1", "word2", "word3", "word4", "word5"),
+           sep = " ") %>%
+  # find last word
+  mutate(last = if_else(ngram == 5, word5,
+                        if_else(ngram == 4, word4,
+                                if_else(ngram == 3, word3,
+                                        if_else(ngram == 2, word2, word1))))) %>%
+  # remove tokens where the first or last word is a stop word
+  filter(word1 %in% stop_words$word |
+           last %in% stop_words$word) %>%
+  select(ngram, token_id)
+```
+
+```
+## Warning: Expected 5 pieces. Missing pieces filled with `NA` in 8997350
+## rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+## 20, ...].
+```
+
+```r
+# convert to dtm
+jokes_dtm <- jokes_tokens %>%
+  # remove stop word tokens
+  anti_join(jokes_stop_words) %>%
+  # get count of each token in each document
+  count(id, word) %>%
+  # create a document-term matrix with all features and tf weighting
+  cast_dtm(document = id, term = word, value = n) %>%
+  removeSparseTerms(sparse = .999)
+```
+
+```
+## Joining, by = c("ngram", "token_id")
+```
+
+```r
+# remove documents with no terms remaining
+jokes_dtm <- jokes_dtm[unique(jokes_dtm$i),]
+jokes_dtm
+```
+
+```
+## <<DocumentTermMatrix (documents: 49283, terms: 2482)>>
+## Non-/sparse entries: 443901/121876505
+## Sparsity           : 100%
+## Maximal term length: 23
 ## Weighting          : term frequency (tf)
 ```
 
@@ -617,12 +539,14 @@ Remember that for LDA, you need to specify in advance the number of topics in th
 
 ### `\(k=4\)`
 
-Let's estimate an LDA model for the Associated Press articles, setting `\(k=4\)`.
+Let's estimate an LDA model for the `r/jokes` jokes, setting `\(k=4\)`.
+
+> Warning: many jokes on `r/jokes` are NSFW and contain potentially offensive language/content.
 
 
 ```r
-ap_lda <- LDA(ap_dtm, k = 4, control = list(seed = 1234))
-ap_lda
+jokes_lda4 <- LDA(jokes_dtm, k = 4, control = list(seed = 123))
+jokes_lda4
 ```
 
 ```
@@ -633,43 +557,14 @@ What do the top terms for each of these topics look like?
 
 
 ```r
-ap_lda_td <- tidy(ap_lda)
+jokes_lda4_td <- tidy(jokes_lda4)
 
-top_terms <- ap_lda_td %>%
+top_terms <- jokes_lda4_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-top_terms
-```
 
-```
-## # A tibble: 20 x 3
-##    topic term          beta
-##    <int> <chr>        <dbl>
-##  1     1 police     0.0102 
-##  2     1 people     0.00856
-##  3     1 officials  0.00478
-##  4     1 city       0.00399
-##  5     1 killed     0.00373
-##  6     2 soviet     0.0113 
-##  7     2 government 0.00982
-##  8     2 president  0.00880
-##  9     2 united     0.00775
-## 10     2 party      0.00598
-## 11     3 percent    0.0191 
-## 12     3 million    0.0127 
-## 13     3 billion    0.00894
-## 14     3 market     0.00649
-## 15     3 company    0.00601
-## 16     4 court      0.00615
-## 17     4 bush       0.00482
-## 18     4 people     0.00431
-## 19     4 dukakis    0.00419
-## 20     4 president  0.00417
-```
-
-```r
 top_terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
@@ -678,14 +573,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/ap_4_topn-1.png" width="672" />
-
-Fair enough. The four topics generally look to describe:
-
-1. American-Soviet relations
-1. Crime and education
-1. American (domestic) government
-1. [It's the economy, stupid](https://en.wikipedia.org/wiki/It%27s_the_economy,_stupid)
+<img src="/notes/topic-modeling_files/figure-html/jokes-4-topn-1.png" width="672" />
 
 ### `\(k=12\)`
 
@@ -693,8 +581,8 @@ What happens if we set `\(k=12\)`? How do our results change?
 
 
 ```r
-ap_lda <- LDA(ap_dtm, k = 12, control = list(seed = 1234))
-ap_lda
+jokes_lda12 <- LDA(jokes_dtm, k = 12, control = list(seed = 123))
+jokes_lda12
 ```
 
 ```
@@ -703,34 +591,14 @@ ap_lda
 
 
 ```r
-ap_lda_td <- tidy(ap_lda)
+jokes_lda12_td <- tidy(jokes_lda12)
 
-top_terms <- ap_lda_td %>%
+top_terms <- jokes_lda12_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-top_terms
-```
 
-```
-## # A tibble: 60 x 3
-##    topic term          beta
-##    <int> <chr>        <dbl>
-##  1     1 people     0.00497
-##  2     1 dont       0.00396
-##  3     1 air        0.00391
-##  4     1 time       0.00377
-##  5     1 york       0.00367
-##  6     2 soviet     0.0175 
-##  7     2 aid        0.0108 
-##  8     2 million    0.00640
-##  9     2 government 0.00622
-## 10     2 corn       0.00572
-## # … with 50 more rows
-```
-
-```r
 top_terms %>%
   mutate(term = reorder(term, beta)) %>%
   ggplot(aes(term, beta, fill = factor(topic))) +
@@ -739,22 +607,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/ap_12_topn-1.png" width="672" />
-
-Hmm. Well, these topics appear to be more specific, yet not as easily decodeable.
-
-1. Iraq War (I)
-1. Bush's reelection campaign
-1. Federal courts
-1. Apartheid and South Africa
-1. Crime
-1. Economy
-1. ???
-1. Soviet Union
-1. Environment
-1. Stock market
-1. Wildfires?
-1. Bush-Congress relations (maybe domestic policy?)
+<img src="/notes/topic-modeling_files/figure-html/jokes-12-topn-1.png" width="672" />
 
 Alas, this is the problem with LDA. Several different values for `\(k\)` may be plausible, but by increasing `\(k\)` we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
 
@@ -766,42 +619,39 @@ Well, sort of. Some aspects of LDA are driven by gut-thinking (or perhaps [truth
 
 
 ```r
-perplexity(ap_lda)
+perplexity(jokes_lda12)
 ```
 
 ```
-## [1] 2277.876
+## [1] 1190.231
 ```
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying `\(k\)`s. The model with the lowest perplexity is generally considered the "best".
 
-Let's estimate a series of LDA models on the Associated Press dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the AP corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the [Research Computing Center](https://rcc.uchicago.edu/).]
-
-
-```r
-n_topics <- c(2, 4, 10, 20, 50, 100)
-ap_lda_compare <- n_topics %>%
-  map(LDA, x = ap_dtm, control = list(seed = 1234))
-```
+Let's estimate a series of LDA models on the `r/jokes` dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the [Research Computing Center](https://rcc.uchicago.edu/).]
 
 
 ```r
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
-# takes forever to estimate this model - store results and use if available
-if(file.exists(here("static", "extras", "ap_lda_compare.Rdata"))){
-  load(file = here("static", "extras", "ap_lda_compare.Rdata"))
-} else{
-  ap_lda_compare <- n_topics %>%
-    map(LDA, x = ap_dtm, control = list(seed = 1234))
-  save(ap_lda_compare, file = here("static", "extras", "ap_lda_compare.Rdata"))
+# cache the models and only estimate if they don't already exist
+if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
+  load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
+} else {
+  plan(multiprocess)
+
+  tic()
+  jokes_lda_compare <- n_topics %>%
+    future_map(LDA, x = jokes_dtm, control = list(seed = 1234))
+  toc()
+  save(jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
 }
 ```
 
 
 ```r
 tibble(k = n_topics,
-       perplex = map_dbl(ap_lda_compare, perplexity)) %>%
+       perplex = map_dbl(jokes_lda_compare, perplexity)) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
   geom_line() +
@@ -811,40 +661,20 @@ tibble(k = n_topics,
        y = "Perplexity")
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/ap_lda_compare_viz-1.png" width="672" />
+<img src="/notes/topic-modeling_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
 
 It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let's look just at the first 12 topics produced by the model (`ggplot2` has difficulty rendering a graph for 100 separate facets):
 
 
 ```r
-ap_lda_td <- tidy(ap_lda_compare[[6]])
+jokes_lda_td <- tidy(jokes_lda_compare[[6]])
 
-top_terms <- ap_lda_td %>%
+top_terms <- jokes_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
   arrange(topic, -beta)
-top_terms
-```
 
-```
-## # A tibble: 500 x 3
-##    topic term          beta
-##    <int> <chr>        <dbl>
-##  1     1 president  0.00802
-##  2     1 oil        0.00562
-##  3     1 people     0.00553
-##  4     1 embassy    0.00526
-##  5     1 television 0.00518
-##  6     2 convention 0.0163 
-##  7     2 york       0.0102 
-##  8     2 dukakis    0.00849
-##  9     2 national   0.00693
-## 10     2 jackson    0.00647
-## # … with 490 more rows
-```
-
-```r
 top_terms %>%
   filter(topic <= 12) %>%
   mutate(term = reorder(term, beta)) %>%
@@ -854,7 +684,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/ap_100_topn-1.png" width="672" />
+<img src="/notes/topic-modeling_files/figure-html/jokes-100-topn-1.png" width="672" />
 
 We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at `\(k=100\)` - would `\(k=200\)` generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
 
@@ -948,21 +778,17 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
 }
 ```
 
-Let's test it using the `\(k = 10\)` LDA topic model for the AP dataset.
+Let's test it using the `\(k = 10\)` LDA topic model for the `AP`r/jokes` dataset.
 
 
 ```r
-ap_10_json <- topicmodels_json_ldavis(fitted = ap_lda_compare[[3]],
-                                       doc_term = ap_dtm)
-```
-
-```
-## Loading required package: slam
+jokes_10_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[3]],
+                                       doc_term = jokes_dtm)
 ```
 
 
 ```r
-serVis(ap_10_json)
+serVis(jokes_10_json)
 ```
 
 ## Acknowledgments
@@ -982,39 +808,38 @@ devtools::session_info()
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 3.5.3 (2019-03-11)
-##  os       macOS Mojave 10.14.3        
+##  os       macOS Mojave 10.14.5        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2019-05-07                  
+##  tz       America/Los_Angeles         
+##  date     2019-05-30                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [2] CRAN (R 3.5.3)
-##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
-##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
-##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
-##  broom         0.5.1   2018-12-05 [2] CRAN (R 3.5.0)
+##  backports     1.1.4   2019-04-10 [2] CRAN (R 3.5.2)
+##  blogdown      0.12    2019-05-01 [1] CRAN (R 3.5.2)
+##  bookdown      0.10    2019-05-10 [1] CRAN (R 3.5.2)
+##  broom         0.5.2   2019-04-07 [2] CRAN (R 3.5.2)
 ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 3.5.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
 ##  colorspace    1.4-1   2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
 ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
-##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
-##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
-##  dplyr       * 0.8.0.1 2019-02-15 [1] CRAN (R 3.5.2)
+##  devtools      2.0.2   2019-04-08 [1] CRAN (R 3.5.2)
+##  digest        0.6.19  2019-05-20 [1] CRAN (R 3.5.2)
+##  dplyr       * 0.8.1   2019-05-14 [1] CRAN (R 3.5.2)
 ##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
 ##  forcats     * 0.4.0   2019-02-17 [2] CRAN (R 3.5.2)
-##  fs            1.2.7   2019-03-19 [1] CRAN (R 3.5.3)
+##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.5.2)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.5.0)
-##  ggplot2     * 3.1.0   2018-10-25 [1] CRAN (R 3.5.0)
+##  ggplot2     * 3.1.1   2019-04-07 [1] CRAN (R 3.5.2)
 ##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
-##  gtable        0.2.0   2016-02-26 [2] CRAN (R 3.5.0)
-##  gutenbergr  * 0.1.4   2018-01-26 [2] CRAN (R 3.5.0)
+##  gtable        0.3.0   2019-03-25 [2] CRAN (R 3.5.2)
 ##  haven         2.1.0   2019-02-19 [2] CRAN (R 3.5.2)
 ##  here        * 0.1     2017-05-28 [2] CRAN (R 3.5.0)
 ##  hms           0.4.2   2018-03-10 [2] CRAN (R 3.5.0)
@@ -1027,50 +852,52 @@ devtools::session_info()
 ##  lazyeval      0.2.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  lubridate     1.7.4   2018-04-11 [2] CRAN (R 3.5.0)
 ##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
-##  Matrix        1.2-15  2018-11-01 [2] CRAN (R 3.5.3)
+##  Matrix        1.2-17  2019-03-22 [2] CRAN (R 3.5.2)
 ##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
 ##  modelr        0.1.4   2019-02-18 [2] CRAN (R 3.5.2)
 ##  modeltools    0.2-22  2018-07-16 [2] CRAN (R 3.5.0)
 ##  munsell       0.5.0   2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme          3.1-137 2018-04-07 [2] CRAN (R 3.5.3)
-##  NLP           0.2-0   2018-10-18 [2] CRAN (R 3.5.0)
-##  pillar        1.3.1   2018-12-15 [2] CRAN (R 3.5.0)
+##  nlme          3.1-140 2019-05-12 [2] CRAN (R 3.5.2)
+##  NLP         * 0.2-0   2018-10-18 [2] CRAN (R 3.5.0)
+##  pillar        1.4.0   2019-05-11 [2] CRAN (R 3.5.2)
 ##  pkgbuild      1.0.3   2019-03-20 [1] CRAN (R 3.5.3)
 ##  pkgconfig     2.0.2   2018-08-16 [2] CRAN (R 3.5.1)
 ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
 ##  plyr          1.8.4   2016-06-08 [2] CRAN (R 3.5.0)
 ##  prettyunits   1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
-##  processx      3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
+##  processx      3.3.1   2019-05-08 [1] CRAN (R 3.5.2)
 ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
 ##  purrr       * 0.3.2   2019-03-15 [2] CRAN (R 3.5.2)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
 ##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.5.2)
 ##  readr       * 1.3.1   2018-12-21 [2] CRAN (R 3.5.0)
 ##  readxl        1.3.1   2019-03-13 [2] CRAN (R 3.5.2)
-##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
+##  remotes       2.0.4   2019-04-10 [1] CRAN (R 3.5.2)
+##  rjson       * 0.2.20  2018-06-08 [1] CRAN (R 3.5.0)
 ##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.5.2)
 ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
 ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.5.3)
-##  rvest         0.3.2   2016-06-17 [2] CRAN (R 3.5.0)
+##  rvest         0.3.4   2019-05-15 [2] CRAN (R 3.5.2)
 ##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.5.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
 ##  slam          0.1-45  2019-02-26 [1] CRAN (R 3.5.2)
 ##  SnowballC     0.6.0   2019-01-15 [2] CRAN (R 3.5.2)
 ##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.5.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
-##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
+##  testthat      2.1.1   2019-04-23 [2] CRAN (R 3.5.2)
 ##  tibble      * 2.1.1   2019-03-16 [2] CRAN (R 3.5.2)
+##  tictoc      * 1.0     2014-06-17 [1] CRAN (R 3.5.0)
 ##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.5.2)
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.5.0)
 ##  tidytext    * 0.2.0   2018-10-17 [1] CRAN (R 3.5.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [2] CRAN (R 3.5.0)
-##  tm            0.7-6   2018-12-21 [2] CRAN (R 3.5.0)
+##  tm          * 0.7-6   2018-12-21 [2] CRAN (R 3.5.0)
 ##  tokenizers    0.2.1   2018-03-29 [2] CRAN (R 3.5.0)
 ##  topicmodels * 0.2-8   2018-12-21 [2] CRAN (R 3.5.0)
-##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
+##  usethis       1.5.0   2019-04-07 [1] CRAN (R 3.5.2)
 ##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
-##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
+##  xfun          0.7     2019-05-14 [1] CRAN (R 3.5.2)
 ##  xml2          1.2.0   2018-01-24 [2] CRAN (R 3.5.0)
 ##  yaml          2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
 ## 
