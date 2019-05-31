@@ -123,24 +123,54 @@ glimpse(song_lyrics)
 ## $ Source <dbl> 3, 1, 1, 1, 1, 1, 3, 5, 1, 3, 3, 1, 3, 1, 3, 3, 3, 3, 1, …
 ```
 
-The lyrics are stored as character vectors, one string for each song.
+The lyrics are stored as character vectors, one string for each song. Consider the song [Uptown Funk](https://www.youtube.com/watch?v=OPf0YbXqDm0):
 
 
 ```r
-str_wrap(song_lyrics$Lyrics[[1]]) %>%
+song_lyrics %>%
+  filter(Song == "uptown funk") %$%
+  Lyrics %>%
+  str_wrap() %>%
   cat()
 ```
 
 ```
-## sam the sham miscellaneous wooly bully wooly bully sam the sham the pharaohs
-## domingo samudio uno dos one two tres quatro matty told hatty about a thing she
-## saw had two big horns and a wooly jaw wooly bully wooly bully wooly bully wooly
-## bully wooly bully hatty told matty lets dont take no chance lets not belseven
-## come and learn to dance wooly bully wooly bully wooly bully wooly bully wooly
-## bully matty told hatty thats the thing to do get you someone really to pull the
-## wool with you wooly bully wooly bully wooly bully wooly bully wooly bully lseven
-## the letter l and the number 7 when typed they form a rough square l7 so the
-## lyrics mean lets not be square
+## this hit that ice cold michelle pfeiffer that white gold this one for them hood
+## girls them good girls straight masterpieces stylin whilen livin it up in the
+## city got chucks on with saint laurent got kiss myself im so prettyim too hot
+## hot damn called a police and a fireman im too hot hot damn make a dragon wanna
+## retire man im too hot hot damn say my name you know who i am im too hot hot damn
+## am i bad bout that money break it downgirls hit your hallelujah whoo girls hit
+## your hallelujah whoo girls hit your hallelujah whoo cause uptown funk gon give
+## it to you cause uptown funk gon give it to you cause uptown funk gon give it
+## to you saturday night and we in the spot dont believe me just watch come ondont
+## believe me just watch uhdont believe me just watch dont believe me just watch
+## dont believe me just watch dont believe me just watch hey hey hey oh meaning
+## byamandah editor 70s girl group the sequence accused bruno mars and producer
+## mark ronson of ripping their sound off in uptown funk their song in question is
+## funk you see all stop wait a minute fill my cup put some liquor in it take a sip
+## sign a check julio get the stretch ride to harlem hollywood jackson mississippi
+## if we show up we gon show out smoother than a fresh jar of skippyim too hot
+## hot damn called a police and a fireman im too hot hot damn make a dragon wanna
+## retire man im too hot hot damn bitch say my name you know who i am im too hot
+## hot damn am i bad bout that money break it downgirls hit your hallelujah whoo
+## girls hit your hallelujah whoo girls hit your hallelujah whoo cause uptown funk
+## gon give it to you cause uptown funk gon give it to you cause uptown funk gon
+## give it to you saturday night and we in the spot dont believe me just watch
+## come ondont believe me just watch uhdont believe me just watch uh dont believe
+## me just watch uh dont believe me just watch dont believe me just watch hey hey
+## hey ohbefore we leave lemmi tell yall a lil something uptown funk you up uptown
+## funk you up uptown funk you up uptown funk you up uh i said uptown funk you up
+## uptown funk you up uptown funk you up uptown funk you upcome on dance jump on
+## it if you sexy then flaunt it if you freaky then own it dont brag about it come
+## show mecome on dance jump on it if you sexy then flaunt it well its saturday
+## night and we in the spot dont believe me just watch come ondont believe me just
+## watch uhdont believe me just watch uh dont believe me just watch uh dont believe
+## me just watch dont believe me just watch hey hey hey ohuptown funk you up uptown
+## funk you up say what uptown funk you up uptown funk you up uptown funk you up
+## uptown funk you up say what uptown funk you up uptown funk you up uptown funk
+## you up uptown funk you up say what uptown funk you up uptown funk you up uptown
+## funk you up uptown funk you up say what uptown funk you up
 ```
 
 ## Find and visualize the state names in the song lyrics
@@ -384,8 +414,8 @@ devtools::session_info()
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2019-05-29                  
+##  tz       America/Los_Angeles         
+##  date     2019-05-30                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version   date       lib source        
