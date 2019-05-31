@@ -31,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: ""
+url_slides: "/slides/text-analysis-classification-and-topic-modeling/"
 url_video: ""
 url_code: ""
 
@@ -43,9 +43,9 @@ math: false
 
 ## Overview
 
-* Define topic modeling
 * Define a document-term matrix
 * Use text as predictors for classification algorithms
+* Define topic modeling
 * Explain Latent Dirichlet allocation and how this process works
 * Demonstrate how to use LDA to recover topic structure from a known set of topics
 * Demonstrate how to use LDA to recover topic structure from an unknown set of topics
@@ -63,4 +63,4 @@ math: false
 
 ## To do for Monday
 
-* [Start homework 9](/homework/text-analysis/)
+* [Start homework 10](/homework/text-analysis/)

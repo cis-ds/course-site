@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+  <head>
+    <title>Text analysis: classification and topic modeling</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Text analysis: classification and topic modeling
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+# Supervised learning
+
+1. Hand-code a small set of documents ($N = 1000$)
+1. Train a statistical learning model on the hand-coded data
+1. Evaluate the effectiveness of the statistical learning model
+1. Apply the final model to the remaining set of documents ($N = 1000000$)
+
+---
+
+# `USCongress`
+
+
+```
+## Observations: 4,449
+## Variables: 7
+## $ ID       &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
+## $ cong     &lt;int&gt; 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
+## $ billnum  &lt;int&gt; 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4…
+## $ h_or_sen &lt;fct&gt; HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR,…
+## $ major    &lt;dbl&gt; 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, …
+## $ text     &lt;chr&gt; "To suspend temporarily the duty on Fast Magenta 2 Stag…
+## $ label    &lt;fct&gt; "Foreign trade", "Foreign trade", "Foreign trade", "For…
+```
+
+* Set of hand-coded bills from US Congress
+* Text description
+* Major policy topic
+
+---
+
+# Create tidy text data frame
+
+
+```r
+(congress_tokens &lt;- congress %&gt;%
+   unnest_tokens(output = word, input = text) %&gt;%
+   # remove numbers
+   filter(!str_detect(word, "^[0-9]*$")) %&gt;%
+   # remove stop words
+   anti_join(stop_words) %&gt;%
+   # stem the words
+   mutate(word = SnowballC::wordStem(word)))
+```
+
+```
+## # A tibble: 58,820 x 7
+##       ID  cong billnum h_or_sen major label         word       
+##    &lt;int&gt; &lt;int&gt;   &lt;int&gt; &lt;fct&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
+##  1     1   107    4499 HR          18 Foreign trade suspend    
+##  2     1   107    4499 HR          18 Foreign trade temporarili
+##  3     1   107    4499 HR          18 Foreign trade duti       
+##  4     1   107    4499 HR          18 Foreign trade fast       
+##  5     1   107    4499 HR          18 Foreign trade magenta    
+##  6     1   107    4499 HR          18 Foreign trade stage      
+##  7     2   107    4500 HR          18 Foreign trade suspend    
+##  8     2   107    4500 HR          18 Foreign trade temporarili
+##  9     2   107    4500 HR          18 Foreign trade duti       
+## 10     2   107    4500 HR          18 Foreign trade fast       
+## # … with 58,810 more rows
+```
+
+---
+
+# Create document-term matrix
+
+
+```r
+(congress_dtm &lt;- congress_tokens %&gt;%
+   # get count of each token in each document
+   count(ID, word) %&gt;%
+   # create a document-term matrix with all features and tf weighting
+   cast_dtm(document = ID, term = word, value = n))
+```
+
+```
+## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 4902)&gt;&gt;
+## Non-/sparse entries: 55033/21753965
+## Sparsity           : 100%
+## Maximal term length: 24
+## Weighting          : term frequency (tf)
+```
+
+---
+
+# Weighting
+
+* Term frequency (tf)
+* Term frequency-inverse document frequency (tf-idf)
+
+---
+
+# Weighting
+
+
+```r
+congress_tokens %&gt;%
+  count(ID, word) %&gt;%
+  cast_dtm(document = ID, term = word, value = n,
+           weighting = tm::weightTfIdf)
+```
+
+```
+## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 4902)&gt;&gt;
+## Non-/sparse entries: 55033/21753965
+## Sparsity           : 100%
+## Maximal term length: 24
+## Weighting          : term frequency - inverse document frequency (normalized) (tf-idf)
+```
+
+---
+
+# Sparsity
+
+
+```r
+removeSparseTerms(congress_dtm, sparse = .95)
+## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 28)&gt;&gt;
+## Non-/sparse entries: 18447/106125
+## Sparsity           : 85%
+## Maximal term length: 11
+## Weighting          : term frequency (tf)
+removeSparseTerms(congress_dtm, sparse = .90)
+## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 16)&gt;&gt;
+## Non-/sparse entries: 14917/56267
+## Sparsity           : 79%
+## Maximal term length: 9
+## Weighting          : term frequency (tf)
+```
+
+
+```r
+(congress_dtm &lt;- removeSparseTerms(congress_dtm, sparse = .99))
+```
+
+```
+## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 209)&gt;&gt;
+## Non-/sparse entries: 33794/896047
+## Sparsity           : 96%
+## Maximal term length: 11
+## Weighting          : term frequency (tf)
+```
+
+---
+
+# Exploratory analysis
+
+
+
+&lt;img src="index_files/figure-html/plot-tf-idf-1.png" width="864" /&gt;
+
+---
+
+# Estimate model
+
+```r
+congress_rf &lt;- train(x = as.matrix(congress_dtm),
+                     y = factor(congress$major),
+                     method = "ranger",
+                     num.trees = 200,
+                     trControl = trainControl(method = "oob"))
+```
+
+
+
+
+
+---
+
+# Evaluate model
+
+
+```
+## Ranger result
+## 
+## Call:
+##  ranger::ranger(dependent.variable.name = ".outcome", data = x,      mtry = min(param$mtry, ncol(x)), min.node.size = param$min.node.size,      splitrule = as.character(param$splitrule), write.forest = TRUE,      probability = classProbs, ...) 
+## 
+## Type:                             Classification 
+## Number of trees:                  200 
+## Sample size:                      4449 
+## Number of independent variables:  209 
+## Mtry:                             105 
+## Target node size:                 1 
+## Variable importance mode:         impurity 
+## Splitrule:                        extratrees 
+## OOB prediction error:             32.34 %
+```
+
+---
+
+# Evaluate model
+
+&lt;img src="index_files/figure-html/rf-varimp-1.png" width="864" /&gt;
+
+---
+
+# Topic modeling
+
+* Themes
+* Probabilistic topic models
+* Latent Dirichlet allocation
+
+---
+
+# Food and animals
+
+1. I ate a banana and spinach smoothie for breakfast.
+1. I like to eat broccoli and bananas.
+1. Chinchillas and kittens are cute.
+1. My sister adopted a kitten yesterday.
+1. Look at this cute hamster munching on a piece of broccoli.
+
+---
+
+# LDA document structure
+
+* Decide on the number of words N the document will have
+    * [Dirichlet probability distribution](https://en.wikipedia.org/wiki/Dirichlet_distribution)
+    * Fixed set of `\(k\)` topics
+* Generate each word in the document:
+    * Pick a topic
+    * Generate the word
+* LDA backtracks from this assumption
+
+---
+
+
+
+# 20 topic LDA model
+
+
+```r
+library(topicmodels)
+congress_lda &lt;- LDA(congress_dtm, k = 20, control = list(seed = 123))
+congress_lda
+```
+
+```
+## A LDA_VEM topic model with 20 topics.
+```
+
+---
+
+# Top terms per topic
+
+&lt;img src="index_files/figure-html/congress-20-topn-1.png" width="864" /&gt;
+
+---
+
+# Document classification
+
+
+
+&lt;img src="index_files/figure-html/congress-model-compare-1.png" width="864" /&gt;
+
+---
+
+# `r/jokes`
+
+&lt;blockquote class="reddit-card" data-card-created="1552319072"&gt;&lt;a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/"&gt;Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.&lt;/a&gt; from &lt;a href="http://www.reddit.com/r/Jokes"&gt;r/Jokes&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"&gt;&lt;/script&gt;
+
+---
+
+# `r/jokes` dataset
+
+
+```
+## Observations: 194,553
+## Variables: 4
+## $ id    &lt;chr&gt; "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1"…
+## $ title &lt;chr&gt; "I hate how you cant even say black paint anymore", "What'…
+## $ body  &lt;chr&gt; "Now I have to say \"Leroy can you please paint the fence?…
+## $ score &lt;dbl&gt; 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, …
+```
+
+
+```
+## &lt;&lt;DocumentTermMatrix (documents: 49283, terms: 2482)&gt;&gt;
+## Non-/sparse entries: 443901/121876505
+## Sparsity           : 100%
+## Maximal term length: 23
+## Weighting          : term frequency (tf)
+```
+
+---
+
+# `\(k=4\)`
+
+
+
+&lt;img src="index_files/figure-html/jokes-4-topn-1.png" width="864" /&gt;
+
+---
+
+# `\(k=12\)`
+
+
+
+&lt;img src="index_files/figure-html/jokes-12-topn-1.png" width="864" /&gt;
+
+---
+
+# Perplexity
+
+* A statistical measure of how well a probability model predicts a sample
+* Given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents
+* Perplexity for LDA model with 12 topics
+    * 1190.2310034
+
+---
+
+# Perplexity
+
+
+
+&lt;img src="index_files/figure-html/jokes_lda_compare_viz-1.png" width="864" /&gt;
+
+---
+
+# `\(k=100\)`
+
+&lt;img src="index_files/figure-html/jokes-100-topn-1.png" width="864" /&gt;
+
+---
+
+# LDAvis
+
+* Interactive visualization of LDA model results
+1. What is the meaning of each topic?
+1. How prevalent is each topic?
+1. How do the topics relate to each other?
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();</script>
+
+<script>
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
