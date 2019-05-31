@@ -5,15 +5,15 @@ authors:
 #   matter.
 # education:
 #   courses:
-#   - course: PhD in Artificial Intelligence
-#     institution: Stanford University
+#   - course: PhD in Political Science
+#     institution: The Pennsylvania State University
+#     year: 2015
+#   - course: MA in Political Science
+#     institution: The Pennsylvania State University
 #     year: 2012
-#   - course: MEng in Artificial Intelligence
-#     institution: Massachusetts Institute of Technology
-#     year: 2009
-#   - course: BSc in Artificial Intelligence
-#     institution: Massachusetts Institute of Technology
-#     year: 2008
+#   - course: BA in Political Science
+#     institution: James Madison University
+#     year: 2010
 email: "soltoffbc@uchicago.edu"
 # interests:
 # - Artificial Intelligence
@@ -27,7 +27,7 @@ role: Lecturer in Computational Social Science
 social:
 - icon: envelope
   icon_pack: fas
-  link: '#contact'
+  link: 'mailto:soltoffbc@uchicago.edu'
 - icon: twitter
   icon_pack: fab
   link: https://twitter.com/soltoffbc
