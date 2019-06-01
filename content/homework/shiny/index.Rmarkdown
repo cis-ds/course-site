@@ -3,7 +3,7 @@ title: "HW09: Build a Shiny application"
 date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
-draft: true
+draft: false
 type: post
 aliases: ["/hw10-shiny.html"]
 
