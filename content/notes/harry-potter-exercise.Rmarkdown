@@ -21,7 +21,6 @@ knitr::opts_chunk$set(cache = TRUE)
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(tidytext)
-library(wordcloud)
 library(harrypotter)
 
 set.seed(1234)
@@ -126,15 +125,25 @@ hp_words %>%
 
 Sometimes words which are defined in a general sentiment dictionary can be outliers in specific contexts. That is, an author may use a word without intending to convey a specific sentiment but the dictionary defines it in a certain way.
 
-We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds) as a quick check to see if there are any outliers in the context of *Harry Potter*.
+We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds) as a quick check to see if there are any outliers in the context of *Harry Potter*, constructed using [`ggwordcloud`](https://lepennec.github.io/ggwordcloud/):
 
 ```{r sentiment-outliers}
-library(wordcloud)
+library(ggwordcloud)
 
+set.seed(123)   # ensure reproducibility of the wordcloud
 hp_nrc %>%
+  # count word frequency across books
   group_by(word) %>%
-  count() %>%
-  with(wordcloud(word, n, max.words = 100))
+  count(sort = TRUE) %>%
+  # keep only top 150 words for wordcloud
+  ungroup() %>%
+  top_n(n = 150, wt = n) %>%
+  mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
+  ggplot(aes(label = word, size = n, angle = angle)) +
+  geom_text_wordcloud_area(rm_outside = TRUE) +
+  scale_size(range = c(2, 15)) +
+  ggtitle("Most frequent tokens in Harry Potter") +
+  theme_minimal()
 ```
 
 As we can see, "harry" appears quite frequently in the books. In the vast majority of appearances, "harry" is used to refer to the main character and is not meant to convey a specific sentiment.
@@ -149,6 +158,23 @@ It would be best to remove this word from further sentiment analysis, treating i
 ```{r sentiment-outlier-remove}
 hp_nrc <- hp_nrc %>%
   filter(word != "harry")
+
+# wordcloud without harry
+set.seed(123)   # ensure reproducibility of the wordcloud
+hp_nrc %>%
+  # count word frequency across books
+  group_by(word) %>%
+  count(sort = TRUE) %>%
+  # keep only top 150 words for wordcloud
+  ungroup() %>%
+  top_n(n = 150, wt = n) %>%
+  mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
+  ggplot(aes(label = word, size = n, angle = angle)) +
+  geom_text_wordcloud_area(rm_outside = TRUE) +
+  scale_size(range = c(1, 15)) +
+  labs(title = "Most frequent tokens in Harry Potter",
+       subtitle = "Except for 'Harry'") +
+  theme_minimal()
 ```
 
 ## Visualize which words appear most frequently for each sentiment type
