@@ -44,10 +44,9 @@ set.seed(1234)
   </div>
   <div class="col-sm-4 col-xs-12">
   
-```{r pr-wordcloud, fig.cap = "Comments left by students when submitting homework assignments"}
+```{r pr-wordcloud, fig.height = 5, fig.width = 4}
 library(tidyverse)
 library(tidytext)
-library(wordcloud2)
 
 # get PR descriptions from fall 18
 evals <- read_rds("../../../grade-report/data/fall-2018-db.Rds")
@@ -57,18 +56,32 @@ pr_text <- evals$pr %>%
   select(user, hw_id, body_pr)
 
 # tokenize into unigrams
-pr_tokens <- pr_text %>% 
+pr_tokens <- pr_text %>%
+  # remove URLs
+  mutate(body_pr = str_remove_all(body_pr, "(http[^ ]*)|(www\\.[^ ]*)")) %>%
   unnest_tokens(output = word,
                 input = body_pr) %>%
   # remove stopwords
-  anti_join(stop_words)
+  anti_join(stop_words) %>%
+  # remove numbers
+  filter(!str_detect(word, "^[0-9]*$"))
 
-# plot using wordcloud2
+library(ggwordcloud)
+
+set.seed(123)   # ensure reproducibility of the wordcloud
 pr_tokens %>%
-  na.omit %>%
-  count(word, sort = TRUE) %>%
-  rename(freq = n) %>%
-  wordcloud2(widgetsize = c(275, 350))
+  # count word frequency
+  group_by(word) %>%
+  count(sort = TRUE) %>%
+  # keep only top words for wordcloud
+  ungroup() %>%
+  top_n(n = 100, wt = n) %>%
+  mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
+  ggplot(aes(label = word, size = n, angle = angle)) +
+  geom_text_wordcloud_area(rm_outside = TRUE, shape = "square") +
+  scale_size_area(max_size = 15) +
+  ggtitle("Comments left by students when\nsubmitting homework assignments") +
+  theme_minimal()
 ```
   
   </div>
