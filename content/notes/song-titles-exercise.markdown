@@ -36,30 +36,8 @@ Today let's practice our `tidytext` skills with a basic analysis of song titles.
 First let's use the `tidycensus` package to access the U.S. Census Bureau API and obtain population numbers for each state in 2016. This will help us later to normalize state mentions based on relative population size.^[For instance, California has a lot more people than Rhode Island so it makes sense that California would be mentioned more often in popular songs. But per capita, are these mentions different?]
 
 
-```r
-# retrieve state populations in 2016 from Census Bureau ACS
-library(tidycensus)
-pop_df <- get_acs(geography = "state", year = 2016,
-                  variables = c(population = "B01003_001")) %>%
-  # remove moe and tidy the data frame
-  select(-moe) %>%
-  spread(variable, estimate) %>%
-  # clean the data to match with the structure of the lyrics data
-  rename(state_name = NAME) %>%
-  mutate(state_name = str_to_lower(state_name)) %>%
-  filter(state_name != "Puerto Rico") %>%
-  write_csv(here("static", "data", "pop2016.csv"))
-```
-
 ```
 ## Getting data from the 2012-2016 5-year ACS
-```
-
-```r
-# do these results make sense?
-pop_df %>% 
-  arrange(desc(population)) %>%
-  top_n(10)
 ```
 
 ```
@@ -125,14 +103,6 @@ glimpse(song_lyrics)
 
 The lyrics are stored as character vectors, one string for each song. Consider the song [Uptown Funk](https://www.youtube.com/watch?v=OPf0YbXqDm0):
 
-
-```r
-song_lyrics %>%
-  filter(Song == "uptown funk") %$%
-  Lyrics %>%
-  str_wrap() %>%
-  cat()
-```
 
 ```
 ## this hit that ice cold michelle pfeiffer that white gold this one for them hood
@@ -414,8 +384,8 @@ devtools::session_info()
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
-##  tz       America/Los_Angeles         
-##  date     2019-05-30                  
+##  tz       America/Chicago             
+##  date     2019-06-03                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version   date       lib source        
@@ -433,6 +403,7 @@ devtools::session_info()
 ##  codetools      0.2-16    2018-12-24 [2] CRAN (R 3.5.3)
 ##  colorspace     1.4-1     2019-03-18 [2] CRAN (R 3.5.2)
 ##  crayon         1.3.4     2017-09-16 [2] CRAN (R 3.5.0)
+##  curl           3.3       2019-01-10 [2] CRAN (R 3.5.2)
 ##  DBI            1.0.0     2018-05-02 [2] CRAN (R 3.5.0)
 ##  desc           1.2.0     2018-05-01 [2] CRAN (R 3.5.0)
 ##  devtools       2.0.2     2019-04-08 [1] CRAN (R 3.5.2)
@@ -440,6 +411,7 @@ devtools::session_info()
 ##  dplyr        * 0.8.1     2019-05-14 [1] CRAN (R 3.5.2)
 ##  e1071          1.7-1     2019-03-19 [1] CRAN (R 3.5.2)
 ##  evaluate       0.13      2019-02-12 [2] CRAN (R 3.5.2)
+##  fansi          0.4.0     2018-10-05 [2] CRAN (R 3.5.0)
 ##  forcats      * 0.4.0     2019-02-17 [2] CRAN (R 3.5.2)
 ##  foreign        0.8-71    2018-07-20 [2] CRAN (R 3.5.3)
 ##  fs             1.3.1     2019-05-06 [1] CRAN (R 3.5.2)
@@ -467,7 +439,7 @@ devtools::session_info()
 ##  modelr         0.1.4     2019-02-18 [2] CRAN (R 3.5.2)
 ##  munsell        0.5.0     2018-06-12 [2] CRAN (R 3.5.0)
 ##  nlme           3.1-140   2019-05-12 [2] CRAN (R 3.5.2)
-##  pillar         1.4.0     2019-05-11 [2] CRAN (R 3.5.2)
+##  pillar         1.4.1     2019-05-28 [1] CRAN (R 3.5.2)
 ##  pkgbuild       1.0.3     2019-03-20 [1] CRAN (R 3.5.3)
 ##  pkgconfig      2.0.2     2018-08-16 [2] CRAN (R 3.5.1)
 ##  pkgload        1.0.2     2018-10-29 [1] CRAN (R 3.5.0)
@@ -498,7 +470,7 @@ devtools::session_info()
 ##  stringi        1.4.3     2019-03-12 [1] CRAN (R 3.5.2)
 ##  stringr      * 1.4.0     2019-02-10 [1] CRAN (R 3.5.2)
 ##  testthat       2.1.1     2019-04-23 [2] CRAN (R 3.5.2)
-##  tibble       * 2.1.1     2019-03-16 [2] CRAN (R 3.5.2)
+##  tibble       * 2.1.1     2019-03-16 [1] CRAN (R 3.5.2)
 ##  tidycensus   * 0.9       2019-01-09 [1] CRAN (R 3.5.2)
 ##  tidyr        * 0.8.3     2019-03-01 [1] CRAN (R 3.5.2)
 ##  tidyselect     0.2.5     2018-10-11 [1] CRAN (R 3.5.0)
@@ -508,12 +480,15 @@ devtools::session_info()
 ##  tokenizers     0.2.1     2018-03-29 [2] CRAN (R 3.5.0)
 ##  units          0.6-3     2019-05-03 [1] CRAN (R 3.5.2)
 ##  usethis        1.5.0     2019-04-07 [1] CRAN (R 3.5.2)
+##  utf8           1.1.4     2018-05-24 [2] CRAN (R 3.5.0)
 ##  uuid           0.1-2     2015-07-28 [2] CRAN (R 3.5.0)
+##  vctrs          0.1.0     2018-11-29 [2] CRAN (R 3.5.0)
 ##  withr          2.1.2     2018-03-15 [2] CRAN (R 3.5.0)
 ##  xfun           0.7       2019-05-14 [1] CRAN (R 3.5.2)
 ##  XML          * 3.98-1.19 2019-03-06 [2] CRAN (R 3.5.2)
 ##  xml2           1.2.0     2018-01-24 [2] CRAN (R 3.5.0)
 ##  yaml           2.2.0     2018-07-25 [2] CRAN (R 3.5.0)
+##  zeallot        0.1.0     2018-01-28 [2] CRAN (R 3.5.0)
 ## 
 ## [1] /Users/soltoffbc/Library/R/3.5/library
 ## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library
