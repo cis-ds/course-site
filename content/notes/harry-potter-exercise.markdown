@@ -28,9 +28,18 @@ theme_set(theme_minimal())
 
 ## Load Harry Potter text
 
+{{% alert note %}}
+
+Run the following code to download the [`harrypotter`](https://github.com/bradleyboehmke/harrypotter) package:
+
 ```r
 devtools::install_github("bradleyboehmke/harrypotter")
 ```
+
+Note that there is a different package available on CRAN also called [`harrypotter`](https://cran.r-project.org/web/packages/harrypotter/index.html). This is an entirely different package. If you just run `install.packages("harrypotter")`, you will get an error.
+
+{{% /alert %}}
+
 
 
 ```r
@@ -356,7 +365,7 @@ hp_nrc %>%
        title = "Harry Plotter: Emotions during the saga",
        subtitle = "Using tidytext and the nrc sentiment dictionary") +
   # seperate plots per sentiment and book and free up x-axes
-  facet_grid(sentiment ~ book, scale = "free")
+  facet_grid(sentiment ~ book, scales = "free")
 ```
 
 <img src="/notes/harry-potter-exercise_files/figure-html/sentiment-over-time-1.png" width="672" />
@@ -387,7 +396,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-06-03                  
+##  date     2019-06-06                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib
