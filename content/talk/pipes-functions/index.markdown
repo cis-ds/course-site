@@ -45,7 +45,6 @@ math: false
 
 * Demonstrate how to use the pipe
 * Demonstrate piping alternatives
-* Practice piping alternatives
 * Define functions and their purpose
 * Analyze a user-written function and explain how it works
 * Demonstrate conditional execution
@@ -58,7 +57,6 @@ math: false
 ## Class materials
 
 * [Pipes in R](/notes/pipes/)
-* [Practice the pipe](/notes/pipes-exercise/)
 * [Functions in R](/notes/functions/)
 
 ## What you need to do
