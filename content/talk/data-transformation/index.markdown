@@ -1,7 +1,7 @@
 ---
 title: "Data transformation"
-date: 2019-04-08T13:30:00
-publishDate: 2019-06-26T10:00:00
+date: 2019-06-26T10:00:00
+publishDate: 2019-04-08T13:30:00
 draft: false
 type: "talk"
 

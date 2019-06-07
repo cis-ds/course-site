@@ -1,7 +1,7 @@
 ---
 title: "Getting data from the web: scraping"
-date: 2019-05-15T13:30:00
-publishDate: 2019-07-16T10:00:00
+date: 2019-07-16T10:00:00
+publishDate: 2019-05-15T13:30:00
 draft: false
 type: "talk"
 

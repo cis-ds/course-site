@@ -1,7 +1,7 @@
 ---
 title: "Building Shiny Apps: Server"
-date: 2019-05-29T13:30:00
-publishDate: 2019-07-25T10:00:00
+date: 2019-07-25T10:00:00
+publishDate: 2019-05-29T13:30:00
 draft: false
 type: "talk"
 
@@ -17,7 +17,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Explain reactivity and construct the server function for a Shiyn application."
+summary: "Explain reactivity and construct the server function for a Shiny application."
 
 # Location of event.
 location: "Room 247, Saieh Hall for Economics, Chicago, IL"

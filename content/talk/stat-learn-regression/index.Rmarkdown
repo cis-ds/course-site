@@ -1,7 +1,7 @@
 ---
 title: "Statistical learning: regression"
-date: 2019-05-06T13:30:00
-publishDate: 2019-07-11T10:00:00
+date: 2019-07-11T10:00:00
+publishDate: 2019-05-06T13:30:00
 draft: false
 type: "talk"
 

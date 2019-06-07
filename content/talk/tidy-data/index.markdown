@@ -1,7 +1,7 @@
 ---
 title: "Data wrangling: tidy data"
-date: 2019-04-15T13:30:00
-publishDate: 2019-07-01T10:00:00
+date: 2019-07-01T10:00:00
+publishDate: 2019-04-15T13:30:00
 draft: false
 type: "talk"
 

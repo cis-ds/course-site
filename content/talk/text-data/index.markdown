@@ -1,7 +1,7 @@
 ---
 title: "Text analysis: fundamentals and sentiment analysis"
-date: 2019-06-03T13:30:00
-publishDate: 2019-07-22T10:00:00
+date: 2019-07-22T10:00:00
+publishDate: 2019-06-03T13:30:00
 draft: false
 type: "talk"
 

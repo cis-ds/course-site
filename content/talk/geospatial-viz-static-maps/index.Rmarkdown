@@ -1,7 +1,7 @@
 ---
 title: "Geospatial visualization: raster and vector maps"
-date: 2019-05-20T13:30:00
-publishDate: 2019-07-17T10:00:00
+date: 2019-07-17T10:00:00
+publishDate: 2019-05-20T13:30:00
 draft: false
 type: "talk"
 

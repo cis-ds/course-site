@@ -1,7 +1,7 @@
 ---
 title: "Visualizations and the grammar of graphics"
-date: 2019-04-03T13:30:00
-publishDate: 2019-06-25T10:00:00
+date: 2019-06-25T10:00:00
+publishDate: 2019-04-03T13:30:00
 draft: false
 type: "talk"
 
