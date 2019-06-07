@@ -68,6 +68,12 @@ In order to analyze the Supreme Court data, you will need to import these two fi
 
 Once joined, use your data wrangling and visualization skills to answer the following questions:
 
+{{% alert note %}}
+
+Pay careful attention to the unit of analysis required to answer each question. Remember that the dataset is structured as one row per justice per case. Some questions may require you to de-duplicate the dataset so that it is only one row per case.
+
+{{% /alert %}}
+
 1. What percentage of cases in each term are decided by a one-vote margin (i.e. 5-4, 4-3, etc.)
 1. For each term he served on the Court, in what percentage of cases was Justice Antonin Scalia in the majority?
 1. **Create a graph similar to above that compares the percentage for all cases versus non-unanimous cases (i.e. there was at least one dissenting vote)**
