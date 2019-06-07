@@ -15,7 +15,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Review methods for storing spatial data, define simple features data frames, and construct vector maps in ggplot."
+summary: "Review methods for storing spatial data, define simple features data frames, and construct vector maps in ggplot2."
 
 # Location of event.
 location: "Room 247, Saieh Hall for Economics, Chicago, IL"
