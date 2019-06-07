@@ -1,7 +1,7 @@
 ---
 title: "Pipes and functions in R"
 date: 2019-04-22T13:30:00
-publishDate: 2019-03-01T13:30:00
+publishDate: 2019-07-03T10:00:00
 draft: false
 type: "talk"
 
@@ -9,7 +9,7 @@ aliases: ["/cm007.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-04-22T14:50:00
+time_end: 2019-07-03T12:00:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
