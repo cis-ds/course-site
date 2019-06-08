@@ -1,6 +1,6 @@
 ---
-title: "HW09: Build a Shiny application"
-date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
+title: "HW08: Build a Shiny application"
+date: 2019-06-03T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw10-shiny.html"]
 
 summary: "Build/enhance a Shiny application."
-url_code: "https://github.com/uc-cfss/hw09"
+url_code: "https://github.com/cfss-su19/hw08"
 ---
 
 
 
 # Overview
 
-Due by class on June 3rd.
+Due by 1:30pm on Monday July 29th.
 
-# Fork the `hw09` repository
+# Fork the `hw08` repository
 
-Go [here](https://github.com/uc-cfss/hw09) to fork the repo for homework 09.
+Go [here](https://github.com/cfss-su19/hw08) to fork the repo.
 
 # What we've done
 

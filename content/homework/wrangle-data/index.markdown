@@ -8,20 +8,20 @@ type: post
 aliases: ["/hw03-wrangle-data.html"]
 
 summary: "Wrangle and explore messy datasets in practical research environments."
-url_code: "https://github.com/uc-cfss/hw03"
+url_code: "https://github.com/cfss-su19/hw03"
 ---
 
 
 
 # Overview
 
-Due before class on April 22nd.
+Due before class on Monday July 8th.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 
 # Fork the `hw03` repository
 
-Go [here](https://github.com/uc-cfss/hw03) to fork the repo for homework 03.
+Go [here](https://github.com/cfss-su19/hw03) to fork the repo.
 
 # Part 1: Tidying messy data
 
