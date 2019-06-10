@@ -35,7 +35,6 @@ Do the above. Can't think of a data source?
 
 * `gutenbergr`
 * `AssociatedPress` from the `topicmodels` package
-* `NYTimes` or `USCongress` from the `RTextTools` package
 * [Reuters-21578](http://www.daviddlewis.com/resources/testcollections/reuters21578/) - a standard set of text documents (articles published by Reuters in 1987). To access the document-term matrix for this data set, run the following code:
 
     

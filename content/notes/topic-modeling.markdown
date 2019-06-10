@@ -99,7 +99,7 @@ LDA can be useful if the topic structure of a set of documents is known **a prio
 
 ```r
 # get USCongress data
-data(USCongress, package = "RTextTools")
+data(USCongress, package = "rcfss")
 
 # topic labels
 major_topics <- tibble(
@@ -131,10 +131,10 @@ glimpse(congress)
 ```
 ## Observations: 4,449
 ## Variables: 7
-## $ ID       <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
-## $ cong     <int> 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
-## $ billnum  <int> 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4…
-## $ h_or_sen <fct> HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR, HR,…
+## $ ID       <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
+## $ cong     <dbl> 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
+## $ billnum  <dbl> 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4…
+## $ h_or_sen <chr> "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "…
 ## $ major    <dbl> 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, …
 ## $ text     <chr> "To suspend temporarily the duty on Fast Magenta 2 Stag…
 ## $ label    <fct> "Foreign trade", "Foreign trade", "Foreign trade", "For…
@@ -201,7 +201,7 @@ congress_tokens
 ```
 ## # A tibble: 58,820 x 7
 ##       ID  cong billnum h_or_sen major label         word       
-##    <int> <int>   <int> <fct>    <dbl> <fct>         <chr>      
+##    <dbl> <dbl>   <dbl> <chr>    <dbl> <fct>         <chr>      
 ##  1     1   107    4499 HR          18 Foreign trade suspend    
 ##  2     1   107    4499 HR          18 Foreign trade temporarili
 ##  3     1   107    4499 HR          18 Foreign trade duti       
@@ -807,7 +807,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.3 (2019-03-11)
+##  version  R version 3.6.0 (2019-04-26)
 ##  os       macOS Mojave 10.14.5        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -815,190 +815,195 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-06-05                  
+##  date     2019-06-10                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib
-##  assertthat    0.2.1   2019-03-21 [2]
-##  backports     1.1.4   2019-04-10 [2]
+##  assertthat    0.2.1   2019-03-21 [1]
+##  backports     1.1.4   2019-04-10 [1]
 ##  blogdown      0.12    2019-05-01 [1]
-##  bookdown      0.10    2019-05-10 [1]
-##  broom         0.5.2   2019-04-07 [2]
-##  callr         3.2.0   2019-03-15 [2]
-##  cellranger    1.1.0   2016-07-27 [2]
+##  bookdown      0.11    2019-05-28 [1]
+##  broom         0.5.2   2019-04-07 [1]
+##  callr         3.2.0   2019-03-15 [1]
+##  cellranger    1.1.0   2016-07-27 [1]
 ##  cli           1.1.0   2019-03-19 [1]
-##  codetools     0.2-16  2018-12-24 [2]
-##  colorspace    1.4-1   2019-03-18 [2]
-##  crayon        1.3.4   2017-09-16 [2]
-##  desc          1.2.0   2018-05-01 [2]
+##  codetools     0.2-16  2018-12-24 [1]
+##  colorspace    1.4-1   2019-03-18 [1]
+##  crayon        1.3.4   2017-09-16 [1]
+##  desc          1.2.0   2018-05-01 [1]
 ##  devtools      2.0.2   2019-04-08 [1]
 ##  digest        0.6.19  2019-05-20 [1]
 ##  dplyr       * 0.8.1   2019-05-14 [1]
-##  evaluate      0.13    2019-02-12 [2]
-##  forcats     * 0.4.0   2019-02-17 [2]
+##  evaluate      0.14    2019-05-28 [1]
+##  fansi         0.4.0   2018-10-05 [1]
+##  forcats     * 0.4.0   2019-02-17 [1]
 ##  fs            1.3.1   2019-05-06 [1]
 ##  generics      0.0.2   2018-11-29 [1]
 ##  ggplot2     * 3.1.1   2019-04-07 [1]
-##  glue          1.3.1   2019-03-12 [2]
-##  gtable        0.3.0   2019-03-25 [2]
-##  gutenbergr  * 0.1.4   2018-01-26 [2]
-##  haven         2.1.0   2019-02-19 [2]
-##  here        * 0.1     2017-05-28 [2]
-##  hms           0.4.2   2018-03-10 [2]
+##  glue          1.3.1   2019-03-12 [1]
+##  gtable        0.3.0   2019-03-25 [1]
+##  gutenbergr  * 0.1.4   2018-01-26 [1]
+##  haven         2.1.0   2019-02-19 [1]
+##  here        * 0.1     2017-05-28 [1]
+##  highr         0.8     2019-03-20 [1]
+##  hms           0.4.2   2018-03-10 [1]
 ##  htmltools     0.3.6   2017-04-28 [1]
-##  httr          1.4.0   2018-12-11 [2]
-##  janeaustenr   0.1.5   2017-06-10 [2]
-##  jsonlite      1.6     2018-12-07 [2]
-##  knitr         1.22    2019-03-08 [2]
-##  labeling      0.3     2014-08-23 [2]
-##  lattice       0.20-38 2018-11-04 [2]
-##  lazyeval      0.2.2   2019-03-15 [2]
-##  LDAvis      * 0.3.5   2019-03-07 [1]
-##  LDAvisData  * 0.1     2018-11-28 [1]
-##  lubridate     1.7.4   2018-04-11 [2]
-##  magrittr      1.5     2014-11-22 [2]
-##  Matrix        1.2-17  2019-03-22 [2]
-##  memoise       1.1.0   2017-04-21 [2]
-##  modelr        0.1.4   2019-02-18 [2]
-##  modeltools    0.2-22  2018-07-16 [2]
-##  munsell       0.5.0   2018-06-12 [2]
-##  nlme          3.1-140 2019-05-12 [2]
-##  NLP         * 0.2-0   2018-10-18 [2]
+##  httr          1.4.0   2018-12-11 [1]
+##  janeaustenr   0.1.5   2017-06-10 [1]
+##  jsonlite      1.6     2018-12-07 [1]
+##  knitr         1.23    2019-05-18 [1]
+##  labeling      0.3     2014-08-23 [1]
+##  lattice       0.20-38 2018-11-04 [1]
+##  lazyeval      0.2.2   2019-03-15 [1]
+##  LDAvis      * 0.3.2   2015-10-24 [1]
+##  LDAvisData  * 0.1     2019-06-10 [1]
+##  lubridate     1.7.4   2018-04-11 [1]
+##  magrittr      1.5     2014-11-22 [1]
+##  Matrix        1.2-17  2019-03-22 [1]
+##  memoise       1.1.0   2017-04-21 [1]
+##  modelr        0.1.4   2019-02-18 [1]
+##  modeltools    0.2-22  2018-07-16 [1]
+##  munsell       0.5.0   2018-06-12 [1]
+##  nlme          3.1-140 2019-05-12 [1]
+##  NLP         * 0.2-0   2018-10-18 [1]
 ##  pillar        1.4.1   2019-05-28 [1]
 ##  pkgbuild      1.0.3   2019-03-20 [1]
-##  pkgconfig     2.0.2   2018-08-16 [2]
+##  pkgconfig     2.0.2   2018-08-16 [1]
 ##  pkgload       1.0.2   2018-10-29 [1]
-##  plyr          1.8.4   2016-06-08 [2]
-##  prettyunits   1.0.2   2015-07-13 [2]
+##  plyr          1.8.4   2016-06-08 [1]
+##  prettyunits   1.0.2   2015-07-13 [1]
 ##  processx      3.3.1   2019-05-08 [1]
-##  proxy         0.4-23  2019-03-05 [1]
-##  ps            1.3.0   2018-12-21 [2]
-##  purrr       * 0.3.2   2019-03-15 [2]
+##  ps            1.3.0   2018-12-21 [1]
+##  purrr       * 0.3.2   2019-03-15 [1]
 ##  R6            2.4.0   2019-02-14 [1]
 ##  Rcpp          1.0.1   2019-03-17 [1]
-##  readr       * 1.3.1   2018-12-21 [2]
-##  readxl        1.3.1   2019-03-13 [2]
+##  readr       * 1.3.1   2018-12-21 [1]
+##  readxl        1.3.1   2019-03-13 [1]
 ##  remotes       2.0.4   2019-04-10 [1]
-##  reshape2      1.4.3   2017-12-11 [2]
+##  reshape2      1.4.3   2017-12-11 [1]
 ##  rjson       * 0.2.20  2018-06-08 [1]
-##  RJSONIO       1.3-1.1 2018-11-14 [2]
 ##  rlang         0.3.4   2019-04-07 [1]
-##  rmarkdown     1.12    2019-03-14 [1]
-##  rprojroot     1.3-2   2018-01-03 [2]
+##  rmarkdown     1.13    2019-05-22 [1]
+##  rprojroot     1.3-2   2018-01-03 [1]
 ##  rstudioapi    0.10    2019-03-19 [1]
-##  rvest         0.3.4   2019-05-15 [2]
+##  rvest         0.3.4   2019-05-15 [1]
 ##  scales        1.0.0   2018-08-09 [1]
 ##  sessioninfo   1.1.1   2018-11-05 [1]
 ##  slam        * 0.1-45  2019-02-26 [1]
-##  SnowballC     0.6.0   2019-01-15 [2]
+##  SnowballC     0.6.0   2019-01-15 [1]
 ##  stringi       1.4.3   2019-03-12 [1]
 ##  stringr     * 1.4.0   2019-02-10 [1]
-##  testthat      2.1.1   2019-04-23 [2]
-##  tibble      * 2.1.1   2019-03-16 [1]
+##  testthat      2.1.1   2019-04-23 [1]
+##  tibble      * 2.1.3   2019-06-06 [1]
 ##  tictoc      * 1.0     2014-06-17 [1]
 ##  tidyr       * 0.8.3   2019-03-01 [1]
 ##  tidyselect    0.2.5   2018-10-11 [1]
 ##  tidytext    * 0.2.0   2018-10-17 [1]
-##  tidyverse   * 1.2.1   2017-11-14 [2]
-##  tm          * 0.7-6   2018-12-21 [2]
-##  tokenizers    0.2.1   2018-03-29 [2]
-##  topicmodels * 0.2-8   2018-12-21 [2]
+##  tidyverse   * 1.2.1   2017-11-14 [1]
+##  tm          * 0.7-6   2018-12-21 [1]
+##  tokenizers    0.2.1   2018-03-29 [1]
+##  topicmodels * 0.2-8   2018-12-21 [1]
 ##  usethis       1.5.0   2019-04-07 [1]
-##  withr         2.1.2   2018-03-15 [2]
+##  utf8          1.1.4   2018-05-24 [1]
+##  vctrs         0.1.0   2018-11-29 [1]
+##  withr         2.1.2   2018-03-15 [1]
 ##  xfun          0.7     2019-05-14 [1]
-##  xml2          1.2.0   2018-01-24 [2]
-##  yaml          2.2.0   2018-07-25 [2]
+##  xml2          1.2.0   2018-01-24 [1]
+##  yaml          2.2.0   2018-07-25 [1]
+##  zeallot       0.1.0   2018-01-28 [1]
 ##  source                               
-##  CRAN (R 3.5.3)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.3)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.3)                       
-##  CRAN (R 3.5.2)                       
-##  Github (cpsievert/LDAvis@5067f7b)    
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
 ##  Github (cpsievert/LDAvisData@43dd263)
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.3)                       
-##  CRAN (R 3.5.1)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.3)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.2)                       
-##  CRAN (R 3.5.0)                       
-##  CRAN (R 3.5.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
+##  CRAN (R 3.6.0)                       
 ## 
-## [1] /Users/soltoffbc/Library/R/3.5/library
-## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```
