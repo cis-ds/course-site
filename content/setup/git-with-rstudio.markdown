@@ -15,7 +15,7 @@ aliases: "/git05.html"
 
 **You only have to do this once per machine.**
 
-# Make sure RStudio can find Git
+## Make sure RStudio can find Git
 
 ## If everything installed correctly...
 
@@ -50,9 +50,7 @@ If you make any changes, **restart RStudio and try the steps at the top of the p
 
 Still not working? Try [googling](https://www.google.com) your problem or speak with myself or the TA.
 
-# Test Drive RStudio and GitHub
-
-## Prerequisites
+## Test Drive RStudio and GitHub
 
 ## Step 1: Make a new repo on GitHub
 
