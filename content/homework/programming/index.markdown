@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw04-programming.html"]
 
 summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
-url_code: "https://github.com/uc-cfss/hw04"
+url_code: "https://github.com/cfss-su19/hw04"
 ---
 
 
 
 # Overview
 
-Due before class on April 29th.
+Due before class on Monday July 15th.
 
 # Fork the `hw04` repository
 
-Go [here](https://github.com/uc-cfss/hw04) to fork the repo for homework 04.
+Go [here](https://github.com/cfss-su19/hw04) to fork the repo.
 
 # Part 1: Programming exercises
 
@@ -45,9 +45,9 @@ Go [here](https://github.com/uc-cfss/hw04) to fork the repo for homework 04.
 
 # Part 2: Using programming in data analysis
 
-The World Bank publishes extensive socioeconomic data on countries around the world. In the `data_world_bank` folder, I have downloaded the World Bank's [complete economic indicators](https://data.worldbank.org/indicator) for each country that is currently a member of the [United Nations Security Council](http://www.un.org/en/sc/members/).^[Current as of 2016.]
+The World Bank publishes extensive socioeconomic data on countries/economies around the world. In the `data_world_bank` folder, I have downloaded the World Bank's [complete economic indicators](https://data.worldbank.org/indicator) for each economy.^[See [the documentation](https://datahelpdesk.worldbank.org/knowledgebase/articles/378834-how-does-the-world-bank-classify-countries) for more information on how the World Bank defines a country or an economy.]
 
-In order to analyze the data, you first need to import it. Each country's data is stored in a separate `.csv` file. You should write a function which uses one argument (the filepath to the data file). Given this path, the function should read and tidy the country data, and return the cleaned data frame as the output. Remember the rules for a tidy data frame:
+In order to analyze the data, you first need to import it. Each economy's data is stored in a separate `.csv` file. You should write a function which uses one argument (the filepath to the data file). Given this path, the function should read and tidy the economy data, and return the cleaned data frame as the output. Remember the rules for a tidy data frame:
 
 1. Each variable must have its own column.
 1. Each observation must have its own row.

@@ -2,7 +2,7 @@
 title: "Memorial Day"
 date: 2019-05-27T13:30:00
 publishDate: 2019-03-01T13:30:00
-draft: false
+draft: true
 type: "talk"
 
 # Talk start and end times.

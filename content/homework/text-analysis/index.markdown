@@ -1,6 +1,6 @@
 ---
-title: "HW10: Analyzing text data"
-date: 2019-06-03T13:30:00-06:00  # Schedule page publish date
+title: "HW07: Analyzing text data"
+date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw09-text_analysis.html"]
 
 summary: "Collect text data and analyze it."
-url_code: "https://github.com/uc-cfss/hw10"
+url_code: "https://github.com/cfss-su19/hw07"
 ---
 
 
 
 # Overview
 
-Due by 1:30pm on June 10th.
+Due by class on Thursday July 25th.
 
-# Fork the `hw10` repository
+# Fork the `hw07` repository
 
-Go [here](https://github.com/uc-cfss/hw10) to fork the repo for homework 10.
+Go [here](https://github.com/cfss-su19/hw08) to fork the repo.
 
 # Your mission
 
@@ -35,7 +35,6 @@ Do the above. Can't think of a data source?
 
 * `gutenbergr`
 * `AssociatedPress` from the `topicmodels` package
-* `NYTimes` or `USCongress` from the `RTextTools` package
 * [Reuters-21578](http://www.daviddlewis.com/resources/testcollections/reuters21578/) - a standard set of text documents (articles published by Reuters in 1987). To access the document-term matrix for this data set, run the following code:
 
     

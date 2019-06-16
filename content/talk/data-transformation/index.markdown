@@ -1,7 +1,7 @@
 ---
 title: "Data transformation"
-date: 2019-04-08T13:30:00
-publishDate: 2019-03-01T13:30:00
+date: 2019-06-26T10:00:00
+publishDate: 2019-04-08T13:30:00
 draft: false
 type: "talk"
 
@@ -9,7 +9,7 @@ aliases: ["/cm003.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-04-08T14:50:00
+time_end: 2019-06-26T12:00:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -65,7 +65,7 @@ math: false
 
 ## What you need to do
 
-* [Register your GitHub username for the course](https://goo.gl/forms/96MlxifdxxNJxuHt2) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/uc-cfss). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
+* [Register your GitHub username for the course](https://forms.gle/jS3nn8CM5JwttorU6) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/uc-cfss). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
 * Complete your peer evaluations for homework 01. Review the following:
     * [General Homework Rubric](/faq/homework-evaluations/)
     * [Performing peer review](/faq/peer-evaluations/)

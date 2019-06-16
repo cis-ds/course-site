@@ -42,7 +42,7 @@ Alternatively, we can now use statistical learning models to classify text into 
 
 ```r
 # get USCongress data
-data(USCongress, package = "RTextTools")
+data(USCongress, package = "rcfss")
 
 # topic labels
 major_topics <- tibble(
@@ -69,7 +69,7 @@ major_topics <- tibble(
 ```
 ## # A tibble: 4,449 x 7
 ##       ID  cong billnum h_or_sen major text                    label        
-##    <int> <int>   <int> <fct>    <dbl> <chr>                   <chr>        
+##    <dbl> <dbl>   <dbl> <chr>    <dbl> <chr>                   <chr>        
 ##  1     1   107    4499 HR          18 To suspend temporarily… Foreign trade
 ##  2     2   107    4500 HR          18 To suspend temporarily… Foreign trade
 ##  3     3   107    4501 HR          18 To suspend temporarily… Foreign trade
@@ -83,7 +83,7 @@ major_topics <- tibble(
 ## # … with 4,439 more rows
 ```
 
-`USCongress` from the [`RTextTools` package](http://www.rtexttools.com/) contains a sample of hand-labeled bills from the United States Congress. For each bill we have a text description of the bill's purpose (e.g. "To amend the Immigration and Nationality Act in regard to Caribbean-born immigrants.") as well as the bill's [major policy topic code corresponding to the subject of the bill](http://www.comparativeagendas.net/pages/master-codebook). There are 20 major policy topics according to this coding scheme (e.g. Macroeconomics, Civil Rights, Health). These topic codes have been labeled by hand. The current dataset only contains a sample of bills from the 107th Congress (2001-03). If we wanted to obtain policy topic codes for all bills introduced over a longer period, we would have to manually code tens of thousands if not millions of bill descriptions. Clearly a task outside of our capabilities.
+`USCongress` contains a sample of hand-labeled bills from the United States Congress. For each bill we have a text description of the bill's purpose (e.g. "To amend the Immigration and Nationality Act in regard to Caribbean-born immigrants.") as well as the bill's [major policy topic code corresponding to the subject of the bill](http://www.comparativeagendas.net/pages/master-codebook). There are 20 major policy topics according to this coding scheme (e.g. Macroeconomics, Civil Rights, Health). These topic codes have been labeled by hand. The current dataset only contains a sample of bills from the 107th Congress (2001-03). If we wanted to obtain policy topic codes for all bills introduced over a longer period, we would have to manually code tens of thousands if not millions of bill descriptions. Clearly a task outside of our capabilities.
 
 Instead, we can build a statistical learning model which predicts the major topic code of a bill given its text description. These notes outline a potential `tidytext` workflow for such an approach.
 
@@ -110,7 +110,7 @@ First we convert `USCongress` into a tidy text data frame.
 ```
 ## # A tibble: 58,820 x 7
 ##       ID  cong billnum h_or_sen major label         word       
-##    <int> <int>   <int> <fct>    <dbl> <chr>         <chr>      
+##    <dbl> <dbl>   <dbl> <chr>    <dbl> <chr>         <chr>      
 ##  1     1   107    4499 HR          18 Foreign trade suspend    
 ##  2     1   107    4499 HR          18 Foreign trade temporarili
 ##  3     1   107    4499 HR          18 Foreign trade duti       
@@ -190,9 +190,9 @@ removeSparseTerms(congress_dtm, sparse = .99)
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 4319, terms: 86)>>
-## Non-/sparse entries: 10933/360501
-## Sparsity           : 97%
+## <<DocumentTermMatrix (documents: 4449, terms: 209)>>
+## Non-/sparse entries: 33794/896047
+## Sparsity           : 96%
 ## Maximal term length: 11
 ## Weighting          : term frequency (tf)
 ```
@@ -202,9 +202,9 @@ removeSparseTerms(congress_dtm, sparse = .95)
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 4319, terms: 10)>>
-## Non-/sparse entries: 4905/38285
-## Sparsity           : 89%
+## <<DocumentTermMatrix (documents: 4449, terms: 28)>>
+## Non-/sparse entries: 18447/106125
+## Sparsity           : 85%
 ## Maximal term length: 11
 ## Weighting          : term frequency (tf)
 ```
@@ -214,10 +214,10 @@ removeSparseTerms(congress_dtm, sparse = .90)
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 4319, terms: 3)>>
-## Non-/sparse entries: 2923/10034
-## Sparsity           : 77%
-## Maximal term length: 6
+## <<DocumentTermMatrix (documents: 4449, terms: 16)>>
+## Non-/sparse entries: 14917/56267
+## Sparsity           : 79%
+## Maximal term length: 9
 ## Weighting          : term frequency (tf)
 ```
 
@@ -337,7 +337,7 @@ toc()
 ```
 
 ```
-## 8.801 sec elapsed
+## 8.406 sec elapsed
 ```
 
 
@@ -352,8 +352,8 @@ congress_rf_200 <- train(x = as.matrix(congress_dtm),
 ```
 
 ```
-## Growing trees.. Progress: 86%. Estimated remaining time: 5 seconds.
-## Growing trees.. Progress: 93%. Estimated remaining time: 2 seconds.
+## Growing trees.. Progress: 47%. Estimated remaining time: 34 seconds.
+## Growing trees.. Progress: 81%. Estimated remaining time: 7 seconds.
 ```
 
 ```r
@@ -361,7 +361,7 @@ toc()
 ```
 
 ```
-## 129.053 sec elapsed
+## 157.455 sec elapsed
 ```
 
 This is why it is important to remove sparse features and simplify the document-term matrix as much as possible - the more text features and observations in the document-term matrix, the longer it takes to train the model.
@@ -387,7 +387,7 @@ congress_rf_200$finalModel
 ## Target node size:                 1 
 ## Variable importance mode:         impurity 
 ## Splitrule:                        extratrees 
-## OOB prediction error:             32.34 %
+## OOB prediction error:             32.37 %
 ```
 
 
@@ -421,7 +421,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.3 (2019-03-11)
+##  version  R version 3.6.0 (2019-04-26)
 ##  os       macOS Mojave 10.14.5        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -429,110 +429,114 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-05-29                  
+##  date     2019-06-10                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        
-##  assertthat     0.2.1      2019-03-21 [2] CRAN (R 3.5.3)
-##  backports      1.1.4      2019-04-10 [2] CRAN (R 3.5.2)
-##  blogdown       0.12       2019-05-01 [1] CRAN (R 3.5.2)
-##  bookdown       0.10       2019-05-10 [1] CRAN (R 3.5.2)
-##  broom          0.5.2      2019-04-07 [2] CRAN (R 3.5.2)
-##  callr          3.2.0      2019-03-15 [2] CRAN (R 3.5.2)
-##  caret        * 6.0-84     2019-04-27 [1] CRAN (R 3.5.2)
-##  cellranger     1.1.0      2016-07-27 [2] CRAN (R 3.5.0)
-##  class          7.3-15     2019-01-01 [2] CRAN (R 3.5.3)
-##  cli            1.1.0      2019-03-19 [1] CRAN (R 3.5.2)
-##  codetools      0.2-16     2018-12-24 [2] CRAN (R 3.5.3)
-##  colorspace     1.4-1      2019-03-18 [2] CRAN (R 3.5.2)
-##  crayon         1.3.4      2017-09-16 [2] CRAN (R 3.5.0)
-##  data.table     1.12.2     2019-04-07 [2] CRAN (R 3.5.2)
-##  desc           1.2.0      2018-05-01 [2] CRAN (R 3.5.0)
-##  devtools       2.0.2      2019-04-08 [1] CRAN (R 3.5.2)
-##  digest         0.6.19     2019-05-20 [1] CRAN (R 3.5.2)
-##  dplyr        * 0.8.1      2019-05-14 [1] CRAN (R 3.5.2)
-##  ellipsis       0.1.0      2019-02-19 [2] CRAN (R 3.5.2)
-##  evaluate       0.13       2019-02-12 [2] CRAN (R 3.5.2)
-##  forcats      * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)
-##  foreach        1.4.4      2017-12-12 [2] CRAN (R 3.5.0)
-##  fs             1.3.1      2019-05-06 [1] CRAN (R 3.5.2)
-##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.5.0)
-##  ggplot2      * 3.1.1      2019-04-07 [1] CRAN (R 3.5.2)
-##  glue           1.3.1      2019-03-12 [2] CRAN (R 3.5.2)
-##  gower          0.2.1      2019-05-14 [2] CRAN (R 3.5.2)
-##  gtable         0.3.0      2019-03-25 [2] CRAN (R 3.5.2)
-##  haven          2.1.0      2019-02-19 [2] CRAN (R 3.5.2)
-##  here           0.1        2017-05-28 [2] CRAN (R 3.5.0)
-##  hms            0.4.2      2018-03-10 [2] CRAN (R 3.5.0)
-##  htmltools      0.3.6      2017-04-28 [1] CRAN (R 3.5.0)
-##  httr           1.4.0      2018-12-11 [2] CRAN (R 3.5.0)
-##  ipred          0.9-9      2019-04-28 [1] CRAN (R 3.5.2)
-##  iterators      1.0.10     2018-07-13 [2] CRAN (R 3.5.0)
-##  janeaustenr    0.1.5      2017-06-10 [2] CRAN (R 3.5.0)
-##  jsonlite       1.6        2018-12-07 [2] CRAN (R 3.5.0)
-##  knitr          1.22       2019-03-08 [2] CRAN (R 3.5.2)
-##  labeling       0.3        2014-08-23 [2] CRAN (R 3.5.0)
-##  lattice      * 0.20-38    2018-11-04 [2] CRAN (R 3.5.3)
-##  lava           1.6.5      2019-02-12 [2] CRAN (R 3.5.2)
-##  lazyeval       0.2.2      2019-03-15 [2] CRAN (R 3.5.2)
-##  lubridate      1.7.4      2018-04-11 [2] CRAN (R 3.5.0)
-##  magrittr       1.5        2014-11-22 [2] CRAN (R 3.5.0)
-##  MASS           7.3-51.4   2019-03-31 [2] CRAN (R 3.5.2)
-##  Matrix         1.2-17     2019-03-22 [2] CRAN (R 3.5.2)
-##  memoise        1.1.0      2017-04-21 [2] CRAN (R 3.5.0)
-##  ModelMetrics   1.2.2      2018-11-03 [2] CRAN (R 3.5.0)
-##  modelr         0.1.4      2019-02-18 [2] CRAN (R 3.5.2)
-##  munsell        0.5.0      2018-06-12 [2] CRAN (R 3.5.0)
-##  nlme           3.1-140    2019-05-12 [2] CRAN (R 3.5.2)
-##  NLP          * 0.2-0      2018-10-18 [2] CRAN (R 3.5.0)
-##  nnet           7.3-12     2016-02-02 [2] CRAN (R 3.5.3)
-##  pillar         1.4.0      2019-05-11 [2] CRAN (R 3.5.2)
-##  pkgbuild       1.0.3      2019-03-20 [1] CRAN (R 3.5.3)
-##  pkgconfig      2.0.2      2018-08-16 [2] CRAN (R 3.5.1)
-##  pkgload        1.0.2      2018-10-29 [1] CRAN (R 3.5.0)
-##  plyr           1.8.4      2016-06-08 [2] CRAN (R 3.5.0)
-##  prettyunits    1.0.2      2015-07-13 [2] CRAN (R 3.5.0)
-##  processx       3.3.1      2019-05-08 [1] CRAN (R 3.5.2)
-##  prodlim        2018.04.18 2018-04-18 [2] CRAN (R 3.5.0)
-##  ps             1.3.0      2018-12-21 [2] CRAN (R 3.5.0)
-##  purrr        * 0.3.2      2019-03-15 [2] CRAN (R 3.5.2)
-##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.5.2)
-##  ranger         0.11.2     2019-03-07 [1] CRAN (R 3.5.2)
-##  Rcpp           1.0.1      2019-03-17 [1] CRAN (R 3.5.2)
-##  readr        * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)
-##  readxl         1.3.1      2019-03-13 [2] CRAN (R 3.5.2)
-##  recipes        0.1.5      2019-03-21 [1] CRAN (R 3.5.3)
-##  remotes        2.0.4      2019-04-10 [1] CRAN (R 3.5.2)
-##  reshape2       1.4.3      2017-12-11 [2] CRAN (R 3.5.0)
-##  rlang          0.3.4      2019-04-07 [1] CRAN (R 3.5.2)
-##  rmarkdown      1.12       2019-03-14 [1] CRAN (R 3.5.2)
-##  rpart          4.1-15     2019-04-12 [1] CRAN (R 3.5.2)
-##  rprojroot      1.3-2      2018-01-03 [2] CRAN (R 3.5.0)
-##  rstudioapi     0.10       2019-03-19 [1] CRAN (R 3.5.3)
-##  rvest          0.3.4      2019-05-15 [2] CRAN (R 3.5.2)
-##  scales         1.0.0      2018-08-09 [1] CRAN (R 3.5.0)
-##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.5.0)
-##  slam           0.1-45     2019-02-26 [1] CRAN (R 3.5.2)
-##  SnowballC      0.6.0      2019-01-15 [2] CRAN (R 3.5.2)
-##  stringi        1.4.3      2019-03-12 [1] CRAN (R 3.5.2)
-##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.5.2)
-##  survival       2.44-1.1   2019-04-01 [2] CRAN (R 3.5.2)
-##  testthat       2.1.1      2019-04-23 [2] CRAN (R 3.5.2)
-##  tibble       * 2.1.1      2019-03-16 [2] CRAN (R 3.5.2)
-##  tictoc       * 1.0        2014-06-17 [1] CRAN (R 3.5.0)
-##  tidyr        * 0.8.3      2019-03-01 [1] CRAN (R 3.5.2)
-##  tidyselect     0.2.5      2018-10-11 [1] CRAN (R 3.5.0)
-##  tidytext     * 0.2.0      2018-10-17 [1] CRAN (R 3.5.0)
-##  tidyverse    * 1.2.1      2017-11-14 [2] CRAN (R 3.5.0)
-##  timeDate       3043.102   2018-02-21 [2] CRAN (R 3.5.0)
-##  tm           * 0.7-6      2018-12-21 [2] CRAN (R 3.5.0)
-##  tokenizers     0.2.1      2018-03-29 [2] CRAN (R 3.5.0)
-##  usethis        1.5.0      2019-04-07 [1] CRAN (R 3.5.2)
-##  withr          2.1.2      2018-03-15 [2] CRAN (R 3.5.0)
-##  xfun           0.7        2019-05-14 [1] CRAN (R 3.5.2)
-##  xml2           1.2.0      2018-01-24 [2] CRAN (R 3.5.0)
-##  yaml           2.2.0      2018-07-25 [2] CRAN (R 3.5.0)
+##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 3.6.0)
+##  backports      1.1.4      2019-04-10 [1] CRAN (R 3.6.0)
+##  blogdown       0.12       2019-05-01 [1] CRAN (R 3.6.0)
+##  bookdown       0.11       2019-05-28 [1] CRAN (R 3.6.0)
+##  broom          0.5.2      2019-04-07 [1] CRAN (R 3.6.0)
+##  callr          3.2.0      2019-03-15 [1] CRAN (R 3.6.0)
+##  caret        * 6.0-84     2019-04-27 [1] CRAN (R 3.6.0)
+##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 3.6.0)
+##  class          7.3-15     2019-01-01 [1] CRAN (R 3.6.0)
+##  cli            1.1.0      2019-03-19 [1] CRAN (R 3.6.0)
+##  codetools      0.2-16     2018-12-24 [1] CRAN (R 3.6.0)
+##  colorspace     1.4-1      2019-03-18 [1] CRAN (R 3.6.0)
+##  crayon         1.3.4      2017-09-16 [1] CRAN (R 3.6.0)
+##  data.table     1.12.2     2019-04-07 [1] CRAN (R 3.6.0)
+##  desc           1.2.0      2018-05-01 [1] CRAN (R 3.6.0)
+##  devtools       2.0.2      2019-04-08 [1] CRAN (R 3.6.0)
+##  digest         0.6.19     2019-05-20 [1] CRAN (R 3.6.0)
+##  dplyr        * 0.8.1      2019-05-14 [1] CRAN (R 3.6.0)
+##  e1071          1.7-2      2019-06-05 [1] CRAN (R 3.6.0)
+##  ellipsis       0.1.0      2019-02-19 [1] CRAN (R 3.6.0)
+##  evaluate       0.14       2019-05-28 [1] CRAN (R 3.6.0)
+##  fansi          0.4.0      2018-10-05 [1] CRAN (R 3.6.0)
+##  forcats      * 0.4.0      2019-02-17 [1] CRAN (R 3.6.0)
+##  foreach        1.4.4      2017-12-12 [1] CRAN (R 3.6.0)
+##  fs             1.3.1      2019-05-06 [1] CRAN (R 3.6.0)
+##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.6.0)
+##  ggplot2      * 3.1.1      2019-04-07 [1] CRAN (R 3.6.0)
+##  glue           1.3.1      2019-03-12 [1] CRAN (R 3.6.0)
+##  gower          0.2.1      2019-05-14 [1] CRAN (R 3.6.0)
+##  gtable         0.3.0      2019-03-25 [1] CRAN (R 3.6.0)
+##  haven          2.1.0      2019-02-19 [1] CRAN (R 3.6.0)
+##  here           0.1        2017-05-28 [1] CRAN (R 3.6.0)
+##  hms            0.4.2      2018-03-10 [1] CRAN (R 3.6.0)
+##  htmltools      0.3.6      2017-04-28 [1] CRAN (R 3.6.0)
+##  httr           1.4.0      2018-12-11 [1] CRAN (R 3.6.0)
+##  ipred          0.9-9      2019-04-28 [1] CRAN (R 3.6.0)
+##  iterators      1.0.10     2018-07-13 [1] CRAN (R 3.6.0)
+##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 3.6.0)
+##  jsonlite       1.6        2018-12-07 [1] CRAN (R 3.6.0)
+##  knitr          1.23       2019-05-18 [1] CRAN (R 3.6.0)
+##  labeling       0.3        2014-08-23 [1] CRAN (R 3.6.0)
+##  lattice      * 0.20-38    2018-11-04 [1] CRAN (R 3.6.0)
+##  lava           1.6.5      2019-02-12 [1] CRAN (R 3.6.0)
+##  lazyeval       0.2.2      2019-03-15 [1] CRAN (R 3.6.0)
+##  lubridate      1.7.4      2018-04-11 [1] CRAN (R 3.6.0)
+##  magrittr       1.5        2014-11-22 [1] CRAN (R 3.6.0)
+##  MASS           7.3-51.4   2019-03-31 [1] CRAN (R 3.6.0)
+##  Matrix         1.2-17     2019-03-22 [1] CRAN (R 3.6.0)
+##  memoise        1.1.0      2017-04-21 [1] CRAN (R 3.6.0)
+##  ModelMetrics   1.2.2      2018-11-03 [1] CRAN (R 3.6.0)
+##  modelr         0.1.4      2019-02-18 [1] CRAN (R 3.6.0)
+##  munsell        0.5.0      2018-06-12 [1] CRAN (R 3.6.0)
+##  nlme           3.1-140    2019-05-12 [1] CRAN (R 3.6.0)
+##  NLP          * 0.2-0      2018-10-18 [1] CRAN (R 3.6.0)
+##  nnet           7.3-12     2016-02-02 [1] CRAN (R 3.6.0)
+##  pillar         1.4.1      2019-05-28 [1] CRAN (R 3.6.0)
+##  pkgbuild       1.0.3      2019-03-20 [1] CRAN (R 3.6.0)
+##  pkgconfig      2.0.2      2018-08-16 [1] CRAN (R 3.6.0)
+##  pkgload        1.0.2      2018-10-29 [1] CRAN (R 3.6.0)
+##  plyr           1.8.4      2016-06-08 [1] CRAN (R 3.6.0)
+##  prettyunits    1.0.2      2015-07-13 [1] CRAN (R 3.6.0)
+##  processx       3.3.1      2019-05-08 [1] CRAN (R 3.6.0)
+##  prodlim        2018.04.18 2018-04-18 [1] CRAN (R 3.6.0)
+##  ps             1.3.0      2018-12-21 [1] CRAN (R 3.6.0)
+##  purrr        * 0.3.2      2019-03-15 [1] CRAN (R 3.6.0)
+##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.6.0)
+##  ranger         0.11.2     2019-03-07 [1] CRAN (R 3.6.0)
+##  Rcpp           1.0.1      2019-03-17 [1] CRAN (R 3.6.0)
+##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)
+##  readxl         1.3.1      2019-03-13 [1] CRAN (R 3.6.0)
+##  recipes        0.1.5      2019-03-21 [1] CRAN (R 3.6.0)
+##  remotes        2.0.4      2019-04-10 [1] CRAN (R 3.6.0)
+##  reshape2       1.4.3      2017-12-11 [1] CRAN (R 3.6.0)
+##  rlang          0.3.4      2019-04-07 [1] CRAN (R 3.6.0)
+##  rmarkdown      1.13       2019-05-22 [1] CRAN (R 3.6.0)
+##  rpart          4.1-15     2019-04-12 [1] CRAN (R 3.6.0)
+##  rprojroot      1.3-2      2018-01-03 [1] CRAN (R 3.6.0)
+##  rstudioapi     0.10       2019-03-19 [1] CRAN (R 3.6.0)
+##  rvest          0.3.4      2019-05-15 [1] CRAN (R 3.6.0)
+##  scales         1.0.0      2018-08-09 [1] CRAN (R 3.6.0)
+##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.6.0)
+##  slam           0.1-45     2019-02-26 [1] CRAN (R 3.6.0)
+##  SnowballC      0.6.0      2019-01-15 [1] CRAN (R 3.6.0)
+##  stringi        1.4.3      2019-03-12 [1] CRAN (R 3.6.0)
+##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.6.0)
+##  survival       2.44-1.1   2019-04-01 [1] CRAN (R 3.6.0)
+##  testthat       2.1.1      2019-04-23 [1] CRAN (R 3.6.0)
+##  tibble       * 2.1.3      2019-06-06 [1] CRAN (R 3.6.0)
+##  tictoc       * 1.0        2014-06-17 [1] CRAN (R 3.6.0)
+##  tidyr        * 0.8.3      2019-03-01 [1] CRAN (R 3.6.0)
+##  tidyselect     0.2.5      2018-10-11 [1] CRAN (R 3.6.0)
+##  tidytext     * 0.2.0      2018-10-17 [1] CRAN (R 3.6.0)
+##  tidyverse    * 1.2.1      2017-11-14 [1] CRAN (R 3.6.0)
+##  timeDate       3043.102   2018-02-21 [1] CRAN (R 3.6.0)
+##  tm           * 0.7-6      2018-12-21 [1] CRAN (R 3.6.0)
+##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 3.6.0)
+##  usethis        1.5.0      2019-04-07 [1] CRAN (R 3.6.0)
+##  utf8           1.1.4      2018-05-24 [1] CRAN (R 3.6.0)
+##  vctrs          0.1.0      2018-11-29 [1] CRAN (R 3.6.0)
+##  withr          2.1.2      2018-03-15 [1] CRAN (R 3.6.0)
+##  xfun           0.7        2019-05-14 [1] CRAN (R 3.6.0)
+##  xml2           1.2.0      2018-01-24 [1] CRAN (R 3.6.0)
+##  yaml           2.2.0      2018-07-25 [1] CRAN (R 3.6.0)
+##  zeallot        0.1.0      2018-01-28 [1] CRAN (R 3.6.0)
 ## 
-## [1] /Users/soltoffbc/Library/R/3.5/library
-## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

@@ -8,20 +8,20 @@ type: post
 aliases: ["/hw03-wrangle-data.html"]
 
 summary: "Wrangle and explore messy datasets in practical research environments."
-url_code: "https://github.com/uc-cfss/hw03"
+url_code: "https://github.com/cfss-su19/hw03"
 ---
 
 
 
 # Overview
 
-Due before class on April 22nd.
+Due before class on Monday July 8th.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 
 # Fork the `hw03` repository
 
-Go [here](https://github.com/uc-cfss/hw03) to fork the repo for homework 03.
+Go [here](https://github.com/cfss-su19/hw03) to fork the repo.
 
 # Part 1: Tidying messy data
 
@@ -67,6 +67,12 @@ The data is structured in a tidy fashion.^[Tidy, though not necessarily the most
 In order to analyze the Supreme Court data, you will need to import these two files and combine them together (see `bind_rows()` from the `dplyr` package). Friendly warning: you will initially encounter an error attempting to bind the two data frames. Use your powers of deduction (and [R4DS](http://r4ds.had.co.nz/data-import.html)/Google/Stack Overflow/classmates/me and the TAs) to figure out how to fix this error.
 
 Once joined, use your data wrangling and visualization skills to answer the following questions:
+
+{{% alert note %}}
+
+Pay careful attention to the unit of analysis required to answer each question. Remember that the dataset is structured as one row per justice per case. Some questions may require you to de-duplicate the dataset so that it is only one row per case.
+
+{{% /alert %}}
 
 1. What percentage of cases in each term are decided by a one-vote margin (i.e. 5-4, 4-3, etc.)
 1. For each term he served on the Court, in what percentage of cases was Justice Antonin Scalia in the majority?

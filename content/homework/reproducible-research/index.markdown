@@ -3,7 +3,7 @@ title: "HW05: Generating reproducible research"
 date: 2019-04-29T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
-draft: false
+draft: true
 type: post
 aliases: ["/hw05-reproducible-research.html"]
 
