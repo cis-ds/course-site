@@ -20,7 +20,7 @@ abstract: ""
 summary: "Review the goals of statistical learning, introduce methods for linear regression, and practice working with model objects in R."
 
 # Location of event.
-location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+location: "Room 315, Haskell Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

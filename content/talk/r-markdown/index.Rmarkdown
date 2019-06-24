@@ -20,7 +20,7 @@ abstract: ""
 summary: "All things related to R Markdown, plus a review of R scripts and Git troubleshooting."
 
 # Location of event.
-location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+location: "Room 315, Haskell Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

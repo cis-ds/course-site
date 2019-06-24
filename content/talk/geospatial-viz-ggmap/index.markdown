@@ -20,7 +20,7 @@ abstract: ""
 summary: "Identify components of geospatial visualizations and implement raster maps using ggplot2."
 
 # Location of event.
-location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+location: "Room 315, Haskell Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

@@ -20,7 +20,7 @@ abstract: ""
 summary: "Practice scraping content from web pages using rvest."
 
 # Location of event.
-location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+location: "Room 315, Haskell Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

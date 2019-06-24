@@ -20,7 +20,7 @@ abstract: ""
 summary: "Define an application program interface, write functions to query APIs, and practice tidying JSON objects."
 
 # Location of event.
-location: "Room 247, Saieh Hall for Economics, Chicago, IL"
+location: "Room 315, Haskell Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false
