@@ -63,15 +63,22 @@ Specifically, how do individual perceptions of the importance of this video effe
 1. Estimate a basic (single variable) linear regression model of the relationship between the importance of the video and feelings towards Donald Trump. Calculate predicted values, graph the relationship between the two variables using the predicted values, and determine whether there appears to be a significant relationship.
 1. Build the best predictive linear regression model of attitudes towards Donald Trump given the variables you have available. In this context, "best" is defined as the model with the lowest MSE. Compare at least three different model formulations (aka different combinations of variables). Use 10-fold cross-validation to avoid a biased estimate of MSE.
 
-# Part 2: Revisiting the Titanic
+# Part 2: Predicting attitudes towards racist college professors
 
-We've looked a lot at the [Titanic](/notes/logistic-regression/) [data set](/notes/decision-trees/). Now I want you to make your own predictions about who lived and who died.
+The [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.^[Conducted by NORC at the University of Chicago.]
 
-1. Load the Titanic data from `library(titanic)`. Use the `titanic_train` data frame.
-1. Estimate three different logistic regression models with `Survived` as the response variable. You may use any combination of the predictors to estimate these models. **Don't just reuse [the models from the notes](/notes/logistic-regression/#logistic_regression).**
+> [The GSS gathers data on contemporary American society in order to monitor and explain trends and constants in attitudes, behaviors, and attributes. Hundreds of trends have been tracked since 1972. In addition, since the GSS adopted questions from earlier surveys, trends can be followed for up to 70 years. The GSS contains a standard core of demographic, behavioral, and attitudinal questions, plus topics of special interest. Among the topics covered are civil liberties, crime and violence, intergroup tolerance, morality, national spending priorities, psychological well-being, social mobility, and stress and traumatic events.](http://gss.norc.org/About-The-GSS)
+
+You are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
+
+`rcfss::gss_colrac` contain a selection of variables from the 2012 GSS. The outcome of interest `colrac` is a binary variable coded as either `TRUE` (respondent believes the person should be allowed to teach) or `FALSE` (respondent believes the person should not allowed to teach). Documentation for the other predictors (if the variable is not clearly coded) can be viewed [here](https://gssdataexplorer.norc.org/variables/vfilter). You can also run `?gss_colrac` to open a documentation file in R.
+
+1. Load the `gss_colrac` data frame from `library(rcfss)`.
+1. Estimate three different logistic regression models with `colrac` as the response variable. You may use any combination of the predictors to estimate these models.
     1. Calculate the 10-fold cross-validation error rate for each model. Which model performs the best?
-1. Now estimate a random forest model with all available variables (excluding Name, Ticket, and Cabin). Generate random forests with 500 trees apiece.
-    1. Generate a variable importance plots. Which variables seem the most important?
+1. Estimate a decision tree model using all the variables and the default settings for `ctree()`. Interpret the resulting decision tree.
+1. Now estimate a random forest model with all available variables. Generate a random forest with 500 trees.
+    1. Generate a variable importance plot. Which variables seem the most important?
     1. Calculate the out-of-bag error rate. How does this compare to the 10-fold CV error rate from the logistic regression models?
 
 # Submit the assignment
