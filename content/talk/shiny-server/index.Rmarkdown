@@ -2,7 +2,7 @@
 title: "Building Shiny Apps: Server"
 date: 2019-07-25T10:00:00
 publishDate: 2019-05-29T13:30:00
-draft: false
+draft: true
 type: "talk"
 
 aliases: ["/cm020.html"]

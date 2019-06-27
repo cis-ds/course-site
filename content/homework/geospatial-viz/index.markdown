@@ -1,5 +1,5 @@
 ---
-title: "HW06: Geospatial visualization"
+title: "HW07: Geospatial visualization"
 date: 2019-05-20T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw07-geospatial.html"]
 
 summary: "Build a map."
-url_code: "https://github.com/cfss-su19/hw06"
+url_code: "https://github.com/cfss-su19/hw07"
 ---
 
 
 
 # Overview
 
-Due by class on Monday July 22nd.
+Due by class on Thursday July 25th.
 
-# Fork the `hw06` repository
+# Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-su19/hw06) to fork the repo.
+Go [here](https://github.com/cfss-su19/hw07) to fork the repo.
 
 # Generate a geospatial visualization
 

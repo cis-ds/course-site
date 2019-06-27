@@ -1,5 +1,5 @@
 ---
-title: "Project management"
+title: "Reproducible workflow"
 date: 2019-07-10T10:00:00
 publishDate: 2019-05-01T13:30:00
 draft: false
@@ -7,7 +7,7 @@ type: "talk"
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-07-10T10:00:00
+time_end: 2019-07-10T10:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -15,7 +15,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "What I don't want to forget to teach you about R."
+summary: "Methods for implementing a tidy, reproducible workflow."
 
 # Location of event.
 location: "Room 315, Haskell Hall, Chicago, IL"
@@ -37,24 +37,16 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
 * Review the importance of reproducibility in scientific research
 * Define a project-oriented workflow
 * Demonstrate how to construct safe filepaths using `here()`
-* Distinguish between R scripts (`.R`) and R Markdown documents (`.Rmd`)
 * Identify R startup procedures
-* Practice generating reproducible examples
-* Identify common problems with Git and explain how to resolve these problems
 
 ## Before class
-
-* Read chapters 27-29 in [R for Data Science](http://r4ds.had.co.nz) for more on R Markdown and document formats
-* Review [chapter 6](http://r4ds.had.co.nz/workflow-scripts.html) in *R for Data Science* for more info on scripts
 
 ## Class materials
 
@@ -62,9 +54,6 @@ knitr::opts_chunk$set(echo = FALSE)
 * [Project-oriented workflow](/notes/project-oriented-workflow)
 * [Use safe filepaths](/notes/safe-filepaths/)
 * [R startup procedures](/notes/r-startup/)
-* [A dive into R Markdown](/notes/r-markdown/)
-* [Reproducible examples and `reprex`](/faq/asking-questions/#include-a-reproducible-example)
-* [Recovering from common Git predicaments](/notes/common-git-problems/)
 
 ## Additional resources
 
@@ -72,6 +61,3 @@ knitr::opts_chunk$set(echo = FALSE)
 * [Project-oriented workflow](https://www.tidyverse.org/articles/2017/12/workflow-vs-script/)
 
 ## What you need to do
-
-* [Start homework 5](/homework/reproducible-research/)
-* Install the `titanic` package using the command `install.packages("titanic")`. We will be using this package in-class next time

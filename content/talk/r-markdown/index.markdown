@@ -1,15 +1,15 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2019-05-01T13:30:00
+date: 2019-07-11T10:00:00
 publishDate: 2019-03-01T13:30:00
-draft: true
+draft: false
 type: "talk"
 
 aliases: ["/cm010.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-05-01T14:50:00
+time_end: 2019-07-11T10:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -46,25 +46,22 @@ math: false
 * Review the importance of reproducibility in scientific research
 * Identify the major components of R Markdown
 * Implement chunk options to customize output
-* Incorporate in-line R code in R Markdown documents
 * Introduce the different R Markdown formats
+* Distinguish between R scripts (`.R`) and R Markdown documents (`.Rmd`)
+* Practice generating reproducible examples
 * Identify common problems with Git and explain how to resolve these problems
 
 ## Before class
 
 * Read chapters 27-29 in [R for Data Science](http://r4ds.had.co.nz) for more on R Markdown and document formats
 * Review [chapter 6](http://r4ds.had.co.nz/workflow-scripts.html) in *R for Data Science* for more info on scripts
-* Read [Recovering from Git Predicaments](/notes/common-git-problems/) - some important tips for fixing problems related to Git
 
 ## Class materials
 
 * [A dive into R Markdown](/notes/r-markdown/)
-
-* [R Markdown](http://rmarkdown.rstudio.com/) - the official site for R Markdown. Lots of great explanations of the different formats and options available for each one.
-* [`flexdashboard`](https://rmarkdown.rstudio.com/flexdashboard/) - documentation for `flexdashboard` to create information dashboards using R Markdown
-* [`pipeline-example`](https://github.com/uc-cfss/pipeline-example) - a repo demonstrating how to combine and use R scripts and R Markdown documents. I recommend you fork/clone the repo to your computer, then explore and execute the different files to see how everything works together.
+* [Reproducible examples and `reprex`](/faq/asking-questions/#include-a-reproducible-example)
+* [Recovering from common Git predicaments](/notes/common-git-problems/)
 
 ## What you need to do
 
-* [Start homework 5](/homework/reproducible-research/)
 * Install the `titanic` package using the command `install.packages("titanic")`. We will be using this package in-class next time

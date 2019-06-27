@@ -1,25 +1,25 @@
 ---
-title: "HW06: Statistical learning"
+title: "HW05: Statistical learning"
 date: 2019-05-06T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
-draft: true
+draft: false
 type: post
 aliases: ["/hw06-stat-learn.html"]
 
 summary: "Implement statistical learning methods for regression and classification."
-url_code: "https://github.com/uc-cfss/hw06"
+url_code: "https://github.com/cfss-su19/hw05"
 ---
 
 
 
 # Overview
 
-Due before class on May 13th.
+Due before class on Thursday July 18th.
 
-# Fork the `hw06` repository
+# Fork the `hw05` repository
 
-Go [here](https://github.com/uc-cfss/hw06) to fork the repo for homework 06.
+Go [here](https://github.com/cfss-su19/hw05) to fork the repo.
 
 # Part 1: President Donald Trump
 
