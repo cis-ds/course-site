@@ -1,0 +1,220 @@
+---
+title: "Reproducible workflow"
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(cache = TRUE,
+                      fig.retina = 2, fig.width = 12)
+
+library(tidyverse)
+library(rcfss)
+library(here)
+
+chunk <- "```"
+inline <- function(x = "") paste0("`` `r ", x, "` ``")
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = rcfss::base_size))
+```
+
+
+# Workspace
+
+* Libraries with `library()`
+* User-created objects
+* Option to save image of current workspace
+* Treat workspaces as disposable
+
+---
+
+![](/img/if-you-liked-it-you-should-have-saved-the-source-for-it.jpg)
+
+---
+
+# Save code, not workspace
+
+* Enforces reproducibility
+* Easy to regenerate on-demand
+* Always save commands
+* Always start R with a blank state
+* Restart R often
+
+---
+
+# Bad approaches
+
+```r
+rm(list = ls())
+```
+
+* Good intent, but poor execution
+* Only deletes user-created objects
+* Enforces hidden dependencies on things you ran before `rm(list = ls())`
+
+---
+
+<iframe width="800" height="500" src="https://www.youtube.com/embed/GiPe1OiKQuk?start=7" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+---
+
+# How to store work
+
+* Split work into projects
+* **We already do this**
+* But why?
+
+---
+
+# `setwd()`
+
+```r
+library(ggplot2)
+setwd("/Users/bensoltoff/cuddly_broccoli/verbose_funicular/foofy/data")
+df <- read.delim("raw_foofy_data.csv")
+p <- ggplot(df, aes(x, y)) + geom_point()
+ggsave("../figs/foofy_scatterplot.png")
+```
+
+---
+
+# Project-based workflow
+
+* File system discipline
+* Working directory intentionality
+* File path discipline
+
+--
+
+## Rationale for workflow
+
+* Ensures portability
+* Reliable, polite behavior
+
+---
+
+# RStudio Projects
+
+* `.Rproj`
+* Opening projects
+* Switching between projects
+
+---
+
+# Use safe filepaths
+
+* Avoid `setwd()`
+* Split work into projects
+* Declare each folder as a project
+* Use `here()`
+
+---
+
+# `here::here()`
+
+```{r}
+library(here)
+here()
+```
+
+--
+
+* Build a file path
+
+```{r, collapse = TRUE}
+here("static", "extras", "awesome.txt")
+cat(readLines(here("static", "extras", "awesome.txt")))
+```
+    
+--
+
+* What if we change the working directory?
+
+```{r, collapse = TRUE}
+setwd(here("static"))
+getwd()
+cat(readLines(here("static", "extras", "awesome.txt")))
+```
+
+---
+
+# How does it know?
+
+* Is a file named `.here` present?
+* Is this an RStudio Project?
+* Is this a checkout from a version control system?
+
+---
+
+# Filepaths and R Markdown
+
+```
+data/
+  scotus.csv
+analysis/
+  exploratory-analysis.Rmd
+final-report.Rmd
+scotus.Rproj
+```
+
+--
+
+* `.Rmd` and assumption of working directory
+* Run `read_csv("data/scotus.csv")`
+* Run `read_csv(here("data", "scotus.csv"))`
+
+---
+
+# R startup procedures
+
+* Customized startup
+* `.Renviron`
+* `.Rprofile`
+
+---
+
+# `.Renviron`
+
+* Define sensitive information
+* Set R specific environmental variables
+* Does not use R code syntax
+* `usethis::edit_r_environ()`
+
+--
+
+## Example `.Renviron`
+
+```shell
+R_HISTSIZE=100000
+GITHUB_PAT=abc123
+R_LIBS_USER=~/R/%p/%v
+```
+
+---
+
+# `.Rprofile`
+
+* R code to run when R starts up
+* Runs after `.Renviron`
+* Multiple `.Rprofile` files
+    * Home directory (`~/.Rprofile`)
+    * Each R Project folder
+* `usethis::edit_r_profile()`
+
+---
+
+# Common items in `.Rprofile`
+
+1. Set a default CRAN mirror
+1. Write a welcome message
+1. Customize their R prompt
+1. Change options, screen width, numeric display
+1. Store API keys/tokens that are necessary for only a single project
+
+---
+
+# Git tracking of `.Rprofile`
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/13e1PQJrKtqYKyO0FY" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>

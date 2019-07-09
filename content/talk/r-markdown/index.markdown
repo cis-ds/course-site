@@ -31,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: ""
+url_slides: "/slides/a-deep-dive-into-r-markdown/"
 url_video: ""
 url_code: ""
 

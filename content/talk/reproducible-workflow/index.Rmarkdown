@@ -29,7 +29,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/project-management/"
+url_slides: "/slides/reproducible-workflow/"
 url_video: ""
 url_code: ""
 
