@@ -73,6 +73,12 @@ You are going to predict attitudes towards racist college professors. Specifical
 
 `rcfss::gss_colrac` contain a selection of variables from the 2012 GSS. The outcome of interest `colrac` is a binary variable coded as either `TRUE` (respondent believes the person should be allowed to teach) or `FALSE` (respondent believes the person should not allowed to teach). Documentation for the other predictors (if the variable is not clearly coded) can be viewed [here](https://gssdataexplorer.norc.org/variables/vfilter). You can also run `?gss_colrac` to open a documentation file in R.
 
+{{% alert note %}}
+
+`gss_colrac` is found in version `0.1.7` of `rcfss`. You will need to update your package prior to attempting the exercise. Run `devtools::install_github("uc-cfss/rcfss")` from your console to update to the most recent version.
+
+{{% /alert %}}
+
 1. Load the `gss_colrac` data frame from `library(rcfss)`.
 1. Estimate three different logistic regression models with `colrac` as the response variable. You may use any combination of the predictors to estimate these models.
     1. Calculate the 10-fold cross-validation error rate for each model. Which model performs the best?
