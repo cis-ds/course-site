@@ -60,4 +60,4 @@ math: false
 
 ## What you need to do
 
-* Work on [homework 8](/homework/geospatial-viz/)
+* [Complete the geospatial visualization homework](/homework/geospatial-viz/)

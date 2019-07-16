@@ -64,4 +64,4 @@ math: false
 
 ## What you need to do
 
-* [Begin homework 3](/homework/wrangle-data/)
+* [Complete the wrangling and visualizing data homework](/homework/wrangle-data/)

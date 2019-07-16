@@ -63,4 +63,4 @@ math: false
 
 ## What you need to do
 
-* [Start homework 4](/homework/programming/)
+* [Complete the programming homework](/homework/programming/)

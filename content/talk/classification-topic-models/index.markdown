@@ -63,4 +63,4 @@ math: false
 
 ## To do for Monday
 
-* [Start homework 10](/homework/text-analysis/)
+* [Complete the text analysis homework](/homework/text-analysis/)
