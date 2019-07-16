@@ -162,7 +162,7 @@ Printing the tree-object provides a text-based view of the entire decision tree 
 * At each terminal node, we identify the number of observations and the misclassification (error) rate.
 * Overall, this decision tree misclassifies `\(20.9\%\)` of the training set observations
 
-That's all well in good, but decision trees are meant to be viewed. Let's plot it!
+That's all well and good, but decision trees are meant to be viewed. Let's plot it!
 
 
 ```r
@@ -963,7 +963,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-07-12                  
+##  date     2019-07-16                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source                     
@@ -973,7 +973,7 @@ devtools::session_info()
 ##  bookdown       0.11       2019-05-28 [1] CRAN (R 3.6.0)             
 ##  broom        * 0.5.2      2019-04-07 [1] CRAN (R 3.6.0)             
 ##  callr          3.2.0      2019-03-15 [1] CRAN (R 3.6.0)             
-##  caret        * 6.0-84     2019-04-27 [1] CRAN (R 3.6.0)             
+##  caret          6.0-84     2019-04-27 [1] CRAN (R 3.6.0)             
 ##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 3.6.0)             
 ##  class          7.3-15     2019-01-01 [1] CRAN (R 3.6.0)             
 ##  cli            1.1.0      2019-03-19 [1] CRAN (R 3.6.0)             
@@ -988,7 +988,6 @@ devtools::session_info()
 ##  evaluate       0.14       2019-05-28 [1] CRAN (R 3.6.0)             
 ##  forcats      * 0.4.0      2019-02-17 [1] CRAN (R 3.6.0)             
 ##  foreach        1.4.4      2017-12-12 [1] CRAN (R 3.6.0)             
-##  Formula        1.2-3      2018-05-03 [1] CRAN (R 3.6.0)             
 ##  fs             1.3.1      2019-05-06 [1] CRAN (R 3.6.0)             
 ##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.6.0)             
 ##  ggplot2      * 3.1.1      2019-04-07 [1] CRAN (R 3.6.0)             
@@ -1000,15 +999,13 @@ devtools::session_info()
 ##  hms            0.4.2      2018-03-10 [1] CRAN (R 3.6.0)             
 ##  htmltools      0.3.6      2017-04-28 [1] CRAN (R 3.6.0)             
 ##  httr           1.4.0      2018-12-11 [1] CRAN (R 3.6.0)             
-##  inum           1.0-1      2019-04-25 [1] CRAN (R 3.6.0)             
 ##  ipred          0.9-9      2019-04-28 [1] CRAN (R 3.6.0)             
 ##  iterators      1.0.10     2018-07-13 [1] CRAN (R 3.6.0)             
 ##  jsonlite       1.6        2018-12-07 [1] CRAN (R 3.6.0)             
 ##  knitr          1.23       2019-05-18 [1] CRAN (R 3.6.0)             
-##  lattice      * 0.20-38    2018-11-04 [1] CRAN (R 3.6.0)             
+##  lattice        0.20-38    2018-11-04 [1] CRAN (R 3.6.0)             
 ##  lava           1.6.5      2019-02-12 [1] CRAN (R 3.6.0)             
 ##  lazyeval       0.2.2      2019-03-15 [1] CRAN (R 3.6.0)             
-##  libcoin      * 1.0-4      2019-02-28 [1] CRAN (R 3.6.0)             
 ##  lubridate      1.7.4      2018-04-11 [1] CRAN (R 3.6.0)             
 ##  magrittr       1.5        2014-11-22 [1] CRAN (R 3.6.0)             
 ##  MASS           7.3-51.4   2019-03-31 [1] CRAN (R 3.6.0)             
@@ -1017,10 +1014,8 @@ devtools::session_info()
 ##  ModelMetrics   1.2.2      2018-11-03 [1] CRAN (R 3.6.0)             
 ##  modelr       * 0.1.4      2019-02-18 [1] CRAN (R 3.6.0)             
 ##  munsell        0.5.0      2018-06-12 [1] CRAN (R 3.6.0)             
-##  mvtnorm      * 1.0-10     2019-03-05 [1] CRAN (R 3.6.0)             
 ##  nlme           3.1-140    2019-05-12 [1] CRAN (R 3.6.0)             
 ##  nnet           7.3-12     2016-02-02 [1] CRAN (R 3.6.0)             
-##  partykit     * 1.2-4      2019-05-17 [1] CRAN (R 3.6.0)             
 ##  pillar         1.4.1      2019-05-28 [1] CRAN (R 3.6.0)             
 ##  pkgbuild       1.0.3      2019-03-20 [1] CRAN (R 3.6.0)             
 ##  pkgconfig      2.0.2      2018-08-16 [1] CRAN (R 3.6.0)             
@@ -1032,7 +1027,6 @@ devtools::session_info()
 ##  ps             1.3.0      2018-12-21 [1] CRAN (R 3.6.0)             
 ##  purrr        * 0.3.2      2019-03-15 [1] CRAN (R 3.6.0)             
 ##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.6.0)             
-##  rcfss        * 0.1.7      2019-07-02 [1] local                      
 ##  Rcpp           1.0.1      2019-03-17 [1] CRAN (R 3.6.0)             
 ##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)             
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 3.6.0)             
@@ -1056,7 +1050,6 @@ devtools::session_info()
 ##  tidyselect     0.2.5      2018-10-11 [1] CRAN (R 3.6.0)             
 ##  tidyverse    * 1.2.1      2017-11-14 [1] CRAN (R 3.6.0)             
 ##  timeDate       3043.102   2018-02-21 [1] CRAN (R 3.6.0)             
-##  titanic      * 0.1.0      2015-08-31 [1] CRAN (R 3.6.0)             
 ##  usethis        1.5.0      2019-04-07 [1] CRAN (R 3.6.0)             
 ##  withr          2.1.2      2018-03-15 [1] CRAN (R 3.6.0)             
 ##  xfun           0.7.4      2019-06-10 [1] Github (yihui/xfun@cc966d3)
