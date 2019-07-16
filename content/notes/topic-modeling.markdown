@@ -383,7 +383,7 @@ congress_tokens_lite %>%
   # join with the gamma values
   left_join(congress_gamma) %>%
   # remove missing values
-  na.omit() %>%
+  drop_na() %>%
   group_by(topic, major, label) %>%
   summarize(gamma = median(gamma)) %>%
   # plot the topic distributions for each policy topic
@@ -815,7 +815,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-07-12                  
+##  date     2019-07-16                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib
@@ -835,7 +835,6 @@ devtools::session_info()
 ##  digest        0.6.19  2019-05-20 [1]
 ##  dplyr       * 0.8.1   2019-05-14 [1]
 ##  evaluate      0.14    2019-05-28 [1]
-##  fansi         0.4.0   2018-10-05 [1]
 ##  forcats     * 0.4.0   2019-02-17 [1]
 ##  fs            1.3.1   2019-05-06 [1]
 ##  generics      0.0.2   2018-11-29 [1]
@@ -872,7 +871,6 @@ devtools::session_info()
 ##  plyr          1.8.4   2016-06-08 [1]
 ##  prettyunits   1.0.2   2015-07-13 [1]
 ##  processx      3.3.1   2019-05-08 [1]
-##  proxy         0.4-23  2019-03-05 [1]
 ##  ps            1.3.0   2018-12-21 [1]
 ##  purrr       * 0.3.2   2019-03-15 [1]
 ##  R6            2.4.0   2019-02-14 [1]
@@ -880,9 +878,7 @@ devtools::session_info()
 ##  readr       * 1.3.1   2018-12-21 [1]
 ##  readxl        1.3.1   2019-03-13 [1]
 ##  remotes       2.0.4   2019-04-10 [1]
-##  reshape2      1.4.3   2017-12-11 [1]
 ##  rjson       * 0.2.20  2018-06-08 [1]
-##  RJSONIO       1.3-1.2 2019-06-04 [1]
 ##  rlang         0.3.4   2019-04-07 [1]
 ##  rmarkdown     1.13    2019-05-22 [1]
 ##  rprojroot     1.3-2   2018-01-03 [1]
@@ -905,15 +901,11 @@ devtools::session_info()
 ##  tokenizers    0.2.1   2018-03-29 [1]
 ##  topicmodels * 0.2-8   2018-12-21 [1]
 ##  usethis       1.5.0   2019-04-07 [1]
-##  utf8          1.1.4   2018-05-24 [1]
-##  vctrs         0.1.0   2018-11-29 [1]
 ##  withr         2.1.2   2018-03-15 [1]
 ##  xfun          0.7.4   2019-06-10 [1]
 ##  xml2          1.2.0   2018-01-24 [1]
 ##  yaml          2.2.0   2018-07-25 [1]
-##  zeallot       0.1.0   2018-01-28 [1]
 ##  source                               
-##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
@@ -997,13 +989,7 @@ devtools::session_info()
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
-##  CRAN (R 3.6.0)                       
-##  CRAN (R 3.6.0)                       
-##  CRAN (R 3.6.0)                       
-##  CRAN (R 3.6.0)                       
-##  CRAN (R 3.6.0)                       
 ##  Github (yihui/xfun@cc966d3)          
-##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ## 

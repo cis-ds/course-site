@@ -488,7 +488,7 @@ We will reuse `titanic_tree_full_data` with the adjustment that we need to remov
 ```r
 titanic_rf_data <- titanic_tree_full_data %>%
   select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked) %>%
-  na.omit()
+  drop_na()
 titanic_rf_data
 ```
 
@@ -568,8 +568,6 @@ str(titanic_rf, max.level = 1)
 ##   ..- attr(*, "class")= chr "randomForest"
 ##  $ preProcess  : NULL
 ##  $ trainingData:Classes 'tbl_df', 'tbl' and 'data.frame':	714 obs. of  8 variables:
-##   ..- attr(*, "na.action")= 'omit' Named int [1:177] 6 18 20 27 29 30 32 33 37 43 ...
-##   .. ..- attr(*, "names")= chr [1:177] "6" "18" "20" "27" ...
 ##  $ resample    : NULL
 ##  $ resampledCM : NULL
 ##  $ perfNames   : chr [1:2] "Accuracy" "Kappa"
@@ -873,7 +871,7 @@ mental_health
     ```r
     # prep data
     mh_rf_data <- mh_tree_data %>%
-      na.omit()
+      drop_na()
     
     # estimate model
     mh_rf <- train(vote96 ~ ., data = mh_rf_data,
@@ -973,7 +971,7 @@ devtools::session_info()
 ##  bookdown       0.11       2019-05-28 [1] CRAN (R 3.6.0)             
 ##  broom        * 0.5.2      2019-04-07 [1] CRAN (R 3.6.0)             
 ##  callr          3.2.0      2019-03-15 [1] CRAN (R 3.6.0)             
-##  caret          6.0-84     2019-04-27 [1] CRAN (R 3.6.0)             
+##  caret        * 6.0-84     2019-04-27 [1] CRAN (R 3.6.0)             
 ##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 3.6.0)             
 ##  class          7.3-15     2019-01-01 [1] CRAN (R 3.6.0)             
 ##  cli            1.1.0      2019-03-19 [1] CRAN (R 3.6.0)             
@@ -985,9 +983,12 @@ devtools::session_info()
 ##  devtools       2.0.2      2019-04-08 [1] CRAN (R 3.6.0)             
 ##  digest         0.6.19     2019-05-20 [1] CRAN (R 3.6.0)             
 ##  dplyr        * 0.8.1      2019-05-14 [1] CRAN (R 3.6.0)             
+##  e1071          1.7-2      2019-06-05 [1] CRAN (R 3.6.0)             
 ##  evaluate       0.14       2019-05-28 [1] CRAN (R 3.6.0)             
+##  fansi          0.4.0      2018-10-05 [1] CRAN (R 3.6.0)             
 ##  forcats      * 0.4.0      2019-02-17 [1] CRAN (R 3.6.0)             
 ##  foreach        1.4.4      2017-12-12 [1] CRAN (R 3.6.0)             
+##  Formula        1.2-3      2018-05-03 [1] CRAN (R 3.6.0)             
 ##  fs             1.3.1      2019-05-06 [1] CRAN (R 3.6.0)             
 ##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.6.0)             
 ##  ggplot2      * 3.1.1      2019-04-07 [1] CRAN (R 3.6.0)             
@@ -996,16 +997,19 @@ devtools::session_info()
 ##  gtable         0.3.0      2019-03-25 [1] CRAN (R 3.6.0)             
 ##  haven          2.1.0      2019-02-19 [1] CRAN (R 3.6.0)             
 ##  here           0.1        2017-05-28 [1] CRAN (R 3.6.0)             
+##  highr          0.8        2019-03-20 [1] CRAN (R 3.6.0)             
 ##  hms            0.4.2      2018-03-10 [1] CRAN (R 3.6.0)             
 ##  htmltools      0.3.6      2017-04-28 [1] CRAN (R 3.6.0)             
 ##  httr           1.4.0      2018-12-11 [1] CRAN (R 3.6.0)             
+##  inum           1.0-1      2019-04-25 [1] CRAN (R 3.6.0)             
 ##  ipred          0.9-9      2019-04-28 [1] CRAN (R 3.6.0)             
 ##  iterators      1.0.10     2018-07-13 [1] CRAN (R 3.6.0)             
 ##  jsonlite       1.6        2018-12-07 [1] CRAN (R 3.6.0)             
 ##  knitr          1.23       2019-05-18 [1] CRAN (R 3.6.0)             
-##  lattice        0.20-38    2018-11-04 [1] CRAN (R 3.6.0)             
+##  lattice      * 0.20-38    2018-11-04 [1] CRAN (R 3.6.0)             
 ##  lava           1.6.5      2019-02-12 [1] CRAN (R 3.6.0)             
 ##  lazyeval       0.2.2      2019-03-15 [1] CRAN (R 3.6.0)             
+##  libcoin      * 1.0-4      2019-02-28 [1] CRAN (R 3.6.0)             
 ##  lubridate      1.7.4      2018-04-11 [1] CRAN (R 3.6.0)             
 ##  magrittr       1.5        2014-11-22 [1] CRAN (R 3.6.0)             
 ##  MASS           7.3-51.4   2019-03-31 [1] CRAN (R 3.6.0)             
@@ -1014,8 +1018,10 @@ devtools::session_info()
 ##  ModelMetrics   1.2.2      2018-11-03 [1] CRAN (R 3.6.0)             
 ##  modelr       * 0.1.4      2019-02-18 [1] CRAN (R 3.6.0)             
 ##  munsell        0.5.0      2018-06-12 [1] CRAN (R 3.6.0)             
+##  mvtnorm      * 1.0-10     2019-03-05 [1] CRAN (R 3.6.0)             
 ##  nlme           3.1-140    2019-05-12 [1] CRAN (R 3.6.0)             
 ##  nnet           7.3-12     2016-02-02 [1] CRAN (R 3.6.0)             
+##  partykit     * 1.2-4      2019-05-17 [1] CRAN (R 3.6.0)             
 ##  pillar         1.4.1      2019-05-28 [1] CRAN (R 3.6.0)             
 ##  pkgbuild       1.0.3      2019-03-20 [1] CRAN (R 3.6.0)             
 ##  pkgconfig      2.0.2      2018-08-16 [1] CRAN (R 3.6.0)             
@@ -1027,6 +1033,8 @@ devtools::session_info()
 ##  ps             1.3.0      2018-12-21 [1] CRAN (R 3.6.0)             
 ##  purrr        * 0.3.2      2019-03-15 [1] CRAN (R 3.6.0)             
 ##  R6             2.4.0      2019-02-14 [1] CRAN (R 3.6.0)             
+##  randomForest   4.6-14     2018-03-25 [1] CRAN (R 3.6.0)             
+##  rcfss        * 0.1.7      2019-07-02 [1] local                      
 ##  Rcpp           1.0.1      2019-03-17 [1] CRAN (R 3.6.0)             
 ##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)             
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 3.6.0)             
@@ -1050,11 +1058,15 @@ devtools::session_info()
 ##  tidyselect     0.2.5      2018-10-11 [1] CRAN (R 3.6.0)             
 ##  tidyverse    * 1.2.1      2017-11-14 [1] CRAN (R 3.6.0)             
 ##  timeDate       3043.102   2018-02-21 [1] CRAN (R 3.6.0)             
+##  titanic      * 0.1.0      2015-08-31 [1] CRAN (R 3.6.0)             
 ##  usethis        1.5.0      2019-04-07 [1] CRAN (R 3.6.0)             
+##  utf8           1.1.4      2018-05-24 [1] CRAN (R 3.6.0)             
+##  vctrs          0.1.0      2018-11-29 [1] CRAN (R 3.6.0)             
 ##  withr          2.1.2      2018-03-15 [1] CRAN (R 3.6.0)             
 ##  xfun           0.7.4      2019-06-10 [1] Github (yihui/xfun@cc966d3)
 ##  xml2           1.2.0      2018-01-24 [1] CRAN (R 3.6.0)             
 ##  yaml           2.2.0      2018-07-25 [1] CRAN (R 3.6.0)             
+##  zeallot        0.1.0      2018-01-28 [1] CRAN (R 3.6.0)             
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```
