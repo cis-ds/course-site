@@ -164,7 +164,7 @@ Computationally driven research follows a specific workflow. This is the ideal -
 
 ### Import
 
-First you need to get your data into whatever software package you will use to analyze it. Most of us are familiar with data stored in flat files (e.g. spreadsheets). However a lot of interesting data cannot be obtained in a single specific and simple format. Information you need could be stored in a database, or a web API, or even (god forbid) **printed books**. You need to know how to convert/extract information into your software package of choice.
+First you need to get your data into whatever software package you will use to analyze it. Most of us are familiar with data stored in flat files (e.g. spreadsheets). However a lot of interesting data cannot be obtained in a single specific and simple format. Information you need could be stored in a database, or a web API, or even (gasp!) **printed books**. You need to know how to convert/extract information into your software package of choice.
 
 ### Tidy
 
@@ -375,7 +375,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-06-24                  
+##  date     2019-07-16                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source                     
