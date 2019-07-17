@@ -62,58 +62,15 @@ library(rtweet)
 
 ## OAuth authentication
 
-> According to the developer of `rtweet`, it is no longer necessary to obtain a developer account and create your own Twitter application to use Twitter's API. You do need a regular Twitter account, but should not have to follow the steps below unless your use of the API becomes excessive or you need additional functionality (such as the ability to create tweets).
+All you need is a **Twitter account** (user name and password) and you can be up in running in minutes!
 
-OAuth is an open standard for authorization, commonly used as a way for Internet users to authorize websites or applications to access their information on other websites but without giving them the passwords. This still requires an API key, but is a bit more complicated to setup.
+Simply send a request to Twitter's API (with a function like `search_tweets()`, `get_timeline()`, `get_followers()`, `get_favorites()`, etc.) during an interactive session of R, authorize the embedded **`rstats2twitter`** app (approve the browser popup), and your token will be created and saved/stored (for future sessions) for you!
 
-### Create a Twitter App
+{{% alert note %}}
 
-> [In July 2018, Twitter changed the process to create applications in response to data privacy concerns.](https://blog.twitter.com/developer/en_us/topics/tools/2018/new-developer-requirements-to-protect-our-platform.html) This can potentially hamper your ability to use the Twitter API to collect and analyze data. The instructions below should still work, assuming Twitter has approved your request to create a developer account. [Request a developer account here.](https://developer.twitter.com/en/apply/user) This process is not instantaneous. It could take a handful of hours. Or longer. I requested my developer account in July and I am still waiting for approval. Your results may vary 🤷🏼
+According to the developer of `rtweet`, it is no longer necessary to obtain a developer account and create your own Twitter application to use Twitter's API. You do need a regular Twitter account, but should not have to create your own developer account unless you intend to heavily use the Twitter API. To setup your own developer account and store your API credentials, [view the documentation.](https://rtweet.info/articles/auth.html)
 
-* To create a Twitter app, navigate to [apps.twitter.com](https://apps.twitter.com/) and create a new app by providing a `Name`, `Description`, and `Website` of your choosing (example screenshot provided below)
-* **Important** In the `Callback URL` field, make sure to enter the following: `http://127.0.0.1:1410`
-* Check yes if you agree and then click "Create your Twitter application"
-
-![Create an application](/img/creating.png)
-
-### Access token/secret authentication
-
-* Click the tab labeled `Keys and Access Tokens` to retrieve your keys
-
-![Created application](/img/created.png)
-
-* In the `Keys and Access Tokens` tab, locate and copy/paste values `Consumer Key` (aka "API Key") and `Consumer Secret` (aka "API Secret") into an R script
-
-![Get API key and secret](/img/keys.png)
-
-* In the `Keys and Access Tokens` tab, scroll down to `Token Actions` and click `Create my access token`
-
-![Generate access token](/img/gen_token.png)
-
-* That should generate two access keys: `Access Token` and `Access Token Secret`
-
-![Access token and token secret](/img/accesskeys.png)
-
-* Locate and copy/paste `Access Token` and `Access Token Secret` (fake keys shown in image above) into an R script file
-* Once the keys are read into R, pass the objects to `create_token()`, and store the output as `twitter_token`
-
-```r
-# create token and save it as an environment variable
-twitter_token <- create_token(
-  app = appname,
-  consumer_key = key,
-  consumer_secret = secret,
-  access_token = access_token,
-  access_secret = access_secret
-)
-```
-
-* The `create_token()` function should automatically save your token as an environment variable for you. This is basically a global version of `.Rprofile`. **Now you can access the Twitter API through `rtweet` from any project on your computer without having to reauthenticate.** To make sure it worked, compare the created token object to the object returned by `get_token()`
-
-```r
-# check to see if the token is loaded
-identical(twitter_token, get_token())
-```
+{{% /alert %}}
 
 ## Searching tweets
 
@@ -340,96 +297,87 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.5.3 (2019-03-11)
-##  os       macOS Mojave 10.14.3        
+##  version  R version 3.6.0 (2019-04-26)
+##  os       macOS Mojave 10.14.5        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-05-13                  
+##  date     2019-07-17                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
-##  package     * version    date       lib source                     
-##  assertthat    0.2.1      2019-03-21 [2] CRAN (R 3.5.3)             
-##  backports     1.1.3      2018-12-14 [2] CRAN (R 3.5.0)             
-##  blogdown      0.11       2019-03-11 [1] CRAN (R 3.5.2)             
-##  bookdown      0.9        2018-12-21 [1] CRAN (R 3.5.0)             
-##  broom       * 0.5.1      2018-12-05 [2] CRAN (R 3.5.0)             
-##  callr         3.2.0      2019-03-15 [2] CRAN (R 3.5.2)             
-##  cellranger    1.1.0      2016-07-27 [2] CRAN (R 3.5.0)             
-##  cli           1.1.0      2019-03-19 [1] CRAN (R 3.5.2)             
-##  colorspace    1.4-1      2019-03-18 [2] CRAN (R 3.5.2)             
-##  crayon        1.3.4      2017-09-16 [2] CRAN (R 3.5.0)             
-##  desc          1.2.0      2018-05-01 [2] CRAN (R 3.5.0)             
-##  devtools      2.0.1      2018-10-26 [1] CRAN (R 3.5.1)             
-##  digest        0.6.18     2018-10-10 [1] CRAN (R 3.5.0)             
-##  dplyr       * 0.8.0.1    2019-02-15 [1] CRAN (R 3.5.2)             
-##  emo           0.0.0.9000 2017-10-03 [2] Github (hadley/emo@9f2e0f2)
-##  evaluate      0.13       2019-02-12 [2] CRAN (R 3.5.2)             
-##  forcats     * 0.4.0      2019-02-17 [2] CRAN (R 3.5.2)             
-##  fs            1.2.7      2019-03-19 [1] CRAN (R 3.5.3)             
-##  generics      0.0.2      2018-11-29 [1] CRAN (R 3.5.0)             
-##  ggplot2     * 3.1.0      2018-10-25 [1] CRAN (R 3.5.0)             
-##  glue          1.3.1      2019-03-12 [2] CRAN (R 3.5.2)             
-##  gtable        0.2.0      2016-02-26 [2] CRAN (R 3.5.0)             
-##  haven         2.1.0      2019-02-19 [2] CRAN (R 3.5.2)             
-##  here          0.1        2017-05-28 [2] CRAN (R 3.5.0)             
-##  hms           0.4.2      2018-03-10 [2] CRAN (R 3.5.0)             
-##  htmltools     0.3.6      2017-04-28 [1] CRAN (R 3.5.0)             
-##  httpuv        1.5.0      2019-03-15 [2] CRAN (R 3.5.2)             
-##  httr          1.4.0      2018-12-11 [2] CRAN (R 3.5.0)             
-##  jsonlite      1.6        2018-12-07 [2] CRAN (R 3.5.0)             
-##  knitr         1.22       2019-03-08 [2] CRAN (R 3.5.2)             
-##  later         0.8.0      2019-02-11 [2] CRAN (R 3.5.2)             
-##  lattice       0.20-38    2018-11-04 [2] CRAN (R 3.5.3)             
-##  lazyeval      0.2.2      2019-03-15 [2] CRAN (R 3.5.2)             
-##  lubridate     1.7.4      2018-04-11 [2] CRAN (R 3.5.0)             
-##  magrittr      1.5        2014-11-22 [2] CRAN (R 3.5.0)             
-##  memoise       1.1.0      2017-04-21 [2] CRAN (R 3.5.0)             
-##  mime          0.6        2018-10-05 [1] CRAN (R 3.5.0)             
-##  miniUI        0.1.1.1    2018-05-18 [2] CRAN (R 3.5.0)             
-##  modelr        0.1.4      2019-02-18 [2] CRAN (R 3.5.2)             
-##  munsell       0.5.0      2018-06-12 [2] CRAN (R 3.5.0)             
-##  nlme          3.1-137    2018-04-07 [2] CRAN (R 3.5.3)             
-##  pillar        1.3.1      2018-12-15 [2] CRAN (R 3.5.0)             
-##  pkgbuild      1.0.3      2019-03-20 [1] CRAN (R 3.5.3)             
-##  pkgconfig     2.0.2      2018-08-16 [2] CRAN (R 3.5.1)             
-##  pkgload       1.0.2      2018-10-29 [1] CRAN (R 3.5.0)             
-##  plyr          1.8.4      2016-06-08 [2] CRAN (R 3.5.0)             
-##  prettyunits   1.0.2      2015-07-13 [2] CRAN (R 3.5.0)             
-##  processx      3.3.0      2019-03-10 [2] CRAN (R 3.5.2)             
-##  promises      1.0.1      2018-04-13 [2] CRAN (R 3.5.0)             
-##  ps            1.3.0      2018-12-21 [2] CRAN (R 3.5.0)             
-##  purrr       * 0.3.2      2019-03-15 [2] CRAN (R 3.5.2)             
-##  R6            2.4.0      2019-02-14 [1] CRAN (R 3.5.2)             
-##  Rcpp          1.0.1      2019-03-17 [1] CRAN (R 3.5.2)             
-##  readr       * 1.3.1      2018-12-21 [2] CRAN (R 3.5.0)             
-##  readxl        1.3.1      2019-03-13 [2] CRAN (R 3.5.2)             
-##  remotes       2.0.2      2018-10-30 [1] CRAN (R 3.5.0)             
-##  rlang         0.3.4      2019-04-07 [1] CRAN (R 3.5.2)             
-##  rmarkdown     1.12       2019-03-14 [1] CRAN (R 3.5.2)             
-##  rprojroot     1.3-2      2018-01-03 [2] CRAN (R 3.5.0)             
-##  rstudioapi    0.10       2019-03-19 [1] CRAN (R 3.5.3)             
-##  rvest         0.3.2      2016-06-17 [2] CRAN (R 3.5.0)             
-##  scales        1.0.0      2018-08-09 [1] CRAN (R 3.5.0)             
-##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 3.5.0)             
-##  shiny         1.2.0      2018-11-02 [2] CRAN (R 3.5.0)             
-##  stringi       1.4.3      2019-03-12 [1] CRAN (R 3.5.2)             
-##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 3.5.2)             
-##  testthat      2.0.1      2018-10-13 [2] CRAN (R 3.5.0)             
-##  tibble      * 2.1.1      2019-03-16 [2] CRAN (R 3.5.2)             
-##  tidyr       * 0.8.3      2019-03-01 [1] CRAN (R 3.5.2)             
-##  tidyselect    0.2.5      2018-10-11 [1] CRAN (R 3.5.0)             
-##  tidyverse   * 1.2.1      2017-11-14 [2] CRAN (R 3.5.0)             
-##  usethis       1.4.0      2018-08-14 [1] CRAN (R 3.5.0)             
-##  withr         2.1.2      2018-03-15 [2] CRAN (R 3.5.0)             
-##  xfun          0.5        2019-02-20 [1] CRAN (R 3.5.2)             
-##  xml2          1.2.0      2018-01-24 [2] CRAN (R 3.5.0)             
-##  xtable        1.8-3      2018-08-29 [2] CRAN (R 3.5.0)             
-##  yaml          2.2.0      2018-07-25 [2] CRAN (R 3.5.0)             
+##  package     * version date       lib source                     
+##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)             
+##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)             
+##  blogdown      0.12    2019-05-01 [1] CRAN (R 3.6.0)             
+##  bookdown      0.11    2019-05-28 [1] CRAN (R 3.6.0)             
+##  broom       * 0.5.2   2019-04-07 [1] CRAN (R 3.6.0)             
+##  callr         3.2.0   2019-03-15 [1] CRAN (R 3.6.0)             
+##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)             
+##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)             
+##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)             
+##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)             
+##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)             
+##  devtools      2.0.2   2019-04-08 [1] CRAN (R 3.6.0)             
+##  digest        0.6.19  2019-05-20 [1] CRAN (R 3.6.0)             
+##  dplyr       * 0.8.1   2019-05-14 [1] CRAN (R 3.6.0)             
+##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)             
+##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)             
+##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)             
+##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)             
+##  ggplot2     * 3.1.1   2019-04-07 [1] CRAN (R 3.6.0)             
+##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)             
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)             
+##  haven         2.1.0   2019-02-19 [1] CRAN (R 3.6.0)             
+##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)             
+##  hms           0.4.2   2018-03-10 [1] CRAN (R 3.6.0)             
+##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)             
+##  httr          1.4.0   2018-12-11 [1] CRAN (R 3.6.0)             
+##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)             
+##  knitr         1.23    2019-05-18 [1] CRAN (R 3.6.0)             
+##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.0)             
+##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)             
+##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)             
+##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)             
+##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)             
+##  modelr        0.1.4   2019-02-18 [1] CRAN (R 3.6.0)             
+##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)             
+##  nlme          3.1-140 2019-05-12 [1] CRAN (R 3.6.0)             
+##  pillar        1.4.1   2019-05-28 [1] CRAN (R 3.6.0)             
+##  pkgbuild      1.0.3   2019-03-20 [1] CRAN (R 3.6.0)             
+##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.6.0)             
+##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)             
+##  plyr          1.8.4   2016-06-08 [1] CRAN (R 3.6.0)             
+##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)             
+##  processx      3.3.1   2019-05-08 [1] CRAN (R 3.6.0)             
+##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)             
+##  purrr       * 0.3.2   2019-03-15 [1] CRAN (R 3.6.0)             
+##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)             
+##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.6.0)             
+##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)             
+##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)             
+##  remotes       2.0.4   2019-04-10 [1] CRAN (R 3.6.0)             
+##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.6.0)             
+##  rmarkdown     1.13    2019-05-22 [1] CRAN (R 3.6.0)             
+##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)             
+##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)             
+##  rvest         0.3.4   2019-05-15 [1] CRAN (R 3.6.0)             
+##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.6.0)             
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)             
+##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.6.0)             
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)             
+##  testthat      2.1.1   2019-04-23 [1] CRAN (R 3.6.0)             
+##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)             
+##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.6.0)             
+##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)             
+##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)             
+##  usethis       1.5.0   2019-04-07 [1] CRAN (R 3.6.0)             
+##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)             
+##  xfun          0.7.4   2019-06-10 [1] Github (yihui/xfun@cc966d3)
+##  xml2          1.2.0   2018-01-24 [1] CRAN (R 3.6.0)             
+##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)             
 ## 
-## [1] /Users/soltoffbc/Library/R/3.5/library
-## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```
