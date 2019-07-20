@@ -331,9 +331,11 @@ This model lends itself to a visualization:
 
 ```r
 top_terms %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, fill = factor(topic))) +
+  mutate(topic = factor(topic),
+         term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+  scale_x_reordered() +
   facet_wrap(~ topic, scales = "free", ncol = 4) +
   coord_flip()
 ```
@@ -566,9 +568,11 @@ top_terms <- jokes_lda4_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, fill = factor(topic))) +
+  mutate(topic = factor(topic),
+         term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+  scale_x_reordered() +
   facet_wrap(~ topic, scales = "free", ncol = 2) +
   coord_flip()
 ```
@@ -600,9 +604,11 @@ top_terms <- jokes_lda12_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, fill = factor(topic))) +
+  mutate(topic = factor(topic),
+         term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+  scale_x_reordered() +
   facet_wrap(~ topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
@@ -677,9 +683,11 @@ top_terms <- jokes_lda_td %>%
 
 top_terms %>%
   filter(topic <= 12) %>%
-  mutate(term = reorder(term, beta)) %>%
-  ggplot(aes(term, beta, fill = factor(topic))) +
+  mutate(topic = factor(topic),
+         term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
+  scale_x_reordered() +
   facet_wrap(~ topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
@@ -815,7 +823,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-07-16                  
+##  date     2019-07-20                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib
@@ -878,6 +886,7 @@ devtools::session_info()
 ##  readr       * 1.3.1   2018-12-21 [1]
 ##  readxl        1.3.1   2019-03-13 [1]
 ##  remotes       2.0.4   2019-04-10 [1]
+##  reshape2      1.4.3   2017-12-11 [1]
 ##  rjson       * 0.2.20  2018-06-08 [1]
 ##  rlang         0.3.4   2019-04-07 [1]
 ##  rmarkdown     1.13    2019-05-22 [1]
@@ -895,7 +904,7 @@ devtools::session_info()
 ##  tictoc      * 1.0     2014-06-17 [1]
 ##  tidyr       * 0.8.3   2019-03-01 [1]
 ##  tidyselect    0.2.5   2018-10-11 [1]
-##  tidytext    * 0.2.0   2018-10-17 [1]
+##  tidytext    * 0.2.1   2019-06-14 [1]
 ##  tidyverse   * 1.2.1   2017-11-14 [1]
 ##  tm          * 0.7-6   2018-12-21 [1]
 ##  tokenizers    0.2.1   2018-03-29 [1]
@@ -942,6 +951,7 @@ devtools::session_info()
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  Github (cpsievert/LDAvisData@43dd263)
+##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       
 ##  CRAN (R 3.6.0)                       

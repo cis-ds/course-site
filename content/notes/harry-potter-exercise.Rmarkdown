@@ -82,65 +82,133 @@ hp_words
 
 Remove stop words.
 
-```{r word-freq, fig.asp = 2}
+```{r word-freq, dependson = "hp", fig.asp = 1.3}
 hp_words %>%
   # delete stopwords
   anti_join(stop_words) %>%
   # summarize count per word per book
-  count(book, word) %>%
-  # highest freq on top
-  arrange(desc(n)) %>% 
-  # identify rank within group
-  group_by(book) %>% # 
-  mutate(top = seq_along(word)) %>%
-  # retain top 15 frequent words
-  filter(top <= 15) %>%
+  count(book, word, sort = TRUE) %>%
+  # get top 15 words per book
+  group_by(book) %>%
+  top_n(15) %>%
+  ungroup() %>%
+  mutate(word = reorder_within(word, n, book)) %>%
   # create barplot
-  ggplot(aes(x = -top, y = n, fill = book)) + 
+  ggplot(aes(x = word, y = n, fill = book)) + 
   geom_col(color = "black") +
-  # print words in plot instead of as axis labels
-  geom_text(aes(label = word), hjust = "left", nudge_y = 100) +
+  scale_x_reordered() +
   labs(title = "Most frequent words in Harry Potter",
        x = NULL,
        y = "Word count") +
-  facet_wrap( ~ book) +
+  facet_wrap(~ book, scales = "free_y") +
   coord_flip() +
-  theme(legend.position = "none",
-        # rotate x text
-        axis.text.x = element_text(angle = 45, hjust = 1),
-        # remove tick marks and text on y-axis
-        axis.ticks.y = element_blank(),
-        axis.text.y = element_blank())
+  theme(legend.position = "none")
 ```
 
 ## Estimate sentiment
 
-## Generate data frame with sentiment derived from the NRC
+## Generate data frame with sentiment derived from the Bing dictionary
 
 <details> 
   <summary>Click for the solution</summary>
   <p>
   
-```{r sentiment-nrc}
-(hp_nrc <- hp_words %>% 
-  inner_join(get_sentiments("nrc")) %>%
-  group_by(book, chapter, sentiment))
+```{r hp-bing, dependson = "hp"}
+(hp_bing <- hp_words %>% 
+  inner_join(get_sentiments("bing")))
 ```
 
   </p>
 </details>
 
-## Visualize which words in the NRC sentiment dictionary appear most frequently
+## Visualize the most frequent positive/negative words in the entire series using the Bing dictionary, and then separately for each book
+
+<details> 
+  <summary>Click for a solution</summary>
+  <p>
+  
+```{r pos-neg-all-series, dependson = "hp-bing"}
+# all series
+hp_bing %>% 
+  group_by(sentiment) %>%
+  count(word, sort = TRUE) %>%
+  group_by(sentiment) %>%
+  top_n(10) %>%
+  ungroup() %>%
+  mutate(word = reorder_within(word, n, sentiment)) %>%
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(~ sentiment, scales = "free_y") +
+  labs(title = "Sentimental words used in the Harry Potter series",
+       x = NULL,
+       y = "Number of occurences in all seven books") +
+  coord_flip()
+
+# per book
+hp_pos_neg_book <- hp_bing %>%
+  group_by(book, sentiment) %>%
+  count(word, sort = TRUE) %>%
+  group_by(book, sentiment) %>%
+  top_n(10) %>%
+  ungroup()
+
+## positive words
+hp_pos_neg_book %>%
+  filter(sentiment == "positive") %>%
+  mutate(word = reorder_within(word, n, book)) %>%
+  ggplot(aes(word, n)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(~ book, scales = "free_y") +
+  labs(title = "Positive words used in the Harry Potter series",
+       x = NULL,
+       y = "Number of occurences") +
+  coord_flip()
+
+## negative words
+hp_pos_neg_book %>%
+  filter(sentiment == "negative") %>%
+  mutate(word = reorder_within(word, n, book)) %>%
+  ggplot(aes(word, n)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(~ book, scales = "free_y") +
+  labs(title = "Negative words used in the Harry Potter series",
+       x = NULL,
+       y = "Number of occurences") +
+  coord_flip()
+```
+
+  </p>
+</details>
+
+## Generate data frame with sentiment derived from the AFINN dictionary
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+  
+```{r hp-afinn, dependson = "hp"}
+(hp_afinn <- hp_words %>% 
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book, chapter))
+```
+
+  </p>
+</details>
+
+## Visualize which words in the AFINN sentiment dictionary appear most frequently
 
 Sometimes words which are defined in a general sentiment dictionary can be outliers in specific contexts. That is, an author may use a word without intending to convey a specific sentiment but the dictionary defines it in a certain way.
 
 We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds) as a quick check to see if there are any outliers in the context of *Harry Potter*, constructed using [`ggwordcloud`](https://lepennec.github.io/ggwordcloud/):
 
-```{r sentiment-outliers}
+```{r sentiment-outliers, dependson = "hp-afinn"}
 library(ggwordcloud)
 
 set.seed(123)   # ensure reproducibility of the wordcloud
-hp_nrc %>%
+hp_afinn %>%
   # count word frequency across books
   group_by(word) %>%
   count(sort = TRUE) %>%
@@ -155,22 +223,24 @@ hp_nrc %>%
   theme_minimal()
 ```
 
-As we can see, "harry" appears quite frequently in the books. In the vast majority of appearances, "harry" is used to refer to the main character and is not meant to convey a specific sentiment.
+As we can see, "moody" appears quite frequently in the books. In the vast majority of appearances, "moody" is used to refer to the character Alastor "Mad-Eye" Moody and is not meant to convey a specific sentiment.
 
-```{r sentiment-harry}
-get_sentiments("nrc") %>%
-  filter(word == "harry")
+<div style="width:100%;height:0;padding-bottom:38%;position:relative;"><iframe src="https://giphy.com/embed/lirn1IJDukVLq" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+```{r sentiment-moody, dependson = "hp-afinn"}
+hp_afinn %>%
+  filter(word == "moody")
 ```
 
 It would be best to remove this word from further sentiment analysis, treating it as if it were another stop word.
 
-```{r sentiment-outlier-remove}
-hp_nrc <- hp_nrc %>%
-  filter(word != "harry")
+```{r sentiment-outlier-remove, dependson = "hp-afinn"}
+hp_afinn <- hp_afinn %>%
+  filter(word != "moody")
 
 # wordcloud without harry
 set.seed(123)   # ensure reproducibility of the wordcloud
-hp_nrc %>%
+hp_afinn %>%
   # count word frequency across books
   group_by(word) %>%
   count(sort = TRUE) %>%
@@ -186,57 +256,18 @@ hp_nrc %>%
   theme_minimal()
 ```
 
-## Visualize which words appear most frequently for each sentiment type
-
-<details> 
-  <summary>Click for a solution</summary>
-  <p>
-  
-```{r nrc-freq, fig.asp = 1}
-hp_nrc %>%
-  # summarize count per word
-  ungroup %>%
-  count(word, sentiment) %>%
-  # highest freq on top
-  arrange(desc(n)) %>% 
-  # identify rank within group
-  group_by(sentiment) %>% # 
-  mutate(top = seq_along(word)) %>%
-  # retain top 15 frequent words
-  filter(top <= 15) %>%
-  # create barplot
-  ggplot(aes(x = -top, y = n, fill = sentiment)) + 
-  geom_col(color = "black") +
-  # print words in plot instead of as axis labels
-  geom_text(aes(label = word), hjust = "left", nudge_y = 100) +
-  labs(title = "Most frequent words in Harry Potter",
-       x = NULL,
-       y = "Word count") +
-  facet_wrap( ~ sentiment, ncol = 5) +
-  coord_flip() +
-  theme(legend.position = "none",
-        # rotate x text
-        axis.text.x = element_text(angle = 45, hjust = 1),
-        # remove tick marks and text on y-axis
-        axis.ticks.y = element_blank(),
-        axis.text.y = element_blank())
-```
-
-  </p>
-</details>
-
 ## Visualize the positive/negative sentiment for each book over time using the AFINN dictionary
 
 <details> 
   <summary>Click for a solution</summary>
   <p>
   
-```{r affin-over-time}
+```{r affin-over-time, dependson = "sentiment-outlier-remove"}
 hp_words %>% 
   inner_join(get_sentiments("afinn")) %>%
   group_by(book, chapter) %>%
-  summarize(score = sum(score)) %>%
-  ggplot(aes(chapter, score, fill = book)) +
+  summarize(value = sum(value)) %>%
+  ggplot(aes(chapter, value, fill = book)) +
   geom_col() +
   facet_wrap(~ book, scales = "free_x") +
   labs(title = "Emotional arc of Harry Potter books",
@@ -245,44 +276,18 @@ hp_words %>%
        y = "Emotional score") +
   theme(legend.position = "none")
 
-# cumulative score
+# cumulative value
 hp_words %>% 
   inner_join(get_sentiments("afinn")) %>%
   group_by(book) %>%
-  mutate(cumscore = cumsum(score)) %>%
-  ggplot(aes(chapter, cumscore, fill = book)) +
+  mutate(cumvalue = cumsum(value)) %>%
+  ggplot(aes(chapter, cumvalue, fill = book)) +
   geom_step() +
   facet_wrap(~ book, scales = "free_x") +
   labs(title = "Emotional arc of Harry Potter books",
        subtitle = "AFINN sentiment dictionary",
        x = "Chapter",
-       y = "Cumulative emotional score")
-```
-
-  </p>
-</details>
-
-## Visualize the sentimental content of each chapter in each book using the NRC dictionary
-
-<details> 
-  <summary>Click for a solution</summary>
-  <p>
-  
-```{r sentiment-over-time, fig.asp = 1}
-hp_nrc %>%
-  count(sentiment, book, chapter) %>%
-  filter(!(sentiment %in% c("positive", "negative"))) %>%
-  # create area plot
-  ggplot(aes(x = chapter, y = n)) +
-  geom_col(aes(fill = sentiment)) + 
-  # add black smoothing line without standard error
-  geom_smooth(aes(fill = sentiment), method = "loess", se = F, col = 'black') + 
-  theme(legend.position = 'none') +
-  labs(x = "Chapter", y = "Emotion score", # add labels
-       title = "Harry Plotter: Emotions during the saga",
-       subtitle = "Using tidytext and the nrc sentiment dictionary") +
-  # seperate plots per sentiment and book and free up x-axes
-  facet_grid(sentiment ~ book, scales = "free")
+       y = "Cumulative emotional value")
 ```
 
   </p>
