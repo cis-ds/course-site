@@ -1,0 +1,668 @@
+---
+title: "Geospatial visualization: vector maps"
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  echo = FALSE,
+  fig.retina = 2, fig.width = 12
+)
+
+library(tidyverse)
+library(sf)
+library(ggmap)
+library(tidycensus)
+library(RColorBrewer)
+library(patchwork)
+library(here)
+
+# easier to generate tidycensus maps
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])){
+  options(bitmapType = "cairo")
+}
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = rcfss::base_size))
+```
+
+# Map data file formats
+
+* Vector files
+    * Raster images
+    * Numeric data
+* Popular formats
+    * Shapefile
+    * GeoJSON
+    
+---
+
+# Shapefile
+
+* Encodes points, lines, and polygons
+* Collection of files
+    * `.shp` - geographic coordinates
+    * `.dbf` - data associated with the geographic features
+    * `.prj` - projection of the coordinates in the shapefile
+
+---
+
+# GeoJSON
+
+* Uses **J**ava**S**cript **O**bject **N**otation (JSON) file format
+    
+    ```json
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [125.6, 10.1]
+      },
+      "properties": {
+        "name": "Dinagat Islands"
+      }
+    }
+    ```
+* Plain text files
+
+---
+
+# Simple features
+
+* [Packages in R for spatial data](https://cran.r-project.org/web/views/Spatial.html)
+* Tidy packages for spatial data
+* Simple features and `sf`
+    * Emphasizes spatial geometry
+    * Describes how to store and retrieve objects
+    * Defines geometrical operations
+
+---
+
+# What is a feature?
+
+* Thing or an object in the real world
+* Sets of features
+* Geometry
+* Attributes
+
+---
+
+# Dimensions
+
+* Geometries composed of points
+    * Coordinates in a 2-, 3- or 4-dimensional space
+    * All points in a geometry have the same dimensionality
+* X and Y coordinates
+* Z coordinate
+* M coordinate (measure associated with point rather than the feature)
+
+---
+
+# Simple feature geometry types
+
+| type | description                                             |
+| ---- | ------------------------------------------------------- |
+| `POINT` | zero-dimensional geometry containing a single point |
+| `LINESTRING` | sequence of points connected by straight, non-self intersecting line pieces; one-dimensional geometry |
+| `POLYGON` | geometry with a positive area (two-dimensional); sequence of points form a closed, non-self intersecting ring; the first ring denotes the exterior ring, zero or more subsequent rings denote holes in this exterior ring |
+
+--
+
+* `MULTIPOINT`
+* `MULTILINESTRING`
+* `MULTIPOLYGON`
+
+---
+
+# Simple features in R
+
+* Uses basic R data structures
+* Data frame with one row per feature
+* Lots of list columns
+
+---
+
+# Importing shapefiles
+
+```{r import-chi-sp, echo = TRUE}
+chi_shape <- here("static/data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp") %>%
+  st_read()
+```
+
+---
+
+# Importing shapefiles
+
+```{r chi-sp, echo = TRUE}
+chi_shape
+```
+
+---
+
+# Importing shapefiles
+
+```{r chi-sp-list-col, echo = TRUE}
+select(chi_shape, community, geometry)
+```
+
+---
+
+# Importing GeoJSON files
+
+```{r import-chi-json, echo = TRUE}
+chi_json <- here("static/data/Boundaries - Community Areas (current).geojson") %>%
+  st_read()
+```
+
+---
+
+# Drawing maps with `sf` objects
+
+```{r import-usa, echo = TRUE}
+usa <- here(
+  "static", "data", "census_bureau",
+  "cb_2013_us_state_20m", "cb_2013_us_state_20m.shp"
+) %>%
+  st_read()
+```
+
+---
+
+# USA boundaries
+
+```{r geom-sf, echo = TRUE}
+ggplot(data = usa) +
+  geom_sf()
+```
+
+---
+
+# Plot a subset of a map
+
+```{r usa-subset, echo = TRUE, fig.height = 5}
+usa_48 <- usa %>%
+  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico")))
+
+ggplot(data = usa_48) +
+  geom_sf()
+```
+
+---
+
+# Just another `ggplot()`
+
+```{r usa-fill, echo = TRUE}
+ggplot(data = usa_48) +
+  geom_sf(fill = "palegreen", color = "black")
+```
+
+---
+
+# `albersusa`
+
+```{r albersusa, echo = TRUE}
+library(albersusa)
+ggplot(data = usa_sf()) +
+  geom_sf()
+```
+
+---
+
+# Points
+
+```{r nycflights, echo = TRUE}
+library(nycflights13)
+airports
+```
+
+---
+
+# Points
+
+```{r scatter, echo = TRUE}
+ggplot(airports, aes(lon, lat)) +
+  geom_point()
+```
+
+---
+
+# Points
+
+```{r flights-usa, echo = TRUE}
+ggplot(data = usa_48) +
+  geom_sf() +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+---
+
+# Cropped map
+
+```{r crop, echo = TRUE, fig.height = 5}
+ggplot(data = usa_48) +
+  geom_sf() +
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1) +
+  coord_sf(
+    xlim = c(-130, -60),
+    ylim = c(20, 50)
+  )
+```
+
+---
+
+# Converting to `sf` data frame
+
+```{r flights-sf, echo = TRUE}
+airports_sf <- st_as_sf(airports, coords = c("lon", "lat"))
+st_crs(airports_sf) <- 4326 # set the coordinate reference system
+airports_sf
+```
+
+---
+
+# Plotting with two sf data frames
+
+```{r flights-sf-plot, echo = TRUE, fig.height = 5}
+ggplot() +
+  geom_sf(data = usa_48) +
+  geom_sf(data = airports_sf, shape = 1) +
+  coord_sf(
+    xlim = c(-130, -60),
+    ylim = c(20, 50)
+  )
+```
+
+---
+
+# Fill (choropleths)
+
+```{r import-foreign, echo = TRUE}
+(fb_state <- here(
+  "static", "data", "census_bureau",
+  "ACS_13_5YR_B05012_state", "ACS_13_5YR_B05012.csv"
+) %>%
+  read_csv() %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+```
+
+---
+
+# Join the data
+
+```{r usa-foreign-join, echo = TRUE}
+(usa_fb <- usa_48 %>%
+  left_join(fb_state, by = c("STATEFP" = "GEO.id2")))
+```
+
+---
+
+# Draw the map
+
+```{r geom-map-state, echo = TRUE}
+ggplot(data = usa_fb) +
+  geom_sf(aes(fill = rate))
+```
+
+---
+
+# Exercise using `tidycensus`
+
+![](http://www.vurtegopogo.com/wp-content/uploads/2016/10/using-a-pogo-stick-for-exercise-and-training.jpg)
+
+---
+
+# Bin data to discrete intervals
+
+* Continuous vs. discrete variables for color
+* Collapse to a discrete variable
+
+---
+
+# `cut_interval()`
+
+```{r cut-interval, echo = TRUE}
+usa_fb %>%
+  mutate(rate_cut = cut_interval(rate, n = 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+```
+
+---
+
+# `cut_number()`
+
+```{r cut-number, echo = TRUE}
+usa_fb %>%
+  mutate(rate_cut = cut_number(rate, n = 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+```
+
+---
+
+# Map projection
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
+
+---
+
+# Map projection
+
+.center[
+
+![[Mercator Projection](https://xkcd.com/2082/)](https://imgs.xkcd.com/comics/mercator_projection.png)
+
+]
+
+---
+
+# Map projection
+
+* Coordinate reference system
+* `proj4string`
+
+---
+
+# Mercator projection
+
+```{r projections}
+map_proj_base <- ggplot(data = usa_48) +
+  geom_sf()
+```
+
+```{r mercator-sf, echo = TRUE}
+map_proj_base +
+  coord_sf(crs = "+proj=merc") +
+  ggtitle("Mercator projection")
+```
+
+---
+
+# Projection using standard lines
+
+```{r projection-rest}
+{
+  map_proj_base +
+    coord_sf(crs = "+proj=cea +lon_0=0 +lat_ts=45") +
+    labs(
+      title = "Gall-Peters",
+      subtitle = '"+proj=cea +lon_0=0 +lat_ts=45"'
+    )
+} + {
+  map_proj_base +
+    coord_sf(crs = "+proj=laea +lat_0=35 +lon_0=-100") +
+    labs(
+      title = "Lambert azimuthal",
+      subtitle = '"+proj=laea +lat_0=35 +lon_0=-100"'
+    )
+} + {
+  map_proj_base +
+    coord_sf(crs = "+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100") +
+    labs(
+      title = "Albers equal-area",
+      subtitle = '"+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100"'
+    )
+} + {
+  map_proj_base +
+    coord_sf(crs = "+proj=aea +lat_1=0 +lat_2=80 +lon_0=-100") +
+    labs(
+      title = "Albers equal-area",
+      subtitle = '"+proj=aea +lat_1=0 +lat_2=80 +lon_0=-100"'
+    )
+} +
+  plot_layout(ncol = 2, nrow = 2) &
+  theme_minimal(base_size = rcfss::base_size * .75)
+```
+
+---
+
+# Select a color palette
+
+```{r color-wheel, echo = FALSE}
+# generate simulated data points
+sim_points <- tibble(x = factor(1:6))
+
+plots <- purrr::map(1:6, ~ ggplot(sim_points[1:.x, ], aes(x, x, color = x)) +
+  geom_point(size = 5) +
+  ggtitle(paste(.x, "color")) +
+  theme(legend.position = "none"))
+
+wrap_plots(plots)
+```
+
+--
+
+* Optimizing color palette
+
+---
+
+# Color Brewer
+
+```{r get-maps, include = FALSE}
+# get national median household income
+usa_inc <- get_acs(
+  geography = "us",
+  variables = c(medincome = "B19013_001"),
+  year = 2016
+) %>%
+  .$estimate %>%
+  nth(1)
+
+# get state-level median household income and region
+state_inc <- get_acs(
+  geography = "state",
+  variables = c(medincome = "B19013_001"),
+  year = 2016,
+  geometry = TRUE
+) %>%
+  # remove alaska, hawaii, and puerto rico
+  filter(!(NAME %in% c("Alaska", "Hawaii", "Puerto Rico"))) %>%
+  # calculate diff from national income
+  mutate(estimate_div = estimate - usa_inc)
+
+# get state-level region
+state_region <- get_decennial(
+  geography = "state",
+  variables = c(region = "REGION"),
+  year = 2010,
+  geometry = TRUE
+) %>%
+  # remove alaska, hawaii, and puerto rico
+  filter(!(NAME %in% c("Alaska", "Hawaii", "Puerto Rico"))) %>%
+  mutate(value = factor(value, labels = c("Northeast", "Midwest", "South", "West")))
+```
+
+* [Color Brewer](http://colorbrewer2.org/)
+
+---
+
+# Sequential palettes
+
+```{r cb-seq}
+display.brewer.all(type = "seq")
+```
+
+---
+
+# Sequential palettes
+
+```{r cb-seq-map}
+cut_interval_format <- function(x, n = NULL, length = NULL, ...) {
+  kimisc::cut_format(x, ggplot2:::breaks(x, "width", n, length),
+    include.lowest = TRUE,
+    ...
+  )
+}
+
+seq_plot <- state_inc %>%
+  mutate(estimate_cut = cut_interval_format(estimate, 6,
+    dig.lab = 5,
+    format_fun = scales::dollar
+  )) %>%
+  ggplot() +
+  geom_sf(aes(fill = estimate_cut)) +
+  labs(
+    title = "Median household income, 2016",
+    caption = "Source: 2016 American Community Survey",
+    fill = NULL
+  )
+
+{
+  seq_plot +
+    scale_fill_brewer(palette = "Blues") +
+    labs(subtitle = "Palette: Blues")
+} + {
+  seq_plot +
+    scale_fill_brewer(palette = "BuGn") +
+    labs(subtitle = "Palette: BuGn")
+} + {
+  seq_plot +
+    scale_fill_brewer(palette = "YlGn") +
+    labs(subtitle = "Palette: YlGn")
+} + {
+  seq_plot +
+    scale_fill_brewer(palette = "YlOrBr") +
+    labs(subtitle = "Palette: YlOrBr")
+} &
+  theme_minimal(base_size = rcfss::base_size * .75) &
+  theme(legend.position = "none")
+```
+
+---
+
+# Diverging palettes
+
+```{r cb-div}
+display.brewer.all(type = "div")
+```
+
+---
+
+# Diverging palettes
+
+```{r cb-div-map, echo = FALSE}
+div_plot <- state_inc %>%
+  mutate(estimate_div_cut = cut_interval_format(estimate_div, 6,
+    dig.lab = 5,
+    format_fun = scales::dollar
+  )) %>%
+  ggplot() +
+  geom_sf(aes(fill = estimate_div_cut)) +
+  labs(
+    title = "Difference from national\nmedian household income, 2016",
+    caption = "Source: 2016 American Community Survey",
+    fill = NULL
+  )
+
+{
+  div_plot +
+    scale_fill_brewer(palette = "PiYG") +
+    labs(subtitle = "Palette: PiYG")
+} + {
+  div_plot +
+    scale_fill_brewer(palette = "RdBu") +
+    labs(subtitle = "Palette: RdBu")
+} + {
+  div_plot +
+    scale_fill_brewer(palette = "RdYlGn") +
+    labs(subtitle = "Palette: RdYlGn")
+} + {
+  div_plot +
+    scale_fill_brewer(palette = "Spectral") +
+    labs(subtitle = "Palette: Spectral")
+} &
+  theme_minimal(base_size = rcfss::base_size * .75) &
+  theme(legend.position = "none")
+```
+
+---
+
+# Qualitative
+
+```{r cb-qual}
+display.brewer.all(type = "qual")
+```
+
+---
+
+# Qualitative
+
+```{r cb-qual-map, echo = FALSE}
+qual_plot <- state_region %>%
+  ggplot() +
+  geom_sf(aes(fill = value)) +
+  labs(
+    title = "Census region",
+    caption = "Source: 2010 US decennial census",
+    fill = NULL
+  )
+
+{
+  qual_plot +
+    scale_fill_brewer(palette = "Accent") +
+    labs(subtitle = "Palette: Accent")
+} + {
+  qual_plot +
+    scale_fill_brewer(palette = "Dark2") +
+    labs(subtitle = "Palette: Dark2")
+} + {
+  qual_plot +
+    scale_fill_brewer(palette = "Paired") +
+    labs(subtitle = "Palette: Paired")
+} + {
+  qual_plot +
+    scale_fill_brewer(palette = "Set1") +
+    labs(subtitle = "Palette: Set1")
+} &
+  theme_minimal(base_size = rcfss::base_size * .75) &
+  theme(legend.position = "none")
+```
+
+---
+
+# Viridis
+
+```{r viridis}
+library(viridis)
+
+viridis_base <- ggplot(state_inc) +
+  geom_sf(aes(fill = estimate)) +
+  labs(
+    title = "Median household income, 2016",
+    subtitle = "Palette: viridis",
+    caption = "Source: 2016 American Community Survey",
+    fill = NULL
+  ) +
+  scale_fill_viridis(labels = scales::dollar)
+
+{
+  viridis_base +
+    labs(subtitle = "Palette: base")
+} + {
+  viridis_base +
+    scale_fill_viridis(option = "cividis", labels = scales::dollar) +
+    labs(subtitle = "Palette: cividis")
+} + {
+  viridis_base +
+    scale_fill_viridis(option = "inferno", labels = scales::dollar) +
+    labs(subtitle = "Palette: inferno")
+} + {
+  viridis_base +
+    scale_fill_viridis(option = "magma", labels = scales::dollar) +
+    labs(subtitle = "Palette: magma")
+} + {
+  viridis_base +
+    scale_fill_viridis(option = "plasma", labels = scales::dollar) +
+    labs(subtitle = "Palette: plasma")
+} &
+  theme_minimal(base_size = rcfss::base_size * .6) &
+  theme(legend.position = "none")
+```
+
+
+

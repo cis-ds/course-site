@@ -32,9 +32,13 @@ theme_set(theme_minimal())
 
 The city of Chicago has [an excellent data portal](https://data.cityofchicago.org/) publishing a large volume of public records. Here we'll look at a subset of the [311 service requests](https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy). I used `RSocrata` and the data portal's [API](/notes/application-program-interface/) to retrieve a portion of the data set.
 
-> If you are copying-and-pasting code from this demonstration, use `chi_311 <- read_csv("https://cfss.uchicago.edu/data/chi-311.csv")` to download the file from the course website.
+{{% alert note %}}
 
-```{r chi-311}
+If you are copying-and-pasting code from this demonstration, use `chi_311 <- read_csv("https://cfss.uchicago.edu/data/chi-311.csv")` to download the file from the course website.
+
+{{% /alert %}}
+
+```{r chi-311, include = FALSE}
 library(RSocrata)
 
 # use API to get 311 complaints for dead animals and potholes
@@ -50,7 +54,9 @@ chi_311 <- chi_311_full %>%
   select(starts_with("sr"), created_date, community_area, ward, latitude, longitude) %>%
   mutate_at(.vars = vars(community_area, ward, latitude, longitude), as.numeric) %>%
   write_csv(here("static", "data", "chi-311.csv"))
+```
 
+```{r chi-311-glimpse, dependson = "chi-311"}
 glimpse(chi_311)
 ```
 
@@ -112,9 +118,9 @@ glimpse(chi_311)
     ggmap(chicago) +
       # add the heatmap
       stat_density_2d(data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
-                      aes(x = longitude,
-                          y = latitude,
-                          fill = stat(level)),
+                      mapping = aes(x = longitude,
+                                    y = latitude,
+                                    fill = stat(level)),
                       alpha = .1,
                       bins = 50,
                       geom = "polygon") +
