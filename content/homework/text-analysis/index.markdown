@@ -31,16 +31,17 @@ Perform sentiment analysis, classification, or topic modeling using text analysi
 
 ## Okay, I need even more information.
 
-Do the above. Can't think of a data source?
+Do the above. Can't think of a data source? Some suggestions include:
 
 * `gutenbergr`
-* `AssociatedPress` from the `topicmodels` package
-* [Reuters-21578](http://www.daviddlewis.com/resources/testcollections/reuters21578/) - a standard set of text documents (articles published by Reuters in 1987). To access the document-term matrix for this data set, run the following code:
-
-    
-    
-* [State of the Union speeches](http://www.presidency.ucsb.edu/sou.php)
+* [Congressional Record for the 43rd-114th Congresses: Parsed Speeches and Phrase Counts](https://data.stanford.edu/congress_text)
+* [Data for Everyone](https://www.figure-eight.com/data-for-everyone/) - a bunch of open-source data sets. Some contain text data, such as **New England Patriots Deflategate sentiment**.
+* [Hate speech samples](https://github.com/t-davidson/hate-speech-and-offensive-language)
+* [Last statements by Texas death row inmates](https://www.tdcj.texas.gov/death_row/dr_executed_offenders.html)
+* [Movie Review Data](http://www.cs.cornell.edu/people/pabo/movie-review-data/) - good for sentiment analysis
+* [The musiXmatch Dataset](http://millionsongdataset.com/musixmatch/)
 * Scrape tweets using `rtweet` (you know how to use the API now, right?)
+* [State of the Union speeches](http://www.presidency.ucsb.edu/sou.php)
 
 Analyze the text for sentiment OR topic. Or build a statistical learning model using text features to predict some outcome of interest. You don't have to do all these things, just pick one. The lecture notes and [Tidy Text Mining with R](http://tidytextmining.com/) are good starting points for templates to perform this type of analysis, but feel free to **expand beyond these examples**.
 
