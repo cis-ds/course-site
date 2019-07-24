@@ -133,6 +133,15 @@ library(janeaustenr)
 
 ---
 
+# Practice using `tidytext`
+
+> How often is each U.S. state mentioned in a popular song?
+
+* Billboard Year-End Hot 100 (1958-present)
+* Census Bureau ACS
+
+---
+
 # Download population data for U.S. states
 
 ```{r acs-pop}
@@ -159,6 +168,8 @@ glimpse(song_lyrics)
 ---
 
 # Retrieve song lyrics
+
+* [Reference](https://youtu.be/OPf0YbXqDm0?t=91)
 
 ```{r lyrics-example, dependson = "lyrics-import", echo = FALSE}
 song_lyrics %>%
@@ -221,7 +232,7 @@ pop_df %>%
 
 > Make a choropleth map for both the raw frequency counts and relative frequency counts
 
-```{r state-map, warning = FALSE, echo = FALSE}
+```{r state-map, warning = FALSE, echo = FALSE, fig.height = 6}
 library(statebins)
 
 {
@@ -362,35 +373,28 @@ hp_words
 
 # Most frequent words, by book
 
-```{r word-freq, echo = FALSE}
+```{r word-freq, echo = FALSE, fig.height = 8}
 hp_words %>%
   # delete stopwords
   anti_join(stop_words) %>%
   # summarize count per word per book
-  count(book, word) %>%
-  # highest freq on top
-  arrange(desc(n)) %>% 
-  # identify rank within group
-  group_by(book) %>% # 
-  mutate(top = seq_along(word)) %>%
-  # retain top 15 frequent words
-  filter(top <= 15) %>%
+  count(book, word, sort = TRUE) %>%
+  # get top 15 words per book
+  group_by(book) %>%
+  top_n(15) %>%
+  ungroup() %>%
+  mutate(word = reorder_within(word, n, book)) %>%
   # create barplot
-  ggplot(aes(x = -top, y = n / 1000, fill = book)) + 
+  ggplot(aes(x = word, y = n, fill = book)) + 
   geom_col(color = "black") +
-  # print words in plot instead of as axis labels
-  geom_text(aes(label = word), hjust = "left", nudge_y = .1) +
+  scale_x_reordered() +
   labs(title = "Most frequent words in Harry Potter",
        x = NULL,
-       y = "Word count (in thousands)") +
-  facet_wrap( ~ book, ncol = 4) +
+       y = "Word count") +
+  facet_wrap(~ book, scales = "free", nrow = 2) +
   coord_flip() +
-  theme(legend.position = "none",
-        # rotate x text
-        # axis.text.x = element_text(angle = 45, hjust = 1),
-        # remove tick marks and text on y-axis
-        axis.ticks.y = element_blank(),
-        axis.text.y = element_blank())
+  theme_minimal(base_size = rcfss::base_size * .65) +
+  theme(legend.position = "none")
 ```
 
 ---

@@ -119,7 +119,7 @@ hp_words %>%
   labs(title = "Most frequent words in Harry Potter",
        x = NULL,
        y = "Word count") +
-  facet_wrap(~ book, scales = "free_y") +
+  facet_wrap(~ book, scales = "free") +
   coord_flip() +
   theme(legend.position = "none")
 ```
@@ -175,6 +175,12 @@ hp_words %>%
 
 ## Visualize the most frequent positive/negative words in the entire series using the Bing dictionary, and then separately for each book
 
+{{% alert note %}}
+
+Check out [this blog post](https://juliasilge.com/blog/reorder-within/) which introduces the `reorder_within()` and `scale_x_reordered()` functions for sorting bar charts within each facet.
+
+{{% /alert %}}
+
 <details> 
   <summary>Click for a solution</summary>
   <p>
@@ -182,15 +188,20 @@ hp_words %>%
 
 ```r
 # all series
-hp_bing %>% 
+hp_bing %>%
+  # generate frequency count for each word and sentiment
   group_by(sentiment) %>%
   count(word, sort = TRUE) %>%
+  # extract 10 most frequent pos/neg words
   group_by(sentiment) %>%
   top_n(10) %>%
   ungroup() %>%
+  # prep data for sorting each word independently by facet
   mutate(word = reorder_within(word, n, sentiment)) %>%
+  # generate the bar plot
   ggplot(aes(word, n, fill = sentiment)) +
   geom_col(show.legend = FALSE) +
+  # used with reorder_within() to label the axis tick marks
   scale_x_reordered() +
   facet_wrap(~ sentiment, scales = "free_y") +
   labs(title = "Sentimental words used in the Harry Potter series",
@@ -208,8 +219,10 @@ hp_bing %>%
 ```r
 # per book
 hp_pos_neg_book <- hp_bing %>%
+  # generate frequency count for each book, word, and sentiment
   group_by(book, sentiment) %>%
   count(word, sort = TRUE) %>%
+  # extract 10 most frequent pos/neg words per book
   group_by(book, sentiment) %>%
   top_n(10) %>%
   ungroup()
@@ -452,7 +465,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-07-20                  
+##  date     2019-07-24                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package      * version date       lib
