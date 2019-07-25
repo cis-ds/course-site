@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-su19/hw08"
 
 # Overview
 
-Due by 1:30pm on Monday July 29th.
+Due by 10:00am on Monday July 29th.
 
 # Fork the `hw08` repository
 
