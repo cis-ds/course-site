@@ -25,38 +25,40 @@ Go [here](https://github.com/cfss-su19/hw02) to fork the repo.
 
 # Exploring clean data
 
-[FiveThirtyEight](http://fivethirtyeight.com/), a data journalism site devoted to politics, sports, science, economics, and culture, recently published a series of articles on [gun deaths in America](http://fivethirtyeight.com/features/gun-deaths-introduction/). Gun violence in the United States is a significant political issue, and while reducing gun deaths is a noble goal, we must first understand the causes and patterns in gun violence in order to craft appropriate policies. As part of the project, FiveThirtyEight collected data from the Centers for Disease Control and Prevention, as well as other governmental agencies and non-profits, on all gun deaths in the United States from 2012-2014.
+The United States experiences far more mass shooting events than any other developed country in the world. While policymakers, politicians, the media, activists, and the general public recognize the widespread prevalence of these tragic events, policies intended to stop these events should be grounded in evidence and empirical data. Regrettably, mass shootings are not well-documented in the United States, and generalizable data is difficult to collect.
+
+In July 2012, in the aftermath of a mass shooting in a movie theater in Aurora, Colorado,
+[Mother Jones](https://www.motherjones.com/politics/2012/07/mass-shootings-map/) published a report on mass shootings in the United States since 1982. Importantly, they provided the underlying data set as [an open-source database](https://www.motherjones.com/politics/2012/12/mass-shootings-mother-jones-full-data/) for anyone interested in studying and understanding this criminal behavior.
 
 ## Obtain the data
 
-I have included this dataset in the [`rcfss`](https://github.com/uc-cfss/rcfss) library on GitHub. To install the package, use the command `devtools::install_github("uc-cfss/rcfss")` in R. If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages()`, then install `rcfss`. The gun deaths dataset can be loaded using `data("gun_deaths")`. Use the help function in R (`?gun_deaths`) to get detailed information on the variables and coding information.
+I have included this dataset in the [`rcfss`](https://github.com/uc-cfss/rcfss) library on GitHub. To install the package, use the command `devtools::install_github("uc-cfss/rcfss")` in R. If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages()`, then install `rcfss`. The mass shootings dataset can be loaded using `data("mass_shootings")`.^[For the purposes of this assignment, I have performed some data cleaning of the underlying raw data. You can view the data cleaning code [here](https://github.com/uc-cfss/rcfss/blob/master/data-raw/mass-shootings.R).] Use the help function in R (`?mass_shootings`) to get detailed information on the variables and coding information.
 
 ## Explore the data
 
 ### Very specific prompts
 
-1. Generate a data frame that summarizes the number of gun deaths per month.
-    1. Print the data frame as [a formatted `kable()` table](#formatting-tables).
-    1. Generate a bar chart with human-readable labels on the x-axis. That is, each month should be labeled "Jan", "Feb", "Mar" (full or abbreviated month names are fine), not `1`, `2`, `3`.
-1. Generate a bar chart that identifies the number of gun deaths associated with each type of intent cause of death. The bars should be sorted from highest to lowest values.
-1. Generate a boxplot visualizing the age of gun death victims, by sex. Print the average age of female gun death victims.
+1. Generate a data frame that summarizes the number of mass shootings per year. Print the data frame as a formatted `kable()` table.
+1. Generate a bar chart that identifies the number of mass shooters associated with each race category. The bars should be sorted from highest to lowest.
+1. Generate a boxplot visualizing the number of total victims, by type of location. Redraw the same plot, but remove the Las Vegas Strip massacre from the dataset.
 
 ### More open-ended questions
 
 Answer the following questions. Generate appropriate figures/tables to support your conclusions.
 
-1. How many white males with at least a high school education were killed by guns in 2012?
-1. Which season of the year has the most gun deaths? Assume that
-    * Winter = January-March
-    * Spring = April-June
-    * Summer = July-September
-    * Fall = October-December
-    * **Hint**: you need to convert a continuous variable into a categorical variable. [Find a function that does that.](https://www.google.com)
-1. Are whites who are killed by guns more likely to die because of suicide or homicide? How does this compare to blacks and hispanics?
+1. How many white males with prior signs of mental illness initiated a mass shooting after 2000?
+1. Which month of the year has the most mass shootings? Generate a bar chart sorted in chronological order to provide evidence of your answer.
+1. How does the distribution of mass shooting fatalities differ between white and black shooters? What about white and latino shooters?
 
 ### Very open-ended
 
-1. Are police-involved gun deaths significantly different from other gun deaths? Assess the relationship between police involvement and age, police involvement and race, and the intersection of all three variables.
+1. Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter? Assess the relationship between mental illness and total victims, mental illness and race, and the intersection of all three variables.
+
+{{% alert note %}}
+
+Make sure to provide 1-2 brief paragraphs of written interpretation of your tables/figures. Graphs and tables alone will not be sufficient to answer this question.
+
+{{% /alert %}}
 
 ### Formatting graphs
 
@@ -75,42 +77,32 @@ When presenting tabular data (aka `dplyr::summarize()`), make sure you format it
 
 
 ```
-## # A tibble: 11 x 2
-##    place                       n
-##    <chr>                   <int>
-##  1 <NA>                     1384
-##  2 Farm                      470
-##  3 Home                    60486
-##  4 Industrial/construction   248
-##  5 Other specified         13751
-##  6 Other unspecified        8867
-##  7 Residential institution   203
-##  8 School/instiution         671
-##  9 Sports                    128
-## 10 Street                  11151
-## 11 Trade/service area       3439
+## # A tibble: 6 x 2
+##   location_type     n
+##   <chr>         <int>
+## 1 Airport           1
+## 2 Military          5
+## 3 Other            47
+## 4 Religious         6
+## 5 School           17
+## 6 Workplace        38
 ```
 
 Instead, use `kable()` to format the table, add a caption, and label the columns:
 
 
-|Location                | Number of deaths|
-|:-----------------------|----------------:|
-|NA                      |             1384|
-|Farm                    |              470|
-|Home                    |            60486|
-|Industrial/construction |              248|
-|Other specified         |            13751|
-|Other unspecified       |             8867|
-|Residential institution |              203|
-|School/instiution       |              671|
-|Sports                  |              128|
-|Street                  |            11151|
-|Trade/service area      |             3439|
+|Location  | Number of incidents|
+|:---------|-------------------:|
+|Airport   |                   1|
+|Military  |                   5|
+|Other     |                  47|
+|Religious |                   6|
+|School    |                  17|
+|Workplace |                  38|
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😩
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 🙍
 
 # Submit the assignment
 
