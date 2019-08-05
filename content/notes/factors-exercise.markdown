@@ -19,7 +19,6 @@ menu:
 
 ```r
 library(tidyverse)
-library(knitr)
 library(rcfss)
 theme_set(theme_minimal())
 
@@ -30,18 +29,18 @@ gun_deaths
 
 ```
 ## # A tibble: 100,798 x 10
-##       id  year month intent  police sex     age race      place   education
-##    <int> <int> <dbl> <chr>    <int> <chr> <int> <chr>     <chr>   <fct>    
-##  1     1  2012     1 Suicide      0 M        34 Asian/Pa… Home    BA+      
-##  2     2  2012     1 Suicide      0 F        21 White     Street  Some col…
-##  3     3  2012     1 Suicide      0 M        60 White     Other … BA+      
-##  4     4  2012     2 Suicide      0 M        64 White     Home    BA+      
-##  5     5  2012     2 Suicide      0 M        31 White     Other … HS/GED   
-##  6     6  2012     2 Suicide      0 M        17 Native A… Home    Less tha…
-##  7     7  2012     2 Undete…      0 M        48 White     Home    HS/GED   
-##  8     8  2012     3 Suicide      0 M        41 Native A… Home    HS/GED   
-##  9     9  2012     2 Accide…      0 M        50 White     Other … Some col…
-## 10    10  2012     2 Suicide      0 M        NA Black     Home    <NA>     
+##       id  year month intent   police sex     age race      place  education
+##    <dbl> <dbl> <chr> <chr>     <dbl> <chr> <dbl> <chr>     <chr>  <fct>    
+##  1     1  2012 Jan   Suicide       0 M        34 Asian/Pa… Home   <NA>     
+##  2     2  2012 Jan   Suicide       0 F        21 White     Street <NA>     
+##  3     3  2012 Jan   Suicide       0 M        60 White     Other… <NA>     
+##  4     4  2012 Feb   Suicide       0 M        64 White     Home   <NA>     
+##  5     5  2012 Feb   Suicide       0 M        31 White     Other… <NA>     
+##  6     6  2012 Feb   Suicide       0 M        17 Native A… Home   <NA>     
+##  7     7  2012 Feb   Undeter…      0 M        48 White     Home   <NA>     
+##  8     8  2012 Mar   Suicide       0 M        41 Native A… Home   <NA>     
+##  9     9  2012 Feb   Acciden…      0 M        50 White     Other… <NA>     
+## 10    10  2012 Feb   Suicide       0 M        NA Black     Home   <NA>     
 ## # … with 100,788 more rows
 ```
 
@@ -70,24 +69,23 @@ month.abb
 ```r
 (gun_deaths <- gun_deaths %>%
   mutate(month = factor(month,
-                        levels = seq(from = 1, to = 12),
-                        labels = month_levels)))
+                        levels = month_levels)))
 ```
 
 ```
 ## # A tibble: 100,798 x 10
-##       id  year month intent  police sex     age race      place   education
-##    <int> <int> <fct> <chr>    <int> <chr> <int> <chr>     <chr>   <fct>    
-##  1     1  2012 Jan   Suicide      0 M        34 Asian/Pa… Home    BA+      
-##  2     2  2012 Jan   Suicide      0 F        21 White     Street  Some col…
-##  3     3  2012 Jan   Suicide      0 M        60 White     Other … BA+      
-##  4     4  2012 Feb   Suicide      0 M        64 White     Home    BA+      
-##  5     5  2012 Feb   Suicide      0 M        31 White     Other … HS/GED   
-##  6     6  2012 Feb   Suicide      0 M        17 Native A… Home    Less tha…
-##  7     7  2012 Feb   Undete…      0 M        48 White     Home    HS/GED   
-##  8     8  2012 Mar   Suicide      0 M        41 Native A… Home    HS/GED   
-##  9     9  2012 Feb   Accide…      0 M        50 White     Other … Some col…
-## 10    10  2012 Feb   Suicide      0 M        NA Black     Home    <NA>     
+##       id  year month intent   police sex     age race      place  education
+##    <dbl> <dbl> <fct> <chr>     <dbl> <chr> <dbl> <chr>     <chr>  <fct>    
+##  1     1  2012 Jan   Suicide       0 M        34 Asian/Pa… Home   <NA>     
+##  2     2  2012 Jan   Suicide       0 F        21 White     Street <NA>     
+##  3     3  2012 Jan   Suicide       0 M        60 White     Other… <NA>     
+##  4     4  2012 Feb   Suicide       0 M        64 White     Home   <NA>     
+##  5     5  2012 Feb   Suicide       0 M        31 White     Other… <NA>     
+##  6     6  2012 Feb   Suicide       0 M        17 Native A… Home   <NA>     
+##  7     7  2012 Feb   Undeter…      0 M        48 White     Home   <NA>     
+##  8     8  2012 Mar   Suicide       0 M        41 Native A… Home   <NA>     
+##  9     9  2012 Feb   Acciden…      0 M        50 White     Other… <NA>     
+## 10    10  2012 Feb   Suicide       0 M        NA Black     Home   <NA>     
 ## # … with 100,788 more rows
 ```
 
@@ -227,7 +225,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-07-12                  
+##  date     2019-08-05                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source                     
@@ -261,7 +259,6 @@ devtools::session_info()
 ##  httr          1.4.0   2018-12-11 [1] CRAN (R 3.6.0)             
 ##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)             
 ##  knitr       * 1.23    2019-05-18 [1] CRAN (R 3.6.0)             
-##  labeling      0.3     2014-08-23 [1] CRAN (R 3.6.0)             
 ##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.0)             
 ##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)             
 ##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)             
@@ -280,12 +277,12 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)             
 ##  purrr       * 0.3.2   2019-03-15 [1] CRAN (R 3.6.0)             
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)             
-##  rcfss       * 0.1.7   2019-07-02 [1] local                      
-##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.6.0)             
+##  rcfss       * 0.1.8   2019-08-05 [1] local                      
+##  Rcpp          1.0.2   2019-07-25 [1] CRAN (R 3.6.0)             
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)             
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)             
 ##  remotes       2.0.4   2019-04-10 [1] CRAN (R 3.6.0)             
-##  rlang         0.3.4   2019-04-07 [1] CRAN (R 3.6.0)             
+##  rlang         0.4.0   2019-06-25 [1] CRAN (R 3.6.0)             
 ##  rmarkdown     1.13    2019-05-22 [1] CRAN (R 3.6.0)             
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)             
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)             
