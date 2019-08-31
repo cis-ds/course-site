@@ -82,4 +82,6 @@ Each homework will be evaluated by either myself or the TA, as well as by **two 
 
 ## Statement on Disabilities
 
-If you need any special accommodations, please provide me (Dr. Soltoff) with a copy of your Accommodation Determination Letter (provided to you by the Student Disability Services office) as soon as possible so that you may discuss with me how your accommodations may be implemented in this course.
+The University of Chicago is committed to diversity and rigorous inquiry from multiple perspectives. The MAPSS, CIR, and Computation programs share this commitment and seek to foster productive learning environments based upon inclusion, open communication, and mutual respect for a diverse range of identities, experiences, and positions.
+
+This course is open to all students who meet the academic requirements for participation. Any student who has a documented need for accommodation should contact Student Disability Services (773-702-6000 or [disabilities@uchicago.edu](mailto:disabilities@uchicago.edu)) and provide me (Dr. Soltoff) with a copy of your Accommodation Determination Letter as soon as possible.
