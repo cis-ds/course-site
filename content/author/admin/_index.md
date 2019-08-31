@@ -23,7 +23,7 @@ name: Benjamin Soltoff
 organizations:
 - name: University of Chicago
   url: "https://macss.uchicago.edu"
-role: Lecturer in Computational Social Science
+role: Assistant Instructional Professor in Computational Social Science
 social:
 - icon: envelope
   icon_pack: fas
@@ -40,4 +40,4 @@ user_groups:
 - Visitors
 ---
 
-Benjamin Soltoff is a lecturer in computational social science at the University of Chicago. He is a political scientist with concentrations in American government, political methodology, and law and courts. Additionally, he has training and experience in data science, big data analytics, and policy evaluation. He currently teaches courses in social scientific research design, computational modeling, data science, math/statistics, and data visualization.
+Benjamin Soltoff is an assistant instructional professor in computational social science at the University of Chicago. He is a political scientist with concentrations in American government, political methodology, and law and courts. Additionally, he has training and experience in data science, big data analytics, and policy evaluation. He currently teaches courses in social scientific research design, computational modeling, data science, math/statistics, and data visualization.
