@@ -1,6 +1,6 @@
 ---
 title: "Geospatial visualization: raster maps"
-date: 2019-11-26T:12:30:00
+date: 2019-11-26T12:30:00
 publishDate: 2019-05-20T13:30:00
 draft: false
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm014.html", "/syllabus/geospatial-visualization/"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-11-26T:13:50:00
+time_end: 2019-11-26T13:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

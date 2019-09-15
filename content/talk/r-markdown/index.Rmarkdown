@@ -1,6 +1,6 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2019-11-05T:12:30:00
+date: 2019-11-05T12:30:00
 publishDate: 2019-03-01T13:30:00
 draft: false
 type: "talk"
