@@ -1,6 +1,6 @@
 ---
 title: "Building Shiny Apps: User interface"
-date: 2019-07-24T10:00:00
+date: 2019-07-24T:12:30:00
 publishDate: 2019-05-27T13:30:00
 draft: true
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm019.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-07-24T12:00:00
+time_end: 2019-07-24T:13:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -20,7 +20,7 @@ abstract: ""
 summary: "Introduce Shiny applications and practice constructing a user interface."
 
 # Location of event.
-location: "Room 315, Haskell Hall, Chicago, IL"
+location: "Room 104, Stuart Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

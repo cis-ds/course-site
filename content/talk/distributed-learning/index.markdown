@@ -20,7 +20,7 @@ abstract: ""
 summary: "Define distributed computing, implement parallel processing, query SQL databases, and practice machine learning with Spark."
 
 # Location of event.
-location: "Room 315, Haskell Hall, Chicago, IL"
+location: "Room 104, Stuart Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

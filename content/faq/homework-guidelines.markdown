@@ -82,57 +82,56 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ```
     ## ─ Session info ──────────────────────────────────────────────────────────
     ##  setting  value                       
-    ##  version  R version 3.5.2 (2018-12-20)
-    ##  os       macOS Mojave 10.14.3        
+    ##  version  R version 3.6.0 (2019-04-26)
+    ##  os       macOS Mojave 10.14.6        
     ##  system   x86_64, darwin15.6.0        
     ##  ui       X11                         
     ##  language (EN)                        
     ##  collate  en_US.UTF-8                 
     ##  ctype    en_US.UTF-8                 
     ##  tz       America/Chicago             
-    ##  date     2019-03-20                  
+    ##  date     2019-09-15                  
     ## 
     ## ─ Packages ──────────────────────────────────────────────────────────────
     ##  package     * version date       lib source        
-    ##  assertthat    0.2.0   2017-04-11 [2] CRAN (R 3.5.0)
-    ##  backports     1.1.3   2018-12-14 [2] CRAN (R 3.5.0)
-    ##  blogdown      0.11    2019-03-11 [1] CRAN (R 3.5.2)
-    ##  bookdown      0.9     2018-12-21 [1] CRAN (R 3.5.0)
-    ##  callr         3.2.0   2019-03-15 [2] CRAN (R 3.5.2)
-    ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.5.2)
-    ##  crayon        1.3.4   2017-09-16 [2] CRAN (R 3.5.0)
-    ##  desc          1.2.0   2018-05-01 [2] CRAN (R 3.5.0)
-    ##  devtools      2.0.1   2018-10-26 [1] CRAN (R 3.5.1)
-    ##  digest        0.6.18  2018-10-10 [1] CRAN (R 3.5.0)
-    ##  evaluate      0.13    2019-02-12 [2] CRAN (R 3.5.2)
-    ##  fs            1.2.6   2018-08-23 [1] CRAN (R 3.5.0)
-    ##  glue          1.3.1   2019-03-12 [2] CRAN (R 3.5.2)
-    ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.5.0)
-    ##  knitr         1.22    2019-03-08 [2] CRAN (R 3.5.2)
-    ##  magrittr      1.5     2014-11-22 [2] CRAN (R 3.5.0)
-    ##  memoise       1.1.0   2017-04-21 [2] CRAN (R 3.5.0)
-    ##  pkgbuild      1.0.2   2018-10-16 [1] CRAN (R 3.5.0)
-    ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.5.0)
-    ##  prettyunits   1.0.2   2015-07-13 [2] CRAN (R 3.5.0)
-    ##  processx      3.3.0   2019-03-10 [2] CRAN (R 3.5.2)
-    ##  ps            1.3.0   2018-12-21 [2] CRAN (R 3.5.0)
-    ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.5.2)
-    ##  Rcpp          1.0.0   2018-11-07 [1] CRAN (R 3.5.0)
-    ##  remotes       2.0.2   2018-10-30 [1] CRAN (R 3.5.0)
-    ##  rlang         0.3.1   2019-01-08 [1] CRAN (R 3.5.2)
-    ##  rmarkdown     1.12    2019-03-14 [1] CRAN (R 3.5.2)
-    ##  rprojroot     1.3-2   2018-01-03 [2] CRAN (R 3.5.0)
-    ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.5.0)
-    ##  stringi       1.3.1   2019-02-13 [1] CRAN (R 3.5.2)
-    ##  stringr       1.4.0   2019-02-10 [1] CRAN (R 3.5.2)
-    ##  testthat      2.0.1   2018-10-13 [2] CRAN (R 3.5.0)
-    ##  usethis       1.4.0   2018-08-14 [1] CRAN (R 3.5.0)
-    ##  withr         2.1.2   2018-03-15 [2] CRAN (R 3.5.0)
-    ##  xfun          0.5     2019-02-20 [1] CRAN (R 3.5.2)
-    ##  yaml          2.2.0   2018-07-25 [2] CRAN (R 3.5.0)
+    ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
+    ##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)
+    ##  blogdown      0.14    2019-07-13 [1] CRAN (R 3.6.0)
+    ##  bookdown      0.12    2019-07-11 [1] CRAN (R 3.6.0)
+    ##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
+    ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
+    ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
+    ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
+    ##  devtools      2.1.0   2019-07-06 [1] CRAN (R 3.6.0)
+    ##  digest        0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
+    ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
+    ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
+    ##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
+    ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
+    ##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
+    ##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
+    ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
+    ##  pkgbuild      1.0.4   2019-08-05 [1] CRAN (R 3.6.0)
+    ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
+    ##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)
+    ##  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
+    ##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
+    ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)
+    ##  Rcpp          1.0.2   2019-07-25 [1] CRAN (R 3.6.0)
+    ##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
+    ##  rlang         0.4.0   2019-06-25 [1] CRAN (R 3.6.0)
+    ##  rmarkdown     1.14    2019-07-12 [1] CRAN (R 3.6.0)
+    ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
+    ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
+    ##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.6.0)
+    ##  stringr       1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
+    ##  testthat      2.2.1   2019-07-25 [1] CRAN (R 3.6.0)
+    ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
+    ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
+    ##  xfun          0.8     2019-06-25 [1] CRAN (R 3.6.0)
+    ##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
     ## 
-    ## [1] /Users/soltoffbc/Library/R/3.5/library
-    ## [2] /Library/Frameworks/R.framework/Versions/3.5/Resources/library
+    ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
     ```
 
 * Pretend you are someone else. Clone a fresh copy of your own repo from GitHub, fire up a new RStudio session and try to knit your R Markdown file. Does it "just work"? It should!

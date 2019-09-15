@@ -1,6 +1,6 @@
 ---
 title: "Pipes and functions in R"
-date: 2019-07-03T10:00:00
+date: 2019-10-22T:12:30:00
 publishDate: 2019-04-22T13:30:00
 draft: false
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm007.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-07-03T12:00:00
+time_end: 2019-10-22T:13:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -20,7 +20,7 @@ abstract: ""
 summary: "Review the pipe, define a function, and practice writing and debugging functions."
 
 # Location of event.
-location: "Room 315, Haskell Hall, Chicago, IL"
+location: "Room 104, Stuart Hall, Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

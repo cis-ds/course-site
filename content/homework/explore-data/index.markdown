@@ -102,7 +102,7 @@ Instead, use `kable()` to format the table, add a caption, and label the columns
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 🙍
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😢
 
 # Submit the assignment
 
