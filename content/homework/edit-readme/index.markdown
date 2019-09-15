@@ -8,20 +8,20 @@ type: post
 aliases: ["/hw01-edit-README.html"]
 
 summary: "Test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown."
-url_code: "https://github.com/cfss-su19/hw01"
+url_code: "https://github.com/cfss-fa19/hw01"
 ---
 
 
 
 # Overview
 
-Due before class Thursday June 27th.
+Due before class October 8th.
 
 The goal is to test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown.
 
 # Fork the `hw01` repository
 
-Go [here](https://github.com/cfss-su19/hw01) to fork the repo.
+Go [here](https://github.com/cfss-fa19/hw01) to fork the repo.
 
 # Edit `README.md`
 

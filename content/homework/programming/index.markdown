@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw04-programming.html"]
 
 summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
-url_code: "https://github.com/cfss-su19/hw04"
+url_code: "https://github.com/cfss-fa19/hw04"
 ---
 
 
 
 # Overview
 
-Due before class on Monday July 15th.
+Due before class on October 29th.
 
 # Fork the `hw04` repository
 
-Go [here](https://github.com/cfss-su19/hw04) to fork the repo.
+Go [here](https://github.com/cfss-fa19/hw04) to fork the repo.
 
 # Part 1: Programming exercises
 

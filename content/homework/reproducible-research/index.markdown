@@ -15,7 +15,7 @@ url_code: "https://github.com/uc-cfss/hw05"
 
 # Overview
 
-Due before class May 6th.
+Due before class November 5th.
 
 # Fork the `hw05` repository
 
