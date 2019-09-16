@@ -52,6 +52,7 @@ Okay, then analyze one of the datasets we've used before.
 * `scorecard`
     * In `library(rcfss)`
     * Use the [`rscorecard`](https://github.com/btskinner/rscorecard) library to download your own subset of the Department of Education's College Scorecard data
+* Check out [this archive of datasets](https://docs.google.com/spreadsheets/d/1wZhPLMCHKJvwOkP4juclhjFgqIY8fQFMemwKL2c64vk/edit#gid=0) from the Data Is Plural Newsletter
 
 ## How can I automatically download the data
 
