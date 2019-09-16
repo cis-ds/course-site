@@ -1,7 +1,7 @@
 ---
 title: "Introduction to computing for the social sciences"
 date: 2019-10-01T12:30:00
-publishDate: 2019-10-01T12:30:00
+publishDate: 2019-08-01T12:30:00
 draft: false
 type: "talk"
 
