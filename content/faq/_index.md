@@ -12,6 +12,70 @@ type: docs
 
 ## Should I take this course?
 
+Meet some of the students you will find in this class.
+
+### Jeri
+
+* General background
+    * PhD student in sociology
+    * Studies the science of science
+    * Uses [advanced metrics](http://www.borischen.co/) to set her fantasy football lineup. Seems to be effective as she has won two years in a row.
+* Starting points
+    * Has been analyzing data in Stata for the past three years
+    * Feels comfortable with regression and econometric methods
+    * Tried to learn Git on her own once, and quickly became frustrated and gave up
+* Needs
+    * Will be analyzing a large-scale dataset for her dissertation
+    * Wants to produce high-quality visualizations
+    * Seeks a reproducible workflow to manage all her exploratory and confirmatory analysis
+
+### Ryan
+
+* General background
+    * Entering the [MAPSS program](https://mapss.uchicago.edu)
+    * Undergraduate degree in journalism
+    * Enjoys attending [Weird Al Yankovic concerts](https://www.youtube.com/watch?v=qpMvS1Q1sos)
+* Starting points
+    * Hasn't taken a statistics class in five years
+    * Isn't sure whether to pursue a PhD or go back into the private sector after graduating
+    * Took an online course of introduction to R, but hasn't used it in his day-to-day work
+* Needs
+    * Writing a master's thesis in a single year
+    * Expects to analyze a collection of published news articles 
+    * Wants to understand code samples he finds online so he can repurpose them for his own work
+
+### Fernando
+
+* General background
+    * Third-year student in the College
+    * Majoring in political science
+    * Makes an annual pilgrimage to Comic-Con where he traditionally cosplays as [Spock](https://memory-alpha.fandom.com/wiki/Spock)
+* Starting points
+    * Has taken MATH 15100 and 15200, plus the departmental methods course
+    * Isn't afraid to tackle a new challenge
+    * Possesses some experience writing scripts in Stata to automate statistical analysis
+* Needs
+    * Wants to work as a research assistant on a project exploring the onset of civil conflict
+    * Faculty advisor's lab works exclusively in R
+    * Needs to start contributing to a new research paper next quarter
+
+### Fang
+
+* General background
+    * Born and raised in Shenzhen, China
+    * First time living in the United States
+    * Improves her English skills by watching the Great British Bake-Off (but was heartbroken when Mary Berry, Mel, and Sue left)
+* Starting points
+    * Background in psychology, plans to apply for doctoral programs in marketing
+    * Uses a mix of Excel, SPSS, and Matlab
+    * Is pursuing the [graduate certificate in computational social science](https://macss.uchicago.edu/content/certificate-current-students)
+* Needs
+    * Is going to run 300 experiments on Amazon MTurk in the next six months
+    * Wants to easily share her analysis notebooks with peers in her research lab
+    * Expects to take courses in machine learning and Bayesian statistics which require a background in R
+
+## General description
+
 This course is open to any graduate (or advanced undergraduate) at UChicago. I anticipate drawing students from a wide range of departments such as Sociology, Psychology, Political Science, Comparative Human Development, and MAPSS. Typically these students are looking to learn basic computational and analytical skills they can apply to master's theses or dissertation research.
 
 If you have never programmed before or don't even know what the [shell](/setup/shell/) is, **prepare for a shock**. This class will prove to be immensely beneficial if you stick with it, but that will require you to commit for the full 10 weeks. I do not presume any prior programming experience, so everyone starts from the same knowledge level. I guarantee that the first few weeks and assignments will be rough - but the good news is that they will be rough for everyone! Your classmates are struggling with you and you can lean on one another to get through the worst part of the learning curve.
