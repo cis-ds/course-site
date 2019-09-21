@@ -1,13 +1,13 @@
 ---
 title: "Reproducible workflow"
-date: 2019-10-31T12:30:00
+date: 2019-11-05T12:30:00
 publishDate: 2019-05-01T13:30:00
 draft: false
 type: "talk"
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-10-31T10:50:00
+time_end: 2019-11-05T10:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
