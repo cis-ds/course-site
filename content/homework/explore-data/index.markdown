@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-fa19/hw02"
 
 # Overview
 
-Due before class on Octobe 15th.
+Due before class on October 15th.
 
 Now that you've demonstrated your software is setup, the goal of this assignment is to practice transforming and exploring data.
 
