@@ -88,7 +88,7 @@ math: false
 
 ## What you need to do
 
-* [Register your GitHub username for the course](https://forms.gle/jS3nn8CM5JwttorU6) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/uc-cfss). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
+* [Register your GitHub username for the course](https://forms.gle/6YDKXHpEGPkc9sX28) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/uc-cfss). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
 * [If you are not currently registered, complete this petition to enroll in the course](https://goo.gl/forms/ZERPvUxvPxX5SZnj2)
 * [Complete the first homework assignment](/homework/edit-readme/)
 * Install the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console. We will be using data from this package in class next week.
