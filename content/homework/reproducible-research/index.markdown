@@ -1,29 +1,29 @@
 ---
-title: "HW05: Generating reproducible research"
+title: "HW06: Generating reproducible research"
 date: 2019-04-29T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
-draft: true
+draft: false
 type: post
 aliases: ["/hw05-reproducible-research.html"]
 
 summary: "Synthesize everything we have learned thus far."
-url_code: "https://github.com/uc-cfss/hw05"
+url_code: "https://github.com/cfss-fa19/hw06"
 ---
 
 
 
 # Overview
 
-Due before class November 5th.
+Due before class November 12th.
 
-# Fork the `hw05` repository
+# Fork the `hw06` repository
 
-Go [here](https://github.com/uc-cfss/hw05) to fork the repo for homework 05.
+Go [here](https://github.com/cfss-fa19/hw06) to fork the repo for homework 06.
 
 # What is my objective?
 
-At this half-way point in the term, I want to check and make sure everyone is up to speed on the major skills learned so far:
+At this mid-way point in the term, I want to check and make sure everyone is up to speed on the major skills learned so far:
 
 * Importing and tidying data
 * Transforming, visualizing, and exploring data
@@ -88,7 +88,7 @@ If you have to store a large data file in your repo, use [**Git Large File Stora
 * Generate some descriptive plots of the data
 * Summarize the relationships you discover with a written summary. Conjecture as to why they occur and/or why they may be [spurious](https://en.wikipedia.org/wiki/Spurious_relationship).
 
-The final output should be a `github_document`, but feel free to use R scripts in your initial work or create a [pipeline](https://github.com/uc-cfss/pipeline-example) that executes and renders all your scripts/R Markdown files at once.
+The final output should be a `github_document` (or alternatively a `pdf_document`, but it must be something you can view directly on GitHub - no `html_document`s).
 
 # Aim higher!
 
@@ -100,9 +100,8 @@ The final output should be a `github_document`, but feel free to use R scripts i
         `Rscript -e "rmarkdown::render('myAwesomeAnalysis.Rmd')"`
     * To emulate RStudio's "Knit" button within an R script:
         `rmarkdown::render('myAwesomeAnalysis.Rmd)`
-* Experiment with running R code saved in a script from within R Markdown. Here's some official documentation on [code externalization](http://yihui.name/knitr/demo/externalization/).
-* Embed pre-existing figures in an R Markdown document, i.e. an R script creates the figures, then the report incorporates them.
 * Make use of code chunk and YAML options to customize the appearance of your final document
+* Use your skills on [project management](/notes/saving-source/) to ensure reproducibility
 * Writing your own functions? Implement [defensive](/notes/style-guide/) [programming](/notes/condition-handling/) to minimize errors (or at least provide informative error messages).
 * Use a consistent style when writing your code
 
