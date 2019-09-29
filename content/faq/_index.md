@@ -151,6 +151,7 @@ Each homework will be evaluated by either myself or the TA, as well as by **two 
 * [Evaluation criteria for homework](/faq/homework-evaluations/)
 * [How to perform peer review](/faq/peer-evaluations/)
 * [How to properly ask for help](/faq/asking-questions/)
+* [Resources for underrepresented groups in programming](/faq/underrepresented-resources/)
 
 ## Statement on Disabilities
 
