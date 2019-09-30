@@ -21,77 +21,75 @@ output:
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(sf)
+library(tidycensus)
+library(viridis)
+
+# useful on MacOS to speed up rendering of geom_sf() objects
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
+  options(bitmapType = "cairo")
+}
+
+options(digits = 3)
 set.seed(1234)
+theme_set(theme_minimal())
 ```
 
 <div class="row">
-  <div class="col-sm-7.5 col-xs-12">
+  <div class="col-sm-7 col-xs-12">
 
-* Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-* Teaching Assistants
-    * Wanitchaya (Mint) Poonpatanapricha
-    * Ruben Rodriguez
-    * Xiaogao Zhou
-* Meeting day/time: TuTh 12:30-1:50 (Stuart Hall 104)
-* Online course discussion: [GitHub discussion repo](https://github.com/uc-cfss/Discussion)
-* Open lab sessions
-    * Th 2-3:20pm (Kent Chem Lab 102)
-    * F 1:30-2:50pm (Saieh Hall of Economics 103)
-* Office hours:
-    * Benjamin: M 1:30-3:30pm (McGiffert House 209)
-    * TBD: Tu 10-12pm (Location TBD)
-* Prerequisites: None
-* Requirements: Bring your own laptop
+  * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
+  * Teaching Assistants
+      * Wanitchaya (Mint) Poonpatanapricha
+      * Ruben Rodriguez
+      * Xiaogao Zhou
+  * Meeting day/time: TuTh 12:30-1:50 (Stuart Hall 104)
+  * Online course discussion: [GitHub discussion repo](https://github.com/uc-cfss/Discussion)
+  * Open lab sessions
+      * Th 2-3:20pm (Kent Chem Lab 102)
+      * F 1:30-2:50pm (Saieh Hall of Economics 103)
+  * Office hours:
+      * Mint: M 9-11am (Regenstein Library)
+      * Benjamin: M 1:30-3:30pm (McGiffert House 209)
+      * Ruben: Tu 10-12pm (Location TBD)
+  * Prerequisites: None
+  * Requirements: Bring your own laptop
 
   </div>
-  <div class="col-sm-4.5 col-xs-12">
   
-```{r pr-wordcloud, fig.height = 5, fig.width = 5}
-library(tidyverse)
-library(tidytext)
-
-# get PR descriptions from spring 19
-evals <- read_rds("../../../grade-report/data/spring-2019-db.Rds")
-
-# get text from PR bodies
-pr_text <- evals$pr %>%
-  select(user, hw_id, body_pr)
-
-# tokenize into unigrams
-pr_tokens <- pr_text %>%
-  # remove URLs
-  mutate(body_pr = str_remove_all(body_pr, "(http[^ ]*)|(www\\.[^ ]*)")) %>%
-  unnest_tokens(output = word,
-                input = body_pr) %>%
-  # remove stopwords
-  anti_join(stop_words) %>%
-  # remove numbers
-  filter(!str_detect(word, "^[0-9]*$"))
-
-library(ggwordcloud)
-
-pr_tokens %>%
-  # count word frequency
-  group_by(word) %>%
-  count(sort = TRUE) %>%
-  # keep only top words for wordcloud
-  ungroup() %>%
-  top_n(n = 150, wt = n) %>%
-  mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30)),
-         color = factor(sample.int(8, n(), replace = TRUE))) %>%
-  ggplot(aes(label = word,
-             size = n,
-             angle = angle,
-             color = color)) +
-  geom_text_wordcloud(rm_outside = TRUE, shape = "square",
-                      grid_margin = 0.3,
-                      seed = 123) +
-  scale_size_area(max_size = 12) +
-  scale_color_brewer(type = "qual", palette = "Dark2") +
-  # ggtitle("Comments left by students when\nsubmitting homework assignments") +
-  theme_minimal()
+  <div class="col-sm-5 col-xs-12">
+  
+```{r income-cook, results = "hide"}
+cook_inc <- get_acs(
+  state = "IL",
+  county = "Cook",
+  geography = "tract",
+  variables = c(medincome = "B19013_001"),
+  year = 2017,
+  geometry = TRUE
+)
 ```
-  
+
+```{r income-cook-map-viridis, dependson = "income-cook", fig.width = 5, fig.height = 5, fig.cap = "Example of student work using `sf`, `tidycensus`, and `ggplot2`"}
+ggplot(data = cook_inc) +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = estimate, color = estimate)) +
+  # increase interpretability of graph
+  scale_color_viridis(labels = scales::dollar) +
+  scale_fill_viridis(labels = scales::dollar) +
+  labs(
+    title = "Median household income in Cook County, IL",
+    subtitle = "In 2017",
+    color = NULL,
+    fill = NULL,
+    caption = "Source: American Community Survey"
+  )
+```
+
   </div>
 
 </div>
