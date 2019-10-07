@@ -52,6 +52,7 @@ math: false
 ## Before class
 
 * Read Chapters 9-12 from [R for Data Science](http://r4ds.had.co.nz/)
+* Read [Pivoting in `tidyr`](https://tidyr.tidyverse.org/articles/pivot.html)
 
 ## Class materials
 
