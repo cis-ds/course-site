@@ -82,6 +82,7 @@ This is essentially a gathering operation. Except for the `Name` column, the rem
 
 
 ```r
+# using gather()
 race %>%
   gather(key = Time, value = Score, -Name, convert = TRUE) %>%
   arrange(Name, Time)
@@ -101,6 +102,31 @@ race %>%
 ##  8 Karen    50   1.3
 ##  9 Karen   100   1.7
 ## 10 Karen   150   1.9
+## # … with 18 more rows
+```
+
+```r
+# using pivot_longer()
+race %>%
+  pivot_longer(cols = -Name, names_to = "Time", values_to = "Score",
+               # ensure the Time column is stored as a numeric column
+               names_ptypes = list(Time = double()))
+```
+
+```
+## # A tibble: 28 x 3
+##    Name   Time Score
+##    <chr> <dbl> <dbl>
+##  1 Carla    50   1.2
+##  2 Carla   100   1.8
+##  3 Carla   150   2.2
+##  4 Carla   200   2.3
+##  5 Carla   250   3  
+##  6 Carla   300   2.5
+##  7 Carla   350   1.8
+##  8 Mace     50   1.5
+##  9 Mace    100   1.1
+## 10 Mace    150   1.9
 ## # … with 18 more rows
 ```
 
@@ -180,6 +206,7 @@ This dataset is not tidy because observations are spread across multiple rows. T
 
 
 ```r
+# using spread()
 results %>%
   spread(key = Treatment, value = value)
 ```
@@ -198,6 +225,29 @@ results %>%
 ##  8 Ind7     17     7
 ##  9 Ind8     18     8
 ## 10 Ind9     19     9
+```
+
+```r
+# using pivot_wider()
+# same results as spread(), rows are just sorted in different order
+results %>%
+  pivot_wider(names_from = Treatment, values_from = value)
+```
+
+```
+## # A tibble: 10 x 3
+##    Ind   Treat  Cont
+##    <chr> <int> <int>
+##  1 Ind1      1    11
+##  2 Ind2      2    12
+##  3 Ind3      3    13
+##  4 Ind4      4    14
+##  5 Ind5      5    15
+##  6 Ind6      6    16
+##  7 Ind7      7    17
+##  8 Ind8      8    18
+##  9 Ind9      9    19
+## 10 Ind10    10    20
 ```
 
   </p>
@@ -338,6 +388,47 @@ If we're cleaning up the data frame, let's also arrange it in a logical order:
 grades %>%
   gather(key = Quarter, value = Score, Fall:Winter) %>%
   spread(key = Test, value = Score) %>%
+  arrange(ID, Year, Quarter)
+```
+
+```
+## # A tibble: 18 x 5
+##       ID  Year Quarter  Math Writing
+##    <dbl> <dbl> <chr>   <dbl>   <dbl>
+##  1     1  2008 Fall       15      22
+##  2     1  2008 Spring     16      22
+##  3     1  2008 Winter     19      24
+##  4     1  2009 Fall       12      10
+##  5     1  2009 Spring     13      14
+##  6     1  2009 Winter     27      20
+##  7     2  2008 Fall       12      13
+##  8     2  2008 Spring     13      11
+##  9     2  2008 Winter     25      29
+## 10     2  2009 Fall       16      23
+## 11     2  2009 Spring     14      20
+## 12     2  2009 Winter     21      26
+## 13     3  2008 Fall       11      17
+## 14     3  2008 Spring     12      12
+## 15     3  2008 Winter     22      23
+## 16     3  2009 Fall       13      14
+## 17     3  2009 Spring     11       9
+## 18     3  2009 Winter     27      31
+```
+
+If we use the `pivot_*()` functions in `tidyr`, we need to make the data frame longer first, then wider:
+
+
+```r
+grades %>%
+  pivot_longer(
+    cols = Fall:Winter,
+    names_to = "Quarter",
+    values_to = "Score"
+  ) %>%
+  pivot_wider(
+    names_from = Test,
+    values_from = Score
+  ) %>%
   arrange(ID, Year, Quarter)
 ```
 
@@ -529,8 +620,8 @@ The whole operation in a single chain (with an `arrange()` thrown in to sort the
 activities %>%
   gather(key = key, value = value, -id, -trt) %>%
   separate(key, into = c("location", "time")) %>%
-  arrange(id, trt, time) %>%
-  spread(key = location, value = value)
+  spread(key = location, value = value) %>%
+  arrange(id, trt, time)
 ```
 
 ```
@@ -559,6 +650,47 @@ activities %>%
 ## 20 x9    cnt   T2    0.400 0.0838 0.103
 ```
 
+And the analogous pivot operation is:
+
+
+```r
+activities %>%
+  pivot_longer(
+    cols = work.T1:talk.T2,
+    names_to = "key",
+    values_to = "value"
+  ) %>%
+  separate(key, into = c("location", "time")) %>%
+  pivot_wider(names_from = location, values_from = value) %>%
+  arrange(id, trt, time)
+```
+
+```
+## # A tibble: 20 x 6
+##    id    trt   time    work  play   talk
+##    <chr> <chr> <chr>  <dbl> <dbl>  <dbl>
+##  1 x1    cnt   T1    0.652  0.865 0.536 
+##  2 x1    cnt   T2    0.275  0.354 0.0319
+##  3 x10   cnt   T1    0.836  0.356 0.501 
+##  4 x10   cnt   T2    0.802  0.505 0.219 
+##  5 x2    cnt   T1    0.568  0.615 0.0931
+##  6 x2    cnt   T2    0.229  0.936 0.114 
+##  7 x3    tr    T1    0.114  0.775 0.170 
+##  8 x3    tr    T2    0.0144 0.246 0.469 
+##  9 x4    tr    T1    0.596  0.356 0.900 
+## 10 x4    tr    T2    0.729  0.473 0.397 
+## 11 x5    tr    T1    0.358  0.406 0.423 
+## 12 x5    tr    T2    0.250  0.192 0.834 
+## 13 x6    cnt   T1    0.429  0.707 0.748 
+## 14 x6    cnt   T2    0.161  0.583 0.761 
+## 15 x7    tr    T1    0.0519 0.838 0.823 
+## 16 x7    tr    T2    0.0170 0.459 0.573 
+## 17 x8    tr    T1    0.264  0.240 0.955 
+## 18 x8    tr    T2    0.486  0.467 0.448 
+## 19 x9    cnt   T1    0.399  0.771 0.685 
+## 20 x9    cnt   T2    0.103  0.400 0.0838
+```
+
   </p>
 </details>
 
@@ -573,7 +705,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.0 (2019-04-26)
+##  version  R version 3.6.1 (2019-07-05)
 ##  os       macOS Mojave 10.14.6        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -581,25 +713,29 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-09-15                  
+##  date     2019-10-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
 ##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)
-##  blogdown      0.14    2019-07-13 [1] CRAN (R 3.6.0)
-##  bookdown      0.12    2019-07-11 [1] CRAN (R 3.6.0)
+##  blogdown      0.15    2019-08-21 [1] CRAN (R 3.6.0)
+##  bookdown      0.13    2019-08-21 [1] CRAN (R 3.6.0)
 ##  broom         0.5.2   2019-04-07 [1] CRAN (R 3.6.0)
 ##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.1.0   2019-07-06 [1] CRAN (R 3.6.0)
+##  devtools      2.2.0   2019-09-07 [1] CRAN (R 3.6.0)
 ##  digest        0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
 ##  dplyr       * 0.8.3   2019-07-04 [1] CRAN (R 3.6.0)
+##  DT            0.8     2019-08-07 [1] CRAN (R 3.6.0)
+##  ellipsis      0.2.0.1 2019-07-02 [1] CRAN (R 3.6.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
+##  fansi         0.4.0   2018-10-05 [1] CRAN (R 3.6.0)
 ##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
 ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
@@ -608,21 +744,23 @@ devtools::session_info()
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
 ##  haven         2.1.1   2019-07-04 [1] CRAN (R 3.6.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.0   2019-07-09 [1] CRAN (R 3.6.0)
+##  hms           0.5.1   2019-08-23 [1] CRAN (R 3.6.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
+##  htmlwidgets   1.3     2018-09-30 [1] CRAN (R 3.6.0)
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
 ##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)
 ##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.0)
+##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
 ##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
+##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
 ##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
 ##  modelr        0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-141 2019-08-01 [1] CRAN (R 3.6.0)
+##  nlme          3.1-140 2019-05-12 [1] CRAN (R 3.6.1)
 ##  pillar        1.4.2   2019-06-29 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.4   2019-08-05 [1] CRAN (R 3.6.0)
+##  pkgbuild      1.0.5   2019-08-26 [1] CRAN (R 3.6.0)
 ##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.6.0)
 ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
 ##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)
@@ -630,12 +768,13 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
 ##  purrr       * 0.3.2   2019-03-15 [1] CRAN (R 3.6.0)
 ##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)
+##  rcfss       * 0.1.8   2019-08-27 [1] local         
 ##  Rcpp          1.0.2   2019-07-25 [1] CRAN (R 3.6.0)
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
 ##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
 ##  rlang         0.4.0   2019-06-25 [1] CRAN (R 3.6.0)
-##  rmarkdown     1.14    2019-07-12 [1] CRAN (R 3.6.0)
+##  rmarkdown     1.15    2019-08-21 [1] CRAN (R 3.6.0)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)
 ##  rvest         0.3.4   2019-05-15 [1] CRAN (R 3.6.0)
@@ -645,13 +784,14 @@ devtools::session_info()
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
 ##  testthat      2.2.1   2019-07-25 [1] CRAN (R 3.6.0)
 ##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.6.0)
+##  tidyr       * 1.0.0   2019-09-11 [1] CRAN (R 3.6.0)
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 3.6.0)
 ##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.8     2019-06-25 [1] CRAN (R 3.6.0)
+##  xfun          0.9     2019-08-21 [1] CRAN (R 3.6.0)
 ##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
 ##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
 ##  zeallot       0.1.0   2018-01-28 [1] CRAN (R 3.6.0)

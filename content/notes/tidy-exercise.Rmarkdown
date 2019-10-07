@@ -59,9 +59,16 @@ race %>%
 This is essentially a gathering operation. Except for the `Name` column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns' values are another variable. We want to gather these columns. The `key` will tell us the original column name, and the `value` will give us the values in the cells. Because the column names are actually numeric values, we set `convert = TRUE` to coerce the new `Time` column into a numeric column (or vector). (The last line isn't necessary, but sorts the data frame in a consistent manner.)
 
 ```{r race-solution}
+# using gather()
 race %>%
   gather(key = Time, value = Score, -Name, convert = TRUE) %>%
   arrange(Name, Time)
+
+# using pivot_longer()
+race %>%
+  pivot_longer(cols = -Name, names_to = "Time", values_to = "Score",
+               # ensure the Time column is stored as a numeric column
+               names_ptypes = list(Time = double()))
 ```
 
   </p>
@@ -100,8 +107,14 @@ results %>%
 This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
 
 ```{r results-solution}
+# using spread()
 results %>%
   spread(key = Treatment, value = value)
+
+# using pivot_wider()
+# same results as spread(), rows are just sorted in different order
+results %>%
+  pivot_wider(names_from = Treatment, values_from = value)
 ```
 
   </p>
@@ -161,6 +174,22 @@ If we're cleaning up the data frame, let's also arrange it in a logical order:
 grades %>%
   gather(key = Quarter, value = Score, Fall:Winter) %>%
   spread(key = Test, value = Score) %>%
+  arrange(ID, Year, Quarter)
+```
+
+If we use the `pivot_*()` functions in `tidyr`, we need to make the data frame longer first, then wider:
+
+```{r grades-pivot}
+grades %>%
+  pivot_longer(
+    cols = Fall:Winter,
+    names_to = "Quarter",
+    values_to = "Score"
+  ) %>%
+  pivot_wider(
+    names_from = Test,
+    values_from = Score
+  ) %>%
   arrange(ID, Year, Quarter)
 ```
 
@@ -227,8 +256,22 @@ The whole operation in a single chain (with an `arrange()` thrown in to sort the
 activities %>%
   gather(key = key, value = value, -id, -trt) %>%
   separate(key, into = c("location", "time")) %>%
-  arrange(id, trt, time) %>%
-  spread(key = location, value = value)
+  spread(key = location, value = value) %>%
+  arrange(id, trt, time)
+```
+
+And the analogous pivot operation is:
+
+```{r activities-pivot}
+activities %>%
+  pivot_longer(
+    cols = work.T1:talk.T2,
+    names_to = "key",
+    values_to = "value"
+  ) %>%
+  separate(key, into = c("location", "time")) %>%
+  pivot_wider(names_from = location, values_from = value) %>%
+  arrange(id, trt, time)
 ```
 
   </p>
