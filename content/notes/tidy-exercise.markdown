@@ -108,9 +108,13 @@ race %>%
 ```r
 # using pivot_longer()
 race %>%
-  pivot_longer(cols = -Name, names_to = "Time", values_to = "Score",
-               # ensure the Time column is stored as a numeric column
-               names_ptypes = list(Time = double()))
+  pivot_longer(
+    cols = -Name,
+    names_to = "Time",
+    values_to = "Score",
+    # ensure the Time column is stored as a numeric column
+    names_ptypes = list(Time = double())
+  )
 ```
 
 ```
@@ -713,7 +717,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-10-07                  
+##  date     2019-10-08                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
