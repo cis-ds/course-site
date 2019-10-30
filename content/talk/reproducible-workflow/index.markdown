@@ -61,3 +61,5 @@ math: false
 * [Project-oriented workflow](https://www.tidyverse.org/articles/2017/12/workflow-vs-script/)
 
 ## What you need to do
+
+* Install the `titanic` package using the command `install.packages("titanic")`. We will be using this package in-class next time

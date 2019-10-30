@@ -6,12 +6,13 @@ output: rcfss::xaringan
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(cache = TRUE,
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE,
                       fig.retina = 2, fig.width = 12)
 
 library(tidyverse)
 library(rcfss)
 library(here)
+library(ymlthis)
 
 chunk <- "```"
 inline <- function(x = "") paste0("`` `r ", x, "` ``")
@@ -28,7 +29,7 @@ theme_set(theme_minimal(base_size = rcfss::base_size))
 
 # R Markdown basics
 
-```{r plain-text, echo = FALSE, comment = ""}
+```{r plain-text, comment = ""}
 cat(htmltools::includeText(here("static", "extras", "gun-deaths.Rmd")))
 ```
 
@@ -63,6 +64,14 @@ cat(htmltools::includeText(here("static", "extras", "gun-deaths.Rmd")))
 * `error = TRUE`
 * `cache = TRUE`
 
+---
+
+# Code chunks
+
+    `r chunk`{r echo = FALSE, message = FALSE, warning = FALSE}
+    # code goes here
+    `r chunk`
+
 --
 
 ## Global options
@@ -82,7 +91,7 @@ youth <- gun_deaths %>%
   filter(age <= 65)
 ```
 
-```{r inline-code, echo = FALSE, comment = ""}
+```{r inline-code, comment = ""}
 here("static", "extras", "inline-code.md") %>%
   htmltools::includeText() %>%
   str_wrap() %>%
@@ -91,19 +100,22 @@ here("static", "extras", "inline-code.md") %>%
 
 --
 
-We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65. The distribution of the remainder is shown below:
+We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65.
 
 ---
 
 # YAML header
 
+```{r yml-default}
+yml_default <- yml() %>%
+  yml_title("Gun deaths") %>%
+  yml_author("Benjamin Soltoff") %>%
+  yml_date(lubridate::today())
 ```
----
-title: "Gun deaths"
-author: "Benjamin Soltoff"
-date: 2017-02-01
-output: html_document
----
+
+```{r yml-basic, comment = "", dependson = "yml-default"}
+yml_default %>%
+  yml_output(github_document())
 ```
 
 * **Y**et **A**nother **M**arkup **L**anguage
@@ -114,57 +126,42 @@ output: html_document
 
 # HTML document
 
-```
----
-title: "Untitled"
-author: "Benjamin Soltoff"
-date: "February 1, 2017"
-output: html_document
----
+```{r yml-html, comment = "", dependson = "yml-default"}
+yml_default %>%
+  yml_output(html_document())
 ```
 
 ---
 
 # Table of contents
 
-```
----
-title: "Untitled"
-author: "Benjamin Soltoff"
-date: "February 1, 2017"
-output:
-  html_document:
-    toc: true
-    toc_depth: 2
----
+```{r yml-toc, comment = "", dependson = "yml-default"}
+yml_default %>%
+  yml_output(html_document(
+    toc = TRUE,
+    toc_depth = 2L
+  ))
 ```
 
 ---
 
 # Appearance and style
 
-```
----
-title: "Untitled"
-author: "Benjamin Soltoff"
-date: "February 1, 2017"
-output:
-  html_document:
-    theme: readable
-    highlight: pygments
----
+```{r yml-theme, comment = "", dependson = "yml-default"}
+yml_default %>%
+  yml_output(html_document(
+    theme = "readable",
+    highlight = "pygments"
+  ))
 ```
 
 ---
 
 # PDF document
 
-```
----
-title: "Gun deaths"
-date: 2017-02-01
-output: pdf_document
----
+```{r yml-pdf, comment = "", dependson = "yml-default"}
+yml_default %>%
+  yml_output(pdf_document())
 ```
 
 ---
@@ -194,96 +191,10 @@ cat(htmltools::includeText(here("static", "extras", "gun-deaths.R")))
 * Building a reproducible pipeline
 * It depends
 
+
 --
 
 ## Running scripts
 
 * Interactively
 * Programmatically using `source()`
-
----
-
-# Reproducible examples
-
-* Minimal
-* Complete
-* Verifiable
-
----
-
-# `reprex`
-
-```{r include = FALSE}
-demo_code <- c(
-  "library(tidyverse)",
-  "count(diamonds, colour)"
-)
-```
-
-```{r asis = TRUE, echo = FALSE, comment = NA}
-cat(demo_code, sep = "\n")
-```
-
----
-
-.center[
-
-![](https://memeshappen.com/media/created/One-does-not-simply-understand-git-meme-60285.jpg)
-
-]
-
----
-
-# Git
-
-## What files to commit
-
-* Source files
-* Markdown files
-* Data files
-
-## What files to not commit
-
-* Temporary files
-* Log files
-* Files with private details
-* Any file greater than 100 megabytes
-
----
-
-# `.gitignore`
-
-* System file
-* Tells Git which files/directories to ignore
-
----
-
-# Accidentally cloned from the master
-
-<div style="width:100%;height:0;padding-bottom:50%;position:relative;"><iframe src="https://giphy.com/embed/3oxHQKW9lw6rK9kYtq" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
-
----
-
-# Accidentally cloned from the master
-
-```bash
-remote: Permission to hadley/ggplot2.git denied to bensoltoff.
-fatal: unable to access 'https://github.com/hadley/ggplot2.git/': The requested URL returned error: 403
-```
-
----
-
-# Avoiding Git problems
-
-1. Commit early and often
-1. Push regularly to GitHub
-
----
-
-# Burn it all down
-
-.center[
-
-![[Git (via xkcd)](https://xkcd.com/1597/)](https://imgs.xkcd.com/comics/git.png)
-
-]

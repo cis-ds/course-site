@@ -61,4 +61,3 @@ math: false
 
 ## What you need to do
 
-* Install the `titanic` package using the command `install.packages("titanic")`. We will be using this package in-class next time
