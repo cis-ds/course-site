@@ -11,7 +11,7 @@ categories: ["git", "project-management"]
 menu:
   notes:
     parent: Project management
-    weight: 6
+    weight: 7
 ---
 
 ## I don't want a bunch of these files committed
