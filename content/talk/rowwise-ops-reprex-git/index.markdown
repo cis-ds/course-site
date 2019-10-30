@@ -1,13 +1,13 @@
 ---
-title: "Reproducible workflow"
-date: 2019-11-05T12:30:00
+title: "Rowwise operations, reproducible examples, and Git"
+date: 2019-11-07T12:30:00
 publishDate: 2019-05-01T13:30:00
 draft: false
 type: "talk"
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-11-05T10:50:00
+time_end: 2019-11-07T10:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -15,7 +15,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Methods for implementing a tidy, reproducible workflow."
+summary: "Methods for rowwise operations, generating reproducible examples, and solving common problems in Git."
 
 # Location of event.
 location: "Room 104, Stuart Hall, Chicago, IL"
@@ -29,7 +29,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/reproducible-workflow/"
+url_slides: "/slides/rowwise-operations-reproducible-examples-and-git/"
 url_video: ""
 url_code: ""
 
@@ -37,25 +37,22 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
-* Review the importance of reproducibility in scientific research
-* Define a project-oriented workflow
-* Demonstrate how to construct safe filepaths using `here()`
-* Identify R startup procedures
+* Define a row-oriented workflow
+* Demonstrate `tidyverse` methods for implementing row-wise operations
+* Practice generating reproducible examples
+* Identify common problems with Git and explain how to resolve these problems
 
 ## Before class
 
 ## Class materials
 
-* [Saving the source and blank slates](/notes/saving-source)
-* [Project-oriented workflow](/notes/project-oriented-workflow)
-* [Use safe filepaths](/notes/safe-filepaths/)
-* [R startup procedures](/notes/r-startup/)
+* [Row-oriented workflows](/notes/row-oriented-workflows/)
+* [Generating a reproducible example](/faq/asking-questions/#include-a-reproducible-example)
+* [Recovering from common Git predicaments](/notes/common-git-problems/)
 
 ## Additional resources
 
@@ -64,3 +61,4 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## What you need to do
 
+* Install the `titanic` package using the command `install.packages("titanic")`. We will be using this package in-class next time
