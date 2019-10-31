@@ -47,7 +47,9 @@ Go [here](https://github.com/cfss-fa19/hw04) to fork the repo.
 
 The World Bank publishes extensive socioeconomic data on countries/economies around the world. In the `data_world_bank` folder, I have downloaded the World Bank's [complete economic indicators](https://data.worldbank.org/indicator) for each economy.^[See [the documentation](https://datahelpdesk.worldbank.org/knowledgebase/articles/378834-how-does-the-world-bank-classify-countries) for more information on how the World Bank defines a country or an economy.]
 
-In order to analyze the data, you first need to import it. Each economy's data is stored in a separate `.csv` file. You should write a function which uses one argument (the filepath to the data file). Given this path, the function should read and tidy the economy data, and return the cleaned data frame as the output. Remember the rules for a tidy data frame:
+In order to analyze the data, you first need to import it. Each economy's data is stored in a separate `.csv` file.
+
+You should write a function which imports **a single data file**. The function should use one argument (the filepath to the data file). Given this path, the function should read and tidy the economy data, and return the cleaned data frame as the output. Remember the rules for a tidy data frame:
 
 1. Each variable must have its own column.
 1. Each observation must have its own row.
@@ -55,13 +57,14 @@ In order to analyze the data, you first need to import it. Each economy's data i
 
 Since the World Bank has hundreds of indicators, your function should pare this down to only the handful of variables you intend to analyze.
 
+Once you have written this function, demonstrate that it works by importing the data files and combining them into a single data frame using an iterative operation.
+
 #### Let's recap the requirements for your function
 
 * Give it a meaningful name
 * It should take a single argument - the filepath to the data file. [Chapter 8 of *R for Data Science*](http://r4ds.had.co.nz/workflow-projects.html) explains directory structures and how to access files in a project. **Review this.** You will be marked down if your function requires an absolute file path such as `/Users/soltoffbc/Projects/Computing for Social Sciences/teach/homework/hw04`
+* Do not try and run the iterative operation inside of the function. Technically this can work, but it is far harder to fix errors and write the body of the function if you are performing both tasks simultaneously.
 * The output of the function should be a **tidy data frame for a single country, pared down to 2-4 substantive variables you will analyze**.
-
-Once you have written this function, demonstrate that it works by importing the data files and combining them into a single data frame using an iterative operation.
 
 Once you have the data imported, write a brief report exploring and analyzing at least [two variables in the data](http://data.worldbank.org/indicator). You should explore both variance and covariance, and present your results and analysis in a coherent and interpretable manner. The main point is that your report should not just be code and output from R - you also need to include your own written analysis. Submitting the report as an [R Markdown document](http://rmarkdown.rstudio.com/) will make this much easier (and is in fact mandatory).
 
