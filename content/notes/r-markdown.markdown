@@ -22,7 +22,7 @@ menu:
 
 ![](/img/data-science/base.png)
 
-**Reproducibility** is "the idea that data analyses, and more generally, scientific claims, are published with their data and software code so that others may verify the findings and build upon them."^[[Coursera: Reproducible Research](https://www.coursera.org/learn/reproducible-research)] Scholars who implement reproducibility in their projects can quickly and easily reproduce the original results and trace back to determine how they were derived. This easily enables verification and replication, and allows the researcher to precisely replicate his or her analysis. This is extremely important when writing a paper, submiting it to a journal, then coming back months later for a revise and resubmit because you won't remember how all the code/analysis works together when completing your revisions.
+**Reproducibility** is "the idea that data analyses, and more generally, scientific claims, are published with their data and software code so that others may verify the findings and build upon them."^[[Coursera: Reproducible Research](https://www.coursera.org/learn/reproducible-research)] Scholars who implement reproducibility in their projects can quickly and easily reproduce the original results and trace back to determine how they were derived. This easily enables verification and replication, and allows the researcher to precisely replicate his or her analysis. This is extremely important when writing a paper, submitting it to a journal, then coming back months later for a revise and resubmit because you won't remember how all the code/analysis works together when completing your revisions.
 
 Reproducibility is also key for communicating findings with other researchers and decision makers; it allows them to verify your results, assess your assumptions, and understand how your answers were formed rather than solely relying on your claims. In the data science framework employed in [R for Data Science](http://r4ds.had.co.nz), reproducibility is infused throughout the entire workflow.
 
@@ -66,10 +66,10 @@ youth %>%
 R Markdown documents contain 3 major components:
 
 1. A **YAML header** surrounded by `---`s
-1. **Chunks** of R code surounded by ``` (triple-backticks)
+1. **Chunks** of R code surrounded by ``` (triple-backticks)
 1. Text mixed with simple text formatting using the [Markdown syntax](/homework/edit-readme/)
 
-Code chunks are interspersed with text throughout the document. To complete the document, you "Knit" or "render" the document. Most of you proably knit the document by clicking the "Knit" button in the script editor panel. You can also do this programmatically from the console by running the command `rmarkdown::render("example.Rmd")`.
+Code chunks are interspersed with text throughout the document. To complete the document, you "Knit" or "render" the document. Most of you probably knit the document by clicking the "Knit" button in the script editor panel. You can also do this programmatically from the console by running the command `rmarkdown::render("example.Rmd")`.
 
 When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, `\(\LaTeX\)`, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
 
@@ -446,7 +446,7 @@ You edit scripts in the editor panel in R Studio.
 
 ## When to use a script?
 
-[Scripts are much easier to troubleshoot than R Markdown documents](http://r4ds.had.co.nz/r-markdown.html#troubleshooting) because your code is not split across chunks and you can run everything interactively. When you first begin a project, you may find it useful to use scripts initially to build and debug code, then convert it to an R Markdown document once you begin the substantive analysis and writeup. Or you may use a mix of scripts and R Markdown documents depending on the size and complexity of your project. For instance, you could use a **reproducible pipeline** which uses a sequence of R scripts to download, import, and transform your data, then use an R Markdown document to produce a final report.
+[Scripts are much easier to troubleshoot than R Markdown documents](http://r4ds.had.co.nz/r-markdown.html#troubleshooting) because your code is not split across chunks and you can run everything interactively. When you first begin a project, you may find it useful to use scripts initially to build and debug code, then convert it to an R Markdown document once you begin the substantive analysis and write-up. Or you may use a mix of scripts and R Markdown documents depending on the size and complexity of your project. For instance, you could use a **reproducible pipeline** which uses a sequence of R scripts to download, import, and transform your data, then use an R Markdown document to produce a final report.
 
 > Check out [this example](https://github.com/uc-cfss/pipeline-example) for how one could use a pipeline in this fashion.
 
@@ -500,7 +500,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-10-30                  
+##  date     2019-10-31                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -512,7 +512,6 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
@@ -575,7 +574,6 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
 ##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
-##  whoami        1.3.0   2019-03-19 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
 ##  xfun          0.9     2019-08-21 [1] CRAN (R 3.6.0)
 ##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
