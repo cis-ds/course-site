@@ -1,0 +1,64 @@
+---
+title: "Working with statistical models"
+date: 2019-11-14T12:30:00
+publishDate: 2019-03-01T13:30:00
+draft: true
+type: "talk"
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_end: 2019-11-14T13:50:00
+all_day: false
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Visualize and present results of statistical models using `ggplot2`."
+
+# Location of event.
+location: "Room 104, Stuart Hall, Chicago, IL"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: "/slides/working-with-statistical-models/"
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
+---
+
+
+
+## Overview
+
+* Fit multiple regression lines as separate layers in `ggplot()`
+* Generate legends using single-value variables
+* Identify principles for visualizing statistical model estimates
+* Generate predicted values from models for graphing
+* Plot marginal effects using `margins`
+
+## Before class
+
+* Read [Work with Models in *Data Visualization: A Practical Introduction*](https://socviz.co/modeling.html)
+* Install the following packages:
+
+    ```r
+    install.packages(c("socviz", "margins"))
+    ```
+    
+## Class materials
+
+
+## What you need to do
+
+* [Complete the statistical learning homework](/homework/statistical-learning/)
