@@ -2,7 +2,7 @@
 title: "Working with statistical models"
 date: 2019-11-14T12:30:00
 publishDate: 2019-03-01T13:30:00
-draft: true
+draft: false
 type: "talk"
 
 # Talk start and end times.
