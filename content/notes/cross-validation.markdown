@@ -11,7 +11,7 @@ categories: ["stat-learn"]
 menu:
   notes:
     parent: Statistical learning
-    weight: 5
+    weight: 6
 ---
 
 
@@ -993,7 +993,7 @@ devtools::session_info()
 ```
 ## ─ Session info ──────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.0 (2019-04-26)
+##  version  R version 3.6.1 (2019-07-05)
 ##  os       macOS Mojave 10.14.6        
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
@@ -1001,25 +1001,27 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-09-15                  
+##  date     2019-11-06                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
 ##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)
-##  blogdown      0.14    2019-07-13 [1] CRAN (R 3.6.0)
-##  bookdown      0.12    2019-07-11 [1] CRAN (R 3.6.0)
+##  blogdown      0.15    2019-08-21 [1] CRAN (R 3.6.0)
+##  bookdown      0.13    2019-08-21 [1] CRAN (R 3.6.0)
 ##  broom       * 0.5.2   2019-04-07 [1] CRAN (R 3.6.0)
 ##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.1.0   2019-07-06 [1] CRAN (R 3.6.0)
+##  devtools      2.2.0   2019-09-07 [1] CRAN (R 3.6.0)
 ##  digest        0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
 ##  dplyr       * 0.8.3   2019-07-04 [1] CRAN (R 3.6.0)
+##  DT            0.8     2019-08-07 [1] CRAN (R 3.6.0)
+##  ellipsis      0.2.0.1 2019-07-02 [1] CRAN (R 3.6.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
 ##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
 ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
@@ -1032,22 +1034,24 @@ devtools::session_info()
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
 ##  haven         2.1.1   2019-07-04 [1] CRAN (R 3.6.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.0   2019-07-09 [1] CRAN (R 3.6.0)
+##  hms           0.5.1   2019-08-23 [1] CRAN (R 3.6.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
+##  htmlwidgets   1.3     2018-09-30 [1] CRAN (R 3.6.0)
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
 ##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)
 ##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.0)
+##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
 ##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
+##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
 ##  listenv       0.7.0   2018-01-21 [1] CRAN (R 3.6.0)
 ##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
 ##  magrittr    * 1.5     2014-11-22 [1] CRAN (R 3.6.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
 ##  modelr      * 0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-141 2019-08-01 [1] CRAN (R 3.6.0)
+##  nlme          3.1-140 2019-05-12 [1] CRAN (R 3.6.1)
 ##  pillar        1.4.2   2019-06-29 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.4   2019-08-05 [1] CRAN (R 3.6.0)
+##  pkgbuild      1.0.5   2019-08-26 [1] CRAN (R 3.6.0)
 ##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.6.0)
 ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
 ##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)
@@ -1060,7 +1064,7 @@ devtools::session_info()
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
 ##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
 ##  rlang         0.4.0   2019-06-25 [1] CRAN (R 3.6.0)
-##  rmarkdown     1.14    2019-07-12 [1] CRAN (R 3.6.0)
+##  rmarkdown     1.15    2019-08-21 [1] CRAN (R 3.6.0)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
 ##  rsample     * 0.0.5   2019-07-12 [1] CRAN (R 3.6.0)
 ##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)
@@ -1071,13 +1075,13 @@ devtools::session_info()
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
 ##  testthat      2.2.1   2019-07-25 [1] CRAN (R 3.6.0)
 ##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.6.0)
+##  tidyr       * 1.0.0   2019-09-11 [1] CRAN (R 3.6.0)
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
 ##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.8     2019-06-25 [1] CRAN (R 3.6.0)
+##  xfun          0.9     2019-08-21 [1] CRAN (R 3.6.0)
 ##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
 ##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
 ##  zeallot       0.1.0   2018-01-28 [1] CRAN (R 3.6.0)

@@ -1,0 +1,247 @@
+---
+title: "Working with statistical models"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+categories: ["stat-learn"]
+
+menu:
+  notes:
+    parent: Statistical learning
+    weight: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
+library(tidyverse)
+library(broom)
+
+set.seed(123)
+
+theme_set(theme_minimal())
+```
+
+## Load `socviz::county_data`
+
+```{r county-data}
+library(socviz)
+
+data("county_data")
+glimpse(county_data)
+```
+
+{{% alert note %}}
+
+Use `?county_data` to view the documentation for the dataset.
+
+{{% /alert %}}
+
+## Visualize a basic linear regression model
+
+Generate a graph using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Overlay a linear regression best fit line on top of a scatterplot.
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+```{r lm-chart, dependson = "county-data"}
+ggplot(data = county_data,
+       mapping = aes(x = hh_income, y = per_dem_2016)) +
+  # use alpha to increase transparency of individual points
+  geom_point(alpha = .1) +
+  # manually specify a linear regression line
+  geom_smooth(method = "lm") +
+  # format labels and axes tick marks
+  scale_x_continuous(labels = scales::dollar) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(title = "2016 U.S. presidential election",
+       subtitle = "By county",
+       x = "Median household income",
+       y = "2016 Democratic presidential vote")
+```
+
+  </p>
+</details>
+
+## Combine plots to show different models
+
+Generate three separate graphs using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Each graph should use a different statistical algorithm:
+
+1. A standard linear regression model
+1. A linear regression model with a second-order polynomial for income
+1. A generalized additive model (`method = "gam"`)
+
+Combine them together into a single plotting object using [`patchwork`](https://github.com/thomasp85/patchwork).
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+```{r combined-chart, dependson = "county-data", fig.asp = 1.4}
+library(patchwork)
+
+# create core ggplot() which contains components used for all plots
+p <- ggplot(
+  data = county_data,
+  mapping = aes(x = hh_income, y = per_dem_2016)
+) +
+  # use alpha to increase transparency of individual points
+  geom_point(alpha = .1) +
+  # format labels and axes tick marks
+  scale_x_continuous(labels = scales::dollar) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    x = "Median household income",
+    y = "2016 Democratic presidential vote"
+  )
+
+# plot using linear regression model
+p_lm <- p +
+  geom_smooth(method = "lm")
+
+# plot using polynomial for income
+p_lm_2 <- p +
+  geom_smooth(method = "lm", formula = y ~ poly(x, degree = 2))
+
+# plot using gam
+p_gam <- p +
+  geom_smooth(method = "gam")
+
+# combine together
+p_lm +
+  p_lm_2 +
+  p_gam +
+  plot_layout(ncol = 1) +
+  plot_annotation(
+    title = "2016 U.S. presidential election",
+    subtitle = "By county"
+  )
+```
+
+  </p>
+</details>
+
+## Show several fits at once with a legend
+
+Generate a single graph using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Draw three separate smoothing lines using the following methods:
+
+1. A standard linear regression model
+1. A linear regression model with a second-order polynomial for income
+1. A generalized additive model (`method = "gam"`)
+
+The graph should be a single `ggplot()` object with properly labeled elements.
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+```{r mult-fit-legend, dependson = "county-data"}
+# reuse core ggplot object, adding three separate geom_smooth() functions
+p +
+  geom_smooth(
+    method = "lm",
+    mapping = aes(color = "OLS", fill = "OLS")
+  ) +
+  geom_smooth(
+    method = "lm",
+    formula = y ~ poly(x, degree = 2),
+    mapping = aes(color = "Polynomial", fill = "Polynomial")
+  ) +
+  geom_smooth(
+    method = "gam",
+    mapping = aes(color = "GAM", fill = "GAM")
+  ) +
+  # use an appropriate color palette
+  scale_color_brewer(
+    # qualitative variable
+    type = "qual",
+    # use the same palette for the fill aesthetic too
+    aesthetics = c("color", "fill")
+    ) +
+  # add meaningful labels
+  labs(
+    title = "2016 U.S. presidential election",
+    subtitle = "By county",
+    color = "Models",
+    fill = "Models"
+    ) +
+  # move the legend to the bottom
+  theme(legend.position = "bottom")
+```
+
+  </p>
+</details>
+
+## Generate a coefficient plot
+
+Estimate a linear regression model predicting 2016 Democratic presidential vote share as a function of percentage of female persons (`female`), percentage of white persons (`white`), percentage of black persons (`black`), and median household income (`hh_income`) in thousands of dollars. To make the graph easier to interpret, measure median household income in thousands of dollars (i.e. divide `hh_income` by 1,000) and multiply `per_dem_2016` by 100 (so it scales between 0-100).
+
+Generate a coefficient plot to visualize the OLS estimates and confidence intervals.
+
+1. Generate the plot manually using `broom::tidy()` to extract the coefficient estimates and 95% confidence intervals from the model object.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+    
+    ```{r ols-mod, dependson = "county-data"}
+    # modify hh_income
+    county_data <- county_data %>%
+      mutate(hh_income_10 = hh_income / 1e03,
+             per_dem_2016_100 = per_dem_2016 * 100)
+    
+    # estimate ols model using lm()
+    vote_mod <- lm(per_dem_2016_100 ~ female + white + black + hh_income_10,
+                   data = county_data)
+    ```
+    
+    ```{r ols-mod-viz-broom, dependson = c("county-data", "ols-mod")}
+    # extract coefficients using tidy()
+    vote_mod_coef <- tidy(vote_mod, conf.int = TRUE)
+    vote_mod_coef
+    
+    # clean up the term names to be human readable
+    vote_mod_coef %>%
+      filter(term != "(Intercept)") %>%
+      mutate(term = factor(term, levels = term, labels = c("Percent female", "Percent white", "Percent black", "Median household income"))) %>%
+      # generate plot
+      ggplot(mapping = aes(x = fct_reorder(term, estimate),
+                           y = estimate,
+                           ymin = conf.low,
+                           ymax = conf.high)) +
+      geom_pointrange() +
+      coord_flip()
+    ```
+    
+      </p>
+    </details>
+
+1. Use the `coefplot` package to automatically generate the coefficient plot.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+    
+    ```{r ols-mod-viz-coefplot, dependson = c("county-data", "ols-mod")}
+    library(coefplot)
+    coefplot(vote_mod, sort = "magnitude", intercept = FALSE)
+    ```
+    
+      </p>
+    </details>
+
+## Visualize marginal effects
+
+
+
+### Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
