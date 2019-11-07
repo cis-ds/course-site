@@ -36,7 +36,7 @@ gapminder <- gapminder %>%
   as.data.frame()
 ```
 
-```{r split-data, fig.height = 7}
+```{r split-data, fig.height = 6}
 life_exp <- gapminder[1:624, 4]
 gdp_per_cap <- gapminder[1:624, 6]
 plot(gdp_per_cap ~ life_exp)
@@ -82,7 +82,7 @@ plot(
 
 ```{r new-df}
 # Function to produce a fresh example data frame
-new_df <- function() {
+new_people <- function() {
   tribble(
     ~name, ~age,
     "Reed", 14L,
@@ -112,11 +112,11 @@ new_df <- function() {
 # The `df$var <- ...` syntax
 
 ```{r df-new-var-base}
-df <- new_df()
-df$eyes <- 2L
-df$snack <- c("chips", "cheese")
-df$uname <- toupper(df$name)
-df
+people <- new_people()
+people$eyes <- 2L
+people$snack <- c("chips", "cheese")
+people$uname <- toupper(people$name)
+people
 ```
 
 ---
@@ -133,7 +133,7 @@ df
 # `dplyr::mutate()` works "inside the box"
 
 ```{r df-new-var-mutate-recycle, error = TRUE}
-new_df() %>%
+new_people() %>%
   mutate(
     eyes = 2L,
     snack = c("chips", "cheese"),
@@ -146,7 +146,7 @@ new_df() %>%
 # `dplyr::mutate()` works "inside the box"
 
 ```{r df-new-var-mutate}
-new_df() %>%
+new_people() %>%
   mutate(
     eyes = 2L,
     snack = c("chips", "cheese", "mixed nuts", "dried peas"),
@@ -159,25 +159,33 @@ new_df() %>%
 # Do you really need to iterate over rows?
 
 ```{r df-new-string}
-df <- new_df()
-paste(df$name[1], "is", df$age[1], "years old")
+people <- new_people()
+paste(people$name[1], "is", people$age[1], "years old")
 ```
 
 --
 
 ```{r df-new-string-loop}
-n <- nrow(df)
-s <- vector(mode = "character", length = n)
-for (i in seq_len(n)) {
-  s[i] <- paste(df$name[i], "is", df$age[i], "years old")
+n_people <- nrow(people)
+s <- vector(mode = "character", length = n_people)
+for (i in seq_len(n_people)) {
+  s[i] <- paste(people$name[i], "is", people$age[i], "years old")
 }
 s
 ```
 
 --
 
+```{r df-new-string-map}
+map2_chr(people$name, people$age, ~ paste(.x, "is", .y, "years old"))
+```
+
+---
+
+# Vectorized functions
+
 ```{r df-new-string-vectorized}
-paste(df$name, "is", df$age, "years old")
+paste(people$name, "is", people$age, "years old")
 ```
 
 ---
@@ -185,13 +193,13 @@ paste(df$name, "is", df$age, "years old")
 # Don't forget to work "inside the box"
 
 ```{r df-new-string-glue}
-str_glue_data(df, "{name} is {age} years old")
+str_glue_data(people, "{name} is {age} years old")
 ```
 
 --
 
 ```{r df-new-string-glue-mutate}
-df %>%
+people %>%
   mutate(sentence = str_glue("{name} is {age} years old"))
 ```
 
@@ -222,22 +230,16 @@ library(purrr)
 map(df_list, nrow)
 ```
 
---
-
-```{r df-list-nrow-map-int, dependson = "df-list"}
-map_int(df_list, ~ nrow(.x))
-```
-
 ---
 
 # Attack via rows or columns?
 
 ```{r gen-list}
-x <- list(
+veggies <- list(
   list(name = "sue", number = 1, veg = c("onion", "carrot")),
   list(name = "doug", number = 2, veg = c("potato", "beet"))
 )
-x
+veggies
 ```
 
 ---
@@ -245,9 +247,9 @@ x
 # Combine into rows
 
 ```{r bind-rows-fail, error = TRUE, dependson = "gen-list"}
-bind_rows(x)
-map_dfr(x, ~.x)
-map_dfr(x, ~ .x[c("name", "number")])
+bind_rows(veggies)
+map_dfr(veggies, ~.x)
+map_dfr(veggies, ~ .x[c("name", "number")])
 ```
 
 ---
@@ -256,9 +258,9 @@ map_dfr(x, ~ .x[c("name", "number")])
 
 ```{r bind-rows-sep-map, dependson = "gen-list"}
 tibble(
-  name = map_chr(x, "name"),
-  number = map_dbl(x, "number"),
-  veg = map(x, "veg")
+  name = map_chr(veggies, "name"),
+  number = map_dbl(veggies, "number"),
+  veg = map(veggies, "veg")
 )
 ```
 
@@ -269,7 +271,7 @@ tibble(
 ```{r group-by-sum}
 gapminder %>%
   group_by(continent) %>%
-  summarise(
+  summarize(
     life_exp_avg = mean(lifeExp),
     gdp_per_cap_avg = mean(gdpPercap)
   )
@@ -282,7 +284,7 @@ gapminder %>%
 ```{r sum-multiple, error = TRUE}
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = quantile(lifeExp, c(0.25, 0.5, 0.75)))
+  summarize(life_exp_qtile = quantile(lifeExp, c(0.25, 0.5, 0.75)))
 ```
 
 --
@@ -290,7 +292,7 @@ gapminder %>%
 ```{r sum-multiple-list}
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75))))
+  summarize(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75))))
 ```
 
 ---
@@ -304,7 +306,7 @@ gapminder %>%
 ```{r sum-multiple-list-unnest}
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75)))) %>%
+  summarize(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75)))) %>%
   mutate(life_exp_qtile = map(life_exp_qtile, enframe, name = "quantile")) %>%
   unnest(life_exp_qtile) %>%
   mutate(quantile = factor(quantile))
@@ -327,7 +329,7 @@ enquantile <- function(.var, ...) {
 ```{r sum-multiple-list-quantile-function, dependson = "quantile-function"}
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = enquantile(lifeExp, c(0.25, 0.5, 0.75))) %>%
+  summarize(life_exp_qtile = enquantile(lifeExp, c(0.25, 0.5, 0.75))) %>%
   unnest(life_exp_qtile)
 ```
 
@@ -353,6 +355,22 @@ demo_code <- c(
 ```{r asis = TRUE, echo = FALSE, comment = NA}
 cat(demo_code, sep = "\n")
 ```
+
+---
+
+# Reprex do's and don'ts
+
+* Use the smallest, simplest, most built-in data possible
+* Include commands on a strict "need to run" basis
+* Consider including "session info"
+* Use good coding style to ensure the readability of your code by other human beings
+* Ensure portability of the code
+
+---
+
+# Build some reproducible examples
+
+<div style="width:100%;height:0;padding-bottom:42%;position:relative;"><iframe src="https://giphy.com/embed/rDIbIO2O7UStO" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 ---
 

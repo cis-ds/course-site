@@ -51,7 +51,7 @@ math: false
 ## Class materials
 
 * [Row-oriented workflows](/notes/row-oriented-workflows/)
-* [Generating a reproducible example](/faq/asking-questions/#include-a-reproducible-example)
+* [Generating a reproducible example](/notes/reproducible-examples/)
 * [Recovering from common Git predicaments](/notes/common-git-problems/)
 
 ## Additional resources

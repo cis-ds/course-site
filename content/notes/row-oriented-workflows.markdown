@@ -32,6 +32,12 @@ The data frame is an important data structure in R. In fact, virtually all of th
 Code style that results from (I speculate) minimizing the number of key presses.
 
 
+```r
+# prep gapminder for the examples to come
+gapminder <- gapminder %>%
+  arrange(continent) %>%
+  as.data.frame()
+```
 
 
 ```r
@@ -53,8 +59,8 @@ Here's one way to do same in a `tidyverse` style:
 
 ```r
 ggplot(
-  filter(gapminder, continent == "Africa"),
-  aes(x = lifeExp, y = gdpPercap)
+  data = filter(gapminder, continent == "Africa"),
+  mapping = aes(x = lifeExp, y = gdpPercap)
 ) +
   geom_point()
 ```
@@ -67,7 +73,7 @@ Another `tidyverse` approach, this time using the pipe operator, `%>%`
 ```r
 gapminder %>%
   filter(continent == "Africa") %>%
-  ggplot(aes(x = lifeExp, y = gdpPercap)) +
+  ggplot(mapping = aes(x = lifeExp, y = gdpPercap)) +
   geom_point()
 ```
 
@@ -93,7 +99,7 @@ plot(
 
 ```r
 # Function to produce a fresh example data frame
-new_df <- function() {
+new_people <- function() {
   tribble(
     ~name, ~age,
     "Reed", 14L,
@@ -106,7 +112,7 @@ new_df <- function() {
 
 ## The `df$var <- ...` syntax
 
-How to create or modify a variable is a fairly low stakes matter, i.e. really a matter of taste. This is not a hill I plan to die on. But here's my two cents.
+How to create or modify a variable is a fairly low stakes matter, i.e. really a matter of taste. That said, I think there are arguments in favor of a tidy approach to modifying or creating columns inside of data frames.
 
 Of course, `df$var <- ...` absolutely works for creating new variables or modifying existing ones. But there are downsides:
 
@@ -117,11 +123,11 @@ so you must be explicit. This can be a drag.
 
 
 ```r
-df <- new_df()
-df$eyes <- 2L
-df$snack <- c("chips", "cheese")
-df$uname <- toupper(df$name)
-df
+people <- new_people()
+people$eyes <- 2L
+people$snack <- c("chips", "cheese")
+people$uname <- toupper(people$name)
+people
 ```
 
 ```
@@ -139,7 +145,7 @@ df
 `dplyr::mutate()` is the `tidyverse` way to work on a variable. If I'm working in a script-y style and the `tidyverse` packages are already available, I generally prefer this method of adding or modifying a variable.
 
 * Only a length one input can be recycled.
-* `df` is the first place to look for things. It turns out that making a
+* `people` is the first place to look for things. It turns out that making a
 new variable out of existing variables is very, very common, so it's nice
 when this is easy.
 * This is pipe-friendly, so I can easily combine with a few other logical
@@ -148,7 +154,7 @@ data manipuluations that need to happen around the same point.
 
 
 ```r
-new_df() %>%
+new_people() %>%
   mutate(
     eyes = 2L,
     snack = c("chips", "cheese"),
@@ -164,7 +170,7 @@ Oops! I did not provide enough snacks!
 
 
 ```r
-new_df() %>%
+new_people() %>%
   mutate(
     eyes = 2L,
     snack = c("chips", "cheese", "mixed nuts", "dried peas"),
@@ -190,8 +196,8 @@ Let's create a string from row 1 of the data frame.
 
 
 ```r
-df <- new_df()
-paste(df$name[1], "is", df$age[1], "years old")
+people <- new_people()
+paste(people$name[1], "is", people$age[1], "years old")
 ```
 
 ```
@@ -202,12 +208,24 @@ I want to scale up, therefore I obviously must ... loop over all rows!
 
 
 ```r
-n <- nrow(df)
-s <- vector(mode = "character", length = n)
-for (i in seq_len(n)) {
-  s[i] <- paste(df$name[i], "is", df$age[i], "years old")
+n_people <- nrow(people)
+s <- vector(mode = "character", length = n_people)
+for (i in seq_len(n_people)) {
+  s[i] <- paste(people$name[i], "is", people$age[i], "years old")
 }
 s
+```
+
+```
+## [1] "Reed is 14 years old"   "Wesley is 12 years old"
+## [3] "Eli is 12 years old"    "Toby is 1 years old"
+```
+
+Or even better, write a `map()` function!
+
+
+```r
+map2_chr(people$name, people$age, ~ paste(.x, "is", .y, "years old"))
 ```
 
 ```
@@ -219,7 +237,7 @@ HOLD ON. What if I told you `paste()` is already vectorized over its arguments?
 
 
 ```r
-paste(df$name, "is", df$age, "years old")
+paste(people$name, "is", people$age, "years old")
 ```
 
 ```
@@ -237,7 +255,7 @@ For this string interpolation task, we can even work with a vectorized function 
 
 
 ```r
-str_glue_data(df, "{name} is {age} years old")
+str_glue_data(people, "{name} is {age} years old")
 ```
 
 ```
@@ -252,7 +270,7 @@ the other variables in `df` are automatically available for use.
 
 
 ```r
-df %>%
+people %>%
   mutate(sentence = str_glue("{name} is {age} years old"))
 ```
 
@@ -389,11 +407,11 @@ The approach you use in that first example is not always the one that scales up 
 
 
 ```r
-x <- list(
+veggies <- list(
   list(name = "sue", number = 1, veg = c("onion", "carrot")),
   list(name = "doug", number = 2, veg = c("potato", "beet"))
 )
-x
+veggies
 ```
 
 ```
@@ -423,7 +441,7 @@ If we want to combine these into rows in a data frame, how can we do this?
 
 
 ```r
-bind_rows(x)
+bind_rows(veggies)
 ```
 
 ```
@@ -431,7 +449,7 @@ bind_rows(x)
 ```
 
 ```r
-map_dfr(x, ~.x)
+map_dfr(veggies, ~.x)
 ```
 
 ```
@@ -439,7 +457,7 @@ map_dfr(x, ~.x)
 ```
 
 ```r
-map_dfr(x, ~ .x[c("name", "number")])
+map_dfr(veggies, ~ .x[c("name", "number")])
 ```
 
 ```
@@ -455,9 +473,9 @@ Sometimes it is simpler to attack the problem column-wise, rather than row-wise.
 
 ```r
 tibble(
-  name = map_chr(x, "name"),
-  number = map_dbl(x, "number"),
-  veg = map(x, "veg")
+  name = map_chr(veggies, "name"),
+  number = map_dbl(veggies, "number"),
+  veg = map(veggies, "veg")
 )
 ```
 
@@ -481,7 +499,7 @@ Instead, use `dplyr::group_by()`, followed by `dplyr::summarize()`, to compute g
 ```r
 gapminder %>%
   group_by(continent) %>%
-  summarise(
+  summarize(
     life_exp_avg = mean(lifeExp),
     gdp_per_cap_avg = mean(gdpPercap)
   )
@@ -504,7 +522,7 @@ What if you want to return summaries that are not just a single number? This doe
 ```r
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = quantile(lifeExp, c(0.25, 0.5, 0.75)))
+  summarize(life_exp_qtile = quantile(lifeExp, c(0.25, 0.5, 0.75)))
 ```
 
 ```
@@ -517,7 +535,7 @@ Solution: package as a length-1 `list()` that contains 3 values, creating a **li
 ```r
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75))))
+  summarize(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75))))
 ```
 
 ```
@@ -539,7 +557,7 @@ Solution: you can `map()` `tibble::enframe()` on the new list column, to convert
 ```r
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75)))) %>%
+  summarize(life_exp_qtile = list(quantile(lifeExp, c(0.25, 0.5, 0.75)))) %>%
   mutate(life_exp_qtile = map(life_exp_qtile, enframe, name = "quantile")) %>%
   unnest(life_exp_qtile) %>%
   mutate(quantile = factor(quantile))
@@ -583,7 +601,7 @@ This makes repeated downstream usage more concise.
 ```r
 gapminder %>%
   group_by(continent) %>%
-  summarise(life_exp_qtile = enquantile(lifeExp, c(0.25, 0.5, 0.75))) %>%
+  summarize(life_exp_qtile = enquantile(lifeExp, c(0.25, 0.5, 0.75))) %>%
   unnest(life_exp_qtile)
 ```
 
@@ -632,7 +650,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-10-30                  
+##  date     2019-11-07                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -644,6 +662,7 @@ devtools::session_info()
 ##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
@@ -653,6 +672,7 @@ devtools::session_info()
 ##  DT            0.8     2019-08-07 [1] CRAN (R 3.6.0)
 ##  ellipsis      0.2.0.1 2019-07-02 [1] CRAN (R 3.6.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
+##  fansi         0.4.0   2018-10-05 [1] CRAN (R 3.6.0)
 ##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
 ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
 ##  gapminder   * 0.3.0   2017-10-31 [1] CRAN (R 3.6.0)
@@ -706,6 +726,7 @@ devtools::session_info()
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 3.6.0)
 ##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
 ##  xfun          0.9     2019-08-21 [1] CRAN (R 3.6.0)

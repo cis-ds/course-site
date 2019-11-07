@@ -1,0 +1,186 @@
+---
+title: "Generating reproducible examples"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+categories: ["programming"]
+
+menu:
+  notes:
+    parent: Programming elements
+    weight: 8
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+## Include a reproducible example
+
+Including a [minimal, complete, and verifiable example](http://stackoverflow.com/help/mcve) of the code you are using greatly helps people resolve your problem in your code. Key elements of a MCV example include:
+
+* Minimal - use as little code as possible that still produces the same problem
+* Complete - provide all parts someone else needs to reproduce your problem
+* Reproducible - test the code to ensure it reproduces the problem
+
+Preparing reproducible examples is difficult. However the better prepared your example, the easier it is for others to help you debug and resolve the problem. So there is substantial value in writing reproducible examples. Fortunately, there are packages available that help you to generate a reproducible example for easy publishing.
+
+## Format your code snippets with `reprex`
+
+The [`reprex`](http://reprex.tidyverse.org/) package allows you to quickly generate reproducible examples that are easily shared on GitHub with all the proper formatting and syntax. Install it by running the following command from the console:
+
+```r
+install.packages("reprex")
+```
+
+To use it, copy your code onto your clipboard (e.g. select the code and **Ctrl + C** or **⌘ + C**). For example, copy this demonstration code to your clipboard:
+
+```{r include = FALSE}
+library(reprex)
+```
+
+```{r include = FALSE}
+demo_code <- c(
+  "library(tidyverse)",
+  "count(diamonds, colour)"
+)
+```
+
+```{r asis = TRUE, echo = FALSE, comment = NA}
+cat(demo_code, sep = "\n")
+```
+
+Then run `reprex()` from the console, where the default target venue is GitHub:
+
+```{r eval = FALSE}
+reprex()
+```
+
+A nicely rendered HTML preview will display in RStudio's Viewer (if you're in RStudio) or your default browser otherwise.
+
+![Output of `reprex()`](/img/reprex-output.png)
+
+The relevant bit of GitHub-flavored Markdown is ready to be pasted from your clipboard:
+
+```{r asis = TRUE, echo = FALSE, comment = NA, message = FALSE}
+md_content <- reprex(input = demo_code, show = FALSE)
+writeLines(md_content, con = here::here("static", "extras", "README-tmp_gh_reprex.md"))
+cat(md_content, sep = "\n")
+```
+
+Here's what that Markdown would look like rendered in a GitHub issue:
+
+```{r child = here::here("static", "extras", "README-tmp_gh_reprex.md")}
+```
+
+Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
+
+{{% alert note %}}
+
+To ensure your example is a reproducible example, you need to make sure to load all necessary packages and data objects at the top of your copied code. This may involve opening a new tab in the editor panel and writing a short version of the script that only includes the essentials, then copying that script to the clipboard and `reprex()` it.
+
+{{% /alert %}}
+
+```{r include = FALSE}
+leftovers <- list.files(pattern = "README-tmp", ignore.case = TRUE)
+unlink(leftovers)
+```
+
+## Reprex do's and don'ts
+
+* Use the smallest, simplest, most built-in data possible
+    * Your example does not have to use a custom data file if you can reproduce it using something that already exists built-in to R or a common R package. This avoids requiring to share data files as part of the reproducible example
+* Include commands on a strict "need to run" basis
+    * You don't typically need to run the entire script or R Markdown document to reproduce the error. Instead, strip out any code that is unrelated to the specific matter at hand.
+    * Do include every single command that is required (e.g. loading specific packages, creating/modifying data frames)
+* Consider including "session info"
+    * Session information provides important details such as your operating system, version of R, version of add-on packages. Often this information is useful in identifying and fixing problems in your code.
+    * Use `reprex(..., si = TRUE)` to automatically append this information at the end of your reproducible example.
+* Use good coding style to ensure the readability of your code by other human beings
+    * Use `reprex(..., style = TRUE)` to request automatic styling of your code. Relies on the [`styler` package](/notes/style-guide/#styler).
+* Ensure portability of the code
+    * Don't use [`rm(list = ls())`](/notes/saving-source/#what-s-wrong-with-rm-list-ls) or [`setwd()`](/notes/project-oriented-workflow/#we-need-to-talk-about-setwd-path-that-only-works-on-my-machine).
+
+## Exercise: generate a simple reproducible example
+
+Consider the following code example:
+
+```{r bad-code, error = TRUE}
+library(dplyr)
+library(ggplot2)
+
+# get data from rcfss package
+# install latest version if not already installed
+# devtools::install_github("uc-cfss/rcfss")
+library(rcfss)
+
+# load the data
+data("mass_shootings")
+mass_shootings
+
+# Generate a bar chart that identifies the number of mass shooters
+# associated with each race category. The bars should be sorted
+# from highest to lowest.
+
+# using reorder() and aggregating the data before plotting
+mass_shootings %>%
+  count(race) %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = reorder(race, -n), y = n)) +
+  geom_col() +
+  labs(
+    title = "Mass shootings in the United States (1982-2019)",
+    x = "Race of perpetrator",
+    y = "Number of incidents"
+  )
+```
+
+It does not work properly. Generate a simple reproducible example using `reprex()` and post it as a new issue in [this repository](https://github.com/uc-cfss/Discussion).
+
+## Exercise: generate a simple reproducible example with graphs
+
+Consider the following code example:
+
+```{r bad-graph}
+library(tidyverse)
+
+# get data from rcfss package
+# install latest version if not already installed
+# devtools::install_github("uc-cfss/rcfss")
+library(rcfss)
+
+# load the data
+data("mass_shootings")
+mass_shootings
+
+# Generate a bar chart that identifies the number of mass shooters
+# associated with each race category. The bars should be sorted
+# from highest to lowest.
+
+# using forcats::fct_infreq() and using the raw data for plotting
+mass_shootings %>%
+  drop_na(race) %>%
+  ggplot(mapping = aes(x = fct_infreq(race))) +
+  geom_bar() +
+  coord_flip() +
+  labs(
+    title = "Mass shootings in the United States (1982-2019)",
+    x = "Race of perpetrator",
+    y = "Number of incidents"
+  )
+```
+
+The code runs, but I want the graph sorted with the most frequent category at the top and the least frequent category at the bottom. How do I do this? Prepare a reproducible example and post it as a new issue on [this repository](https://github.com/uc-cfss/Discussion).
+
+## Acknowledgments
+
+* ["How do I ask a good question?" StackOverflow.com](http://stackoverflow.com/help/how-to-ask)
+* [`reprex`](https://reprex.tidyverse.org/index.html)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+
+```
