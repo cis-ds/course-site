@@ -245,6 +245,33 @@ Generate a coefficient plot to visualize the OLS estimates and confidence interv
     # estimate ols model using lm()
     vote_mod <- lm(per_dem_2016_100 ~ female + white + black + hh_income_10,
                    data = county_data)
+    summary(vote_mod)
+    ```
+    
+    ```
+    ## 
+    ## Call:
+    ## lm(formula = per_dem_2016_100 ~ female + white + black + hh_income_10, 
+    ##     data = county_data)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -30.518  -7.687  -1.836   5.928  61.034 
+    ## 
+    ## Coefficients:
+    ##              Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)  11.36467    5.08611   2.234   0.0255 *  
+    ## female        0.84575    0.09336   9.059  < 2e-16 ***
+    ## white        -0.45935    0.02344 -19.600  < 2e-16 ***
+    ## black         0.15865    0.02698   5.881  4.5e-09 ***
+    ## hh_income_10  0.34585    0.01804  19.170  < 2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 11.63 on 3136 degrees of freedom
+    ##   (54 observations deleted due to missingness)
+    ## Multiple R-squared:  0.4225,	Adjusted R-squared:  0.4218 
+    ## F-statistic: 573.7 on 4 and 3136 DF,  p-value: < 2.2e-16
     ```
     
     
@@ -269,14 +296,25 @@ Generate a coefficient plot to visualize the OLS estimates and confidence interv
     # clean up the term names to be human readable
     vote_mod_coef %>%
       filter(term != "(Intercept)") %>%
-      mutate(term = factor(term, levels = term, labels = c("Percent female", "Percent white", "Percent black", "Median household income"))) %>%
+      mutate(
+        # fix variable labels
+        term = recode(
+          term,
+          black = "Percent black",
+          female = "Percent female",
+          hh_income_10 = "Median household income",
+          white = "Percent white"
+        )
+      ) %>%
       # generate plot
       ggplot(mapping = aes(x = fct_reorder(term, estimate),
                            y = estimate,
                            ymin = conf.low,
                            ymax = conf.high)) +
       geom_pointrange() +
-      coord_flip()
+      coord_flip() +
+      labs(x = "Coefficient",
+           y = "Value")
     ```
     
     <img src="/notes/work-with-models-exercise_files/figure-html/ols-mod-viz-broom-1.png" width="672" />
@@ -303,6 +341,127 @@ Generate a coefficient plot to visualize the OLS estimates and confidence interv
 
 ## Visualize marginal effects
 
+Estimate a logistic regression model predicting the county-level winner of the 2016 presidential election (`winner`) as a function of percentage of female persons (`female`), percentage of white persons (`white`), percentage of black persons (`black`), median household income (`hh_income`) in thousands of dollars, and census region  (`census_region`). To make the graph easier to interpret, measure median household income in thousands of dollars (i.e. divide `hh_income` by 1,000).
+
+{{% alert note %}}
+
+The dependent variable in a `glm()` object must be either a numeric column or a factor column. You should first convert `winner` to either be numeric or a factor prior to estimating the model.
+
+{{% /alert %}}
+
+Plot the average marginal effect of each variable using the `margins` package to visualize the logistic regression estimates and confidence intervals.
+
+<details> 
+  <summary>Click for the solution</summary>
+  <p>
+
+
+```r
+# convert winner to a factor column
+county_data <- county_data %>%
+  mutate(winner = factor(winner))
+
+# estimate logistic regression model using glm()
+vote_logit_mod <- glm(
+  winner ~ female + black + white + hh_income_10 + census_region,
+  family = "binomial",
+  data = county_data
+)
+
+summary(vote_logit_mod)
+```
+
+```
+## 
+## Call:
+## glm(formula = winner ~ female + black + white + hh_income_10 + 
+##     census_region, family = "binomial", data = county_data)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -3.7687   0.1417   0.2733   0.4651   2.0126  
+## 
+## Coefficients:
+##                         Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)            10.268138   1.616205   6.353 2.11e-10 ***
+## female                 -0.182389   0.030969  -5.889 3.88e-09 ***
+## black                  -0.069698   0.007619  -9.148  < 2e-16 ***
+## white                   0.043711   0.005210   8.390  < 2e-16 ***
+## hh_income_10           -0.044977   0.004735  -9.499  < 2e-16 ***
+## census_regionNortheast -1.669512   0.210934  -7.915 2.48e-15 ***
+## census_regionSouth      1.385163   0.222154   6.235 4.51e-10 ***
+## census_regionWest      -1.497713   0.183680  -8.154 3.52e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 2713.2  on 3140  degrees of freedom
+## Residual deviance: 1796.0  on 3133  degrees of freedom
+##   (54 observations deleted due to missingness)
+## AIC: 1812
+## 
+## Number of Fisher Scoring iterations: 6
+```
+
+
+```r
+library(margins)
+
+# estimate marginal effects
+vote_logit_marg <- margins(vote_logit_mod)
+
+# extract average marginal effects
+vote_logit_marg_tbl <- summary(vote_logit_marg) %>%
+  as_tibble() %>%
+  mutate(
+    # remove prefixes from variable labels using socviz::prefix_strip
+    factor = prefix_strip(factor, "census_region"),
+    # fix variable labels
+    factor = recode(
+      factor,
+      Black = "Percent black",
+      Female = "Percent female",
+      Hh_income_10 = "Median household income",
+      White = "Percent white"
+    )
+  )
+vote_logit_marg_tbl
+```
+
+```
+## # A tibble: 7 x 7
+##   factor                       AME      SE     z        p    lower    upper
+##   <chr>                      <dbl>   <dbl> <dbl>    <dbl>    <dbl>    <dbl>
+## 1 Percent black           -0.00595 6.30e-4 -9.44 3.64e-21 -0.00718 -0.00471
+## 2 Northeast               -0.198   2.87e-2 -6.89 5.73e-12 -0.254   -0.141  
+## 3 South                    0.0886  1.36e-2  6.51 7.46e-11  0.0619   0.115  
+## 4 West                    -0.172   2.22e-2 -7.75 9.49e-15 -0.215   -0.128  
+## 5 Percent female          -0.0156  2.60e-3 -5.98 2.30e- 9 -0.0207  -0.0105 
+## 6 Median household income -0.00384 3.86e-4 -9.93 2.97e-23 -0.00459 -0.00308
+## 7 Percent white            0.00373 4.26e-4  8.76 1.91e-18  0.00290  0.00456
+```
+
+```r
+# plot using ggplot()
+ggplot(data = vote_logit_marg_tbl,
+       mapping = aes(x = reorder(factor, AME),
+                     y = AME,
+                     ymin = lower,
+                     ymax = upper)) +
+  # add line indicating null (0) effect
+  geom_hline(yintercept = 0, color = "gray80") +
+  # add point range plot to visualize estimate and confidence interval
+  geom_pointrange() +
+  coord_flip() +
+  labs(x = NULL,
+       y = "Average marginal effect")
+```
+
+<img src="/notes/work-with-models-exercise_files/figure-html/logit-mod-margins-1.png" width="672" />
+
+  </p>
+</details>
 
 
 ### Session Info
@@ -324,84 +483,187 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-11-06                  
+##  date     2019-11-12                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)
-##  blogdown      0.15    2019-08-21 [1] CRAN (R 3.6.0)
-##  bookdown      0.13    2019-08-21 [1] CRAN (R 3.6.0)
-##  broom       * 0.5.2   2019-04-07 [1] CRAN (R 3.6.0)
-##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.2.0   2019-09-07 [1] CRAN (R 3.6.0)
-##  digest        0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
-##  dplyr       * 0.8.3   2019-07-04 [1] CRAN (R 3.6.0)
-##  DT            0.8     2019-08-07 [1] CRAN (R 3.6.0)
-##  ellipsis      0.2.0.1 2019-07-02 [1] CRAN (R 3.6.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-##  ggplot2     * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven         2.1.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.1   2019-08-23 [1] CRAN (R 3.6.0)
-##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
-##  htmlwidgets   1.3     2018-09-30 [1] CRAN (R 3.6.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)
-##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
-##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-##  modelr        0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-140 2019-05-12 [1] CRAN (R 3.6.1)
-##  pillar        1.4.2   2019-06-29 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.5   2019-08-26 [1] CRAN (R 3.6.0)
-##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.6.0)
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)
-##  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr       * 0.3.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)
-##  Rcpp          1.0.2   2019-07-25 [1] CRAN (R 3.6.0)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  rlang         0.4.0   2019-06-25 [1] CRAN (R 3.6.0)
-##  rmarkdown     1.15    2019-08-21 [1] CRAN (R 3.6.0)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)
-##  rvest         0.3.4   2019-05-15 [1] CRAN (R 3.6.0)
-##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.6.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.6.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat      2.2.1   2019-07-25 [1] CRAN (R 3.6.0)
-##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 1.0.0   2019-09-11 [1] CRAN (R 3.6.0)
-##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
-##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
-##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
-##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.9     2019-08-21 [1] CRAN (R 3.6.0)
-##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
-##  zeallot       0.1.0   2018-01-28 [1] CRAN (R 3.6.0)
+##  package     * version  date       lib
+##  assertthat    0.2.1    2019-03-21 [1]
+##  backports     1.1.4    2019-04-10 [1]
+##  blogdown      0.15     2019-08-21 [1]
+##  bookdown      0.13     2019-08-21 [1]
+##  broom       * 0.5.2    2019-04-07 [1]
+##  callr         3.3.1    2019-07-18 [1]
+##  cellranger    1.1.0    2016-07-27 [1]
+##  cli           1.1.0    2019-03-19 [1]
+##  codetools     0.2-16   2018-12-24 [1]
+##  coefplot    * 1.2.6    2018-02-07 [1]
+##  colorspace    1.4-1    2019-03-18 [1]
+##  crayon        1.3.4    2017-09-16 [1]
+##  data.table    1.12.2   2019-04-07 [1]
+##  desc          1.2.0    2018-05-01 [1]
+##  devtools      2.2.0    2019-09-07 [1]
+##  digest        0.6.20   2019-07-04 [1]
+##  dplyr       * 0.8.3    2019-07-04 [1]
+##  DT            0.8      2019-08-07 [1]
+##  ellipsis      0.2.0.1  2019-07-02 [1]
+##  evaluate      0.14     2019-05-28 [1]
+##  fansi         0.4.0    2018-10-05 [1]
+##  forcats     * 0.4.0    2019-02-17 [1]
+##  fs            1.3.1    2019-05-06 [1]
+##  generics      0.0.2    2018-11-29 [1]
+##  ggplot2     * 3.2.1    2019-08-10 [1]
+##  glue          1.3.1    2019-03-12 [1]
+##  gtable        0.3.0    2019-03-25 [1]
+##  haven         2.1.1    2019-07-04 [1]
+##  here          0.1      2017-05-28 [1]
+##  hms           0.5.1    2019-08-23 [1]
+##  htmltools     0.3.6    2017-04-28 [1]
+##  htmlwidgets   1.3      2018-09-30 [1]
+##  httr          1.4.1    2019-08-05 [1]
+##  jsonlite      1.6      2018-12-07 [1]
+##  knitr         1.24     2019-08-08 [1]
+##  labeling      0.3      2014-08-23 [1]
+##  lattice       0.20-38  2018-11-04 [1]
+##  lazyeval      0.2.2    2019-03-15 [1]
+##  lifecycle     0.1.0    2019-08-01 [1]
+##  lubridate     1.7.4    2018-04-11 [1]
+##  magrittr      1.5      2014-11-22 [1]
+##  margins     * 0.3.23   2018-05-22 [1]
+##  MASS          7.3-51.4 2019-03-31 [1]
+##  memoise       1.1.0    2017-04-21 [1]
+##  modelr        0.1.5    2019-08-08 [1]
+##  munsell       0.5.0    2018-06-12 [1]
+##  nlme          3.1-140  2019-05-12 [1]
+##  patchwork   * 0.0.1    2019-06-10 [1]
+##  pillar        1.4.2    2019-06-29 [1]
+##  pkgbuild      1.0.5    2019-08-26 [1]
+##  pkgconfig     2.0.2    2018-08-16 [1]
+##  pkgload       1.0.2    2018-10-29 [1]
+##  plyr          1.8.4    2016-06-08 [1]
+##  prediction    0.3.14   2019-06-17 [1]
+##  prettyunits   1.0.2    2015-07-13 [1]
+##  processx      3.4.1    2019-07-18 [1]
+##  ps            1.3.0    2018-12-21 [1]
+##  purrr       * 0.3.2    2019-03-15 [1]
+##  R6            2.4.0    2019-02-14 [1]
+##  Rcpp          1.0.2    2019-07-25 [1]
+##  readr       * 1.3.1    2018-12-21 [1]
+##  readxl        1.3.1    2019-03-13 [1]
+##  remotes       2.1.0    2019-06-24 [1]
+##  reshape2      1.4.3    2017-12-11 [1]
+##  rlang         0.4.0    2019-06-25 [1]
+##  rmarkdown     1.15     2019-08-21 [1]
+##  rprojroot     1.3-2    2018-01-03 [1]
+##  rstudioapi    0.10     2019-03-19 [1]
+##  rvest         0.3.4    2019-05-15 [1]
+##  scales        1.0.0    2018-08-09 [1]
+##  sessioninfo   1.1.1    2018-11-05 [1]
+##  socviz      * 1.0.0    2019-04-23 [1]
+##  stringi       1.4.3    2019-03-12 [1]
+##  stringr     * 1.4.0    2019-02-10 [1]
+##  testthat      2.2.1    2019-07-25 [1]
+##  tibble      * 2.1.3    2019-06-06 [1]
+##  tidyr       * 1.0.0    2019-09-11 [1]
+##  tidyselect    0.2.5    2018-10-11 [1]
+##  tidyverse   * 1.2.1    2017-11-14 [1]
+##  useful        1.2.6    2018-10-08 [1]
+##  usethis       1.5.1    2019-07-04 [1]
+##  utf8          1.1.4    2018-05-24 [1]
+##  vctrs         0.2.0    2019-07-05 [1]
+##  withr         2.1.2    2018-03-15 [1]
+##  xfun          0.9      2019-08-21 [1]
+##  xml2          1.2.2    2019-08-09 [1]
+##  yaml          2.2.0    2018-07-25 [1]
+##  zeallot       0.1.0    2018-01-28 [1]
+##  source                              
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.1)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.1)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.1)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.1)                      
+##  Github (thomasp85/patchwork@fd7958b)
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
+##  CRAN (R 3.6.0)                      
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

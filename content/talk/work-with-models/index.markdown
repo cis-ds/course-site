@@ -58,6 +58,7 @@ math: false
     
 ## Class materials
 
+* [Working with statistical models](/notes/work-with-models-exercise/)
 
 ## What you need to do
 
