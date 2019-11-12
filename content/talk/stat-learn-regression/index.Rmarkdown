@@ -5,7 +5,7 @@ publishDate: 2019-05-06T13:30:00
 draft: false
 type: "talk"
 
-aliases: ["/cm011.html", "/notes/statistical-learning-regression"]
+aliases: ["/cm011.html", "/syllabus/statistical-learning-regression"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
