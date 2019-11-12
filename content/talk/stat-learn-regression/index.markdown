@@ -1,11 +1,11 @@
 ---
-title: "Statistical learning: regression"
+title: "Statistical learning"
 date: 2019-11-12T12:30:00
 publishDate: 2019-05-06T13:30:00
 draft: false
 type: "talk"
 
-aliases: ["/cm011.html"]
+aliases: ["/cm011.html", "/notes/statistical-learning-regression"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -17,7 +17,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Review the goals of statistical learning, introduce methods for linear regression, and practice working with model objects in R."
+summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice working with model objects in R."
 
 # Location of event.
 location: "Room 104, Stuart Hall, Chicago, IL"
@@ -31,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/statistical-learning-regression/"
+url_slides: "/slides/statistical-learning/"
 url_video: ""
 url_code: ""
 
