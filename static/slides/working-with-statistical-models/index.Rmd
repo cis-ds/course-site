@@ -1,0 +1,292 @@
+---
+title: "Working with statistical models"
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  echo = FALSE,
+  fig.retina = 2, fig.width = 12
+)
+
+library(tidyverse)
+library(broom)
+library(gapminder)
+library(patchwork)
+library(coefplot)
+library(margins)
+library(here)
+library(socviz)
+library(rcfss)
+library(titanic)
+library(tidytext)
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = rcfss::base_size))
+```
+
+# Working with models
+
+* Visualizing raw data
+* Visualizing summarized data
+* `stat_*()` functions
+* Default `geom_*()` functions
+
+---
+
+# Visualizing models separately
+
+```{r viz-gapminder-combo}
+p <- ggplot(
+  data = gapminder,
+  mapping = aes(x = gdpPercap, y = lifeExp)
+) +
+  scale_x_log10(labels = scales::dollar) +
+  labs(
+    x = "GDP per capita",
+    y = "Life expectancy"
+  ) +
+  theme_minimal(base_size = rcfss::base_size * .7)
+
+p_robust <- p +
+  geom_point(alpha = 0.1) +
+  geom_smooth(color = "tomato", fill = "tomato", method = MASS::rlm) +
+  geom_smooth(color = "steelblue", fill = "steelblue", method = "lm") +
+  labs(subtitle = "OLS vs. robust regression")
+
+p_poly <- p +
+  geom_point(alpha = 0.1) +
+  geom_smooth(
+    color = "tomato", method = "lm", size = 1.2,
+    formula = y ~ splines::bs(x, 3), se = FALSE
+  ) +
+  labs(subtitle = "Polynomial fit")
+
+p_quant <- p +
+  geom_point(alpha = 0.1) +
+  geom_quantile(
+    color = "tomato", size = 1.2, method = "rqss",
+    lambda = 1, quantiles = c(0.20, 0.5, 0.85)
+  ) +
+  labs(subtitle = "Quantile regression")
+
+p_robust +
+  p_poly +
+  p_quant
+```
+
+---
+
+# Combining `ggplot()`s
+
+* How do we combine separate `ggplot()` objects into a single chart?
+* `gridExtra`
+* `cowplot`
+* [`patchwork`](https://github.com/thomasp85/patchwork)
+
+---
+
+# Showing several fits at once
+
+* Mapping variables to the plot
+* Instead of a column, use a character string
+* [Example using SCOTUS](https://github.com/cfss-fa19/hw03/blob/master/demo/scotus_solution.md#with-two-data-frames)
+
+---
+
+# Showing several fits at once
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/8AfVHQbGG8dxGCC7ES" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+---
+
+# Getting model-based graphics right
+
+* Statistics is hard
+* Communicating results is hard
+
+--
+
+## General guidelines
+
+* Present your findings in substantive terms
+* Show your degree of confidence
+* Show your data (when you can)
+
+---
+
+# Coefficient plots
+
+```{r complex-model}
+# estimate a model using gun deaths data to compare a results table vs. coefficient plot
+gun_deaths_mod <- lm(age ~ intent + police + sex + race + education,
+  data = gun_deaths
+)
+
+# regression results table
+tidy(gun_deaths_mod) %>%
+  mutate(
+    # remove prefixes from variable labels using socviz::prefix_strip
+    term = prefix_strip(term, c("intent", "race", "sex", "education")),
+    # fix variable labels
+    term = recode(
+      term,
+      M = "Male"
+    )
+  ) %>%
+  knitr::kable(
+    col.names = c(
+      "Term", "Coefficient", "Standard Error",
+      "t-statistic", "p-value"
+    ),
+    digits = 2,
+    format = "html"
+  )
+```
+
+---
+
+# Coefficient plots
+
+```{r complex-model-plot, dependson = "complex-model", fig.height = 8}
+gun_deaths_mod_vars <- c("intent", "race", "sex", "education")
+
+tidy(gun_deaths_mod, conf.int = TRUE) %>%
+  mutate(
+    # remove prefixes from variable labels using socviz::prefix_strip
+    term = prefix_replace(
+      var_names = term,
+      prefixes = gun_deaths_mod_vars,
+      replacements = str_c(gun_deaths_mod_vars, "_")
+    )
+  ) %>%
+  separate(col = term, into = c("variable", "value"), sep = "_") %>%
+  mutate(
+    variable = str_to_title(variable),
+    value = recode(value, M = "Male")
+  ) %>%
+  filter(value != "Intercept") %>%
+  mutate(value = reorder_within(value, estimate, variable)) %>%
+  ggplot(mapping = aes(
+    x = value,
+    y = estimate,
+    ymin = conf.low,
+    ymax = conf.high
+  )) +
+  geom_pointrange() +
+  scale_x_reordered() +
+  facet_wrap(~variable, scales = "free_y", ncol = 1) +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Value"
+  )
+```
+
+---
+
+# Generate coefficient plots
+
+<div style="width:100%;height:0;padding-bottom:41%;position:relative;"><iframe src="https://giphy.com/embed/H7x1H0veAJlo4" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+---
+
+# Marginal effects plots
+
+* Expected change in $Y$ associated with a change in $X$
+* Constant in OLS models
+* Non-constant in logistic regression models
+
+---
+
+# Marginal effects plots
+
+```{r titanic-model}
+ggplot(titanic_train, aes(Age, Survived, color = Sex)) +
+  geom_point() +
+  geom_smooth(
+    method = "glm",
+    method.args = list(family = "binomial")
+  ) +
+  scale_color_brewer(type = "qual") +
+  labs(
+    title = "Probability of Surviving the Titanic",
+    y = "Predicted Probability of Survival",
+    color = "Sex"
+  )
+```
+
+---
+
+# Average marginal effects
+
+```{r obama-mod}
+gss_sm$polviews_m <- relevel(gss_sm$polviews, ref = "Moderate")
+
+out_bo <- glm(obama ~ polviews_m + sex * race,
+  family = "binomial", data = gss_sm
+)
+tidy(out_bo)
+```
+
+---
+
+# Average marginal effects
+
+```{r obama-margins, dependson = "obama-mod"}
+bo_m <- margins(out_bo)
+
+bo_gg <- as_tibble(summary(bo_m))
+prefixes <- c("polviews_m", "sex")
+bo_gg$factor <- prefix_strip(bo_gg$factor, prefixes)
+bo_gg$factor <- prefix_replace(bo_gg$factor, "race", "Race: ")
+
+p <- ggplot(data = bo_gg, aes(
+  x = reorder(factor, AME),
+  y = AME, ymin = lower, ymax = upper
+))
+
+p + geom_hline(yintercept = 0, color = "gray80") +
+  geom_pointrange() + coord_flip() +
+  labs(x = NULL, y = "Average Marginal Effect")
+```
+
+---
+
+# Conditional effects
+
+```{r obama-cond, dependson = "obama-mod", include = FALSE}
+ce_sex <- cplot(out_bo, x = "sex", draw = FALSE) %>%
+  mutate(variable = "Sex")
+ce_race <- cplot(out_bo, x = "race", draw = FALSE) %>%
+  mutate(variable = "Race")
+ce_obama <- bind_rows(ce_sex, ce_race)
+```
+
+```{r obama-cond-plot, dependson = "obama-cond"}
+ce_obama %>%
+  mutate(xvals = reorder_within(xvals, yvals, variable)) %>%
+  ggplot(mapping = aes(
+  x = xvals,
+  y = yvals, ymin = lower, ymax = upper
+)) +
+  geom_hline(yintercept = 0, color = "gray80") +
+  geom_pointrange() +
+  scale_x_reordered() +
+  coord_flip() +
+  facet_wrap(~ variable, scales = "free_y", ncol = 1) +
+  labs(x = NULL, y = "Conditional Effect")
+```
+
+---
+
+# Marginal effects plots
+
+<div style="width:100%;height:0;padding-bottom:75%;position:relative;"><iframe src="https://giphy.com/embed/3ofT5RxXymlX4na3p6" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+

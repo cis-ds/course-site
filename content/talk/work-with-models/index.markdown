@@ -41,6 +41,7 @@ math: false
 
 ## Overview
 
+* Combine multiple `ggplot()` objects using `patchwork`
 * Fit multiple regression lines as separate layers in `ggplot()`
 * Generate legends using single-value variables
 * Identify principles for visualizing statistical model estimates

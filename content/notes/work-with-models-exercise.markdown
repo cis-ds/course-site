@@ -307,7 +307,7 @@ Generate a coefficient plot to visualize the OLS estimates and confidence interv
         )
       ) %>%
       # generate plot
-      ggplot(mapping = aes(x = fct_reorder(term, estimate),
+      ggplot(mapping = aes(x = reorder(term, estimate),
                            y = estimate,
                            ymin = conf.low,
                            ymax = conf.high)) +
@@ -483,7 +483,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-11-12                  
+##  date     2019-11-14                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version  date       lib
