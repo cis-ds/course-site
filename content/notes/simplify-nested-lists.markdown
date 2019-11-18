@@ -424,7 +424,7 @@ tibble(repo = gh_repos) %>%
 ## #   homepage <chr>
 ```
 
-## Game of Thrones characters
+## ASOIAF characters
 
 Let's look at `got_chars`, which is a list of information on the point-of-view characters from the first five books in *A Song of Ice and Fire* by George R.R. Martin.
 
@@ -774,7 +774,6 @@ devtools::session_info()
 ##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  curl        * 4.0     2019-07-22 [1] CRAN (R 3.6.0)
@@ -785,7 +784,6 @@ devtools::session_info()
 ##  DT            0.8     2019-08-07 [1] CRAN (R 3.6.0)
 ##  ellipsis      0.2.0.1 2019-07-02 [1] CRAN (R 3.6.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi         0.4.0   2018-10-05 [1] CRAN (R 3.6.0)
 ##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
 ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
@@ -800,13 +798,11 @@ devtools::session_info()
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
 ##  jsonlite    * 1.6     2018-12-07 [1] CRAN (R 3.6.0)
 ##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
-##  labeling      0.3     2014-08-23 [1] CRAN (R 3.6.0)
 ##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
 ##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
 ##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  listviewer  * 2.1.0   2018-10-07 [1] CRAN (R 3.6.0)
 ##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr    * 1.5     2014-11-22 [1] CRAN (R 3.6.0)
+##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
 ##  modelr        0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
@@ -840,7 +836,6 @@ devtools::session_info()
 ##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
 ##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  utf8          1.1.4   2018-05-24 [1] CRAN (R 3.6.0)
 ##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
 ##  xfun          0.9     2019-08-21 [1] CRAN (R 3.6.0)

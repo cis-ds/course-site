@@ -319,19 +319,10 @@ http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013&plot=short&r=xml
 ```{r omdb-key}
 # retrieve API key from .RProfile
 omdb_key <- getOption("omdb_key")
-
-# create url
-request <- str_c("http://www.omdbapi.com/?apikey=", omdb_key, "&", "t=",
-                 "Sharknado", "&", "y=", "2013", "&", "plot=", "short",
-                 "&", "r=", "xml")
-request
 ```
 
----
-
-# Abstracting to a function
-
 ```{r omdb-function, dependson = "omdb-key"}
+# function to create API request
 omdb <- function(Key, Title, Year, Plot, Format){
   baseurl <- "http://www.omdbapi.com/?"
   params <- c("apikey=", "t=", "y=", "plot=", "r=")
@@ -346,15 +337,21 @@ omdb(omdb_key, "Sharknado", "2013", "short", "xml")
 
 ---
 
-# Obtain data with `curl`
+# `httr`
 
-```{r omdb-json, dependson = "omdb-key", warning = FALSE}
-request_sharknado <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
-con <- curl(request_sharknado)
-answer_json <- readLines(con)
-close(con)
-answer_json %>% 
-  prettify()
+* GET
+* POST
+* PUT
+* DELETE
+
+---
+
+# `GET()` Sharknado
+
+```{r httr-json}
+sharknado_json <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
+response_json <- GET(sharknado_json)
+content(response_json, as = "parsed", type = "application/json")
 ```
 
 ---
@@ -371,46 +368,6 @@ answer_json %>%
     "phone": "573-111-1111"
   }
 }
-```
-
----
-
-# Parsing JSON
-
-```{r parse-json, dependson = "omdb-json"}
-answer_json %>% 
-  fromJSON()
-```
-
----
-
-# Parsing JSON into a data frame
-
-```{r json-df, dependson = "omdb-json"}
-answer_json %>% 
-  fromJSON() %>% 
-  # remove ratings element for now
-  list_modify(Ratings = NULL) %>%
-  as_tibble()
-```
-
----
-
-# Introducing the easy way: `httr`
-
-* GET
-* POST
-* PUT
-* DELETE
-
----
-
-# `GET()` Sharknado
-
-```{r httr-json}
-sharknado_json <- omdb(omdb_key, "Sharknado", "2013", "short", "json")
-response_json <- GET(sharknado_json)
-content(response_json, as = "parsed", type = "application/json")
 ```
 
 ---
@@ -463,26 +420,7 @@ content(sharknado_2)
 # Messy API responses
 
 ```{r omdb-recursive, echo = FALSE, error = TRUE, warning = FALSE}
-# omdb API function
-omdb <- function(Key, Title, Year, Plot, Format){
-  baseurl <- "http://www.omdbapi.com/?"
-  params <- c("apikey=", "t=", "y=", "plot=", "r=")
-  values <- c(Key, Title, Year, Plot, Format)
-  param_values <- map2_chr(params, values, str_c)
-  args <- str_c(param_values, collapse = "&")
-  str_c(baseurl, args)
-}
-
-# use curl to execute the query
-request_sharknado <- omdb(getOption("omdb_key"), "Sharknado",
-                          "2013", "short", "json")
-con <- curl(request_sharknado)
-answer_json <- readLines(con)
-close(con)
-
-# convert to data frame
-answer_json %>% 
-  fromJSON() %>% 
+content(response_json, as = "parsed", type = "application/json") %>% 
   as_tibble()
 ```
 
@@ -490,246 +428,170 @@ answer_json %>%
 
 # Whoops
 
-```{r omdb-str}
-sharknado <- answer_json %>% 
-  fromJSON()
-
-jsonedit(sharknado, mode = "view", elementId = "sharknado")
+```{r omdb-str, echo = FALSE}
+content(response_json, as = "parsed", type = "application/json") %>%
+  jsonedit(mode = "view", elementId = "sharknado")
 ```
 
 ---
 
-# Inspecting and exploring lists
+# Rectangling and `tidyr`
 
-```{r packages-lists, cache = FALSE, include = FALSE}
-library(purrr)
-library(repurrrsive)
-```
+* Art and craft of taking a deeply nested list and taming it into a tidy data set of rows and columns
 
-```{r got-view}
-jsonedit(got_chars, mode = "view", elementId = "got_chars")
+
+* `unnest_longer()`
+* `unnest_wider()`
+* `unnest_auto()`
+* `hoist()`
+  
+---
+
+# `unnest_wider()` and `hoist()`
+
+```{r gh-users}
+str(gh_users, list.len = 3)
 ```
 
 ---
 
-# Name and position shortcuts
+# `unnest_wider()` and `hoist()`
 
-```{r got-name-name}
-map(got_chars[1:4], "name")
+```{r gh-users-df}
+(users <- tibble(user = gh_users))
 ```
 
-* Equivalent to `function(x) x[["TEXT"]]`
+--
 
----
-
-# Name and position shortcuts
-
-```{r got-name-int}
-map(got_chars[5:8], 3)
-```
-
-* Equivalent to `function(x) x[[i]]`
-    
----
-
-# Name and position shortcuts with pipe
-
-```{r got-name-pipe, eval = FALSE}
-got_chars %>% 
-  map("name")
-got_chars %>% 
-  map(3)
-```
-    
----
-
-# Type-specific map
-
-```{r got-name-chr}
-map_chr(got_chars[9:12], "name")
-map_chr(got_chars[13:16], 3)
+```{r gh-users-names, dependson = "gh-users-df"}
+names(users$user[[1]])
 ```
 
 ---
 
-# Extract multiple values
+# `unnest_wider()`
 
-```{r got-subset-one}
-# Victarion element
-got_chars[[3]]
-
-# specific elements for Victarion
-got_chars[[3]][c("name", "culture", "gender", "born")]
+```{r gh-users-unnest-wider, dependson = "gh-users-df"}
+users %>%
+  unnest_wider(user)
 ```
 
 ---
 
-# Adapt to `map()` framework
+# `hoist()`
 
-```r
-map(.x, .f, ...)
-```
-
-* `.f` = `[`
-* `...` = character vector identifying the names of the elements to extract
-
----
-
-# Adapt to `map()` framework
-
-```{r got-subset}
-x <- map(got_chars, `[`, c("name", "culture", "gender", "born"))
-str(x[16:17])
-```
-
----
-
-# `magrittr::extract()`
-
-```{r got-subset-magrittr, message = FALSE}
-library(magrittr)
-
-x <- map(got_chars, extract, c("name", "culture", "gender", "born"))
-str(x[18:19])
-```
-
----
-
-# Data frame output
-
-```{r got-df}
-map_df(got_chars, extract, c("name", "culture", "gender", "id", "born", "alive"))
-```
-
----
-
-# More robust approach
-
-```{r got-df-robust}
-got_chars %>% {
-  tibble(
-    name = map_chr(., "name"),
-    culture = map_chr(., "culture"),
-    gender = map_chr(., "gender"),       
-    id = map_int(., "id"),
-    born = map_chr(., "born"),
-    alive = map_lgl(., "alive")
+```{r gh-users-hoist, dependson = "gh-users-df"}
+users %>%
+  hoist(user, 
+        followers = "followers", 
+        login = "login", 
+        url = "html_url"
   )
-}
 ```
 
 ---
 
-# Exercise: simplify `gh_users`
+# `gh_repos` and nested list structures
 
-![](https://avatars1.githubusercontent.com/u/583231?s=400&v=4)
-
----
-
-# List inside a data frame
-
-```{r gh-repos-view}
-jsonedit(gh_repos, mode = "view", elementId = "gh_repos")
+```{r gh-repos}
+(repos <- tibble(repo = gh_repos))
 ```
 
 ---
 
-# Vector input to extraction shortcuts
+# `unnest_longer()`
 
-```{r gh-repos-repo-name}
-gh_repos %>%
-  map_chr(c(1, 3))
+```{r gh-repos-unnest-longer, dependson = "gh-repos"}
+repos <- repos %>%
+  unnest_longer(repo)
+repos
 ```
 
 ---
 
-# Get it into a data frame
+# `unnest_longer()`
 
-> One row per repository, with variables identifying which GitHub user owns it, the repository name, etc.
-
----
-
-# Create a data frame
-
-## Usernames and `gh_repos`
-
-```{r gh-repos-df}
-(unames <- map_chr(gh_repos, c(1, 4, 1)))
-(udf <- gh_repos %>%
-    set_names(unames) %>% 
-    enframe("username", "gh_repos"))
+```{r gh-repos-hoist, dependson = "gh-repos-unnest-longer"}
+repos %>%
+  hoist(repo, 
+        login = c("owner", "login"), 
+        name = "name",
+        homepage = "homepage",
+        watchers = "watchers_count"
+  )
 ```
 
 ---
 
-# Repos associated with each user
+# `unnest_auto()`
 
-```{r gh-repos-length}
-udf %>% 
-  mutate(n_repos = map_int(gh_repos, length))
+```{r gh-repos-auto, message = TRUE}
+tibble(repo = gh_repos) %>% 
+  unnest_auto(repo) %>% 
+  unnest_auto(repo)
 ```
 
 ---
 
-# Practice on a single user
+# ASOIAF characters
 
-```{r gh-repos-user1, collapse = TRUE}
-# one_user is a list of repos for one user
-one_user <- udf$gh_repos[[1]]
-
-# one_user[[1]] is a list of info for one repo
-one_repo <- one_user[[1]]
-str(one_repo, max.level = 1, list.len = 5)
+```{r got}
+chars <- tibble(char = got_chars)
+chars
 ```
 
 ---
 
-# Practice on a single user
+# ASOIAF characters
 
-```{r gh-repos-user1-2, collapse = TRUE}
-# a highly selective list of tibble-worthy info for one repo
-one_repo[c("name", "fork", "open_issues")]
-
-# make a data frame of that info for all a user's repos
-map_df(one_user, extract, c("name", "fork", "open_issues"))
+```{r got-wider}
+chars2 <- chars %>%
+  unnest_wider(char)
+chars2
 ```
 
 ---
 
-# Scale up to all users
+# Nested list objects
+
+```{r got-list-cols, dependson = "got-wider"}
+chars2 %>%
+  select_if(is.list)
+```
+
+---
+
+# Choose your own adventure
 
 .center[
 
-![](http://i0.kym-cdn.com/photos/images/facebook/000/531/557/a88.jpg)
+![:scale 40%](https://images-na.ssl-images-amazon.com/images/I/81E88dflPeL.jpg)
 
 ]
 
 ---
 
-# Scale up to all users
+# Every appearance per book/season
 
-```{r gh-repos-inception}
-udf %>% 
-  mutate(repo_info = gh_repos %>%
-           map(~ .x %>%
-                 map_df(extract, c("name", "fork", "open_issues"))))
+```{r got-appearances, dependson = "got-wider"}
+chars2 %>% 
+  select(name, books, tvSeries) %>% 
+  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>% 
+  unnest_longer(value)
 ```
 
 ---
 
-# Tidy the data frame
+# Match title to name
 
-```{r gh-repos-df-unnest}
-(rdf <- udf %>% 
-   mutate(
-     repo_info = gh_repos %>%
-       map(~ .x %>%
-             map_df(extract, c("name", "fork", "open_issues")))
-   ) %>% 
-   select(-gh_repos) %>% 
-   tidyr::unnest())
+```{r got-title-name, dependson = "got-wider"}
+chars2 %>% 
+  select(name, title = titles) %>% 
+  unnest_longer(title)
 ```
 
+---
 
+# Practice rectangling
 
-
+<div style="width:100%;height:0;padding-bottom:49%;position:relative;"><iframe src="https://giphy.com/embed/1l522MnWgimYM" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
