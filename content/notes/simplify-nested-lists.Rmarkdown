@@ -1,5 +1,5 @@
 ---
-title: "Simplifying lists with purrr"
+title: "Simplifying lists"
 date: 2019-03-01
 
 type: docs
@@ -23,6 +23,9 @@ library(tidyverse)
 library(jsonlite)
 library(curl)
 library(repurrrsive)
+
+set.seed(123)
+theme_set(theme_minimal())
 ```
 
 Not all lists are easily coerced into data frames by simply calling `fromJSON() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
@@ -61,6 +64,18 @@ str(sharknado)
 
 Look at the `ratings` element: **it is a data frame**. Remember that data frames are just a special type of list, so what we have here is a list inside of a list (aka a **recursive list**). We cannot easily **flatten** this into a data frame, because the `ratings` element is not an atomic vector of length 1 like all the other elements in `sharknado`. Instead, we have to think of another way to convert it to a data frame.
 
+## Rectangling and `tidyr`
+
+Rectangling is the art and craft of taking a deeply nested list (often sourced from wild caught JSON or XML) and taming it into a tidy data set of rows and columns. There are three functions from `tidyr` that are particularly useful for rectangling:
+
+* `unnest_longer()` takes each element of a list-column and makes a new row.
+* `unnest_wider()` takes each element of a list-column and makes a new column.
+* `unnest_auto()` guesses whether you want `unnest_longer()` or `unnest_wider()`.
+* `hoist()` is similar to `unnest_wider()` but only plucks out selected
+  components, and can reach down multiple levels.
+  
+A very large number of data rectangling problems can be solved by combining these functions with a splash of `dplyr`. 
+
 ## Load packages
 
 We need to load two packages now: `repurrrsive` contains examples of recursive lists, and `listviewer` which provides an interactive method for viewing the structure of a list.
@@ -81,267 +96,218 @@ Before you can apply functions to a list, you should understand it. Especially w
 
 > Alternatively, you can use [`listviewer::jsonedit()`](https://github.com/timelyportfolio/listviewer) to interactively view the list within RStudio.
 
-Let's look at `got_chars`, which is a list of information on the 29 point-of-view characters from the first five books in *A Song of Ice and Fire* by George R.R. Martin.
+## `unnest_wider()` and `hoist()`
 
-> Spoiler alert - if you haven't read the series, you may not want to read too much into each list element. That said, the book series is over 20 years old now and the show *Game of Thrones* is incredibly popular, so you've had plenty of opportunity to learn this information by now.
+Let's look at `gh_users` which is a list that contains information about six GitHub users.
 
-Each element corresponds to one character and contains 18 sub-elements which are named atomic vectors of various lengths and types.
-
-```{r got-view}
-str(got_chars, list.len = 3)
-```
-
-## Extract elements
-
-##### Quick review of `purrr::map()`
-
-* [Map functions in *R for Data Science*](http://r4ds.had.co.nz/iteration.html#the-map-functions)
-* [Notes on map functions](/notes/iteration/#map-functions)
-
-We can use `purrr::map()` to extract elements from lists.
-
-## Name and position shortcuts
-
-Let's extract the `name` element for each Game of Thrones character. To do this, we can use `map()` and extract list elements based on their name:
-
-```{r got-name-name}
-map(got_chars[1:4], "name")
-```
-
-A companion shortcut is to extract elements by their integer position in the list. For example, extract the 3rd element of each character's list like so:
-
-```{r got-name-int}
-map(got_chars[5:8], 3)
-```
-
-To recap, here are two shortcuts for making the `.f` function that `map()` will apply:
-
-* Provide "TEXT" to extract the element named "TEXT"
-    * Equivalent to `function(x) x[["TEXT"]]`
-* Provide `i` to extract the `i`-th element
-    * Equivalent to `function(x) x[[i]]`
-    
-And as always, we can use `map()` with the pipe `%>%`:
-
-```{r got-name-pipe, eval = FALSE}
-got_chars %>% 
-  map("name")
-got_chars %>% 
-  map(3)
-```
-    
-## Type-specific map
-
-`map()` always returns a list, but if you know that the elements are all the same type (e.g. numeric, character, boolean) and are each of length one, you can use the `map_()` function appropriate for that type of vector.
-
-```{r got-name-chr}
-map_chr(got_chars[9:12], "name")
-map_chr(got_chars[13:16], 3)
-```
-
-## Extract multiple values
-
-What if you want to retrieve elements? What if you want to know the character's name and gender? For a single user, we can use traditional [subsetting](http://r4ds.had.co.nz/vectors.html#subsetting-1):
-
-```{r got-subset-one}
-# Victarion element
-got_chars[[3]]
-
-# specific elements for Victarion
-got_chars[[3]][c("name", "culture", "gender", "born")]
-```
-
-We use a single square bracket indexing and a character vector to index by name. To adapt this to the `map()` framework, recall:
-
-```r
-map(.x, .f, ...)
-```
-
-The function `.f` will be `[` and `...` will be the character vector identifying the names of the elements to extract.
-
-```{r got-subset}
-x <- map(got_chars, `[`, c("name", "culture", "gender", "born"))
-str(x[16:17])
-```
-
-Alternatively, we can use `magrittr::extract()` to do the same thing. It looks a bit more clean:
-
-```{r got-subset-magrittr}
-library(magrittr)
-
-x <- map(got_chars, extract, c("name", "culture", "gender", "born"))
-str(x[18:19])
-```
-
-## Data frame output
-
-Notice that even by extracting multiple elements at once, we are still left with a list. But we want a simplified data frame! Remember that the output of `map()` is always a list. To force the output to be a data frame, use `map_df()`:
-
-```{r got-df}
-map_df(got_chars, extract, c("name", "culture", "gender", "id", "born", "alive"))
-```
-
-Now we have an automatically type converted data frame. It was quite simple to perform, however it is not very robust. It takes more code, but it is generally better to explicitly specify the type of each column to ensure the output is as you would expect:
-
-```{r got-df-robust}
-got_chars %>% {
-  tibble(
-    name = map_chr(., "name"),
-    culture = map_chr(., "culture"),
-    gender = map_chr(., "gender"),       
-    id = map_int(., "id"),
-    born = map_chr(., "born"),
-    alive = map_lgl(., "alive")
-  )
-}
-```
-
-> The dot `.` above is the placeholder for the primary input: `got_chars` in this case. The curly braces `{}` surrounding the `tibble()` call prevent `got_chars` from being passed in as the first argument of `tibble()`.
-
-## Exercise: simplify `gh_users`
-
-`repurrrsive` provides information on 6 GitHub users in a list named `gh_users`. It is a recursive list:
-
-* One element for each of the 6 GitHub users
-* Each element is, in turn, a list with information on the user
-
-What is in the list? Let's take a look:
-
-```{r gh-users-view}
+```{r gh-users}
 str(gh_users, list.len = 3)
 ```
 
-Extract each user's real name, username, GitHub ID, location, date of account creation, and number of public repositories. Store this information in a tidy data frame.
+To begin, we first put `gh_users` into a data frame:
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-Using the easy (non-robust method):
-
-```{r gh-users-df-easy}
-map_df(gh_users, `[`, c("login", "name", "id", "location", "created_at", "public_repos"))
+```{r gh-users-df}
+(users <- tibble(user = gh_users))
 ```
 
-Using the longer (but robust) way:
+We've already seen examples of list-columns. By storing the list in a data frame, we bundle together multiple vectors so when we start to extract elements they are stored in a single object.
 
-```{r gh-users-df-robust}
-gh_users %>% {
-  tibble(
-    login = map_chr(., "login"),
-    name = map_chr(., "name"),
-    id = map_int(., "id"),
-    location = map_chr(., "location"),
-    created_at = map_chr(., "created_at") %>%
-      lubridate::ymd_hms(),
-    public_repos = map_int(., "public_repos")
+Each `user` is a named list, where each element represents a column:
+
+```{r gh-users-names, dependson = "gh-users-df"}
+names(users$user[[1]])
+```
+
+There are two ways to turn the list components into columns. `unnest_wider()` takes every component and makes a new column:
+
+```{r gh-users-unnest-wider, dependson = "gh-users-df"}
+users %>%
+  unnest_wider(user)
+```
+
+Extremely easy! However, there are a lot of components in `users`, and we don't necessarily want or need all of them. Instead, we can use `hoist()` to pull out selected components:
+
+```{r gh-users-hoist, dependson = "gh-users-df"}
+users %>%
+  hoist(user, 
+        followers = "followers", 
+        login = "login", 
+        url = "html_url"
   )
-}
 ```
 
-Also notice that because I extracted each element manually, I could easily convert `created_at` to a [datetime column](http://r4ds.had.co.nz/dates-and-times.html#from-strings).
+`hoist()` removes the named components from the `user` list-column while retaining the unnamed components, so it's equivalent to moving the components out of the inner list into the top-level data frame.
+
+## `gh_repos` and nested list structures
+
+We start off `gh_repos` similarly, by putting it in a tibble:
+
+```{r gh-repos}
+(repos <- tibble(repo = gh_repos))
+```
+
+This time the elements of `repo` are a list of repositories that belong to that user. These are observations, so should become new rows, so we use `unnest_longer()` rather than `unnest_wider()`:
+
+```{r gh-repos-unnest-longer, dependson = "gh-repos"}
+repos <- repos %>%
+  unnest_longer(repo)
+repos
+```
+
+Then we can use `unnest_wider()` or `hoist()`:
+
+```{r gh-repos-hoist, dependson = "gh-repos-unnest-longer"}
+repos %>%
+  hoist(repo, 
+        login = c("owner", "login"), 
+        name = "name",
+        homepage = "homepage",
+        watchers = "watchers_count"
+  )
+```
+
+Note the use of `c("owner", "login")`: this allows us to reach two levels deep inside of a list. An alternative approach would be to pull out just `owner` and then put each element of it in a column:
+
+```{r gh-repos-hoist-alt, dependson = "gh-repos-unnest-longer"}
+repos %>% 
+  hoist(repo, owner = "owner") %>% 
+  unnest_wider(owner)
+```
+
+Instead of looking at the list and carefully thinking about whether it needs to become rows or columns, you can use `unnest_auto()`. It uses a handful of heuristics to figure out whether `unnest_longer()` or `unnest_wider()` is appropriate, and tells you about its reasoning.
+
+```{r gh-repos-auto}
+tibble(repo = gh_repos) %>% 
+  unnest_auto(repo) %>% 
+  unnest_auto(repo)
+```
+
+## Game of Thrones characters
+
+Let's look at `got_chars`, which is a list of information on the point-of-view characters from the first five books in *A Song of Ice and Fire* by George R.R. Martin.
+
+{{% alert note %}}
+
+Spoiler alert - if you haven't read the series, you may not want to read too much into each list element. That said, the book series is over 20 years old now and the show *Game of Thrones* is incredibly popular, so you've had plenty of opportunity to learn this information by now.
+
+{{% /alert %}}
+
+Each element corresponds to one character and contains 18 sub-elements which are named atomic vectors of various lengths and types. We start in the same way, first by creating a data frame and then by unnesting each component into a column:
+
+```{r got}
+chars <- tibble(char = got_chars)
+chars
+
+chars2 <- chars %>%
+  unnest_wider(char)
+chars2
+```
+
+This is more complex than `gh_users` because some component of `char` are themselves a list, giving us a collection of list-columns:
+
+```{r got-list-cols, dependson = "got"}
+chars2 %>%
+  select_if(is.list)
+```
+
+What you do next will depend on the purposes of the analysis. Maybe you want a row for every book and TV series that the character appears in:
+
+```{r got-appearances, dependson = "got"}
+chars2 %>% 
+  select(name, books, tvSeries) %>% 
+  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>% 
+  unnest_longer(value)
+```
+
+Or maybe you want to build a table that lets you match title to name:
+
+```{r got-title-name, dependson = "got"}
+chars2 %>% 
+  select(name, title = titles) %>% 
+  unnest_longer(title)
+```
+
+Again, we could rewrite using `unnest_auto()`. This is convenient for exploration, but I wouldn't rely on it in the long term - `unnest_auto()` has the undesirable property that it will always succeed. That means if your data structure changes, `unnest_auto()` will continue to work, but might give very different output that causes cryptic failures from downstream functions.
+
+```{r got-auto, dependson = "got"}
+tibble(char = got_chars) %>% 
+  unnest_auto(char) %>% 
+  select(name, title = titles) %>% 
+  unnest_auto(title)
+```
+
+## May the force be with you
+
+`sw_people`, `sw_films`, `sw_species`, `sw_planets`, `sw_starships` and `sw_vehicles` are interrelated lists in the `repurrrsive` package about entities in the Star Wars Universe retrieved from the [Star Wars API](http://swapi.co) using the package [`rwars`](https://github.com/Ironholds/rwars).
+
+```{r}
+map_chr(sw_films, "title")
+```
+
+Use your knowledge of rectangling with `tidyr` to extract relevant data of interest from these data frames to complete the following exercises.
+
+1. Generate a visualization of the distribution of average height for each species in the Star Wars universe.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
     
-  </p>
-</details>
+    `sw_species` contains one element for each species in the database, so we should use `unnest_wider()` or `hoist()` to extract the required elements.
+    
+    ```{r sw-avg-height}
+    # clean up sw_species so it is one-row-per-species
+    sw_height <- tibble(sw_species) %>%
+      hoist(sw_species,
+            height = "average_height") %>%
+      # fix height to be a numeric column
+      mutate(height = parse_number(height))
+    sw_height
+    
+    # generate a histogram
+    ggplot(data = sw_height, mapping = aes(x = height)) +
+      geom_histogram() +
+      labs(x = "Height (in centimeters)",
+           y = "Number of species")
+    ```
+    
+      </p>
+    </details>
 
-## List inside a data frame
+1. Generate a bar chart showing the number of film appearances made by each character in `sw_people` who made at least three film appearances.
 
-`gh_users` has a single primary level of nesting, but you regularly will encounter even more levels. `gh_repos` is a list with:
-
-* One element for each of the 6 GitHub users
-* Each element is another list of that user's repositories (or the first 30 if the user has more)
-* Several of the list elements are also a list
-
-```{r gh-repos-view}
-str(gh_repos, list.len = 2)
-```
-
-## Vector input to extraction shortcuts
-
-Now we use the indexing shortcuts in a more complicated setting. Instead of providing a single name or position, we use a vector:
-
-* the `j`-th element addresses the `j`-th level of the hierarchy
-  
-Here we get the full name (element 3) of the first repository listed for each user.
-
-```{r gh-repos-repo-name}
-gh_repos %>%
-  map_chr(c(1, 3))
-```
-
-Note that this does NOT give elements 1 and 3 of `gh_repos`. It extracts the first repo for each user and, within that, the 3rd piece of information for the repo.
-
-## Get it into a data frame
-
-Our objective is to get a data frame with one row per repository, with variables identifying which GitHub user owns it, the repository name, etc.
-
-### Create a data frame with usernames and `gh_repos`
-
-First let's create a data frame with `gh_repos` as a list-column along with identifying GitHub usernames. To do this, we extract the user names using the approach outlined above, set them as the names on `gh_repos`, then convert the named list into a tibble:
-
-```{r gh-repos-df}
-(unames <- map_chr(gh_repos, c(1, 4, 1)))
-(udf <- gh_repos %>%
-    set_names(unames) %>% 
-    enframe("username", "gh_repos"))
-```
-
-Next let's extract some basic piece of information from `gh_repos`. For instance, how many repos are associated with each user?
-
-```{r gh-repos-length}
-udf %>% 
-  mutate(n_repos = map_int(gh_repos, length))
-```
-
-### Practice on a single user
-
-Before attempting to `map()` functions to the entire data frame, let's first practice on a single user.
-
-```{r gh-repos-user1}
-# one_user is a list of repos for one user
-one_user <- udf$gh_repos[[1]]
-
-# one_user[[1]] is a list of info for one repo
-one_repo <- one_user[[1]]
-str(one_repo, max.level = 1, list.len = 5)
-
-# a highly selective list of tibble-worthy info for one repo
-one_repo[c("name", "fork", "open_issues")]
-
-# make a data frame of that info for all a user's repos
-map_df(one_user, `[`, c("name", "fork", "open_issues"))
-map_df(one_user, extract, c("name", "fork", "open_issues"))
-```
-
-### Scale up to all users
-
-Next let's scale this up to all the users in the data frame by executing a `map()` inside of a `map()`:
-
-```{r gh-repos-inception}
-udf %>% 
-  mutate(repo_info = gh_repos %>%
-           map(~ .x %>%
-                 map_df(extract, c("name", "fork", "open_issues"))))
-```
-
-### Tidy the data frame
-
-Now that we extracted our user-specific information, we want to make this a tidy data frame. All the info we want is in `repo_info`, so we can remove `gh_repos` and `unnest()` the data frame:
-
-```{r gh-repos-df-unnest}
-(rdf <- udf %>% 
-   mutate(
-     repo_info = gh_repos %>%
-       map(~ .x %>%
-             map_df(extract, c("name", "fork", "open_issues")))
-   ) %>% 
-   select(-gh_repos) %>% 
-   tidyr::unnest())
-```
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+    
+    Each element of `sw_people` contains one character. The `films` element within each character is a character vector containing one value for each film in which the character appeared. This required two separate `unnest_*()` operations to get the data in the proper form.
+    
+    ```{r sw-film-appearances}
+    # unnest the data
+    sw_people_df <- tibble(sw_people) %>%
+      unnest_wider(sw_people) %>%
+      unnest_longer(films)
+    sw_people_df
+    
+    # summarize the data frame and graph the bar chart
+    sw_people_df %>%
+      count(name) %>%
+      filter(n >= 3) %>%
+      ggplot(mapping = aes(x = fct_reorder(.f = name, .x = n), y = n)) +
+      geom_col() +
+      coord_flip() +
+      labs(title = "Number of appearances in the Star Wars cinematic universe",
+           subtitle = "As of December 31, 2015",
+           x = NULL,
+           y = "Number of film appearances")
+    ```
+    
+      </p>
+    </details>
 
 ## Acknowledgments
 
 * Examples and data files drawn from Jenny Bryan's [`purrr` tutorial](https://jennybc.github.io/purrr-tutorial/index.html)
+* Examples and data files also drawn from the [rectangling ](https://tidyr.tidyverse.org/articles/rectangle.html) vignette in `tidyr`.
 
 ## Session Info
 
