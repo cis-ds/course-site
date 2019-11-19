@@ -49,8 +49,8 @@ math: false
 * Demonstrate how to use canned packages in R to access APIs
 * Practice gathering data from Twitter API using the `rtweet` package in R
 * Identify methods for writing functions to interact with APIs
-* Define JSON and XML data structure and how to convert them to data frames
-* Practice tidying messy JSON data objects using `purrr::map()`
+* Define JSON data structure and how to convert them to data frames
+* Practice tidying messy JSON data objects using `tidyr`
 
 ## Before class
 
@@ -60,10 +60,11 @@ math: false
 ## Class materials
 
 * [Practice getting data from the Twitter API](/notes/twitter-api-practice/)
-* [Simplifying lists with `purrr`](/notes/simplify-nested-lists/)
+* [Simplifying lists](/notes/simplify-nested-lists/)
+
+## Additional resources
 
 * [More install-and-play API packages for R](https://github.com/ropensci/webservices)
 * [Documentation for `httr`](https://cran.r-project.org/web/packages/httr/)
-* [Lot's more tutorials and practice with `purrr` and recursive lists](https://jennybc.github.io/purrr-tutorial/index.html)
 
 ## What you need to do

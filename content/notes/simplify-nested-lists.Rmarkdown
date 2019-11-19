@@ -20,15 +20,14 @@ knitr::opts_chunk$set(cache = TRUE)
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
-library(jsonlite)
-library(curl)
+library(httr)
 library(repurrrsive)
 
 set.seed(123)
 theme_set(theme_minimal())
 ```
 
-Not all lists are easily coerced into data frames by simply calling `fromJSON() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
+Not all lists are easily coerced into data frames by simply calling `content() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
 
 ```{r omdb-recursive, error = TRUE, warning = FALSE}
 # omdb API function
@@ -41,24 +40,19 @@ omdb <- function(Key, Title, Year, Plot, Format){
   str_c(baseurl, args)
 }
 
-# use curl to execute the query
-request_sharknado <- omdb(getOption("omdb_key"), "Sharknado", "2013", "short", "json")
-con <- curl(request_sharknado)
-answer_json <- readLines(con)
-close(con)
+# query the API
+sharknado_json <- omdb(getOption("omdb_key"), "Sharknado", "2013", "short", "json")
+response_json <- GET(sharknado_json)
 
 # convert to data frame
-answer_json %>% 
-  fromJSON() %>% 
+content(response_json, as = "parsed", type = "application/json") %>% 
   as_tibble()
 ```
 
-Wait a minute, what happened? Look at the structure of `answer_json %>% fromJSON()`:
+Wait a minute, what happened? Look at the structure of `content()`:
 
-```{r omdb-str}
-sharknado <- answer_json %>% 
-  fromJSON()
-
+```{r omdb-str, dependson = "omdb-recursive"}
+sharknado <- content(response_json, as = "parsed", type = "application/json")
 str(sharknado)
 ```
 

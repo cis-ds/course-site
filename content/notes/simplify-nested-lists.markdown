@@ -19,15 +19,14 @@ menu:
 
 ```r
 library(tidyverse)
-library(jsonlite)
-library(curl)
+library(httr)
 library(repurrrsive)
 
 set.seed(123)
 theme_set(theme_minimal())
 ```
 
-Not all lists are easily coerced into data frames by simply calling `fromJSON() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
+Not all lists are easily coerced into data frames by simply calling `content() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
 
 
 ```r
@@ -41,15 +40,12 @@ omdb <- function(Key, Title, Year, Plot, Format){
   str_c(baseurl, args)
 }
 
-# use curl to execute the query
-request_sharknado <- omdb(getOption("omdb_key"), "Sharknado", "2013", "short", "json")
-con <- curl(request_sharknado)
-answer_json <- readLines(con)
-close(con)
+# query the API
+sharknado_json <- omdb(getOption("omdb_key"), "Sharknado", "2013", "short", "json")
+response_json <- GET(sharknado_json)
 
 # convert to data frame
-answer_json %>% 
-  fromJSON() %>% 
+content(response_json, as = "parsed", type = "application/json") %>% 
   as_tibble()
 ```
 
@@ -59,20 +55,17 @@ answer_json %>%
 ##   <chr> <chr> <chr> <chr>    <chr>   <chr> <chr>    <chr>  <chr>  <chr>
 ## 1 Shar… 2013  TV-14 11 Jul … 86 min  Acti… Anthony… Thund… Ian Z… When…
 ## 2 Shar… 2013  TV-14 11 Jul … 86 min  Acti… Anthony… Thund… Ian Z… When…
-## # … with 16 more variables: Language <chr>, Country <chr>, Awards <chr>,
-## #   Poster <chr>, Ratings$Source <chr>, $Value <chr>, Metascore <chr>,
-## #   imdbRating <chr>, imdbVotes <chr>, imdbID <chr>, Type <chr>,
-## #   DVD <chr>, BoxOffice <chr>, Production <chr>, Website <chr>,
-## #   Response <chr>
+## # … with 15 more variables: Language <chr>, Country <chr>, Awards <chr>,
+## #   Poster <chr>, Ratings <list>, Metascore <chr>, imdbRating <chr>,
+## #   imdbVotes <chr>, imdbID <chr>, Type <chr>, DVD <chr>, BoxOffice <chr>,
+## #   Production <chr>, Website <chr>, Response <chr>
 ```
 
-Wait a minute, what happened? Look at the structure of `answer_json %>% fromJSON()`:
+Wait a minute, what happened? Look at the structure of `content()`:
 
 
 ```r
-sharknado <- answer_json %>% 
-  fromJSON()
-
+sharknado <- content(response_json, as = "parsed", type = "application/json")
 str(sharknado)
 ```
 
@@ -92,18 +85,22 @@ str(sharknado)
 ##  $ Country   : chr "USA"
 ##  $ Awards    : chr "1 win & 2 nominations."
 ##  $ Poster    : chr "https://m.media-amazon.com/images/M/MV5BODcwZWFiNTEtNDgzMC00ZmE2LWExMzYtNzZhZDgzNDc5NDkyXkEyXkFqcGdeQXVyMTQxNzM"| __truncated__
-##  $ Ratings   :'data.frame':	2 obs. of  2 variables:
-##   ..$ Source: chr [1:2] "Internet Movie Database" "Rotten Tomatoes"
-##   ..$ Value : chr [1:2] "3.3/10" "82%"
+##  $ Ratings   :List of 2
+##   ..$ :List of 2
+##   .. ..$ Source: chr "Internet Movie Database"
+##   .. ..$ Value : chr "3.3/10"
+##   ..$ :List of 2
+##   .. ..$ Source: chr "Rotten Tomatoes"
+##   .. ..$ Value : chr "78%"
 ##  $ Metascore : chr "N/A"
 ##  $ imdbRating: chr "3.3"
-##  $ imdbVotes : chr "42,959"
+##  $ imdbVotes : chr "44,067"
 ##  $ imdbID    : chr "tt2724064"
 ##  $ Type      : chr "movie"
 ##  $ DVD       : chr "03 Sep 2013"
 ##  $ BoxOffice : chr "N/A"
 ##  $ Production: chr "NCM Fathom"
-##  $ Website   : chr "http://www.mtivideo.com/TitleView.aspx?TITLE_ID=728"
+##  $ Website   : chr "N/A"
 ##  $ Response  : chr "True"
 ```
 
@@ -762,7 +759,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-11-18                  
+##  date     2019-11-19                  
 ## 
 ## ─ Packages ──────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -776,7 +773,6 @@ devtools::session_info()
 ##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  curl        * 4.0     2019-07-22 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
 ##  devtools      2.2.0   2019-09-07 [1] CRAN (R 3.6.0)
 ##  digest        0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
@@ -795,8 +791,8 @@ devtools::session_info()
 ##  hms           0.5.1   2019-08-23 [1] CRAN (R 3.6.0)
 ##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
 ##  htmlwidgets   1.3     2018-09-30 [1] CRAN (R 3.6.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  jsonlite    * 1.6     2018-12-07 [1] CRAN (R 3.6.0)
+##  httr        * 1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
+##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)
 ##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
 ##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
 ##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
