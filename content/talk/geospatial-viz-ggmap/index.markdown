@@ -2,7 +2,7 @@
 title: "Geospatial visualization: raster maps"
 date: 2019-11-26T12:30:00
 publishDate: 2019-05-20T13:30:00
-draft: false
+draft: true
 type: "talk"
 
 aliases: ["/cm014.html", "/syllabus/geospatial-visualization/"]
