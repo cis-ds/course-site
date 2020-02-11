@@ -1,12 +1,12 @@
----
++++
 widget = "people"  # Use the People widget
 headless = true  # This file represents a page section.
 
 # ... Put Your Section Options Here (title etc.) ...
-active: false
-subtitle: ""
-title: People
-weight: 68
+active = false
+subtitle = ""
+title = "People"
+weight = 68
 
 [content]
   # Choose which groups/teams of users to display.
@@ -24,4 +24,4 @@ weight: 68
 
   # Show user's interests? (true/false)
   show_interests = true
----
++++
