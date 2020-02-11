@@ -8,6 +8,7 @@ menu:
 title: Overview
 toc: false
 type: docs
+layout: docs
 ---
 
 This section contains lecture notes and exercises for the course.
