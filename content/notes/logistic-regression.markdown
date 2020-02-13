@@ -124,9 +124,9 @@ ggplot(titanic, aes(Age, Survived)) +
 
 <img src="/notes/logistic-regression_files/figure-html/titanic_ols-1.png" width="672" />
 
-Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are `\(0\)` and `\(1\)`. Yet the linear regression model gives us predicted values such as `\(.4\)` and `\(.25\)`. How should we interpret those?
+Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are $0$ and $1$. Yet the linear regression model gives us predicted values such as $.4$ and $.25$. How should we interpret those?
 
-One possibility is that these values are **predicted probabilities**. That is, the estimated probability a passenger will survive given their age. So someone with a predicted probability of `\(.4\)` has a 40% chance of surviving. Okay, but notice that because the line is linear and continuous, it extends infinitely in both directions of age.
+One possibility is that these values are **predicted probabilities**. That is, the estimated probability a passenger will survive given their age. So someone with a predicted probability of $.4$ has a 40% chance of surviving. Okay, but notice that because the line is linear and continuous, it extends infinitely in both directions of age.
 
 
 ```r
@@ -138,7 +138,7 @@ ggplot(titanic, aes(Age, Survived)) +
 
 <img src="/notes/logistic-regression_files/figure-html/titanic_ols_old-1.png" width="672" />
 
-What happens if a 200 year old person is on the Titanic? They would have a `\(-.1\)` probability of surviving. **But you cannot have a probability outside of the `\([0,1]\)` interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
+What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
 
 Or what if we didn't want to predict survival, but instead predict the port from which an individual departed (Cherbourg, Queenstown, or Southampton)? We could try and code this as a numeric response variable:
 
@@ -168,11 +168,11 @@ Or even:
 
 ## Logistic regression
 
-Rather than modeling the response `\(Y\)` directly, logistic regression instead models the **probability** that `\(Y\)` belongs to a particular category. In our first Titanic example, the probability of survival can be written as:
+Rather than modeling the response $Y$ directly, logistic regression instead models the **probability** that $Y$ belongs to a particular category. In our first Titanic example, the probability of survival can be written as:
 
-`$$\Pr(\text{survival} = \text{Yes} | \text{age})$$`
+$$\Pr(\text{survival} = \text{Yes} | \text{age})$$
 
-The values of `\(\Pr(\text{survival} = \text{Yes} | \text{age})\)` (or simply `\(\Pr(\text{survival})\)`) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom `\(\Pr(\text{survival}) > .5\)` will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
+The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $\Pr(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
 
 We can estimate the logistic regression model using the `glm` function.
 
@@ -234,7 +234,7 @@ ggplot(titanic, aes(Age, Survived)) +
 
 <img src="/notes/logistic-regression_files/figure-html/titanic_age_glm_plot_wide-1.png" width="672" />
 
-No more predictions that a 200 year old has a `\(-.1\)` probability of surviving!
+No more predictions that a 200 year old has a $-.1$ probability of surviving!
 
 ## Adding predictions
 
@@ -383,7 +383,7 @@ This graph illustrates a key fact about surviving the sinking of the Titanic - a
 
 ## Quadratic terms
 
-Logistic regression, like linear regression, assumes each predictor has an independent and linear relationship with the response. That is, it assumes the relationship takes the form `\(y = \beta_0 + \beta_{1}x\)` and looks something like this:
+Logistic regression, like linear regression, assumes each predictor has an independent and linear relationship with the response. That is, it assumes the relationship takes the form $y = \beta_0 + \beta_{1}x$ and looks something like this:
 
 
 ```r
@@ -396,7 +396,7 @@ ggplot(sim_line, aes(x, y)) +
 
 <img src="/notes/logistic-regression_files/figure-html/straight_line-1.png" width="672" />
 
-But from algebra we know that variables can have non-linear relationships. Perhaps instead the relationship is parabolic like `\(y = \beta_0 + \beta_{1}x + \beta_{2}x^2\)`:
+But from algebra we know that variables can have non-linear relationships. Perhaps instead the relationship is parabolic like $y = \beta_0 + \beta_{1}x + \beta_{2}x^2$:
 
 
 ```r
@@ -409,7 +409,7 @@ ggplot(sim_line, aes(x, y)) +
 
 <img src="/notes/logistic-regression_files/figure-html/parabola-1.png" width="672" />
 
-Or a more general quadratic equation `\(y = \beta_0 + \beta_{1}x + \beta_{2}x^2 + \beta_{3}x^3\)`:
+Or a more general quadratic equation $y = \beta_0 + \beta_{1}x + \beta_{2}x^2 + \beta_{3}x^3$:
 
 
 ```r
@@ -472,14 +472,14 @@ augment(survive_age_square,
 
 ## Interactive terms
 
-Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and gender example, we assume our function `\(f\)` looks something like:^[In mathematical truth, it looks more like:
-    `$$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}$$`]
+Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and gender example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
+    $$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}$$]
 
-`$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$`
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
 
 However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? This possibility would take the functional form:
 
-`$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$`
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
 
 This is considered an **interaction** between age and gender. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
 
@@ -562,7 +562,7 @@ You may think then that it makes sense to throw in interaction terms (and quadra
 
 ## Comparing models
 
-How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a `\(.5\)` cut-point), then see what percentage of predictions were the same as the actual survivals?
+How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a $.5$ cut-point), then see what percentage of predictions were the same as the actual survivals?
 
 
 ```r
@@ -576,7 +576,7 @@ mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE)
 ## [1] 0.4061625
 ```
 
-`\(40.6\%\)` of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that `\(61.6\%\)` of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
+$40.6\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $61.6\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
 
 
 ```r
@@ -755,90 +755,95 @@ devtools::session_info()
 ```
 
 ```
-## ─ Session info ──────────────────────────────────────────────────────────
+## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.0 (2019-04-26)
-##  os       macOS Mojave 10.14.6        
+##  version  R version 3.6.1 (2019-07-05)
+##  os       macOS Catalina 10.15.3      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-09-15                  
+##  date     2020-02-12                  
 ## 
-## ─ Packages ──────────────────────────────────────────────────────────────
+## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)
-##  blogdown      0.14    2019-07-13 [1] CRAN (R 3.6.0)
-##  bookdown      0.12    2019-07-11 [1] CRAN (R 3.6.0)
-##  broom       * 0.5.2   2019-04-07 [1] CRAN (R 3.6.0)
-##  callr         3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
+##  backports     1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
+##  blogdown      0.17.1  2020-02-13 [1] local         
+##  bookdown      0.17    2020-01-11 [1] CRAN (R 3.6.0)
+##  broom       * 0.5.4   2020-01-27 [1] CRAN (R 3.6.0)
+##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
+##  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
+##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
+##  dbplyr        1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.1.0   2019-07-06 [1] CRAN (R 3.6.0)
-##  digest        0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
-##  dplyr       * 0.8.3   2019-07-04 [1] CRAN (R 3.6.0)
+##  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
+##  digest        0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
+##  dplyr       * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
+##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
+##  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
 ##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
 ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
 ##  ggplot2     * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
 ##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven         2.1.1   2019-07-04 [1] CRAN (R 3.6.0)
+##  haven         2.2.0   2019-11-08 [1] CRAN (R 3.6.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.0   2019-07-09 [1] CRAN (R 3.6.0)
-##  htmltools     0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
+##  hms           0.5.3   2020-01-08 [1] CRAN (R 3.6.0)
+##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)
-##  knitr         1.24    2019-08-08 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.0)
+##  jsonlite      1.6.1   2020-02-02 [1] CRAN (R 3.6.0)
+##  knitr         1.28    2020-02-06 [1] CRAN (R 3.6.0)
+##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
 ##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
+##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
 ##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
 ##  modelr      * 0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-141 2019-08-01 [1] CRAN (R 3.6.0)
-##  pillar        1.4.2   2019-06-29 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.4   2019-08-05 [1] CRAN (R 3.6.0)
-##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.6.0)
+##  nlme          3.1-144 2020-02-06 [1] CRAN (R 3.6.0)
+##  pillar        1.4.3   2019-12-20 [1] CRAN (R 3.6.0)
+##  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
+##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 3.6.0)
 ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)
+##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
 ##  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
 ##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr       * 0.3.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)
-##  Rcpp          1.0.2   2019-07-25 [1] CRAN (R 3.6.0)
+##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
+##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
+##  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
 ##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  rlang         0.4.0   2019-06-25 [1] CRAN (R 3.6.0)
-##  rmarkdown     1.14    2019-07-12 [1] CRAN (R 3.6.0)
+##  reprex        0.3.0   2019-05-16 [1] CRAN (R 3.6.0)
+##  rlang         0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
+##  rmarkdown     2.1     2020-01-20 [1] CRAN (R 3.6.0)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)
-##  rvest         0.3.4   2019-05-15 [1] CRAN (R 3.6.0)
-##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.6.0)
+##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 3.6.0)
+##  rvest         0.3.5   2019-11-08 [1] CRAN (R 3.6.0)
+##  scales        1.1.0   2019-11-18 [1] CRAN (R 3.6.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  stringi       1.4.3   2019-03-12 [1] CRAN (R 3.6.0)
+##  stringi       1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat      2.2.1   2019-07-25 [1] CRAN (R 3.6.0)
+##  testthat      2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
 ##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 0.8.3   2019-03-01 [1] CRAN (R 3.6.0)
-##  tidyselect    0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
-##  tidyverse   * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
+##  tidyr       * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
+##  tidyselect    1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
+##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs         0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
+##  vctrs         0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.8     2019-06-25 [1] CRAN (R 3.6.0)
+##  xfun          0.12    2020-01-13 [1] CRAN (R 3.6.0)
 ##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
-##  zeallot       0.1.0   2018-01-28 [1] CRAN (R 3.6.0)
+##  yaml          2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

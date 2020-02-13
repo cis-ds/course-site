@@ -48,7 +48,7 @@ math: false
 * Define and estimate a random forest
 * Introduce the `caret` package for statistical learning in R
 * Define resampling method
-* Compare and contrast the validation set approach with leave-one-out and `\(k\)`-fold cross-validation
+* Compare and contrast the validation set approach with leave-one-out and $k$-fold cross-validation
 * Demonstrate how to conduct cross-validation using `rsample`
 
 ## Before class

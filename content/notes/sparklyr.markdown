@@ -82,19 +82,19 @@ library(titanic)
 
 ```
 ## # Source: spark<titanic> [?? x 12]
-##    PassengerId Survived Pclass Name  Sex     Age SibSp Parch Ticket  Fare
-##          <int>    <int>  <int> <chr> <chr> <dbl> <int> <int> <chr>  <dbl>
-##  1           1        0      3 Brau… male     22     1     0 A/5 2…  7.25
-##  2           2        1      1 Cumi… fema…    38     1     0 PC 17… 71.3 
-##  3           3        1      3 Heik… fema…    26     0     0 STON/…  7.92
-##  4           4        1      1 Futr… fema…    35     1     0 113803 53.1 
-##  5           5        0      3 Alle… male     35     0     0 373450  8.05
-##  6           6        0      3 Mora… male    NaN     0     0 330877  8.46
-##  7           7        0      1 McCa… male     54     0     0 17463  51.9 
-##  8           8        0      3 Pals… male      2     3     1 349909 21.1 
-##  9           9        1      3 John… fema…    27     0     2 347742 11.1 
-## 10          10        1      2 Nass… fema…    14     1     0 237736 30.1 
-## # … with more rows, and 2 more variables: Cabin <chr>, Embarked <chr>
+##    PassengerId Survived Pclass Name  Sex     Age SibSp Parch Ticket  Fare Cabin
+##          <int>    <int>  <int> <chr> <chr> <dbl> <int> <int> <chr>  <dbl> <chr>
+##  1           1        0      3 Brau… male     22     1     0 A/5 2…  7.25 ""   
+##  2           2        1      1 Cumi… fema…    38     1     0 PC 17… 71.3  "C85"
+##  3           3        1      3 Heik… fema…    26     0     0 STON/…  7.92 ""   
+##  4           4        1      1 Futr… fema…    35     1     0 113803 53.1  "C12…
+##  5           5        0      3 Alle… male     35     0     0 373450  8.05 ""   
+##  6           6        0      3 Mora… male    NaN     0     0 330877  8.46 ""   
+##  7           7        0      1 McCa… male     54     0     0 17463  51.9  "E46"
+##  8           8        0      3 Pals… male      2     3     1 349909 21.1  ""   
+##  9           9        1      3 John… fema…    27     0     2 347742 11.1  ""   
+## 10          10        1      2 Nass… fema…    14     1     0 237736 30.1  ""   
+## # … with more rows, and 1 more variable: Embarked <chr>
 ```
 
 ## Tidy the data
@@ -294,7 +294,7 @@ The lift chart suggests the tree-based models (random forest, gradient boosted t
 
 ![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/6/6b/Roccurves.png)
 
-The ideal model perfectly classifies all positive outcomes as true and all negative outcomes as false (i.e. TPR = 1 and FPR = 0). The line on the second graph is made by calculating predicted outcomes at different cutpoint thresholds (i.e. `\(.1, .2, .5, .8\)`) and connecting the dots. The diagonal line indicates expected true/false positive rates if you guessed at random. The area under the curve (AUC) summarizes how good the model is across these threshold points simultaneously. An area of 1 indicates that for any threshold value, the model always makes perfect preditions. **This will almost never occur in real life.** Good AUC values are between `\(.6\)` and `\(.8\)`. While we cannot draw the ROC graph using Spark, we can extract the AUC values based on the predictions.
+The ideal model perfectly classifies all positive outcomes as true and all negative outcomes as false (i.e. TPR = 1 and FPR = 0). The line on the second graph is made by calculating predicted outcomes at different cutpoint thresholds (i.e. $.1, .2, .5, .8$) and connecting the dots. The diagonal line indicates expected true/false positive rates if you guessed at random. The area under the curve (AUC) summarizes how good the model is across these threshold points simultaneously. An area of 1 indicates that for any threshold value, the model always makes perfect preditions. **This will almost never occur in real life.** Good AUC values are between $.6$ and $.8$. While we cannot draw the ROC graph using Spark, we can extract the AUC values based on the predictions.
 
 
 ```r
@@ -424,7 +424,7 @@ result %>%
 
 ## Sparkling Water (H2O) and machine learning
 
-Where's the LOOCV? Where's the `\(k\)`-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. The functions we used above to estimate the models are part of **Spark’s distributed [machine learning library](https://spark.apache.org/docs/latest/mllib-guide.html)** (MLlib). MLlib contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196).^[In refreshing my notes for the term, I saw CV was just incorporated into the development version of `sparklyr` but it is not yet deployed on CRAN.] A real drag.
+Where's the LOOCV? Where's the $k$-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. The functions we used above to estimate the models are part of **Spark’s distributed [machine learning library](https://spark.apache.org/docs/latest/mllib-guide.html)** (MLlib). MLlib contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196).^[In refreshing my notes for the term, I saw CV was just incorporated into the development version of `sparklyr` but it is not yet deployed on CRAN.] A real drag.
 
 If you are serious about utilizing Spark and need cross-validation and other more robust machine learning tools, another option is [**H2O**](https://www.h2o.ai/h2o/), an alternative open-source cross-platform machine learning software package. The `rsparkling` package provides functions to access H2O's distributed [machine learning functions](https://www.h2o.ai/h2o/machine-learning/) via `sparklyr`. H2O has many of the same features as MLlib (if not more so through `sparklyr`), however implementing it is a bit more complicated. Hence we focused most our code above on MLlib algorithms.
 
@@ -636,109 +636,110 @@ devtools::session_info()
 ```
 
 ```
-## ─ Session info ──────────────────────────────────────────────────────────
+## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.0 (2019-04-26)
-##  os       macOS Mojave 10.14.6        
+##  version  R version 3.6.1 (2019-07-05)
+##  os       macOS Catalina 10.15.3      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2019-09-15                  
+##  date     2020-02-12                  
 ## 
-## ─ Packages ──────────────────────────────────────────────────────────────
-##  package     * version   date       lib source        
-##  askpass       1.1       2019-01-13 [1] CRAN (R 3.6.0)
-##  assertthat    0.2.1     2019-03-21 [1] CRAN (R 3.6.0)
-##  backports     1.1.4     2019-04-10 [1] CRAN (R 3.6.0)
-##  base64enc     0.1-3     2015-07-28 [1] CRAN (R 3.6.0)
-##  bitops        1.0-6     2013-08-17 [1] CRAN (R 3.6.0)
-##  blogdown      0.14      2019-07-13 [1] CRAN (R 3.6.0)
-##  bookdown      0.12      2019-07-11 [1] CRAN (R 3.6.0)
-##  broom         0.5.2     2019-04-07 [1] CRAN (R 3.6.0)
-##  callr         3.3.1     2019-07-18 [1] CRAN (R 3.6.0)
-##  cellranger    1.1.0     2016-07-27 [1] CRAN (R 3.6.0)
-##  cli           1.1.0     2019-03-19 [1] CRAN (R 3.6.0)
-##  colorspace    1.4-1     2019-03-18 [1] CRAN (R 3.6.0)
-##  config        0.3       2018-03-27 [1] CRAN (R 3.6.0)
-##  crayon        1.3.4     2017-09-16 [1] CRAN (R 3.6.0)
-##  DBI           1.0.0     2018-05-02 [1] CRAN (R 3.6.0)
-##  dbplyr        1.4.2     2019-06-17 [1] CRAN (R 3.6.0)
-##  desc          1.2.0     2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.1.0     2019-07-06 [1] CRAN (R 3.6.0)
-##  digest        0.6.20    2019-07-04 [1] CRAN (R 3.6.0)
-##  dplyr       * 0.8.3     2019-07-04 [1] CRAN (R 3.6.0)
-##  ellipsis      0.2.0.1   2019-07-02 [1] CRAN (R 3.6.0)
-##  evaluate      0.14      2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi         0.4.0     2018-10-05 [1] CRAN (R 3.6.0)
-##  forcats     * 0.4.0     2019-02-17 [1] CRAN (R 3.6.0)
-##  forge         0.2.0     2019-02-26 [1] CRAN (R 3.6.0)
-##  fs            1.3.1     2019-05-06 [1] CRAN (R 3.6.0)
-##  generics      0.0.2     2018-11-29 [1] CRAN (R 3.6.0)
-##  ggplot2     * 3.2.1     2019-08-10 [1] CRAN (R 3.6.0)
-##  glue          1.3.1     2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable        0.3.0     2019-03-25 [1] CRAN (R 3.6.0)
-##  h2o         * 3.26.0.2  2019-08-01 [1] CRAN (R 3.6.0)
-##  haven         2.1.1     2019-07-04 [1] CRAN (R 3.6.0)
-##  here          0.1       2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.0     2019-07-09 [1] CRAN (R 3.6.0)
-##  htmltools     0.3.6     2017-04-28 [1] CRAN (R 3.6.0)
-##  htmlwidgets   1.3       2018-09-30 [1] CRAN (R 3.6.0)
-##  httr          1.4.1     2019-08-05 [1] CRAN (R 3.6.0)
-##  jsonlite      1.6       2018-12-07 [1] CRAN (R 3.6.0)
-##  knitr         1.24      2019-08-08 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38   2018-11-04 [1] CRAN (R 3.6.0)
-##  lazyeval      0.2.2     2019-03-15 [1] CRAN (R 3.6.0)
-##  lubridate     1.7.4     2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr      1.5       2014-11-22 [1] CRAN (R 3.6.0)
-##  memoise       1.1.0     2017-04-21 [1] CRAN (R 3.6.0)
-##  modelr        0.1.5     2019-08-08 [1] CRAN (R 3.6.0)
-##  munsell       0.5.0     2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-141   2019-08-01 [1] CRAN (R 3.6.0)
-##  openssl       1.4.1     2019-07-18 [1] CRAN (R 3.6.0)
-##  pillar        1.4.2     2019-06-29 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.4     2019-08-05 [1] CRAN (R 3.6.0)
-##  pkgconfig     2.0.2     2018-08-16 [1] CRAN (R 3.6.0)
-##  pkgload       1.0.2     2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits   1.0.2     2015-07-13 [1] CRAN (R 3.6.0)
-##  processx      3.4.1     2019-07-18 [1] CRAN (R 3.6.0)
-##  ps            1.3.0     2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr       * 0.3.2     2019-03-15 [1] CRAN (R 3.6.0)
-##  r2d3          0.2.3     2018-12-18 [1] CRAN (R 3.6.0)
-##  R6            2.4.0     2019-02-14 [1] CRAN (R 3.6.0)
-##  rappdirs      0.3.1     2016-03-28 [1] CRAN (R 3.6.0)
-##  Rcpp          1.0.2     2019-07-25 [1] CRAN (R 3.6.0)
-##  RCurl         1.95-4.12 2019-03-04 [1] CRAN (R 3.6.0)
-##  readr       * 1.3.1     2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl        1.3.1     2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes       2.1.0     2019-06-24 [1] CRAN (R 3.6.0)
-##  rlang         0.4.0     2019-06-25 [1] CRAN (R 3.6.0)
-##  rmarkdown     1.14      2019-07-12 [1] CRAN (R 3.6.0)
-##  rprojroot     1.3-2     2018-01-03 [1] CRAN (R 3.6.0)
-##  rsparkling  * 0.2.18    2019-01-30 [1] CRAN (R 3.6.0)
-##  rstudioapi    0.10      2019-03-19 [1] CRAN (R 3.6.0)
-##  rvest         0.3.4     2019-05-15 [1] CRAN (R 3.6.0)
-##  scales        1.0.0     2018-08-09 [1] CRAN (R 3.6.0)
-##  sessioninfo   1.1.1     2018-11-05 [1] CRAN (R 3.6.0)
-##  sparklyr    * 1.0.2     2019-07-04 [1] CRAN (R 3.6.0)
-##  stringi       1.4.3     2019-03-12 [1] CRAN (R 3.6.0)
-##  stringr     * 1.4.0     2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat      2.2.1     2019-07-25 [1] CRAN (R 3.6.0)
-##  tibble      * 2.1.3     2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 0.8.3     2019-03-01 [1] CRAN (R 3.6.0)
-##  tidyselect    0.2.5     2018-10-11 [1] CRAN (R 3.6.0)
-##  tidyverse   * 1.2.1     2017-11-14 [1] CRAN (R 3.6.0)
-##  titanic     * 0.1.0     2015-08-31 [1] CRAN (R 3.6.0)
-##  usethis       1.5.1     2019-07-04 [1] CRAN (R 3.6.0)
-##  utf8          1.1.4     2018-05-24 [1] CRAN (R 3.6.0)
-##  vctrs         0.2.0     2019-07-05 [1] CRAN (R 3.6.0)
-##  withr         2.1.2     2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.8       2019-06-25 [1] CRAN (R 3.6.0)
-##  xml2          1.2.2     2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml          2.2.0     2018-07-25 [1] CRAN (R 3.6.0)
-##  zeallot       0.1.0     2018-01-28 [1] CRAN (R 3.6.0)
+## ─ Packages ───────────────────────────────────────────────────────────────────
+##  package     * version        date       lib source        
+##  askpass       1.1            2019-01-13 [1] CRAN (R 3.6.0)
+##  assertthat    0.2.1          2019-03-21 [1] CRAN (R 3.6.0)
+##  backports     1.1.5          2019-10-02 [1] CRAN (R 3.6.0)
+##  base64enc     0.1-3          2015-07-28 [1] CRAN (R 3.6.0)
+##  bitops        1.0-6          2013-08-17 [1] CRAN (R 3.6.0)
+##  blogdown      0.17.1         2020-02-13 [1] local         
+##  bookdown      0.17           2020-01-11 [1] CRAN (R 3.6.0)
+##  broom         0.5.4          2020-01-27 [1] CRAN (R 3.6.0)
+##  callr         3.4.2          2020-02-12 [1] CRAN (R 3.6.1)
+##  cellranger    1.1.0          2016-07-27 [1] CRAN (R 3.6.0)
+##  cli           2.0.1          2020-01-08 [1] CRAN (R 3.6.0)
+##  colorspace    1.4-1          2019-03-18 [1] CRAN (R 3.6.0)
+##  config        0.3            2018-03-27 [1] CRAN (R 3.6.0)
+##  crayon        1.3.4          2017-09-16 [1] CRAN (R 3.6.0)
+##  DBI           1.1.0          2019-12-15 [1] CRAN (R 3.6.0)
+##  dbplyr        1.4.2          2019-06-17 [1] CRAN (R 3.6.0)
+##  desc          1.2.0          2018-05-01 [1] CRAN (R 3.6.0)
+##  devtools      2.2.1          2019-09-24 [1] CRAN (R 3.6.0)
+##  digest        0.6.23         2019-11-23 [1] CRAN (R 3.6.0)
+##  dplyr       * 0.8.4          2020-01-31 [1] CRAN (R 3.6.0)
+##  ellipsis      0.3.0          2019-09-20 [1] CRAN (R 3.6.0)
+##  evaluate      0.14           2019-05-28 [1] CRAN (R 3.6.0)
+##  fansi         0.4.1          2020-01-08 [1] CRAN (R 3.6.0)
+##  forcats     * 0.4.0          2019-02-17 [1] CRAN (R 3.6.0)
+##  forge         0.2.0          2019-02-26 [1] CRAN (R 3.6.0)
+##  fs            1.3.1          2019-05-06 [1] CRAN (R 3.6.0)
+##  generics      0.0.2          2018-11-29 [1] CRAN (R 3.6.0)
+##  ggplot2     * 3.2.1          2019-08-10 [1] CRAN (R 3.6.0)
+##  glue          1.3.1          2019-03-12 [1] CRAN (R 3.6.0)
+##  gtable        0.3.0          2019-03-25 [1] CRAN (R 3.6.0)
+##  h2o         * 3.28.0.2       2020-01-22 [1] CRAN (R 3.6.0)
+##  haven         2.2.0          2019-11-08 [1] CRAN (R 3.6.0)
+##  here          0.1            2017-05-28 [1] CRAN (R 3.6.0)
+##  hms           0.5.3          2020-01-08 [1] CRAN (R 3.6.0)
+##  htmltools     0.4.0          2019-10-04 [1] CRAN (R 3.6.0)
+##  htmlwidgets   1.5.1          2019-10-08 [1] CRAN (R 3.6.0)
+##  httr          1.4.1          2019-08-05 [1] CRAN (R 3.6.0)
+##  jsonlite      1.6.1          2020-02-02 [1] CRAN (R 3.6.0)
+##  knitr         1.28           2020-02-06 [1] CRAN (R 3.6.0)
+##  lattice       0.20-38        2018-11-04 [1] CRAN (R 3.6.1)
+##  lazyeval      0.2.2          2019-03-15 [1] CRAN (R 3.6.0)
+##  lifecycle     0.1.0          2019-08-01 [1] CRAN (R 3.6.0)
+##  lubridate     1.7.4          2018-04-11 [1] CRAN (R 3.6.0)
+##  magrittr      1.5            2014-11-22 [1] CRAN (R 3.6.0)
+##  memoise       1.1.0          2017-04-21 [1] CRAN (R 3.6.0)
+##  modelr        0.1.5          2019-08-08 [1] CRAN (R 3.6.0)
+##  munsell       0.5.0          2018-06-12 [1] CRAN (R 3.6.0)
+##  nlme          3.1-144        2020-02-06 [1] CRAN (R 3.6.0)
+##  openssl       1.4.1          2019-07-18 [1] CRAN (R 3.6.0)
+##  pillar        1.4.3          2019-12-20 [1] CRAN (R 3.6.0)
+##  pkgbuild      1.0.6          2019-10-09 [1] CRAN (R 3.6.0)
+##  pkgconfig     2.0.3          2019-09-22 [1] CRAN (R 3.6.0)
+##  pkgload       1.0.2          2018-10-29 [1] CRAN (R 3.6.0)
+##  prettyunits   1.1.1          2020-01-24 [1] CRAN (R 3.6.0)
+##  processx      3.4.1          2019-07-18 [1] CRAN (R 3.6.0)
+##  ps            1.3.0          2018-12-21 [1] CRAN (R 3.6.0)
+##  purrr       * 0.3.3          2019-10-18 [1] CRAN (R 3.6.0)
+##  r2d3          0.2.3          2018-12-18 [1] CRAN (R 3.6.0)
+##  R6            2.4.1          2019-11-12 [1] CRAN (R 3.6.0)
+##  rappdirs      0.3.1          2016-03-28 [1] CRAN (R 3.6.0)
+##  Rcpp          1.0.3          2019-11-08 [1] CRAN (R 3.6.0)
+##  RCurl         1.98-1.1       2020-01-19 [1] CRAN (R 3.6.0)
+##  readr       * 1.3.1          2018-12-21 [1] CRAN (R 3.6.0)
+##  readxl        1.3.1          2019-03-13 [1] CRAN (R 3.6.0)
+##  remotes       2.1.0          2019-06-24 [1] CRAN (R 3.6.0)
+##  reprex        0.3.0          2019-05-16 [1] CRAN (R 3.6.0)
+##  rlang         0.4.4          2020-01-28 [1] CRAN (R 3.6.0)
+##  rmarkdown     2.1            2020-01-20 [1] CRAN (R 3.6.0)
+##  rprojroot     1.3-2          2018-01-03 [1] CRAN (R 3.6.0)
+##  rsparkling  * 3.28.0.3-1-2.1 2020-02-13 [1] local         
+##  rstudioapi    0.11           2020-02-07 [1] CRAN (R 3.6.0)
+##  rvest         0.3.5          2019-11-08 [1] CRAN (R 3.6.0)
+##  scales        1.1.0          2019-11-18 [1] CRAN (R 3.6.0)
+##  sessioninfo   1.1.1          2018-11-05 [1] CRAN (R 3.6.0)
+##  sparklyr    * 1.1.0          2020-01-11 [1] CRAN (R 3.6.0)
+##  stringi       1.4.5          2020-01-11 [1] CRAN (R 3.6.0)
+##  stringr     * 1.4.0          2019-02-10 [1] CRAN (R 3.6.0)
+##  testthat      2.3.1          2019-12-01 [1] CRAN (R 3.6.0)
+##  tibble      * 2.1.3          2019-06-06 [1] CRAN (R 3.6.0)
+##  tidyr       * 1.0.2          2020-01-24 [1] CRAN (R 3.6.0)
+##  tidyselect    1.0.0          2020-01-27 [1] CRAN (R 3.6.0)
+##  tidyverse   * 1.3.0          2019-11-21 [1] CRAN (R 3.6.0)
+##  titanic     * 0.1.0          2015-08-31 [1] CRAN (R 3.6.0)
+##  usethis       1.5.1          2019-07-04 [1] CRAN (R 3.6.0)
+##  utf8          1.1.4          2018-05-24 [1] CRAN (R 3.6.0)
+##  vctrs         0.2.2          2020-01-24 [1] CRAN (R 3.6.0)
+##  withr         2.1.2          2018-03-15 [1] CRAN (R 3.6.0)
+##  xfun          0.12           2020-01-13 [1] CRAN (R 3.6.0)
+##  xml2          1.2.2          2019-08-09 [1] CRAN (R 3.6.0)
+##  yaml          2.2.1          2020-02-01 [1] CRAN (R 3.6.0)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

@@ -272,7 +272,7 @@ library(tidyverse)
     
     <img src="/r4ds/_index_files/figure-html/unnamed-chunk-16-2.png" width="70%" style="display: block; margin: auto;" />
     
-    `.` acts a placeholder for no variable. In `facet_grid()`, this results in a plot faceted on a single dimension (1 by `\(N\)` or `\(N\)` by 1) rather than an `\(N\)` by `\(N\)` grid.
+    `.` acts a placeholder for no variable. In `facet_grid()`, this results in a plot faceted on a single dimension (1 by $N$ or $N$ by 1) rather than an $N$ by $N$ grid.
 
 1.  Take the first faceted plot in this section:
 
@@ -586,7 +586,7 @@ library(tidyverse)
 
 1.  What does `labs()` do? Read the documentation.
 
-    `labs()` adds labels to the graph. You can add a title, subtitle, and a label for the `\(x\)` and `\(y\)` axes, as well as a caption.
+    `labs()` adds labels to the graph. You can add a title, subtitle, and a label for the $x$ and $y$ axes, as well as a caption.
 
 1.  What's the difference between `coord_quickmap()` and `coord_map()`?
 
@@ -606,7 +606,7 @@ library(tidyverse)
     
     <img src="/r4ds/_index_files/figure-html/unnamed-chunk-31-1.png" width="70%" style="display: block; margin: auto;" />
     
-    The relationships is approximately linear, though overall cars have slightly better highway mileage than city mileage. But using `coord_fixed()`, the plot draws equal intervals on the `\(x\)` and `\(y\)` axes so they are directly comparable. `geom_abline()` draws a line that, by default, has an intercept of 0 and slope of 1. This aids us in our discovery that automobile gas efficiency is on average slightly higher for highways than city driving, though the slope of the relationship is still roughly 1-to-1.
+    The relationships is approximately linear, though overall cars have slightly better highway mileage than city mileage. But using `coord_fixed()`, the plot draws equal intervals on the $x$ and $y$ axes so they are directly comparable. `geom_abline()` draws a line that, by default, has an intercept of 0 and slope of 1. This aids us in our discovery that automobile gas efficiency is on average slightly higher for highways than city driving, though the slope of the relationship is still roughly 1-to-1.
     
 # 4 Workflow: basics
 
@@ -1285,7 +1285,7 @@ library(tidyverse)
 1.  Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you
     expect those three numbers to be related?
     
-    `dep_time` should equal `sched_dep_time` `\(+\)` `dep_delay` (after accounting for the fact that they are not stored continuously).
+    `dep_time` should equal `sched_dep_time` $+$ `dep_delay` (after accounting for the fact that they are not stored continuously).
 
 1.  Find the 10 most delayed flights using a ranking function. How do you want 
     to handle ties? Carefully read the documentation for `min_rank()`.
@@ -1801,7 +1801,7 @@ library(tidyverse)
     
     <img src="/r4ds/_index_files/figure-html/unnamed-chunk-67-1.png" width="70%" style="display: block; margin: auto;" />
     
-    Around 1500 diamonds are `\(1.00\)` carat, compared to around 30 or so diamonds at `\(.99\)` carat. This could occur because prospective buyers of diamonds, if they are already willing to buy a `\(.99\)` carat diamond will decide it is more aesthetically pleasing to say they bought a `\(1\)` carat diamond so there is less demand for `\(.99\)` carat diamonds.
+    Around 1500 diamonds are $1.00$ carat, compared to around 30 or so diamonds at $.99$ carat. This could occur because prospective buyers of diamonds, if they are already willing to buy a $.99$ carat diamond will decide it is more aesthetically pleasing to say they bought a $1$ carat diamond so there is less demand for $.99$ carat diamonds.
     
 1.  Compare and contrast `coord_cartesian()` vs `xlim()` or `ylim()` when
     zooming in on a histogram. What happens if you leave `binwidth` unset?
@@ -2269,102 +2269,59 @@ library(tidyverse)
 
 ```r
 devtools::session_info()
-#> ─ Session info ──────────────────────────────────────────────────────────
+#> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 3.6.0 (2019-04-26)
-#>  os       macOS Mojave 10.14.6        
+#>  version  R version 3.6.1 (2019-07-05)
+#>  os       macOS Catalina 10.15.3      
 #>  system   x86_64, darwin15.6.0        
 #>  ui       X11                         
 #>  language (EN)                        
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
 #>  tz       America/Chicago             
-#>  date     2019-09-15                  
+#>  date     2020-02-12                  
 #> 
-#> ─ Packages ──────────────────────────────────────────────────────────────
-#>  package      * version date       lib source        
-#>  assertthat     0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-#>  backports      1.1.4   2019-04-10 [1] CRAN (R 3.6.0)
-#>  blogdown       0.14    2019-07-13 [1] CRAN (R 3.6.0)
-#>  bookdown       0.12    2019-07-11 [1] CRAN (R 3.6.0)
-#>  broom          0.5.2   2019-04-07 [1] CRAN (R 3.6.0)
-#>  callr          3.3.1   2019-07-18 [1] CRAN (R 3.6.0)
-#>  cellranger     1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-#>  cli            1.1.0   2019-03-19 [1] CRAN (R 3.6.0)
-#>  codetools      0.2-16  2018-12-24 [1] CRAN (R 3.6.0)
-#>  colorspace     1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-#>  crayon         1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-#>  desc           1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-#>  devtools       2.1.0   2019-07-06 [1] CRAN (R 3.6.0)
-#>  digest         0.6.20  2019-07-04 [1] CRAN (R 3.6.0)
-#>  dplyr        * 0.8.3   2019-07-04 [1] CRAN (R 3.6.0)
-#>  evaluate       0.14    2019-05-28 [1] CRAN (R 3.6.0)
-#>  fansi          0.4.0   2018-10-05 [1] CRAN (R 3.6.0)
-#>  forcats      * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-#>  fs             1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-#>  generics       0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-#>  ggplot2      * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-#>  ggstance     * 0.3.2   2019-06-24 [1] CRAN (R 3.6.0)
-#>  glue           1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-#>  gtable         0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-#>  haven          2.1.1   2019-07-04 [1] CRAN (R 3.6.0)
-#>  here           0.1     2017-05-28 [1] CRAN (R 3.6.0)
-#>  hms            0.5.0   2019-07-09 [1] CRAN (R 3.6.0)
-#>  htmltools      0.3.6   2017-04-28 [1] CRAN (R 3.6.0)
-#>  httr           1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-#>  jsonlite       1.6     2018-12-07 [1] CRAN (R 3.6.0)
-#>  knitr          1.24    2019-08-08 [1] CRAN (R 3.6.0)
-#>  labeling       0.3     2014-08-23 [1] CRAN (R 3.6.0)
-#>  lattice        0.20-38 2018-11-04 [1] CRAN (R 3.6.0)
-#>  lazyeval       0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-#>  lubridate      1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-#>  lvplot       * 0.2.0   2016-05-01 [1] CRAN (R 3.6.0)
-#>  magrittr       1.5     2014-11-22 [1] CRAN (R 3.6.0)
-#>  Matrix         1.2-17  2019-03-22 [1] CRAN (R 3.6.0)
-#>  memoise        1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-#>  mgcv           1.8-28  2019-03-21 [1] CRAN (R 3.6.0)
-#>  modelr         0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-#>  munsell        0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-#>  nlme           3.1-141 2019-08-01 [1] CRAN (R 3.6.0)
-#>  nycflights13 * 1.0.0   2018-06-26 [1] CRAN (R 3.6.0)
-#>  pillar         1.4.2   2019-06-29 [1] CRAN (R 3.6.0)
-#>  pkgbuild       1.0.4   2019-08-05 [1] CRAN (R 3.6.0)
-#>  pkgconfig      2.0.2   2018-08-16 [1] CRAN (R 3.6.0)
-#>  pkgload        1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-#>  plyr           1.8.4   2016-06-08 [1] CRAN (R 3.6.0)
-#>  prettyunits    1.0.2   2015-07-13 [1] CRAN (R 3.6.0)
-#>  processx       3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-#>  ps             1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-#>  purrr        * 0.3.2   2019-03-15 [1] CRAN (R 3.6.0)
-#>  R6             2.4.0   2019-02-14 [1] CRAN (R 3.6.0)
-#>  Rcpp           1.0.2   2019-07-25 [1] CRAN (R 3.6.0)
-#>  readr        * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-#>  readxl         1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-#>  remotes        2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-#>  reshape2       1.4.3   2017-12-11 [1] CRAN (R 3.6.0)
-#>  rlang          0.4.0   2019-06-25 [1] CRAN (R 3.6.0)
-#>  rmarkdown      1.14    2019-07-12 [1] CRAN (R 3.6.0)
-#>  rprojroot      1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-#>  rstudioapi     0.10    2019-03-19 [1] CRAN (R 3.6.0)
-#>  rvest          0.3.4   2019-05-15 [1] CRAN (R 3.6.0)
-#>  scales         1.0.0   2018-08-09 [1] CRAN (R 3.6.0)
-#>  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-#>  stringi        1.4.3   2019-03-12 [1] CRAN (R 3.6.0)
-#>  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-#>  testthat       2.2.1   2019-07-25 [1] CRAN (R 3.6.0)
-#>  tibble       * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-#>  tidyr        * 0.8.3   2019-03-01 [1] CRAN (R 3.6.0)
-#>  tidyselect     0.2.5   2018-10-11 [1] CRAN (R 3.6.0)
-#>  tidyverse    * 1.2.1   2017-11-14 [1] CRAN (R 3.6.0)
-#>  usethis        1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-#>  utf8           1.1.4   2018-05-24 [1] CRAN (R 3.6.0)
-#>  vctrs          0.2.0   2019-07-05 [1] CRAN (R 3.6.0)
-#>  viridisLite    0.3.0   2018-02-01 [1] CRAN (R 3.6.0)
-#>  withr          2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-#>  xfun           0.8     2019-06-25 [1] CRAN (R 3.6.0)
-#>  xml2           1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-#>  yaml           2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
-#>  zeallot        0.1.0   2018-01-28 [1] CRAN (R 3.6.0)
+#> ─ Packages ───────────────────────────────────────────────────────────────────
+#>  package     * version date       lib source        
+#>  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
+#>  backports     1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
+#>  blogdown      0.17.1  2020-02-13 [1] local         
+#>  bookdown      0.17    2020-01-11 [1] CRAN (R 3.6.0)
+#>  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
+#>  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
+#>  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
+#>  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
+#>  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
+#>  digest        0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
+#>  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
+#>  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
+#>  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
+#>  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
+#>  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
+#>  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)
+#>  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
+#>  knitr         1.28    2020-02-06 [1] CRAN (R 3.6.0)
+#>  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
+#>  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
+#>  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
+#>  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
+#>  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
+#>  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
+#>  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
+#>  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
+#>  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
+#>  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
+#>  rlang         0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
+#>  rmarkdown     2.1     2020-01-20 [1] CRAN (R 3.6.0)
+#>  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
+#>  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
+#>  stringi       1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
+#>  stringr       1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
+#>  testthat      2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
+#>  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
+#>  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
+#>  xfun          0.12    2020-01-13 [1] CRAN (R 3.6.0)
+#>  yaml          2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
 #> 
 #> [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```
