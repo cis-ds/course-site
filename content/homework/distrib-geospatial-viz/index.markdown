@@ -26,7 +26,7 @@ Go [here](https://github.com/uc-cfss/hw07) to fork the repo for homework 07.
 [Last week](/homework/statistical-learning/) you estimated statistical learning models predicting survival and death on the Titanic. Take the model specification for your best-performing model from the Titanic problem, and estimate it using at least three machine learning algorithms in `sparklyr` (either MLlib or H2O). Calculate the accuracy and AUC metrics for each model. Which algorithm performs the best?
 
 * If you use an `ml_()` function, you need to split the data into training/test sets
-* If you use an `h2o.()` function, you need to either split the data into training/test sets or use `\(k\)`-fold CV
+* If you use an `h2o.()` function, you need to either split the data into training/test sets or use $k$-fold CV
 
 # Part 2: Generating geospatial visualization
 
