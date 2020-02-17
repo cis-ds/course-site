@@ -1,6 +1,6 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2019-10-31T12:30:00
+date: 2020-04-29T13:30:00
 publishDate: 2019-03-01T13:30:00
 draft: false
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm010.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-10-31T10:50:00
+time_end: 2020-04-29T10:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -20,7 +20,7 @@ abstract: ""
 summary: "All things related to R Markdown and the `knitr` package."
 
 # Location of event.
-location: "Room 104, Stuart Hall, Chicago, IL"
+location: "Room 140C, 1155 E. 60th St., Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

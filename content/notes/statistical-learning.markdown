@@ -119,7 +119,7 @@ That said, whether **predictors** are qualitative or quantitative is not importa
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-12                  
+##  date     2020-02-17                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

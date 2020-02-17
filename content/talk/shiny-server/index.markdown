@@ -1,6 +1,6 @@
 ---
 title: "Building Shiny Apps: Server"
-date: 2019-07-25T12:30:00
+date: 2019-07-25T13:30:00
 publishDate: 2019-05-29T13:30:00
 draft: true
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm020.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-07-25T13:50:00
+time_end: 2019-07-25T14:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

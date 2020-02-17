@@ -1,7 +1,7 @@
 ---
 title: "Getting data from the web: API access"
-date: 2019-11-19T12:30:00
-publishDate: 2019-06-01T12:30:00
+date: 2020-05-18T13:30:00
+publishDate: 2019-06-01T13:30:00
 draft: false
 type: "talk"
 
@@ -9,7 +9,7 @@ aliases: ["/cm015.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-11-19T13:50:00
+time_end: 2020-05-18T14:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -20,7 +20,7 @@ abstract: ""
 summary: "Define an application program interface, write functions to query APIs, and practice tidying JSON objects."
 
 # Location of event.
-location: "Room 104, Stuart Hall, Chicago, IL"
+location: "Room 140C, 1155 E. 60th St., Chicago, IL"
 
 # Is this a selected talk? (true/false)
 selected: false

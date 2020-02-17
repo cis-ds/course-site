@@ -1,3 +1,3 @@
 #!/bin/sh
 
-find . -type f -name "*Rmarkdown*" -exec sed -i '' 's/T12:00:00/T:13:50:00/g' {} +
+find . -type f -name "*Rmarkdown*" -exec sed -i '' 's/T12:30:00/T13:30:00/g' {} +
