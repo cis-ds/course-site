@@ -339,7 +339,7 @@ summary(survive_age_woman)
 ## Number of Fisher Scoring iterations: 4
 ```
 
-The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of gender. Likewise, it also tells us the relationship between gender and survival, after controlling for the effects of age. To get a better visualization of this, let's use `data_grid()` and `add_predictions()` again:
+The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of sex. Likewise, it also tells us the relationship between sex and survival, after controlling for the effects of age. To get a better visualization of this, let's use `data_grid()` and `add_predictions()` again:
 
 
 ```r
@@ -366,7 +366,7 @@ titanic_age_sex
 ## # … with 168 more rows
 ```
 
-With these predicted probabilities, we can now plot the separate effects of age and gender:
+With these predicted probabilities, we can now plot the separate effects of age and sex:
 
 
 ```r
@@ -379,7 +379,7 @@ ggplot(titanic_age_sex, aes(Age, .fitted, color = Sex)) +
 
 <img src="/notes/logistic-regression_files/figure-html/survive_age_woman_plot-1.png" width="672" />
 
-This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's gender was much more important. Females survived at much higher rates than males, regardless of age.
+This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's sex was much more important. Females survived at much higher rates than males, regardless of age.
 
 ## Quadratic terms
 
@@ -472,16 +472,16 @@ augment(survive_age_square,
 
 ## Interactive terms
 
-Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and gender example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
-    $$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}$$]
+Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
+    $$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex})}}$$]
 
-$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex}$$
 
 However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? This possibility would take the functional form:
 
-$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex} + \beta_{3}(\text{age} \times \text{sex})$$
 
-This is considered an **interaction** between age and gender. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
+This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
 
 
 ```r
@@ -518,7 +518,7 @@ summary(survive_age_woman_x)
 ## Number of Fisher Scoring iterations: 4
 ```
 
-As before, let's estimate predicted probabilities and plot the interactive effects of age and gender.
+As before, let's estimate predicted probabilities and plot the interactive effects of age and sex.
 
 
 ```r
@@ -576,7 +576,7 @@ mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE)
 ## [1] 0.4061625
 ```
 
-$40.6\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $61.6\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
+$40.6\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $61.6\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and sex model?
 
 
 ```r
@@ -590,7 +590,7 @@ mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE)
 ## [1] 0.219888
 ```
 
-This model is much better. Just by knowing an individual's age and gender, our model is incorrect only   22% of the time.
+This model is much better. Just by knowing an individual's age and sex, our model is incorrect only   22% of the time.
 
 ## Exercise: logistic regression with `mental_health`
 
@@ -765,7 +765,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-17                  
+##  date     2020-02-18                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -777,6 +777,7 @@ devtools::session_info()
 ##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
@@ -819,6 +820,7 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
 ##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
+##  rcfss       * 0.1.9   2019-11-13 [1] local         
 ##  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
@@ -838,6 +840,7 @@ devtools::session_info()
 ##  tidyr       * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
 ##  tidyselect    1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
+##  titanic     * 0.1.0   2015-08-31 [1] CRAN (R 3.6.0)
 ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
 ##  vctrs         0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
 ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)

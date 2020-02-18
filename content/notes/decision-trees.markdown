@@ -62,7 +62,7 @@ titanic %>%
 |           5|        0|      3|Allen, Mr. William Henry                            |male   |  35|     0|     0|373450           |  8.0500|      |S        |
 |           6|        0|      3|Moran, Mr. James                                    |male   |  NA|     0|     0|330877           |  8.4583|      |Q        |
 
-I want to predict who lives and who dies during this event. Instead of using [logistic regression](/notes/logistic-regression/), I'm going to calculate a decision tree based on a passenger's age and gender. Here's what that decision tree looks like:
+I want to predict who lives and who dies during this event. Instead of using [logistic regression](/notes/logistic-regression/), I'm going to calculate a decision tree based on a passenger's age and sex. Here's what that decision tree looks like:
 
 <img src="/notes/decision-trees_files/figure-html/titanic_tree-1.png" width="672" />
 
@@ -175,7 +175,7 @@ plot(titanic_tree)
 
 ## Build a more complex tree
 
-Since we have a lot of other variables in our Titanic data set, let's estimate a more complex model that accounts for all the information we have.^[Specifically passenger class, gender, age, number of sibling/spouses aboard, number of parents/children aboard, fare, and port of embarkation.] We'll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use `mutate_if()` to apply `as.factor()` to all character columns in one line of code (another type of iterative/conditional operation):
+Since we have a lot of other variables in our Titanic data set, let's estimate a more complex model that accounts for all the information we have.^[Specifically passenger class, sex, age, number of sibling/spouses aboard, number of parents/children aboard, fare, and port of embarkation.] We'll have to format all our columns this time before we can estimate the model. Because there are multiple qualitative variables as predictors, I will use `mutate_if()` to apply `as.factor()` to all character columns in one line of code (another type of iterative/conditional operation):
 
 
 ```r
@@ -394,7 +394,7 @@ As with other resampling methods, each individual sample will have some degree o
 
 In the context of decision trees, this means we draw repeated samples from the original dataset and estimate a decision tree model on each sample. To make predictions, we estimate the outcome using each tree and average across all of them to obtain the final prediction. Rather than being a binary outcome ($[0,1]$, survived/died), the average prediction will be a probability of the given outcome (i.e. the probability of survival). This process is called **bagging**.
 
-Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. **Random forests specifically exclude a portion of the predictor variables when building individual trees**. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say gender in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more **reliable**.
+Random forests go a step further: when building individual decision trees, each time a split in the tree is considered a random sample of predictors is selected as the candidates for the split. **Random forests specifically exclude a portion of the predictor variables when building individual trees**. Why throw away good data? This ensures each decision tree is not correlated with one another. If one specific variable was a strong predictor in the data set (say sex in the Titanic data set), it could potentially dominate every decision tree and the result would be nearly-identical trees regardless of the sampling procedure. By forcibly excluding a random subset of variables, individual trees in random forests will not have strong correlations with one another. Therefore the average predictions will be more **reliable**.
 
 ## Estimating statistical models using `caret`
 
@@ -509,7 +509,7 @@ titanic_rf_data
 ## # … with 704 more rows
 ```
 
-Now that the data is prepped, let's estimate the model. To start, we'll estimate a simple model that only uses age and gender. Again we use the `train()` function but this time we will use the `rf` method.^[[There are many packages that use algorithms to estimate random forests.](https://topepo.github.io/caret/train-models-by-tag.html#random-forest) They all do the same basic thing, though with some notable differences. The `rf` method is generally popular, so I use it here.] To start with, I will estimate a forest with 200 trees (the default is 500 trees) and set the `trainControl` method to `"oob"` (I will explain this shortly):
+Now that the data is prepped, let's estimate the model. To start, we'll estimate a simple model that only uses age and sex. Again we use the `train()` function but this time we will use the `rf` method.^[[There are many packages that use algorithms to estimate random forests.](https://topepo.github.io/caret/train-models-by-tag.html#random-forest) They all do the same basic thing, though with some notable differences. The `rf` method is generally popular, so I use it here.] To start with, I will estimate a forest with 200 trees (the default is 500 trees) and set the `trainControl` method to `"oob"` (I will explain this shortly):
 
 
 ```r
@@ -752,7 +752,7 @@ randomForest::varImpPlot(titanic_rf$finalModel)
 
 <img src="/notes/decision-trees_files/figure-html/rf_import-1.png" width="672" />
 
-This tells us how much each variable decreases the average **Gini index**, a measure of how important the variable is to the model. Essentially, it estimates the impact a variable has on the model by comparing prediction accuracy rates for models with and without the variable. Larger values indicate higher importance of the variable. Here we see that the gender variable `Sexmale` is most important.
+This tells us how much each variable decreases the average **Gini index**, a measure of how important the variable is to the model. Essentially, it estimates the impact a variable has on the model by comparing prediction accuracy rates for models with and without the variable. Larger values indicate higher importance of the variable. Here we see that the sex variable `Sexmale` is most important.
 
 ## Exercise: random forests with `mental_health`
 
@@ -961,7 +961,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-17                  
+##  date     2020-02-18                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        

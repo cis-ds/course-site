@@ -224,7 +224,7 @@ survive_age_woman <- glm(Survived ~ Age + Sex, data = titanic,
 summary(survive_age_woman)
 ```
 
-The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of gender. Likewise, it also tells us the relationship between gender and survival, after controlling for the effects of age. To get a better visualization of this, let's use `data_grid()` and `add_predictions()` again:
+The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of sex. Likewise, it also tells us the relationship between sex and survival, after controlling for the effects of age. To get a better visualization of this, let's use `data_grid()` and `add_predictions()` again:
 
 ```{r survive_age_woman_pred}
 titanic_age_sex <- augment(survive_age_woman,
@@ -233,7 +233,7 @@ titanic_age_sex <- augment(survive_age_woman,
 titanic_age_sex
 ```
 
-With these predicted probabilities, we can now plot the separate effects of age and gender:
+With these predicted probabilities, we can now plot the separate effects of age and sex:
 
 ```{r survive_age_woman_plot, dependson="survive_age_woman"}
 ggplot(titanic_age_sex, aes(Age, .fitted, color = Sex)) +
@@ -243,7 +243,7 @@ ggplot(titanic_age_sex, aes(Age, .fitted, color = Sex)) +
        color = "Sex")
 ```
 
-This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's gender was much more important. Females survived at much higher rates than males, regardless of age.
+This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's sex was much more important. Females survived at much higher rates than males, regardless of age.
 
 ## Quadratic terms
 
@@ -295,16 +295,16 @@ augment(survive_age_square,
 
 ## Interactive terms
 
-Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and gender example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
-    $$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{gender}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender})}}$$]
+Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
+    $$\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex})}}$$]
 
-$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender}$$
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex}$$
 
 However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? This possibility would take the functional form:
 
-$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{gender} + \beta_{3}(\text{age} \times \text{gender})$$
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex} + \beta_{3}(\text{age} \times \text{sex})$$
 
-This is considered an **interaction** between age and gender. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
+This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
 
 ```{r age_woman_cross}
 survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
@@ -312,7 +312,7 @@ survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
 summary(survive_age_woman_x)
 ```
 
-As before, let's estimate predicted probabilities and plot the interactive effects of age and gender.
+As before, let's estimate predicted probabilities and plot the interactive effects of age and sex.
 
 ```{r age_woman_cross_pred, dependson="age_woman_cross"}
 titanic_age_sex_x <- augment(survive_age_woman_x,
@@ -344,16 +344,16 @@ age_accuracy <- augment(survive_age, type.predict = "response") %>%
 mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE)
 ```
 
-$`r formatC(mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $`r formatC((1 - mean(titanic$Survived, na.rm = TRUE)) * 100, digits = 3)`\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and gender model?
+$`r formatC(mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $`r formatC((1 - mean(titanic$Survived, na.rm = TRUE)) * 100, digits = 3)`\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and sex model?
 
-```{r accuracy_age_gender_x, dependson="age_woman_cross"}
+```{r accuracy_age_sex_x, dependson="age_woman_cross"}
 x_accuracy <- augment(survive_age_woman_x, type.predict = "response") %>%
   mutate(.pred = as.numeric(.fitted > .5))
 
 mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE)
 ```
 
-This model is much better. Just by knowing an individual's age and gender, our model is incorrect only `r formatC(mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`% of the time.
+This model is much better. Just by knowing an individual's age and sex, our model is incorrect only `r formatC(mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE) * 100, digits = 3)`% of the time.
 
 ## Exercise: logistic regression with `mental_health`
 
