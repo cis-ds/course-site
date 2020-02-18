@@ -51,7 +51,7 @@ math: false
 
 ## Before class
 
-* Read [**Debugging, condition handling, and defensive programming** in *Advanced R*](http://adv-r.had.co.nz/Exceptions-Debugging.html)
+* Read [**Debugging R code** in *Advanced R*](https://rstats.wtf/debugging-r-code.html)
 * Skim/read [The `tidyverse` style guide](http://style.tidyverse.org/)
 * Review [21.6 Dealing with failure in *R for Data Science*](http://r4ds.had.co.nz/iteration.html#dealing-with-failure)
 
