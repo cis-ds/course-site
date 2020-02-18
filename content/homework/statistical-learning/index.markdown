@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw06-stat-learn.html"]
 
 summary: "Implement statistical learning methods for regression and classification."
-url_code: "https://github.com/cfss-fa19/hw07"
+url_code: "https://github.com/cfss-sp20/hw07"
 ---
 
 
@@ -19,7 +19,7 @@ Due before class on November 19th.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-fa19/hw07) to fork the repo.
+Go [here](https://github.com/cfss-sp20/hw07) to fork the repo.
 
 # Part 1: President Donald Trump
 

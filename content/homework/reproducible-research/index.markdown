@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw05-reproducible-research.html"]
 
 summary: "Synthesize everything we have learned thus far."
-url_code: "https://github.com/cfss-fa19/hw06"
+url_code: "https://github.com/cfss-sp20/hw06"
 ---
 
 
@@ -19,7 +19,7 @@ Due before class November 12th.
 
 # Fork the `hw06` repository
 
-Go [here](https://github.com/cfss-fa19/hw06) to fork the repo for homework 06.
+Go [here](https://github.com/cfss-sp20/hw06) to fork the repo for homework 06.
 
 # What is my objective?
 

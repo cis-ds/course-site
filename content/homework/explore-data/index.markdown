@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw02-explore-data.html"]
 
 summary: "Transform and explore a cleaned dataset on gun deaths in the United States."
-url_code: "https://github.com/cfss-fa19/hw02"
+url_code: "https://github.com/cfss-sp20/hw02"
 ---
 
 
@@ -21,7 +21,7 @@ Now that you've demonstrated your software is setup, the goal of this assignment
 
 # Fork the `hw02` repository
 
-Go [here](https://github.com/cfss-fa19/hw02) to fork the repo.
+Go [here](https://github.com/cfss-sp20/hw02) to fork the repo.
 
 # Exploring clean data
 
@@ -102,7 +102,7 @@ Instead, use `kable()` to format the table, add a caption, and label the columns
 
 Run `?kable` in the console to see how additional options.
 
-> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😭
+> Note that when viewed on GitHub, table captions will not show up. Just a (missing) feature of Markdown on GitHub 😿
 
 # Submit the assignment
 
