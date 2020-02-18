@@ -26,7 +26,7 @@ The homework repository contains a file called `country-profile.Rmd`. It has som
 
 # Submit the assignment
 
-Your assignment should be submitted as two R Markdown documents and the rendered output. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

@@ -88,7 +88,7 @@ Pay careful attention to the unit of analysis required to answer each question. 
 
 # Submit the assignment
 
-Your assignment should be submitted as three RMarkdown documents. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as three RMarkdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

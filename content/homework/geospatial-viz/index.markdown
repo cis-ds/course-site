@@ -3,12 +3,12 @@ title: "HW09: Geospatial visualization"
 date: 2019-05-20T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
-draft: true
+draft: false
 type: post
 aliases: ["/hw07-geospatial.html"]
 
 summary: "Build a map."
-url_code: "https://github.com/cfss-sp20/hw07"
+url_code: "https://github.com/cfss-sp20/hw09"
 ---
 
 
@@ -19,7 +19,7 @@ Due by class on December 3rd.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-sp20/hw07) to fork the repo.
+Go [here](https://github.com/cfss-sp20/hw09) to fork the repo.
 
 # Generate a geospatial visualization
 
@@ -63,7 +63,7 @@ Once you have your geographic boundaries data (either from an R package or impor
 
 # Submit the assignment
 
-Your assignment should be submitted as one or more R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted an R Markdown document using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

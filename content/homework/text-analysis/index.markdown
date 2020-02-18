@@ -1,5 +1,5 @@
 ---
-title: "HW09: Analyzing text data"
+title: "HW10: Analyzing text data"
 date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw09-text_analysis.html"]
 
 summary: "Collect text data and analyze it."
-url_code: "https://github.com/cfss-sp20/hw09"
+url_code: "https://github.com/cfss-sp20/hw10"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 12:30pm on December 6th.
 
 # Fork the `hw09` repository
 
-Go [here](https://github.com/cfss-sp20/hw09) to fork the repo.
+Go [here](https://github.com/cfss-sp20/hw10) to fork the repo.
 
 # Your mission
 
@@ -54,7 +54,7 @@ Analyze the text for sentiment OR topic. Or build a statistical learning model u
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of R scripts, R Markdown documents, data files, etc. Whatever is necessary to show your code and present your results. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as an R Markdown document using the `github_document` format. Whatever is necessary to show your code and present your results. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 
