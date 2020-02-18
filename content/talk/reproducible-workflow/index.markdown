@@ -48,12 +48,9 @@ math: false
 
 ## Before class
 
-## Class materials
+* Read chapters 1-3, 7 in [*What They Forgot to Teach You About R*](https://rstats.wtf/)
 
-* [Saving the source and blank slates](/notes/saving-source)
-* [Project-oriented workflow](/notes/project-oriented-workflow)
-* [Use safe filepaths](/notes/safe-filepaths/)
-* [R startup procedures](/notes/r-startup/)
+## Class materials
 
 ## Additional resources
 
