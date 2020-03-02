@@ -227,7 +227,7 @@ my_function(3, 4)
 
 ```r
 sum_of_squares <- function(x, y){
-  x^2 + y^2
+  return(x^2 + y^2)
 }
 ```
 
@@ -588,7 +588,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-18                  
+##  date     2020-03-02                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -600,13 +600,14 @@ devtools::session_info()
 ##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
 ##  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
 ##  dbplyr        1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
 ##  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
-##  digest        0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
+##  digest        0.6.24  2020-02-12 [1] CRAN (R 3.6.0)
 ##  dplyr       * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
 ##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
@@ -642,6 +643,7 @@ devtools::session_info()
 ##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
 ##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
+##  rcfss       * 0.1.9   2019-11-13 [1] local         
 ##  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
