@@ -13,6 +13,11 @@ aliases: ["/hw00_peer-review.html"]
 
 As part of this course you will be reviewing, commenting on, and marking other students' assignments. This is a mandatory part of the course: failure to complete peer reviews will result in a mark down on your final grade.
 
+## Expectations for peer reviewer
+
+* Identify three **specific things** your peer did well
+* Identify three **specific things** the student could improve upon (and ideally provide a suggested approach or solution)
+
 ## How to do peer review well
 
 * Give thoughtful, constructive and considerate comments
