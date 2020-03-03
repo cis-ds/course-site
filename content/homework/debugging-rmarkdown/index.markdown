@@ -22,7 +22,18 @@ Go [here](https://github.com/cfss-sp20/hw05) to fork the repo for homework 05.
 
 # Debugging code
 
-The homework repository contains a file called `country-profile.Rmd`. It has some problems. Fix the problems so you can successfully knit the document.
+TBD.
+
+# Working with R Markdown documents
+
+The homework repository contains a file called `hiv-profile.Rmd`.
+
+1. The file has some problems. Fix the problems so you can successfully knit the document in its existing form.
+1. Create a [parameterized report](https://r4ds.had.co.nz/r-markdown.html#parameters) that allows you generate `hiv-profile.Rmd` for any country in the dataset. Specifically, you need to do the following:
+    1. Copy the file that you have successfully debugged to `hiv-profile-params.Rmd`.
+    1. Change the output format to `html_document`.
+    1. Add a parameter called `my_iso3` to the YAML header which defines a country's iso3 code.
+    1. Write an R script which generates a separate report for every country in `hiv_rates.csv` and saves it to a folder called `reports`. Each file should be named after the country's iso3 code. For example, the report for the United States should be called `USA.html`.
 
 # Submit the assignment
 
