@@ -2,7 +2,7 @@
 title: "Geospatial visualization: vector maps"
 date: 2020-05-27T15:00:00
 publishDate: 2019-05-22T13:30:00
-draft: false
+draft: true
 type: "talk"
 
 # Talk start and end times.
