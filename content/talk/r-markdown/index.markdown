@@ -1,6 +1,6 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2020-04-29T13:30:00
+date: 2020-05-06T13:30:00
 publishDate: 2019-03-01T13:30:00
 draft: false
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm010.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2020-04-29T10:50:00
+time_end: 2020-05-06T10:50:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
