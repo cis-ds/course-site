@@ -45,6 +45,7 @@ math: false
 
 * Define a bug
 * Review best practices for reading, writing, and styling code
+* Interpret function documentation
 * Distinguish between errors, warnings, and messages
 * Introduce `traceback()` and explain how to read it
 * Identify and practice methods for error handling and recovery
@@ -53,6 +54,7 @@ math: false
 
 * Read [**Debugging R code** in *Advanced R*](https://rstats.wtf/debugging-r-code.html)
 * Skim/read [The `tidyverse` style guide](http://style.tidyverse.org/)
+* Read [How to read an R help page](http://socviz.co/appendix.html#how-to-read-an-r-help-page)
 * Review [21.6 Dealing with failure in *R for Data Science*](http://r4ds.had.co.nz/iteration.html#dealing-with-failure)
 
 ## Class materials
