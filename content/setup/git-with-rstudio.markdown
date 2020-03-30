@@ -144,7 +144,7 @@ Before you *push* your changes to GitHub, first you should *pull* from GitHub. W
 
 Now just rinse and repeat. Do work somewhere. Commit it. Push it or pull it depending on where you did it, but get local and remote "synced up".
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

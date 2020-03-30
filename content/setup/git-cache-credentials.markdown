@@ -97,7 +97,7 @@ Rejoice and close the shell. From now on your "Push" button in RStudio will just
 
 Secure Shell (SSH) is an alternative method for authenticating trusted computers without using a password. There are some benefits to this approach over HTTPS, however it is generally more complicated to initially set up. If you wish to use this approach, see [here](https://help.github.com/articles/generating-an-ssh-key/) for instructions on generating an SSH key and pairing it with your GitHub account.
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

@@ -33,7 +33,7 @@ Git can be used locally by you on a single computer to track changes in a projec
 
 Chances are that by now you've seen or even used GitHub. Professionally, you should know how to use Git and GitHub to manage projects and share code. In this class, we will use Git and GitHub to host our [course site](https://github.com/uc-cfss/uc-cfss.github.io), share code, and distribute/collect assignments.
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

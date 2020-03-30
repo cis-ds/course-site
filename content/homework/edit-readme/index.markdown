@@ -63,7 +63,7 @@ Check: something in between
 
 Check plus: `README.md` provides a proper introduction of student to the class. It also demonstrates experimentation with 4 or more aspects of the Markdown syntax. Examples: section headers, links, bold, italic, bullet points, image embed, etc. The student describes how they got the changes into `README.md` and offers a few reflections on their GitHub workflow and their experience with Markdown.
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

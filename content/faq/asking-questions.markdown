@@ -77,7 +77,7 @@ count(diamonds, colour)
 #> Error: Column `colour` is unknown
 ```
 
-<sup>Created on 2020-02-18 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
+<sup>Created on 2020-03-30 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
@@ -89,7 +89,7 @@ count(diamonds, colour)
 #> Error: Column `colour` is unknown
 ```
 
-<sup>Created on 2020-02-18 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
+<sup>Created on 2020-03-30 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 
@@ -105,7 +105,7 @@ Sometimes problems are caused by using older or incompatible versions of package
 
 Once you have solved the problem (either by yourself or with the help of an instructor/classmate), **post the solution**. This let's us know that you have fixed the issue AND if anyone else encounters a similar error, they can refer to your solution to fix their problem.
 
-### Acknowledgments
+## Acknowledgments
 
 * ["How do I ask a good question?" StackOverflow.com](http://stackoverflow.com/help/how-to-ask)
 * ["How to Ask Programming Questions," ProPublica.com](https://www.propublica.org/nerds/item/how-to-ask-programming-questions)

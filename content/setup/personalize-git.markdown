@@ -45,7 +45,7 @@ Open the [shell](/setup/shell/) on your computer. From there, type the following
 
 You will not see any output from these commands. To ensure the changes were made, run `git config --global --list`.
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

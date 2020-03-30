@@ -63,7 +63,7 @@ To complete each course assignment, you will [clone a Git repository](/faq/homew
 
 Unlike using RStudio locally, you cannot [store your username and password](/setup/git-cache-credentials/). You will need to enter it every time you sync your Git repository with GitHub.
 
-### Acknowledgments {.toc-ignore}
+## Acknowledgments {.toc-ignore}
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

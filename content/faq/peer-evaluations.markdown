@@ -36,7 +36,7 @@ As part of this course you will be reviewing, commenting on, and marking other s
 
 Performing good peer review is difficult! In graduate school we are taught to criticize and tear down others' work and find the flaws. We need to be better at this and not just criticize, but highlight good aspects and suggest how to improve the work. This is still a habit I am struggling to break, so start working on it now before you leave grad school.
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

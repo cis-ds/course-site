@@ -34,7 +34,7 @@ Evaluation
 | **Coding strategy**         |           |              |            |
 | **Presentation**            |           |              |            |
 | **Achievement, creativity** |           |              |            |
-| **Reproducibility**          |           |              |            |
+| **Reproducibility**         |           |              |            |
 
 Remarks:
 
@@ -45,7 +45,7 @@ Remarks:
 * Something I know and that you, my peer, might like to know because it is relevant to something you struggled with.
 ```
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).

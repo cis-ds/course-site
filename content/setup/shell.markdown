@@ -53,7 +53,7 @@ If you get an error message such as ``pwd` is not recognized as an internal or e
 
 If you followed the installation instructions and still cannot run GitBash, you should find it under the Start Menu > Git > Git Bash. If you're still confused, go back and watch the first three minutes of this [video tutorial on installing Git for Windows](https://www.youtube.com/watch?v=339AEqk9c-8).
 
-### Acknowledgments
+## Acknowledgments
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
