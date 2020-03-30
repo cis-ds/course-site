@@ -7,10 +7,12 @@ library(tidyverse)
 library(magrittr)
 
 # get list of .Rmd files
-rmd_files <- list.files(path = "content/",
-                        pattern = "*.Rmarkdown",
-                        full.names = TRUE,
-                        recursive = TRUE)
+rmd_files <- list.files(
+  path = "content/",
+  pattern = "*.Rmarkdown",
+  full.names = TRUE,
+  recursive = TRUE
+)
 
 # read in each file and store in a list of character vectors
 packages <- tibble(filepath = rmd_files) %>%
@@ -21,7 +23,7 @@ packages <- tibble(filepath = rmd_files) %>%
   filter(startsWith(content, "library")) %>%
   # get unique content
   select(content) %>%
-  distinct %$%
+  distinct() %$%
   # extract library names
   str_extract(content, "\\([^()]+\\)") %>%
   str_remove_all("\\(|\\)")
@@ -31,7 +33,7 @@ packages %>%
   str_flatten(collapse = ", ")
 
 # check which are on CRAN
-available_pkgs <- available.packages()[,1]
+available_pkgs <- available.packages()[, 1]
 
 pkg_cran <- tibble(packages) %>%
   mutate(on_cran = map_lgl(packages, ~ .x %in% available_pkgs))
@@ -39,37 +41,32 @@ pkg_cran <- tibble(packages) %>%
 with(pkg_cran, packages[on_cran]) %>%
   str_flatten(collapse = '", "') %>%
   str_c('c("', ., '")') %>%
-  cat
+  cat()
 
 # which are not on CRAN
 with(pkg_cran, packages[!on_cran]) %>%
   map(library, character.only = TRUE)
 
 
-###### code to run on RStudio cloud project
-# pkg_cran <- c("tidyverse", "broom", "rtweet", "gapminder", "ggplot2",
-#               "tibble", "knitr", "forcats", "stringr", "tweenr",
-#               "microbenchmark", "feather", "readxl", "haven", "nycflights13",
-#               "dplyr", "bigrquery", "rsparkling", "sparklyr", "h2o",
-#               "titanic", "sf", "tidycensus", "RColorBrewer", "gridExtra",
-#               "viridis", "ggmap", "leaflet", "fiftystater", "reprex",
-#               "tidytext", "wordcloud2", "ggrepel", "lattice", "modelr",
-#               "readr", "caret", "pROC", "nnet", "ISLR", "profvis", "gam",
-#               "tree", "randomForest", "gbm", "ggdendro", "e1071", "FNN",
-#               "kknn", "tm", "topicmodels", "car", "lmtest", "GGally",
-#               "plotly", "coefplot", "mgcv", "Amelia", "lme4", "purrr",
-#               "maps", "shiny", "caret", "rsample", "magrittr", "lubridate",
-#               "gutenbergr", "acs", "downloader", "statebins", "wordcloud",
-#               "rebird", "geonames", "manifestoR", "curl", "jsonlite", "XML",
-#               "httr", "repurrrsive", "listviewer", "rvest", "htmltools",
-#               "tidymodels")
+# ###### code to run on RStudio cloud project
+# pkg_cran <- c("reprex", "tidyverse", "knitr", "gapminder", "forcats", "broom",
+#               "wordcloud", "tidytext", "viridis", "rebird", "geonames", "tidycensus",
+#               "modelr", "rsample", "magrittr", "ISLR", "titanic", "microbenchmark",
+#               "partykit", "caret", "nycflights13", "ggplot2", "tibble", "ggwordcloud",
+#               "here", "arrow", "readxl", "haven", "sf", "ggmap", "rnaturalearth",
+#               "rtweet", "RColorBrewer", "patchwork", "ymlthis", "RSocrata", "dplyr",
+#               "shiny", "httr", "repurrrsive", "purrr", "acs", "downloader", "statebins",
+#               "rsparkling", "sparklyr", "h2o", "stringr", "dbplyr", "bigrquery", "FNN",
+#               "maps", "gam", "tm", "tictoc", "topicmodels", "rjson", "LDAvis", "rvest",
+#               "socviz", "margins", "curl", "jsonlite", "XML", "usethis")
 # 
 # install.packages(pkg_cran)
 # 
 # # install packages from GitHub
-# devtools::install_github(c("dgrtwo/gganimate",
-#                            "bradleyboehmke/harrypotter",
-#                            "hadley/multidplyr",
-#                            "uc-cfss/rcfss"))
-
-
+# remotes::install_github(c(
+#   "bradleyboehmke/harrypotter",
+#   "uc-cfss/rcfss",
+#   "ManifestoProject/manifestoR",
+#   "cpsievert/LDAvisData",
+#   "hrbrmstr/albersusa"
+# ))
