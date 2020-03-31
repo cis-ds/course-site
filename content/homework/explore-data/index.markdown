@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-sp20/hw02"
 
 # Overview
 
-Due before class on October 15th.
+Due by 11:59pm CT (Chicago) on April 20th.
 
 Now that you've demonstrated your software is setup, the goal of this assignment is to practice transforming and exploring data.
 

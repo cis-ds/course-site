@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw09-text_analysis.html"]
 
 summary: "Collect text data and analyze it."
-url_code: "https://github.com/cfss-sp20/hw10"
+url_code: "https://github.com/cfss-sp20/hw09"
 ---
 
 
 
 # Overview
 
-Due by 12:30pm on December 6th.
+Due by 11:59pm CT (Chicago) on June 8th.
 
 # Fork the `hw09` repository
 
-Go [here](https://github.com/cfss-sp20/hw10) to fork the repo.
+Go [here](https://github.com/cfss-sp20/hw09) to fork the repo.
 
 # Your mission
 

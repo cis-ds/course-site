@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-sp20/hw03"
 
 # Overview
 
-Due before class on October 22nd.
+Due by 11:59pm CT (Chicago) on April 27th.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 
@@ -84,7 +84,11 @@ Pay careful attention to the unit of analysis required to answer each question. 
     * Let me emphasize: you want to skim/read chapter 16 in [R for Data Science](http://r4ds.had.co.nz/dates-and-times.html) as it discusses working with dates and times using the `lubridate` package
     * Also note, the Supreme Court's calendar runs on the federal government's [fiscal year](https://en.wikipedia.org/wiki/Fiscal_year#Federal_government). That means the first month of the court's term is October, running through September of the following calendar year.
 
-> You only need to complete one of the two bolded questions. Only complete both if you are feeling particularly masochistic!
+{{% alert note %}}
+
+You only need to complete one of the two bolded questions. Only complete both if you are feeling particularly masochistic!
+
+{{% /alert %}}
 
 # Submit the assignment
 

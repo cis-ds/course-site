@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-sp20/hw01"
 
 # Overview
 
-Due before class October 8th.
+Due by 11:59pm CT (Chicago) on April 13th.
 
 The goal is to test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown.
 

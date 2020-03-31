@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-sp20/hw04"
 
 # Overview
 
-Due before class on October 29th.
+Due by 11:59pm CT (Chicago) on May 4th.
 
 # Fork the `hw04` repository
 
@@ -37,9 +37,9 @@ Go [here](https://github.com/cfss-sp20/hw04) to fork the repo.
     1. Write code that uses a `for` loop to do this task.
     1. Write code that uses one of the `map` functions to do this task.
 1. [Pythagorean theorem](https://en.wikipedia.org/wiki/Pythagorean_theorem)
-    $$a^2 + b^2 = c^2$$
+    `$$a^2 + b^2 = c^2$$`
     * Write a function that, given the lengths of two sides of the triangle, calculates the length of the third side
-    * This function should be flexible - that is, the function works if I give it values for $a$ and $b$, or $b$ and $c$, or $a$ and $c$
+    * This function should be flexible - that is, the function works if I give it values for `\(a\)` and `\(b\)`, or `\(b\)` and `\(c\)`, or `\(a\)` and `\(c\)`
     * If the user only provides the length of one side, the function should [throw an error with `stop()`](http://r4ds.had.co.nz/functions.html). Likewise, if the user provides the lengths of all three sides, the function should throw an error.
     * If the user provides any values other than numeric values, the function should throw an error
 

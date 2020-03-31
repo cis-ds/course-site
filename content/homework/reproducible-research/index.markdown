@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-sp20/hw06"
 
 # Overview
 
-Due before class November 12th.
+Due by 11:59pm CT (Chicago) on May 18th.
 
 # Fork the `hw06` repository
 
