@@ -18,7 +18,7 @@ abstract: ""
 summary: "Methods for implementing a tidy, reproducible workflow."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false

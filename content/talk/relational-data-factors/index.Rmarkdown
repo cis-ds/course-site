@@ -20,7 +20,7 @@ abstract: ""
 summary: "Introduce relational data structures, and practice working with factor columns."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false

@@ -20,7 +20,7 @@ abstract: ""
 summary: "Identify components of geospatial visualizations and implement raster maps using ggplot2."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false

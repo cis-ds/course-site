@@ -20,7 +20,7 @@ abstract: ""
 summary: "Define computer bugs, discuss defensive programming tactics, and practice troubleshooting scripts."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false

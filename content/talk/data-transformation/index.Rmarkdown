@@ -20,7 +20,7 @@ abstract: ""
 summary: "Computational problem-solving, verbs for data manipulation, and practice transforming data frames using dplyr."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false

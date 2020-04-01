@@ -20,7 +20,7 @@ abstract: ""
 summary: "Implement unsupervised and supervised learning methods for text data."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false
@@ -49,7 +49,7 @@ math: false
 * Explain Latent Dirichlet allocation and how this process works
 * Demonstrate how to use LDA to recover topic structure from a known set of topics
 * Demonstrate how to use LDA to recover topic structure from an unknown set of topics
-* Identify methods for selecting the appropriate parameter for $k$
+* Identify methods for selecting the appropriate parameter for `\(k\)`
 
 ## Before class
 

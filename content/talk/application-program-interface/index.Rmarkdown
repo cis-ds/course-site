@@ -20,7 +20,7 @@ abstract: ""
 summary: "Define an application program interface, write functions to query APIs, and practice tidying JSON objects."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false

@@ -20,7 +20,7 @@ abstract: ""
 summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice working with model objects in R."
 
 # Location of event.
-location: "Room 140C, 1155 E. 60th St., Chicago, IL"
+location: "Online"
 
 # Is this a selected talk? (true/false)
 selected: false
