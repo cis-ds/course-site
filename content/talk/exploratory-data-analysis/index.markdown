@@ -56,6 +56,12 @@ math: false
 * [Exploratory data analysis](/notes/exploratory-data-analysis/)
 * [Practice exploring college education (data)](/notes/exploratory-data-analysis-practice/)
 
+    Run the below code in your console to download this exercise as a set of R scripts.
+    
+    ```r
+    usethis::use_course("uc-cfss/exploratory-data-analysis")
+    ```
+
 ## Additional resources
 
 * [Graphical Data Analysis with R](http://proxy.uchicago.edu/login?url=http://search.ebscohost.com/login.aspx?direct=true&db=nlebk&AN=1338290&site=ehost-live&scope=site&ebv=EB&ppid=pp_A) - Antony Unwin. Great coverage of a range of graphical methods for data exploration and analysis. Also draws on packages beyond `ggplot2` for statistical graphics.

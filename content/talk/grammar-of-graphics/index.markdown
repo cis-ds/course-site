@@ -63,7 +63,7 @@ math: false
 
 * [Why visualize data?](/notes/why-visualize-data/)
 * [How to build a complicated, layered graphic](/notes/minard/)
-* Practice generating layered graphics using `ggplot2`
+* [Practice generating layered graphics using `ggplot2`](/notes/gapminder/)
     
     Run the below code in your console to download the required files.
     
