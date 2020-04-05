@@ -19,7 +19,26 @@ In this course, we will learn how to use [R](https://www.r-project.org/) for com
 
 Before we can do any of this, we need to install all the necessary software and get it setup and working.
 
-## Option 1 - install the software locally
+{{% alert note %}}
+
+Given the remote learning format for spring 2020, I strongly encourage students to utilize the RStudio Server option. This will ensure all students use a consistent software environment, and I have tested all the course notes, exercises, and homework assignments to ensure they will run on the RStudio Server. If you choose to install your own software locally, I cannot guarantee the instructional staff will be able to help you troubleshoot issues caused by software configuration.
+
+{{% /alert %}}
+
+## Option 1 - use RStudio Server
+
+If you want to avoid installing anything on your computer and access R and RStudio through your web browser, follow these instructions.
+
+* R
+    * [Why R?](/setup/what-is-r/)
+    * [Accessing RStudio Server](/setup/r-server/)
+* Git
+    * [What is Git?](/setup/what-is-git/)
+    * [Register a free GitHub account.](https://github.com/)
+    * [Personalize Git](/setup/personalize-git/)
+    * [Using Git within RStudio](/setup/git-with-rstudio/#test-drive-rstudio-and-github)
+
+## Option 2 - install the software locally
 
 If you want to run R on your own computer, follow these instructions.
 
@@ -38,15 +57,3 @@ If you want to run R on your own computer, follow these instructions.
         * [Using Git within RStudio](/setup/git-with-rstudio/)
         * [GitHub credentials and avoiding monotony](/setup/git-cache-credentials/)
         * [Complete homework 01](/homework/edit-readme/)
-
-## Option 2 - use RStudio Cloud
-
-If you want to avoid installing anything on your computer and access R and RStudio through your web browser, follow these instructions.
-
-* R
-    * [Why R?](/setup/what-is-r/)
-    * [Accessing RStudio Cloud](/setup/r-cloud/)
-* Git
-    * [What is Git?](/setup/what-is-git/)
-    * [Register a free GitHub account.](https://github.com/)
-    * [Using Git within RStudio](/setup/git-with-rstudio/#test-drive-rstudio-and-github)
