@@ -11,6 +11,10 @@ type: docs
 aliases: ["/hw00_homework_guidelines"]
 ---
 
+## Demonstration of the homework workflow
+
+<iframe src="https://uchicago.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=7bd284fa-ceac-400b-a8db-ab9500f8d943&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" width=720 height=405 style="border: 1px solid #464646;" allowfullscreen allow="autoplay"></iframe>
+
 ## GitHub prerequisites
 
 I assume you can [pull from and push to GitHub from RStudio](/setup/git-with-rstudio/).
@@ -83,14 +87,14 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ## ─ Session info ───────────────────────────────────────────────────────────────
     ##  setting  value                       
     ##  version  R version 3.6.3 (2020-02-29)
-    ##  os       macOS Catalina 10.15.3      
+    ##  os       macOS Catalina 10.15.4      
     ##  system   x86_64, darwin15.6.0        
     ##  ui       X11                         
     ##  language (EN)                        
     ##  collate  en_US.UTF-8                 
     ##  ctype    en_US.UTF-8                 
     ##  tz       America/Chicago             
-    ##  date     2020-03-30                  
+    ##  date     2020-04-06                  
     ## 
     ## ─ Packages ───────────────────────────────────────────────────────────────────
     ##  package     * version    date       lib source                      
