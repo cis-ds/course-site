@@ -85,15 +85,15 @@ ggplot(Auto, aes(horsepower, mpg)) +
 
 Perhaps by adding [quadratic terms](/notes/logistic-regression/#quadratic-terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and validation set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
 
-$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
+`$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$`
 
 where:
 
-* $y_i =$ the observed response value for the $i$th observation
-* $\hat{f}(x_i) =$ the predicted response value for the $i$th observation given by $\hat{f}$
-* $n =$ the total number of observations
+* `\(y_i =\)` the observed response value for the `\(i\)`th observation
+* `\(\hat{f}(x_i) =\)` the predicted response value for the `\(i\)`th observation given by `\(\hat{f}\)`
+* `\(n =\)` the total number of observations
 
-Boo math! Actually this is pretty intuitive. All we're doing is for each observation, calculating the difference between the actual and predicted values for $y$, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.
+Boo math! Actually this is pretty intuitive. All we're doing is for each observation, calculating the difference between the actual and predicted values for `\(y\)`, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.
 
 For this task, first we use `rsample::initial_split()` to create training and validation sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.
 
@@ -160,7 +160,11 @@ For the training set, this would look like:
 ## [1] 24.54843
 ```
 
-> Note the special use of the [`$%$` pipe operator from the `magrittr` package](http://r4ds.had.co.nz/pipes.html#other-tools-from-magrittr). This allows us to directly access columns from the data frame entering the pipe. This is especially useful for integrating non-tidy functions into a tidy operation.
+{{% alert note %}}
+
+Note the special use of the [`$%$` pipe operator from the `magrittr` package](http://r4ds.had.co.nz/pipes.html#other-tools-from-magrittr). This allows us to directly access columns from the data frame entering the pipe. This is especially useful for integrating non-tidy functions into a tidy operation.
+
+{{% /alert %}}
 
 For the validation set:
 
@@ -280,7 +284,7 @@ summary(survive_age_woman_x)
 ## Number of Fisher Scoring iterations: 4
 ```
 
-We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the validation set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is $0%$).
+We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the validation set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is `\(0%\)`).
 
 
 ```r
@@ -382,13 +386,13 @@ There are two main problems with validation sets:
 
 ## Leave-one-out cross-validation
 
-An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the validation set, and keep all remaining observations in the training set. The statistical learning method is fit on the $n-1$ training set. You then use the held-out observation to calculate the $MSE = (y_1 - \hat{y}_1)^2$ which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
+An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the validation set, and keep all remaining observations in the training set. The statistical learning method is fit on the `\(n-1\)` training set. You then use the held-out observation to calculate the `\(MSE = (y_1 - \hat{y}_1)^2\)` which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
 
-$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$
+`$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$`
 
 This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the MSE estimate is highly dependent on the sampling process for training/validation sets. LOOCV is also highly flexible and works with any kind of predictive modeling.
 
-Of course the downside is that this method is computationally difficult. You have to estimate $n$ different models - if you have a large $n$ or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.
+Of course the downside is that this method is computationally difficult. You have to estimate `\(n\)` different models - if you have a large `\(n\)` or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.
 
 ## LOOCV in linear regression
 
@@ -468,9 +472,9 @@ assessment(first_resample)
 
 Given this new `loocv_data` data frame, we write a function that will, for each resample:
 
-1. Obtain the analysis data set (i.e. the $n-1$ training set)
+1. Obtain the analysis data set (i.e. the `\(n-1\)` training set)
 1. Fit a linear regression model
-1. Predict the test data (also known as the **assessment** data, the $1$ validation set) using the `broom` package
+1. Predict the test data (also known as the **assessment** data, the `\(1\)` validation set) using the `broom` package
 1. Determine the MSE for each sample
 
 
@@ -508,7 +512,7 @@ holdout_results(loocv_data$splits[[1]])
 ## #   .resid <dbl>
 ```
 
-To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the $n$ observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each validation set:
+To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the `\(n\)` observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each validation set:
 
 
 ```r
@@ -748,15 +752,15 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       </p>
     </details>
 
-## $k$-fold cross-validation
+## `\(k\)`-fold cross-validation
 
-A less computationally-intensive approach to cross validation is **$k$-fold cross-validation**. Rather than dividing the data into $n$ groups, one divides the observations into $k$ groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining $k-1$ folds. This process is repeated $k$ times, with each fold serving as the validation set precisely once. The $k$-fold CV estimate is calculated by averaging the MSE values for each fold:
+A less computationally-intensive approach to cross validation is **$k$-fold cross-validation**. Rather than dividing the data into `\(n\)` groups, one divides the observations into `\(k\)` groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining `\(k-1\)` folds. This process is repeated `\(k\)` times, with each fold serving as the validation set precisely once. The `\(k\)`-fold CV estimate is calculated by averaging the MSE values for each fold:
 
-$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
+`$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$`
 
-As you may have noticed, LOOCV is a special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
+As you may have noticed, LOOCV is a special case of `\(k\)`-fold cross-validation where `\(k = n\)`. More typically researchers will use `\(k=5\)` or `\(k=10\)` depending on the size of the data set and the complexity of the statistical model.
 
-## $k$-fold CV in linear regression
+## `\(k\)`-fold CV in linear regression
 
 Let's go back to the `Auto` data set. Instead of LOOCV, let's use 10-fold CV to compare the different polynomial models.
 
@@ -833,7 +837,7 @@ tibble(
 
 Pretty much the same results.
 
-## Computational speed of LOOCV vs. $k$-fold CV
+## Computational speed of LOOCV vs. `\(k\)`-fold CV
 
 
 ```r
@@ -849,9 +853,9 @@ autoplot(results_cv)
 
 <img src="/notes/cross-validation_files/figure-html/loocv-kfold-time-1.png" width="672" />
 
-On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimating $k=10$ models is going to be much easier than estimating $k=392$ models.
+On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimating `\(k=10\)` models is going to be much easier than estimating `\(k=392\)` models.
 
-## $k$-fold CV in logistic regression
+## `\(k\)`-fold CV in logistic regression
 
 You've gotten the idea by now, but let's do it one more time on our interactive Titanic model.
 
@@ -887,7 +891,7 @@ mean(titanic_cv10$error_rate, na.rm = TRUE)
 
 Not a large difference from the LOOCV approach, but it take much less time to compute.
 
-## Exercise: $k$-fold CV
+## Exercise: `\(k\)`-fold CV
 
 1. Estimate the 10-fold CV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](/notes/linear-models/#exercise-linear-regression-with-scorecard).
 
@@ -993,103 +997,98 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.1 (2019-07-05)
-##  os       macOS Catalina 10.15.3      
+##  version  R version 3.6.3 (2020-02-29)
+##  os       macOS Catalina 10.15.4      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-18                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package        * version date       lib source        
-##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports        1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
-##  blogdown         0.17.1  2020-02-13 [1] local         
-##  bookdown         0.17    2020-01-11 [1] CRAN (R 3.6.0)
-##  broom          * 0.5.4   2020-01-27 [1] CRAN (R 3.6.0)
-##  callr            3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
-##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli              2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  codetools        0.2-16  2018-12-24 [1] CRAN (R 3.6.1)
-##  colorspace       1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-##  crayon           1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  DBI              1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
-##  dbplyr           1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
-##  desc             1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools         2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
-##  digest           0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
-##  dplyr          * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
-##  ellipsis         0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
-##  evaluate         0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi            0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  forcats        * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-##  fs               1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-##  furrr            0.1.0   2018-05-16 [1] CRAN (R 3.6.0)
-##  future           1.16.0  2020-01-16 [1] CRAN (R 3.6.0)
-##  generics         0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-##  ggplot2        * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-##  globals          0.12.5  2019-12-07 [1] CRAN (R 3.6.0)
-##  glue             1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable           0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven            2.2.0   2019-11-08 [1] CRAN (R 3.6.0)
-##  here             0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms              0.5.3   2020-01-08 [1] CRAN (R 3.6.0)
-##  htmltools        0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
-##  httr             1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  ISLR           * 1.2     2017-10-20 [1] CRAN (R 3.6.0)
-##  jsonlite         1.6.1   2020-02-02 [1] CRAN (R 3.6.0)
-##  knitr            1.28    2020-02-06 [1] CRAN (R 3.6.0)
-##  lattice          0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
-##  lazyeval         0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  lifecycle        0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  listenv          0.8.0   2019-12-05 [1] CRAN (R 3.6.0)
-##  lubridate        1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr       * 1.5     2014-11-22 [1] CRAN (R 3.6.0)
-##  memoise          1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-##  microbenchmark * 1.4-7   2019-09-24 [1] CRAN (R 3.6.0)
-##  modelr         * 0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-##  munsell          0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme             3.1-144 2020-02-06 [1] CRAN (R 3.6.0)
-##  pillar           1.4.3   2019-12-20 [1] CRAN (R 3.6.0)
-##  pkgbuild         1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
-##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 3.6.0)
-##  pkgload          1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
-##  processx         3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  ps               1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr          * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
-##  R6               2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
-##  rcfss          * 0.1.9   2019-11-13 [1] local         
-##  Rcpp             1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
-##  readr          * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl           1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes          2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  reprex           0.3.0   2019-05-16 [1] CRAN (R 3.6.0)
-##  rlang            0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
-##  rmarkdown        2.1     2020-01-20 [1] CRAN (R 3.6.0)
-##  rprojroot        1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rsample        * 0.0.5   2019-07-12 [1] CRAN (R 3.6.0)
-##  rstudioapi       0.11    2020-02-07 [1] CRAN (R 3.6.0)
-##  rvest            0.3.5   2019-11-08 [1] CRAN (R 3.6.0)
-##  scales           1.1.0   2019-11-18 [1] CRAN (R 3.6.0)
-##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  stringi          1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
-##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat         2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
-##  tibble         * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr          * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  tidyselect       1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
-##  tidyverse      * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
-##  titanic        * 0.1.0   2015-08-31 [1] CRAN (R 3.6.0)
-##  usethis          1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs            0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  withr            2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun             0.12    2020-01-13 [1] CRAN (R 3.6.0)
-##  xml2             1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml             2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
+##  package     * version     date       lib source                      
+##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
+##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
+##  broom       * 0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
+##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
+##  cellranger    1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
+##  cli           2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
+##  codetools     0.2-16      2018-12-24 [1] CRAN (R 3.6.3)              
+##  colorspace    1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
+##  crayon        1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
+##  DBI           1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
+##  dbplyr        1.4.2       2019-06-17 [1] CRAN (R 3.6.0)              
+##  desc          1.2.0       2018-05-01 [1] CRAN (R 3.6.0)              
+##  devtools      2.2.2       2020-02-17 [1] CRAN (R 3.6.0)              
+##  digest        0.6.25      2020-02-23 [1] CRAN (R 3.6.0)              
+##  dplyr       * 0.8.5       2020-03-07 [1] CRAN (R 3.6.0)              
+##  ellipsis      0.3.0       2019-09-20 [1] CRAN (R 3.6.0)              
+##  evaluate      0.14        2019-05-28 [1] CRAN (R 3.6.0)              
+##  fansi         0.4.1       2020-01-08 [1] CRAN (R 3.6.0)              
+##  forcats     * 0.5.0       2020-03-01 [1] CRAN (R 3.6.0)              
+##  fs            1.3.2       2020-03-05 [1] CRAN (R 3.6.0)              
+##  furrr         0.1.0       2018-05-16 [1] CRAN (R 3.6.0)              
+##  future        1.16.0      2020-01-16 [1] CRAN (R 3.6.0)              
+##  generics      0.0.2       2018-11-29 [1] CRAN (R 3.6.0)              
+##  ggplot2     * 3.3.0       2020-03-05 [1] CRAN (R 3.6.0)              
+##  globals       0.12.5      2019-12-07 [1] CRAN (R 3.6.0)              
+##  glue          1.3.2       2020-03-12 [1] CRAN (R 3.6.0)              
+##  gtable        0.3.0       2019-03-25 [1] CRAN (R 3.6.0)              
+##  haven         2.2.0       2019-11-08 [1] CRAN (R 3.6.0)              
+##  here          0.1         2017-05-28 [1] CRAN (R 3.6.0)              
+##  hms           0.5.3       2020-01-08 [1] CRAN (R 3.6.0)              
+##  htmltools     0.4.0       2019-10-04 [1] CRAN (R 3.6.0)              
+##  httr          1.4.1       2019-08-05 [1] CRAN (R 3.6.0)              
+##  jsonlite      1.6.1       2020-02-02 [1] CRAN (R 3.6.0)              
+##  knitr         1.28        2020-02-06 [1] CRAN (R 3.6.0)              
+##  lattice       0.20-40     2020-02-19 [1] CRAN (R 3.6.0)              
+##  lifecycle     0.2.0       2020-03-06 [1] CRAN (R 3.6.0)              
+##  listenv       0.8.0       2019-12-05 [1] CRAN (R 3.6.0)              
+##  lubridate     1.7.4       2018-04-11 [1] CRAN (R 3.6.0)              
+##  magrittr    * 1.5         2014-11-22 [1] CRAN (R 3.6.0)              
+##  memoise       1.1.0       2017-04-21 [1] CRAN (R 3.6.0)              
+##  modelr      * 0.1.6       2020-02-22 [1] CRAN (R 3.6.0)              
+##  munsell       0.5.0       2018-06-12 [1] CRAN (R 3.6.0)              
+##  nlme          3.1-145     2020-03-04 [1] CRAN (R 3.6.0)              
+##  pillar        1.4.3       2019-12-20 [1] CRAN (R 3.6.0)              
+##  pkgbuild      1.0.6       2019-10-09 [1] CRAN (R 3.6.0)              
+##  pkgconfig     2.0.3       2019-09-22 [1] CRAN (R 3.6.0)              
+##  pkgload       1.0.2       2018-10-29 [1] CRAN (R 3.6.0)              
+##  prettyunits   1.1.1       2020-01-24 [1] CRAN (R 3.6.0)              
+##  processx      3.4.2       2020-02-09 [1] CRAN (R 3.6.0)              
+##  ps            1.3.2       2020-02-13 [1] CRAN (R 3.6.0)              
+##  purrr       * 0.3.3       2019-10-18 [1] CRAN (R 3.6.0)              
+##  R6            2.4.1       2019-11-12 [1] CRAN (R 3.6.0)              
+##  Rcpp          1.0.4       2020-03-17 [1] CRAN (R 3.6.0)              
+##  readr       * 1.3.1       2018-12-21 [1] CRAN (R 3.6.0)              
+##  readxl        1.3.1       2019-03-13 [1] CRAN (R 3.6.0)              
+##  remotes       2.1.1       2020-02-15 [1] CRAN (R 3.6.0)              
+##  reprex        0.3.0       2019-05-16 [1] CRAN (R 3.6.0)              
+##  rlang         0.4.5.9000  2020-03-19 [1] Github (r-lib/rlang@a90b04b)
+##  rmarkdown     2.1         2020-01-20 [1] CRAN (R 3.6.0)              
+##  rprojroot     1.3-2       2018-01-03 [1] CRAN (R 3.6.0)              
+##  rsample     * 0.0.5       2019-07-12 [1] CRAN (R 3.6.0)              
+##  rstudioapi    0.11        2020-02-07 [1] CRAN (R 3.6.0)              
+##  rvest         0.3.5       2019-11-08 [1] CRAN (R 3.6.0)              
+##  scales        1.1.0       2019-11-18 [1] CRAN (R 3.6.0)              
+##  sessioninfo   1.1.1       2018-11-05 [1] CRAN (R 3.6.0)              
+##  stringi       1.4.6       2020-02-17 [1] CRAN (R 3.6.0)              
+##  stringr     * 1.4.0       2019-02-10 [1] CRAN (R 3.6.0)              
+##  testthat      2.3.2       2020-03-02 [1] CRAN (R 3.6.0)              
+##  tibble      * 2.1.3       2019-06-06 [1] CRAN (R 3.6.0)              
+##  tidyr       * 1.0.2       2020-01-24 [1] CRAN (R 3.6.0)              
+##  tidyselect    1.0.0       2020-01-27 [1] CRAN (R 3.6.0)              
+##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
+##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
+##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
+##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
+##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
+##  xml2          1.2.5       2020-03-11 [1] CRAN (R 3.6.0)              
+##  yaml          2.2.1       2020-02-01 [1] CRAN (R 3.6.0)              
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

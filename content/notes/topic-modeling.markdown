@@ -70,8 +70,8 @@ You could infer that topic A is a topic about **food**, and topic B is a topic a
 
 LDA represents documents as mixtures of topics that spit out words with certain probabilities. It assumes that documents are produced in the following fashion: when writing each document, you
 
-* Decide on the number of words $N$ the document will have
-* Choose a topic mixture for the document (according to a [Dirichlet probability distribution](https://en.wikipedia.org/wiki/Dirichlet_distribution) over a fixed set of $K$ topics). For example, assuming that we have the two food and cute animal topics above, you might choose the document to consist of 1/3 food and 2/3 cute animals.
+* Decide on the number of words `\(N\)` the document will have
+* Choose a topic mixture for the document (according to a [Dirichlet probability distribution](https://en.wikipedia.org/wiki/Dirichlet_distribution) over a fixed set of `\(K\)` topics). For example, assuming that we have the two food and cute animal topics above, you might choose the document to consist of 1/3 food and 2/3 cute animals.
 * Generate each word in the document by:
     * First picking a topic (according to the distribution that you sampled above; for example, you might pick the food topic with 1/3 probability and the cute animals topic with 2/3 probability).
     * Then using the topic to generate the word itself (according to the topic's multinomial distribution). For instance, the food topic might output the word "broccoli" with 30% probability, "bananas" with 15% probability, and so on.
@@ -80,10 +80,10 @@ Assuming this generative model for a collection of documents, LDA then tries to 
 
 ### Food and animals
 
-How could we have generated the sentences in the previous example? When generating a document $D$:
+How could we have generated the sentences in the previous example? When generating a document `\(D\)`:
 
-* Decide that $D$ will be 1/2 about food and 1/2 about cute animals.
-* Pick 5 to be the number of words in $D$.
+* Decide that `\(D\)` will be 1/2 about food and 1/2 about cute animals.
+* Pick 5 to be the number of words in `\(D\)`.
 * Pick the first word to come from the food topic, which then gives you the word "broccoli".
 * Pick the second word to come from the cute animals topic, which gives you "panda".
 * Pick the third word to come from the cute animals topic, giving you "adorable".
@@ -403,7 +403,7 @@ congress_tokens_lite %>%
 
 <img src="/notes/topic-modeling_files/figure-html/congress-model-compare-1.png" width="672" />
 
-The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for $\gamma$. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
+The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for `\(\gamma\)`. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
 
 ## LDA with an unknown topic structure
 
@@ -535,15 +535,19 @@ jokes_dtm
 ## Weighting          : term frequency (tf)
 ```
 
-## Selecting $k$
+## Selecting `\(k\)`
 
 Remember that for LDA, you need to specify in advance the number of topics in the underlying topic structure.
 
-### $k=4$
+### `\(k=4\)`
 
-Let's estimate an LDA model for the `r/jokes` jokes, setting $k=4$.
+Let's estimate an LDA model for the `r/jokes` jokes, setting `\(k=4\)`.
 
-> Warning: many jokes on `r/jokes` are NSFW and contain potentially offensive language/content.
+{{% alert warning %}}
+
+Warning: many jokes on `r/jokes` are NSFW and contain potentially offensive language/content.
+
+{{% /alert %}}
 
 
 ```r
@@ -579,9 +583,9 @@ top_terms %>%
 
 <img src="/notes/topic-modeling_files/figure-html/jokes-4-topn-1.png" width="672" />
 
-### $k=12$
+### `\(k=12\)`
 
-What happens if we set $k=12$? How do our results change?
+What happens if we set `\(k=12\)`? How do our results change?
 
 
 ```r
@@ -615,11 +619,11 @@ top_terms %>%
 
 <img src="/notes/topic-modeling_files/figure-html/jokes-12-topn-1.png" width="672" />
 
-Alas, this is the problem with LDA. Several different values for $k$ may be plausible, but by increasing $k$ we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
+Alas, this is the problem with LDA. Several different values for `\(k\)` may be plausible, but by increasing `\(k\)` we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
 
 ## Perplexity
 
-Well, sort of. Some aspects of LDA are driven by gut-thinking (or perhaps [truthiness](http://www.cc.com/video-clips/63ite2/the-colbert-report-the-word---truthiness)). However we can have some help. [**Perplexity**](https://en.wikipedia.org/wiki/Perplexity) is a statistical measure of how well a probability model predicts a sample. As applied to LDA, for a given value of $k$, you estimate the LDA model. Then given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents.
+Well, sort of. Some aspects of LDA are driven by gut-thinking (or perhaps [truthiness](http://www.cc.com/video-clips/63ite2/the-colbert-report-the-word---truthiness)). However we can have some help. [**Perplexity**](https://en.wikipedia.org/wiki/Perplexity) is a statistical measure of how well a probability model predicts a sample. As applied to LDA, for a given value of `\(k\)`, you estimate the LDA model. Then given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents.
 
 `topicmodels` includes the function `perplexity()` which calculates this value for a given model.
 
@@ -632,7 +636,7 @@ perplexity(jokes_lda12)
 ## [1] 1190.231
 ```
 
-However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
+However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying `\(k\)`s. The model with the lowest perplexity is generally considered the "best".
 
 Let's estimate a series of LDA models on the `r/jokes` dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the [Research Computing Center](https://rcc.uchicago.edu/).]
 
@@ -694,7 +698,7 @@ top_terms %>%
 
 <img src="/notes/topic-modeling_files/figure-html/jokes-100-topn-1.png" width="672" />
 
-We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at $k=100$ - would $k=200$ generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
+We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at `\(k=100\)` - would `\(k=200\)` generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
 
 Again, this is where your intuition and domain knowledge as a researcher is important. You can use perplexity as one data point in your decision process, but a lot of the time it helps to simply look at the topics themselves and the highest probability words associated with each one to determine if the structure makes sense. If you have a known topic structure you can compare it to (such as the books example above), this can also be useful.
 
@@ -702,10 +706,10 @@ Again, this is where your intuition and domain knowledge as a researcher is impo
 
 The [`LDAvis`](https://github.com/cpsievert/LDAvis) allows you to interactively visualize an LDA topic model. The major graphical elements include:
 
-1. Default topic circles - $K$ circles, one for each topic, whose areas are set to be proportional to the proportions of the topics across the $N$ total tokens in the corpus.
+1. Default topic circles - `\(K\)` circles, one for each topic, whose areas are set to be proportional to the proportions of the topics across the `\(N\)` total tokens in the corpus.
 1. Red bars - represent the estimated number of times a given term was generated by a given topic.
 1. Blue bars - represent the overall frequency of each term in the corpus
-1. Topic-term circlues - $K \times W$ circles whose areas are set to be proportional to the frequencies with which a given term is estimated to have been generated by the topics.
+1. Topic-term circlues - `\(K \times W\)` circles whose areas are set to be proportional to the frequencies with which a given term is estimated to have been generated by the topics.
 
 To install the necessary packages, run the code below:
 
@@ -716,7 +720,7 @@ devtools::install_github("cpsievert/LDAvisData")
 
 ### Example: This is Jeopardy!
 
-Here we draw an example directly from the `LDAvis` package to visualize a $K = 100$ topic LDA model of 200,000+ Jeopardy! "answers" and categories. The model is pre-generated and relevant components from the `LDA()` function are already stored in a list for us. In order to visualize the model, we need to convert this to a JSON file using `createJSON()` and then pass this object to `serVis()`.
+Here we draw an example directly from the `LDAvis` package to visualize a `\(K = 100\)` topic LDA model of 200,000+ Jeopardy! "answers" and categories. The model is pre-generated and relevant components from the `LDA()` function are already stored in a list for us. In order to visualize the model, we need to convert this to a JSON file using `createJSON()` and then pass this object to `serVis()`.
 
 
 ```r
@@ -786,7 +790,7 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
 }
 ```
 
-Let's test it using the $k = 10$ LDA topic model for the `AP`r/jokes` dataset.
+Let's test it using the `\(k = 10\)` LDA topic model for the `AP`r/jokes` dataset.
 
 
 ```r
@@ -815,105 +819,104 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.1 (2019-07-05)
-##  os       macOS Catalina 10.15.3      
+##  version  R version 3.6.3 (2020-02-29)
+##  os       macOS Catalina 10.15.4      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-18                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports     1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
-##  blogdown      0.17.1  2020-02-13 [1] local         
-##  bookdown      0.17    2020-01-11 [1] CRAN (R 3.6.0)
-##  broom         0.5.4   2020-01-27 [1] CRAN (R 3.6.0)
-##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
-##  dbplyr        1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
-##  digest        0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
-##  dplyr       * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
-##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-##  ggplot2     * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven         2.2.0   2019-11-08 [1] CRAN (R 3.6.0)
-##  here        * 0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 3.6.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  janeaustenr   0.1.5   2017-06-10 [1] CRAN (R 3.6.0)
-##  jsonlite      1.6.1   2020-02-02 [1] CRAN (R 3.6.0)
-##  knitr         1.28    2020-02-06 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
-##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
-##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 3.6.0)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-##  modelr        0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-##  modeltools    0.2-22  2018-07-16 [1] CRAN (R 3.6.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-144 2020-02-06 [1] CRAN (R 3.6.0)
-##  NLP         * 0.2-0   2018-10-18 [1] CRAN (R 3.6.0)
-##  pillar        1.4.3   2019-12-20 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 3.6.0)
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
-##  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
-##  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 3.6.0)
-##  rjson       * 0.2.20  2018-06-08 [1] CRAN (R 3.6.0)
-##  rlang         0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
-##  rmarkdown     2.1     2020-01-20 [1] CRAN (R 3.6.0)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 3.6.0)
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 3.6.0)
-##  scales        1.1.0   2019-11-18 [1] CRAN (R 3.6.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  slam          0.1-47  2019-12-21 [1] CRAN (R 3.6.0)
-##  SnowballC     0.6.0   2019-01-15 [1] CRAN (R 3.6.0)
-##  stringi       1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat      2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
-##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tictoc      * 1.0     2014-06-17 [1] CRAN (R 3.6.0)
-##  tidyr       * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  tidyselect    1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
-##  tidytext    * 0.2.2   2019-07-29 [1] CRAN (R 3.6.0)
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
-##  tm          * 0.7-7   2019-12-12 [1] CRAN (R 3.6.0)
-##  tokenizers    0.2.1   2018-03-29 [1] CRAN (R 3.6.0)
-##  topicmodels * 0.2-9   2019-12-03 [1] CRAN (R 3.6.0)
-##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs         0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.12    2020-01-13 [1] CRAN (R 3.6.0)
-##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
+##  package     * version     date       lib source                      
+##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
+##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
+##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
+##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
+##  cellranger    1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
+##  cli           2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
+##  colorspace    1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
+##  crayon        1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
+##  DBI           1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
+##  dbplyr        1.4.2       2019-06-17 [1] CRAN (R 3.6.0)              
+##  desc          1.2.0       2018-05-01 [1] CRAN (R 3.6.0)              
+##  devtools      2.2.2       2020-02-17 [1] CRAN (R 3.6.0)              
+##  digest        0.6.25      2020-02-23 [1] CRAN (R 3.6.0)              
+##  dplyr       * 0.8.5       2020-03-07 [1] CRAN (R 3.6.0)              
+##  ellipsis      0.3.0       2019-09-20 [1] CRAN (R 3.6.0)              
+##  evaluate      0.14        2019-05-28 [1] CRAN (R 3.6.0)              
+##  fansi         0.4.1       2020-01-08 [1] CRAN (R 3.6.0)              
+##  forcats     * 0.5.0       2020-03-01 [1] CRAN (R 3.6.0)              
+##  fs            1.3.2       2020-03-05 [1] CRAN (R 3.6.0)              
+##  generics      0.0.2       2018-11-29 [1] CRAN (R 3.6.0)              
+##  ggplot2     * 3.3.0       2020-03-05 [1] CRAN (R 3.6.0)              
+##  glue          1.3.2       2020-03-12 [1] CRAN (R 3.6.0)              
+##  gtable        0.3.0       2019-03-25 [1] CRAN (R 3.6.0)              
+##  haven         2.2.0       2019-11-08 [1] CRAN (R 3.6.0)              
+##  here        * 0.1         2017-05-28 [1] CRAN (R 3.6.0)              
+##  hms           0.5.3       2020-01-08 [1] CRAN (R 3.6.0)              
+##  htmltools     0.4.0       2019-10-04 [1] CRAN (R 3.6.0)              
+##  httr          1.4.1       2019-08-05 [1] CRAN (R 3.6.0)              
+##  janeaustenr   0.1.5       2017-06-10 [1] CRAN (R 3.6.0)              
+##  jsonlite      1.6.1       2020-02-02 [1] CRAN (R 3.6.0)              
+##  knitr         1.28        2020-02-06 [1] CRAN (R 3.6.0)              
+##  lattice       0.20-40     2020-02-19 [1] CRAN (R 3.6.0)              
+##  lifecycle     0.2.0       2020-03-06 [1] CRAN (R 3.6.0)              
+##  lubridate     1.7.4       2018-04-11 [1] CRAN (R 3.6.0)              
+##  magrittr      1.5         2014-11-22 [1] CRAN (R 3.6.0)              
+##  Matrix        1.2-18      2019-11-27 [1] CRAN (R 3.6.3)              
+##  memoise       1.1.0       2017-04-21 [1] CRAN (R 3.6.0)              
+##  modelr        0.1.6       2020-02-22 [1] CRAN (R 3.6.0)              
+##  modeltools    0.2-23      2020-03-05 [1] CRAN (R 3.6.0)              
+##  munsell       0.5.0       2018-06-12 [1] CRAN (R 3.6.0)              
+##  nlme          3.1-145     2020-03-04 [1] CRAN (R 3.6.0)              
+##  NLP         * 0.2-0       2018-10-18 [1] CRAN (R 3.6.0)              
+##  pillar        1.4.3       2019-12-20 [1] CRAN (R 3.6.0)              
+##  pkgbuild      1.0.6       2019-10-09 [1] CRAN (R 3.6.0)              
+##  pkgconfig     2.0.3       2019-09-22 [1] CRAN (R 3.6.0)              
+##  pkgload       1.0.2       2018-10-29 [1] CRAN (R 3.6.0)              
+##  prettyunits   1.1.1       2020-01-24 [1] CRAN (R 3.6.0)              
+##  processx      3.4.2       2020-02-09 [1] CRAN (R 3.6.0)              
+##  ps            1.3.2       2020-02-13 [1] CRAN (R 3.6.0)              
+##  purrr       * 0.3.3       2019-10-18 [1] CRAN (R 3.6.0)              
+##  R6            2.4.1       2019-11-12 [1] CRAN (R 3.6.0)              
+##  Rcpp          1.0.4       2020-03-17 [1] CRAN (R 3.6.0)              
+##  readr       * 1.3.1       2018-12-21 [1] CRAN (R 3.6.0)              
+##  readxl        1.3.1       2019-03-13 [1] CRAN (R 3.6.0)              
+##  remotes       2.1.1       2020-02-15 [1] CRAN (R 3.6.0)              
+##  reprex        0.3.0       2019-05-16 [1] CRAN (R 3.6.0)              
+##  rjson       * 0.2.20      2018-06-08 [1] CRAN (R 3.6.0)              
+##  rlang         0.4.5.9000  2020-03-19 [1] Github (r-lib/rlang@a90b04b)
+##  rmarkdown     2.1         2020-01-20 [1] CRAN (R 3.6.0)              
+##  rprojroot     1.3-2       2018-01-03 [1] CRAN (R 3.6.0)              
+##  rstudioapi    0.11        2020-02-07 [1] CRAN (R 3.6.0)              
+##  rvest         0.3.5       2019-11-08 [1] CRAN (R 3.6.0)              
+##  scales        1.1.0       2019-11-18 [1] CRAN (R 3.6.0)              
+##  sessioninfo   1.1.1       2018-11-05 [1] CRAN (R 3.6.0)              
+##  slam          0.1-47      2019-12-21 [1] CRAN (R 3.6.0)              
+##  SnowballC     0.6.0       2019-01-15 [1] CRAN (R 3.6.0)              
+##  stringi       1.4.6       2020-02-17 [1] CRAN (R 3.6.0)              
+##  stringr     * 1.4.0       2019-02-10 [1] CRAN (R 3.6.0)              
+##  testthat      2.3.2       2020-03-02 [1] CRAN (R 3.6.0)              
+##  tibble      * 2.1.3       2019-06-06 [1] CRAN (R 3.6.0)              
+##  tictoc      * 1.0         2014-06-17 [1] CRAN (R 3.6.0)              
+##  tidyr       * 1.0.2       2020-01-24 [1] CRAN (R 3.6.0)              
+##  tidyselect    1.0.0       2020-01-27 [1] CRAN (R 3.6.0)              
+##  tidytext    * 0.2.3       2020-03-04 [1] CRAN (R 3.6.0)              
+##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
+##  tm          * 0.7-7       2019-12-12 [1] CRAN (R 3.6.0)              
+##  tokenizers    0.2.1       2018-03-29 [1] CRAN (R 3.6.0)              
+##  topicmodels * 0.2-9       2019-12-03 [1] CRAN (R 3.6.0)              
+##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
+##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
+##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
+##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
+##  xml2          1.2.5       2020-03-11 [1] CRAN (R 3.6.0)              
+##  yaml          2.2.1       2020-02-01 [1] CRAN (R 3.6.0)              
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

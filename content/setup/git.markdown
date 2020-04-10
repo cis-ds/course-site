@@ -22,7 +22,11 @@ This method of installing Git for Windows leaves the Git executable in a convent
 * When asked about "Adjusting your PATH environment", make sure to select "Git from the command line and also from 3rd-party software". Otherwise, we believe it is good to accept the defaults.
 * Note that RStudio for Windows prefers for Git to be installed below `C:/Program Files` and this appears to be the default. This implies, for example, that the Git executable on my Windows system is found at `C:/Program Files/Git/bin/git.exe`. Unless you have specific reasons to otherwise, follow this convention.
 
-> If you follow these instructions and install RStudio version 1.1 or higher, you can use the shell (also called the **terminal**) directly from within RStudio. See [this article for more information on how to use it and setup RStudio to use Git Bash, rather than the Command Prompt](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal).
+{{% alert note %}}
+
+If you follow these instructions and install RStudio version 1.1 or higher, you can use the shell (also called the **terminal**) directly from within RStudio. See [this article for more information on how to use it and setup RStudio to use Git Bash, rather than the Command Prompt](https://support.rstudio.com/hc/en-us/articles/115010737148-Using-the-RStudio-Terminal).
+
+{{% /alert %}}
 
 ## Git Installation: Mac OS X
 

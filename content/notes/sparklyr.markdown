@@ -137,7 +137,11 @@ titanic_final_tbl <- titanic2_tbl %>%
   sdf_register("titanic_final")
 ```
 
-> `ft_bucketizer()` is equivalent to `cut()` in R.
+{{% alert note %}}
+
+`ft_bucketizer()` is equivalent to `cut()` in R.
+
+{{% /alert %}}
 
 ### Train-validation split
 
@@ -639,14 +643,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.3      
+##  os       macOS Catalina 10.15.4      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-03-30                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version        date       lib source                      

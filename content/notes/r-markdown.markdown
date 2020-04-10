@@ -71,7 +71,7 @@ R Markdown documents contain 3 major components:
 
 Code chunks are interspersed with text throughout the document. To complete the document, you "Knit" or "render" the document. Most of you probably knit the document by clicking the "Knit" button in the script editor panel. You can also do this programmatically from the console by running the command `rmarkdown::render("example.Rmd")`.
 
-When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, $\LaTeX$, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
+When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, `\(\LaTeX\)`, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
 
 ![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)
 
@@ -282,7 +282,7 @@ Use the `gun-deaths.Rmd` file you saved on your computer and test some of the do
 
 ## PDF document
 
-[`pdf_document`](http://rmarkdown.rstudio.com/pdf_document_format.html) converts the `.Rmd` file to a $\LaTeX$ file which is used to generate a PDF.
+[`pdf_document`](http://rmarkdown.rstudio.com/pdf_document_format.html) converts the `.Rmd` file to a `\(\LaTeX\)` file which is used to generate a PDF.
 
 
 ```
@@ -294,7 +294,7 @@ output: pdf_document
 ---
 ```
 
-You do need to have a full installation of TeX on your computer to generate PDF output. However the nice thing is that because it uses the $\LaTeX$ rendering engine, you can use raw $\LaTeX$ code in your `.Rmd` file (if you know how to use it).
+You do need to have a full installation of TeX on your computer to generate PDF output. However the nice thing is that because it uses the `\(\LaTeX\)` rendering engine, you can use raw `\(\LaTeX\)` code in your `.Rmd` file (if you know how to use it).
 
 ### Table of contents
 
@@ -329,9 +329,9 @@ output:
 ---
 ```
 
-### $\LaTeX$ options
+### `\(\LaTeX\)` options
 
-You can also directly control options in the $\LaTeX$ template itself via the YAML options. Note that these options are passed as top-level YAML metadata, not underneath the `output` section:
+You can also directly control options in the `\(\LaTeX\)` template itself via the YAML options. Note that these options are passed as top-level YAML metadata, not underneath the `output` section:
 
 
 ```
@@ -347,7 +347,7 @@ fontsize: 11pt
 
 ### Keep intermediate TeX
 
-R Markdown documents are converted first to a `.tex` file, and then use the $\LaTeX$ engine to convert to PDF. To keep the `.tex` file, use the `keep_tex` option:
+R Markdown documents are converted first to a `.tex` file, and then use the `\(\LaTeX\)` engine to convert to PDF. To keep the `.tex` file, use the `keep_tex` option:
 
 
 ```
@@ -372,7 +372,7 @@ You can use R Markdown not only to generate full documents, but also slide prese
 * [ioslides](http://rmarkdown.rstudio.com/ioslides_presentation_format.html) - HTML presentation with ioslides
 * [reveal.js](http://rmarkdown.rstudio.com/revealjs_presentation_format.html) - HTML presentation with reveal.js
 * [Slidy](http://rmarkdown.rstudio.com/slidy_presentation_format.html) - HTML presentation with W3C Slidy
-* [Beamer](http://rmarkdown.rstudio.com/beamer_presentation_format.html) - PDF presentation with $\LaTeX$ Beamer
+* [Beamer](http://rmarkdown.rstudio.com/beamer_presentation_format.html) - PDF presentation with `\(\LaTeX\)` Beamer
 
 Each as their own strengths and weaknesses. ioslides and Slidy are probably the easiest to use initially, but are more difficult to customize. reveal.js is more complex, but allows for more customization (this is the format I use for my slides in this class). Beamer is the only presentation format that creates a PDF document and is probably a smoother transition for those already used to Beamer.
 
@@ -406,7 +406,7 @@ When rendering multiple output formats, you cannot just click the "Knit" button.
 
 ### Exercise: render in multiple formats
 
-Render `gun-deaths.Rmd` as both an HTML document and a PDF document. If you do not have $\LaTeX$ installed on your computer, render `gun-deaths.Rmd` as both an HTML document and a [Word document](http://rmarkdown.rstudio.com/word_document_format.html). And at some point [install $\LaTeX$ on your computer](https://www.latex-project.org/get/) so you can create PDF documents.
+Render `gun-deaths.Rmd` as both an HTML document and a PDF document. If you do not have `\(\LaTeX\)` installed on your computer, render `gun-deaths.Rmd` as both an HTML document and a [Word document](http://rmarkdown.rstudio.com/word_document_format.html). And at some point [install `\(\LaTeX\)` on your computer](https://www.latex-project.org/get/) so you can create PDF documents.
 
 ## R scripts
 
@@ -448,7 +448,11 @@ You edit scripts in the editor panel in R Studio.
 
 [Scripts are much easier to troubleshoot than R Markdown documents](http://r4ds.had.co.nz/r-markdown.html#troubleshooting) because your code is not split across chunks and you can run everything interactively. When you first begin a project, you may find it useful to use scripts initially to build and debug code, then convert it to an R Markdown document once you begin the substantive analysis and write-up. Or you may use a mix of scripts and R Markdown documents depending on the size and complexity of your project. For instance, you could use a **reproducible pipeline** which uses a sequence of R scripts to download, import, and transform your data, then use an R Markdown document to produce a final report.
 
-> Check out [this example](https://github.com/uc-cfss/pipeline-example) for how one could use a pipeline in this fashion.
+{{% alert note %}}
+
+Check out [this example](https://github.com/uc-cfss/pipeline-example) for how one could use a pipeline in this fashion.
+
+{{% /alert %}}
 
 In this class while the final product is generally submitted as an R Markdown document, **it is fine to do your initial work in an R script.** If you find it easier to write and debug code there, then use that approach. Or if you prefer the [R Markdown lab notebook workflow](http://r4ds.had.co.nz/r-markdown-workflow.html), then use that. By this point you have enough competence in R to decide what works for you and what does not. **Find what works best for you and do that.**
 
@@ -460,7 +464,11 @@ You can run sections of your script by highlighting the appropriate code and typ
 
 To run a script saved on your computer, use the `source()` function in the console. As in `source("gun-deaths.R")`. You can also include this command in a second script. By doing this you can execute a sequence of related scripts all in order, rather than having to run each one manually in the console. See [`runfile.R`](https://github.com/uc-cfss/pipeline-example/blob/master/runfile.R) from the `pipeline-example` repo to see this in action. Remember that R scripts (`.R`) are executed via the `source()` function, whereas R Markdown files (`.Rmd`) are executed via the `rmarkdown::render()` function.
 
-> Want to create a report from an R script? Just call `rmarkdown::render("gun-deaths.R")` to author an R Markdown document based on the R script. It will never be as fully featured as if you originally wrote it in an R Markdown document, but can sometimes be handy. Read [this overview](http://rmarkdown.rstudio.com/articles_report_from_r_script.html) for more details on this procedure.
+{{% alert note %}}
+
+Want to create a report from an R script? Just call `rmarkdown::render("gun-deaths.R")` to author an R Markdown document based on the R script. It will never be as fully featured as if you originally wrote it in an R Markdown document, but can sometimes be handy. Read [this overview](http://rmarkdown.rstudio.com/articles_report_from_r_script.html) for more details on this procedure.
+
+{{% /alert %}}
 
 ## Running scripts via the shell
 
@@ -492,95 +500,94 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.1 (2019-07-05)
-##  os       macOS Catalina 10.15.3      
+##  version  R version 3.6.3 (2020-02-29)
+##  os       macOS Catalina 10.15.4      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-18                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports     1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
-##  blogdown      0.17.1  2020-02-13 [1] local         
-##  bookdown      0.17    2020-01-11 [1] CRAN (R 3.6.0)
-##  broom         0.5.4   2020-01-27 [1] CRAN (R 3.6.0)
-##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
-##  dbplyr        1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
-##  digest        0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
-##  dplyr       * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
-##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-##  ggplot2     * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven         2.2.0   2019-11-08 [1] CRAN (R 3.6.0)
-##  here        * 0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 3.6.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  jsonlite      1.6.1   2020-02-02 [1] CRAN (R 3.6.0)
-##  knitr         1.28    2020-02-06 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
-##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-##  modelr        0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-144 2020-02-06 [1] CRAN (R 3.6.0)
-##  pillar        1.4.3   2019-12-20 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 3.6.0)
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
-##  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
-##  rcfss       * 0.1.9   2019-11-13 [1] local         
-##  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 3.6.0)
-##  rlang         0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
-##  rmarkdown     2.1     2020-01-20 [1] CRAN (R 3.6.0)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 3.6.0)
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 3.6.0)
-##  scales        1.1.0   2019-11-18 [1] CRAN (R 3.6.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  stringi       1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat      2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
-##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  tidyselect    1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
-##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs         0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.12    2020-01-13 [1] CRAN (R 3.6.0)
-##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
-##  ymlthis     * 0.1.2   2020-02-03 [1] CRAN (R 3.6.0)
+##  package     * version     date       lib source                      
+##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
+##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
+##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
+##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
+##  cellranger    1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
+##  cli           2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
+##  colorspace    1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
+##  crayon        1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
+##  DBI           1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
+##  dbplyr        1.4.2       2019-06-17 [1] CRAN (R 3.6.0)              
+##  desc          1.2.0       2018-05-01 [1] CRAN (R 3.6.0)              
+##  devtools      2.2.2       2020-02-17 [1] CRAN (R 3.6.0)              
+##  digest        0.6.25      2020-02-23 [1] CRAN (R 3.6.0)              
+##  dplyr       * 0.8.5       2020-03-07 [1] CRAN (R 3.6.0)              
+##  ellipsis      0.3.0       2019-09-20 [1] CRAN (R 3.6.0)              
+##  evaluate      0.14        2019-05-28 [1] CRAN (R 3.6.0)              
+##  fansi         0.4.1       2020-01-08 [1] CRAN (R 3.6.0)              
+##  forcats     * 0.5.0       2020-03-01 [1] CRAN (R 3.6.0)              
+##  fs            1.3.2       2020-03-05 [1] CRAN (R 3.6.0)              
+##  generics      0.0.2       2018-11-29 [1] CRAN (R 3.6.0)              
+##  ggplot2     * 3.3.0       2020-03-05 [1] CRAN (R 3.6.0)              
+##  glue          1.3.2       2020-03-12 [1] CRAN (R 3.6.0)              
+##  gtable        0.3.0       2019-03-25 [1] CRAN (R 3.6.0)              
+##  haven         2.2.0       2019-11-08 [1] CRAN (R 3.6.0)              
+##  here        * 0.1         2017-05-28 [1] CRAN (R 3.6.0)              
+##  hms           0.5.3       2020-01-08 [1] CRAN (R 3.6.0)              
+##  htmltools     0.4.0       2019-10-04 [1] CRAN (R 3.6.0)              
+##  httr          1.4.1       2019-08-05 [1] CRAN (R 3.6.0)              
+##  jsonlite      1.6.1       2020-02-02 [1] CRAN (R 3.6.0)              
+##  knitr         1.28        2020-02-06 [1] CRAN (R 3.6.0)              
+##  lattice       0.20-40     2020-02-19 [1] CRAN (R 3.6.0)              
+##  lifecycle     0.2.0       2020-03-06 [1] CRAN (R 3.6.0)              
+##  lubridate     1.7.4       2018-04-11 [1] CRAN (R 3.6.0)              
+##  magrittr      1.5         2014-11-22 [1] CRAN (R 3.6.0)              
+##  memoise       1.1.0       2017-04-21 [1] CRAN (R 3.6.0)              
+##  modelr        0.1.6       2020-02-22 [1] CRAN (R 3.6.0)              
+##  munsell       0.5.0       2018-06-12 [1] CRAN (R 3.6.0)              
+##  nlme          3.1-145     2020-03-04 [1] CRAN (R 3.6.0)              
+##  pillar        1.4.3       2019-12-20 [1] CRAN (R 3.6.0)              
+##  pkgbuild      1.0.6       2019-10-09 [1] CRAN (R 3.6.0)              
+##  pkgconfig     2.0.3       2019-09-22 [1] CRAN (R 3.6.0)              
+##  pkgload       1.0.2       2018-10-29 [1] CRAN (R 3.6.0)              
+##  prettyunits   1.1.1       2020-01-24 [1] CRAN (R 3.6.0)              
+##  processx      3.4.2       2020-02-09 [1] CRAN (R 3.6.0)              
+##  ps            1.3.2       2020-02-13 [1] CRAN (R 3.6.0)              
+##  purrr       * 0.3.3       2019-10-18 [1] CRAN (R 3.6.0)              
+##  R6            2.4.1       2019-11-12 [1] CRAN (R 3.6.0)              
+##  rcfss       * 0.1.9       2019-11-13 [1] local                       
+##  Rcpp          1.0.4       2020-03-17 [1] CRAN (R 3.6.0)              
+##  readr       * 1.3.1       2018-12-21 [1] CRAN (R 3.6.0)              
+##  readxl        1.3.1       2019-03-13 [1] CRAN (R 3.6.0)              
+##  remotes       2.1.1       2020-02-15 [1] CRAN (R 3.6.0)              
+##  reprex        0.3.0       2019-05-16 [1] CRAN (R 3.6.0)              
+##  rlang         0.4.5.9000  2020-03-19 [1] Github (r-lib/rlang@a90b04b)
+##  rmarkdown     2.1         2020-01-20 [1] CRAN (R 3.6.0)              
+##  rprojroot     1.3-2       2018-01-03 [1] CRAN (R 3.6.0)              
+##  rstudioapi    0.11        2020-02-07 [1] CRAN (R 3.6.0)              
+##  rvest         0.3.5       2019-11-08 [1] CRAN (R 3.6.0)              
+##  scales        1.1.0       2019-11-18 [1] CRAN (R 3.6.0)              
+##  sessioninfo   1.1.1       2018-11-05 [1] CRAN (R 3.6.0)              
+##  stringi       1.4.6       2020-02-17 [1] CRAN (R 3.6.0)              
+##  stringr     * 1.4.0       2019-02-10 [1] CRAN (R 3.6.0)              
+##  testthat      2.3.2       2020-03-02 [1] CRAN (R 3.6.0)              
+##  tibble      * 2.1.3       2019-06-06 [1] CRAN (R 3.6.0)              
+##  tidyr       * 1.0.2       2020-01-24 [1] CRAN (R 3.6.0)              
+##  tidyselect    1.0.0       2020-01-27 [1] CRAN (R 3.6.0)              
+##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
+##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
+##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
+##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
+##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
+##  xml2          1.2.5       2020-03-11 [1] CRAN (R 3.6.0)              
+##  yaml          2.2.1       2020-02-01 [1] CRAN (R 3.6.0)              
+##  ymlthis     * 0.1.2       2020-02-03 [1] CRAN (R 3.6.0)              
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 ```

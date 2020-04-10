@@ -71,7 +71,11 @@ The units of analysis are completely different. Just as it made sense to split [
 
 ## Inner join
 
-> `inner_join(x, y)`: Return all rows from `x` where there are matching values in `y`, and all columns from `x` and `y`. If there are multiple matches between `x` and `y`, all combination of the matches are returned. This is a mutating join.
+{{% alert note %}}
+
+`inner_join(x, y)`: Return all rows from `x` where there are matching values in `y`, and all columns from `x` and `y`. If there are multiple matches between `x` and `y`, all combination of the matches are returned. This is a mutating join.
+
+{{% /alert %}}
 
 
 ```r
@@ -217,7 +221,11 @@ We lose Sabrina in the join because, although she appears in `x = superheroes`, 
   
 ## Left join
 
-> `left_join(x, y)`: Return all rows from `x`, and all columns from `x` and `y`. If there are multiple matches between `x` and `y`, all combination of the matches are returned. This is a mutating join.
+{{% alert note %}}
+
+`left_join(x, y)`: Return all rows from `x`, and all columns from `x` and `y`. If there are multiple matches between `x` and `y`, all combination of the matches are returned. This is a mutating join.
+
+{{% /alert %}}
 
 
 ```r
@@ -365,7 +373,11 @@ We basically get `x = superheroes` back, but with the addition of variable `yr_f
 
 ## Right join
 
-> `right_join(x, y)`: Return all rows from `y`, and all columns from `x` and `y`. If there are multiple matches between `x` and `y`, all combination of the matches are returned. This is a mutating join.
+{{% alert note %}}
+
+`right_join(x, y)`: Return all rows from `y`, and all columns from `x` and `y`. If there are multiple matches between `x` and `y`, all combination of the matches are returned. This is a mutating join.
+
+{{% /alert %}}
 
 
 ```r
@@ -539,7 +551,11 @@ Doing so returns the same basic data frame, with the column orders reversed. `ri
 
 ## Full join
 
-> `full_join(x, y)`: Return all rows and all columns from both `x` and `y`. Where there are not matching values, returns `NA` for the one missing. This is a mutating join.
+{{% alert note %}}
+
+`full_join(x, y)`: Return all rows and all columns from both `x` and `y`. Where there are not matching values, returns `NA` for the one missing. This is a mutating join.
+
+{{% /alert %}}
 
 
 ```r
@@ -691,7 +707,11 @@ We get all rows of `x = superheroes` plus a new row from `y = publishers`, conta
 
 ## Semi join
 
-> `semi_join(x, y)`: Return all rows from `x` where there are matching values in `y`, keeping just columns from `x`. A semi join differs from an inner join because an inner join will return one row of `x` for each matching row of `y` (potentially duplicating rows in `x`), whereas a semi join will never duplicate rows of `x`. This is a filtering join.
+{{% alert note %}}
+
+`semi_join(x, y)`: Return all rows from `x` where there are matching values in `y`, keeping just columns from `x`. A semi join differs from an inner join because an inner join will return one row of `x` for each matching row of `y` (potentially duplicating rows in `x`), whereas a semi join will never duplicate rows of `x`. This is a filtering join.
+
+{{% /alert %}}
 
 
 ```r
@@ -836,7 +856,11 @@ We get a similar result as with `inner_join()` but the join result contains only
 
 ## Anti join
 
-> `anti_join(x, y)`: Return all rows from `x` where there are not matching values in `y`, keeping just columns from `x`. This is a filtering join.
+{{% alert note %}}
+
+`anti_join(x, y)`: Return all rows from `x` where there are not matching values in `y`, keeping just columns from `x`. This is a filtering join.
+
+{{% /alert %}}
 
 
 ```r
@@ -987,14 +1011,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.3      
+##  os       macOS Catalina 10.15.4      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-03-30                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source                      

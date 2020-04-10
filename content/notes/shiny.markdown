@@ -161,7 +161,11 @@ ui <- fluidPage(
 
 Run the app with this code as the UI. Notice the formatting of the text and understand why it is rendered that way.
 
-> For people who know basic HTML: any named argument you pass to an HTML function becomes an attribute of the HTML element, and any unnamed argument will be a child of the element. That means that you can, for example, create blue text with `div("this is blue", style = "color: blue;")`.
+{{% alert note %}}
+
+For people who know basic HTML: any named argument you pass to an HTML function becomes an attribute of the HTML element, and any unnamed argument will be a child of the element. That means that you can, for example, create blue text with `div("this is blue", style = "color: blue;")`.
+
+{{% /alert %}}
 
 **Exercise:** Experiment with different HTML-wrapper functions inside `fluidPage()`. Run the `fluidPage(...)` function in the console and see the HTML that it creates.
 
@@ -217,7 +221,11 @@ shinyApp(ui = ui, server = server)
 
 [![Shiny layout](/img/shiny-layout.png)](/img/shiny-layout.png)
 
-> If you want to be a lot more flexible with the design, you can have much more fine control over where things go by using a grid layout. We won't cover that here, but if you're interested, look at the documentation for `?column` and `?fluidRow`.
+{{% alert note %}}
+
+If you want to be a lot more flexible with the design, you can have much more fine control over where things go by using a grid layout. We won't cover that here, but if you're interested, look at the documentation for `?column` and `?fluidRow`.
+
+{{% /alert %}}
 
 **Exercise:** Add some UI into each of the two panels (sidebar panel and main panel) and see how your app now has two columns.
 
@@ -343,7 +351,11 @@ selectInput(inputId = "department",
             multiple = TRUE)
 ```
 
-> Set `multiple = TRUE` so the user can select more than one department at a time.
+{{% alert note %}}
+
+Set `multiple = TRUE` so the user can select more than one department at a time.
+
+{{% /alert %}}
 
 Add this function as well to your app. If you followed along, your entire app should have this code:
 
@@ -599,7 +611,11 @@ output$employTable <- renderTable({
 
 Add this code to your server. Don't overwrite the previous definition of `output$hourlyPlot`, just add this code before or after that, but inside the server function. Run your app, and be amazed! You can now see a table showing the number of wage employees per department that match your criteria. 
 
-> Notice that in building `ui`, we are using a predefined function called `fluidPage()` so all of our different elements for the UI are separated by commas. This is because each element for the page is an argument for the `fluidPage()` function. In building `server`, we are writing a new function. For this reason we don't have to separate each element with a comma. We just write it like we would any other function!
+{{% alert note %}}
+
+Notice that in building `ui`, we are using a predefined function called `fluidPage()` so all of our different elements for the UI are separated by commas. This is because each element for the page is an argument for the `fluidPage()` function. In building `server`, we are writing a new function. For this reason we don't have to separate each element with a comma. We just write it like we would any other function!
+
+{{% /alert %}}
 
 **Exercise:** Add a new output. Either a new plot, a new table, or some piece of text that changes based on the inputs. For example, you could add a text output (`textOutput()` in the UI, `renderText()` in the server) that says how many results were found. If you choose to do this, I recommend first adding the output to the UI, then building the output in the server with static text to make sure you have the syntax correct. Only once you can see the text output in your app you should make it reflect the inputs. Pro-tip: since `textOutput()` is written in the UI, you can wrap it in other UI functions. For example, `h2(textOutput(...))` will result in larger text.
 
@@ -818,7 +834,11 @@ output$jobTitle <- renderUI({
 })
 ```
 
-> Why can we not just use `employ_filter()` within this `renderUI()` function? Because we need to add a `filter()` in `employ_filter()` for the new job title selector. Relying on `employ_filter()` in `output$jobTitle` will generate a feedback loop preventing a user from reliably using the job title filter.
+{{% alert note %}}
+
+Why can we not just use `employ_filter()` within this `renderUI()` function? Because we need to add a `filter()` in `employ_filter()` for the new job title selector. Relying on `employ_filter()` in `output$jobTitle` will generate a feedback loop preventing a user from reliably using the job title filter.
+
+{{% /alert %}}
 
 Finally to make sure the data properly updates, change `employ_filter` in the `server` function to:
 
@@ -1120,14 +1140,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.3      
+##  os       macOS Catalina 10.15.4      
 ##  system   x86_64, darwin15.6.0        
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-03-30                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      

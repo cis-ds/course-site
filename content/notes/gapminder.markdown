@@ -70,7 +70,11 @@ glimpse(gapminder)
 ## $ gdpPercap <dbl> 779, 821, 853, 836, 740, 786, 978, 852, 649, 635, 727,…
 ```
 
-> Run `?gapminder` in the console to open the help file for the data and definitions for each of the columns.
+{{% alert note %}}
+
+Run `?gapminder` in the console to open the help file for the data and definitions for each of the columns.
+
+{{% /alert %}}
 
 Using the grammar of graphics and your knowledge of the `ggplot2` library, generate a series of graphs that explore the relationships between specific variables.
 
@@ -325,7 +329,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-01                  
+##  date     2020-04-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      

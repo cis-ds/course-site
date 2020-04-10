@@ -26,7 +26,7 @@ Go [here](https://github.com/uc-cfss/hw07) to fork the repo for homework 07.
 [Last week](/homework/statistical-learning/) you estimated statistical learning models predicting survival and death on the Titanic. Take the model specification for your best-performing model from the Titanic problem, and estimate it using at least three machine learning algorithms in `sparklyr` (either MLlib or H2O). Calculate the accuracy and AUC metrics for each model. Which algorithm performs the best?
 
 * If you use an `ml_()` function, you need to split the data into training/test sets
-* If you use an `h2o.()` function, you need to either split the data into training/test sets or use $k$-fold CV
+* If you use an `h2o.()` function, you need to either split the data into training/test sets or use `\(k\)`-fold CV
 
 # Part 2: Generating geospatial visualization
 
@@ -54,7 +54,11 @@ Once you have your geographic boundaries data (either from an R package or impor
 
 **Along with the map itself, write a brief description (250-500 words) of the map.** Summarize the information being depicted and explain any major visual design choices (e.g. why this color palette, why split the continuous variable into XYZ intervals rather than ABC intervals).
 
-> Remember to make your assignment reproducible. If you get a shapefile from the internet, either include it in your repo or make sure your R Markdown document/R script includes a function to download it from the internet.
+{{% alert note %}}
+
+Remember to make your assignment reproducible. If you get a shapefile from the internet, either include it in your repo or make sure your R Markdown document/R script includes a function to download it from the internet.
+
+{{% /alert %}}
 
 # Submit the assignment
 
