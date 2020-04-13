@@ -34,6 +34,7 @@ url_pdf: ""
 url_slides: "/slides/data-transformation/"
 url_video: ""
 url_code: ""
+url_notes: "https://hackmd.io/@cfss-sp20/data-transformation"
 
 # Does the content use math formatting?
 math: false
