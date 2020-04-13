@@ -65,12 +65,6 @@ math: false
 * [Why visualize data?](/notes/why-visualize-data/)
 * [How to build a complicated, layered graphic](/notes/minard/)
 * [Practice generating layered graphics using `ggplot2`](/notes/gapminder/)
-    
-    Run the below code in your console to download the required files.
-    
-    ```r
-    usethis::use_course("uc-cfss/grammar-of-graphics")
-    ```
 
 * [Exploring Minard's 1812 plot with `ggplot2`](https://github.com/andrewheiss/fancy-minard) - a much fancier (and more complex) version
 

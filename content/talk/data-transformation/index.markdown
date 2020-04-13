@@ -59,13 +59,6 @@ math: false
 * [`dplyr` in brief](/notes/dplyr/)
 * [Practice transforming college education (data)](/notes/transform-college/)
 
-    Run the below code in your console to download the required files.
-    
-    ```r
-    usethis::use_course("uc-cfss/data-transformation")
-    ```
-
-
 ## Additional resources
 
 * [Data Wrangling with `dplyr` and `tidyr` Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf)
