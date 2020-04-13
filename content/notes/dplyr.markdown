@@ -324,17 +324,17 @@ Or this:
 
 ```r
 delays <- flights %>% 
-  group_by(flights, dest) %>% 
-  summarize(flights,
+  group_by(.data = flights, dest) %>% 
+  summarize(.data = flights,
     count = n(),
     dist = mean(distance, na.rm = TRUE),
     delay = mean(arr_delay, na.rm = TRUE)
   ) %>% 
-  filter(flights, count > 20, dest != "HNL")
+  filter(.data = flights, count > 20, dest != "HNL")
 ```
 
 ```
-## Error: Column `flights` is unknown
+## Error: Column `.` is unknown
 ```
 
 If you use pipes, you don't have to reference the data frame with each function - just the first time at the beginning of the pipe sequence.
@@ -358,7 +358,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-13                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version     date       lib source                      
@@ -370,6 +370,7 @@ devtools::session_info()
 ##  callr          3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
 ##  cellranger     1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
 ##  cli            2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
+##  codetools      0.2-16      2018-12-24 [1] CRAN (R 3.6.3)              
 ##  colorspace     1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
 ##  crayon         1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
 ##  DBI            1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
