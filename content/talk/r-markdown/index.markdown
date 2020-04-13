@@ -59,5 +59,5 @@ math: false
 
 * [A dive into R Markdown](/notes/r-markdown/)
 
-## What you need to do
+## What you need to do after class
 

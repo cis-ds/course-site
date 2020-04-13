@@ -64,4 +64,4 @@ math: false
 
 * [*Naming things*](http://www2.stat.duke.edu/~rcs46/lectures_2015/01-markdown-git/slides/naming-slides/naming-slides.pdf) - by Jenny Bryan. A concise guide to naming files.
 
-## What you need to do
+## What you need to do after class

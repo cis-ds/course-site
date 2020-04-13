@@ -48,7 +48,7 @@ math: false
 * Define and estimate a random forest
 * Introduce the `caret` package for statistical learning in R
 * Define resampling method
-* Compare and contrast the validation set approach with leave-one-out and $k$-fold cross-validation
+* Compare and contrast the validation set approach with leave-one-out and `\(k\)`-fold cross-validation
 * Demonstrate how to conduct cross-validation using `rsample`
 
 ## Before class
@@ -65,6 +65,6 @@ This is not a math/stats class. In class we will **briefly** summarize how these
 * [The `caret` Package](https://topepo.github.io/caret/) - introductory book for the `caret` package. Tells you what models you can implement and all the nitty-gritty details to customize `train` for different cross-validation methods.
 * [Working with `rset`s](https://tidymodels.github.io/rsample/articles/Working_with_rsets.html) - documentation for `rsample` and demonstration implementing it for resampling and model assessment
 
-## What you need to do
+## What you need to do after class
 
 * [Complete the statistical learning homework](/homework/statistical-learning/)

@@ -62,6 +62,6 @@ math: false
 
 * [Working with statistical models](/notes/work-with-models-exercise/)
 
-## What you need to do
+## What you need to do after class
 
 * [Complete the statistical learning homework](/homework/statistical-learning/)

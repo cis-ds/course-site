@@ -62,6 +62,6 @@ math: false
 * [Practice using relational data](/notes/relational-data-exercise/)
 * [Practice transforming and visualizing factors](/notes/factors-exercise/)
 
-## What you need to do
+## What you need to do after class
 
 * [Complete the wrangling and visualizing data homework](/homework/wrangle-data/)

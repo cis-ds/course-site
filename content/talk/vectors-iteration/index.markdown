@@ -61,6 +61,6 @@ math: false
 
 * [Scoped verbs](https://dcl-2017-04.github.io/curriculum/manip-scoped.html)
 
-## What you need to do
+## What you need to do after class
 
 * [Complete the programming homework](/homework/programming/)

@@ -67,4 +67,4 @@ math: false
 * [More install-and-play API packages for R](https://github.com/ropensci/webservices)
 * [Documentation for `httr`](https://cran.r-project.org/web/packages/httr/)
 
-## What you need to do
+## What you need to do after class

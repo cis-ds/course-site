@@ -56,6 +56,6 @@ math: false
 * [Git repo for dating age rule app](https://github.com/bensoltoff/age-rule)
 * [Chicago wage employees sample app](https://bensoltoff.shinyapps.io/chicago-employees/)
 
-## What you need to do
+## What you need to do after class
 
 * Finish [Homework 09](/homework/shiny/)

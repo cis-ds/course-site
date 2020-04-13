@@ -60,6 +60,6 @@ math: false
     * `demo("united")` - how to scrape a web page which requires a login
     * [Scraping IMDB](https://blog.rstudio.org/2014/11/24/rvest-easy-web-scraping-with-r/)
 
-## What you need to do
+## What you need to do after class
 
 * Start [homework 8](/homework/webdata/)

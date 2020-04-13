@@ -48,4 +48,4 @@ math: false
 ## Class materials
 
 
-## What you need to do
+## What you need to do after class

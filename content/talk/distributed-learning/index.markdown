@@ -78,4 +78,4 @@ math: false
 * [`bigrquery`](https://github.com/rstats-db/bigrquery) - instructions for setting up an account to access Google Bigquery databases
 * [`sparklyr`](http://spark.rstudio.com/) - introduction to the `sparklyr` interface for Spark
 
-## What you need to do
+## What you need to do after class

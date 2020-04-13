@@ -67,4 +67,4 @@ math: false
 * [Practicing `tidytext` with song titles](/notes/song-titles-exercise/)
 * [Practicing sentiment analysis with Harry Potter](/notes/harry-potter-exercise/)
 
-## What you need to do
+## What you need to do after class

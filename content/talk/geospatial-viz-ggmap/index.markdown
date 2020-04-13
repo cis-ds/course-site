@@ -62,6 +62,6 @@ math: false
 
 * [Learn Spatial Analysis](https://spatialanalysis.github.io/) - tutorials and workshops conducted by the Center for Spatial Data Science at the University of Chicago. Lots of materials developed using R.
 
-## What you need to do
+## What you need to do after class
 
 * [Obtain an API key](https://api.census.gov/data/key_signup.html) and [store it securely](/notes/application-program-interface/#census-data-with-tidycensus) on your computer. We will be using `tidycensus` next class, so you will save time if you set this up in advance.

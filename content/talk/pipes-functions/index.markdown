@@ -59,4 +59,4 @@ math: false
 * [Pipes in R](/notes/pipes/)
 * [Functions in R](/notes/functions/)
 
-## What you need to do
+## What you need to do after class

@@ -74,4 +74,4 @@ math: false
 * [Vignette on `broom`](https://cran.r-project.org/web/packages/broom/vignettes/broom.html)
 * [Examples of estimating common statistical models in R](http://www.ats.ucla.edu/stat/dae/)
 
-## What you need to do
+## What you need to do after class
