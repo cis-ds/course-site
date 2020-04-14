@@ -52,7 +52,6 @@ math: false
 ## Before class
 
 * Read Chapters 9-12 from [R for Data Science](http://r4ds.had.co.nz/)
-* Read [Pivoting in `tidyr`](https://tidyr.tidyverse.org/articles/pivot.html)
 
 ## Class materials
 
@@ -64,3 +63,4 @@ math: false
 
 * Lohr. 2014. [For Big-Data Scientists, "Janitor Work" Is Key Hurdle to Insights.](http://www.nytimes.com/2014/08/18/technology/for-big-data-scientists-hurdle-to-insights-is-janitor-work.html?_r=0) *New York Times*.
     * [Data Carpentry](http://www.mimno.org/articles/carpentry/) - a response to the NYTimes article
+* [Pivoting in `tidyr`](https://tidyr.tidyverse.org/articles/pivot.html)

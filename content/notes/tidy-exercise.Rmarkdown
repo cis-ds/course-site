@@ -22,6 +22,16 @@ knitr::opts_chunk$set(cache = TRUE)
 library(tidyverse)
 ```
 
+{{% alert note %}}
+
+Run the below code in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/data-wrangling-tidy-data")
+```
+
+{{% /alert %}}
+
 For each exercise, tidy the data frame. Before you write any code examine the structure of the data frame and mentally (or with pen-and-paper) sketch out what you think the tidy data structure should be.
 
 ## Race data
@@ -44,9 +54,14 @@ Important info:
 **Tidy data structure**
 
 ```{r race-hint, echo = FALSE}
-race %>%
-  gather(key = Time, value = Score, -Name, convert = TRUE) %>%
-  arrange(Name, Time)
+pivot_longer(
+  data = race,
+  cols = -Name,
+  names_to = "Time",
+  values_to = "Score",
+  # ensure the Time column is stored as a numeric column
+  names_ptypes = list(Time = double())
+)
 ```
 
   </p>
@@ -56,24 +71,16 @@ race %>%
   <summary>Click for the solution</summary>
   <p>
 
-This is essentially a gathering operation. Except for the `Name` column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns' values are another variable. We want to gather these columns. The `key` will tell us the original column name, and the `value` will give us the values in the cells. Because the column names are actually numeric values, we set `convert = TRUE` to coerce the new `Time` column into a numeric column (or vector). (The last line isn't necessary, but sorts the data frame in a consistent manner.)
-
-```{r race-solution}
-# using gather()
-race %>%
-  gather(key = Time, value = Score, -Name, convert = TRUE) %>%
-  arrange(Name, Time)
-
-# using pivot_longer()
-race %>%
-  pivot_longer(
-    cols = -Name,
-    names_to = "Time",
-    values_to = "Score",
-    # ensure the Time column is stored as a numeric column
-    names_ptypes = list(Time = double())
-  )
+```{r race-hint, echo = TRUE}
 ```
+
+Except for the `Name` column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns' values are another variable. `pivot_longer()` is the appropriate function.
+
+{{% alert note %}}
+
+Because the column names are actually numeric values, we use `names_ptypes = list(Time = double())` to coerce the new `Time` column into a numeric column. `names_ptypes` allows us to manually specify the column type for the name column. Because (rarely) you may have more than one name column, we store each type separately inside of `list()`. `double()` refers to numeric data, so `names_ptypes = list(Time = double())` ensures the `Time` column is stored as a numeric column.
+
+{{% /alert %}}
 
   </p>
 </details>
@@ -97,8 +104,7 @@ Important info:
 **Tidy data structure**
 
 ```{r results-hint, echo = FALSE}
-results %>%
-  spread(key = Treatment, value = value)
+pivot_wider(data = results, names_from = Treatment, values_from = value)
 ```
 
   </p>
@@ -108,18 +114,10 @@ results %>%
   <summary>Click for the solution</summary>
   <p>
 
-This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
-
-```{r results-solution}
-# using spread()
-results %>%
-  spread(key = Treatment, value = value)
-
-# using pivot_wider()
-# same results as spread(), rows are just sorted in different order
-results %>%
-  pivot_wider(names_from = Treatment, values_from = value)
+```{r results-hint, echo = TRUE}
 ```
+
+This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
 
   </p>
 </details>
@@ -142,10 +140,16 @@ This one is a bit tougher. Important info:
 **Tidy data structure**
 
 ```{r grades-hint, echo = FALSE}
-grades %>%
-  gather(key = Quarter, value = Score, Fall:Winter) %>%
-  spread(key = Test, value = Score) %>%
-  arrange(ID, Year, Quarter)
+pivot_longer(
+  data = grades,
+  cols = c(Fall:Winter),
+  names_to = "Quarter",
+  values_to = "Score"
+) %>%
+  pivot_wider(
+    names_from = Test,
+    values_from = Score
+  )
 ```
 
   </p>
@@ -155,46 +159,35 @@ grades %>%
   <summary>Click for the solution</summary>
   <p>
 
+```{r grades-hint, echo = TRUE}
+```
+
 In this example, the basic unit of observation is the test. Each individual takes two separate tests (`Math` or `Writing`) at multiple points in time: during each quarter (`Fall`, `Winter`, `Spring`) as well as in multiple years (`2008` and `2009`). So our final data frame should contain five columns: `ID` (identifying the student), `Year` (year the test was taken), `Quarter` (quarter in which the test was taken), `Math` (score on the math test), and `Writing` (score on the writing test).
 
-Let's start with the gathering operation: we want to gather `Fall`, `Winter`, and `Spring` into a single column (we can use the inclusive select function `:` to gather these three columns):
+Where can we begin? Initially we can make the data frame longer by making `Fall`, `Winter`, and `Spring` into a single column (we can use the inclusive select function `:` to gather these three columns):
 
-```{r grades-gather}
-grades %>%
-  gather(key = Quarter, value = Score, Fall:Winter)
+```{r grades-longer}
+pivot_longer(
+  data = grades,
+  cols = c(Fall:Winter),
+  names_to = "Quarter",
+  values_to = "Score"
+)
 ```
 
-Good, but now we spread observations across multiple rows. Remember that we want each test to be a separate variable. To do that, we can spread those values across two columns.
+Good, but now we have observations spread across multiple rows. Remember that we want each test to be a separate variable. To do that, we can `pivot_wider()` those values across two columns.
 
-```{r grades-spread}
-grades %>%
-  gather(key = Quarter, value = Score, Fall:Winter) %>%
-  spread(key = Test, value = Score)
-```
-
-If we're cleaning up the data frame, let's also arrange it in a logical order:
-
-```{r grades-arrange}
-grades %>%
-  gather(key = Quarter, value = Score, Fall:Winter) %>%
-  spread(key = Test, value = Score) %>%
-  arrange(ID, Year, Quarter)
-```
-
-If we use the `pivot_*()` functions in `tidyr`, we need to make the data frame longer first, then wider:
-
-```{r grades-pivot}
-grades %>%
-  pivot_longer(
-    cols = Fall:Winter,
-    names_to = "Quarter",
-    values_to = "Score"
-  ) %>%
+```{r grades-wider}
+pivot_longer(
+  data = grades,
+  cols = c(Fall:Winter),
+  names_to = "Quarter",
+  values_to = "Score"
+) %>%
   pivot_wider(
     names_from = Test,
     values_from = Score
-  ) %>%
-  arrange(ID, Year, Quarter)
+  )
 ```
 
   </p>
@@ -215,11 +208,14 @@ This one is also pretty difficult, but if you think it through conceptually it i
 **Tidy data structure**
 
 ```{r activities-hint, echo = FALSE}
-activities %>%
-  gather(key = key, value = value, -id, -trt) %>%
-  separate(col = key, into = c("location", "time")) %>%
-  arrange(id, trt, time) %>%
-  spread(key = location, value = value)
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+) %>%
+  separate(variable, into = c("location", "time")) %>%
+  pivot_wider(names_from = location, values_from = value)
 ```
 
   </p>
@@ -229,53 +225,41 @@ activities %>%
   <summary>Click for the solution</summary>
   <p>
 
-This is a more complex operation. The basic problem is that we have variables stored in multiple columns (location, with possible values of `work`, `play`, and `talk`). We need to gather these columns into a single column for each variable. But what happens if we just gather them?
+This is a more complex operation. The basic problem is that we have variables stored in multiple columns (location, with possible values of `work`, `play`, and `talk`). We need to combine these columns into a single column for each variable. But what happens if we just make the data frame longer in this way?
 
-```{r activities-gather}
-activities %>%
-  gather(key = key, value = value, -id, -trt)
+```{r activities-longer}
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+)
 ```
 
 We've created a new problem! Actually, two problems:
 
 1. We have a single observation stored across multiple rows: we want a single row for each `id` x `trt` pairing
-2. We have two variables stored in a single column: `key` contains the information on both location (`work`, `play`, and `talk`) as well as when the measurement was taken (`T1` or `T2`)
+2. We have two variables stored in a single column: `variable` contains the information on both location (`work`, `play`, and `talk`) as well as when the measurement was taken (`T1` or `T2`)
 
 The best approach is to fix the second problem by separating the columns, then spreading the different types of measurements back into their own columns.
 
-```{r activities-separate-spread}
-activities %>%
-  gather(key = key, value = value, -id, -trt) %>%
-  separate(col = key, into = c("location", "time"))
+```{r activities-separate-longer}
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+) %>%
+  separate(variable, into = c("location", "time"))
 
-activities %>%
-  gather(key = key, value = value, -id, -trt) %>%
-  separate(col = key, into = c("location", "time")) %>%
-  spread(key = location, value = value)
-```
-
-The whole operation in a single chain (with an `arrange()` thrown in to sort the data frame):
-
-```{r activities-solution}
-activities %>%
-  gather(key = key, value = value, -id, -trt) %>%
-  separate(key, into = c("location", "time")) %>%
-  spread(key = location, value = value) %>%
-  arrange(id, trt, time)
-```
-
-And the analogous pivot operation is:
-
-```{r activities-pivot}
-activities %>%
-  pivot_longer(
-    cols = work.T1:talk.T2,
-    names_to = "key",
-    values_to = "value"
-  ) %>%
-  separate(key, into = c("location", "time")) %>%
-  pivot_wider(names_from = location, values_from = value) %>%
-  arrange(id, trt, time)
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+) %>%
+  separate(variable, into = c("location", "time")) %>%
+  pivot_wider(names_from = location, values_from = value)
 ```
 
   </p>
