@@ -219,7 +219,7 @@ if (y < 0 && debug) message("Y is negative")
 
 ### Line length
 
-Strive to limit your code to 80 characters per line. This fits comfortably on a printed page with a reasonably sized font. For instance, if I wanted to convert the `chief` column to a [factor](http://r4ds.had.co.nz/factors.html) for building a [faceted graph](https://github.com/uc-cfss/hw03/blob/master/demo/scotus_solution.md#solution-using-facets-and-showing-whole-data-on-each-facet-getting-harder):
+Strive to limit your code to 80 characters per line. This fits comfortably on a printed page with a reasonably sized font. For instance, if I wanted to convert the `chief` column to a [factor](http://r4ds.had.co.nz/factors.html) for building a faceted graph:
 
 ```r
 # Good
@@ -591,7 +591,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
