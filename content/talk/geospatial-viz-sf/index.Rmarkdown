@@ -1,13 +1,13 @@
 ---
 title: "Geospatial visualization: vector maps"
-date: 2020-05-27T15:00:00
-publishDate: 2019-05-22T13:30:00
+date: 2020-05-27T15:00:00-06:00
+publishDate: 2019-05-22T13:30:00-06:00
 draft: true
 type: "talk"
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2020-05-27T16:20:00
+time_end: 2020-05-27T16:20:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
