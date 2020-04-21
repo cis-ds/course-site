@@ -23,6 +23,16 @@ library(nycflights13)
 theme_set(theme_minimal())
 ```
 
+{{% alert note %}}
+
+Run the below code in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/data-wrangling-relational-data-and-factors")
+```
+
+{{% /alert %}}
+
 For each exercise, use your knowledge of relational data and joining operations to compute a table or graph that answers the question. All questions use data frames from the `nycflights13` package (if you have not previously installed it, do so using `install.packages("nycflights13")`).
 
 {{% alert note %}}
@@ -298,7 +308,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-21                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version     date       lib source                      
