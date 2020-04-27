@@ -34,6 +34,7 @@ url_pdf: ""
 url_slides: "/slides/pipes-and-functions-in-r/"
 url_video: ""
 url_code: ""
+url_notes: "https://hackmd.io/@cfss-sp20/pipes-and-functions-in-r"
 
 # Does the content use math formatting?
 math: false
