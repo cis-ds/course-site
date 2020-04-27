@@ -180,14 +180,11 @@ gun_deaths %>%
   drop_na(intent) %>%
   # parse_factor() is a tidyverse friendly form of factor()
   mutate(intent = parse_factor(intent, levels = intent_levels)) %>%
-  ggplot(mapping = aes(x = intent %>%
-                         fct_infreq() %>%
-                         fct_rev())) +
+  ggplot(mapping = aes(x = fct_infreq(intent))) +
   geom_bar() +
   labs(title = "Gun Deaths in the United States (2012-2014)",
        x = "Intent of death",
-       y = "Number of gun deaths") +
-  coord_flip()
+       y = "Number of gun deaths")
 ```
 
 <img src="/notes/factors-exercise_files/figure-html/intent-1.png" width="672" />
@@ -243,7 +240,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-21                  
+##  date     2020-04-27                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
@@ -320,7 +317,6 @@ devtools::session_info()
 ##  tidyselect    1.0.0       2020-01-27 [1] CRAN (R 3.6.0)              
 ##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
 ##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
-##  utf8          1.1.4       2018-05-24 [1] CRAN (R 3.6.0)              
 ##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
 ##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
 ##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
