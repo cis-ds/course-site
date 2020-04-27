@@ -21,6 +21,16 @@ menu:
 library(tidyverse)
 ```
 
+{{% alert note %}}
+
+Run the below code in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/pipes-and-functions-in-r")
+```
+
+{{% /alert %}}
+
 **Functions** are an important tool in the computational social scientist's toolkit. They enable you to avoid repetition and copy-and-paste and greatly increase the efficiency of your code writing.
 
 * **They are easy to reuse**. If an update to the code is necessary, you revise it in one location and the changes propogate to all over components that implement the function.
@@ -596,7 +606,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-27                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
