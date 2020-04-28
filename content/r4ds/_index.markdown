@@ -276,7 +276,7 @@ library(tidyverse)
     
     <img src="/r4ds/_index_files/figure-html/unnamed-chunk-16-2.png" width="70%" style="display: block; margin: auto;" />
     
-    `.` acts a placeholder for no variable. In `facet_grid()`, this results in a plot faceted on a single dimension (1 by `\(N\)` or `\(N\)` by 1) rather than an `\(N\)` by `\(N\)` grid.
+    `.` acts a placeholder for no variable. In `facet_grid()`, this results in a plot faceted on a single dimension (1 by $N$ or $N$ by 1) rather than an $N$ by $N$ grid.
 
 1.  Take the first faceted plot in this section:
 
@@ -590,7 +590,7 @@ library(tidyverse)
 
 1.  What does `labs()` do? Read the documentation.
 
-    `labs()` adds labels to the graph. You can add a title, subtitle, and a label for the `\(x\)` and `\(y\)` axes, as well as a caption.
+    `labs()` adds labels to the graph. You can add a title, subtitle, and a label for the $x$ and $y$ axes, as well as a caption.
 
 1.  What's the difference between `coord_quickmap()` and `coord_map()`?
 
@@ -610,7 +610,7 @@ library(tidyverse)
     
     <img src="/r4ds/_index_files/figure-html/unnamed-chunk-31-1.png" width="70%" style="display: block; margin: auto;" />
     
-    The relationships is approximately linear, though overall cars have slightly better highway mileage than city mileage. But using `coord_fixed()`, the plot draws equal intervals on the `\(x\)` and `\(y\)` axes so they are directly comparable. `geom_abline()` draws a line that, by default, has an intercept of 0 and slope of 1. This aids us in our discovery that automobile gas efficiency is on average slightly higher for highways than city driving, though the slope of the relationship is still roughly 1-to-1.
+    The relationships is approximately linear, though overall cars have slightly better highway mileage than city mileage. But using `coord_fixed()`, the plot draws equal intervals on the $x$ and $y$ axes so they are directly comparable. `geom_abline()` draws a line that, by default, has an intercept of 0 and slope of 1. This aids us in our discovery that automobile gas efficiency is on average slightly higher for highways than city driving, though the slope of the relationship is still roughly 1-to-1.
     
 # 4 Workflow: basics
 
@@ -1289,7 +1289,7 @@ library(tidyverse)
 1.  Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you
     expect those three numbers to be related?
     
-    `dep_time` should equal `sched_dep_time` `\(+\)` `dep_delay` (after accounting for the fact that they are not stored continuously).
+    `dep_time` should equal `sched_dep_time` $+$ `dep_delay` (after accounting for the fact that they are not stored continuously).
 
 1.  Find the 10 most delayed flights using a ranking function. How do you want 
     to handle ties? Carefully read the documentation for `min_rank()`.
@@ -1805,7 +1805,7 @@ library(tidyverse)
     
     <img src="/r4ds/_index_files/figure-html/unnamed-chunk-67-1.png" width="70%" style="display: block; margin: auto;" />
     
-    Around 1500 diamonds are `\(1.00\)` carat, compared to around 30 or so diamonds at `\(.99\)` carat. This could occur because prospective buyers of diamonds, if they are already willing to buy a `\(.99\)` carat diamond will decide it is more aesthetically pleasing to say they bought a `\(1\)` carat diamond so there is less demand for `\(.99\)` carat diamonds.
+    Around 1500 diamonds are $1.00$ carat, compared to around 30 or so diamonds at $.99$ carat. This could occur because prospective buyers of diamonds, if they are already willing to buy a $.99$ carat diamond will decide it is more aesthetically pleasing to say they bought a $1$ carat diamond so there is less demand for $.99$ carat diamonds.
     
 1.  Compare and contrast `coord_cartesian()` vs `xlim()` or `ylim()` when
     zooming in on a histogram. What happens if you leave `binwidth` unset?
@@ -2283,13 +2283,13 @@ devtools::session_info()
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
 #>  tz       America/Chicago             
-#>  date     2020-04-10                  
+#>  date     2020-04-28                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package     * version    date       lib source                      
 #>  assertthat    0.2.1      2019-03-21 [1] CRAN (R 3.6.0)              
 #>  backports     1.1.5      2019-10-02 [1] CRAN (R 3.6.0)              
-#>  blogdown      0.18       2020-03-04 [1] CRAN (R 3.6.0)              
+#>  blogdown      0.18.1     2020-04-28 [1] local                       
 #>  bookdown      0.18       2020-03-05 [1] CRAN (R 3.6.0)              
 #>  callr         3.4.2      2020-02-12 [1] CRAN (R 3.6.1)              
 #>  cli           2.0.2      2020-02-28 [1] CRAN (R 3.6.0)              

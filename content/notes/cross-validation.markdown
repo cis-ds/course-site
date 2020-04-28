@@ -85,15 +85,15 @@ ggplot(Auto, aes(horsepower, mpg)) +
 
 Perhaps by adding [quadratic terms](/notes/logistic-regression/#quadratic-terms) to the linear regression we could improve overall model fit. To evaluate the model, we will split the data into a training set and validation set, estimate a series of higher-order models, and calculate a test statistic summarizing the accuracy of the estimated `mpg`. To calculate the accuracy of the model, we will use **Mean Squared Error** (MSE), defined as
 
-`$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$`
+$$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
 
 where:
 
-* `\(y_i =\)` the observed response value for the `\(i\)`th observation
-* `\(\hat{f}(x_i) =\)` the predicted response value for the `\(i\)`th observation given by `\(\hat{f}\)`
-* `\(n =\)` the total number of observations
+* $y_i =$ the observed response value for the $i$th observation
+* $\hat{f}(x_i) =$ the predicted response value for the $i$th observation given by $\hat{f}$
+* $n =$ the total number of observations
 
-Boo math! Actually this is pretty intuitive. All we're doing is for each observation, calculating the difference between the actual and predicted values for `\(y\)`, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.
+Boo math! Actually this is pretty intuitive. All we're doing is for each observation, calculating the difference between the actual and predicted values for $y$, squaring that difference, then calculating the average across all observations. An MSE of 0 indicates the model perfectly predicted each observation. The larger the MSE, the more error in the model.
 
 For this task, first we use `rsample::initial_split()` to create training and validation sets (using a 50/50 split), then estimate a linear regression model without any quadratic terms.
 
@@ -284,7 +284,7 @@ summary(survive_age_woman_x)
 ## Number of Fisher Scoring iterations: 4
 ```
 
-We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the validation set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is `\(0%\)`).
+We can use the same validation set approach to evaluate the model's accuracy. For classification models, instead of using MSE we examine the **test error rate**. That is, of all the predictions generated for the validation set, what percentage of predictions are incorrect? The goal is to minimize this value as much as possible (ideally, until we make no errors and our error rate is $0%$).
 
 
 ```r
@@ -386,13 +386,13 @@ There are two main problems with validation sets:
 
 ## Leave-one-out cross-validation
 
-An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the validation set, and keep all remaining observations in the training set. The statistical learning method is fit on the `\(n-1\)` training set. You then use the held-out observation to calculate the `\(MSE = (y_1 - \hat{y}_1)^2\)` which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
+An alternative method is **leave-one-out cross validation** (LOOCV). Like with the validation set approach, you split the data into two parts. However the difference is that you only remove one observation for the validation set, and keep all remaining observations in the training set. The statistical learning method is fit on the $n-1$ training set. You then use the held-out observation to calculate the $MSE = (y_1 - \hat{y}_1)^2$ which should be an unbiased estimator of the test error. Because this MSE is highly dependent on which observation is held out, **we repeat this process for every single observation in the data set**. Mathematically, this looks like:
 
-`$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$`
+$$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$
 
 This method produces estimates of the error rate that have minimal bias and are relatively steady (i.e. non-varying), unlike the validation set approach where the MSE estimate is highly dependent on the sampling process for training/validation sets. LOOCV is also highly flexible and works with any kind of predictive modeling.
 
-Of course the downside is that this method is computationally difficult. You have to estimate `\(n\)` different models - if you have a large `\(n\)` or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.
+Of course the downside is that this method is computationally difficult. You have to estimate $n$ different models - if you have a large $n$ or each individual model takes a long time to compute, you may be stuck waiting a long time for the computer to finish its calculations.
 
 ## LOOCV in linear regression
 
@@ -472,9 +472,9 @@ assessment(first_resample)
 
 Given this new `loocv_data` data frame, we write a function that will, for each resample:
 
-1. Obtain the analysis data set (i.e. the `\(n-1\)` training set)
+1. Obtain the analysis data set (i.e. the $n-1$ training set)
 1. Fit a linear regression model
-1. Predict the test data (also known as the **assessment** data, the `\(1\)` validation set) using the `broom` package
+1. Predict the test data (also known as the **assessment** data, the $1$ validation set) using the `broom` package
 1. Determine the MSE for each sample
 
 
@@ -512,7 +512,7 @@ holdout_results(loocv_data$splits[[1]])
 ## #   .resid <dbl>
 ```
 
-To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the `\(n\)` observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each validation set:
+To compute the MSE for each heldout observation (i.e. estimate the test MSE for each of the $n$ observations), we use the `map()` function from the `purrr` package to estimate the model for each training test, then calculate the MSE for each observation in each validation set:
 
 
 ```r
@@ -752,15 +752,15 @@ In a classification problem, the LOOCV tells us the average error rate based on 
       </p>
     </details>
 
-## `\(k\)`-fold cross-validation
+## $k$-fold cross-validation
 
-A less computationally-intensive approach to cross validation is **$k$-fold cross-validation**. Rather than dividing the data into `\(n\)` groups, one divides the observations into `\(k\)` groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining `\(k-1\)` folds. This process is repeated `\(k\)` times, with each fold serving as the validation set precisely once. The `\(k\)`-fold CV estimate is calculated by averaging the MSE values for each fold:
+A less computationally-intensive approach to cross validation is **$k$-fold cross-validation**. Rather than dividing the data into $n$ groups, one divides the observations into $k$ groups, or **folds**, of approximately equal size. The first fold is treated as the validation set, and the model is estimated on the remaining $k-1$ folds. This process is repeated $k$ times, with each fold serving as the validation set precisely once. The $k$-fold CV estimate is calculated by averaging the MSE values for each fold:
 
-`$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$`
+$$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
-As you may have noticed, LOOCV is a special case of `\(k\)`-fold cross-validation where `\(k = n\)`. More typically researchers will use `\(k=5\)` or `\(k=10\)` depending on the size of the data set and the complexity of the statistical model.
+As you may have noticed, LOOCV is a special case of $k$-fold cross-validation where $k = n$. More typically researchers will use $k=5$ or $k=10$ depending on the size of the data set and the complexity of the statistical model.
 
-## `\(k\)`-fold CV in linear regression
+## $k$-fold CV in linear regression
 
 Let's go back to the `Auto` data set. Instead of LOOCV, let's use 10-fold CV to compare the different polynomial models.
 
@@ -837,7 +837,7 @@ tibble(
 
 Pretty much the same results.
 
-## Computational speed of LOOCV vs. `\(k\)`-fold CV
+## Computational speed of LOOCV vs. $k$-fold CV
 
 
 ```r
@@ -853,9 +853,9 @@ autoplot(results_cv)
 
 <img src="/notes/cross-validation_files/figure-html/loocv-kfold-time-1.png" width="672" />
 
-On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimating `\(k=10\)` models is going to be much easier than estimating `\(k=392\)` models.
+On my machine, 10-fold CV was about 40 times faster than LOOCV. Again, estimating $k=10$ models is going to be much easier than estimating $k=392$ models.
 
-## `\(k\)`-fold CV in logistic regression
+## $k$-fold CV in logistic regression
 
 You've gotten the idea by now, but let's do it one more time on our interactive Titanic model.
 
@@ -891,7 +891,7 @@ mean(titanic_cv10$error_rate, na.rm = TRUE)
 
 Not a large difference from the LOOCV approach, but it take much less time to compute.
 
-## Exercise: `\(k\)`-fold CV
+## Exercise: $k$-fold CV
 
 1. Estimate the 10-fold CV MSE of a linear regression of the relationship between admission rate and cost in the [`scorecard` dataset](/notes/linear-models/#exercise-linear-regression-with-scorecard).
 
@@ -1005,13 +1005,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
 ##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
 ##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18.1      2020-04-28 [1] local                       
 ##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom       * 0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              

@@ -160,7 +160,7 @@ Printing the tree-object provides a text-based view of the entire decision tree 
 * There are three terminal nodes in the tree
 * There are two internal nodes in the tree
 * At each terminal node, we identify the number of observations and the misclassification (error) rate.
-* Overall, this decision tree misclassifies `\(20.9\%\)` of the training set observations
+* Overall, this decision tree misclassifies $20.9\%$ of the training set observations
 
 That's all well and good, but decision trees are meant to be viewed. Let's plot it!
 
@@ -388,7 +388,7 @@ rerun(5, sample(numbers, replace = TRUE))
 ##  [1] 7 4 9 7 6 6 4 7 4 6
 ```
 
-You repeat this process many times (say `\(k = 1000\)`), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.
+You repeat this process many times (say $k = 1000$), then estimate your quantity or model of interest on each sample. Then finally you average across all the bootstrapped samples to calculate the final model or statistical estimator.
 
 As with other resampling methods, each individual sample will have some degree of bias to it. However by averaging across all the bootstrapped samples you cancel out much of this bias. Most importantly, averaging a set of observations reduces **variance** - you achieve stable estimates of the prediction accuracy or overall model error.
 
@@ -628,7 +628,7 @@ This tells us some important things:
 * At every potential branch, the model randomly used one of 2 variables to define the split
 * The **out-of-bag** (OOB) error rate
 
-    This requires further explanation. Because each tree is built from a bootstrapped sample, for any given tree approximately one-third of the observations are not used to build the tree. In essence, we have a natural validation set for each tree. For each observation, we predict the outcome of interest using all trees where the observation was not used to build the tree, then average across these predictions. For any observation, we should have `\(K/3\)` validation predictions where `\(K\)` is the total number of trees in the forest. Averaging across these predictions gives us an out-of-bag error rate for every observation (even if they are derived from different combinations of trees). Because the OOB estimate is built only using trees that were not fit to the observation, this is a valid estimate of the test error for the random forest.
+    This requires further explanation. Because each tree is built from a bootstrapped sample, for any given tree approximately one-third of the observations are not used to build the tree. In essence, we have a natural validation set for each tree. For each observation, we predict the outcome of interest using all trees where the observation was not used to build the tree, then average across these predictions. For any observation, we should have $K/3$ validation predictions where $K$ is the total number of trees in the forest. Averaging across these predictions gives us an out-of-bag error rate for every observation (even if they are derived from different combinations of trees). Because the OOB estimate is built only using trees that were not fit to the observation, this is a valid estimate of the test error for the random forest.
     
     Here we get an OOB estimate of the error rate of  20%. This means for test observations, the model misclassifies the individual's survival  20% of the time.
 * The **confusion matrix** - this compares the predictions to the actual known outcomes.
@@ -860,7 +860,7 @@ mental_health
     ## [1] "29.5"
     ```
 
-    The model isn't too bad. It's misclassification error rate is `\(29.5\%\)` (based on the original data).
+    The model isn't too bad. It's misclassification error rate is $29.5\%$ (based on the original data).
     
       </p>
     </details>
@@ -965,13 +965,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version     date       lib source                      
 ##  assertthat     0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
 ##  backports      1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown       0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown       0.18.1      2020-04-28 [1] local                       
 ##  bookdown       0.18        2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom        * 0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr          3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              

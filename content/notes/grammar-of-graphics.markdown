@@ -84,7 +84,7 @@ head(x = mpg) %>%
 |audi         |a4    |   2.8| 1999|   6|auto(l5)   |f   |  16|  26|p  |compact |
 |audi         |a4    |   2.8| 1999|   6|manual(m5) |f   |  18|  26|p  |compact |
 
-**Mapping** defines how the variables are applied to the plot. So if we were graphing information from `mpg`, we might map a car's engine displacement to the `\(x\)` position and highway mileage to the `\(y\)` position.
+**Mapping** defines how the variables are applied to the plot. So if we were graphing information from `mpg`, we might map a car's engine displacement to the $x$ position and highway mileage to the $y$ position.
 
 
 ```r
@@ -113,7 +113,7 @@ mpg %>%
 
 ## Statistical transformation
 
-A **statistical transformation** (*stat*) transforms the data, generally by summarizing the information. For instance, in a bar graph you typically are not trying to graph the raw data because this doesn't make any inherent sense. Instead, you might summarize the data by graphing the total number of observations within a set of categories. Or if you have a dataset with many observations, you might transform the data into a smoothing line which summarizes the overall pattern of the relationship between variables by calculating the mean of `\(y\)` conditional on `\(x\)`.
+A **statistical transformation** (*stat*) transforms the data, generally by summarizing the information. For instance, in a bar graph you typically are not trying to graph the raw data because this doesn't make any inherent sense. Instead, you might summarize the data by graphing the total number of observations within a set of categories. Or if you have a dataset with many observations, you might transform the data into a smoothing line which summarizes the overall pattern of the relationship between variables by calculating the mean of $y$ conditional on $x$.
 
 A stat is a function that takes in a dataset as the input and returns a dataset as the output; a stat can add new variables to the original dataset, or create an entirely new dataset. So instead of graphing this data in its raw form:
 
@@ -160,7 +160,7 @@ mpg %>%
 
 {{% alert note %}}
 
-Sometimes you don't need to make a statistical transformation. For example, in a scatterplot you use the raw values for the `\(x\)` and `\(y\)` variables to map onto the graph. In these situations, the statistical transformation is an *identity* transformation - the stat simply passes in the original dataset and exports the exact same dataset.
+Sometimes you don't need to make a statistical transformation. For example, in a scatterplot you use the raw values for the $x$ and $y$ variables to map onto the graph. In these situations, the statistical transformation is an *identity* transformation - the stat simply passes in the original dataset and exports the exact same dataset.
 
 {{% /alert %}}
 
@@ -223,7 +223,7 @@ count(x = mpg, class, cyl) %>%
 
 <img src="/notes/grammar-of-graphics_files/figure-html/position_dodge-2.png" width="672" />
 
-Sometimes scatterplots with few unique `\(x\)` and `\(y\)` values are **jittered** (random noise is added) to reduce overplotting.
+Sometimes scatterplots with few unique $x$ and $y$ values are **jittered** (random noise is added) to reduce overplotting.
 
 
 ```r
@@ -322,7 +322,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 
 ## Defaults
 
-Rather than explicitly declaring each component of a layered graphic (which will use more code and introduces opportunities for errors), we can establish intelligent defaults for specific geoms and scales. For instance, whenever we want to use a bar geom, we can default to using a stat that counts the number of observations in each group of our variable in the `\(x\)` position.
+Rather than explicitly declaring each component of a layered graphic (which will use more code and introduces opportunities for errors), we can establish intelligent defaults for specific geoms and scales. For instance, whenever we want to use a bar geom, we can default to using a stat that counts the number of observations in each group of our variable in the $x$ position.
 
 Consider the following scenario: you wish to generate a scatterplot visualizing the relationship between engine displacement size and highway fuel efficiency. With no defaults, the code to generate this graph is:
 
@@ -345,7 +345,7 @@ The above code:
 * Creates a new plot object (`ggplot`)
 * Adds a layer (`layer`)
     * Specifies the data (`mpg`)
-    * Maps engine displacement to the `\(x\)` position and highway mileage to the `\(y\)` position (`mapping`)
+    * Maps engine displacement to the $x$ position and highway mileage to the $y$ position (`mapping`)
     * Uses the point geometric transformation (`geom = "point"`)
     * Implements an identity transformation and position (`stat = "identity"` and `position = "identity"`)
 * Establishes two continuous position scales (`scale_x_continuous` and `scale_y_continuous`)
@@ -443,13 +443,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
 ##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
 ##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18.1      2020-04-28 [1] local                       
 ##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              

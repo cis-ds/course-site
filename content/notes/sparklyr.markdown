@@ -298,7 +298,7 @@ The lift chart suggests the tree-based models (random forest, gradient boosted t
 
 ![From [Receiver operating characteristic](https://en.wikipedia.org/wiki/Receiver_operating_characteristic)](https://upload.wikimedia.org/wikipedia/commons/6/6b/Roccurves.png)
 
-The ideal model perfectly classifies all positive outcomes as true and all negative outcomes as false (i.e. TPR = 1 and FPR = 0). The line on the second graph is made by calculating predicted outcomes at different cutpoint thresholds (i.e. `\(.1, .2, .5, .8\)`) and connecting the dots. The diagonal line indicates expected true/false positive rates if you guessed at random. The area under the curve (AUC) summarizes how good the model is across these threshold points simultaneously. An area of 1 indicates that for any threshold value, the model always makes perfect preditions. **This will almost never occur in real life.** Good AUC values are between `\(.6\)` and `\(.8\)`. While we cannot draw the ROC graph using Spark, we can extract the AUC values based on the predictions.
+The ideal model perfectly classifies all positive outcomes as true and all negative outcomes as false (i.e. TPR = 1 and FPR = 0). The line on the second graph is made by calculating predicted outcomes at different cutpoint thresholds (i.e. $.1, .2, .5, .8$) and connecting the dots. The diagonal line indicates expected true/false positive rates if you guessed at random. The area under the curve (AUC) summarizes how good the model is across these threshold points simultaneously. An area of 1 indicates that for any threshold value, the model always makes perfect preditions. **This will almost never occur in real life.** Good AUC values are between $.6$ and $.8$. While we cannot draw the ROC graph using Spark, we can extract the AUC values based on the predictions.
 
 
 ```r
@@ -428,7 +428,7 @@ result %>%
 
 ## Sparkling Water (H2O) and machine learning
 
-Where's the LOOCV? Where's the `\(k\)`-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. The functions we used above to estimate the models are part of **Spark’s distributed [machine learning library](https://spark.apache.org/docs/latest/mllib-guide.html)** (MLlib). MLlib contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196).^[In refreshing my notes for the term, I saw CV was just incorporated into the development version of `sparklyr` but it is not yet deployed on CRAN.] A real drag.
+Where's the LOOCV? Where's the $k$-fold cross validation? Well, `sparklyr` is still under development. It doesn't allow you to do every single thing Spark can do. The functions we used above to estimate the models are part of **Spark’s distributed [machine learning library](https://spark.apache.org/docs/latest/mllib-guide.html)** (MLlib). MLlib contains [cross-validation functions](http://spark.apache.org/docs/latest/ml-tuning.html#cross-validation) - there just isn't an interface to them in `sparklyr` [yet](https://github.com/rstudio/sparklyr/issues/196).^[In refreshing my notes for the term, I saw CV was just incorporated into the development version of `sparklyr` but it is not yet deployed on CRAN.] A real drag.
 
 If you are serious about utilizing Spark and need cross-validation and other more robust machine learning tools, another option is [**H2O**](https://www.h2o.ai/h2o/), an alternative open-source cross-platform machine learning software package. The `rsparkling` package provides functions to access H2O's distributed [machine learning functions](https://www.h2o.ai/h2o/machine-learning/) via `sparklyr`. H2O has many of the same features as MLlib (if not more so through `sparklyr`), however implementing it is a bit more complicated. Hence we focused most our code above on MLlib algorithms.
 
@@ -650,7 +650,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version        date       lib source                      
@@ -659,7 +659,7 @@ devtools::session_info()
 ##  backports     1.1.5          2019-10-02 [1] CRAN (R 3.6.0)              
 ##  base64enc     0.1-3          2015-07-28 [1] CRAN (R 3.6.0)              
 ##  bitops        1.0-6          2013-08-17 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18           2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18.1         2020-04-28 [1] local                       
 ##  bookdown      0.18           2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom         0.5.5          2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr         3.4.2          2020-02-12 [1] CRAN (R 3.6.1)              

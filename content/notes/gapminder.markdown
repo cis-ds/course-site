@@ -259,7 +259,7 @@ ggplot(data = gapminder,mapping = aes(x = gdpPercap, y = lifeExp, color = contin
 
 Why use `facet_grid()` here instead of `facet_wrap()`? Good question! Let's reframe it and instead ask, what is the difference between `facet_grid()` and `facet_wrap()`?^[Example drawn from [this StackOverflow thread](https://stackoverflow.com/questions/20457905/whats-the-difference-between-facet-wrap-and-facet-grid-in-ggplot2).]
 
-The answer below refers to the case when you have 2 arguments in `facet_grid()` or `facet_wrap()`. `facet_grid(x ~ y)` will display `\(x \times y\)` plots even if some plots are empty. For example:
+The answer below refers to the case when you have 2 arguments in `facet_grid()` or `facet_wrap()`. `facet_grid(x ~ y)` will display $x \times y$ plots even if some plots are empty. For example:
 
 
 ```r
@@ -270,7 +270,7 @@ ggplot(mpg, aes(displ, hwy)) +
 
 <img src="/notes/gapminder_files/figure-html/facet-grid-1.png" width="672" />
 
-There are 4 distinct `cyl` and 7 distinct `class` values. This plot  displays `\(4 \times 7 = 28\)` plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
+There are 4 distinct `cyl` and 7 distinct `class` values. This plot  displays $4 \times 7 = 28$ plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
 
 `facet_wrap(x ~ y)` displays only the plots having actual values.
 
@@ -329,13 +329,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
 ##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
 ##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18.1      2020-04-28 [1] local                       
 ##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              

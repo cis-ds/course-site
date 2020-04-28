@@ -256,7 +256,7 @@ Before you write the `for` loop, identify the three components you need:
 
 * Output - a numeric vector of length 11
 * Sequence - `i in seq_along(mtcars)`
-* Body - calculate the `mean()` of the `\(i\)`th column, store the new value as the `\(i\)`th element of the vector `output`
+* Body - calculate the `mean()` of the $i$th column, store the new value as the $i$th element of the vector `output`
 
 
 ```r
@@ -315,7 +315,7 @@ Before you write the `for` loop, identify the three components you need:
 
 * Output - a vector of length 10
 * Sequence - `i in seq_along(diamonds)`
-* Body - get the maximum value of the `\(i\)`th column of the data frame `diamonds`, store the new value as the `\(i\)`th element of the list `output`
+* Body - get the maximum value of the $i$th column of the data frame `diamonds`, store the new value as the $i$th element of the list `output`
 
 
 ```r
@@ -884,13 +884,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
 ##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
 ##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18.1      2020-04-28 [1] local                       
 ##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              

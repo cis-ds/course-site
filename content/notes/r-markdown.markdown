@@ -71,7 +71,7 @@ R Markdown documents contain 3 major components:
 
 Code chunks are interspersed with text throughout the document. To complete the document, you "Knit" or "render" the document. Most of you probably knit the document by clicking the "Knit" button in the script editor panel. You can also do this programmatically from the console by running the command `rmarkdown::render("example.Rmd")`.
 
-When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, `\(\LaTeX\)`, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
+When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, $\LaTeX$, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
 
 ![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)
 
@@ -282,7 +282,7 @@ Use the `gun-deaths.Rmd` file you saved on your computer and test some of the do
 
 ## PDF document
 
-[`pdf_document`](http://rmarkdown.rstudio.com/pdf_document_format.html) converts the `.Rmd` file to a `\(\LaTeX\)` file which is used to generate a PDF.
+[`pdf_document`](http://rmarkdown.rstudio.com/pdf_document_format.html) converts the `.Rmd` file to a $\LaTeX$ file which is used to generate a PDF.
 
 
 ```
@@ -294,7 +294,7 @@ output: pdf_document
 ---
 ```
 
-You do need to have a full installation of TeX on your computer to generate PDF output. However the nice thing is that because it uses the `\(\LaTeX\)` rendering engine, you can use raw `\(\LaTeX\)` code in your `.Rmd` file (if you know how to use it).
+You do need to have a full installation of TeX on your computer to generate PDF output. However the nice thing is that because it uses the $\LaTeX$ rendering engine, you can use raw $\LaTeX$ code in your `.Rmd` file (if you know how to use it).
 
 ### Table of contents
 
@@ -329,9 +329,9 @@ output:
 ---
 ```
 
-### `\(\LaTeX\)` options
+### $\LaTeX$ options
 
-You can also directly control options in the `\(\LaTeX\)` template itself via the YAML options. Note that these options are passed as top-level YAML metadata, not underneath the `output` section:
+You can also directly control options in the $\LaTeX$ template itself via the YAML options. Note that these options are passed as top-level YAML metadata, not underneath the `output` section:
 
 
 ```
@@ -347,7 +347,7 @@ fontsize: 11pt
 
 ### Keep intermediate TeX
 
-R Markdown documents are converted first to a `.tex` file, and then use the `\(\LaTeX\)` engine to convert to PDF. To keep the `.tex` file, use the `keep_tex` option:
+R Markdown documents are converted first to a `.tex` file, and then use the $\LaTeX$ engine to convert to PDF. To keep the `.tex` file, use the `keep_tex` option:
 
 
 ```
@@ -372,7 +372,7 @@ You can use R Markdown not only to generate full documents, but also slide prese
 * [ioslides](http://rmarkdown.rstudio.com/ioslides_presentation_format.html) - HTML presentation with ioslides
 * [reveal.js](http://rmarkdown.rstudio.com/revealjs_presentation_format.html) - HTML presentation with reveal.js
 * [Slidy](http://rmarkdown.rstudio.com/slidy_presentation_format.html) - HTML presentation with W3C Slidy
-* [Beamer](http://rmarkdown.rstudio.com/beamer_presentation_format.html) - PDF presentation with `\(\LaTeX\)` Beamer
+* [Beamer](http://rmarkdown.rstudio.com/beamer_presentation_format.html) - PDF presentation with $\LaTeX$ Beamer
 
 Each as their own strengths and weaknesses. ioslides and Slidy are probably the easiest to use initially, but are more difficult to customize. reveal.js is more complex, but allows for more customization (this is the format I use for my slides in this class). Beamer is the only presentation format that creates a PDF document and is probably a smoother transition for those already used to Beamer.
 
@@ -406,7 +406,7 @@ When rendering multiple output formats, you cannot just click the "Knit" button.
 
 ### Exercise: render in multiple formats
 
-Render `gun-deaths.Rmd` as both an HTML document and a PDF document. If you do not have `\(\LaTeX\)` installed on your computer, render `gun-deaths.Rmd` as both an HTML document and a [Word document](http://rmarkdown.rstudio.com/word_document_format.html). And at some point [install `\(\LaTeX\)` on your computer](https://www.latex-project.org/get/) so you can create PDF documents.
+Render `gun-deaths.Rmd` as both an HTML document and a PDF document. If you do not have $\LaTeX$ installed on your computer, render `gun-deaths.Rmd` as both an HTML document and a [Word document](http://rmarkdown.rstudio.com/word_document_format.html). And at some point [install $\LaTeX$ on your computer](https://www.latex-project.org/get/) so you can create PDF documents.
 
 ## R scripts
 
@@ -508,13 +508,13 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-04-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
 ##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
 ##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
+##  blogdown      0.18.1      2020-04-28 [1] local                       
 ##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
 ##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
 ##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
