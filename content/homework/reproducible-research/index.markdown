@@ -115,11 +115,11 @@ In your reflection, make special note of any significant problems that required 
 
 # Rubric
 
-Check minus: Cannot reproduce your results. Scripts require interactive coding to fix. Markdown documents are not generated. Graphs and tables don't have appropriate labels or formatting. There is no consistency to your code's style.
+Needs work: Cannot reproduce your results. Scripts require interactive coding to fix. Markdown documents are not generated. Graphs and tables don't have appropriate labels or formatting. There is no consistency to your code's style.
 
-Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
+Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
-Check plus: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Displays innovative data analysis or coding skills. Graphs and tables are well labeled. Excellent implementation of a consistent style guide. Analysis is insightful. I walk away feeling I learned something.
+Excellent: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Displays innovative data analysis or coding skills. Graphs and tables are well labeled. Excellent implementation of a consistent style guide. Analysis is insightful. I walk away feeling I learned something.
 
 ## Acknowledgments
 

@@ -71,8 +71,8 @@ Your assignment should be submitted an R Markdown document using the `github_doc
 
 # Rubric
 
-Check minus: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment. Map looks amateurish or hard to interpret.
+Needs work: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment. Map looks amateurish or hard to interpret.
 
-Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
+Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
-Check plus: Interpretation is clear and in-depth. Accurately interprets the results, with appropriate caveats for what the technique can and cannot do. Code is reproducible. Writes a user-friendly `README` file. Graph looks crisp, easy-to-read, and communicates information honestly and accurately.
+Excellent: Interpretation is clear and in-depth. Accurately interprets the results, with appropriate caveats for what the technique can and cannot do. Code is reproducible. Writes a user-friendly `README` file. Graph looks crisp, easy-to-read, and communicates information honestly and accurately.

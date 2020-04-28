@@ -49,8 +49,8 @@ Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-wo
 
 # Rubric
 
-Check minus: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
+Needs work: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
 
-Check: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
+Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
-Check plus: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Broken R Markdown document successfully knits. Used iterative operations to generate each country's HIV profile.
+Excellent: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Broken R Markdown document successfully knits. Used iterative operations to generate each country's HIV profile.
