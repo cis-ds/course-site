@@ -52,7 +52,7 @@ math: false
 
 ## Before class
 
-* Read [**Debugging R code** in *Advanced R*](https://rstats.wtf/debugging-r-code.html)
+* Read [**Debugging R code** in *What They Forgot to Teach You About R*](https://rstats.wtf/debugging-r-code.html)
 * Skim/read [The `tidyverse` style guide](http://style.tidyverse.org/)
 * Read [How to read an R help page](http://socviz.co/appendix.html#how-to-read-an-r-help-page)
 * Review [21.6 Dealing with failure in *R for Data Science*](http://r4ds.had.co.nz/iteration.html#dealing-with-failure)
