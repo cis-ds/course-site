@@ -24,6 +24,16 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
+{{% alert note %}}
+
+Run the below code in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/debugging-and-defensive-programming")
+```
+
+{{% /alert %}}
+
 **Conditions** are a method for communicating to the user when something unanticipated has occurred. Helpfully, many package authors will build these into their functions to explicitly communicate with users when they attempt to use the function improperly. In fact, when you write your own functions you too can use conditions to alert users when something has gone wrong. There are three levels of conditions in R, which each lead to different outcomes.
 
 ## Types of conditions
@@ -816,7 +826,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-28                  
+##  date     2020-05-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
