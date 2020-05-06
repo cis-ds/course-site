@@ -18,6 +18,16 @@ menu:
 
 
 
+{{% alert note %}}
+
+Run the below code in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/a-deep-dive-into-r-markdown")
+```
+
+{{% /alert %}}
+
 ## Reproducibility in scientific research
 
 ![](/img/data-science/base.png)
@@ -42,7 +52,7 @@ An R Markdown file is a plain text file that uses the extension `.Rmd`:
 ````
 ---
 title: "Gun deaths"
-date: 2017-02-01
+date: "`r lubridate::today()`"
 output: html_document
 ---
 
@@ -54,12 +64,24 @@ youth <- gun_deaths %>%
   filter(age <= 65)
 ```
 
+# Gun deaths by age
+
 We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65. The distribution of the remainder is shown below:
 
 ```{r youth-dist, echo = FALSE}
 youth %>% 
   ggplot(aes(age)) + 
   geom_freqpoly(binwidth = 1)
+```
+
+# Gun deaths by race
+
+```{r race-dist}
+youth %>%
+  ggplot(aes(fct_infreq(race) %>% fct_rev())) +
+  geom_bar() +
+  coord_flip() +
+  labs(x = "Victim race")
 ```
 ````
 
@@ -81,11 +103,12 @@ When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yi
 
 ### Exercise
 
-Copy and paste the contents of `gun-deaths.Rmd` (the file demonstrated above) and save it in a local R Markdown document. Check that you can run it, then add text after the frequency polygon that describes its most striking features.
+* Render `gun-deaths.Rmd` as an HTML document
+* Add text describing the frequency polygon
 
 ## Code chunks
 
-**Code chunks** are where you store R code that will be executed. You can name a code chunk using the syntax ` ```{r name-here} `. Naming chunks is a good practice to get into for several reasons. First, it makes navigating an R Markdown document using the drop-down code navigator in the bottom-left of the script editor easier since your chunks will have **intuitive** names. Second, it generates meaningful file names for any graphs created within the chunk, rather than unhelpful names such as `unnamed-chunk-1.png`. Finally, once you start **caching** your results (more on that below), using consistent names for chunks avoids having to repeat computationally intensive calculations.
+**Code chunks** are where you store R code that will be executed. You can name a code chunk using the syntax ```` ```{r name-here} ````. Naming chunks is a good practice to get into for several reasons. First, it makes navigating an R Markdown document using the drop-down code navigator in the bottom-left of the script editor easier since your chunks will have **intuitive** names. Second, it generates meaningful file names for any graphs created within the chunk, rather than unhelpful names such as `unnamed-chunk-1.png`. Finally, once you start **caching** your results (more on that below), using consistent names for chunks avoids having to repeat computationally intensive calculations.
 
 ## Customizing chunks
 
@@ -163,11 +186,8 @@ When you knit the document, the R code is executed:
 
 ## Exercise: practice chunk options
 
-Add a section that explores how gun deaths vary by race.
-
-1. Assume you're writing a report for someone who doesn't know R, and instead of setting `echo = FALSE` on each chunk, set a global option.
-1. Enable caching as a global option and render the document. Look at the file structure for the cache. Now render the document again. Does it run faster? Modify some code in one of the chunks? What happens now?
-1. Test out some of the other chunk options. Which do you find most useful? In what context would you use them?
+* Set `echo = FALSE` as a global option
+* Enable caching as a global option and render the document. Look at the file structure for the cache. Now render the document again. Does it run faster?
 
 ## YAML header
 
@@ -179,7 +199,7 @@ Add a section that explores how gun deaths vary by race.
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output: github_document
 ---
@@ -197,7 +217,7 @@ For your homework assignments, we have used `github_document` to generate a [Mar
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output: html_document
 ---
@@ -213,7 +233,7 @@ Each output format has various options to customize the appearance of the final 
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   html_document:
@@ -235,7 +255,7 @@ There are several options that control the visual appearance of HTML documents.
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   html_document:
@@ -252,7 +272,7 @@ Sometimes when knitting an R Markdown document you want to include your R source
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   html_document:
@@ -268,7 +288,7 @@ When `knitr` processes your `.Rmd` document, it creates a Markdown (`.md`) file 
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   html_document:
@@ -278,7 +298,9 @@ output:
 
 ### Exercise: test HTML options
 
-Use the `gun-deaths.Rmd` file you saved on your computer and test some of the document options outlined above. There are far more customization options than I outlined above. Read the [help file for HTML documents](http://rmarkdown.rstudio.com/html_document_format.html) to learn about more of the available options.
+1. Add a table of contents
+1. Use the `"cerulean"` theme
+1. Modify the figures so they are 8x6
 
 ## PDF document
 
@@ -288,7 +310,7 @@ Use the `gun-deaths.Rmd` file you saved on your computer and test some of the do
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output: pdf_document
 ---
@@ -304,7 +326,7 @@ Many options for HTML documents also work for PDFs. For instance, you create a t
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   pdf_document:
@@ -321,7 +343,7 @@ You cannot customize the `theme` of a `pdf_document` (at least not in the same w
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   pdf_document:
@@ -337,7 +359,7 @@ You can also directly control options in the $\LaTeX$ template itself via the YA
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output: pdf_document
 geometry: margin=1in
@@ -353,17 +375,13 @@ R Markdown documents are converted first to a `.tex` file, and then use the $\La
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   pdf_document:
     keep_tex: true
 ---
 ```
-
-### Exercise: test PDF options
-
-Use the `gun-deaths.Rmd` file you saved on your computer and test some of the PDF document options outlined above. Be sure to first change the output format to `pdf_document`. There are far more customization options than I outlined above. Read the [help file for PDF documents](http://rmarkdown.rstudio.com/pdf_document_format.html) to learn about more of the available options.
 
 ## Presentations
 
@@ -376,10 +394,6 @@ You can use R Markdown not only to generate full documents, but also slide prese
 
 Each as their own strengths and weaknesses. ioslides and Slidy are probably the easiest to use initially, but are more difficult to customize. reveal.js is more complex, but allows for more customization (this is the format I use for my slides in this class). Beamer is the only presentation format that creates a PDF document and is probably a smoother transition for those already used to Beamer.
 
-### Exercise: build a presentation
-
-Choose one of the presentation formats and convert `gun-deaths.Rmd` into a slide presentation. Save this new document as `gun-deaths-slides.Rmd`. Test out some of the associated options for your chosen presentation format.
-
 ## Multiple formats
 
 You can even render your document into multiple output formats by supplying a list of formats:
@@ -388,7 +402,7 @@ You can even render your document into multiple output formats by supplying a li
 ```
 ---
 author: Benjamin Soltoff
-date: '2019-10-30'
+date: '2020-05-06'
 title: Gun deaths
 output:
   pdf_document: default
@@ -406,7 +420,13 @@ When rendering multiple output formats, you cannot just click the "Knit" button.
 
 ### Exercise: render in multiple formats
 
-Render `gun-deaths.Rmd` as both an HTML document and a PDF document. If you do not have $\LaTeX$ installed on your computer, render `gun-deaths.Rmd` as both an HTML document and a [Word document](http://rmarkdown.rstudio.com/word_document_format.html). And at some point [install $\LaTeX$ on your computer](https://www.latex-project.org/get/) so you can create PDF documents.
+* Render `gun-deaths.Rmd` as both an HTML document and a PDF document
+
+{{% alert warning %}}
+
+If you do not have $\LaTeX$ installed on your computer, render `gun-deaths.Rmd` as both an HTML document and a [Word document](http://rmarkdown.rstudio.com/word_document_format.html). And at some point [install $\LaTeX$ on your computer](https://www.latex-project.org/get/) so you can create PDF documents.
+
+{{% /alert %}}
 
 ## R scripts
 
@@ -421,7 +441,6 @@ A script is a plain-text file with a `.R` file extension. It contains R code. Yo
 # gun-deaths.R
 # 2017-02-01
 # Examine the distribution of age of victims in gun_deaths
-
 
 # load packages
 library(tidyverse)
@@ -438,6 +457,13 @@ nrow(gun_deaths) - nrow(youth)
 youth %>% 
   ggplot(aes(age)) + 
   geom_freqpoly(binwidth = 1)
+
+# graph the distribution of youth, by race
+youth %>%
+  ggplot(aes(fct_infreq(race) %>% fct_rev())) +
+  geom_bar() +
+  coord_flip() +
+  labs(x = "Victim race")
 ```
 
 You edit scripts in the editor panel in R Studio.
@@ -486,13 +512,6 @@ Rscript -e "rmarkdown::render('gun-deaths.Rmd')"
 
 This creates a temporary R script which contains the single command `rmarkdown::render('gun-deaths.Rmd')` and executes it via `Rscript`.
 
-## Exercise: execute R scripts
-
-1. Convert your revised `gun-deaths.Rmd` document into an R script called `gun-deaths.R`.
-1. Practice running segments of code interactively
-1. Run the entire script via the `source()` function
-1. Use the shell to run `gun-deaths.R`
-
 ## Session Info
 
 
@@ -508,7 +527,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-28                  
+##  date     2020-05-06                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version     date       lib source                      
@@ -520,6 +539,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
 ##  cellranger    1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
 ##  cli           2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
+##  codetools     0.2-16      2018-12-24 [1] CRAN (R 3.6.3)              
 ##  colorspace    1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
 ##  crayon        1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
 ##  DBI           1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
@@ -583,6 +603,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
 ##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
 ##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
+##  whoami        1.3.0       2019-03-19 [1] CRAN (R 3.6.0)              
 ##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
 ##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
 ##  xml2          1.2.5       2020-03-11 [1] CRAN (R 3.6.0)              
