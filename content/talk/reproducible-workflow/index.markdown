@@ -52,6 +52,16 @@ math: false
 
 ## Class materials
 
+{{% alert note %}}
+
+Run the below code in your console to download the exercises for today.
+
+```r
+usethis::use_course("uc-cfss/reproducible-workflow")
+```
+
+{{% /alert %}}
+
 ## Additional resources
 
 * [What They Forgot to Teach You About R](https://rstats.wtf/)
