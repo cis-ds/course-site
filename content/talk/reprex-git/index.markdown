@@ -37,9 +37,7 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
@@ -57,8 +55,8 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Additional resources
 
-* [What They Forgot to Teach You About R](https://rstats.wtf/)
-* [Project-oriented workflow](https://www.tidyverse.org/articles/2017/12/workflow-vs-script/)
+* [`reprex`](https://reprex.tidyverse.org/)
+* [`datapasta`](https://milesmcbain.github.io/datapasta/)
 
 ## What you need to do after class
 
