@@ -61,3 +61,4 @@ math: false
 
 ## What you need to do after class
 
+* Complete the [debugging homework assignment](/homework/debugging-rmarkdown/)
