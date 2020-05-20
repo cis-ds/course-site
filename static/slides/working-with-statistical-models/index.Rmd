@@ -25,6 +25,7 @@ library(socviz)
 library(rcfss)
 library(titanic)
 library(tidytext)
+library(gganimate)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcfss::base_size))
@@ -200,19 +201,76 @@ tidy(gun_deaths_mod, conf.int = TRUE) %>%
 
 # Marginal effects plots
 
-```{r titanic-model}
-ggplot(titanic_train, aes(Age, Survived, color = Sex)) +
-  geom_point() +
-  geom_smooth(
-    method = "glm",
-    method.args = list(family = "binomial")
+```{r titanic-pred, include = FALSE}
+# estimate interactive model
+titanic_glm <- glm(Survived ~ Age * Sex, data = titanic_train, family = "binomial")
+
+# generate predicted values using margins::cplot()
+age_range <- range(titanic_train$Age, na.rm = TRUE) %>%
+  round()
+age_range <- seq(from = age_range[[1]], to = age_range[[2]])
+
+titanic_female <- cplot(titanic_glm,
+  x = "Age",
+  data = prediction::find_data(titanic_glm) %>%
+    filter(Sex == "female"),
+  xvals = age_range,
+  what = "prediction",
+  draw = FALSE
+)
+titanic_male <- cplot(titanic_glm,
+  x = "Age",
+  data = prediction::find_data(titanic_glm) %>%
+    filter(Sex == "male"),
+  xvals = age_range,
+  what = "prediction",
+  draw = FALSE
+)
+
+titanic_pred <- bind_rows(
+  Female = titanic_female,
+  Male = titanic_male,
+  .id = "sex"
+)
+```
+
+```{r titanic-marg-eff, dependson = "titanic-pred", fig.height = 8}
+titanic_rolling <- map2_df(
+  .x = seq(from = 0, to = 60, length.out = 50),
+  .y = seq(from = 20, to = 80, length.out = 50),
+  ~ filter(titanic_pred) %>%
+    filter(xvals >= .x, xvals <= .y) %>%
+    group_by(sex) %>%
+    mutate(ymin = ifelse(sex == "Female", min(yvals), max(yvals))),
+  .id = "start_val"
+) %>%
+  ungroup() %>%
+  # add unique group for each start_val/sex combo
+  # to avoid errors with transition_state
+  mutate(
+    group = group_indices(., start_val, sex),
+    start_val = parse_number(start_val)
+  )
+
+ggplot(titanic_pred, aes(x = xvals, color = sex)) +
+  geom_line(aes(y = yvals)) +
+  geom_line(aes(y = upper), linetype = 2) +
+  geom_line(aes(y = lower), linetype = 2) +
+  geom_ribbon(
+    data = titanic_rolling,
+    aes(x = xvals, ymin = ymin, ymax = yvals, fill = sex, group = group),
+    position = "identity"
   ) +
-  scale_color_brewer(type = "qual") +
+  scale_color_brewer(type = "qual", aesthetics = c("color", "fill")) +
   labs(
     title = "Probability of Surviving the Titanic",
+    x = "Age",
     y = "Predicted Probability of Survival",
-    color = "Sex"
-  )
+    color = "Sex",
+    fill = "Sex"
+  ) +
+  theme(legend.position = "bottom") +
+  transition_states(states = start_val, transition_length = .5, wrap = FALSE)
 ```
 
 ---
@@ -266,14 +324,14 @@ ce_obama <- bind_rows(ce_sex, ce_race)
 ce_obama %>%
   mutate(xvals = reorder_within(xvals, yvals, variable)) %>%
   ggplot(mapping = aes(
-  x = xvals,
-  y = yvals, ymin = lower, ymax = upper
-)) +
+    x = xvals,
+    y = yvals, ymin = lower, ymax = upper
+  )) +
   geom_hline(yintercept = 0, color = "gray80") +
   geom_pointrange() +
   scale_x_reordered() +
   coord_flip() +
-  facet_wrap(~ variable, scales = "free_y", ncol = 1) +
+  facet_wrap(~variable, scales = "free_y", ncol = 1) +
   labs(x = NULL, y = "Conditional Effect")
 ```
 
