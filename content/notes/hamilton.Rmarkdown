@@ -1,0 +1,216 @@
+---
+title: "Practicing tidytext with Hamilton"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: []
+categories: ["text"]
+
+menu:
+  notes:
+    parent: Text analysis
+    weight: 3
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidytext)
+library(here)
+
+set.seed(123)
+theme_set(theme_minimal())
+```
+
+```{r get-hamilton, eval = FALSE, include = FALSE}
+library(geniusr)
+
+# Genius album ID number
+hamilton_id <- 131575
+
+# retrieve track list
+hamilton_tracks <- get_album_tracklist_id(album_id = hamilton_id)
+
+# retrieve song lyrics
+hamilton_lyrics <- hamilton_tracks %>%
+  mutate(lyrics = map(.x = song_lyrics_url, get_lyrics_url))
+
+# unnest and clean-up
+hamilton <- hamilton_lyrics %>%
+  unnest(cols = lyrics, names_repair = "universal") %>%
+  select(song_number, song_title, line, section_name, song_name) %>%
+  group_by(song_number) %>%
+  # add line number
+  mutate(line_num = row_number()) %>%
+  # reorder columns and convert speaker to title case
+  select(song_number, song_title, line_num, line, speaker = section_name) %>%
+  mutate(speaker = str_to_title(speaker),
+         line = str_replace_all(line, "’", "'")) %>%
+  # write to disk
+  write_csv(path = here("static", "data", "hamilton.csv"))
+```
+
+```{r hamilton}
+hamilton <- read_csv(file = here("static", "data", "hamilton.csv")) %>%
+  mutate(song_title = parse_factor(song_title))
+glimpse(hamilton)
+```
+
+## Convert to tidytext format
+
+```{r tidy, dependson = "hamilton"}
+hamilton_tidy <- hamilton %>%
+  unnest_tokens(output = word, input = line)
+```
+
+## Length of songs by words
+
+```{r song-length, dependson = "hamilton", fig.asp = 1.1}
+ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
+  geom_bar() +
+  coord_flip() +
+  labs(
+    title = "Length of songs in Hamilton",
+    x = NULL,
+    y = "Song length (in words)"
+  )
+```
+
+## Stop words
+
+```{r stop, dependson = "tidy"}
+hamilton_tidy %>%
+  count(word) %>%
+  arrange(desc(n))
+
+# remove stop words
+hamilton_tidy <- hamilton_tidy %>%
+  anti_join(get_stopwords(source = "smart"))
+
+hamilton_tidy %>%
+  count(word) %>%
+  top_n(20) %>%
+  ggplot(aes(fct_reorder(word, n), n)) +
+  geom_col() +
+  coord_flip() + 
+  theme_minimal() +
+  labs(
+    title = "Frequency of Hamilton lyrics",
+    x = NULL,
+    y = NULL
+  )
+```
+
+## Words used most by each cast member
+
+```{r tf-idf, dependson = "tidy", fig.asp = 1.1}
+# principal cast via Wikipedia
+principal_cast <- c("Hamilton", "Eliza", "Burr", "Angelica", "Washington", "Lafayette",
+                    "Jefferson", "Mulligan", "Madison", "Laurens", "Philip", "Peggy",
+                    "Maria", "King George")
+
+# calculate tf-idf scores for words sung by the principal cast
+hamilton_tf_idf <- hamilton_tidy %>%
+  filter(speaker %in% principal_cast) %>%
+  mutate(speaker = parse_factor(x = speaker, levels = principal_cast)) %>%
+  count(speaker, word) %>%
+  bind_tf_idf(term = word, document = speaker, n = n)
+
+# visualize the top N terms per character by tf-idf score
+hamilton_tf_idf %>%
+  arrange(desc(tf_idf)) %>%
+  mutate(word = factor(word, levels = rev(unique(word)))) %>% 
+  group_by(speaker) %>% 
+  top_n(8) %>% 
+  ungroup() %>%
+  # resolve ambiguities when same word appears for different characters
+  mutate(word = reorder_within(x = word, by = tf_idf, within = speaker)) %>%
+  ggplot(mapping = aes(x = word, y = tf_idf)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  labs(x = NULL, y = "tf-idf") +
+  facet_wrap(~ speaker, scales = "free") +
+  coord_flip()
+```
+
+## Sentiment analysis
+
+```{r fig.asp = 1.1}
+hamilton_afinn <- hamilton_tidy %>%
+  inner_join(get_sentiments(lexicon = "afinn")) %>%
+  mutate(cum_sent = cumsum(value),
+         id = row_number())
+
+hamilton_afinn %>%
+  group_by(song_title) %>%
+  summarize(sent = sum(value)) %>%
+  ggplot(mapping = aes(x = fct_rev(song_title), y = sent, fill = sent)) +
+  geom_col() +
+  scale_fill_viridis_c() +
+  coord_flip() +
+  labs(
+    x = NULL,
+    y = "Summative sentiment",
+    color = "Summative\nsentiment"
+  )
+
+ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
+  ggrepel::geom_text_repel(data = hamilton_afinn %>%
+                             group_by(song_number) %>%
+                             filter(id == min(id)),
+                           mapping = aes(label = song_title),
+                           size = 3,
+                           alpha = .4) +
+  geom_line() +
+  scale_x_continuous(breaks = NULL) +
+  labs(
+    x = NULL,
+    y = "Cumulative sentiment"
+  )
+```
+
+## Pairs of words
+
+```{r}
+library(widyr)
+library(igraph)
+library(ggraph)
+
+hamilton_pair <- hamilton %>%
+  unnest_tokens(output = word, input = line, token = "ngrams", n = 2) %>%
+  separate(col = word, into = c("word1", "word2"), sep = " ") %>%
+  filter(!word1 %in% get_stopwords(source = "smart")$word,
+         !word2 %in% get_stopwords(source = "smart")$word) %>%
+  drop_na(word1, word2) %>%
+  count(word1, word2, sort = TRUE)
+
+# filter for only relatively common combinations
+bigram_graph <- hamilton_pair %>%
+  filter(n > 2) %>%
+  graph_from_data_frame()
+
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)
+
+hamilton_cor <- hamilton_tidy %>%
+  group_by(word) %>%
+  filter(n() > 20) %>%
+  pairwise_cor(item = word, feature = song_number)
+arrange(hamilton_cor, -correlation)
+```
+
+## Acknowledgments
+
+* This page is derived in part from [SONG LYRICS ACROSS THE UNITED STATES](https://juliasilge.com/blog/song-lyrics-across/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
