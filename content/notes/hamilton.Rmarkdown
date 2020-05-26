@@ -28,6 +28,16 @@ set.seed(123)
 theme_set(theme_minimal())
 ```
 
+About five months ago, my wife and I became addicted to Hamilton.
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/d4bmtcUmgA8ylgCk" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+I admit, we were quite late to the party. I promise we did like it, but I wanted to wait and see the musical in-person before listening to the soundtrack. Alas, having three small children limits your free time to go out to the theater for an entire evening. So I finally caved and started listening to the soundtrack on Spotify. And it's amazing! My son's favorite song (he's four BTW) is My Shot.
+
+<iframe src="https://open.spotify.com/embed/track/4cxvludVmQxryrnx1m9FqL" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+
+One of the nice things about the musical is that it is [sung-through](https://en.wikipedia.org/wiki/Sung-through), so the lyrics contain essentially all of the dialogue. This provides an interesting opportunity to use the `tidytext` package to analyze the lyrics.[^lyrics]
+
 ```{r get-hamilton, eval = FALSE, include = FALSE}
 library(geniusr)
 
@@ -62,14 +72,23 @@ hamilton <- read_csv(file = here("static", "data", "hamilton.csv")) %>%
 glimpse(hamilton)
 ```
 
+Along with the lyrics, we also know the singer (`speaker`) of each line of dialogue. This will be helpful if we want to perform analysis on a subset of singers.
+
 ## Convert to tidytext format
+
+Currently, `hamilton` is stored as one-row-per-line of lyrics. The definition of a single "line" is somewhat arbitrary. For substantial analysis, we will convert the corpus to a tidy-text data frame of one-row-per-token. Initially, we will use `unnest_tokens()` to tokenize all unigrams.
 
 ```{r tidy, dependson = "hamilton"}
 hamilton_tidy <- hamilton %>%
   unnest_tokens(output = word, input = line)
+hamilton_tidy
 ```
 
+Remember that by default, `unnest_tokens()` automatically converts all text to lowercase and strips out punctuation.
+
 ## Length of songs by words
+
+An initial check reveals the length of each song in terms of the number of words in its lyrics.^[Though lyrics' length is not always [a good measure of a musical's pacing](https://fivethirtyeight.com/features/hamilton-is-the-very-model-of-a-modern-fast-paced-musical/).]
 
 ```{r song-length, dependson = "hamilton", fig.asp = 1.1}
 ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
@@ -78,17 +97,55 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
   labs(
     title = "Length of songs in Hamilton",
     x = NULL,
-    y = "Song length (in words)"
+    y = "Song length (in words)",
+    caption = "Source: Genius API"
+  )
+```
+
+As a function of number of words, My Shot is the longest song in the musical.
+
+```{r spotify, dependson = "tidy"}
+hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
+  # fix missing song from spotify info
+  mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
+         song_number = ifelse(disc_number == 2,
+                              track_number + max(track_number[disc_number == 1]),
+                              track_number))
+hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
+hamilton_audio <- bind_cols(hamilton_spotify, hamilton_audio_features) %>%
+  as_tibble() %>%
+  select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
+```
+
+```{r length-words-duration, dependson = c("tidy", "spotify")}
+hamilton_tidy %>%
+  count(song_number, song_title) %>%
+  left_join(hamilton_audio) %>%
+  ggplot(mapping = aes(x = n, y = duration_ms / 1000)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggrepel::geom_text_repel(mapping = aes(label = song_title), alpha = .3, size = 3) +
+  scale_y_time() +
+  labs(
+    x = "Number of words",
+    y = "Length of song (duration)",
+    caption = "Lyrics: Genius API\nDuration: Spotify API"
   )
 ```
 
 ## Stop words
 
-```{r stop, dependson = "tidy"}
+Of course not all words are equally important. Consider the 10 most frequent words in the lyrics:
+
+```{r stopwords, dependson = "tidy"}
 hamilton_tidy %>%
   count(word) %>%
   arrange(desc(n))
+```
 
+Not particularly informative. We can identify a list of stopwords using `get_stopwords()` then remove them via `anti_join()`.^[I told you filtering joins would be useful one day, but you didn't believe me!]
+
+```{r stop-remove, dependson = "tidy"}
 # remove stop words
 hamilton_tidy <- hamilton_tidy %>%
   anti_join(get_stopwords(source = "smart"))
@@ -107,13 +164,17 @@ hamilton_tidy %>%
   )
 ```
 
+Now the words seem more relevant to the specific story being told in the musical.
+
 ## Words used most by each cast member
 
-```{r tf-idf, dependson = "tidy", fig.asp = 1.1}
+Since we know which singer performs each line, we can examine the relative significance of different words to different characters. [**Term frequency-inverse document frequency** (tf-idf)](https://www.tidytextmining.com/tfidf.html) is a simple metric for measuring the importance of specific words to a corpus. Here let's calculate the top ten words for each member of the principal cast.
+
+```{r tf-idf, dependson = "stop-remove", fig.asp = 1.1}
 # principal cast via Wikipedia
-principal_cast <- c("Hamilton", "Eliza", "Burr", "Angelica", "Washington", "Lafayette",
-                    "Jefferson", "Mulligan", "Madison", "Laurens", "Philip", "Peggy",
-                    "Maria", "King George")
+principal_cast <- c("Hamilton", "Eliza", "Burr", "Angelica", "Washington",
+                    "Lafayette", "Jefferson", "Mulligan", "Madison",
+                    "Laurens", "Philip", "Peggy", "Maria", "King George")
 
 # calculate tf-idf scores for words sung by the principal cast
 hamilton_tf_idf <- hamilton_tidy %>%
@@ -125,23 +186,36 @@ hamilton_tf_idf <- hamilton_tidy %>%
 # visualize the top N terms per character by tf-idf score
 hamilton_tf_idf %>%
   arrange(desc(tf_idf)) %>%
-  mutate(word = factor(word, levels = rev(unique(word)))) %>% 
-  group_by(speaker) %>% 
-  top_n(8) %>% 
+  mutate(word = factor(word, levels = rev(unique(word)))) %>%
+  group_by(speaker) %>%
+  top_n(10) %>%
+  # arbitrarily reduce to only 10 for characters with tied tf-idf
+  slice(1:10) %>%
   ungroup() %>%
   # resolve ambiguities when same word appears for different characters
   mutate(word = reorder_within(x = word, by = tf_idf, within = speaker)) %>%
   ggplot(mapping = aes(x = word, y = tf_idf)) +
   geom_col(show.legend = FALSE) +
   scale_x_reordered() +
-  labs(x = NULL, y = "tf-idf") +
-  facet_wrap(~ speaker, scales = "free") +
-  coord_flip()
+  labs(
+    title = "Most important words in *Hamilton*",
+    subtitle = "Principal cast only",
+    x = NULL,
+    y = "tf-idf",
+    caption = "Source: Genius API"
+  ) +
+  facet_wrap(~speaker, scales = "free") +
+  coord_flip() +
+  theme(plot.title = element_markdown())
 ```
+
+Again, some expected results stick out. Hamilton is always singing about not throwing away his shot, Eliza is helplessly in love with Alexander, while Burr regrets not being "in the room where it happens". And don't forget King George's love songs to his wayward children.
+
+<div style="width:100%;height:0;padding-bottom:90%;position:relative;"><iframe src="https://giphy.com/embed/26u6duhyJTMmLGMAE" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 ## Sentiment analysis
 
-```{r fig.asp = 1.1}
+```{r sentiment, dependson = "stop-remove", fig.asp = 1.1}
 hamilton_afinn <- hamilton_tidy %>%
   inner_join(get_sentiments(lexicon = "afinn")) %>%
   mutate(cum_sent = cumsum(value),
@@ -212,8 +286,15 @@ ggraph(bigram_graph, layout = "fr") +
 
 ## Acknowledgments
 
-* This page is derived in part from [SONG LYRICS ACROSS THE UNITED STATES](https://juliasilge.com/blog/song-lyrics-across/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+* This page is derived in part from [A Sentiment Analysis of Hamilton: The broom Where it Happens / When are these #rcatladies gonna rise up?](https://seankross.com/2016/08/30/A-Sentiment-Analysis-of-Hamilton.html) and licensed under a [Creative Commons Attribution 4.0 International (CC BY 4.0) License](https://creativecommons.org/licenses/by/4.0/).
+* This page is derived in part from [Alexander Hamilton: The Breakdown](https://rstudio-pubs-static.s3.amazonaws.com/516633_c5ceb17730f7453fb3422884d55b5144.html).
+* This page is derived in part from [Tidytext Analysis](https://www2.stat.duke.edu/courses/Spring19/sta199.001/slides/lec-slides/14b-text-analysis.html#1) and licensed under a [Creative Commons Attribution 4.0 International (CC BY 4.0) License](https://creativecommons.org/licenses/by/4.0/).
 
+[^lyrics]: There are a number of ways to obtain the lyrics for the entire soundtrack. [One approach](https://seankross.com/2016/08/30/A-Sentiment-Analysis-of-Hamilton.html) is to use [`rvest` and web scraping](/notes/web-scraping/) to extract the lyrics from sources online. However here I used the Genius API and [`geniusr`](https://ewenme.github.io/geniusr/) to systematically collect the lyrics from an authoritative (and legal) source. The code below was used to obtain the lyrics for all the songs. Note that you need to [authenticate using an API token](https://ewenme.github.io/geniusr/articles/geniusr.html#auth) in order to use this code.
+
+    ```{r get-hamilton, include = TRUE}
+    ```
+    
 ## Session Info
 
 ```{r child = here::here("R", "_session-info.Rmd")}
