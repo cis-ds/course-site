@@ -6,10 +6,12 @@ output: rcfss::xaringan
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE,
-                      fig.retina = 2, fig.width = 12)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.retina = 2, fig.width = 12
+)
 
 library(tidyverse)
 library(broom)
@@ -61,7 +63,6 @@ theme_set(theme_minimal(base_size = rcfss::base_size))
     * reproducible
     * updating
     * ease
-    * scaling
 
 ---
 
@@ -86,6 +87,11 @@ options("this_is_my_key" = XXXX)
 # later, in the R script:
 key <- getOption("this_is_my_key")
 ```
+
+--
+
+* `usethis::edit_r_profile()`
+* Read the documentation - different packages have different storage methods
 
 ---
 
@@ -114,9 +120,11 @@ mpds %>%
   count(partyname) %>%
   ggplot(aes(fct_reorder(partyname, n), n)) +
   geom_col() +
-  labs(title = "Political manifestos published in Sweden",
-       x = NULL,
-       y = "Total (1948-present)") +
+  labs(
+    title = "Political manifestos published in Sweden",
+    x = NULL,
+    y = "Total (1948-present)"
+  ) +
   coord_flip()
 ```
 
@@ -124,15 +132,19 @@ mpds %>%
 
 # Download manifestos
 
-```{r manifestor-corpus, echo = FALSE, message = FALSE, warning = FALSE}
+```{r manifestor-corpus, include = FALSE}
 # download documents
 docs <- mp_corpus(countryname == "United States" & edate > as.Date("2012-01-01"))
+```
 
+```{r manifestor-corpus-wordcloud, dependson = "manifestor-corpus", echo = FALSE}
 # generate wordcloud of most common terms
 docs %>%
   tidy() %>%
-  mutate(party = factor(party, levels = c(61320, 61620),
-                        labels = c("Democratic Party", "Republican Party"))) %>%
+  mutate(party = factor(party,
+    levels = c(61320, 61620),
+    labels = c("Democratic Party", "Republican Party")
+  )) %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words) %>%
   count(party, word, sort = TRUE) %>%
@@ -168,9 +180,11 @@ census_api_key("YOUR API KEY GOES HERE")
 # Obtain data
 
 ```{r income-usa}
-usa_inc <- get_acs(geography = "state", 
-                   variables = c(medincome = "B19013_001"), 
-                   year = 2016)
+usa_inc <- get_acs(
+  geography = "state",
+  variables = c(medincome = "B19013_001"),
+  year = 2016
+)
 usa_inc
 ```
 
@@ -181,14 +195,20 @@ usa_inc
 ```{r income-usa-plot, echo = FALSE, fig.asp = .7}
 usa_inc %>%
   ggplot(aes(x = reorder(NAME, estimate), y = estimate)) +
-  geom_pointrange(aes(ymin = estimate - moe,
-                     ymax = estimate + moe),
-                  size = .25) +
+  geom_pointrange(aes(
+    ymin = estimate - moe,
+    ymax = estimate + moe
+  ),
+  size = .25
+  ) +
+  scale_y_continuous(labels = scales::dollar) +
   coord_flip() +
-  labs(title = "Household income by state",
-       subtitle = "2012-2016 American Community Survey",
-       x = "",
-       y = "ACS estimate (bars represent margin of error)") +
+  labs(
+    title = "Household income by state",
+    subtitle = "2012-2016 American Community Survey",
+    x = "",
+    y = "ACS estimate (bars represent margin of error)"
+  ) +
   theme_minimal(base_size = rcfss::base_size * 0.7)
 ```
 
@@ -200,8 +220,9 @@ usa_inc %>%
 * REST API
 * Streaming API
 
-* [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html)
-* [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html)
+
+--
+
 * [`rtweet`](http://rtweet.info/)
 
 ---
@@ -323,7 +344,7 @@ omdb_key <- getOption("omdb_key")
 
 ```{r omdb-function, dependson = "omdb-key"}
 # function to create API request
-omdb <- function(Key, Title, Year, Plot, Format){
+omdb <- function(Key, Title, Year, Plot, Format) {
   baseurl <- "http://www.omdbapi.com/?"
   params <- c("apikey=", "t=", "y=", "plot=", "r=")
   values <- c(Key, Title, Year, Plot, Format)
@@ -406,11 +427,14 @@ Code | Status
 
 ```{r httr-get-only}
 sharknado_2 <- GET("http://www.omdbapi.com/?",
-                   query = list(t = "Sharknado 2: The Second One",
-                                y = 2014,
-                                plot = "short",
-                                r = "json",
-                                apikey = omdb_key))
+  query = list(
+    t = "Sharknado 2: The Second One",
+    y = 2014,
+    plot = "short",
+    r = "json",
+    apikey = omdb_key
+  )
+)
 
 content(sharknado_2)
 ```
@@ -420,7 +444,7 @@ content(sharknado_2)
 # Messy API responses
 
 ```{r omdb-recursive, echo = FALSE, error = TRUE, warning = FALSE}
-content(response_json, as = "parsed", type = "application/json") %>% 
+content(response_json, as = "parsed", type = "application/json") %>%
   as_tibble()
 ```
 
@@ -482,10 +506,10 @@ users %>%
 
 ```{r gh-users-hoist, dependson = "gh-users-df"}
 users %>%
-  hoist(user, 
-        followers = "followers", 
-        login = "login", 
-        url = "html_url"
+  hoist(user,
+    followers = "followers",
+    login = "login",
+    url = "html_url"
   )
 ```
 
@@ -513,11 +537,11 @@ repos
 
 ```{r gh-repos-hoist, dependson = "gh-repos-unnest-longer"}
 repos %>%
-  hoist(repo, 
-        login = c("owner", "login"), 
-        name = "name",
-        homepage = "homepage",
-        watchers = "watchers_count"
+  hoist(repo,
+    login = c("owner", "login"),
+    name = "name",
+    homepage = "homepage",
+    watchers = "watchers_count"
   )
 ```
 
@@ -526,8 +550,8 @@ repos %>%
 # `unnest_auto()`
 
 ```{r gh-repos-auto, message = TRUE}
-tibble(repo = gh_repos) %>% 
-  unnest_auto(repo) %>% 
+tibble(repo = gh_repos) %>%
+  unnest_auto(repo) %>%
   unnest_auto(repo)
 ```
 
@@ -574,9 +598,9 @@ chars2 %>%
 # Every appearance per book/season
 
 ```{r got-appearances, dependson = "got-wider"}
-chars2 %>% 
-  select(name, books, tvSeries) %>% 
-  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>% 
+chars2 %>%
+  select(name, books, tvSeries) %>%
+  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>%
   unnest_longer(value)
 ```
 
@@ -585,13 +609,13 @@ chars2 %>%
 # Match title to name
 
 ```{r got-title-name, dependson = "got-wider"}
-chars2 %>% 
-  select(name, title = titles) %>% 
+chars2 %>%
+  select(name, title = titles) %>%
   unnest_longer(title)
 ```
 
 ---
 
-# Practice rectangling
+# May the force be with you
 
-<div style="width:100%;height:0;padding-bottom:49%;position:relative;"><iframe src="https://giphy.com/embed/1l522MnWgimYM" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+<div style="width:100%;height:0;padding-bottom:40%;position:relative;"><iframe src="https://giphy.com/embed/kB2uyoigIXPMI" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
