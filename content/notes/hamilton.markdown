@@ -123,59 +123,6 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
 
 As a function of number of words, My Shot is the longest song in the musical.
 
-
-```r
-hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
-  # fix missing song from spotify info
-  mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
-         song_number = ifelse(disc_number == 2,
-                              track_number + max(track_number[disc_number == 1]),
-                              track_number))
-hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
-hamilton_audio <- bind_cols(hamilton_spotify, hamilton_audio_features) %>%
-  as_tibble() %>%
-  select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
-```
-
-
-```r
-hamilton_tidy %>%
-  count(song_number, song_title) %>%
-  left_join(hamilton_audio) %>%
-  ggplot(mapping = aes(x = n, y = duration_ms / 1000)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  ggrepel::geom_text_repel(mapping = aes(label = song_title), alpha = .3, size = 3) +
-  scale_y_time() +
-  labs(
-    x = "Number of words",
-    y = "Length of song (duration)",
-    caption = "Lyrics: Genius API\nDuration: Spotify API"
-  )
-```
-
-```
-## Joining, by = "song_number"
-```
-
-```
-## `geom_smooth()` using formula 'y ~ x'
-```
-
-```
-## Warning: Removed 1 rows containing non-finite values (stat_smooth).
-```
-
-```
-## Warning: Removed 1 rows containing missing values (geom_point).
-```
-
-```
-## Warning: Removed 1 rows containing missing values (geom_text_repel).
-```
-
-<img src="/notes/hamilton_files/figure-html/length-words-duration-1.png" width="672" />
-
 ## Stop words
 
 Of course not all words are equally important. Consider the 10 most frequent words in the lyrics:
@@ -296,10 +243,14 @@ Again, some expected results stick out. Hamilton is always singing about not thr
 
 ## Sentiment analysis
 
+**Sentiment analysis** utilizes the text of the lyrics to classify content as positive or negative. Dictionary-based methods use pre-generated lexicons of words independently coded as positive/negative. We can combine one of these dictionaries with the Hamilton tidy-text data frame using `inner_join()` to identify words with sentimental affect, and further analyze trends.
+
 
 ```r
 hamilton_afinn <- hamilton_tidy %>%
+  # join with sentiment dictionary
   inner_join(get_sentiments(lexicon = "afinn")) %>%
+  # create row id and cumulative sentiment over the entire corpus
   mutate(cum_sent = cumsum(value),
          id = row_number())
 ```
@@ -308,7 +259,9 @@ hamilton_afinn <- hamilton_tidy %>%
 ## Joining, by = "word"
 ```
 
+
 ```r
+# sentiment by song
 hamilton_afinn %>%
   group_by(song_title) %>%
   summarize(sent = sum(value)) %>%
@@ -317,13 +270,44 @@ hamilton_afinn %>%
   scale_fill_viridis_c() +
   coord_flip() +
   labs(
+    title = "Positive/negative sentiment in *Hamilton*",
+    subtitle = "By song",
     x = NULL,
     y = "Summative sentiment",
-    color = "Summative\nsentiment"
-  )
+    fill = "Summative\nsentiment",
+    caption = "Source: Genius API"
+  ) +
+  theme(plot.title = element_markdown(),
+        legend.position = "none")
 ```
 
-<img src="/notes/hamilton_files/figure-html/sentiment-1.png" width="672" />
+<img src="/notes/hamilton_files/figure-html/sentiment-song-1.png" width="672" />
+
+
+```r
+hamilton_afinn %>%
+  filter(speaker %in% principal_cast) %>%
+  group_by(speaker) %>%
+  summarize(sent = sum(value),
+            n = n(),
+            sent_norm = sent / n) %>%
+  ggplot(mapping = aes(x = fct_rev(speaker), y = sent_norm, fill = sent_norm)) +
+  geom_col() +
+  scale_fill_viridis_c() +
+  coord_flip() +
+  labs(
+    title = "Positive/negative sentiment in *Hamilton*",
+    subtitle = "By speaker",
+    x = NULL,
+    y = "Normalized sentiment",
+    caption = "Speaker sentiment normalized by overall word frequency\nSource: Genius API"
+  ) +
+  theme(plot.title = element_markdown(),
+        legend.position = "none")
+```
+
+<img src="/notes/hamilton_files/figure-html/sentiment-by-speaker-1.png" width="672" />
+
 
 ```r
 ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
@@ -341,7 +325,7 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
   )
 ```
 
-<img src="/notes/hamilton_files/figure-html/sentiment-2.png" width="672" />
+<img src="/notes/hamilton_files/figure-html/sentiment-cum-1.png" width="672" />
 
 ## Pairs of words
 
@@ -384,6 +368,66 @@ ggraph(bigram_graph, layout = "fr") +
 ```
 
 <img src="/notes/hamilton_files/figure-html/unnamed-chunk-1-2.png" width="672" />
+
+## Extra credit: Integration with audio features
+
+
+```r
+hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
+  # fix missing song from spotify info
+  mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
+         song_number = ifelse(disc_number == 2,
+                              track_number + max(track_number[disc_number == 1]),
+                              track_number))
+hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
+hamilton_audio <- bind_cols(hamilton_spotify, hamilton_audio_features) %>%
+  as_tibble() %>%
+  select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
+```
+
+
+```r
+hamilton_tidy %>%
+  count(song_number, song_title) %>%
+  left_join(hamilton_audio) %>%
+  ggplot(mapping = aes(x = n, y = duration_ms / 1000)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggrepel::geom_text_repel(mapping = aes(label = song_title), alpha = .3, size = 3) +
+  scale_y_time() +
+  labs(
+    x = "Number of words",
+    y = "Length of song (duration)",
+    caption = "Lyrics: Genius API\nDuration: Spotify API"
+  )
+```
+
+```
+## Joining, by = "song_number"
+```
+
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+```
+## Warning: Removed 1 rows containing non-finite values (stat_smooth).
+```
+
+```
+## Warning: Removed 1 rows containing missing values (geom_point).
+```
+
+```
+## Warning: Removed 1 rows containing missing values (geom_text_repel).
+```
+
+<img src="/notes/hamilton_files/figure-html/length-words-duration-1.png" width="672" />
+
+
+
+
+
 
 ## Acknowledgments
 
@@ -449,15 +493,16 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-05-25                  
+##  date     2020-05-31                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source                          
 ##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 3.6.0)                  
 ##  backports      1.1.7      2020-05-13 [1] CRAN (R 3.6.2)                  
-##  blogdown       0.18.1     2020-04-28 [1] local                           
-##  bookdown       0.18       2020-03-05 [1] CRAN (R 3.6.0)                  
-##  broom          0.5.5      2020-02-29 [1] CRAN (R 3.6.0)                  
+##  blob           1.2.1      2020-01-20 [1] CRAN (R 3.6.0)                  
+##  blogdown       0.19       2020-05-22 [1] CRAN (R 3.6.2)                  
+##  bookdown       0.19       2020-05-15 [1] CRAN (R 3.6.2)                  
+##  broom          0.5.6      2020-04-20 [1] CRAN (R 3.6.2)                  
 ##  callr          3.4.3      2020-03-28 [1] CRAN (R 3.6.2)                  
 ##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 3.6.0)                  
 ##  cli            2.0.2      2020-02-28 [1] CRAN (R 3.6.0)                  
@@ -466,9 +511,9 @@ devtools::session_info()
 ##  crayon         1.3.4      2017-09-16 [1] CRAN (R 3.6.0)                  
 ##  curl           4.3        2019-12-02 [1] CRAN (R 3.6.0)                  
 ##  DBI            1.1.0      2019-12-15 [1] CRAN (R 3.6.0)                  
-##  dbplyr         1.4.2      2019-06-17 [1] CRAN (R 3.6.0)                  
+##  dbplyr         1.4.4      2020-05-27 [1] CRAN (R 3.6.3)                  
 ##  desc           1.2.0      2018-05-01 [1] CRAN (R 3.6.0)                  
-##  devtools       2.2.2      2020-02-17 [1] CRAN (R 3.6.0)                  
+##  devtools       2.3.0      2020-04-10 [1] CRAN (R 3.6.2)                  
 ##  digest         0.6.25     2020-02-23 [1] CRAN (R 3.6.0)                  
 ##  dplyr        * 0.8.5      2020-03-07 [1] CRAN (R 3.6.0)                  
 ##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 3.6.2)                  
@@ -476,20 +521,20 @@ devtools::session_info()
 ##  fansi          0.4.1      2020-01-08 [1] CRAN (R 3.6.0)                  
 ##  farver         2.0.3      2020-01-16 [1] CRAN (R 3.6.0)                  
 ##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 3.6.0)                  
-##  fs             1.3.2      2020-03-05 [1] CRAN (R 3.6.0)                  
+##  fs             1.4.1      2020-04-04 [1] CRAN (R 3.6.2)                  
 ##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.6.0)                  
 ##  geniusr      * 1.2.0      2020-04-13 [1] CRAN (R 3.6.2)                  
 ##  ggforce        0.3.1      2019-08-20 [1] CRAN (R 3.6.0)                  
 ##  ggplot2      * 3.3.0      2020-03-05 [1] CRAN (R 3.6.0)                  
-##  ggraph       * 2.0.2      2020-03-17 [1] CRAN (R 3.6.0)                  
+##  ggraph       * 2.0.3      2020-05-20 [1] CRAN (R 3.6.2)                  
 ##  ggrepel        0.8.2      2020-03-08 [1] CRAN (R 3.6.3)                  
 ##  ggtext       * 0.1.0      2020-05-21 [1] Github (wilkelab/ggtext@e978034)
 ##  glue           1.4.1      2020-05-13 [1] CRAN (R 3.6.2)                  
-##  graphlayouts   0.6.0      2020-03-09 [1] CRAN (R 3.6.0)                  
+##  graphlayouts   0.7.0      2020-04-25 [1] CRAN (R 3.6.2)                  
 ##  gridExtra      2.3        2017-09-09 [1] CRAN (R 3.6.0)                  
 ##  gridtext       0.1.1      2020-02-24 [1] CRAN (R 3.6.0)                  
 ##  gtable         0.3.0      2019-03-25 [1] CRAN (R 3.6.0)                  
-##  haven          2.2.0      2019-11-08 [1] CRAN (R 3.6.0)                  
+##  haven          2.3.0      2020-05-24 [1] CRAN (R 3.6.2)                  
 ##  here         * 0.1        2017-05-28 [1] CRAN (R 3.6.0)                  
 ##  hms            0.5.3      2020-01-08 [1] CRAN (R 3.6.0)                  
 ##  htmltools      0.4.0      2019-10-04 [1] CRAN (R 3.6.0)                  
@@ -499,17 +544,17 @@ devtools::session_info()
 ##  jsonlite       1.6.1      2020-02-02 [1] CRAN (R 3.6.0)                  
 ##  knitr          1.28       2020-02-06 [1] CRAN (R 3.6.0)                  
 ##  labeling       0.3        2014-08-23 [1] CRAN (R 3.6.0)                  
-##  lattice        0.20-40    2020-02-19 [1] CRAN (R 3.6.0)                  
+##  lattice        0.20-41    2020-04-02 [1] CRAN (R 3.6.2)                  
 ##  lifecycle      0.2.0      2020-03-06 [1] CRAN (R 3.6.0)                  
 ##  lubridate      1.7.8      2020-04-06 [1] CRAN (R 3.6.2)                  
 ##  magrittr       1.5        2014-11-22 [1] CRAN (R 3.6.0)                  
 ##  markdown       1.1        2019-08-07 [1] CRAN (R 3.6.0)                  
-##  MASS           7.3-51.5   2019-12-20 [1] CRAN (R 3.6.3)                  
+##  MASS           7.3-51.6   2020-04-26 [1] CRAN (R 3.6.2)                  
 ##  Matrix         1.2-18     2019-11-27 [1] CRAN (R 3.6.3)                  
 ##  memoise        1.1.0      2017-04-21 [1] CRAN (R 3.6.0)                  
-##  modelr         0.1.6      2020-02-22 [1] CRAN (R 3.6.0)                  
+##  modelr         0.1.8      2020-05-19 [1] CRAN (R 3.6.2)                  
 ##  munsell        0.5.0      2018-06-12 [1] CRAN (R 3.6.0)                  
-##  nlme           3.1-145    2020-03-04 [1] CRAN (R 3.6.0)                  
+##  nlme           3.1-148    2020-05-24 [1] CRAN (R 3.6.2)                  
 ##  pillar         1.4.4      2020-05-05 [1] CRAN (R 3.6.2)                  
 ##  pkgbuild       1.0.8      2020-05-07 [1] CRAN (R 3.6.2)                  
 ##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 3.6.0)                  
@@ -520,6 +565,7 @@ devtools::session_info()
 ##  ps             1.3.3      2020-05-08 [1] CRAN (R 3.6.2)                  
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 3.6.2)                  
 ##  R6             2.4.1      2019-11-12 [1] CRAN (R 3.6.0)                  
+##  rappdirs       0.3.1      2016-03-28 [1] CRAN (R 3.6.0)                  
 ##  Rcpp           1.0.4      2020-03-17 [1] CRAN (R 3.6.0)                  
 ##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)                  
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 3.6.0)                  
@@ -533,23 +579,24 @@ devtools::session_info()
 ##  scales         1.1.1      2020-05-11 [1] CRAN (R 3.6.2)                  
 ##  selectr        0.4-2      2019-11-20 [1] CRAN (R 3.6.0)                  
 ##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.6.0)                  
-##  SnowballC      0.6.0      2019-01-15 [1] CRAN (R 3.6.0)                  
+##  SnowballC      0.7.0      2020-04-01 [1] CRAN (R 3.6.2)                  
 ##  stringi        1.4.6      2020-02-17 [1] CRAN (R 3.6.0)                  
 ##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.6.0)                  
 ##  testthat       2.3.2      2020-03-02 [1] CRAN (R 3.6.0)                  
+##  textdata       0.4.1      2020-05-04 [1] CRAN (R 3.6.2)                  
 ##  tibble       * 3.0.1      2020-04-20 [1] CRAN (R 3.6.2)                  
-##  tidygraph      1.1.2      2019-02-18 [1] CRAN (R 3.6.0)                  
+##  tidygraph      1.2.0      2020-05-12 [1] CRAN (R 3.6.2)                  
 ##  tidyr        * 1.1.0      2020-05-20 [1] CRAN (R 3.6.2)                  
 ##  tidyselect     1.1.0      2020-05-11 [1] CRAN (R 3.6.2)                  
-##  tidytext     * 0.2.3      2020-03-04 [1] CRAN (R 3.6.0)                  
+##  tidytext     * 0.2.4      2020-04-17 [1] CRAN (R 3.6.2)                  
 ##  tidyverse    * 1.3.0      2019-11-21 [1] CRAN (R 3.6.0)                  
 ##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 3.6.0)                  
 ##  tweenr         1.0.1      2018-12-14 [1] CRAN (R 3.6.0)                  
-##  usethis        1.5.1      2019-07-04 [1] CRAN (R 3.6.0)                  
+##  usethis        1.6.1      2020-04-29 [1] CRAN (R 3.6.2)                  
 ##  vctrs          0.3.0.9000 2020-05-21 [1] Github (r-lib/vctrs@f476e06)    
 ##  viridis        0.5.1      2018-03-29 [1] CRAN (R 3.6.0)                  
 ##  viridisLite    0.3.0      2018-02-01 [1] CRAN (R 3.6.0)                  
-##  widyr        * 0.1.2      2019-09-09 [1] CRAN (R 3.6.0)                  
+##  widyr        * 0.1.3      2020-04-12 [1] CRAN (R 3.6.2)                  
 ##  withr          2.2.0      2020-04-20 [1] CRAN (R 3.6.2)                  
 ##  xfun           0.14       2020-05-20 [1] CRAN (R 3.6.2)                  
 ##  xml2           1.3.2      2020-04-23 [1] CRAN (R 3.6.2)                  

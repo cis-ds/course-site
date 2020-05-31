@@ -104,35 +104,6 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
 
 As a function of number of words, My Shot is the longest song in the musical.
 
-```{r spotify, dependson = "tidy"}
-hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
-  # fix missing song from spotify info
-  mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
-         song_number = ifelse(disc_number == 2,
-                              track_number + max(track_number[disc_number == 1]),
-                              track_number))
-hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
-hamilton_audio <- bind_cols(hamilton_spotify, hamilton_audio_features) %>%
-  as_tibble() %>%
-  select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
-```
-
-```{r length-words-duration, dependson = c("tidy", "spotify")}
-hamilton_tidy %>%
-  count(song_number, song_title) %>%
-  left_join(hamilton_audio) %>%
-  ggplot(mapping = aes(x = n, y = duration_ms / 1000)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE) +
-  ggrepel::geom_text_repel(mapping = aes(label = song_title), alpha = .3, size = 3) +
-  scale_y_time() +
-  labs(
-    x = "Number of words",
-    y = "Length of song (duration)",
-    caption = "Lyrics: Genius API\nDuration: Spotify API"
-  )
-```
-
 ## Stop words
 
 Of course not all words are equally important. Consider the 10 most frequent words in the lyrics:
@@ -215,12 +186,19 @@ Again, some expected results stick out. Hamilton is always singing about not thr
 
 ## Sentiment analysis
 
-```{r sentiment, dependson = "stop-remove", fig.asp = 1.1}
+**Sentiment analysis** utilizes the text of the lyrics to classify content as positive or negative. Dictionary-based methods use pre-generated lexicons of words independently coded as positive/negative. We can combine one of these dictionaries with the Hamilton tidy-text data frame using `inner_join()` to identify words with sentimental affect, and further analyze trends.
+
+```{r sentiment, dependson = "stop-remove", fig.asp = 1.0}
 hamilton_afinn <- hamilton_tidy %>%
+  # join with sentiment dictionary
   inner_join(get_sentiments(lexicon = "afinn")) %>%
+  # create row id and cumulative sentiment over the entire corpus
   mutate(cum_sent = cumsum(value),
          id = row_number())
+```
 
+```{r sentiment-song, dependson = "sentiment", fig.asp = 1.0}
+# sentiment by song
 hamilton_afinn %>%
   group_by(song_title) %>%
   summarize(sent = sum(value)) %>%
@@ -229,11 +207,40 @@ hamilton_afinn %>%
   scale_fill_viridis_c() +
   coord_flip() +
   labs(
+    title = "Positive/negative sentiment in *Hamilton*",
+    subtitle = "By song",
     x = NULL,
     y = "Summative sentiment",
-    color = "Summative\nsentiment"
-  )
+    fill = "Summative\nsentiment",
+    caption = "Source: Genius API"
+  ) +
+  theme(plot.title = element_markdown(),
+        legend.position = "none")
+```
 
+```{r sentiment-by-speaker, dependson = "sentiment", fig.asp = 1.}
+hamilton_afinn %>%
+  filter(speaker %in% principal_cast) %>%
+  group_by(speaker) %>%
+  summarize(sent = sum(value),
+            n = n(),
+            sent_norm = sent / n) %>%
+  ggplot(mapping = aes(x = fct_rev(speaker), y = sent_norm, fill = sent_norm)) +
+  geom_col() +
+  scale_fill_viridis_c() +
+  coord_flip() +
+  labs(
+    title = "Positive/negative sentiment in *Hamilton*",
+    subtitle = "By speaker",
+    x = NULL,
+    y = "Normalized sentiment",
+    caption = "Speaker sentiment normalized by overall word frequency\nSource: Genius API"
+  ) +
+  theme(plot.title = element_markdown(),
+        legend.position = "none")
+```
+
+```{r sentiment-cum, dependson = "sentiment", fig.asp = 1.}
 ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
   ggrepel::geom_text_repel(data = hamilton_afinn %>%
                              group_by(song_number) %>%
@@ -283,6 +290,42 @@ ggraph(bigram_graph, layout = "fr") +
   theme_void() +
   theme(plot.title = element_markdown())
 ```
+
+## Extra credit: Integration with audio features
+
+```{r spotify, dependson = "tidy"}
+hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
+  # fix missing song from spotify info
+  mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
+         song_number = ifelse(disc_number == 2,
+                              track_number + max(track_number[disc_number == 1]),
+                              track_number))
+hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
+hamilton_audio <- bind_cols(hamilton_spotify, hamilton_audio_features) %>%
+  as_tibble() %>%
+  select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
+```
+
+```{r length-words-duration, dependson = c("tidy", "spotify")}
+hamilton_tidy %>%
+  count(song_number, song_title) %>%
+  left_join(hamilton_audio) %>%
+  ggplot(mapping = aes(x = n, y = duration_ms / 1000)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  ggrepel::geom_text_repel(mapping = aes(label = song_title), alpha = .3, size = 3) +
+  scale_y_time() +
+  labs(
+    x = "Number of words",
+    y = "Length of song (duration)",
+    caption = "Lyrics: Genius API\nDuration: Spotify API"
+  )
+```
+
+
+
+
+
 
 ## Acknowledgments
 
