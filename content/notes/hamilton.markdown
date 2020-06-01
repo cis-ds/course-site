@@ -29,7 +29,7 @@ theme_set(theme_minimal())
 
 About five months ago, my wife and I became addicted to Hamilton.
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/d4bmtcUmgA8ylgCk" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+![My name is Alexander Hamilton](https://media.giphy.com/media/d4bmtcUmgA8ylgCk/giphy.gif)
 
 I admit, we were quite late to the party. I promise we did like it, but I wanted to wait and see the musical in-person before listening to the soundtrack. Alas, having three small children limits your free time to go out to the theater for an entire evening. So I finally caved and started listening to the soundtrack on Spotify. And it's amazing! My son's favorite song (he's four BTW) is My Shot.
 
@@ -239,12 +239,36 @@ hamilton_tf_idf %>%
 
 Again, some expected results stick out. Hamilton is always singing about not throwing away his shot, Eliza is helplessly in love with Alexander, while Burr regrets not being "in the room where it happens". And don't forget King George's love songs to his wayward children.
 
-<div style="width:100%;height:0;padding-bottom:90%;position:relative;"><iframe src="https://giphy.com/embed/26u6duhyJTMmLGMAE" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+![Jonathan Groff](https://media.giphy.com/media/26u6duhyJTMmLGMAE/giphy.gif)
 
 ## Sentiment analysis
 
 **Sentiment analysis** utilizes the text of the lyrics to classify content as positive or negative. Dictionary-based methods use pre-generated lexicons of words independently coded as positive/negative. We can combine one of these dictionaries with the Hamilton tidy-text data frame using `inner_join()` to identify words with sentimental affect, and further analyze trends.
 
+Here we use the `afinn` dictionary which classifies 2,477 words on a scale of `\([-5, +5]\)`.
+
+
+```r
+# afinn dictionary
+get_sentiments(lexicon = "afinn")
+```
+
+```
+## # A tibble: 2,477 x 2
+##    word       value
+##    <chr>      <dbl>
+##  1 abandon       -2
+##  2 abandoned     -2
+##  3 abandons      -2
+##  4 abducted      -2
+##  5 abduction     -2
+##  6 abductions    -2
+##  7 abhor         -3
+##  8 abhorred      -3
+##  9 abhorrent     -3
+## 10 abhors        -3
+## # … with 2,467 more rows
+```
 
 ```r
 hamilton_afinn <- hamilton_tidy %>%
@@ -259,12 +283,35 @@ hamilton_afinn <- hamilton_tidy %>%
 ## Joining, by = "word"
 ```
 
+```r
+hamilton_afinn
+```
+
+```
+## # A tibble: 1,165 x 8
+##    song_number song_title      line_num speaker     word    value cum_sent    id
+##          <dbl> <fct>              <dbl> <chr>       <chr>   <dbl>    <dbl> <int>
+##  1           1 Alexander Hami…        1 Aaron Burr  bastard    -5       -5     1
+##  2           1 Alexander Hami…        1 Aaron Burr  whore      -4       -9     2
+##  3           1 Alexander Hami…        2 Aaron Burr  forgot…    -1      -10     3
+##  4           1 Alexander Hami…        4 Aaron Burr  hero        2       -8     4
+##  5           1 Alexander Hami…        7 John Laure… smarter     2       -6     5
+##  6           1 Alexander Hami…       11 Thomas Jef… strugg…    -2       -8     6
+##  7           1 Alexander Hami…       12 Thomas Jef… longing    -1       -9     7
+##  8           1 Alexander Hami…       13 Thomas Jef… steal      -2      -11     8
+##  9           1 Alexander Hami…       17 James Madi… pain       -2      -13     9
+## 10           1 Alexander Hami…       18 Burr        insane     -2      -15    10
+## # … with 1,155 more rows
+```
+
+First, we can examine the sentiment of each song individually by calculating the average sentiment of each word in the song.
+
 
 ```r
 # sentiment by song
 hamilton_afinn %>%
   group_by(song_title) %>%
-  summarize(sent = sum(value)) %>%
+  summarize(sent = mean(value)) %>%
   ggplot(mapping = aes(x = fct_rev(song_title), y = sent, fill = sent)) +
   geom_col() +
   scale_fill_viridis_c() +
@@ -273,8 +320,8 @@ hamilton_afinn %>%
     title = "Positive/negative sentiment in *Hamilton*",
     subtitle = "By song",
     x = NULL,
-    y = "Summative sentiment",
-    fill = "Summative\nsentiment",
+    y = "Average sentiment",
+    fill = "Average\nsentiment",
     caption = "Source: Genius API"
   ) +
   theme(plot.title = element_markdown(),
@@ -283,30 +330,66 @@ hamilton_afinn %>%
 
 <img src="/notes/hamilton_files/figure-html/sentiment-song-1.png" width="672" />
 
+Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective sons.
+
+However, this also illustrates some problems with dictionary-based sentiment analysis. Consider thw back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
+
+
+```r
+get_sentiments(lexicon = "afinn") %>%
+  filter(word %in% c("helpless", "satisfied"))
+```
+
+```
+## # A tibble: 2 x 2
+##   word      value
+##   <chr>     <dbl>
+## 1 helpless     -2
+## 2 satisfied     2
+```
+
+Herein lies the problem with dictionary-based methods. The AFINN lexicon codes "helpless" as a negative term and "satisfied" as a positive term. On their own this makes sense, but in the context of the music clearly Eliza is "helplessly" in love while Angelica will in fact never be "satisfied" because she cannot be with Alexander. A dictionary-based sentiment classification will always miss these nuances in language.
+
+We could also examine the general disposition of each speaker based on the sentiment of their lyrics. Consider the principal cast below:
+
 
 ```r
 hamilton_afinn %>%
   filter(speaker %in% principal_cast) %>%
   group_by(speaker) %>%
-  summarize(sent = sum(value),
-            n = n(),
-            sent_norm = sent / n) %>%
-  ggplot(mapping = aes(x = fct_rev(speaker), y = sent_norm, fill = sent_norm)) +
-  geom_col() +
+  summarize(sent = mean(value),
+            se = sd(value) / n()) %>%
+  ggplot(mapping = aes(x = fct_reorder(speaker, sent), y = sent, fill = sent)) +
+  geom_pointrange(mapping = aes(
+    ymin = sent - 2 * se,
+    ymax = sent + 2 * se
+  )) +
   scale_fill_viridis_c() +
   coord_flip() +
   labs(
     title = "Positive/negative sentiment in *Hamilton*",
     subtitle = "By speaker",
     x = NULL,
-    y = "Normalized sentiment",
-    caption = "Speaker sentiment normalized by overall word frequency\nSource: Genius API"
+    y = "Average sentiment",
+    caption = "Source: Genius API"
   ) +
   theme(plot.title = element_markdown(),
         legend.position = "none")
 ```
 
 <img src="/notes/hamilton_files/figure-html/sentiment-by-speaker-1.png" width="672" />
+
+Given his generally neutral sentiment, Aaron Burr clearly follows his own guidance.
+
+![Talk less](https://media.giphy.com/media/vDZw32VEqrGOQ/giphy.gif)
+
+![Smile more](https://media.giphy.com/media/GPLL2dSTt9Jvy/giphy.gif)
+
+Also, can we please note Peggy's generally negative tone?
+
+![And Peggy!](https://media.giphy.com/media/20EwQf08wjYrbq9Pfn/giphy.gif)
+
+Tracking the cumulative sentiment across the entire musical, it's easy to identify the high and low points.
 
 
 ```r
@@ -317,6 +400,10 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
                            mapping = aes(label = song_title),
                            size = 3,
                            alpha = .4) +
+  geom_point(data = hamilton_afinn %>%
+                             group_by(song_number) %>%
+                             filter(id == min(id)),
+                           alpha = .4) +
   geom_line() +
   scale_x_continuous(breaks = NULL) +
   labs(
@@ -326,6 +413,8 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
 ```
 
 <img src="/notes/hamilton_files/figure-html/sentiment-cum-1.png" width="672" />
+
+After the initial drop from "Alexander Hamilton", the next peaks in the graph show several positive events in Hamilton's life: meeting his friends, becoming Washington's secretary, and meeting and marrying Eliza. The musical experiences a drop in tone during the rough years of the revolution and Hamilton's dismissal back to New York, then rebounds as the revolutionaries close in on victory at Yorktown. Hamilton's challenges as a member of Washington's cabinet and rivalry with Jefferson are captured in the up-and-down swings in the graph, rises up with "One Last Time" and Hamilton writing Washington's Farewell Address, dropping once again with "Hurricane" and the revelation of Hamilton's affair, rising as Alexander and Eliza reconcile before finally descending once more upon Hamilton's death in his duel with Burr.
 
 ## Pairs of words
 
@@ -543,12 +632,10 @@ devtools::session_info()
 ##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 3.6.0)                  
 ##  jsonlite       1.6.1      2020-02-02 [1] CRAN (R 3.6.0)                  
 ##  knitr          1.28       2020-02-06 [1] CRAN (R 3.6.0)                  
-##  labeling       0.3        2014-08-23 [1] CRAN (R 3.6.0)                  
 ##  lattice        0.20-41    2020-04-02 [1] CRAN (R 3.6.2)                  
 ##  lifecycle      0.2.0      2020-03-06 [1] CRAN (R 3.6.0)                  
 ##  lubridate      1.7.8      2020-04-06 [1] CRAN (R 3.6.2)                  
 ##  magrittr       1.5        2014-11-22 [1] CRAN (R 3.6.0)                  
-##  markdown       1.1        2019-08-07 [1] CRAN (R 3.6.0)                  
 ##  MASS           7.3-51.6   2020-04-26 [1] CRAN (R 3.6.2)                  
 ##  Matrix         1.2-18     2019-11-27 [1] CRAN (R 3.6.3)                  
 ##  memoise        1.1.0      2017-04-21 [1] CRAN (R 3.6.0)                  
