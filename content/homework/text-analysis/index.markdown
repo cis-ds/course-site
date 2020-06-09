@@ -59,7 +59,7 @@ Your assignment should be submitted as an R Markdown document using the `github_
 
 # Rubric
 
-Needs work: Cannot get code to run or is poorly documented. Severe misinterpretations of the results. No effort is made to pre-process the text for analysis.^[Or you provide no justification for keeping content such as numbers, stop words, etc.]
+Needs improvement: Cannot get code to run or is poorly documented. Severe misinterpretations of the results. No effort is made to pre-process the text for analysis.^[Or you provide no justification for keeping content such as numbers, stop words, etc.]
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

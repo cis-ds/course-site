@@ -88,7 +88,7 @@ Your assignment should be submitted as a set of two R Markdown documents using t
 
 # Rubric
 
-Needs work: Cannot get code to run. Fail to accurately create the population density variable. Generated data set is not tidy. No documentation explaining how to use your API function or web scraping script.
+Needs improvement: Cannot get code to run. Fail to accurately create the population density variable. Generated data set is not tidy. No documentation explaining how to use your API function or web scraping script.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

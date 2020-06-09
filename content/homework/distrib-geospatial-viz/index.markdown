@@ -66,7 +66,7 @@ Your assignment should be submitted as one or more R Markdown documents, data fi
 
 # Rubric
 
-Needs work: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment. Map looks amateurish or hard to interpret.
+Needs improvement: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment. Map looks amateurish or hard to interpret.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

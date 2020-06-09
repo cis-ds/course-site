@@ -15,7 +15,7 @@ aliases: ["/hw00_homework_grading.html", "/hw00_github_rubric.html"]
 
 *Also consult any specific guidance given in the relevant assignment itself*
 
-Topic| Excellent: <br> ✓+ coded as +  | Satisfactory: <br> ✓ coded as 0  |Needs work: <br> ✓- coded as - |
+Topic| Excellent: <br> ✓+ coded as +  | Satisfactory: <br> ✓ coded as 0  |Needs improvement: <br> ✓- coded as - |
 |-----------| ---------------------- |--------------------------| ----------------------|
 |Coding style| Student has gone beyond what was expected and required, coding manual is followed, code is well commented | Coding style lacks refinement and has some errors, but code is readable and has some comments | Many errors in coding style, little attention paid to making the code human readable|
 |Coding strategy| Complicated problem broken down into sub-problems that are individually much simpler. Code is efficient, correct, and minimal. Code uses appropriate data structure (list, data frame, vector/matrix/array). Code checks for common errors  | Code is correct, but could be edited down to leaner code. Some "hacking" instead of using suitable data structure. Some checks for errors. |   Code tackles complicated problem in one big chunk. Code is repetitive and could easily be functionalized. No anticipation of errors. |
@@ -28,7 +28,7 @@ Topic| Excellent: <br> ✓+ coded as +  | Satisfactory: <br> ✓ coded as 0  |Ne
 ```
 Evaluation
 ----------------------------------------------------
-| Topic                       | Excellent | Satisfactory | Needs Work |
+| Topic                       | Excellent | Satisfactory | Needs Improvement |
 |-----------------------------|-----------|--------------|------------|
 | **Coding style**            |           |              |            |
 | **Coding strategy**         |           |              |            |
@@ -38,7 +38,7 @@ Evaluation
 
 Remarks:
 
-* Elaborate on above, especially for "needs work."
+* Elaborate on above, especially for "Needs improvement."
 * Some specific praise?
 * Something I learned?
 * Specific constructive criticism?

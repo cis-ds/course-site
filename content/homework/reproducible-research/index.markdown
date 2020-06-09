@@ -116,7 +116,7 @@ In your reflection, make special note of any significant problems that required 
 
 # Rubric
 
-Needs work: Cannot reproduce your results. Scripts require interactive coding to fix. Markdown documents are not generated. Graphs and tables don't have appropriate labels or formatting. There is no consistency to your code's style.
+Needs improvement: Cannot reproduce your results. Scripts require interactive coding to fix. Markdown documents are not generated. Graphs and tables don't have appropriate labels or formatting. There is no consistency to your code's style.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

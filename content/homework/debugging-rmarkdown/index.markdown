@@ -49,7 +49,7 @@ Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-wo
 
 # Rubric
 
-Needs work: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
+Needs improvement: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
