@@ -34,7 +34,6 @@ url_pdf: ""
 url_slides: "/slides/visualizations-and-the-grammar-of-graphics/"
 url_video: ""
 url_code: ""
-url_notes: "https://hackmd.io/@cfss-su20/visualizations-and-the-grammar-of-graphics"
 
 # Does the content use math formatting?
 math: false

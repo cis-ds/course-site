@@ -34,7 +34,6 @@ url_pdf: ""
 url_slides: "/slides/introduction-to-computing-for-the-social-sciences/"
 url_video: ""
 url_code: ""
-url_notes: "https://hackmd.io/@cfss-su20/introduction-to-computing-for-the-social-sciences"
 
 # Does the content use math formatting?
 math: false

@@ -34,7 +34,6 @@ url_pdf: ""
 url_slides: "/slides/exploratory-data-analysis/"
 url_video: ""
 url_code: ""
-url_notes: "https://hackmd.io/@cfss-su20/exploratory-data-analysis"
 
 # Does the content use math formatting?
 math: false

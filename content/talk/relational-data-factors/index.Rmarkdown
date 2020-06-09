@@ -34,7 +34,6 @@ url_pdf: ""
 url_slides: "/slides/data-wrangling-relational-data-and-factors/"
 url_video: ""
 url_code: ""
-url_notes: "https://hackmd.io/@cfss-su20/data-wrangling-relational-data-and-factors"
 
 # Does the content use math formatting?
 math: false
