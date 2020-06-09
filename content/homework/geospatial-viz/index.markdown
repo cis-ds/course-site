@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw07-geospatial.html"]
 
 summary: "Build a map."
-url_code: "https://github.com/cfss-sp20/hw09"
+url_code: "https://github.com/cfss-su20/hw09"
 ---
 
 
@@ -19,7 +19,7 @@ Due by class on December 3rd.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-sp20/hw09) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw09) to fork the repo.
 
 # Generate a geospatial visualization
 

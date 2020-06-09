@@ -34,7 +34,7 @@ url_pdf: ""
 url_slides: "/slides/vectors-and-iteration/"
 url_video: ""
 url_code: ""
-url_notes: "https://hackmd.io/@cfss-sp20/vectors-and-iteration"
+url_notes: "https://hackmd.io/@cfss-su20/vectors-and-iteration"
 
 # Does the content use math formatting?
 math: false

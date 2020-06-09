@@ -3,12 +3,12 @@ title: "HW09: Build a Shiny application"
 date: 2019-06-03T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
-draft: true
+draft: false
 type: post
 aliases: ["/hw10-shiny.html"]
 
 summary: "Build/enhance a Shiny application."
-url_code: "https://github.com/cfss-sp20/hw09"
+url_code: "https://github.com/cfss-su20/hw09"
 ---
 
 
@@ -19,7 +19,7 @@ Due by class on December 3rd.
 
 # Fork the `hw09` repository
 
-Go [here](https://github.com/cfss-sp20/hw09) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw10) to fork the repo.
 
 # What we've done
 
