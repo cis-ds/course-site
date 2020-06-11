@@ -7,7 +7,7 @@ draft: false
 type: post
 
 summary: "Resolve code errors and generate reproducible R Markdown documents."
-url_code: "https://github.com/cfss-sp20/hw05"
+url_code: "https://github.com/cfss-su20/hw05"
 ---
 
 
@@ -18,7 +18,7 @@ Due by 11:59pm CT (Chicago) on May 11th.
 
 # Fork the `hw05` repository
 
-Go [here](https://github.com/cfss-sp20/hw05) to fork the repo for homework 05.
+Go [here](https://github.com/cfss-su20/hw05) to fork the repo for homework 05.
 
 # Debugging code
 
@@ -49,7 +49,7 @@ Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-wo
 
 # Rubric
 
-Needs work: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
+Needs improvement: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

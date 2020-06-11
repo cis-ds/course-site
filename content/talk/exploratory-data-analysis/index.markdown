@@ -1,7 +1,7 @@
 ---
 title: "Exploratory data analysis"
-date: 2020-04-15T13:30:00-06:00
-publishDate: 2019-04-10T13:30:00-06:00
+date: 2020-06-25T09:30:00-06:00
+publishDate: 2019-04-10T09:30:00-06:00
 draft: false
 type: "talk"
 
@@ -9,7 +9,7 @@ aliases: ["/cm004.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2020-04-15T14:50:00-06:00
+time_end: 2020-06-25T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -34,7 +34,6 @@ url_pdf: ""
 url_slides: "/slides/exploratory-data-analysis/"
 url_video: ""
 url_code: ""
-url_notes: "https://hackmd.io/@cfss-sp20/exploratory-data-analysis"
 
 # Does the content use math formatting?
 math: false
@@ -67,5 +66,5 @@ math: false
 
 ## What you need to do after class
 
-* [Register your GitHub username for the course](https://goo.gl/forms/mvwVaTWfoZN6fn4Z2) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-sp20). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
+* [Register your GitHub username for the course](https://goo.gl/forms/mvwVaTWfoZN6fn4Z2) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-su20). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
 * [Complete the exploring and visualizing data homework](/homework/explore-data/)

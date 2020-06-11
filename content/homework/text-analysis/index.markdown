@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw09-text_analysis.html"]
 
 summary: "Collect text data and analyze it."
-url_code: "https://github.com/cfss-sp20/hw09"
+url_code: "https://github.com/cfss-su20/hw09"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 11:59pm CT (Chicago) on June 8th.
 
 # Fork the `hw09` repository
 
-Go [here](https://github.com/cfss-sp20/hw09) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw09) to fork the repo.
 
 # Your mission
 
@@ -59,7 +59,7 @@ Your assignment should be submitted as an R Markdown document using the `github_
 
 # Rubric
 
-Needs work: Cannot get code to run or is poorly documented. Severe misinterpretations of the results. No effort is made to pre-process the text for analysis.^[Or you provide no justification for keeping content such as numbers, stop words, etc.]
+Needs improvement: Cannot get code to run or is poorly documented. Severe misinterpretations of the results. No effort is made to pre-process the text for analysis.^[Or you provide no justification for keeping content such as numbers, stop words, etc.]
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

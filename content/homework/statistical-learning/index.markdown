@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw06-stat-learn.html"]
 
 summary: "Implement statistical learning methods for regression and classification."
-url_code: "https://github.com/cfss-sp20/hw07"
+url_code: "https://github.com/cfss-su20/hw07"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 11:59pm CT (Chicago) on May 25th.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-sp20/hw07) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw07) to fork the repo.
 
 # Part 1: President Donald Trump
 
@@ -90,7 +90,7 @@ Your assignment should be submitted as a set of two R Markdown documents using t
 
 # Rubric
 
-Needs work: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment.
+Needs improvement: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

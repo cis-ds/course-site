@@ -197,34 +197,41 @@ Hint: To search for matching state names, this data frame should include both **
   
 
 ```r
-tidy_lyrics <- bind_rows(song_lyrics %>% 
-                           unnest_tokens(output = state_name,
-                                         input = Lyrics),
-                         song_lyrics %>% 
-                           unnest_tokens(output = state_name,
-                                         input = Lyrics, 
-                                         token = "ngrams", n = 2))
+# tokenize
+lyrics_unigrams <- unnest_tokens(
+  tbl = song_lyrics,
+  output = word,
+  input = Lyrics)
+lyrics_bigrams <- unnest_tokens(
+  tbl = song_lyrics,
+  output = word,
+  input = Lyrics, 
+  token = "ngrams", n = 2
+)
+
+# combine together
+tidy_lyrics <- bind_rows(lyrics_unigrams, lyrics_bigrams)
 tidy_lyrics
 ```
 
 ```
 ## # A tibble: 3,201,465 x 6
-##     Rank Song        Artist                        Year Source state_name  
-##    <dbl> <chr>       <chr>                        <dbl>  <dbl> <chr>       
-##  1     1 wooly bully sam the sham and the pharao…  1965      3 sam         
-##  2     1 wooly bully sam the sham and the pharao…  1965      3 the         
-##  3     1 wooly bully sam the sham and the pharao…  1965      3 sham        
-##  4     1 wooly bully sam the sham and the pharao…  1965      3 miscellaneo…
-##  5     1 wooly bully sam the sham and the pharao…  1965      3 wooly       
-##  6     1 wooly bully sam the sham and the pharao…  1965      3 bully       
-##  7     1 wooly bully sam the sham and the pharao…  1965      3 wooly       
-##  8     1 wooly bully sam the sham and the pharao…  1965      3 bully       
-##  9     1 wooly bully sam the sham and the pharao…  1965      3 sam         
-## 10     1 wooly bully sam the sham and the pharao…  1965      3 the         
+##     Rank Song        Artist                         Year Source word         
+##    <dbl> <chr>       <chr>                         <dbl>  <dbl> <chr>        
+##  1     1 wooly bully sam the sham and the pharaohs  1965      3 sam          
+##  2     1 wooly bully sam the sham and the pharaohs  1965      3 the          
+##  3     1 wooly bully sam the sham and the pharaohs  1965      3 sham         
+##  4     1 wooly bully sam the sham and the pharaohs  1965      3 miscellaneous
+##  5     1 wooly bully sam the sham and the pharaohs  1965      3 wooly        
+##  6     1 wooly bully sam the sham and the pharaohs  1965      3 bully        
+##  7     1 wooly bully sam the sham and the pharaohs  1965      3 wooly        
+##  8     1 wooly bully sam the sham and the pharaohs  1965      3 bully        
+##  9     1 wooly bully sam the sham and the pharaohs  1965      3 sam          
+## 10     1 wooly bully sam the sham and the pharaohs  1965      3 the          
 ## # … with 3,201,455 more rows
 ```
 
-The variable `state_name` in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.
+The variable `word` in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.
 
   </p>
 </details>
@@ -239,27 +246,23 @@ First create a data frame that meets this criteria, then save a new data frame t
   
 
 ```r
-inner_join(tidy_lyrics, pop_df)
-```
-
-```
-## Joining, by = "state_name"
+inner_join(tidy_lyrics, pop_df, by = c("word" = "state_name"))
 ```
 
 ```
 ## # A tibble: 526 x 8
-##     Rank Song           Artist      Year Source state_name GEOID population
-##    <dbl> <chr>          <chr>      <dbl>  <dbl> <chr>      <chr>      <dbl>
-##  1    12 king of the r… roger mil…  1965      1 maine      23       1329923
-##  2    29 eve of destru… barry mcg…  1965      1 alabama    01       4841164
-##  3    49 california gi… the beach…  1965      3 california 06      38654206
-##  4    49 california gi… the beach…  1965      3 california 06      38654206
-##  5    49 california gi… the beach…  1965      3 california 06      38654206
-##  6    49 california gi… the beach…  1965      3 california 06      38654206
-##  7    49 california gi… the beach…  1965      3 california 06      38654206
-##  8    49 california gi… the beach…  1965      3 california 06      38654206
-##  9    49 california gi… the beach…  1965      3 california 06      38654206
-## 10    49 california gi… the beach…  1965      3 california 06      38654206
+##     Rank Song              Artist         Year Source word      GEOID population
+##    <dbl> <chr>             <chr>         <dbl>  <dbl> <chr>     <chr>      <dbl>
+##  1    12 king of the road  roger miller   1965      1 maine     23       1329923
+##  2    29 eve of destructi… barry mcguire  1965      1 alabama   01       4841164
+##  3    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+##  4    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+##  5    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+##  6    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+##  7    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+##  8    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+##  9    49 california girls  the beach bo…  1965      3 californ… 06      38654206
+## 10    49 california girls  the beach bo…  1965      3 californ… 06      38654206
 ## # … with 516 more rows
 ```
 
@@ -267,32 +270,25 @@ Let's only count each state once per song that it is mentioned in.
 
 
 ```r
-tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
-  distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE)
-```
-
-```
-## Joining, by = "state_name"
-```
-
-```r
+tidy_lyrics <- inner_join(tidy_lyrics, pop_df, by = c("word" = "state_name")) %>%
+  distinct(Rank, Song, Artist, Year, word, .keep_all = TRUE)
 tidy_lyrics
 ```
 
 ```
 ## # A tibble: 253 x 8
-##     Rank Song         Artist        Year Source state_name GEOID population
-##    <dbl> <chr>        <chr>        <dbl>  <dbl> <chr>      <chr>      <dbl>
-##  1    12 king of the… roger miller  1965      1 maine      23       1329923
-##  2    29 eve of dest… barry mcgui…  1965      1 alabama    01       4841164
-##  3    49 california … the beach b…  1965      3 california 06      38654206
-##  4    10 california … the mamas  …  1966      3 california 06      38654206
-##  5    77 message to … dionne warw…  1966      1 kentucky   21       4411989
-##  6    61 california … lesley gore   1967      1 california 06      38654206
-##  7     4 sittin on t… otis redding  1968      1 georgia    13      10099320
-##  8    10 tighten up   archie bell…  1968      3 texas      48      26956435
-##  9    25 get back     the beatles…  1969      3 arizona    04       6728577
-## 10    25 get back     the beatles…  1969      3 california 06      38654206
+##     Rank Song             Artist            Year Source word    GEOID population
+##    <dbl> <chr>            <chr>            <dbl>  <dbl> <chr>   <chr>      <dbl>
+##  1    12 king of the road roger miller      1965      1 maine   23       1329923
+##  2    29 eve of destruct… barry mcguire     1965      1 alabama 01       4841164
+##  3    49 california girls the beach boys    1965      3 califo… 06      38654206
+##  4    10 california drea… the mamas  the …  1966      3 califo… 06      38654206
+##  5    77 message to mich… dionne warwick    1966      1 kentuc… 21       4411989
+##  6    61 california nigh… lesley gore       1967      1 califo… 06      38654206
+##  7     4 sittin on the d… otis redding      1968      1 georgia 13      10099320
+##  8    10 tighten up       archie bell  th…  1968      3 texas   48      26956435
+##  9    25 get back         the beatles wit…  1969      3 arizona 04       6728577
+## 10    25 get back         the beatles wit…  1969      3 califo… 06      38654206
 ## # … with 243 more rows
 ```
 
@@ -308,13 +304,13 @@ tidy_lyrics
 
 ```r
 (state_counts <- tidy_lyrics %>% 
-   count(state_name) %>% 
-   arrange(desc(n)))
+    count(word) %>% 
+    arrange(desc(n)))
 ```
 
 ```
 ## # A tibble: 33 x 2
-##    state_name      n
+##    word            n
 ##    <chr>       <int>
 ##  1 new york       64
 ##  2 california     34
@@ -332,15 +328,10 @@ tidy_lyrics
 
 ```r
 pop_df <- pop_df %>% 
-  left_join(state_counts) %>% 
+  left_join(state_counts, by = c("state_name" = "word")) %>% 
   mutate(rate = n / population * 1e6)
-```
 
-```
-## Joining, by = "state_name"
-```
-
-```r
+## which are the top ten states by rate?
 pop_df %>%
   arrange(desc(rate)) %>%
   top_n(10)
@@ -417,101 +408,120 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.3 (2020-02-29)
+##  version  R version 4.0.1 (2020-06-06)
 ##  os       macOS Catalina 10.15.4      
-##  system   x86_64, darwin15.6.0        
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-06-01                  
+##  date     2020-06-09                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version    date       lib source                      
-##  acs         * 2.1.4      2019-02-19 [1] CRAN (R 3.6.0)              
-##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 3.6.0)              
-##  backports     1.1.7      2020-05-13 [1] CRAN (R 3.6.2)              
-##  blob          1.2.1      2020-01-20 [1] CRAN (R 3.6.0)              
-##  blogdown      0.19       2020-05-22 [1] CRAN (R 3.6.2)              
-##  bookdown      0.19       2020-05-15 [1] CRAN (R 3.6.2)              
-##  broom         0.5.6      2020-04-20 [1] CRAN (R 3.6.2)              
-##  callr         3.4.3      2020-03-28 [1] CRAN (R 3.6.2)              
-##  cellranger    1.1.0      2016-07-27 [1] CRAN (R 3.6.0)              
-##  cli           2.0.2      2020-02-28 [1] CRAN (R 3.6.0)              
-##  colorspace    1.4-1      2019-03-18 [1] CRAN (R 3.6.0)              
-##  crayon        1.3.4      2017-09-16 [1] CRAN (R 3.6.0)              
-##  DBI           1.1.0      2019-12-15 [1] CRAN (R 3.6.0)              
-##  dbplyr        1.4.4      2020-05-27 [1] CRAN (R 3.6.3)              
-##  desc          1.2.0      2018-05-01 [1] CRAN (R 3.6.0)              
-##  devtools      2.3.0      2020-04-10 [1] CRAN (R 3.6.2)              
-##  digest        0.6.25     2020-02-23 [1] CRAN (R 3.6.0)              
-##  dplyr       * 0.8.5      2020-03-07 [1] CRAN (R 3.6.0)              
-##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 3.6.2)              
-##  evaluate      0.14       2019-05-28 [1] CRAN (R 3.6.0)              
-##  fansi         0.4.1      2020-01-08 [1] CRAN (R 3.6.0)              
-##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 3.6.0)              
-##  fs            1.4.1      2020-04-04 [1] CRAN (R 3.6.2)              
-##  generics      0.0.2      2018-11-29 [1] CRAN (R 3.6.0)              
-##  ggplot2     * 3.3.0      2020-03-05 [1] CRAN (R 3.6.0)              
-##  glue          1.4.1      2020-05-13 [1] CRAN (R 3.6.2)              
-##  gtable        0.3.0      2019-03-25 [1] CRAN (R 3.6.0)              
-##  haven         2.3.0      2020-05-24 [1] CRAN (R 3.6.2)              
-##  here        * 0.1        2017-05-28 [1] CRAN (R 3.6.0)              
-##  hms           0.5.3      2020-01-08 [1] CRAN (R 3.6.0)              
-##  htmltools     0.4.0      2019-10-04 [1] CRAN (R 3.6.0)              
-##  httr          1.4.1      2019-08-05 [1] CRAN (R 3.6.0)              
-##  janeaustenr   0.1.5      2017-06-10 [1] CRAN (R 3.6.0)              
-##  jsonlite      1.6.1      2020-02-02 [1] CRAN (R 3.6.0)              
-##  knitr         1.28       2020-02-06 [1] CRAN (R 3.6.0)              
-##  lattice       0.20-41    2020-04-02 [1] CRAN (R 3.6.2)              
-##  lifecycle     0.2.0      2020-03-06 [1] CRAN (R 3.6.0)              
-##  lubridate     1.7.8      2020-04-06 [1] CRAN (R 3.6.2)              
-##  magrittr      1.5        2014-11-22 [1] CRAN (R 3.6.0)              
-##  Matrix        1.2-18     2019-11-27 [1] CRAN (R 3.6.3)              
-##  memoise       1.1.0      2017-04-21 [1] CRAN (R 3.6.0)              
-##  modelr        0.1.8      2020-05-19 [1] CRAN (R 3.6.2)              
-##  munsell       0.5.0      2018-06-12 [1] CRAN (R 3.6.0)              
-##  nlme          3.1-148    2020-05-24 [1] CRAN (R 3.6.2)              
-##  pillar        1.4.4      2020-05-05 [1] CRAN (R 3.6.2)              
-##  pkgbuild      1.0.8      2020-05-07 [1] CRAN (R 3.6.2)              
-##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 3.6.0)              
-##  pkgload       1.0.2      2018-10-29 [1] CRAN (R 3.6.0)              
-##  plyr          1.8.6      2020-03-03 [1] CRAN (R 3.6.0)              
-##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 3.6.0)              
-##  processx      3.4.2      2020-02-09 [1] CRAN (R 3.6.0)              
-##  ps            1.3.3      2020-05-08 [1] CRAN (R 3.6.2)              
-##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 3.6.2)              
-##  R6            2.4.1      2019-11-12 [1] CRAN (R 3.6.0)              
-##  Rcpp          1.0.4      2020-03-17 [1] CRAN (R 3.6.0)              
-##  readr       * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)              
-##  readxl        1.3.1      2019-03-13 [1] CRAN (R 3.6.0)              
-##  remotes       2.1.1      2020-02-15 [1] CRAN (R 3.6.0)              
-##  reprex        0.3.0      2019-05-16 [1] CRAN (R 3.6.0)              
-##  rlang         0.4.6.9000 2020-05-21 [1] Github (r-lib/rlang@691b5a8)
-##  rmarkdown     2.1        2020-01-20 [1] CRAN (R 3.6.0)              
-##  rprojroot     1.3-2      2018-01-03 [1] CRAN (R 3.6.0)              
-##  rstudioapi    0.11       2020-02-07 [1] CRAN (R 3.6.0)              
-##  rvest         0.3.5      2019-11-08 [1] CRAN (R 3.6.0)              
-##  scales        1.1.1      2020-05-11 [1] CRAN (R 3.6.2)              
-##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 3.6.0)              
-##  SnowballC     0.7.0      2020-04-01 [1] CRAN (R 3.6.2)              
-##  stringi       1.4.6      2020-02-17 [1] CRAN (R 3.6.0)              
-##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 3.6.0)              
-##  testthat      2.3.2      2020-03-02 [1] CRAN (R 3.6.0)              
-##  tibble      * 3.0.1      2020-04-20 [1] CRAN (R 3.6.2)              
-##  tidyr       * 1.1.0      2020-05-20 [1] CRAN (R 3.6.2)              
-##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 3.6.2)              
-##  tidytext    * 0.2.4      2020-04-17 [1] CRAN (R 3.6.2)              
-##  tidyverse   * 1.3.0      2019-11-21 [1] CRAN (R 3.6.0)              
-##  tokenizers    0.2.1      2018-03-29 [1] CRAN (R 3.6.0)              
-##  usethis       1.6.1      2020-04-29 [1] CRAN (R 3.6.2)              
-##  vctrs         0.3.0.9000 2020-05-21 [1] Github (r-lib/vctrs@f476e06)
-##  withr         2.2.0      2020-04-20 [1] CRAN (R 3.6.2)              
-##  xfun          0.14       2020-05-20 [1] CRAN (R 3.6.2)              
-##  XML         * 3.99-0.3   2020-01-20 [1] CRAN (R 3.6.0)              
-##  xml2          1.3.2      2020-04-23 [1] CRAN (R 3.6.2)              
-##  yaml          2.2.1      2020-02-01 [1] CRAN (R 3.6.0)              
+##  package      * version    date       lib source                      
+##  acs          * 2.1.4      2019-02-19 [1] CRAN (R 4.0.0)              
+##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 4.0.0)              
+##  backports      1.1.7      2020-05-13 [1] CRAN (R 4.0.0)              
+##  blob           1.2.1      2020-01-20 [1] CRAN (R 4.0.0)              
+##  blogdown       0.19       2020-05-22 [1] CRAN (R 4.0.0)              
+##  bookdown       0.19       2020-05-15 [1] CRAN (R 4.0.0)              
+##  broom          0.5.6      2020-04-20 [1] CRAN (R 4.0.0)              
+##  callr          3.4.3      2020-03-28 [1] CRAN (R 4.0.0)              
+##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 4.0.0)              
+##  class          7.3-17     2020-04-26 [1] CRAN (R 4.0.0)              
+##  classInt       0.4-3      2020-04-07 [1] CRAN (R 4.0.0)              
+##  cli            2.0.2      2020-02-28 [1] CRAN (R 4.0.0)              
+##  codetools      0.2-16     2018-12-24 [1] CRAN (R 4.0.0)              
+##  colorspace     1.4-1      2019-03-18 [1] CRAN (R 4.0.0)              
+##  crayon         1.3.4      2017-09-16 [1] CRAN (R 4.0.0)              
+##  DBI            1.1.0      2019-12-15 [1] CRAN (R 4.0.0)              
+##  dbplyr         1.4.4      2020-05-27 [1] CRAN (R 4.0.0)              
+##  desc           1.2.0      2018-05-01 [1] CRAN (R 4.0.0)              
+##  devtools       2.3.0      2020-04-10 [1] CRAN (R 4.0.0)              
+##  digest         0.6.25     2020-02-23 [1] CRAN (R 4.0.0)              
+##  dplyr        * 1.0.0      2020-05-29 [1] CRAN (R 4.0.0)              
+##  e1071          1.7-3      2019-11-26 [1] CRAN (R 4.0.0)              
+##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 4.0.0)              
+##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.0.0)              
+##  fansi          0.4.1      2020-01-08 [1] CRAN (R 4.0.0)              
+##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)              
+##  foreign        0.8-80     2020-05-24 [1] CRAN (R 4.0.0)              
+##  fs             1.4.1      2020-04-04 [1] CRAN (R 4.0.0)              
+##  generics       0.0.2      2018-11-29 [1] CRAN (R 4.0.0)              
+##  ggplot2      * 3.3.1      2020-05-28 [1] CRAN (R 4.0.0)              
+##  glue           1.4.1      2020-05-13 [1] CRAN (R 4.0.0)              
+##  gridExtra      2.3        2017-09-09 [1] CRAN (R 4.0.0)              
+##  gtable         0.3.0      2019-03-25 [1] CRAN (R 4.0.0)              
+##  haven          2.3.1      2020-06-01 [1] CRAN (R 4.0.0)              
+##  here         * 0.1        2017-05-28 [1] CRAN (R 4.0.0)              
+##  hms            0.5.3      2020-01-08 [1] CRAN (R 4.0.0)              
+##  htmltools      0.4.0      2019-10-04 [1] CRAN (R 4.0.0)              
+##  httr           1.4.1      2019-08-05 [1] CRAN (R 4.0.0)              
+##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 4.0.0)              
+##  jsonlite       1.6.1      2020-02-02 [1] CRAN (R 4.0.0)              
+##  KernSmooth     2.23-17    2020-04-26 [1] CRAN (R 4.0.0)              
+##  knitr          1.28       2020-02-06 [1] CRAN (R 4.0.0)              
+##  lattice        0.20-41    2020-04-02 [1] CRAN (R 4.0.0)              
+##  lifecycle      0.2.0      2020-03-06 [1] CRAN (R 4.0.0)              
+##  lubridate      1.7.8      2020-04-06 [1] CRAN (R 4.0.0)              
+##  magrittr       1.5        2014-11-22 [1] CRAN (R 4.0.0)              
+##  maptools       1.0-1      2020-05-14 [1] CRAN (R 4.0.0)              
+##  Matrix         1.2-18     2019-11-27 [1] CRAN (R 4.0.0)              
+##  memoise        1.1.0      2017-04-21 [1] CRAN (R 4.0.0)              
+##  modelr         0.1.8      2020-05-19 [1] CRAN (R 4.0.0)              
+##  munsell        0.5.0      2018-06-12 [1] CRAN (R 4.0.0)              
+##  nlme           3.1-148    2020-05-24 [1] CRAN (R 4.0.0)              
+##  pillar         1.4.4      2020-05-05 [1] CRAN (R 4.0.0)              
+##  pkgbuild       1.0.8      2020-05-07 [1] CRAN (R 4.0.0)              
+##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 4.0.0)              
+##  pkgload        1.1.0      2020-05-29 [1] CRAN (R 4.0.0)              
+##  plyr           1.8.6      2020-03-03 [1] CRAN (R 4.0.0)              
+##  prettyunits    1.1.1      2020-01-24 [1] CRAN (R 4.0.0)              
+##  processx       3.4.2      2020-02-09 [1] CRAN (R 4.0.0)              
+##  ps             1.3.3      2020-05-08 [1] CRAN (R 4.0.0)              
+##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)              
+##  R6             2.4.1      2019-11-12 [1] CRAN (R 4.0.0)              
+##  rappdirs       0.3.1      2016-03-28 [1] CRAN (R 4.0.0)              
+##  RColorBrewer   1.1-2      2014-12-07 [1] CRAN (R 4.0.0)              
+##  Rcpp           1.0.4.6    2020-04-09 [1] CRAN (R 4.0.0)              
+##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 4.0.0)              
+##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.0.0)              
+##  remotes        2.1.1      2020-02-15 [1] CRAN (R 4.0.0)              
+##  reprex         0.3.0      2019-05-16 [1] CRAN (R 4.0.0)              
+##  rgdal          1.5-8      2020-05-28 [1] CRAN (R 4.0.0)              
+##  rlang          0.4.6.9000 2020-06-08 [1] Github (r-lib/rlang@10b32e8)
+##  rmarkdown      2.2        2020-05-31 [1] CRAN (R 4.0.0)              
+##  rprojroot      1.3-2      2018-01-03 [1] CRAN (R 4.0.0)              
+##  rstudioapi     0.11       2020-02-07 [1] CRAN (R 4.0.0)              
+##  rvest          0.3.5      2019-11-08 [1] CRAN (R 4.0.0)              
+##  scales         1.1.1      2020-05-11 [1] CRAN (R 4.0.0)              
+##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 4.0.0)              
+##  sf             0.9-3      2020-05-04 [1] CRAN (R 4.0.0)              
+##  SnowballC      0.7.0      2020-04-01 [1] CRAN (R 4.0.0)              
+##  sp             1.4-2      2020-05-20 [1] CRAN (R 4.0.0)              
+##  statebins    * 1.2.2      2015-12-21 [1] CRAN (R 4.0.0)              
+##  stringi        1.4.6      2020-02-17 [1] CRAN (R 4.0.0)              
+##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)              
+##  testthat       2.3.2      2020-03-02 [1] CRAN (R 4.0.0)              
+##  tibble       * 3.0.1      2020-04-20 [1] CRAN (R 4.0.0)              
+##  tidycensus   * 0.9.9.2    2020-04-03 [1] CRAN (R 4.0.0)              
+##  tidyr        * 1.1.0      2020-05-20 [1] CRAN (R 4.0.0)              
+##  tidyselect     1.1.0      2020-05-11 [1] CRAN (R 4.0.0)              
+##  tidytext     * 0.2.4      2020-04-17 [1] CRAN (R 4.0.0)              
+##  tidyverse    * 1.3.0      2019-11-21 [1] CRAN (R 4.0.0)              
+##  tigris         0.9.4      2020-04-01 [1] CRAN (R 4.0.0)              
+##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 4.0.0)              
+##  units          0.6-6      2020-03-16 [1] CRAN (R 4.0.0)              
+##  usethis        1.6.1      2020-04-29 [1] CRAN (R 4.0.0)              
+##  utf8           1.1.4      2018-05-24 [1] CRAN (R 4.0.0)              
+##  uuid           0.1-4      2020-02-26 [1] CRAN (R 4.0.0)              
+##  vctrs          0.3.1      2020-06-05 [1] CRAN (R 4.0.1)              
+##  withr          2.2.0      2020-04-20 [1] CRAN (R 4.0.0)              
+##  xfun           0.14       2020-05-20 [1] CRAN (R 4.0.0)              
+##  XML          * 3.99-0.3   2020-01-20 [1] CRAN (R 4.0.0)              
+##  xml2           1.3.2      2020-04-23 [1] CRAN (R 4.0.0)              
+##  yaml           2.2.1      2020-02-01 [1] CRAN (R 4.0.0)              
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
