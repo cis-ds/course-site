@@ -14,7 +14,7 @@ url_code: "https://github.com/cfss-su20/hw05"
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on May 11th.
+Due by 9:30 am CT (Chicago) on July 9th.
 
 # Fork the `hw05` repository
 

@@ -8,14 +8,14 @@ type: post
 aliases: ["/hw10-shiny.html"]
 
 summary: "Build/enhance a Shiny application."
-url_code: "https://github.com/cfss-su20/hw09"
+url_code: "https://github.com/cfss-su20/hw10"
 ---
 
 
 
 # Overview
 
-Due by class on December 3rd.
+Due by 9:30 am CT (Chicago) on July 27th.
 
 # Fork the `hw10` repository
 
