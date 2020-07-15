@@ -27,6 +27,7 @@ library(manifestoR)
 library(httr)
 library(rtweet)
 library(viridis)
+library(flipbookr)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcfss::base_size))
@@ -497,7 +498,7 @@ names(users$user[[1]])
 
 ```{r gh-users-unnest-wider, dependson = "gh-users-df"}
 users %>%
-  unnest_wider(user)
+  unnest_wider(col = user)
 ```
 
 ---
@@ -506,7 +507,8 @@ users %>%
 
 ```{r gh-users-hoist, dependson = "gh-users-df"}
 users %>%
-  hoist(user,
+  hoist(
+    .col = user,
     followers = "followers",
     login = "login",
     url = "html_url"
@@ -527,7 +529,7 @@ users %>%
 
 ```{r gh-repos-unnest-longer, dependson = "gh-repos"}
 repos <- repos %>%
-  unnest_longer(repo)
+  unnest_longer(col = repo)
 repos
 ```
 
@@ -537,7 +539,8 @@ repos
 
 ```{r gh-repos-hoist, dependson = "gh-repos-unnest-longer"}
 repos %>%
-  hoist(repo,
+  hoist(
+    .col = repo,
     login = c("owner", "login"),
     name = "name",
     homepage = "homepage",
@@ -547,13 +550,13 @@ repos %>%
 
 ---
 
-# `unnest_auto()`
-
-```{r gh-repos-auto, message = TRUE}
+```{r gh-repos-auto, include = FALSE}
 tibble(repo = gh_repos) %>%
-  unnest_auto(repo) %>%
-  unnest_auto(repo)
+  unnest_auto(col = repo) %>%
+  unnest_auto(col = repo)
 ```
+
+`r chunk_reveal(chunk_name = "gh-repos-auto")`
 
 ---
 
@@ -570,7 +573,7 @@ chars
 
 ```{r got-wider}
 chars2 <- chars %>%
-  unnest_wider(char)
+  unnest_wider(col = char)
 chars2
 ```
 
@@ -597,22 +600,39 @@ chars2 %>%
 
 # Every appearance per book/season
 
-```{r got-appearances, dependson = "got-wider"}
-chars2 %>%
-  select(name, books, tvSeries) %>%
-  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>%
-  unnest_longer(value)
+---
+
+```{r got-appearances, dependson = "got-wider", include = FALSE}
+select(
+  .data = chars2,
+  name, books, tvSeries
+) %>%
+  pivot_longer(
+    cols = c(books, tvSeries),
+    names_to = "media",
+    values_to = "value"
+  ) %>%
+  unnest_longer(col = value)
 ```
+
+`r chunk_reveal(chunk_name = "got-appearances", break_type = "auto")`
 
 ---
 
-# Match title to name
+# Match character's title to their name
 
-```{r got-title-name, dependson = "got-wider"}
-chars2 %>%
-  select(name, title = titles) %>%
-  unnest_longer(title)
+---
+
+```{r got-title-name, dependson = "got-wider", include = FALSE}
+select(
+  .data = chars2,
+  name,
+  title = titles
+) %>%
+  unnest_longer(col = title)
 ```
+
+`r chunk_reveal(chunk_name = "got-title-name", break_type = "auto")`
 
 ---
 
