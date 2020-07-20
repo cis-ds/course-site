@@ -60,6 +60,7 @@ math: false
         * Retrieving data from APIs
         * Textual analysis with `tidytext`
         * Visualizations with `ggplot2`
+* Read [Practicing tidytext with Hamilton](/notes/hamilton/)
 
 ## Class materials
 

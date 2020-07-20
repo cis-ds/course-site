@@ -28,15 +28,15 @@ set.seed(123)
 theme_set(theme_minimal())
 ```
 
-About five months ago, my wife and I became addicted to Hamilton.
+About seven months ago, my wife and I became addicted to Hamilton.
 
 ![My name is Alexander Hamilton](https://media.giphy.com/media/d4bmtcUmgA8ylgCk/giphy.gif)
 
 I admit, we were quite late to the party. I promise we did like it, but I wanted to wait and see the musical in-person before listening to the soundtrack. Alas, having three small children limits your free time to go out to the theater for an entire evening. So I finally caved and started listening to the soundtrack on Spotify. And it's amazing! My son's favorite song (he's four BTW) is My Shot.
 
-<iframe src="https://open.spotify.com/embed/track/4cxvludVmQxryrnx1m9FqL" width="300" height="380" frameborder="0" allowtransparency="true" allow="encrypted-media"></iframe>
+![My Shot](https://media.giphy.com/media/l378ovNpNyKXCQCHu/giphy.gif)
 
-One of the nice things about the musical is that it is [sung-through](https://en.wikipedia.org/wiki/Sung-through), so the lyrics contain essentially all of the dialogue. This provides an interesting opportunity to use the `tidytext` package to analyze the lyrics.[^lyrics]
+One of the nice things about the musical is that it is [sung-through](https://en.wikipedia.org/wiki/Sung-through), so the lyrics contain essentially all of the dialogue. This provides an interesting opportunity to use the `tidytext` package to analyze the lyrics. Here, I use the `geniusr` package to obtain the complete lyrics from [Genius](https://genius.com/albums/Lin-manuel-miranda/Hamilton-an-american-musical-original-broadway-cast-recording).[^lyrics]
 
 ```{r get-hamilton, eval = FALSE, include = FALSE}
 library(geniusr)
@@ -64,6 +64,7 @@ hamilton <- hamilton_lyrics %>%
          line = str_replace_all(line, "’", "'")) %>%
   # write to disk
   write_csv(path = here("static", "data", "hamilton.csv"))
+glimpse(hamilton)
 ```
 
 ```{r hamilton}
@@ -123,7 +124,7 @@ hamilton_tidy <- hamilton_tidy %>%
 
 hamilton_tidy %>%
   count(word) %>%
-  top_n(20) %>%
+  slice_max(n = 20, order_by = n) %>%
   ggplot(aes(fct_reorder(word, n), n)) +
   geom_col() +
   coord_flip() + 
@@ -159,11 +160,9 @@ hamilton_tf_idf %>%
   arrange(desc(tf_idf)) %>%
   mutate(word = factor(word, levels = rev(unique(word)))) %>%
   group_by(speaker) %>%
-  top_n(10) %>%
-  # arbitrarily reduce to only 10 for characters with tied tf-idf
-  slice(1:10) %>%
-  ungroup() %>%
+  slice_max(n = 10, order_by = tf_idf, with_ties = FALSE) %>%
   # resolve ambiguities when same word appears for different characters
+  ungroup() %>%
   mutate(word = reorder_within(x = word, by = tf_idf, within = speaker)) %>%
   ggplot(mapping = aes(x = word, y = tf_idf)) +
   geom_col(show.legend = FALSE) +
@@ -226,7 +225,7 @@ hamilton_afinn %>%
         legend.position = "none")
 ```
 
-Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective sons.
+Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective children.
 
 However, this also illustrates some problems with dictionary-based sentiment analysis. Consider thw back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
 
@@ -269,30 +268,34 @@ Given his generally neutral sentiment, Aaron Burr clearly follows his own guidan
 
 ![Smile more](https://media.giphy.com/media/GPLL2dSTt9Jvy/giphy.gif)
 
-Also, can we please note Peggy's generally negative tone?
+Also, can we please note Peggy's general pessimism?
 
 ![And Peggy!](https://media.giphy.com/media/20EwQf08wjYrbq9Pfn/giphy.gif)
 
 Tracking the cumulative sentiment across the entire musical, it's easy to identify the high and low points.
 
-```{r sentiment-cum, dependson = "sentiment"}
+```{r sentiment-cum, dependson = "sentiment", fig.asp = 1.4}
 ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
-  ggrepel::geom_text_repel(data = hamilton_afinn %>%
-                             group_by(song_number) %>%
-                             filter(id == min(id)),
-                           mapping = aes(label = song_title),
-                           size = 3,
-                           alpha = .4) +
-  geom_point(data = hamilton_afinn %>%
-                             group_by(song_number) %>%
-                             filter(id == min(id)),
-                           alpha = .4) +
   geom_line() +
-  scale_x_continuous(breaks = NULL) +
+  # label the start of each song
+  scale_x_reverse(breaks = hamilton_afinn %>%
+                             group_by(song_number) %>%
+                             filter(id == min(id)) %>%
+                       pull(id),
+                     labels = hamilton_afinn %>%
+                             group_by(song_number) %>%
+                             filter(id == min(id)) %>%
+                       pull(song_title)) +
   labs(
+    title = "Positive/negative sentiment in *Hamilton*",
     x = NULL,
-    y = "Cumulative sentiment"
-  )
+    y = "Cumulative sentiment",
+    caption = "Source: Genius API"
+  ) +
+  # transpose to be able to fit song titles on the graph
+  coord_flip() +
+  theme(panel.grid.minor.y = element_blank(),
+        plot.title = element_markdown())
 ```
 
 After the initial drop from "Alexander Hamilton", the next peaks in the graph show several positive events in Hamilton's life: meeting his friends, becoming Washington's secretary, and meeting and marrying Eliza. The musical experiences a drop in tone during the rough years of the revolution and Hamilton's dismissal back to New York, then rebounds as the revolutionaries close in on victory at Yorktown. Hamilton's challenges as a member of Washington's cabinet and rivalry with Jefferson are captured in the up-and-down swings in the graph, rises up with "One Last Time" and Hamilton writing Washington's Farewell Address, dropping once again with "Hurricane" and the revelation of Hamilton's affair, rising as Alexander and Eliza reconcile before finally descending once more upon Hamilton's death in his duel with Burr.
@@ -303,6 +306,7 @@ After the initial drop from "Alexander Hamilton", the next peaks in the graph sh
 library(widyr)
 library(ggraph)
 
+# calculate all pairs of words in the musical
 hamilton_pair <- hamilton %>%
   unnest_tokens(output = word, input = line, token = "ngrams", n = 2) %>%
   separate(col = word, into = c("word1", "word2"), sep = " ") %>%
@@ -313,15 +317,10 @@ hamilton_pair <- hamilton %>%
 
 # filter for only relatively common combinations
 bigram_graph <- hamilton_pair %>%
-  filter(n > 2) %>%
+  filter(n > 3) %>%
   igraph::graph_from_data_frame()
 
-set.seed(1776) # New York City
-ggraph(bigram_graph, layout = "fr") +
-  geom_edge_link() +
-  geom_node_point() +
-  geom_node_text(aes(label = name), vjust = 1, hjust = 1)
-
+# draw a network graph
 set.seed(1776) # New York City
 ggraph(bigram_graph, layout = "fr") +
   geom_edge_link(aes(edge_alpha = n, edge_width = n), show.legend = FALSE, alpha = .5) +
@@ -332,9 +331,9 @@ ggraph(bigram_graph, layout = "fr") +
   theme(plot.title = element_markdown())
 ```
 
-## Extra credit: Integration with audio features
+Finally we can examine the colocation of pairs of words to look for common usage. It's apparent there are several major themes detected through this approach, including the Hamilton/Jefferson relationship, "Aaron Burr, sir", Philip's song with his mother (un, deux, trois, quatre, ...), the rising up of the colonies, and those young, scrappy, and hungry men.
 
-```{r spotify, dependson = "tidy"}
+```{r spotify, dependson = "tidy", eval = FALSE, include = FALSE}
 hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
   # fix missing song from spotify info
   mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
@@ -342,12 +341,16 @@ hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", li
                               track_number + max(track_number[disc_number == 1]),
                               track_number))
 hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
-hamilton_audio <- bind_cols(hamilton_spotify, hamilton_audio_features) %>%
-  as_tibble() %>%
+
+# join together
+hamilton_audio <- hamilton_spotify %>%
+  # remove duplicate columns that actually have differing data
+  select(-type, -uri, -duration_ms) %>%
+  left_join(hamilton_audio_features) %>%
   select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
 ```
 
-```{r length-words-duration, dependson = c("tidy", "spotify")}
+```{r length-words-duration, dependson = c("tidy", "spotify"), eval = FALSE, include = FALSE}
 hamilton_tidy %>%
   count(song_number, song_title) %>%
   left_join(hamilton_audio) %>%
@@ -362,11 +365,6 @@ hamilton_tidy %>%
     caption = "Lyrics: Genius API\nDuration: Spotify API"
   )
 ```
-
-
-
-
-
 
 ## Acknowledgments
 
