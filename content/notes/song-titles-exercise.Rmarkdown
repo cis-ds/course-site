@@ -125,17 +125,24 @@ Hint: To search for matching state names, this data frame should include both **
   <p>
   
 ```{r lyrics-tidy}
-tidy_lyrics <- bind_rows(song_lyrics %>% 
-                           unnest_tokens(output = state_name,
-                                         input = Lyrics),
-                         song_lyrics %>% 
-                           unnest_tokens(output = state_name,
-                                         input = Lyrics, 
-                                         token = "ngrams", n = 2))
+# tokenize
+lyrics_unigrams <- unnest_tokens(
+  tbl = song_lyrics,
+  output = word,
+  input = Lyrics)
+lyrics_bigrams <- unnest_tokens(
+  tbl = song_lyrics,
+  output = word,
+  input = Lyrics, 
+  token = "ngrams", n = 2
+)
+
+# combine together
+tidy_lyrics <- bind_rows(lyrics_unigrams, lyrics_bigrams)
 tidy_lyrics
 ```
 
-The variable `state_name` in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.
+The variable `word` in this data frame contains all the possible words and bigrams that might be state names in all the lyrics.
 
   </p>
 </details>
@@ -149,14 +156,14 @@ First create a data frame that meets this criteria, then save a new data frame t
   <p>
   
 ```{r lyrics-state-names}
-inner_join(tidy_lyrics, pop_df)
+inner_join(tidy_lyrics, pop_df, by = c("word" = "state_name"))
 ```
 
 Let's only count each state once per song that it is mentioned in.
 
 ```{r lyrics-state-distinct}
-tidy_lyrics <- inner_join(tidy_lyrics, pop_df) %>%
-  distinct(Rank, Song, Artist, Year, state_name, .keep_all = TRUE)
+tidy_lyrics <- inner_join(tidy_lyrics, pop_df, by = c("word" = "state_name")) %>%
+  distinct(Rank, Song, Artist, Year, word, .keep_all = TRUE)
 tidy_lyrics
 ```
 
@@ -171,15 +178,16 @@ tidy_lyrics
   
 ```{r state-counts}
 (state_counts <- tidy_lyrics %>% 
-   count(state_name) %>% 
-   arrange(desc(n)))
+    count(word) %>% 
+    arrange(desc(n)))
 ```
 
 ```{r state-counts-poprel}
 pop_df <- pop_df %>% 
-  left_join(state_counts) %>% 
+  left_join(state_counts, by = c("state_name" = "word")) %>% 
   mutate(rate = n / population * 1e6)
 
+## which are the top ten states by rate?
 pop_df %>%
   arrange(desc(rate)) %>%
   top_n(10)

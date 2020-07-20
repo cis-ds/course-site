@@ -1,7 +1,7 @@
 ---
 title: "Statistical learning: classification and cross-validation"
-date: 2019-11-14T13:30:00-06:00
-publishDate: 2019-03-01T13:30:00-06:00
+date: 2019-11-14T09:30:00-06:00
+publishDate: 2019-03-01T09:30:00-06:00
 draft: true
 type: "talk"
 
@@ -9,7 +9,7 @@ aliases: ["/cm012.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-11-14T14:50:00-06:00
+time_end: 2019-11-14T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -48,7 +48,7 @@ math: false
 * Define and estimate a random forest
 * Introduce the `caret` package for statistical learning in R
 * Define resampling method
-* Compare and contrast the validation set approach with leave-one-out and $k$-fold cross-validation
+* Compare and contrast the validation set approach with leave-one-out and `\(k\)`-fold cross-validation
 * Demonstrate how to conduct cross-validation using `rsample`
 
 ## Before class

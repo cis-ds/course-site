@@ -8,20 +8,20 @@ type: post
 aliases: ["/hw02-explore-data.html"]
 
 summary: "Transform and explore a cleaned dataset on gun deaths in the United States."
-url_code: "https://github.com/cfss-sp20/hw02"
+url_code: "https://github.com/cfss-su20/hw02"
 ---
 
 
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on April 20th.
+Due by 9:30 am CT (Chicago) on June 29th.
 
 Now that you've demonstrated your software is setup, the goal of this assignment is to practice transforming and exploring data.
 
 # Fork the `hw02` repository
 
-Go [here](https://github.com/cfss-sp20/hw02) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw02) to fork the repo.
 
 # Exploring clean data
 
@@ -108,9 +108,19 @@ Your assignment should be submitted as an R Markdown document using the `github_
 
 Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
+{{% alert note %}}
+
+Make sure to stage and commit:
+
+* `mass-shootings.Rmd`
+* `mass-shootings.md`
+* `mass-shootings_files/` - this folder contains all the graphs you generated in your R Markdown document
+
+{{% /alert %}}
+
 # Rubric
 
-Needs work: Displays minimal effort. Doesn't complete all components. Code is poorly written and not documented. Uses the same type of plot for each graph, or doesn't use plots appropriate for the variables being analyzed. No record of commits other than the final push to GitHub.
+Needs improvement: Displays minimal effort. Doesn't complete all components. Code is poorly written and not documented. Uses the same type of plot for each graph, or doesn't use plots appropriate for the variables being analyzed. No record of commits other than the final push to GitHub.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

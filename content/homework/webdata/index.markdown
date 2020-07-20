@@ -8,14 +8,14 @@ type: post
 aliases: ["/hw08-webdata.html"]
 
 summary: "Collect data from the web and analyze it."
-url_code: "https://github.com/cfss-sp20/hw08"
+url_code: "https://github.com/cfss-su20/hw08"
 ---
 
 
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on June 1st.
+Due by 9:30 am CT (Chicago) on July 21st.
 
 We learned three ways of collecting data from the internet:
 
@@ -30,7 +30,7 @@ For the homework, you will
 
 # Fork the `hw08` repository
 
-Go [here](https://github.com/cfss-sp20/hw08) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw08) to fork the repo.
 
 # Part 1: Exploring the `gapminder` data (even more)
 
@@ -75,7 +75,7 @@ Some suggested APIs you could write your own code for in R:
 * [NASA APIs](https://api.nasa.gov/index.html)
 * [The New York Times Developer Network](https://developer.nytimes.com/)
 * [NFLArrest API](http://nflarrest.com/api/)
-* [SWAPI - the Star Wars API](https://swapi.co/)
+* [SWAPI - the Star Wars API](https://swapi.dev/)
 * [USASpending.gov](https://api.usaspending.gov/)
 * [USGS Earthquake Catalog](https://earthquake.usgs.gov/fdsnws/event/1/)
 * [xkcd](https://xkcd.com/json.html)
@@ -88,7 +88,7 @@ Your assignment should be submitted as a set of two R Markdown documents using t
 
 # Rubric
 
-Needs work: Cannot get code to run. Fail to accurately create the population density variable. Generated data set is not tidy. No documentation explaining how to use your API function or web scraping script.
+Needs improvement: Cannot get code to run. Fail to accurately create the population density variable. Generated data set is not tidy. No documentation explaining how to use your API function or web scraping script.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

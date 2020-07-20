@@ -8,18 +8,18 @@ type: post
 aliases: ["/hw04-programming.html"]
 
 summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
-url_code: "https://github.com/cfss-sp20/hw04"
+url_code: "https://github.com/cfss-su20/hw04"
 ---
 
 
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on May 4th.
+Due by 9:30 am CT (Chicago) on July 6th.
 
 # Fork the `hw04` repository
 
-Go [here](https://github.com/cfss-sp20/hw04) to fork the repo.
+Go [here](https://github.com/cfss-su20/hw04) to fork the repo.
 
 # Part 1: Programming exercises
 
@@ -68,7 +68,7 @@ Once you have written this function, demonstrate that it works by importing the 
 * Do not try and run the iterative operation inside of the function. Technically this can work, but it is far harder to fix errors and write the body of the function if you are performing both tasks simultaneously.
 * The output of the function should be a **tidy data frame for a single country, pared down to 2-4 substantive variables you will analyze**.
 
-Once you have the data imported, write a brief report exploring and analyzing at least [two variables in the data](http://data.worldbank.org/indicator). You should explore both variance and covariance, and present your results and analysis in a coherent and interpretable manner. The main point is that your report should not just be code and output from R - you also need to include your own written analysis. Submitting the report as an [R Markdown document](http://rmarkdown.rstudio.com/) will make this much easier (and is in fact mandatory).
+Once you have the data imported, write a brief report exploring and analyzing at least [two variables in the data](http://data.worldbank.org/indicator). Use a combination of descriptive statistics, tables, and figures, and present your results and analysis in a coherent and interpretable manner. The main point is that your report should not just be code and output from R - you also need to include your own written analysis. Submitting the report as an [R Markdown document](http://rmarkdown.rstudio.com/) will make this much easier (and is in fact mandatory).
 
 # Submit the assignment
 
@@ -76,7 +76,7 @@ Your assignment should be submitted as two R Markdown documents using the `githu
 
 # Rubric
 
-Needs work: Displays minimal effort. Doesn't complete all components. Code is poorly written and not documented. World Bank analysis is slapped together, or just contains code and output. No history of commits to document work.
+Needs improvement: Displays minimal effort. Doesn't complete all components. Code is poorly written and not documented. World Bank analysis is slapped together, or just contains code and output. No history of commits to document work.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 

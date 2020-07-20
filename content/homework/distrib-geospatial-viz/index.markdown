@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw07-distrib-learn-geospatial.html"]
 
 summary: "Implement statistical learning via sparklyr and build a map."
-url_code: "https://github.com/cfss-sp20/hw07"
+url_code: "https://github.com/cfss-su20/hw07"
 ---
 
 
@@ -19,14 +19,14 @@ Due before class May 14th.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-sp20/hw07) to fork the repo for homework 07.
+Go [here](https://github.com/cfss-su20/hw07) to fork the repo for homework 07.
 
 # Part 1: Statistical learning in Spark
 
 [Last week](/homework/statistical-learning/) you estimated statistical learning models predicting survival and death on the Titanic. Take the model specification for your best-performing model from the Titanic problem, and estimate it using at least three machine learning algorithms in `sparklyr` (either MLlib or H2O). Calculate the accuracy and AUC metrics for each model. Which algorithm performs the best?
 
 * If you use an `ml_()` function, you need to split the data into training/test sets
-* If you use an `h2o.()` function, you need to either split the data into training/test sets or use $k$-fold CV
+* If you use an `h2o.()` function, you need to either split the data into training/test sets or use `\(k\)`-fold CV
 
 # Part 2: Generating geospatial visualization
 
@@ -66,7 +66,7 @@ Your assignment should be submitted as one or more R Markdown documents, data fi
 
 # Rubric
 
-Needs work: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment. Map looks amateurish or hard to interpret.
+Needs improvement: Cannot get code to run or is poorly documented. No documentation in the `README` file. Severe misinterpretations of the results. Overall a shoddy or incomplete assignment. Map looks amateurish or hard to interpret.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
