@@ -2,7 +2,7 @@
 title: "Building Shiny apps: user interface"
 date: 2020-07-22T09:30:00-06:00
 publishDate: 2019-05-20T09:30:00-06:00
-draft: false
+draft: true
 type: "talk"
 
 aliases: ["/cm019.html"]
