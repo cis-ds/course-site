@@ -54,12 +54,12 @@ hamilton_lyrics <- hamilton_tracks %>%
 # unnest and clean-up
 hamilton <- hamilton_lyrics %>%
   unnest(cols = lyrics, names_repair = "universal") %>%
-  select(song_number, song_title, line, section_name, song_name) %>%
+  select(song_number, line, section_name, song_name) %>%
   group_by(song_number) %>%
   # add line number
   mutate(line_num = row_number()) %>%
   # reorder columns and convert speaker to title case
-  select(song_number, song_title, line_num, line, speaker = section_name) %>%
+  select(song_number, song_name, line_num, line, speaker = section_name) %>%
   mutate(speaker = str_to_title(speaker),
          line = str_replace_all(line, "’", "'")) %>%
   # write to disk
@@ -69,7 +69,7 @@ glimpse(hamilton)
 
 ```{r hamilton}
 hamilton <- read_csv(file = here("static", "data", "hamilton.csv")) %>%
-  mutate(song_title = parse_factor(song_title))
+  mutate(song_name = parse_factor(song_name))
 glimpse(hamilton)
 ```
 
@@ -92,7 +92,7 @@ Remember that by default, `unnest_tokens()` automatically converts all text to l
 An initial check reveals the length of each song in terms of the number of words in its lyrics.^[Though lyrics' length is not always [a good measure of a musical's pacing](https://fivethirtyeight.com/features/hamilton-is-the-very-model-of-a-modern-fast-paced-musical/).]
 
 ```{r song-length, dependson = "hamilton", fig.asp = 1.1}
-ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
+ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_name))) +
   geom_bar() +
   coord_flip() +
   labs(
@@ -103,7 +103,7 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
   )
 ```
 
-As a function of number of words, My Shot is the longest song in the musical.
+As a function of number of words, Non-Stop is the longest song in the musical.
 
 ## Stop words
 
@@ -207,9 +207,9 @@ First, we can examine the sentiment of each song individually by calculating the
 ```{r sentiment-song, dependson = "sentiment", fig.asp = 1.0}
 # sentiment by song
 hamilton_afinn %>%
-  group_by(song_title) %>%
+  group_by(song_name) %>%
   summarize(sent = mean(value)) %>%
-  ggplot(mapping = aes(x = fct_rev(song_title), y = sent, fill = sent)) +
+  ggplot(mapping = aes(x = fct_rev(song_name), y = sent, fill = sent)) +
   geom_col() +
   scale_fill_viridis_c() +
   coord_flip() +
@@ -227,7 +227,7 @@ hamilton_afinn %>%
 
 Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective children.
 
-However, this also illustrates some problems with dictionary-based sentiment analysis. Consider thw back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
+However, this also illustrates some problems with dictionary-based sentiment analysis. Consider the back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
 
 ```{r sentiment-outliers, dependson = "sentiment"}
 get_sentiments(lexicon = "afinn") %>%
@@ -241,15 +241,16 @@ We could also examine the general disposition of each speaker based on the senti
 ```{r sentiment-by-speaker, dependson = "sentiment"}
 hamilton_afinn %>%
   filter(speaker %in% principal_cast) %>%
+  # calculate average sentiment by character with standard error
   group_by(speaker) %>%
   summarize(sent = mean(value),
             se = sd(value) / n()) %>%
+  # generate plot sorted from positive to negative
   ggplot(mapping = aes(x = fct_reorder(speaker, sent), y = sent, fill = sent)) +
   geom_pointrange(mapping = aes(
     ymin = sent - 2 * se,
     ymax = sent + 2 * se
   )) +
-  scale_fill_viridis_c() +
   coord_flip() +
   labs(
     title = "Positive/negative sentiment in *Hamilton*",
@@ -274,7 +275,7 @@ Also, can we please note Peggy's general pessimism?
 
 Tracking the cumulative sentiment across the entire musical, it's easy to identify the high and low points.
 
-```{r sentiment-cum, dependson = "sentiment", fig.asp = 1.4}
+```{r sentiment-cum, dependson = "sentiment", fig.asp = 1.6}
 ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
   geom_line() +
   # label the start of each song
@@ -285,7 +286,7 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
                      labels = hamilton_afinn %>%
                              group_by(song_number) %>%
                              filter(id == min(id)) %>%
-                       pull(song_title)) +
+                       pull(song_name)) +
   labs(
     title = "Positive/negative sentiment in *Hamilton*",
     x = NULL,
@@ -352,12 +353,12 @@ hamilton_audio <- hamilton_spotify %>%
 
 ```{r length-words-duration, dependson = c("tidy", "spotify"), eval = FALSE, include = FALSE}
 hamilton_tidy %>%
-  count(song_number, song_title) %>%
+  count(song_number, song_name) %>%
   left_join(hamilton_audio) %>%
   ggplot(mapping = aes(x = n, y = duration_ms / 1000)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE) +
-  ggrepel::geom_text_repel(mapping = aes(label = song_title), alpha = .3, size = 3) +
+  ggrepel::geom_text_repel(mapping = aes(label = song_name), alpha = .3, size = 3) +
   scale_y_time() +
   labs(
     x = "Number of words",

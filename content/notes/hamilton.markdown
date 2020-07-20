@@ -42,14 +42,14 @@ One of the nice things about the musical is that it is [sung-through](https://en
 
 ```r
 hamilton <- read_csv(file = here("static", "data", "hamilton.csv")) %>%
-  mutate(song_title = parse_factor(song_title))
+  mutate(song_name = parse_factor(song_name))
 ```
 
 ```
 ## Parsed with column specification:
 ## cols(
 ##   song_number = col_double(),
-##   song_title = col_character(),
+##   song_name = col_character(),
 ##   line_num = col_double(),
 ##   line = col_character(),
 ##   speaker = col_character()
@@ -61,10 +61,10 @@ glimpse(hamilton)
 ```
 
 ```
-## Observations: 3,544
-## Variables: 5
+## Rows: 3,532
+## Columns: 5
 ## $ song_number <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
-## $ song_title  <fct> Alexander Hamilton, Alexander Hamilton, Alexander Hamilto…
+## $ song_name   <fct> Alexander Hamilton, Alexander Hamilton, Alexander Hamilto…
 ## $ line_num    <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17…
 ## $ line        <chr> "How does a bastard, orphan, son of a whore and a", "Scot…
 ## $ speaker     <chr> "Aaron Burr", "Aaron Burr", "Aaron Burr", "Aaron Burr", "…
@@ -84,8 +84,8 @@ hamilton_tidy
 ```
 
 ```
-## # A tibble: 21,289 x 5
-##    song_number song_title         line_num speaker    word   
+## # A tibble: 21,142 x 5
+##    song_number song_name          line_num speaker    word   
 ##          <dbl> <fct>                 <dbl> <chr>      <chr>  
 ##  1           1 Alexander Hamilton        1 Aaron Burr how    
 ##  2           1 Alexander Hamilton        1 Aaron Burr does   
@@ -97,7 +97,7 @@ hamilton_tidy
 ##  8           1 Alexander Hamilton        1 Aaron Burr a      
 ##  9           1 Alexander Hamilton        1 Aaron Burr whore  
 ## 10           1 Alexander Hamilton        1 Aaron Burr and    
-## # … with 21,279 more rows
+## # … with 21,132 more rows
 ```
 
 Remember that by default, `unnest_tokens()` automatically converts all text to lowercase and strips out punctuation.
@@ -108,7 +108,7 @@ An initial check reveals the length of each song in terms of the number of words
 
 
 ```r
-ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
+ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_name))) +
   geom_bar() +
   coord_flip() +
   labs(
@@ -121,7 +121,7 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_title))) +
 
 <img src="/notes/hamilton_files/figure-html/song-length-1.png" width="672" />
 
-As a function of number of words, My Shot is the longest song in the musical.
+As a function of number of words, Non-Stop is the longest song in the musical.
 
 ## Stop words
 
@@ -135,20 +135,20 @@ hamilton_tidy %>%
 ```
 
 ```
-## # A tibble: 2,976 x 2
+## # A tibble: 2,929 x 2
 ##    word      n
 ##    <chr> <int>
-##  1 the     854
-##  2 i       642
-##  3 you     582
-##  4 to      547
-##  5 a       473
-##  6 and     384
-##  7 in      320
-##  8 it      296
-##  9 of      277
+##  1 the     848
+##  2 i       639
+##  3 you     578
+##  4 to      544
+##  5 a       471
+##  6 and     383
+##  7 in      317
+##  8 it      294
+##  9 of      274
 ## 10 my      259
-## # … with 2,966 more rows
+## # … with 2,919 more rows
 ```
 
 Not particularly informative. We can identify a list of stopwords using `get_stopwords()` then remove them via `anti_join()`.^[I told you filtering joins would be useful one day, but you didn't believe me!]
@@ -278,20 +278,20 @@ hamilton_afinn
 ```
 
 ```
-## # A tibble: 1,165 x 8
-##    song_number song_title      line_num speaker     word    value cum_sent    id
-##          <dbl> <fct>              <dbl> <chr>       <chr>   <dbl>    <dbl> <int>
-##  1           1 Alexander Hami…        1 Aaron Burr  bastard    -5       -5     1
-##  2           1 Alexander Hami…        1 Aaron Burr  whore      -4       -9     2
-##  3           1 Alexander Hami…        2 Aaron Burr  forgot…    -1      -10     3
-##  4           1 Alexander Hami…        4 Aaron Burr  hero        2       -8     4
-##  5           1 Alexander Hami…        7 John Laure… smarter     2       -6     5
-##  6           1 Alexander Hami…       11 Thomas Jef… strugg…    -2       -8     6
-##  7           1 Alexander Hami…       12 Thomas Jef… longing    -1       -9     7
-##  8           1 Alexander Hami…       13 Thomas Jef… steal      -2      -11     8
-##  9           1 Alexander Hami…       17 James Madi… pain       -2      -13     9
-## 10           1 Alexander Hami…       18 Burr        insane     -2      -15    10
-## # … with 1,155 more rows
+## # A tibble: 1,159 x 8
+##    song_number song_name      line_num speaker      word    value cum_sent    id
+##          <dbl> <fct>             <dbl> <chr>        <chr>   <dbl>    <dbl> <int>
+##  1           1 Alexander Ham…        1 Aaron Burr   bastard    -5       -5     1
+##  2           1 Alexander Ham…        1 Aaron Burr   whore      -4       -9     2
+##  3           1 Alexander Ham…        2 Aaron Burr   forgot…    -1      -10     3
+##  4           1 Alexander Ham…        4 Aaron Burr   hero        2       -8     4
+##  5           1 Alexander Ham…        7 John Laurens smarter     2       -6     5
+##  6           1 Alexander Ham…       11 Thomas Jeff… strugg…    -2       -8     6
+##  7           1 Alexander Ham…       12 Thomas Jeff… longing    -1       -9     7
+##  8           1 Alexander Ham…       13 Thomas Jeff… steal      -2      -11     8
+##  9           1 Alexander Ham…       17 James Madis… pain       -2      -13     9
+## 10           1 Alexander Ham…       18 Burr         insane     -2      -15    10
+## # … with 1,149 more rows
 ```
 
 First, we can examine the sentiment of each song individually by calculating the average sentiment of each word in the song.
@@ -300,9 +300,9 @@ First, we can examine the sentiment of each song individually by calculating the
 ```r
 # sentiment by song
 hamilton_afinn %>%
-  group_by(song_title) %>%
+  group_by(song_name) %>%
   summarize(sent = mean(value)) %>%
-  ggplot(mapping = aes(x = fct_rev(song_title), y = sent, fill = sent)) +
+  ggplot(mapping = aes(x = fct_rev(song_name), y = sent, fill = sent)) +
   geom_col() +
   scale_fill_viridis_c() +
   coord_flip() +
@@ -326,7 +326,7 @@ hamilton_afinn %>%
 
 Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective children.
 
-However, this also illustrates some problems with dictionary-based sentiment analysis. Consider thw back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
+However, this also illustrates some problems with dictionary-based sentiment analysis. Consider the back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
 
 
 ```r
@@ -350,15 +350,16 @@ We could also examine the general disposition of each speaker based on the senti
 ```r
 hamilton_afinn %>%
   filter(speaker %in% principal_cast) %>%
+  # calculate average sentiment by character with standard error
   group_by(speaker) %>%
   summarize(sent = mean(value),
             se = sd(value) / n()) %>%
+  # generate plot sorted from positive to negative
   ggplot(mapping = aes(x = fct_reorder(speaker, sent), y = sent, fill = sent)) +
   geom_pointrange(mapping = aes(
     ymin = sent - 2 * se,
     ymax = sent + 2 * se
   )) +
-  scale_fill_viridis_c() +
   coord_flip() +
   labs(
     title = "Positive/negative sentiment in *Hamilton*",
@@ -401,7 +402,7 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
                      labels = hamilton_afinn %>%
                              group_by(song_number) %>%
                              filter(id == min(id)) %>%
-                       pull(song_title)) +
+                       pull(song_name)) +
   labs(
     title = "Positive/negative sentiment in *Hamilton*",
     x = NULL,
@@ -483,12 +484,12 @@ Finally we can examine the colocation of pairs of words to look for common usage
     # unnest and clean-up
     hamilton <- hamilton_lyrics %>%
       unnest(cols = lyrics, names_repair = "universal") %>%
-      select(song_number, song_title, line, section_name, song_name) %>%
+      select(song_number, line, section_name, song_name) %>%
       group_by(song_number) %>%
       # add line number
       mutate(line_num = row_number()) %>%
       # reorder columns and convert speaker to title case
-      select(song_number, song_title, line_num, line, speaker = section_name) %>%
+      select(song_number, song_name, line_num, line, speaker = section_name) %>%
       mutate(speaker = str_to_title(speaker),
              line = str_replace_all(line, "’", "'")) %>%
       # write to disk
@@ -512,7 +513,7 @@ Finally we can examine the colocation of pairs of words to look for common usage
     ## Columns: 5
     ## Groups: song_number [46]
     ## $ song_number <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, …
-    ## $ song_title  <chr> "Alexander Hamilton by Leslie Odom, Jr., Anthony Ramos, D…
+    ## $ song_name   <chr> "Alexander Hamilton", "Alexander Hamilton", "Alexander Ha…
     ## $ line_num    <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17…
     ## $ line        <chr> "How does a bastard, orphan, son of a whore and a", "Scot…
     ## $ speaker     <chr> "Aaron Burr", "Aaron Burr", "Aaron Burr", "Aaron Burr", "…
@@ -537,7 +538,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-07-19                  
+##  date     2020-07-20                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version  date       lib source        
@@ -583,7 +584,7 @@ devtools::session_info()
 ##  hms            0.5.3    2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools      0.4.0    2019-10-04 [1] CRAN (R 4.0.0)
 ##  httr           1.4.1    2019-08-05 [1] CRAN (R 4.0.0)
-##  igraph       * 1.2.5    2020-03-19 [1] CRAN (R 4.0.0)
+##  igraph         1.2.5    2020-03-19 [1] CRAN (R 4.0.0)
 ##  janeaustenr    0.1.5    2017-06-10 [1] CRAN (R 4.0.0)
 ##  jsonlite       1.7.0    2020-06-25 [1] CRAN (R 4.0.2)
 ##  knitr          1.29     2020-06-23 [1] CRAN (R 4.0.1)
@@ -624,7 +625,6 @@ devtools::session_info()
 ##  selectr        0.4-2    2019-11-20 [1] CRAN (R 4.0.0)
 ##  sessioninfo    1.1.1    2018-11-05 [1] CRAN (R 4.0.0)
 ##  SnowballC      0.7.0    2020-04-01 [1] CRAN (R 4.0.0)
-##  stopwords      2.0      2020-04-14 [1] CRAN (R 4.0.0)
 ##  stringi        1.4.6    2020-02-17 [1] CRAN (R 4.0.0)
 ##  stringr      * 1.4.0    2019-02-10 [1] CRAN (R 4.0.0)
 ##  testthat       2.3.2    2020-03-02 [1] CRAN (R 4.0.0)
