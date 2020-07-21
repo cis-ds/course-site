@@ -83,14 +83,14 @@ hp_words <- list(
   group_by(book) %>%
   mutate(chapter = row_number(book)) %>%
   # tokenize the data frame
-  unnest_tokens(word, value)
+  unnest_tokens(word, value) %>%
+  ungroup()
 
 hp_words
 ```
 
 ```
 ## # A tibble: 1,089,386 x 3
-## # Groups:   book [7]
 ##    book               chapter word   
 ##    <fct>                <int> <chr>  
 ##  1 philosophers_stone       1 the    
@@ -164,7 +164,6 @@ hp_words %>%
 
 ```
 ## # A tibble: 65,094 x 4
-## # Groups:   book [7]
 ##    book               chapter word       sentiment
 ##    <fct>                <int> <chr>      <chr>    
 ##  1 philosophers_stone       1 proud      positive 
@@ -426,6 +425,10 @@ hp_words %>%
 ## Joining, by = "word"
 ```
 
+```
+## `summarise()` regrouping output by 'book' (override with `.groups` argument)
+```
+
 <img src="/notes/harry-potter-exercise_files/figure-html/affin-over-time-1.png" width="672" />
 
 ```r
@@ -467,181 +470,199 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.4      
-##  system   x86_64, darwin15.6.0        
+##  version  R version 4.0.1 (2020-06-06)
+##  os       macOS Catalina 10.15.6      
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-06-01                  
+##  date     2020-07-21                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version    date       lib
-##  assertthat    0.2.1      2019-03-21 [1]
-##  backports     1.1.7      2020-05-13 [1]
-##  blob          1.2.1      2020-01-20 [1]
-##  blogdown      0.19       2020-05-22 [1]
-##  bookdown      0.19       2020-05-15 [1]
-##  broom         0.5.6      2020-04-20 [1]
-##  callr         3.4.3      2020-03-28 [1]
-##  cellranger    1.1.0      2016-07-27 [1]
-##  cli           2.0.2      2020-02-28 [1]
-##  colorspace    1.4-1      2019-03-18 [1]
-##  crayon        1.3.4      2017-09-16 [1]
-##  DBI           1.1.0      2019-12-15 [1]
-##  dbplyr        1.4.4      2020-05-27 [1]
-##  desc          1.2.0      2018-05-01 [1]
-##  devtools      2.3.0      2020-04-10 [1]
-##  digest        0.6.25     2020-02-23 [1]
-##  dplyr       * 0.8.5      2020-03-07 [1]
-##  ellipsis      0.3.1      2020-05-15 [1]
-##  evaluate      0.14       2019-05-28 [1]
-##  fansi         0.4.1      2020-01-08 [1]
-##  forcats     * 0.5.0      2020-03-01 [1]
-##  fs            1.4.1      2020-04-04 [1]
-##  generics      0.0.2      2018-11-29 [1]
-##  ggplot2     * 3.3.0      2020-03-05 [1]
-##  glue          1.4.1      2020-05-13 [1]
-##  gtable        0.3.0      2019-03-25 [1]
-##  harrypotter * 0.1.0      2019-06-10 [1]
-##  haven         2.3.0      2020-05-24 [1]
-##  here          0.1        2017-05-28 [1]
-##  hms           0.5.3      2020-01-08 [1]
-##  htmltools     0.4.0      2019-10-04 [1]
-##  httr          1.4.1      2019-08-05 [1]
-##  janeaustenr   0.1.5      2017-06-10 [1]
-##  jsonlite      1.6.1      2020-02-02 [1]
-##  knitr         1.28       2020-02-06 [1]
-##  lattice       0.20-41    2020-04-02 [1]
-##  lifecycle     0.2.0      2020-03-06 [1]
-##  lubridate     1.7.8      2020-04-06 [1]
-##  magrittr      1.5        2014-11-22 [1]
-##  Matrix        1.2-18     2019-11-27 [1]
-##  memoise       1.1.0      2017-04-21 [1]
-##  modelr        0.1.8      2020-05-19 [1]
-##  munsell       0.5.0      2018-06-12 [1]
-##  nlme          3.1-148    2020-05-24 [1]
-##  pillar        1.4.4      2020-05-05 [1]
-##  pkgbuild      1.0.8      2020-05-07 [1]
-##  pkgconfig     2.0.3      2019-09-22 [1]
-##  pkgload       1.0.2      2018-10-29 [1]
-##  prettyunits   1.1.1      2020-01-24 [1]
-##  processx      3.4.2      2020-02-09 [1]
-##  ps            1.3.3      2020-05-08 [1]
-##  purrr       * 0.3.4      2020-04-17 [1]
-##  R6            2.4.1      2019-11-12 [1]
-##  Rcpp          1.0.4      2020-03-17 [1]
-##  readr       * 1.3.1      2018-12-21 [1]
-##  readxl        1.3.1      2019-03-13 [1]
-##  remotes       2.1.1      2020-02-15 [1]
-##  reprex        0.3.0      2019-05-16 [1]
-##  rlang         0.4.6.9000 2020-05-21 [1]
-##  rmarkdown     2.1        2020-01-20 [1]
-##  rprojroot     1.3-2      2018-01-03 [1]
-##  rstudioapi    0.11       2020-02-07 [1]
-##  rvest         0.3.5      2019-11-08 [1]
-##  scales        1.1.1      2020-05-11 [1]
-##  sessioninfo   1.1.1      2018-11-05 [1]
-##  SnowballC     0.7.0      2020-04-01 [1]
-##  stringi       1.4.6      2020-02-17 [1]
-##  stringr     * 1.4.0      2019-02-10 [1]
-##  testthat      2.3.2      2020-03-02 [1]
-##  tibble      * 3.0.1      2020-04-20 [1]
-##  tidyr       * 1.1.0      2020-05-20 [1]
-##  tidyselect    1.1.0      2020-05-11 [1]
-##  tidytext    * 0.2.4      2020-04-17 [1]
-##  tidyverse   * 1.3.0      2019-11-21 [1]
-##  tokenizers    0.2.1      2018-03-29 [1]
-##  usethis       1.6.1      2020-04-29 [1]
-##  vctrs         0.3.0.9000 2020-05-21 [1]
-##  withr         2.2.0      2020-04-20 [1]
-##  xfun          0.14       2020-05-20 [1]
-##  xml2          1.3.2      2020-04-23 [1]
-##  yaml          2.2.1      2020-02-01 [1]
+##  package      * version date       lib
+##  assertthat     0.2.1   2019-03-21 [1]
+##  backports      1.1.7   2020-05-13 [1]
+##  blob           1.2.1   2020-01-20 [1]
+##  blogdown       0.20.1  2020-07-02 [1]
+##  bookdown       0.20    2020-06-23 [1]
+##  broom          0.5.6   2020-04-20 [1]
+##  callr          3.4.3   2020-03-28 [1]
+##  cellranger     1.1.0   2016-07-27 [1]
+##  cli            2.0.2   2020-02-28 [1]
+##  codetools      0.2-16  2018-12-24 [1]
+##  colorspace     1.4-1   2019-03-18 [1]
+##  crayon         1.3.4   2017-09-16 [1]
+##  DBI            1.1.0   2019-12-15 [1]
+##  dbplyr         1.4.4   2020-05-27 [1]
+##  desc           1.2.0   2018-05-01 [1]
+##  devtools       2.3.0   2020-04-10 [1]
+##  digest         0.6.25  2020-02-23 [1]
+##  dplyr        * 1.0.0   2020-05-29 [1]
+##  ellipsis       0.3.1   2020-05-15 [1]
+##  evaluate       0.14    2019-05-28 [1]
+##  fansi          0.4.1   2020-01-08 [1]
+##  farver         2.0.3   2020-01-16 [1]
+##  forcats      * 0.5.0   2020-03-01 [1]
+##  fs             1.4.1   2020-04-04 [1]
+##  generics       0.0.2   2018-11-29 [1]
+##  ggplot2      * 3.3.1   2020-05-28 [1]
+##  ggwordcloud  * 0.5.0   2019-06-02 [1]
+##  glue           1.4.1   2020-05-13 [1]
+##  gtable         0.3.0   2019-03-25 [1]
+##  harrypotter  * 0.1.0   2020-07-21 [1]
+##  haven          2.3.1   2020-06-01 [1]
+##  here           0.1     2017-05-28 [1]
+##  hms            0.5.3   2020-01-08 [1]
+##  htmltools      0.4.0   2019-10-04 [1]
+##  httr           1.4.1   2019-08-05 [1]
+##  janeaustenr    0.1.5   2017-06-10 [1]
+##  jsonlite       1.7.0   2020-06-25 [1]
+##  knitr          1.29    2020-06-23 [1]
+##  labeling       0.3     2014-08-23 [1]
+##  lattice        0.20-41 2020-04-02 [1]
+##  lifecycle      0.2.0   2020-03-06 [1]
+##  lubridate      1.7.8   2020-04-06 [1]
+##  magrittr       1.5     2014-11-22 [1]
+##  Matrix         1.2-18  2019-11-27 [1]
+##  memoise        1.1.0   2017-04-21 [1]
+##  modelr         0.1.8   2020-05-19 [1]
+##  munsell        0.5.0   2018-06-12 [1]
+##  nlme           3.1-148 2020-05-24 [1]
+##  pillar         1.4.6   2020-07-10 [1]
+##  pkgbuild       1.0.8   2020-05-07 [1]
+##  pkgconfig      2.0.3   2019-09-22 [1]
+##  pkgload        1.1.0   2020-05-29 [1]
+##  png            0.1-7   2013-12-03 [1]
+##  prettyunits    1.1.1   2020-01-24 [1]
+##  processx       3.4.2   2020-02-09 [1]
+##  ps             1.3.3   2020-05-08 [1]
+##  purrr        * 0.3.4   2020-04-17 [1]
+##  R6             2.4.1   2019-11-12 [1]
+##  rappdirs       0.3.1   2016-03-28 [1]
+##  RColorBrewer * 1.1-2   2014-12-07 [1]
+##  Rcpp           1.0.5   2020-07-06 [1]
+##  readr        * 1.3.1   2018-12-21 [1]
+##  readxl         1.3.1   2019-03-13 [1]
+##  remotes        2.1.1   2020-02-15 [1]
+##  reprex         0.3.0   2019-05-16 [1]
+##  rlang          0.4.6   2020-05-02 [1]
+##  rmarkdown      2.3     2020-06-18 [1]
+##  rprojroot      1.3-2   2018-01-03 [1]
+##  rstudioapi     0.11    2020-02-07 [1]
+##  rvest          0.3.5   2019-11-08 [1]
+##  scales         1.1.1   2020-05-11 [1]
+##  sessioninfo    1.1.1   2018-11-05 [1]
+##  SnowballC      0.7.0   2020-04-01 [1]
+##  stringi        1.4.6   2020-02-17 [1]
+##  stringr      * 1.4.0   2019-02-10 [1]
+##  testthat       2.3.2   2020-03-02 [1]
+##  textdata       0.4.1   2020-05-04 [1]
+##  tibble       * 3.0.3   2020-07-10 [1]
+##  tidyr        * 1.1.0   2020-05-20 [1]
+##  tidyselect     1.1.0   2020-05-11 [1]
+##  tidytext     * 0.2.4   2020-04-17 [1]
+##  tidyverse    * 1.3.0   2019-11-21 [1]
+##  tokenizers     0.2.1   2018-03-29 [1]
+##  usethis        1.6.1   2020-04-29 [1]
+##  vctrs          0.3.1   2020-06-05 [1]
+##  withr          2.2.0   2020-04-20 [1]
+##  wordcloud    * 2.6     2018-08-24 [1]
+##  xfun           0.15    2020-06-21 [1]
+##  xml2           1.3.2   2020-04-23 [1]
+##  yaml           2.2.1   2020-02-01 [1]
 ##  source                                     
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.3)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  local                                      
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
 ##  Github (bradleyboehmke/harrypotter@51f7146)
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.3)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  Github (r-lib/rlang@691b5a8)               
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.0)                             
-##  CRAN (R 3.6.2)                             
-##  Github (r-lib/vctrs@f476e06)               
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.2)                             
-##  CRAN (R 3.6.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.1)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.1)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.1)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.1)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.1)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.1)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
