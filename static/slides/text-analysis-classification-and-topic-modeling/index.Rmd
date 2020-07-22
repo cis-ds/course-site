@@ -16,13 +16,13 @@ knitr::opts_chunk$set(
 
 library(tidyverse)
 library(tidytext)
-library(caret)
 library(rjson)
 library(topicmodels)
 library(tm)
 library(here)
 library(patchwork)
 library(tictoc)
+library(flipbookr)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcfss::base_size))
@@ -46,14 +46,16 @@ data(USCongress, package = "rcfss")
 # topic labels
 major_topics <- tibble(
   major = c(1:10, 12:21, 99),
-  label = c("Macroeconomics", "Civil rights, minority issues, civil liberties",
-            "Health", "Agriculture", "Labor and employment", "Education", "Environment",
-            "Energy", "Immigration", "Transportation", "Law, crime, family issues",
-            "Social welfare", "Community development and housing issues",
-            "Banking, finance, and domestic commerce", "Defense",
-            "Space, technology, and communications", "Foreign trade",
-            "International affairs and foreign aid", "Government operations",
-            "Public lands and water management", "Other, miscellaneous")
+  label = c(
+    "Macroeconomics", "Civil rights, minority issues, civil liberties",
+    "Health", "Agriculture", "Labor and employment", "Education", "Environment",
+    "Energy", "Immigration", "Transportation", "Law, crime, family issues",
+    "Social welfare", "Community development and housing issues",
+    "Banking, finance, and domestic commerce", "Defense",
+    "Space, technology, and communications", "Foreign trade",
+    "International affairs and foreign aid", "Government operations",
+    "Public lands and water management", "Other, miscellaneous"
+  )
 ) %>%
   mutate(label = factor(major, levels = major, labels = label))
 
@@ -71,28 +73,44 @@ head(congress$text)
 
 # Create tidy text data frame
 
-```{r convert-tidytext, dependson = "get-docs", echo = TRUE}
-(congress_tokens <- congress %>%
-   unnest_tokens(output = word, input = text) %>%
-   # remove numbers
-   filter(!str_detect(word, "^[0-9]*$")) %>%
-   # remove stop words
-   anti_join(stop_words) %>%
-   # stem the words
-   mutate(word = SnowballC::wordStem(word)))
+```{r convert-tidytext, dependson = "get-docs", include = FALSE}
+congress_tokens <- congress %>%
+  unnest_tokens(
+    output = word,
+    input = text
+  ) %>%
+  # remove numbers
+  filter(!str_detect(word, "^[0-9]*$")) %>%
+  # remove stop words
+  anti_join(stop_words) %>%
+  # stem the words
+  mutate(word = SnowballC::wordStem(word))
 ```
+
+---
+
+`r chunk_reveal(chunk_name = "convert-tidytext", left_assign = TRUE)`
 
 ---
 
 # Create document-term matrix
 
-```{r dtm, dependson = "convert-tidytext", echo = TRUE}
-(congress_dtm <- congress_tokens %>%
-   # get count of each token in each document
-   count(ID, word) %>%
-   # create a document-term matrix with all features and tf weighting
-   cast_dtm(document = ID, term = word, value = n))
+```{r dtm, dependson = "convert-tidytext", include = FALSE}
+congress_dtm <- congress_tokens %>%
+  # get count of each token in each document
+  count(ID, word) %>%
+  # create a document-term matrix with all features and tf weighting
+  cast_dtm(
+    document = ID,
+    term = word,
+    value = n
+  )
 ```
+
+---
+
+`r chunk_reveal(chunk_name = "dtm", left_assign = TRUE)`
+
 
 ---
 
@@ -105,12 +123,18 @@ head(congress$text)
 
 # Weighting
 
-```{r dtm-tf-idf, dependson = "convert-tidytext", echo = TRUE}
+```{r dtm-tf-idf, dependson = "convert-tidytext"}
 congress_tokens %>%
   count(ID, word) %>%
-  cast_dtm(document = ID, term = word, value = n,
-           weighting = tm::weightTfIdf)
+  cast_dtm(
+    document = ID, term = word, value = n,
+    weighting = tm::weightTfIdf
+  )
 ```
+
+---
+
+`r chunk_reveal(chunk_name = "dtm-tf-idf")`
 
 ---
 
@@ -143,9 +167,11 @@ plot_congress <- congress_tfidf %>%
 
 # graph the top 10 tokens for 4 categories
 plot_congress %>%
-  filter(label %in% c("Macroeconomics",
-                      "Civil rights, minority issues, civil liberties",
-                      "Health", "Education")) %>%
+  filter(label %in% c(
+    "Macroeconomics",
+    "Civil rights, minority issues, civil liberties",
+    "Health", "Education"
+  )) %>%
   group_by(label) %>%
   top_n(10) %>%
   ungroup() %>%
@@ -154,7 +180,7 @@ plot_congress %>%
   geom_col() +
   scale_x_reordered() +
   labs(x = NULL, y = "tf-idf") +
-  facet_wrap(~ label, scales = "free") +
+  facet_wrap(~label, scales = "free") +
   coord_flip()
 ```
 
@@ -189,21 +215,25 @@ plot_congress %>%
 # make sure to remove their associated labels so we have the same number of observations
 congress_slice <- slice(congress, as.numeric(congress_dtm$dimnames$Docs))
 
-congress_rf_10 <- train(x = as.matrix(congress_dtm),
-                        y = factor(congress_slice$major),
-                        method = "ranger",
-                        num.trees = 10,
-                        importance = "impurity",
-                        trControl = trainControl(method = "oob"))
+congress_rf_10 <- caret::train(
+  x = as.matrix(congress_dtm),
+  y = factor(congress_slice$major),
+  method = "ranger",
+  num.trees = 10,
+  importance = "impurity",
+  trControl = caret::trainControl(method = "oob")
+)
 ```
 
 ```{r rf-train-200, dependson = "remove-sparse-terms-final", results = "hide"}
-congress_rf_200 <- train(x = as.matrix(congress_dtm),
-                         y = factor(congress_slice$major),
-                         method = "ranger",
-                         num.trees = 200,
-                         importance = "impurity",
-                         trControl = trainControl(method = "oob"))
+congress_rf_200 <- caret::train(
+  x = as.matrix(congress_dtm),
+  y = factor(congress_slice$major),
+  method = "ranger",
+  num.trees = 200,
+  importance = "impurity",
+  trControl = caret::trainControl(method = "oob")
+)
 ```
 
 ```{r rf-error, dependson = "rf-train-200"}
@@ -225,8 +255,10 @@ congress_rf_10$finalModel %>%
   ggplot(aes(x = fct_reorder(variable, varimp), y = varimp)) +
   geom_col() +
   coord_flip() +
-  labs(x = "Token",
-       y = "Variable importance (higher is more important)")
+  labs(
+    x = "Token",
+    y = "Variable importance (higher is more important)"
+  )
 ```
 
 ---
@@ -268,7 +300,7 @@ congress_tokens_lite <- congress_tokens %>%
   bind_tf_idf(term = word, document = major, n = n) %>%
   group_by(major) %>%
   top_n(40, wt = tf_idf) %>%
-  ungroup %>%
+  ungroup() %>%
   count(word) %>%
   select(-n) %>%
   left_join(congress_tokens)
@@ -302,12 +334,14 @@ top_terms <- congress_lda_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 4) +
+  facet_wrap(~topic, scales = "free", ncol = 4) +
   coord_flip() +
   theme_minimal(base_size = rcfss::base_size * .7)
 ```
@@ -333,9 +367,11 @@ congress_tokens_lite %>%
   ggplot(aes(factor(topic), gamma)) +
   geom_segment(aes(x = factor(topic), xend = factor(topic), y = 0, yend = gamma), color = "grey50") +
   geom_point() +
-  facet_wrap(~ label) +
-  labs(x = "LDA topic",
-       y = expression(gamma)) +
+  facet_wrap(~label) +
+  labs(
+    x = "LDA topic",
+    y = expression(gamma)
+  ) +
   theme_minimal(base_size = rcfss::base_size * .6)
 ```
 
@@ -354,51 +390,59 @@ congress_tokens_lite %>%
 # obtain r/jokes and extract values from the JSON file
 jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
 
-jokes <- jokes_json %>%
-  {
-    tibble(
-      id = map_chr(., "id"),
-      title = map_chr(., "title"),
-      body = map_chr(., "body"),
-      score = map_dbl(., "score")
-    )
-  }
+jokes <- jokes_json %>% {
+  tibble(
+    id = map_chr(., "id"),
+    title = map_chr(., "title"),
+    body = map_chr(., "body"),
+    score = map_dbl(., "score")
+  )
+}
 glimpse(jokes)
 ```
 
 ```{r jokes-dtm, dependson = "jokes"}
 # convert into a document-term matrix
 set.seed(123)
-n_grams <- 1:5                          # extract n-grams for n=1,2,3,4,5
-jokes_lite <- sample_n(jokes, 50000)    # randomly sample only 50,000 jokes
+n_grams <- 1:5 # extract n-grams for n=1,2,3,4,5
+jokes_lite <- sample_n(jokes, 50000) # randomly sample only 50,000 jokes
 
 jokes_tokens <- map_df(n_grams, ~ jokes_lite %>%
-                         # combine title and body
-                         unite(col = joke, title, body, sep = " ") %>%
-                         # tokenize
-                         unnest_tokens(output = word,
-                                       input = joke,
-                                       token = "ngrams",
-                                       n = .x) %>%
-                         mutate(ngram = .x,
-                                token_id = row_number()) %>%
-                         # remove tokens that are missing values
-                         drop_na(word))
+  # combine title and body
+  unite(col = joke, title, body, sep = " ") %>%
+  # tokenize
+  unnest_tokens(
+    output = word,
+    input = joke,
+    token = "ngrams",
+    n = .x
+  ) %>%
+  mutate(
+    ngram = .x,
+    token_id = row_number()
+  ) %>%
+  # remove tokens that are missing values
+  drop_na(word))
 
 # remove stop words or n-grams beginning or ending with stop word
 jokes_stop_words <- jokes_tokens %>%
   # separate ngrams into separate columns
-  separate(col = word,
-           into = c("word1", "word2", "word3", "word4", "word5"),
-           sep = " ") %>%
+  separate(
+    col = word,
+    into = c("word1", "word2", "word3", "word4", "word5"),
+    sep = " "
+  ) %>%
   # find last word
   mutate(last = if_else(ngram == 5, word5,
-                        if_else(ngram == 4, word4,
-                                if_else(ngram == 3, word3,
-                                        if_else(ngram == 2, word2, word1))))) %>%
+    if_else(ngram == 4, word4,
+      if_else(ngram == 3, word3,
+        if_else(ngram == 2, word2, word1)
+      )
+    )
+  )) %>%
   # remove tokens where the first or last word is a stop word
   filter(word1 %in% stop_words$word |
-           last %in% stop_words$word) %>%
+    last %in% stop_words$word) %>%
   select(ngram, token_id)
 
 # convert to dtm
@@ -412,7 +456,7 @@ jokes_dtm <- jokes_tokens %>%
   removeSparseTerms(sparse = .999)
 
 # remove documents with no terms remaining
-jokes_dtm <- jokes_dtm[unique(jokes_dtm$i),]
+jokes_dtm <- jokes_dtm[unique(jokes_dtm$i), ]
 jokes_dtm
 ```
 
@@ -434,12 +478,14 @@ top_terms <- jokes_lda4_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 2) +
+  facet_wrap(~topic, scales = "free", ncol = 2) +
   coord_flip()
 ```
 
@@ -461,12 +507,14 @@ top_terms <- jokes_lda12_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 3) +
+  facet_wrap(~topic, scales = "free", ncol = 3) +
   coord_flip() +
   theme_minimal(base_size = rcfss::base_size * .8)
 ```
@@ -502,15 +550,19 @@ if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
 ```
 
 ```{r jokes_lda_compare_viz, dependson="jokes_lda_compare"} 
-tibble(k = n_topics,
-       perplex = map_dbl(jokes_lda_compare, perplexity)) %>%
+tibble(
+  k = n_topics,
+  perplex = map_dbl(jokes_lda_compare, perplexity)
+) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
   geom_line() +
-  labs(title = "Evaluating LDA topic models",
-       subtitle = "Optimal number of topics (smaller is better)",
-       x = "Number of topics",
-       y = "Perplexity")
+  labs(
+    title = "Evaluating LDA topic models",
+    subtitle = "Optimal number of topics (smaller is better)",
+    x = "Number of topics",
+    y = "Perplexity"
+  )
 ```
 
 ---
@@ -528,12 +580,14 @@ top_terms <- jokes_lda_td %>%
 
 top_terms %>%
   filter(topic <= 12) %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 3) +
+  facet_wrap(~topic, scales = "free", ncol = 3) +
   coord_flip() +
   theme_minimal(base_size = rcfss::base_size * .8)
 ```
@@ -546,4 +600,3 @@ top_terms %>%
 1. What is the meaning of each topic?
 1. How prevalent is each topic?
 1. How do the topics relate to each other?
-
