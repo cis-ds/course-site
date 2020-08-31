@@ -246,35 +246,53 @@ output[[i]] <- median(df[[i]])
 
 # Preallocation
 
-```{r preallocate, include = FALSE}
-x <- rnorm(1000, mean = 0, sd = 1)
-str(x)
+```r
+# no preallocation
+mpg_no_preall <- tibble()
+
+for(i in 1:100){
+  mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+}
+
+# with preallocation using a list
+mpg_preall <- vector(mode = "list", length = 100)
+
+for(i in 1:100){
+  mpg_preall[[i]] <- mpg
+}
+
+mpg_preall <- bind_rows(mpg_preall)
 ```
 
-```{r preallocate-plot, echo = FALSE, fig.height = 5.5}
+---
+
+# Preallocation
+
+```{r preallocate, echo = FALSE, fig.height = 5.5}
 # load microbenchmark library to time code
 library(microbenchmark)
 
-microbenchmark(
-  # don't preallocate
+# bind together 100 copies of mpg
+times <- microbenchmark(
   `No preallocation` = {
-    output <- vector("numeric", 0)
+    mpg_no_preall <- tibble()
     
-    for (i in seq_along(x)) {
-      output <- c(output, x[[i]] + 1)
+    for(i in 1:100){
+      mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
     }
   },
-  # preallocate
   `Preallocation` = {
-    output <- vector("numeric", length(x))
+    mpg_preall <- vector(mode = "list", length = 100)
     
-    for (i in seq_along(x)) {
-      output[[i]] <- x[[i]] + 1
+    for(i in 1:100){
+      mpg_preall[[i]] <- mpg
     }
-  }) %>%
-  autoplot +
-  scale_y_log10(breaks = c(2, 4, 8, 16, 32)) +
-  labs(y = "Time [milliseconds]")
+    
+    mpg_preall <- bind_rows(mpg_preall)
+  }
+)
+
+autoplot(times)
 ```
 
 ---
