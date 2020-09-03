@@ -40,4 +40,4 @@ user_groups:
 - Visitors
 ---
 
-Benjamin Soltoff is Assistant Director & Assistant Instructional Professor in the [Masters in Computational Social Science program](https://macss.uchicago.edu) at the University of Chicago. He is a political scientist with concentrations in American government, political methodology, and law and courts. Additionally, he has training and experience in data science, big data analytics, and policy evaluation. He currently teaches courses in introductory programming, machine learning, social scientific research design, and data visualization.
+Benjamin Soltoff is Assistant Instructional Professor & Assistant Director in the [Masters in Computational Social Science program](https://macss.uchicago.edu) at the University of Chicago. He is a political scientist with concentrations in American government, political methodology, and law and courts. Additionally, he has training and experience in data science, big data analytics, and policy evaluation. He currently teaches courses in introductory programming, machine learning, social scientific research design, and data visualization.
