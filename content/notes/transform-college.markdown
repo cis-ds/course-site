@@ -47,20 +47,22 @@ glimpse(scorecard)
 ```
 
 ```
-## Observations: 1,849
-## Variables: 12
-## $ unitid    <int> 450234, 448479, 456427, 459596, 459851, 482477, 482547…
-## $ name      <chr> "ITT Technical Institute-Wichita", "ITT Technical Inst…
-## $ state     <chr> "KS", "MI", "CA", "FL", "WI", "IL", "NV", "OR", "TN", …
-## $ type      <chr> "Private, for-profit", "Private, for-profit", "Private…
-## $ cost      <int> 28306, 26994, 26353, 28894, 23928, 25625, 24265, NA, 2…
-## $ admrate   <dbl> 81.31, 98.31, 89.26, 58.37, 68.75, 70.40, 80.00, 50.00…
-## $ satavg    <dbl> NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
-## $ avgfacsal <dbl> 45054, 52857, NA, 47196, 55089, 62793, 47556, 60003, 5…
-## $ pctpell   <dbl> 0.8030, 0.7735, 0.7038, 0.7781, 0.6098, 0.6411, 0.6356…
-## $ comprate  <dbl> 0.6000, 0.3359, NA, NA, NA, 0.2939, 0.6364, 0.0000, 0.…
-## $ firstgen  <dbl> 0.5057590, 0.5057590, 0.5057590, 0.5057590, 0.5171601,…
-## $ debt      <dbl> 13000, 13000, 13000, 13000, 9500, 14250, 14250, 14250,…
+## Rows: 1,733
+## Columns: 14
+## $ unitid    <int> 147244, 147341, 145691, 148131, 146667, 150774, 150941, 148…
+## $ name      <chr> "Millikin University", "Monmouth College", "Illinois Colleg…
+## $ state     <chr> "IL", "IL", "IL", "IL", "IL", "IN", "IN", "IL", "IL", "IN",…
+## $ type      <fct> "Private, nonprofit", "Private, nonprofit", "Private, nonpr…
+## $ admrate   <dbl> 0.6380, 0.5206, 0.5403, 0.6623, 0.5288, 0.9101, 0.8921, 0.4…
+## $ satavg    <dbl> 1047, 1045, NA, 991, 1007, 1053, 1019, 1068, 1009, 1025, 10…
+## $ cost      <int> 43149, 45005, 41869, 39686, 25542, 39437, 36227, 39175, 382…
+## $ avgfacsal <dbl> 55197, 61101, 63765, 50166, 52713, 47367, 58563, 70425, 656…
+## $ pctpell   <dbl> 0.4054, 0.4127, 0.4191, 0.3789, 0.4640, 0.2857, 0.3502, 0.3…
+## $ comprate  <dbl> 0.6004, 0.5577, 0.6800, 0.5110, 0.6132, 0.4069, 0.6540, 0.6…
+## $ firstgen  <dbl> 0.3184783, 0.3224401, 0.3109756, 0.3300493, 0.3122172, 0.28…
+## $ debt      <dbl> 20375.0, 20000.0, 22300.0, 13000.0, 17500.0, 11000.0, 22500…
+## $ locale    <fct> City, Town, Town, Town, Town, Suburb, Town, Suburb, City, C…
+## $ openadmp  <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No,…
 ```
 
 {{% alert note %}}
@@ -83,20 +85,21 @@ filter(.data = scorecard, firstgen > .40)
 ```
 
 ```
-## # A tibble: 578 x 12
-##    unitid name  state type   cost admrate satavg avgfacsal pctpell comprate
-##     <int> <chr> <chr> <chr> <int>   <dbl>  <dbl>     <dbl>   <dbl>    <dbl>
-##  1 450234 ITT … KS    Priv… 28306    81.3     NA     45054   0.803    0.6  
-##  2 448479 ITT … MI    Priv… 26994    98.3     NA     52857   0.774    0.336
-##  3 456427 ITT … CA    Priv… 26353    89.3     NA        NA   0.704   NA    
-##  4 459596 ITT … FL    Priv… 28894    58.4     NA     47196   0.778   NA    
-##  5 459851 Herz… WI    Priv… 23928    68.8     NA     55089   0.610   NA    
-##  6 482477 DeVr… IL    Priv… 25625    70.4     NA     62793   0.641    0.294
-##  7 482547 DeVr… NV    Priv… 24265    80       NA     47556   0.636    0.636
-##  8 482592 DeVr… OR    Priv…    NA    50       NA     60003   0.671    0    
-##  9 482617 DeVr… TN    Priv… 20983    66.7     NA     51660   0.720    0    
-## 10 482662 DeVr… WA    Priv… 21999    77.8     NA     56160   0.586    0.290
-## # … with 568 more rows, and 2 more variables: firstgen <dbl>, debt <dbl>
+## # A tibble: 356 x 14
+##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
+##  1 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
+##  2 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
+##  3 165264 Labo… MA    Priv…   0.267     NA 37535     48357   0.428    0.167
+##  4 167251 Newb… MA    Priv…   0.827     NA 43808     62973   0.577    0.419
+##  5 169327 Clea… MI    Priv…   0.468    990 23983     45666   0.332    0.176
+##  6 176044 Miss… MS    Publ…   0.844    825 20347     52182   0.717    0.312
+##  7 176947 Cent… MO    Priv…   0.610   1023 35660     56907   0.398    0.465
+##  8 178341 Miss… MO    Publ…   0.943    990 14419     52713   0.478    0.299
+##  9 177214 Drur… MO    Priv…   0.700   1142 35054     59661   0.517    0.575
+## 10 182281 Univ… NV    Publ…   0.828   1012 17131     97002   0.364    0.406
+## # … with 346 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
+## #   locale <fct>, openadmp <fct>
 ```
 
   </p>
@@ -117,20 +120,21 @@ arrange(.data = scorecard, desc(cost)) %>%
 ```
 
 ```
-## # A tibble: 10 x 12
-##    unitid name  state type   cost admrate satavg avgfacsal pctpell comprate
-##     <int> <chr> <chr> <chr> <int>   <dbl>  <dbl>     <dbl>   <dbl>    <dbl>
-##  1 195304 Sara… NY    Priv… 62636   61.7      NA     87309  0.194     0.692
-##  2 179867 Wash… MO    Priv… 62594   15.6    1474    123579  0.0616    0.940
-##  3 144050 Univ… IL    Priv… 62425    8.81   1504    153738  0.142     0.927
-##  4 190150 Colu… NY    Priv… 61540    7.42   1471    151479  0.215     0.933
-##  5 182670 Dart… NH    Priv… 61398    9.78   1446    120114  0.136     0.947
-##  6 130697 Wesl… CT    Priv… 61167   20.9    1387    103437  0.184     0.915
-##  7 147767 Nort… IL    Priv… 60729   15.3    1458    135396  0.142     0.942
-##  8 120254 Occi… CA    Priv… 60655   42.4    1303     95391  0.215     0.878
-##  9 115409 Harv… CA    Priv… 60613   18.2    1483    114885  0.131     0.908
-## 10 230816 Benn… VT    Priv… 60556   64.9      NA     82017  0.215     0.672
-## # … with 2 more variables: firstgen <dbl>, debt <dbl>
+## # A tibble: 10 x 14
+##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
+##  1 144050 Univ… IL    Priv…  0.0794   1508 70100    166221  0.109     0.942
+##  2 115409 Harv… CA    Priv…  0.129    1496 69355    123039  0.12      0.933
+##  3 190150 Colu… NY    Priv…  0.0683   1496 69021    168867  0.224     0.941
+##  4 147767 Nort… IL    Priv…  0.107    1470 67887    154701  0.142     0.935
+##  5 212054 Drex… PA    Priv…  0.746    1204 67821     99576  0.220     0.698
+##  6 179867 Wash… MO    Priv…  0.165    1472 67751    134640  0.0833    0.940
+##  7 193900 New … NY    Priv…  0.319    1371 67637    126504  0.211     0.846
+##  8 123961 Univ… CA    Priv…  0.166    1395 67064    132408  0.217     0.920
+##  9 120254 Occi… CA    Priv…  0.458    1315 67046    101637  0.202     0.808
+## 10 182670 Dart… NH    Priv…  0.106    1441 67044    137502  0.142     0.966
+## # … with 4 more variables: firstgen <dbl>, debt <dbl>, locale <fct>,
+## #   openadmp <fct>
 ```
 
  We can also use the `top_n()` function in `dplyr` to accomplish the same thing in one line of code.
@@ -141,20 +145,21 @@ top_n(x = scorecard, n = 10, wt = cost)
 ```
 
 ```
-## # A tibble: 10 x 12
-##    unitid name  state type   cost admrate satavg avgfacsal pctpell comprate
-##     <int> <chr> <chr> <chr> <int>   <dbl>  <dbl>     <dbl>   <dbl>    <dbl>
-##  1 120254 Occi… CA    Priv… 60655   42.4    1303     95391  0.215     0.878
-##  2 195304 Sara… NY    Priv… 62636   61.7      NA     87309  0.194     0.692
-##  3 115409 Harv… CA    Priv… 60613   18.2    1483    114885  0.131     0.908
-##  4 130697 Wesl… CT    Priv… 61167   20.9    1387    103437  0.184     0.915
-##  5 147767 Nort… IL    Priv… 60729   15.3    1458    135396  0.142     0.942
-##  6 144050 Univ… IL    Priv… 62425    8.81   1504    153738  0.142     0.927
-##  7 230816 Benn… VT    Priv… 60556   64.9      NA     82017  0.215     0.672
-##  8 182670 Dart… NH    Priv… 61398    9.78   1446    120114  0.136     0.947
-##  9 179867 Wash… MO    Priv… 62594   15.6    1474    123579  0.0616    0.940
-## 10 190150 Colu… NY    Priv… 61540    7.42   1471    151479  0.215     0.933
-## # … with 2 more variables: firstgen <dbl>, debt <dbl>
+## # A tibble: 10 x 14
+##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
+##  1 179867 Wash… MO    Priv…  0.165    1472 67751    134640  0.0833    0.940
+##  2 123961 Univ… CA    Priv…  0.166    1395 67064    132408  0.217     0.920
+##  3 147767 Nort… IL    Priv…  0.107    1470 67887    154701  0.142     0.935
+##  4 120254 Occi… CA    Priv…  0.458    1315 67046    101637  0.202     0.808
+##  5 212054 Drex… PA    Priv…  0.746    1204 67821     99576  0.220     0.698
+##  6 190150 Colu… NY    Priv…  0.0683   1496 69021    168867  0.224     0.941
+##  7 115409 Harv… CA    Priv…  0.129    1496 69355    123039  0.12      0.933
+##  8 182670 Dart… NH    Priv…  0.106    1441 67044    137502  0.142     0.966
+##  9 144050 Univ… IL    Priv…  0.0794   1508 70100    166221  0.109     0.942
+## 10 193900 New … NY    Priv…  0.319    1371 67637    126504  0.211     0.846
+## # … with 4 more variables: firstgen <dbl>, debt <dbl>, locale <fct>,
+## #   openadmp <fct>
 ```
 
   Notice that the resulting data frame is not sorted in order from most to least expensive - instead it is sorted in the original order from the data frame, but still only contains the 10 most expensive schools based on cost.
@@ -176,12 +181,16 @@ scorecard %>%
 ```
 
 ```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```
 ## # A tibble: 3 x 2
 ##   type                mean_sat
-##   <chr>                  <dbl>
-## 1 Private, for-profit    1002.
-## 2 Private, nonprofit     1075.
-## 3 Public                 1037.
+##   <fct>                  <dbl>
+## 1 Public                 1049.
+## 2 Private, nonprofit     1076.
+## 3 Private, for-profit     980
 ```
 
   </p>
@@ -201,20 +210,20 @@ scorecard %>%
 ```
 
 ```
-## # A tibble: 1,849 x 2
-##    name                                 ratio
-##    <chr>                                <dbl>
-##  1 ITT Technical Institute-Wichita       1.59
-##  2 ITT Technical Institute-Swartz Creek  1.96
-##  3 ITT Technical Institute-Concord      NA   
-##  4 ITT Technical Institute-Tallahassee   1.63
-##  5 Herzing University-Brookfield         2.30
-##  6 DeVry University-Illinois             2.45
-##  7 DeVry University-Nevada               1.96
-##  8 DeVry University-Oregon              NA   
-##  9 DeVry University-Tennessee            2.46
-## 10 DeVry University-Washington           2.55
-## # … with 1,839 more rows
+## # A tibble: 1,733 x 2
+##    name                                              ratio
+##    <chr>                                             <dbl>
+##  1 Millikin University                                1.28
+##  2 Monmouth College                                   1.36
+##  3 Illinois College                                   1.52
+##  4 Quincy University                                  1.26
+##  5 Lincoln Christian University                       2.06
+##  6 Holy Cross College                                 1.20
+##  7 Huntington University                              1.62
+##  8 University of St Francis                           1.80
+##  9 Saint Xavier University                            1.72
+## 10 Indiana University-Purdue University-Indianapolis  3.75
+## # … with 1,723 more rows
 ```
 
   </p>
@@ -242,21 +251,23 @@ scorecard %>%
 ```
 
 ```
-## Observations: 1
-## Variables: 13
+## Rows: 1
+## Columns: 15
 ## $ unitid         <int> 144050
 ## $ name           <chr> "University of Chicago"
 ## $ state          <chr> "IL"
-## $ type           <chr> "Private, nonprofit"
-## $ cost           <int> 62425
-## $ admrate        <dbl> 8.81
-## $ satavg         <dbl> 1504
-## $ avgfacsal      <dbl> 153738
-## $ pctpell        <dbl> 0.1419
-## $ comprate       <dbl> 0.9268
-## $ firstgen       <dbl> 0.1185808
-## $ debt           <dbl> 16350
-## $ school_cheaper <dbl> 1077
+## $ type           <fct> "Private, nonprofit"
+## $ admrate        <dbl> 0.0794
+## $ satavg         <dbl> 1508
+## $ cost           <int> 70100
+## $ avgfacsal      <dbl> 166221
+## $ pctpell        <dbl> 0.109
+## $ comprate       <dbl> 0.9422
+## $ firstgen       <dbl> 0.2024353
+## $ debt           <dbl> 14853
+## $ locale         <fct> City
+## $ openadmp       <fct> No
+## $ school_cheaper <dbl> 1066
 ```
 
   </p>
@@ -278,21 +289,23 @@ scorecard %>%
 ```
 
 ```
-## Observations: 1
-## Variables: 13
+## Rows: 1
+## Columns: 15
 ## $ unitid    <int> 144050
 ## $ name      <chr> "University of Chicago"
 ## $ state     <chr> "IL"
-## $ type      <chr> "Private, nonprofit"
-## $ cost      <int> 62425
-## $ admrate   <dbl> 8.81
-## $ satavg    <dbl> 1504
-## $ avgfacsal <dbl> 153738
-## $ pctpell   <dbl> 0.1419
-## $ comprate  <dbl> 0.9268
-## $ firstgen  <dbl> 0.1185808
-## $ debt      <dbl> 16350
-## $ cost_rank <dbl> 0.9981464
+## $ type      <fct> "Private, nonprofit"
+## $ admrate   <dbl> 0.0794
+## $ satavg    <dbl> 1508
+## $ cost      <int> 70100
+## $ avgfacsal <dbl> 166221
+## $ pctpell   <dbl> 0.109
+## $ comprate  <dbl> 0.9422
+## $ firstgen  <dbl> 0.2024353
+## $ debt      <dbl> 14853
+## $ locale    <fct> City
+## $ openadmp  <fct> No
+## $ cost_rank <dbl> 1
 ```
 
   </p>
@@ -309,92 +322,96 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.4      
-##  system   x86_64, darwin15.6.0        
+##  version  R version 4.0.2 (2020-06-22)
+##  os       macOS Catalina 10.15.6      
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-10                  
+##  date     2020-09-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version     date       lib source                      
-##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
-##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
-##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
-##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
-##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
-##  cellranger    1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
-##  cli           2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
-##  colorspace    1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
-##  crayon        1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
-##  DBI           1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
-##  dbplyr        1.4.2       2019-06-17 [1] CRAN (R 3.6.0)              
-##  desc          1.2.0       2018-05-01 [1] CRAN (R 3.6.0)              
-##  devtools      2.2.2       2020-02-17 [1] CRAN (R 3.6.0)              
-##  digest        0.6.25      2020-02-23 [1] CRAN (R 3.6.0)              
-##  dplyr       * 0.8.5       2020-03-07 [1] CRAN (R 3.6.0)              
-##  ellipsis      0.3.0       2019-09-20 [1] CRAN (R 3.6.0)              
-##  evaluate      0.14        2019-05-28 [1] CRAN (R 3.6.0)              
-##  fansi         0.4.1       2020-01-08 [1] CRAN (R 3.6.0)              
-##  forcats     * 0.5.0       2020-03-01 [1] CRAN (R 3.6.0)              
-##  fs            1.3.2       2020-03-05 [1] CRAN (R 3.6.0)              
-##  generics      0.0.2       2018-11-29 [1] CRAN (R 3.6.0)              
-##  ggplot2     * 3.3.0       2020-03-05 [1] CRAN (R 3.6.0)              
-##  glue          1.3.2       2020-03-12 [1] CRAN (R 3.6.0)              
-##  gtable        0.3.0       2019-03-25 [1] CRAN (R 3.6.0)              
-##  haven         2.2.0       2019-11-08 [1] CRAN (R 3.6.0)              
-##  here          0.1         2017-05-28 [1] CRAN (R 3.6.0)              
-##  hms           0.5.3       2020-01-08 [1] CRAN (R 3.6.0)              
-##  htmltools     0.4.0       2019-10-04 [1] CRAN (R 3.6.0)              
-##  httr          1.4.1       2019-08-05 [1] CRAN (R 3.6.0)              
-##  jsonlite      1.6.1       2020-02-02 [1] CRAN (R 3.6.0)              
-##  knitr         1.28        2020-02-06 [1] CRAN (R 3.6.0)              
-##  lattice       0.20-40     2020-02-19 [1] CRAN (R 3.6.0)              
-##  lifecycle     0.2.0       2020-03-06 [1] CRAN (R 3.6.0)              
-##  lubridate     1.7.4       2018-04-11 [1] CRAN (R 3.6.0)              
-##  magrittr      1.5         2014-11-22 [1] CRAN (R 3.6.0)              
-##  memoise       1.1.0       2017-04-21 [1] CRAN (R 3.6.0)              
-##  modelr        0.1.6       2020-02-22 [1] CRAN (R 3.6.0)              
-##  munsell       0.5.0       2018-06-12 [1] CRAN (R 3.6.0)              
-##  nlme          3.1-145     2020-03-04 [1] CRAN (R 3.6.0)              
-##  pillar        1.4.3       2019-12-20 [1] CRAN (R 3.6.0)              
-##  pkgbuild      1.0.6       2019-10-09 [1] CRAN (R 3.6.0)              
-##  pkgconfig     2.0.3       2019-09-22 [1] CRAN (R 3.6.0)              
-##  pkgload       1.0.2       2018-10-29 [1] CRAN (R 3.6.0)              
-##  prettyunits   1.1.1       2020-01-24 [1] CRAN (R 3.6.0)              
-##  processx      3.4.2       2020-02-09 [1] CRAN (R 3.6.0)              
-##  ps            1.3.2       2020-02-13 [1] CRAN (R 3.6.0)              
-##  purrr       * 0.3.3       2019-10-18 [1] CRAN (R 3.6.0)              
-##  R6            2.4.1       2019-11-12 [1] CRAN (R 3.6.0)              
-##  Rcpp          1.0.4       2020-03-17 [1] CRAN (R 3.6.0)              
-##  readr       * 1.3.1       2018-12-21 [1] CRAN (R 3.6.0)              
-##  readxl        1.3.1       2019-03-13 [1] CRAN (R 3.6.0)              
-##  remotes       2.1.1       2020-02-15 [1] CRAN (R 3.6.0)              
-##  reprex        0.3.0       2019-05-16 [1] CRAN (R 3.6.0)              
-##  rlang         0.4.5.9000  2020-03-19 [1] Github (r-lib/rlang@a90b04b)
-##  rmarkdown     2.1         2020-01-20 [1] CRAN (R 3.6.0)              
-##  rprojroot     1.3-2       2018-01-03 [1] CRAN (R 3.6.0)              
-##  rstudioapi    0.11        2020-02-07 [1] CRAN (R 3.6.0)              
-##  rvest         0.3.5       2019-11-08 [1] CRAN (R 3.6.0)              
-##  scales        1.1.0       2019-11-18 [1] CRAN (R 3.6.0)              
-##  sessioninfo   1.1.1       2018-11-05 [1] CRAN (R 3.6.0)              
-##  stringi       1.4.6       2020-02-17 [1] CRAN (R 3.6.0)              
-##  stringr     * 1.4.0       2019-02-10 [1] CRAN (R 3.6.0)              
-##  testthat      2.3.2       2020-03-02 [1] CRAN (R 3.6.0)              
-##  tibble      * 2.1.3       2019-06-06 [1] CRAN (R 3.6.0)              
-##  tidyr       * 1.0.2       2020-01-24 [1] CRAN (R 3.6.0)              
-##  tidyselect    1.0.0       2020-01-27 [1] CRAN (R 3.6.0)              
-##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
-##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
-##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
-##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
-##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
-##  xml2          1.2.5       2020-03-11 [1] CRAN (R 3.6.0)              
-##  yaml          2.2.1       2020-02-01 [1] CRAN (R 3.6.0)              
+##  package     * version date       lib source        
+##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports     1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown      0.20.1  2020-07-02 [1] local         
+##  bookdown      0.20    2020-06-23 [1] CRAN (R 4.0.2)
+##  broom         0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
+##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
+##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools      2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
+##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
+##  glue          1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
+##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
+##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
+##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
+##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
+##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme          3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
+##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild      1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx      3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
+##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  rcfss       * 0.2.0   2020-09-05 [1] local         
+##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
+##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes       2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang         0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
+##  rmarkdown     2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest         0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  stringi       1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
+##  tidyr       * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
+##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
+##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
+##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
+##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
