@@ -152,11 +152,51 @@ Each homework will be evaluated by either myself or the TA, as well as by **two 
 * [How to perform peer review](/faq/peer-evaluations/)
 * [How to properly ask for help](/faq/asking-questions/)
 
+## COVID-19-related policies
+
+### UChicago Health Pact
+
+All students on campus are required to adhere to the guidelines in the UChicago Health Pact in order to promote a safe environment in the classroom.
+
+* Secure face coverings must be worn appropriately at all times at all times while in University buildings
+* Maintain a distance of 6 feet from others
+* Do not attend and in-person class if you feel unwell or are experiencing COVID-19 related symptoms
+
+The complete text of the UChicago Health Pact along with additional information about COVID-19 protocols can be found [here](https://goforward.uchicago.edu/health-requirements/#healthpact).
+
+### Reporting COVID-19 related concerns
+
+Any concerns over inappropriate PPE usage, physical distancing, cleaning/disinfection, or other COVID-19 related public health concerns should be directed to [UCAIR](https://ehs-prd-01.uchicago.edu/ehsa-ucair/InjuryIllnessIndexUOFC-IT.html).
+
+If there is an emergency, call 773-702-8181 or dial 123 on any campus phone.
+
+### Reporting COVID-19 exposure or a confirmed case
+
+If you were potentially exposed to COVID-19 or your COVID-19 test results come back positive, reach out immediately to [C19HealthReport@uchicago.edu](mailto:C19HealthReport@uchicago.edu).
+
+### Recording and deltion policies for academic year 2020-21
+
+The Recording and Deletion Policies for the current academic year can be found in the Student Manual under [Petitions, Audio & Video Recording on Campus](https://studentmanual.uchicago.edu/administrative-policies/additional-administrative-regulations/petitions-audio-video-recording-on-campus/).
+
+* Do not record, share, or disseminate any course sessions, videos, transcripts, audio, or chats.
+* Do not share links for the course to those not currently enrolled.
+* Any Zoom cloud recordings will be automatically deleted 90 days after the completion of the recording.
+
+### Participation if you get COVID-19
+
+Students who have been exposed to or who are experiencing symptoms of COVID-19 should contact [UChicago Student Wellness](https://wellness.uchicago.edu/) immediately to be tested, and reach out to their area Dean of Students to request accommodations for classes until:
+
+* At least 10 days have passed since symptoms first appeared and;
+* At least 3 days (72 hours) have passed since recovery - defined as resolution of fever without the use of fever-reducing medications and improvement in respiratory symptoms (e.g., cough, shortness of breath).
+
 ## Statement on Disabilities
 
 The University of Chicago is committed to diversity and rigorous inquiry from multiple perspectives. The MAPSS, CIR, and Computation programs share this commitment and seek to foster productive learning environments based upon inclusion, open communication, and mutual respect for a diverse range of identities, experiences, and positions.
 
-This course is open to all students who meet the academic requirements for participation. Any student who has a documented need for accommodation should contact Student Disability Services (773-702-6000 or [disabilities@uchicago.edu](mailto:disabilities@uchicago.edu)) and provide me (Dr. Soltoff) with a copy of your Accommodation Determination Letter as soon as possible.
+The University of Chicago is committed to ensuring equitable access to our academic programs and services. Students with disabilities who have been approved for the use of academic accommodations by Student Disability Services (SDS) and need a reasonable accommodation(s) to participate fully in this course should follow the procedures established by SDS for using accommodations. Timely notifications are required in order to ensure that your accommodations can be implemented. Please meet with me to discuss your access needs in this class after you have completed the SDS procedures for requesting accommodations.
+
+* Email: [disabilities@uchicago.edu](mailto:disabilities@uchicago.edu)
+* Phone: 773-702-6000
 
 ## Acknowledgments
 
