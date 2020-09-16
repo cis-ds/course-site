@@ -174,7 +174,7 @@ If there is an emergency, call 773-702-8181 or dial 123 on any campus phone.
 
 If you were potentially exposed to COVID-19 or your COVID-19 test results come back positive, reach out immediately to [C19HealthReport@uchicago.edu](mailto:C19HealthReport@uchicago.edu).
 
-### Recording and deltion policies for academic year 2020-21
+### Recording and deletion policies for academic year 2020-21
 
 The Recording and Deletion Policies for the current academic year can be found in the Student Manual under [Petitions, Audio & Video Recording on Campus](https://studentmanual.uchicago.edu/administrative-policies/additional-administrative-regulations/petitions-audio-video-recording-on-campus/).
 
