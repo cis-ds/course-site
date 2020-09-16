@@ -189,7 +189,7 @@ Students who have been exposed to or who are experiencing symptoms of COVID-19 s
 * At least 10 days have passed since symptoms first appeared and;
 * At least 3 days (72 hours) have passed since recovery - defined as resolution of fever without the use of fever-reducing medications and improvement in respiratory symptoms (e.g., cough, shortness of breath).
 
-## Statement on Disabilities
+## Statement on diversity, inclusion, and disability
 
 The University of Chicago is committed to diversity and rigorous inquiry from multiple perspectives. The MAPSS, CIR, and Computation programs share this commitment and seek to foster productive learning environments based upon inclusion, open communication, and mutual respect for a diverse range of identities, experiences, and positions.
 
