@@ -22,11 +22,12 @@ Pipes are an extremely useful tool from the `magrittr` package^[The basic `%>%` 
 
 Suppose we have the following assignment:
 
-> Using the `penguins` dataset, calculate the average body mass for penguins with species Adelie on different islands.
+> Using the [`penguins`](https://github.com/allisonhorst/palmerpenguins) dataset, calculate the average body mass for Adelie penguins on different islands.
 
 Okay, first let's load our libraries and check out the data frame.
 
 ```{r data, message = FALSE}
+library(tidyverse)
 library(palmerpenguins)
 penguins
 ```
@@ -45,34 +46,28 @@ One option is to save each step as a new object:
 
 ```{r intermediate}
 penguins_1 <- filter(penguins, species == "Adelie")
-penguins_2 <- drop_na(penguins_1, body_mass_g)
-penguins_3 <- group_by(penguins_2, island)
-(penguins_4 <- summarize(penguins_3, body_mass = mean(body_mass_g)))
+penguins_2 <- group_by(penguins_1, island)
+(penguins_3 <- summarize(penguins_2, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
 Why do we not like doing this? **We have to name each intermediate object**. Here I just append a number to the end, but this is not good self-documentation. What should we expect to find in `penguins_2`? It would be nicer to have an informative name, but there isn't a natural one. Then we have to remember how the data exists in each intermediate step and remember to reference the correct one. What happens if we misidentify the data frame?
 
 ```{r intermediate-bad, error = TRUE}
 penguins_1 <- filter(penguins, species == "Adelie")
-penguins_2 <- drop_na(penguins_1, body_mass_g)
-penguins_3 <- group_by(penguins_2, island)
-(penguins_4 <- summarize(penguins_2, body_mass = mean(body_mass_g)))
+penguins_2 <- group_by(penguins_1, island)
+(penguins_3 <- summarize(penguins_1, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
-We don't get the correct answer. Worse, we don't get an explicit error message because the code, as written, works. R can execute this command for us and doesn't know to warn us that we used `penguins_2` instead of `penguins_3`.
+We don't get the correct answer. Worse, we don't get an explicit error message because the code, as written, works. R can execute this command for us and doesn't know to warn us that we used `penguins_1` instead of `penguins_2`.
 
 ## Overwrite the original
 
 Instead of creating intermediate objects, let's just replace the original data frame with the modified form.
 
 ```{r overwrite}
-# copy penguins to penguins_t just for demonstration purposes
-penguins_t <- penguins
-
-penguins_t <- filter(penguins_t, species == "Adelie")
-penguins_t <- drop_na(penguins_t, body_mass_g)
-penguins_t <- group_by(penguins_t, island)
-(penguins_t <- summarize(penguins_t, body_mass = mean(body_mass_g)))
+penguins <- filter(penguins, species == "Adelie")
+penguins <- group_by(penguins, island)
+(penguins <- summarize(penguins, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
 This works, but still has a couple of problems. What happens if I make an error in the middle of the operation? I need to rerun the entire operation from the beginning. With your own data sources, this means having to read in the `.csv` file all over again to restore a fresh copy.
@@ -81,19 +76,27 @@ This works, but still has a couple of problems. What happens if I make an error 
 
 We could string all the function calls together into a single object and forget assigning it anywhere.
 
+```{r penguins-refresh, include = FALSE}
+data("penguins")
+```
+
 ```{r function-comp}
-summarize(group_by(filter(
-  drop_na(penguins, body_mass_g),
-  species == "Adelie"
-),
-island),
-body_mass = mean(body_mass_g))
+summarize(
+  group_by(
+    filter(
+      penguins,
+      species == "Adelie"
+    ),
+    island
+  ),
+  body_mass = mean(body_mass_g, na.rm = TRUE)
+)
 ```
 
 But now we have to read the function from the inside out. Even worse, what happens if we cram it all into a single line?
 
 ```{r function-comp-single}
-summarize(group_by(filter(drop_na(penguins, body_mass_g),species == "Adelie"), island), body_mass = mean(body_mass_g))
+summarize(group_by(filter(penguins, species == "Adelie"), island), body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
 **This is not intuitive for humans**. Again, the computer will handle it just fine, but if you make a mistake debugging it will be a pain.
@@ -103,9 +106,8 @@ summarize(group_by(filter(drop_na(penguins, body_mass_g),species == "Adelie"), i
 ```{r pipe}
 penguins %>%
   filter(species == "Adelie") %>%
-  drop_na(body_mass_g) %>%
   group_by(island) %>%
-  summarize(body_mass = mean(body_mass_g))
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
 Piping is the clearest syntax to implement, as it focuses on actions, not objects. Or as [Hadley would say](http://r4ds.had.co.nz/pipes.html#use-the-pipe):
