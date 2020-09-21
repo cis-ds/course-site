@@ -174,7 +174,7 @@ Do not place spaces around code in parentheses or square brackets (unless there�
 ```r
 # Good
 if (debug) do(x)
-diamonds[5, ]
+penguins[5, ]
 
 # Bad
 if ( debug ) do(x)  # No spaces around debug
@@ -353,10 +353,10 @@ x=2;print('Oh no... ask the right bracket to go away!')}
 1*3 # one space before this comment will become two!
 2+2+2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-filter(color == "I") %>%
-group_by(cut) %>%
-summarize(price = mean(price))
+penguins %>%
+filter(island == "Torgersen") %>%
+group_by(species) %>%
+summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y~x1+x2, data=data.frame(y=rnorm(100),x1=rnorm(100),x2=rnorm(100)))  ### a linear model
 
@@ -380,10 +380,10 @@ print('Oh no... ask the right bracket to go away!')
 1 * 3 # one space before this comment will become two!
 2 + 2 + 2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-filter(color == "I") %>%
-group_by(cut) %>%
-summarize(price = mean(price))
+penguins %>%
+  filter(island == "Torgersen") %>%
+  group_by(species) %>%
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y ~ x1 + x2, data = data.frame(
 y = rnorm(100),
@@ -417,10 +417,10 @@ print('Oh no... ask the right bracket to go away!')
 1 * 3 # one space before this comment will become two!
 2 + 2 + 2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-filter(color == "I") %>%
-group_by(cut) %>%
-summarize(price = mean(price))
+penguins %>%
+filter(island == "Torgersen") %>%
+group_by(species) %>%
+summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y ~ x1 + x2, data = data.frame(
 y = rnorm(100),
@@ -449,10 +449,10 @@ if (TRUE) {
 1 * 3 # one space before this comment will become two!
 2 + 2 + 2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-  filter(color == "I") %>%
-  group_by(cut) %>%
-  summarize(price = mean(price))
+penguins %>%
+  filter(island == "Torgersen") %>%
+  group_by(species) %>%
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y ~ x1 + x2, data = data.frame(
   y = rnorm(100),
@@ -488,13 +488,13 @@ crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.))
 ```
 
 ```
-## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67.6666666666667, :
+## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67, `66.66667%` = 81:
 ## some 'x' values beyond boundary knots may cause ill-conditioned bases
 ```
 
 ```
-## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 68, `66.66667%` =
-## 82: some 'x' values beyond boundary knots may cause ill-conditioned bases
+## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67, `66.66667%` = 81:
+## some 'x' values beyond boundary knots may cause ill-conditioned bases
 ```
 
 ```
@@ -503,11 +503,19 @@ crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.))
 ##   <chr>  <dbl>
 ## 1 linear  13.9
 ## 2 log     14.8
-## 3 spline  12.6
+## 3 spline  12.7
 ```
 
 ```r
 college_phd_spline<-gam(Outstate~bs(PhD,df=5),data=College)# spline has the best model fit
+```
+
+```
+## Warning in model.matrix.default(mt, mf, contrasts): non-list contrasts argument
+## ignored
+```
+
+```r
 college_phd_terms<-preplot(college_phd_spline,se=TRUE,rug=FALSE)# get first difference for age
 #age plot
 tibble(x=college_phd_terms$`bs(PhD, df = 5)`$x,
@@ -583,92 +591,97 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.4      
-##  system   x86_64, darwin15.6.0        
+##  version  R version 4.0.2 (2020-06-22)
+##  os       macOS Catalina 10.15.6      
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-04-15                  
+##  date     2020-09-21                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version     date       lib source                      
-##  assertthat    0.2.1       2019-03-21 [1] CRAN (R 3.6.0)              
-##  backports     1.1.5       2019-10-02 [1] CRAN (R 3.6.0)              
-##  blogdown      0.18        2020-03-04 [1] CRAN (R 3.6.0)              
-##  bookdown      0.18        2020-03-05 [1] CRAN (R 3.6.0)              
-##  broom         0.5.5       2020-02-29 [1] CRAN (R 3.6.0)              
-##  callr         3.4.2       2020-02-12 [1] CRAN (R 3.6.1)              
-##  cellranger    1.1.0       2016-07-27 [1] CRAN (R 3.6.0)              
-##  cli           2.0.2       2020-02-28 [1] CRAN (R 3.6.0)              
-##  colorspace    1.4-1       2019-03-18 [1] CRAN (R 3.6.0)              
-##  crayon        1.3.4       2017-09-16 [1] CRAN (R 3.6.0)              
-##  DBI           1.1.0       2019-12-15 [1] CRAN (R 3.6.0)              
-##  dbplyr        1.4.2       2019-06-17 [1] CRAN (R 3.6.0)              
-##  desc          1.2.0       2018-05-01 [1] CRAN (R 3.6.0)              
-##  devtools      2.2.2       2020-02-17 [1] CRAN (R 3.6.0)              
-##  digest        0.6.25      2020-02-23 [1] CRAN (R 3.6.0)              
-##  dplyr       * 0.8.5       2020-03-07 [1] CRAN (R 3.6.0)              
-##  ellipsis      0.3.0       2019-09-20 [1] CRAN (R 3.6.0)              
-##  evaluate      0.14        2019-05-28 [1] CRAN (R 3.6.0)              
-##  fansi         0.4.1       2020-01-08 [1] CRAN (R 3.6.0)              
-##  forcats     * 0.5.0       2020-03-01 [1] CRAN (R 3.6.0)              
-##  fs            1.3.2       2020-03-05 [1] CRAN (R 3.6.0)              
-##  generics      0.0.2       2018-11-29 [1] CRAN (R 3.6.0)              
-##  ggplot2     * 3.3.0       2020-03-05 [1] CRAN (R 3.6.0)              
-##  glue          1.3.2       2020-03-12 [1] CRAN (R 3.6.0)              
-##  gtable        0.3.0       2019-03-25 [1] CRAN (R 3.6.0)              
-##  haven         2.2.0       2019-11-08 [1] CRAN (R 3.6.0)              
-##  here          0.1         2017-05-28 [1] CRAN (R 3.6.0)              
-##  hms           0.5.3       2020-01-08 [1] CRAN (R 3.6.0)              
-##  htmltools     0.4.0       2019-10-04 [1] CRAN (R 3.6.0)              
-##  httr          1.4.1       2019-08-05 [1] CRAN (R 3.6.0)              
-##  jsonlite      1.6.1       2020-02-02 [1] CRAN (R 3.6.0)              
-##  knitr         1.28        2020-02-06 [1] CRAN (R 3.6.0)              
-##  lattice       0.20-40     2020-02-19 [1] CRAN (R 3.6.0)              
-##  lifecycle     0.2.0       2020-03-06 [1] CRAN (R 3.6.0)              
-##  lubridate     1.7.4       2018-04-11 [1] CRAN (R 3.6.0)              
-##  magrittr      1.5         2014-11-22 [1] CRAN (R 3.6.0)              
-##  memoise       1.1.0       2017-04-21 [1] CRAN (R 3.6.0)              
-##  modelr        0.1.6       2020-02-22 [1] CRAN (R 3.6.0)              
-##  munsell       0.5.0       2018-06-12 [1] CRAN (R 3.6.0)              
-##  nlme          3.1-145     2020-03-04 [1] CRAN (R 3.6.0)              
-##  pillar        1.4.3       2019-12-20 [1] CRAN (R 3.6.0)              
-##  pkgbuild      1.0.6       2019-10-09 [1] CRAN (R 3.6.0)              
-##  pkgconfig     2.0.3       2019-09-22 [1] CRAN (R 3.6.0)              
-##  pkgload       1.0.2       2018-10-29 [1] CRAN (R 3.6.0)              
-##  prettyunits   1.1.1       2020-01-24 [1] CRAN (R 3.6.0)              
-##  processx      3.4.2       2020-02-09 [1] CRAN (R 3.6.0)              
-##  ps            1.3.2       2020-02-13 [1] CRAN (R 3.6.0)              
-##  purrr       * 0.3.3       2019-10-18 [1] CRAN (R 3.6.0)              
-##  R6            2.4.1       2019-11-12 [1] CRAN (R 3.6.0)              
-##  Rcpp          1.0.4       2020-03-17 [1] CRAN (R 3.6.0)              
-##  readr       * 1.3.1       2018-12-21 [1] CRAN (R 3.6.0)              
-##  readxl        1.3.1       2019-03-13 [1] CRAN (R 3.6.0)              
-##  remotes       2.1.1       2020-02-15 [1] CRAN (R 3.6.0)              
-##  reprex        0.3.0       2019-05-16 [1] CRAN (R 3.6.0)              
-##  rlang         0.4.5.9000  2020-03-19 [1] Github (r-lib/rlang@a90b04b)
-##  rmarkdown     2.1         2020-01-20 [1] CRAN (R 3.6.0)              
-##  rprojroot     1.3-2       2018-01-03 [1] CRAN (R 3.6.0)              
-##  rstudioapi    0.11        2020-02-07 [1] CRAN (R 3.6.0)              
-##  rvest         0.3.5       2019-11-08 [1] CRAN (R 3.6.0)              
-##  scales        1.1.0       2019-11-18 [1] CRAN (R 3.6.0)              
-##  sessioninfo   1.1.1       2018-11-05 [1] CRAN (R 3.6.0)              
-##  stringi       1.4.6       2020-02-17 [1] CRAN (R 3.6.0)              
-##  stringr     * 1.4.0       2019-02-10 [1] CRAN (R 3.6.0)              
-##  testthat      2.3.2       2020-03-02 [1] CRAN (R 3.6.0)              
-##  tibble      * 2.1.3       2019-06-06 [1] CRAN (R 3.6.0)              
-##  tidyr       * 1.0.2       2020-01-24 [1] CRAN (R 3.6.0)              
-##  tidyselect    1.0.0       2020-01-27 [1] CRAN (R 3.6.0)              
-##  tidyverse   * 1.3.0       2019-11-21 [1] CRAN (R 3.6.0)              
-##  usethis       1.5.1       2019-07-04 [1] CRAN (R 3.6.0)              
-##  vctrs         0.2.99.9010 2020-03-19 [1] Github (r-lib/vctrs@94bea91)
-##  withr         2.1.2       2018-03-15 [1] CRAN (R 3.6.0)              
-##  xfun          0.12        2020-01-13 [1] CRAN (R 3.6.0)              
-##  xml2          1.2.5       2020-03-11 [1] CRAN (R 3.6.0)              
-##  yaml          2.2.1       2020-02-01 [1] CRAN (R 3.6.0)              
+##  package     * version date       lib source        
+##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports     1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown      0.20.1  2020-07-02 [1] local         
+##  bookdown      0.20    2020-06-23 [1] CRAN (R 4.0.2)
+##  broom       * 0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
+##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
+##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools      2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
+##  foreach     * 1.5.0   2020-03-30 [1] CRAN (R 4.0.0)
+##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  gam         * 1.16.1  2019-07-03 [1] CRAN (R 4.0.0)
+##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
+##  glue          1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
+##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
+##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
+##  iterators     1.0.12  2019-07-26 [1] CRAN (R 4.0.0)
+##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
+##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
+##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  modelr      * 0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme          3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
+##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild      1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx      3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
+##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
+##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes       2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang         0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
+##  rmarkdown     2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest         0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  stringi       1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
+##  tidyr       * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
+##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
+##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
+##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
+##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
