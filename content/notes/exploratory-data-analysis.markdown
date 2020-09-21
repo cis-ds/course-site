@@ -19,6 +19,7 @@ menu:
 
 ```r
 library(tidyverse)
+library(palmerpenguins)
 ```
 
 **Exploratory data analysis** (EDA) is often the first step to visualizing and transforming your data.^[After any necessary data importation and wrangling.] Hadley Wickham [defines EDA as an iterative cycle](http://r4ds.had.co.nz/exploratory-data-analysis.html):
@@ -37,43 +38,58 @@ EDA relies heavily on visualizations and graphical interpretations of data. Whil
 
 ## Characteristics of exploratory graphs
 
-Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to [explore how the price of a diamond varies with it's carat size](http://r4ds.had.co.nz/exploratory-data-analysis.html#two-continuous-variables). An appropriate technique would be a scatterplot:
+Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to explore how the flipper length of a penguin varies with it's body mass size. An appropriate technique would be a scatterplot:
 
 
 ```r
-ggplot(data = diamonds,
-       mapping = aes(x = carat, y = price)) +
+ggplot(data = penguins,
+       mapping = aes(x = body_mass_g, y = flipper_length_mm)) +
   geom_point() +
   geom_smooth()
 ```
 
 ```
-## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/diamonds-eda-1.png" width="672" />
+```
+## Warning: Removed 2 rows containing non-finite values (stat_smooth).
+```
 
-This is a great exploratory graph: it took just three lines of code and clearly establishes an exponential relationship between the carat size and price of a diamond. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
+```
+## Warning: Removed 2 rows containing missing values (geom_point).
+```
+
+<img src="/notes/exploratory-data-analysis_files/figure-html/penguins-eda-1.png" width="672" />
+
+This is a great exploratory graph: it took just three lines of code and clearly establishes a positive relationship between the flipper length and body mass of a penguin. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
 
 
 ```r
-ggplot(data = diamonds,
-       mapping = aes(x = carat, y = price)) +
-  geom_point(alpha = .01) +
+ggplot(data = penguins,
+       mapping = aes(x = body_mass_g, y = flipper_length_mm)) +
+  geom_point(alpha = .1) +
   geom_smooth(se = FALSE) +
-  scale_y_continuous(labels = scales::dollar) +
-  labs(title = "Exponential relationship between carat size and price",
-       subtitle = "Sample of 54,000 diamonds",
-       x = "Carat size",
-       y = "Price") +
+  labs(title = "Relationship between body mass and flipper length of a penguin",
+       subtitle = "Sample of 344 penguins",
+       x = "Body mass(g)",
+       y = "Flipper length(mm)") +
   theme_minimal()
 ```
 
 ```
-## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
+## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/diamonds-final-1.png" width="672" />
+```
+## Warning: Removed 2 rows containing non-finite values (stat_smooth).
+```
+
+```
+## Warning: Removed 2 rows containing missing values (geom_point).
+```
+
+<img src="/notes/exploratory-data-analysis_files/figure-html/penguins-final-1.png" width="672" />
 
 These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
 
@@ -95,18 +111,18 @@ mpg
 
 ```
 ## # A tibble: 234 x 11
-##    manufacturer model displ  year   cyl trans drv     cty   hwy fl    class
-##    <chr>        <chr> <dbl> <int> <int> <chr> <chr> <int> <int> <chr> <chr>
-##  1 audi         a4      1.8  1999     4 auto… f        18    29 p     comp…
-##  2 audi         a4      1.8  1999     4 manu… f        21    29 p     comp…
-##  3 audi         a4      2    2008     4 manu… f        20    31 p     comp…
-##  4 audi         a4      2    2008     4 auto… f        21    30 p     comp…
-##  5 audi         a4      2.8  1999     6 auto… f        16    26 p     comp…
-##  6 audi         a4      2.8  1999     6 manu… f        18    26 p     comp…
-##  7 audi         a4      3.1  2008     6 auto… f        18    27 p     comp…
-##  8 audi         a4 q…   1.8  1999     4 manu… 4        18    26 p     comp…
-##  9 audi         a4 q…   1.8  1999     4 auto… 4        16    25 p     comp…
-## 10 audi         a4 q…   2    2008     4 manu… 4        20    28 p     comp…
+##    manufacturer model    displ  year   cyl trans   drv     cty   hwy fl    class
+##    <chr>        <chr>    <dbl> <int> <int> <chr>   <chr> <int> <int> <chr> <chr>
+##  1 audi         a4         1.8  1999     4 auto(l… f        18    29 p     comp…
+##  2 audi         a4         1.8  1999     4 manual… f        21    29 p     comp…
+##  3 audi         a4         2    2008     4 manual… f        20    31 p     comp…
+##  4 audi         a4         2    2008     4 auto(a… f        21    30 p     comp…
+##  5 audi         a4         2.8  1999     6 auto(l… f        16    26 p     comp…
+##  6 audi         a4         2.8  1999     6 manual… f        18    26 p     comp…
+##  7 audi         a4         3.1  2008     6 auto(a… f        18    27 p     comp…
+##  8 audi         a4 quat…   1.8  1999     4 manual… 4        18    26 p     comp…
+##  9 audi         a4 quat…   1.8  1999     4 auto(l… 4        16    25 p     comp…
+## 10 audi         a4 quat…   2    2008     4 manual… 4        20    28 p     comp…
 ## # … with 224 more rows
 ```
 
@@ -115,19 +131,19 @@ glimpse(x = mpg)
 ```
 
 ```
-## Observations: 234
-## Variables: 11
-## $ manufacturer <chr> "audi", "audi", "audi", "audi", "audi", "audi", "au…
-## $ model        <chr> "a4", "a4", "a4", "a4", "a4", "a4", "a4", "a4 quatt…
-## $ displ        <dbl> 1.8, 1.8, 2.0, 2.0, 2.8, 2.8, 3.1, 1.8, 1.8, 2.0, 2…
-## $ year         <int> 1999, 1999, 2008, 2008, 1999, 1999, 2008, 1999, 199…
-## $ cyl          <int> 4, 4, 4, 4, 6, 6, 6, 4, 4, 4, 4, 6, 6, 6, 6, 6, 6, …
-## $ trans        <chr> "auto(l5)", "manual(m5)", "manual(m6)", "auto(av)",…
-## $ drv          <chr> "f", "f", "f", "f", "f", "f", "f", "4", "4", "4", "…
-## $ cty          <int> 18, 21, 20, 21, 16, 18, 18, 18, 16, 20, 19, 15, 17,…
-## $ hwy          <int> 29, 29, 31, 30, 26, 26, 27, 26, 25, 28, 27, 25, 25,…
-## $ fl           <chr> "p", "p", "p", "p", "p", "p", "p", "p", "p", "p", "…
-## $ class        <chr> "compact", "compact", "compact", "compact", "compac…
+## Rows: 234
+## Columns: 11
+## $ manufacturer <chr> "audi", "audi", "audi", "audi", "audi", "audi", "audi", …
+## $ model        <chr> "a4", "a4", "a4", "a4", "a4", "a4", "a4", "a4 quattro", …
+## $ displ        <dbl> 1.8, 1.8, 2.0, 2.0, 2.8, 2.8, 3.1, 1.8, 1.8, 2.0, 2.0, 2…
+## $ year         <int> 1999, 1999, 2008, 2008, 1999, 1999, 2008, 1999, 1999, 20…
+## $ cyl          <int> 4, 4, 4, 4, 6, 6, 6, 4, 4, 4, 4, 6, 6, 6, 6, 6, 6, 8, 8,…
+## $ trans        <chr> "auto(l5)", "manual(m5)", "manual(m6)", "auto(av)", "aut…
+## $ drv          <chr> "f", "f", "f", "f", "f", "f", "f", "4", "4", "4", "4", "…
+## $ cty          <int> 18, 21, 20, 21, 16, 18, 18, 18, 16, 20, 19, 15, 17, 17, …
+## $ hwy          <int> 29, 29, 31, 30, 26, 26, 27, 26, 25, 28, 27, 25, 25, 25, …
+## $ fl           <chr> "p", "p", "p", "p", "p", "p", "p", "p", "p", "p", "p", "…
+## $ class        <chr> "compact", "compact", "compact", "compact", "compact", "…
 ```
 
 Each row represents a model of car sold in a given year.^[The data is a panel structure, so the same model car appears multiple times.] `hwy` identifies the highway miles per gallon for the vehicle.
@@ -314,9 +330,9 @@ ggplot(data = mpg,
 ```
 
 ```
-## Warning: The shape palette can deal with a maximum of 6 discrete values
-## because more than 6 becomes difficult to discriminate; you have 7.
-## Consider specifying shapes manually if you must have them.
+## Warning: The shape palette can deal with a maximum of 6 discrete values because
+## more than 6 becomes difficult to discriminate; you have 7. Consider
+## specifying shapes manually if you must have them.
 ```
 
 ```
@@ -338,93 +354,99 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.1 (2019-07-05)
-##  os       macOS Catalina 10.15.3      
-##  system   x86_64, darwin15.6.0        
+##  version  R version 4.0.2 (2020-06-22)
+##  os       macOS Catalina 10.15.6      
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-18                  
+##  date     2020-09-21                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports     1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
-##  blogdown      0.17.1  2020-02-13 [1] local         
-##  bookdown      0.17    2020-01-11 [1] CRAN (R 3.6.0)
-##  broom         0.5.4   2020-01-27 [1] CRAN (R 3.6.0)
-##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli           2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
-##  dbplyr        1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
-##  digest        0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
-##  dplyr       * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
-##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-##  ggplot2     * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-##  glue          1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven         2.2.0   2019-11-08 [1] CRAN (R 3.6.0)
-##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 3.6.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  jsonlite      1.6.1   2020-02-02 [1] CRAN (R 3.6.0)
-##  knitr         1.28    2020-02-06 [1] CRAN (R 3.6.0)
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
-##  lazyeval      0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  lifecycle     0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-##  modelr        0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme          3.1-144 2020-02-06 [1] CRAN (R 3.6.0)
-##  pillar        1.4.3   2019-12-20 [1] CRAN (R 3.6.0)
-##  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 3.6.0)
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
-##  processx      3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
-##  Rcpp          1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 3.6.0)
-##  rlang         0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
-##  rmarkdown     2.1     2020-01-20 [1] CRAN (R 3.6.0)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 3.6.0)
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 3.6.0)
-##  scales        1.1.0   2019-11-18 [1] CRAN (R 3.6.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  stringi       1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat      2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
-##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr       * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  tidyselect    1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
-##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs         0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun          0.12    2020-01-13 [1] CRAN (R 3.6.0)
-##  xml2          1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
+##  package        * version date       lib source        
+##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports        1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  blob             1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown         0.20.1  2020-07-02 [1] local         
+##  bookdown         0.20    2020-06-23 [1] CRAN (R 4.0.2)
+##  broom            0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
+##  callr            3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli              2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  codetools        0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
+##  colorspace       1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon           1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI              1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr           1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  desc             1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools         2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  digest           0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr          * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  ellipsis         0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate         0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi            0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver           2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
+##  forcats        * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
+##  fs               1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  generics         0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2        * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
+##  glue             1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven            2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
+##  here             0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hms              0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools        0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
+##  httr             1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
+##  jsonlite         1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
+##  knitr            1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  labeling         0.3     2014-08-23 [1] CRAN (R 4.0.0)
+##  lattice          0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
+##  lifecycle        0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  lubridate        1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  magrittr         1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  Matrix           1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
+##  memoise          1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv             1.8-31  2019-11-09 [1] CRAN (R 4.0.2)
+##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme             3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
+##  palmerpenguins * 0.1.0   2020-07-23 [1] CRAN (R 4.0.2)
+##  pillar           1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild         1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload          1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx         3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
+##  ps               1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6               2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  Rcpp             1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
+##  readr          * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readxl           1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes          2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  reprex           0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang            0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
+##  rmarkdown        2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rprojroot        1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  rstudioapi       0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest            0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  scales           1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  stringi          1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat         2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble         * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
+##  tidyr          * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tidyselect       1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse      * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
+##  usethis          1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
+##  vctrs            0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
+##  withr            2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
+##  xfun             0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  xml2             1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml             2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

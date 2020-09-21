@@ -20,11 +20,11 @@ class: center, middle, inverse, title-slide
 
 
 
-&gt; Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
+&gt; Using the [`penguins`](https://github.com/allisonhorst/palmerpenguins) dataset, calculate the average body mass for Adelie penguins on different islands.
 
-1. Filter `diamonds` to only keep observations where the color is rated as "I"
-1. Group the filtered `diamonds` data frame by cut
-1. Summarize the grouped and filtered `diamonds` data frame by calculating the average price
+1. Filter `penguins` to only keep observations where the species is  "Adelie"
+1. Group the filtered `penguins` data frame by island
+1. Summarize the grouped and filtered `penguins` data frame by calculating the average body mass
 
 ---
 
@@ -32,20 +32,18 @@ class: center, middle, inverse, title-slide
 
 
 ```r
-diamonds_1 &lt;- filter(diamonds, color == "I")
-diamonds_2 &lt;- group_by(diamonds_1, cut)
-(diamonds_3 &lt;- summarize(diamonds_2, price = mean(price)))
+penguins_1 &lt;- filter(penguins, species == "Adelie")
+penguins_2 &lt;- group_by(penguins_1, island)
+(penguins_3 &lt;- summarize(penguins_2, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
 ```
-## # A tibble: 5 x 2
-##   cut       price
-##   &lt;ord&gt;     &lt;dbl&gt;
-## 1 Fair      4685.
-## 2 Good      5079.
-## 3 Very Good 5256.
-## 4 Premium   5946.
-## 5 Ideal     4452.
+## # A tibble: 3 x 2
+##   island    body_mass
+##   &lt;fct&gt;         &lt;dbl&gt;
+## 1 Biscoe        3710.
+## 2 Dream         3688.
+## 3 Torgersen     3706.
 ```
 
 ---
@@ -54,49 +52,47 @@ diamonds_2 &lt;- group_by(diamonds_1, cut)
 
 
 ```r
-# copy diamonds to diamonds_t just for demonstration purposes
-diamonds_t &lt;- diamonds
-
-diamonds_t &lt;- filter(diamonds_t, color == "I")
-diamonds_t &lt;- group_by(diamonds_t, cut)
-(diamonds_t &lt;- summarize(diamonds_t, price = mean(price)))
+penguins &lt;- filter(penguins, species == "Adelie")
+penguins &lt;- group_by(penguins, island)
+(penguins &lt;- summarize(penguins, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
 ```
-## # A tibble: 5 x 2
-##   cut       price
-##   &lt;ord&gt;     &lt;dbl&gt;
-## 1 Fair      4685.
-## 2 Good      5079.
-## 3 Very Good 5256.
-## 4 Premium   5946.
-## 5 Ideal     4452.
+## # A tibble: 3 x 2
+##   island    body_mass
+##   &lt;fct&gt;         &lt;dbl&gt;
+## 1 Biscoe        3710.
+## 2 Dream         3688.
+## 3 Torgersen     3706.
 ```
 
 ---
 
 # Function composition
+
+
 
 
 ```r
 summarize(
   group_by(
-    filter(diamonds, color == "I"),
-    cut
+    filter(
+      penguins,
+      species == "Adelie"
+    ),
+    island
   ),
-  price = mean(price)
+  body_mass = mean(body_mass_g, na.rm = TRUE)
 )
 ```
 
 ```
-## # A tibble: 5 x 2
-##   cut       price
-##   &lt;ord&gt;     &lt;dbl&gt;
-## 1 Fair      4685.
-## 2 Good      5079.
-## 3 Very Good 5256.
-## 4 Premium   5946.
-## 5 Ideal     4452.
+## # A tibble: 3 x 2
+##   island    body_mass
+##   &lt;fct&gt;         &lt;dbl&gt;
+## 1 Biscoe        3710.
+## 2 Dream         3688.
+## 3 Torgersen     3706.
 ```
 
 ---
@@ -105,18 +101,16 @@ summarize(
 
 
 ```r
-summarize(group_by(filter(diamonds, color == "I"), cut), price = mean(price))
+summarize(group_by(filter(penguins, species == "Adelie"), island), body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
 ```
-## # A tibble: 5 x 2
-##   cut       price
-##   &lt;ord&gt;     &lt;dbl&gt;
-## 1 Fair      4685.
-## 2 Good      5079.
-## 3 Very Good 5256.
-## 4 Premium   5946.
-## 5 Ideal     4452.
+## # A tibble: 3 x 2
+##   island    body_mass
+##   &lt;fct&gt;         &lt;dbl&gt;
+## 1 Biscoe        3710.
+## 2 Dream         3688.
+## 3 Torgersen     3706.
 ```
 
 ---
@@ -125,21 +119,19 @@ summarize(group_by(filter(diamonds, color == "I"), cut), price = mean(price))
 
 
 ```r
-diamonds %&gt;%
-  filter(color == "I") %&gt;%
-  group_by(cut) %&gt;%
-  summarize(price = mean(price))
+penguins %&gt;%
+  filter(species == "Adelie") %&gt;%
+  group_by(island) %&gt;%
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
 ```
-## # A tibble: 5 x 2
-##   cut       price
-##   &lt;ord&gt;     &lt;dbl&gt;
-## 1 Fair      4685.
-## 2 Good      5079.
-## 3 Very Good 5256.
-## 4 Premium   5946.
-## 5 Ideal     4452.
+## # A tibble: 3 x 2
+##   island    body_mass
+##   &lt;fct&gt;         &lt;dbl&gt;
+## 1 Biscoe        3710.
+## 2 Dream         3688.
+## 3 Torgersen     3706.
 ```
 
 ---
@@ -284,30 +276,32 @@ if (this) {
 
 
 ```r
-diamonds %&gt;%
-  select(carat) %&gt;%
-  mutate(carat_autobin = cut(carat, breaks = 5),
-         carat_manbin = cut(carat,
-                            breaks = c(0, 1, 2, 3, 6),
-                            labels = c("Small", "Medium",
-                                       "Large", "Huge")))
+penguins %&gt;%
+  select(body_mass_g) %&gt;%
+  mutate(
+    body_mass_g_autobin = cut(body_mass_g, breaks = 5),
+    body_mass_g_manbin = cut(body_mass_g,
+      breaks = c(2700, 3600, 4500, 5400, 6300),
+      labels = c("Small", "Medium", "Large", "Huge")
+    )
+  )
 ```
 
 ```
-## # A tibble: 53,940 x 3
-##    carat carat_autobin carat_manbin
-##    &lt;dbl&gt; &lt;fct&gt;         &lt;fct&gt;       
-##  1 0.23  (0.195,1.16]  Small       
-##  2 0.21  (0.195,1.16]  Small       
-##  3 0.23  (0.195,1.16]  Small       
-##  4 0.290 (0.195,1.16]  Small       
-##  5 0.31  (0.195,1.16]  Small       
-##  6 0.24  (0.195,1.16]  Small       
-##  7 0.24  (0.195,1.16]  Small       
-##  8 0.26  (0.195,1.16]  Small       
-##  9 0.22  (0.195,1.16]  Small       
-## 10 0.23  (0.195,1.16]  Small       
-## # … with 53,930 more rows
+## # A tibble: 344 x 3
+##    body_mass_g body_mass_g_autobin body_mass_g_manbin
+##          &lt;int&gt; &lt;fct&gt;               &lt;fct&gt;             
+##  1        3750 (3.42e+03,4.14e+03] Medium            
+##  2        3800 (3.42e+03,4.14e+03] Medium            
+##  3        3250 (2.7e+03,3.42e+03]  Small             
+##  4          NA &lt;NA&gt;                &lt;NA&gt;              
+##  5        3450 (3.42e+03,4.14e+03] Small             
+##  6        3650 (3.42e+03,4.14e+03] Medium            
+##  7        3625 (3.42e+03,4.14e+03] Medium            
+##  8        4675 (4.14e+03,4.86e+03] Large             
+##  9        3475 (3.42e+03,4.14e+03] Small             
+## 10        4250 (4.14e+03,4.86e+03] Medium            
+## # … with 334 more rows
 ```
 
 ---
@@ -434,9 +428,9 @@ count(educ_ifelse, hsPlus)
 ## # A tibble: 3 x 2
 ##   hsPlus           n
 ##   &lt;chr&gt;        &lt;int&gt;
-## 1 &lt;NA&gt;          1422
-## 2 HS+          77553
-## 3 Less than HS 21823
+## 1 HS+          77553
+## 2 Less than HS 21823
+## 3 &lt;NA&gt;          1422
 ```
 
 ---
@@ -494,6 +488,32 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
     deleted = true;
   });
 })();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
 // adds .remark-code-has-line-highlighted class to <pre> parent elements
 // of code chunks containing highlighted lines with class .remark-code-line-highlighted
 (function(d) {
@@ -511,17 +531,6 @@ if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
   }
   preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
 })(document);</script>
-
-<script>
-(function() {
-  var links = document.getElementsByTagName('a');
-  for (var i = 0; i < links.length; i++) {
-    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
-      links[i].target = '_blank';
-    }
-  }
-})();
-</script>
 
 <script>
 slideshow._releaseMath = function(el) {

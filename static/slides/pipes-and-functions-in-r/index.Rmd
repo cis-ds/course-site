@@ -12,26 +12,27 @@ knitr::opts_chunk$set(cache = TRUE,
                       fig.retina = 2, fig.width = 12)
 
 library(tidyverse)
+library(palmerpenguins)
 library(here)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcfss::base_size))
 ```
 
-> Using the `diamonds` dataset, calculate the average price for each cut of "I" colored diamonds.
+> Using the [`penguins`](https://github.com/allisonhorst/palmerpenguins) dataset, calculate the average body mass for Adelie penguins on different islands.
 
-1. Filter `diamonds` to only keep observations where the color is rated as "I"
-1. Group the filtered `diamonds` data frame by cut
-1. Summarize the grouped and filtered `diamonds` data frame by calculating the average price
+1. Filter `penguins` to only keep observations where the species is  "Adelie"
+1. Group the filtered `penguins` data frame by island
+1. Summarize the grouped and filtered `penguins` data frame by calculating the average body mass
 
 ---
 
 # Intermediate steps
 
 ```{r intermediate}
-diamonds_1 <- filter(diamonds, color == "I")
-diamonds_2 <- group_by(diamonds_1, cut)
-(diamonds_3 <- summarize(diamonds_2, price = mean(price)))
+penguins_1 <- filter(penguins, species == "Adelie")
+penguins_2 <- group_by(penguins_1, island)
+(penguins_3 <- summarize(penguins_2, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
 ---
@@ -39,25 +40,29 @@ diamonds_2 <- group_by(diamonds_1, cut)
 # Overwrite the original
 
 ```{r overwrite}
-# copy diamonds to diamonds_t just for demonstration purposes
-diamonds_t <- diamonds
-
-diamonds_t <- filter(diamonds_t, color == "I")
-diamonds_t <- group_by(diamonds_t, cut)
-(diamonds_t <- summarize(diamonds_t, price = mean(price)))
+penguins <- filter(penguins, species == "Adelie")
+penguins <- group_by(penguins, island)
+(penguins <- summarize(penguins, body_mass = mean(body_mass_g, na.rm = TRUE)))
 ```
 
 ---
 
 # Function composition
 
-```{r function_comp}
+```{r penguins-refresh, include = FALSE}
+data("penguins")
+```
+
+```{r function-comp}
 summarize(
   group_by(
-    filter(diamonds, color == "I"),
-    cut
+    filter(
+      penguins,
+      species == "Adelie"
+    ),
+    island
   ),
-  price = mean(price)
+  body_mass = mean(body_mass_g, na.rm = TRUE)
 )
 ```
 
@@ -66,7 +71,7 @@ summarize(
 # Function composition
 
 ```{r function-comp-single}
-summarize(group_by(filter(diamonds, color == "I"), cut), price = mean(price))
+summarize(group_by(filter(penguins, species == "Adelie"), island), body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
 ---
@@ -74,10 +79,10 @@ summarize(group_by(filter(diamonds, color == "I"), cut), price = mean(price))
 # Piping
 
 ```{r pipe}
-diamonds %>%
-  filter(color == "I") %>%
-  group_by(cut) %>%
-  summarize(price = mean(price))
+penguins %>%
+  filter(species == "Adelie") %>%
+  group_by(island) %>%
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
 ---
@@ -189,14 +194,16 @@ if (this) {
 
 # Conditional execution and `cut()`
 
-```{r}
-diamonds %>%
-  select(carat) %>%
-  mutate(carat_autobin = cut(carat, breaks = 5),
-         carat_manbin = cut(carat,
-                            breaks = c(0, 1, 2, 3, 6),
-                            labels = c("Small", "Medium",
-                                       "Large", "Huge")))
+```{r cut}
+penguins %>%
+  select(body_mass_g) %>%
+  mutate(
+    body_mass_g_autobin = cut(body_mass_g, breaks = 5),
+    body_mass_g_manbin = cut(body_mass_g,
+      breaks = c(2700, 3600, 4500, 5400, 6300),
+      labels = c("Small", "Medium", "Large", "Huge")
+    )
+  )
 ```
 
 ---

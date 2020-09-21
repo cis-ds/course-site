@@ -174,7 +174,7 @@ Do not place spaces around code in parentheses or square brackets (unless thereâ
 ```r
 # Good
 if (debug) do(x)
-diamonds[5, ]
+penguins[5, ]
 
 # Bad
 if ( debug ) do(x)  # No spaces around debug
@@ -353,10 +353,10 @@ x=2;print('Oh no... ask the right bracket to go away!')}
 1*3 # one space before this comment will become two!
 2+2+2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-filter(color == "I") %>%
-group_by(cut) %>%
-summarize(price = mean(price))
+penguins %>%
+filter(island == "Torgersen") %>%
+group_by(species) %>%
+summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y~x1+x2, data=data.frame(y=rnorm(100),x1=rnorm(100),x2=rnorm(100)))  ### a linear model
 
@@ -380,10 +380,10 @@ print('Oh no... ask the right bracket to go away!')
 1 * 3 # one space before this comment will become two!
 2 + 2 + 2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-filter(color == "I") %>%
-group_by(cut) %>%
-summarize(price = mean(price))
+penguins %>%
+  filter(island == "Torgersen") %>%
+  group_by(species) %>%
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y ~ x1 + x2, data = data.frame(
 y = rnorm(100),
@@ -417,10 +417,10 @@ print('Oh no... ask the right bracket to go away!')
 1 * 3 # one space before this comment will become two!
 2 + 2 + 2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-filter(color == "I") %>%
-group_by(cut) %>%
-summarize(price = mean(price))
+penguins %>%
+filter(island == "Torgersen") %>%
+group_by(species) %>%
+summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y ~ x1 + x2, data = data.frame(
 y = rnorm(100),
@@ -449,10 +449,10 @@ if (TRUE) {
 1 * 3 # one space before this comment will become two!
 2 + 2 + 2    # only 'single quotes' are allowed in comments
 
-diamonds %>%
-  filter(color == "I") %>%
-  group_by(cut) %>%
-  summarize(price = mean(price))
+penguins %>%
+  filter(island == "Torgersen") %>%
+  group_by(species) %>%
+  summarize(body_mass = mean(body_mass_g, na.rm = TRUE))
 
 lm(y ~ x1 + x2, data = data.frame(
   y = rnorm(100),
@@ -488,12 +488,12 @@ crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.))
 ```
 
 ```
-## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67.6666666666667, : some
-## 'x' values beyond boundary knots may cause ill-conditioned bases
+## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67, `66.66667%` = 81:
+## some 'x' values beyond boundary knots may cause ill-conditioned bases
 ```
 
 ```
-## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 68, `66.66667%` = 82:
+## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67, `66.66667%` = 81:
 ## some 'x' values beyond boundary knots may cause ill-conditioned bases
 ```
 
@@ -503,7 +503,7 @@ crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.))
 ##   <chr>  <dbl>
 ## 1 linear  13.9
 ## 2 log     14.8
-## 3 spline  12.6
+## 3 spline  12.7
 ```
 
 ```r
