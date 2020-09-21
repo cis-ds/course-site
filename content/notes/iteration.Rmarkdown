@@ -20,7 +20,6 @@ knitr::opts_chunk$set(cache = TRUE)
 
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
-library(palmerpenguins)
 set.seed(1234)
 theme_set(theme_minimal())
 ```
@@ -106,36 +105,55 @@ This is the code that actually performs the desired calculations. It runs multip
 
 If you don't preallocate space for the output, each time the `for` loop iterates, it makes a copy of the output and appends the new value at the end. Copying data takes time and memory. If the output is preallocated space, the loop simply fills in the slots with the correct values.
 
-```{r preallocate}
-x <- rnorm(1000, mean = 0, sd = 1)
-str(x)
+Consider the following task: duplicate the data frame `mpg` 100 times and bind them together into a single data frame. We can accomplish the latter task using `bind_rows()`, and use a `for` loop to create 100 copies of `mpg`. What is the difference if we preallocate space for the output as opposed to just copying and extending the data frame each time?
 
-# load microbenchmark library to time code
-library(microbenchmark)
+```r
+# no preallocation
+mpg_no_preall <- tibble()
 
-microbenchmark(
-  # don't preallocate
-  `No preallocation` = {
-    output <- vector("numeric", 0)
-    
-    for (i in seq_along(x)) {
-      output <- c(output, x[[i]] + 1)
-    }
-  },
-  # preallocate
-  `Preallocation` = {
-    output <- vector("numeric", length(x))
-    
-    for (i in seq_along(x)) {
-      output[[i]] <- x[[i]] + 1
-    }
-  }) %>%
-  autoplot +
-  scale_y_log10(breaks = c(2, 4, 8, 16, 32)) +
-  labs(y = "Time [milliseconds]")
+for(i in 1:100){
+  mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+}
+
+# with preallocation using a list
+mpg_preall <- vector(mode = "list", length = 100)
+
+for(i in 1:100){
+  mpg_preall[[i]] <- mpg
+}
+
+mpg_preall <- bind_rows(mpg_preall)
 ```
 
-Here, preallocating space for the vector cuts the computation time by a factor of 3.
+Let's compare the time it takes to complete each of these loops by replicating each example 100 times and measuring how long it takes for the expression to evaluate.
+
+```{r preallocate, echo = FALSE, message = FALSE}
+library(microbenchmark)
+
+# bind together 100 copies of mpg
+times <- microbenchmark(
+  `No preallocation` = {
+    mpg_no_preall <- tibble()
+    
+    for(i in 1:100){
+      mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+    }
+  },
+  `Preallocation` = {
+    mpg_preall <- vector(mode = "list", length = 100)
+    
+    for(i in 1:100){
+      mpg_preall[[i]] <- mpg
+    }
+    
+    mpg_preall <- bind_rows(mpg_preall)
+  }
+)
+
+autoplot(times)
+```
+
+Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 30.
 
 ## Exercise: write a `for` loop
 
@@ -177,12 +195,12 @@ output
   </p>
 </details>
 
-### Maximum value in each column of `penguins`
+### Maximum value in each column of `diamonds`
 
-Write a `for` loop that calculates the maximum value in each column of `penguins`.
+Write a `for` loop that calculates the maximum value in each column of `diamonds`.
 
-```{r penguins}
-penguins
+```{r diamonds}
+diamonds
 ```
 
 Before you write the `for` loop, identify the three components you need:
@@ -195,37 +213,31 @@ Before you write the `for` loop, identify the three components you need:
   <summary>Click for the solution</summary>
   <p>
 
-* Output - a vector of length `r ncol(ggplot2::penguins)`
-* Sequence - `i in seq_along(penguins)`
-* Body - get the maximum value of the $i$th column of the data frame `penguins`, store the new value as the $i$th element of the list `output`
+* Output - a vector of length `r ncol(ggplot2::diamonds)`
+* Sequence - `i in seq_along(diamonds)`
+* Body - get the maximum value of the $i$th column of the data frame `diamonds`, store the new value as the $i$th element of the list `output`
 
-```{r penguins-for}
-# select the columns we want
-penguins_1 <- penguins %>% 
-  select(3:6)%>%
-  drop_na()
-
+```{r diamonds-for}
 # preallocate space for the output
-output <- vector("numeric", ncol(penguins_1))
+output <- vector("numeric", ncol(diamonds))
 
-# initialize the loop along all the columns of penguins
-for(i in seq_along(penguins_1)){
+# initialize the loop along all the columns of diamonds
+for(i in seq_along(diamonds)){
   # calculate the max value for the i-th column
-  output[i] <- max(penguins_1[[i]])
+  output[i] <- max(diamonds[[i]])
 }
 
 output
-
 ```
 
-To preserve the name attributes from `penguins_1`, use the `names()` function to extract the names of each column in `penguins_1` and apply them as the names to the `output` vector:
+To preserve the name attributes from `diamonds`, use the `names()` function to extract the names of each column in `diamonds` and apply them as the names to the `output` vector:
 
-```{r penguins-for-name}
-# get the names of the columns in penguins
-names(penguins_1)
+```{r diamonds-for-name}
+# get the names of the columns in diamonds
+names(diamonds)
 
-# assign the names of the penguins columns to output
-names(output) <-names(penguins_1)
+# assign the names of the diamonds columns to output
+names(output) <- names(diamonds)
 output
 ```
 
@@ -296,23 +308,20 @@ map_dbl(mtcars, mean)
   </p>
 </details>
 
-### Maximum value in each column of `penguins`
+### Maximum value in each column of `diamonds`
 
-Write a `map()` function that calculates the maximum value in each column of `penguins_1`.
+Write a `map()` function that calculates the maximum value in each column of `diamonds`.
 
-```{r penguins-again}
-penguins_1 <- penguins %>% 
-  select(3:6)%>%
-  drop_na()
-penguins_1
+```{r diamonds-again}
+diamonds
 ```
 
 <details> 
   <summary>Click for the solution</summary>
   <p>
 
-```{r penguins-map}
-map_dbl(penguins_1, max)
+```{r diamonds-map}
+map_dbl(diamonds, max)
 ```
 
   </p>
