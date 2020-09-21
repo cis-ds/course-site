@@ -483,8 +483,8 @@ library(tidyverse)
 library(modelr)
 library(broom)
 library(gam)
-College <- as_tibble(ISLR::College)%>%mutate(Outstate =Outstate/1000,Room.Board=Room.Board/ 1000)# rescale Outstate in thousands of dollars
-crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.)),log= map(train,~glm(Outstate ~log(PhD), data=.)),spline=map(train,~ glm(Outstate ~bs(PhD, df=5),   data=.)))%>%gather(type,model,linear:spline)%>%mutate(mse=map2_dbl(model,test,mse))%>%group_by(type)%>%summarize(mse = mean(mse))# k-fold cv of three model types
+College <- as_tibble(ISLR::College)%>%mutate(Outstate =Outstate/1000,Room.Board=Room.Board/ 1000,PhD_log = log(PhD))# rescale Outstate in thousands of dollars
+crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.)),log= map(train,~glm(Outstate ~PhD_log, data=.)),spline=map(train,~ glm(Outstate ~bs(PhD, df=5),   data=.)))%>%gather(type,model,linear:spline)%>%mutate(mse=map2_dbl(model,test,mse))%>%group_by(type)%>%summarize(mse = mean(mse))# k-fold cv of three model types
 ```
 
 ```
@@ -543,12 +543,13 @@ library(gam)
 College <- as_tibble(ISLR::College) %>%
   # rescale Outstate in thousands of dollars
   mutate(Outstate = Outstate / 1000,
-         Room.Board = Room.Board / 1000)
+         Room.Board = Room.Board / 1000,
+         PhD_log = log(PhD))
 
 # k-fold cv of three model types
 crossv_kfold(College, k = 10) %>%
   mutate(linear = map(train, ~ glm(Outstate ~ PhD, data = .)),
-         log = map(train, ~ glm(Outstate ~ log(PhD), data = .)),
+         log = map(train, ~ glm(Outstate ~ PhD_log, data = .)),
          spline = map(train, ~ glm(Outstate ~ bs(PhD, df = 5), data = .))) %>%
   gather(type, model, linear:spline) %>%
   mutate(mse = map2_dbl(model, test, mse)) %>%
@@ -624,6 +625,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach     * 1.5.0   2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
@@ -637,9 +639,11 @@ devtools::session_info()
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
+##  ISLR          1.2     2017-10-20 [1] CRAN (R 4.0.0)
 ##  iterators     1.0.12  2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
 ##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
@@ -677,6 +681,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
 ##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
 ##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)

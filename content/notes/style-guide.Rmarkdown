@@ -476,8 +476,8 @@ library(tidyverse)
 library(modelr)
 library(broom)
 library(gam)
-College <- as_tibble(ISLR::College)%>%mutate(Outstate =Outstate/1000,Room.Board=Room.Board/ 1000)# rescale Outstate in thousands of dollars
-crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.)),log= map(train,~glm(Outstate ~log(PhD), data=.)),spline=map(train,~ glm(Outstate ~bs(PhD, df=5),   data=.)))%>%gather(type,model,linear:spline)%>%mutate(mse=map2_dbl(model,test,mse))%>%group_by(type)%>%summarize(mse = mean(mse))# k-fold cv of three model types
+College <- as_tibble(ISLR::College)%>%mutate(Outstate =Outstate/1000,Room.Board=Room.Board/ 1000,PhD_log = log(PhD))# rescale Outstate in thousands of dollars
+crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.)),log= map(train,~glm(Outstate ~PhD_log, data=.)),spline=map(train,~ glm(Outstate ~bs(PhD, df=5),   data=.)))%>%gather(type,model,linear:spline)%>%mutate(mse=map2_dbl(model,test,mse))%>%group_by(type)%>%summarize(mse = mean(mse))# k-fold cv of three model types
 college_phd_spline<-gam(Outstate~bs(PhD,df=5),data=College)# spline has the best model fit
 college_phd_terms<-preplot(college_phd_spline,se=TRUE,rug=FALSE)# get first difference for age
 #age plot
@@ -503,12 +503,13 @@ library(gam)
 College <- as_tibble(ISLR::College) %>%
   # rescale Outstate in thousands of dollars
   mutate(Outstate = Outstate / 1000,
-         Room.Board = Room.Board / 1000)
+         Room.Board = Room.Board / 1000,
+         PhD_log = log(PhD))
 
 # k-fold cv of three model types
 crossv_kfold(College, k = 10) %>%
   mutate(linear = map(train, ~ glm(Outstate ~ PhD, data = .)),
-         log = map(train, ~ glm(Outstate ~ log(PhD), data = .)),
+         log = map(train, ~ glm(Outstate ~ PhD_log, data = .)),
          spline = map(train, ~ glm(Outstate ~ bs(PhD, df = 5), data = .))) %>%
   gather(type, model, linear:spline) %>%
   mutate(mse = map2_dbl(model, test, mse)) %>%

@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw02-explore-data.html"]
 
 summary: "Transform and explore a cleaned dataset on gun deaths in the United States."
-url_code: "https://github.com/cfss-su20/hw02"
+url_code: "https://github.com/cfss-fa20/hw02"
 ---
 
 
@@ -21,7 +21,7 @@ Now that you've demonstrated your software is setup, the goal of this assignment
 
 # Fork the `hw02` repository
 
-Go [here](https://github.com/cfss-su20/hw02) to fork the repo.
+Go [here](https://github.com/cfss-fa20/hw02) to fork the repo.
 
 # Exploring clean data
 
@@ -90,6 +90,8 @@ When presenting tabular data (aka `dplyr::summarize()`), make sure you format it
 
 Instead, use `kable()` to format the table, add a caption, and label the columns:
 
+
+Table: Table 1: Mass shootings in the United States (1982-2019), by location
 
 |Location  | Number of incidents|
 |:---------|-------------------:|

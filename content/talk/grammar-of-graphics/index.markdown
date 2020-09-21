@@ -1,6 +1,6 @@
 ---
 title: "Visualizations and the grammar of graphics"
-date: 2020-06-23T09:30:00-06:00
+date: 2020-10-01T09:30:00-06:00
 publishDate: 2019-04-03T09:30:00-06:00
 draft: false
 type: "talk"
@@ -9,7 +9,7 @@ aliases: ["/cm002.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2020-06-23T11:30:00-06:00
+time_end: 2020-10-01T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -88,7 +88,7 @@ math: false
 
 ## What you need to do after class
 
-* [Register your GitHub username for the course](https://forms.gle/A624VwWBkPyWuBEB9) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-su20). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
+* [Register your GitHub username for the course](https://forms.gle/KPHNtbPcW4qu6Y168) - all remaining homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-su20). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
 * [Complete the first homework assignment](/homework/edit-readme/)
 * Install the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console. We will be using data from this package in class next week.
 
