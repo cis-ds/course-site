@@ -488,12 +488,12 @@ crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.))
 ```
 
 ```
-## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67, `66.66667%` = 81:
-## some 'x' values beyond boundary knots may cause ill-conditioned bases
+## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67.6666666666667, : some
+## 'x' values beyond boundary knots may cause ill-conditioned bases
 ```
 
 ```
-## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 67, `66.66667%` = 81:
+## Warning in bs(PhD, degree = 3L, knots = c(`33.33333%` = 68, `66.66667%` = 82:
 ## some 'x' values beyond boundary knots may cause ill-conditioned bases
 ```
 
@@ -503,7 +503,7 @@ crossv_kfold(College,k=10)%>%mutate(linear=map(train,~glm(Outstate~PhD, data=.))
 ##   <chr>  <dbl>
 ## 1 linear  13.9
 ## 2 log     14.8
-## 3 spline  12.7
+## 3 spline  12.6
 ```
 
 ```r
@@ -593,14 +593,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 4.0.2 (2020-06-22)
-##  os       macOS Catalina 10.15.6      
+##  os       macOS Catalina 10.15.7      
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-21                  
+##  date     2020-09-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -625,7 +625,6 @@ devtools::session_info()
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach     * 1.5.0   2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
@@ -639,11 +638,9 @@ devtools::session_info()
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
-##  ISLR          1.2     2017-10-20 [1] CRAN (R 4.0.0)
 ##  iterators     1.0.12  2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
 ##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
-##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
@@ -681,7 +678,6 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
-##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
 ##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
 ##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
