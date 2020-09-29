@@ -54,7 +54,7 @@ math: false
 
 {{% alert note %}}
 
-Run the below code in your console to download the exercises for today.
+Run the code below in your console to download the exercises for today.
 
 ```r
 usethis::use_course("uc-cfss/reproducible-workflow")

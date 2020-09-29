@@ -24,7 +24,7 @@ library(palmerpenguins)
 
 {{% alert note %}}
 
-Run the below code in your console to download this exercise as a set of R scripts.
+Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
 usethis::use_course("uc-cfss/pipes-and-functions-in-r")
@@ -385,8 +385,8 @@ This sounds like a classic if-else operation. For each individual, if `education
 ```
 
 ```
-## Warning in if (education == "Less than HS") {: the condition has length > 1 and
-## only the first element will be used
+## Warning in if (education == "Less than HS") {: the condition has length > 1
+## and only the first element will be used
 ```
 
 ```
@@ -453,9 +453,9 @@ count(educ_ifelse, hsPlus)
 ## # A tibble: 3 x 2
 ##   hsPlus           n
 ##   <chr>        <int>
-## 1 HS+          77553
-## 2 Less than HS 21823
-## 3 <NA>          1422
+## 1 <NA>          1422
+## 2 HS+          77553
+## 3 Less than HS 21823
 ```
 
 ## Exercise: write a `fizzbuzz` function
@@ -603,14 +603,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 4.0.2 (2020-06-22)
-##  os       macOS Catalina 10.15.6      
+##  os       macOS Catalina 10.15.7      
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-21                  
+##  date     2020-09-29                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        

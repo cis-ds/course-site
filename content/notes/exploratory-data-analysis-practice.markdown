@@ -23,7 +23,7 @@ library(tidyverse)
 
 {{% alert note %}}
 
-Run the below code in your console to download this exercise as a set of R scripts.
+Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
 usethis::use_course("uc-cfss/exploratory-data-analysis")
@@ -367,14 +367,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 4.0.2 (2020-06-22)
-##  os       macOS Catalina 10.15.6      
+##  os       macOS Catalina 10.15.7      
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-05                  
+##  date     2020-09-29                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -387,7 +387,6 @@ devtools::session_info()
 ##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -399,7 +398,6 @@ devtools::session_info()
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -413,7 +411,6 @@ devtools::session_info()
 ##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
 ##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
-##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
@@ -431,7 +428,6 @@ devtools::session_info()
 ##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.0   2020-09-05 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
