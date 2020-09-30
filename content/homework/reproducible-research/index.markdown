@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-fa20/hw06"
 
 # Overview
 
-Due by 9:30 am CT (Chicago) on July 13th.
+Due by 1:00 pm CT (Chicago) on November 10th.
 
 # Fork the `hw06` repository
 

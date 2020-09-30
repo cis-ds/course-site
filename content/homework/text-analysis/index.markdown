@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-fa20/hw09"
 
 # Overview
 
-Due by 9:30 am CT (Chicago) on July 24th.
+Due by 1:00 pm CT (Chicago) on December 8th.
 
 # Fork the `hw09` repository
 
