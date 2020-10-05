@@ -48,18 +48,6 @@ ggplot(data = penguins,
   geom_smooth()
 ```
 
-```
-## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (stat_smooth).
-```
-
-```
-## Warning: Removed 2 rows containing missing values (geom_point).
-```
-
 <img src="/notes/exploratory-data-analysis_files/figure-html/penguins-eda-1.png" width="672" />
 
 This is a great exploratory graph: it took just three lines of code and clearly establishes a positive relationship between the flipper length and body mass of a penguin. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
@@ -77,87 +65,79 @@ ggplot(data = penguins,
   theme_minimal()
 ```
 
-```
-## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-```
-
-```
-## Warning: Removed 2 rows containing non-finite values (stat_smooth).
-```
-
-```
-## Warning: Removed 2 rows containing missing values (geom_point).
-```
-
 <img src="/notes/exploratory-data-analysis_files/figure-html/penguins-final-1.png" width="672" />
 
 These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
 
-## Fuel economy data
+## Scorecard
 
-The U.S. Environmental Protection Agency (EPA) [collects fuel economy data](http://fueleconomy.gov/) on all vehicles sold in the United States. Here let's examine a subset of that data for 38 popular models of cars sold between 1999 and 2008 to answer the following question: **how does highway fuel efficiency vary across cars?**
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2016 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub.  Here let's examine the data to answer the following question: **how does cost of attendance vary across universities?**
 
 ## Import the data
 
-The `mpg` dataset is included as part of the `ggplot2` library:
+The `scorecard` dataset is included as part of the `rcfss` library:
 
 
 ```r
-library(ggplot2)
-data("mpg")
+library(rcfss)
+data("scorecard")
 
-mpg
+scorecard
 ```
 
 ```
-## # A tibble: 234 x 11
-##    manufacturer model    displ  year   cyl trans   drv     cty   hwy fl    class
-##    <chr>        <chr>    <dbl> <int> <int> <chr>   <chr> <int> <int> <chr> <chr>
-##  1 audi         a4         1.8  1999     4 auto(l… f        18    29 p     comp…
-##  2 audi         a4         1.8  1999     4 manual… f        21    29 p     comp…
-##  3 audi         a4         2    2008     4 manual… f        20    31 p     comp…
-##  4 audi         a4         2    2008     4 auto(a… f        21    30 p     comp…
-##  5 audi         a4         2.8  1999     6 auto(l… f        16    26 p     comp…
-##  6 audi         a4         2.8  1999     6 manual… f        18    26 p     comp…
-##  7 audi         a4         3.1  2008     6 auto(a… f        18    27 p     comp…
-##  8 audi         a4 quat…   1.8  1999     4 manual… 4        18    26 p     comp…
-##  9 audi         a4 quat…   1.8  1999     4 auto(l… 4        16    25 p     comp…
-## 10 audi         a4 quat…   2    2008     4 manual… 4        20    28 p     comp…
-## # … with 224 more rows
+## # A tibble: 1,733 x 14
+##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
+##  1 147244 Mill… IL    Priv…   0.638   1047 43149     55197   0.405    0.600
+##  2 147341 Monm… IL    Priv…   0.521   1045 45005     61101   0.413    0.558
+##  3 145691 Illi… IL    Priv…   0.540     NA 41869     63765   0.419    0.68 
+##  4 148131 Quin… IL    Priv…   0.662    991 39686     50166   0.379    0.511
+##  5 146667 Linc… IL    Priv…   0.529   1007 25542     52713   0.464    0.613
+##  6 150774 Holy… IN    Priv…   0.910   1053 39437     47367   0.286    0.407
+##  7 150941 Hunt… IN    Priv…   0.892   1019 36227     58563   0.350    0.654
+##  8 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
+##  9 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
+## 10 151111 Indi… IN    Publ…   0.740   1025 20451     76608   0.381    0.463
+## # … with 1,723 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
+## #   locale <fct>, openadmp <fct>
 ```
 
 ```r
-glimpse(x = mpg)
+glimpse(x = scorecard)
 ```
 
 ```
-## Rows: 234
-## Columns: 11
-## $ manufacturer <chr> "audi", "audi", "audi", "audi", "audi", "audi", "audi", …
-## $ model        <chr> "a4", "a4", "a4", "a4", "a4", "a4", "a4", "a4 quattro", …
-## $ displ        <dbl> 1.8, 1.8, 2.0, 2.0, 2.8, 2.8, 3.1, 1.8, 1.8, 2.0, 2.0, 2…
-## $ year         <int> 1999, 1999, 2008, 2008, 1999, 1999, 2008, 1999, 1999, 20…
-## $ cyl          <int> 4, 4, 4, 4, 6, 6, 6, 4, 4, 4, 4, 6, 6, 6, 6, 6, 6, 8, 8,…
-## $ trans        <chr> "auto(l5)", "manual(m5)", "manual(m6)", "auto(av)", "aut…
-## $ drv          <chr> "f", "f", "f", "f", "f", "f", "f", "4", "4", "4", "4", "…
-## $ cty          <int> 18, 21, 20, 21, 16, 18, 18, 18, 16, 20, 19, 15, 17, 17, …
-## $ hwy          <int> 29, 29, 31, 30, 26, 26, 27, 26, 25, 28, 27, 25, 25, 25, …
-## $ fl           <chr> "p", "p", "p", "p", "p", "p", "p", "p", "p", "p", "p", "…
-## $ class        <chr> "compact", "compact", "compact", "compact", "compact", "…
+## Rows: 1,733
+## Columns: 14
+## $ unitid    <int> 147244, 147341, 145691, 148131, 146667, 150774, 150941, 148…
+## $ name      <chr> "Millikin University", "Monmouth College", "Illinois Colleg…
+## $ state     <chr> "IL", "IL", "IL", "IL", "IL", "IN", "IN", "IL", "IL", "IN",…
+## $ type      <fct> "Private, nonprofit", "Private, nonprofit", "Private, nonpr…
+## $ admrate   <dbl> 0.6380, 0.5206, 0.5403, 0.6623, 0.5288, 0.9101, 0.8921, 0.4…
+## $ satavg    <dbl> 1047, 1045, NA, 991, 1007, 1053, 1019, 1068, 1009, 1025, 10…
+## $ cost      <int> 43149, 45005, 41869, 39686, 25542, 39437, 36227, 39175, 382…
+## $ avgfacsal <dbl> 55197, 61101, 63765, 50166, 52713, 47367, 58563, 70425, 656…
+## $ pctpell   <dbl> 0.4054, 0.4127, 0.4191, 0.3789, 0.4640, 0.2857, 0.3502, 0.3…
+## $ comprate  <dbl> 0.6004, 0.5577, 0.6800, 0.5110, 0.6132, 0.4069, 0.6540, 0.6…
+## $ firstgen  <dbl> 0.3184783, 0.3224401, 0.3109756, 0.3300493, 0.3122172, 0.28…
+## $ debt      <dbl> 20375.0, 20000.0, 22300.0, 13000.0, 17500.0, 11000.0, 22500…
+## $ locale    <fct> City, Town, Town, Town, Town, Suburb, Town, Suburb, City, C…
+## $ openadmp  <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No,…
 ```
 
-Each row represents a model of car sold in a given year.^[The data is a panel structure, so the same model car appears multiple times.] `hwy` identifies the highway miles per gallon for the vehicle.
+Each row represents a different four-year college or university in the United States. `cost` identifies the average annual total cost of attendance.
 
 ## Assessing variation
 
-Assessing **variation** requires examining the values of a variable as they change from measurement to measurement. Here, let's examine variation in highway fuel efficiency and related variables using a few different graphical techniques.
+Assessing **variation** requires examining the values of a variable as they change from measurement to measurement. Here, let's examine variation in cost of attendance and related variables using a few different graphical techniques.
 
 ### Histogram
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = hwy)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
   geom_histogram()
 ```
 
@@ -165,59 +145,56 @@ ggplot(data = mpg,
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
+```
+## Warning: Removed 42 rows containing non-finite values (stat_bin).
+```
+
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-1.png" width="672" />
 
-It appears there is a high concentration of vehicles with highway fuel efficiency between 20 and 30 mpg, with a smaller number of vehicles between 15-20 and some outliers with high fuel efficiency (larger values indicate more efficient vehicles). To view the actual data points, we use `geom_rug()`:
-
-
-```r
-ggplot(data = mpg,
-       mapping = aes(x = hwy)) +
-  geom_histogram() +
-  geom_rug()
-```
-
-```
-## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-```
-
-<img src="/notes/exploratory-data-analysis_files/figure-html/rug-1.png" width="672" />
-
-One thing `geom_rug()` does is illustrate that while `hwy` is a continuous variable, it is measured in integer units - that is, there are no fractional values in the dataset. 26 miles per gallon on the highway is the most common mpg rate in the dataset. Why is that? Something perhaps to investigate further.
+It appears there are three sets of peak values for cost of attendance, around 20,000, 40,000, and 65,000 dollars in declining overall frequency. This could suggest some underlying factor or set of differences between the universities that clusters them into separate groups based on cost of attendance.
 
 By default, `geom_histogram()` bins the observations into 30 intervals of equal width. You can adjust this using the `bins` parameter:
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = hwy)) +
-  geom_histogram(bins = 50) +
-  geom_rug()
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
+  geom_histogram(bins = 50)
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-1.png" width="672" />
+```
+## Warning: Removed 42 rows containing non-finite values (stat_bin).
+```
+
+<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-50-1.png" width="672" />
+
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = hwy)) +
-  geom_histogram(bins = 10) +
-  geom_rug()
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
+  geom_histogram(bins = 10)
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-2.png" width="672" />
+```
+## Warning: Removed 42 rows containing non-finite values (stat_bin).
+```
+
+<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-10-1.png" width="672" />
+
+Different `bins` can lead to different inferences about the data. Here if we set a larger number of bins, the overall picture seems to be the same - the distribution is trimodal. But if we collapse the number of bins to 10, we lose the clarity of each of these peaks.
 
 ### Bar chart
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = class)) +
+ggplot(data = scorecard,
+       mapping = aes(x = type)) +
   geom_bar()
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/barplot-1.png" width="672" />
 
-To examine the distribution of a categorical variable, we can use a **bar chart**. Here we see the most common type of vehicle in the dataset is an SUV, not surprising given Americans' car culture.
+To examine the distribution of a categorical variable, we can use a **bar chart**. Here we see the most common type of four-year college is a private, nonprofit institution.
 
 ## Covariation
 
@@ -233,56 +210,72 @@ To examine the distribution of a categorical variable, we can use a **bar chart*
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = class, y = hwy)) +
+ggplot(data = scorecard,
+       mapping = aes(x = type, y = cost)) +
   geom_boxplot()
+```
+
+```
+## Warning: Removed 42 rows containing non-finite values (stat_boxplot).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/boxplot-1.png" width="672" />
 
-Here we see that on average, compact and midsize vehicles have the highest highway fuel efficiency whereas pickups and SUVs have the lowest fuel efficiency. What might explain these differences? Another question you could explore after viewing this visualization.
+Here we see that on average, public universities are least expensive, followed by private for-profit institutions. I was somewhat surprised by this since for-profit institutions by definition seek to generate a profit, so wouldn't they be the most expensive? But perhaps this makes sense, because they have to attract students so need to offer a better financial value than competing nonprofit or public institutions. Is there a better explanation for these differences? Another question you could explore after viewing this visualization.
 
-If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between engine displacement (the physical size of the engine) and highway fuel efficiency:
+If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between financial aid awards^[Percentage of undergraduates who receive a [Pell Grant](https://studentaid.gov/understand-aid/types/grants/pell/), regularly employed as a proxy for low-income students.] and cost of attendance:
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = displ, y = hwy)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = cost)) +
   geom_point()
+```
+
+```
+## Warning: Removed 42 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-1.png" width="672" />
 
-As engines get larger, highway fuel efficiency declines.
+As percentage of Pell Grant recipients increases, average cost of attendance declines.
 
 ## Multiple window plots
 
-Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine variation in highway fuel efficiency separately for type of drive (front wheel, rear wheel, or 4 wheel), we could draw a graph like this:
+Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine variation in cost of attendance separately for college type, we could draw a graph like this:
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = hwy)) +
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
   geom_histogram() +
-  facet_wrap(~ drv)
+  facet_wrap(~ type)
 ```
 
 ```
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
+```
+## Warning: Removed 42 rows containing non-finite values (stat_bin).
+```
+
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-facet-1.png" width="672" />
 
-Highway fuel efficiency is right-skewed for 4 and rear wheel drive vehicles, whereas front wheel drive vehicles are generally unskewed with a couple outliers of 40+ mpg.
+This helps answer one of our earlier questions. Colleges in the 20,000 dollar range tend to be public universities, while the heaps around 40,000 and 65,000 dollars are from private nonprofits.
 
-You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between engine displacement and highway fuel efficiency by drive type:
+You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between Pell Grant recipients and cost of attendance by college type:
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = displ, y = hwy)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = cost)) +
   geom_point() +
-  facet_wrap(~ drv)
+  facet_wrap(~ type)
+```
+
+```
+## Warning: Removed 42 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-facet-1.png" width="672" />
@@ -295,53 +288,38 @@ Depending on the type of graph and variables you wish to encode, there are sever
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = displ,
-                     y = hwy,
-                     color = class)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell,
+                     y = cost,
+                     color = type)) +
   geom_point()
+```
+
+```
+## Warning: Removed 42 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-color-1.png" width="672" />
 
-We can even use a fourth channel to communicate another variable (number of cylinders) by making use of the size channel:
+We can even use a fourth channel to communicate another variable (median debt load after leaving school) by making use of the size channel:
 
 
 ```r
-ggplot(data = mpg,
-       mapping = aes(x = displ,
-                     y = hwy,
-                     color = class,
-                     size = cyl)) +
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell,
+                     y = cost,
+                     color = type,
+                     size = debt)) +
   geom_point()
+```
+
+```
+## Warning: Removed 113 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-color-size-1.png" width="672" />
 
-Note that some channels are not always appropriate, even if they can technically be implemented. For example, instead of using a color channel to visualize `class`, why not distinguish each type of car using the point's shape?
-
-
-```r
-ggplot(data = mpg,
-       mapping = aes(x = displ,
-                    y = hwy,
-                    shape = class)) +
-  geom_point()
-```
-
-```
-## Warning: The shape palette can deal with a maximum of 6 discrete values because
-## more than 6 becomes difficult to discriminate; you have 7. Consider
-## specifying shapes manually if you must have them.
-```
-
-```
-## Warning: Removed 62 rows containing missing values (geom_point).
-```
-
-<img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-shape-1.png" width="672" />
-
-With this many categories, shape is not very useful in visually distinguishing between each car's class.
+Note that some channels are not always appropriate, even if they can technically be implemented. For example, the graph above has become quite challenging to read due to so many overlapping data points. Just because one **can** construct a graph does not mean one **should** construct a graph.
 
 ## Session Info
 
@@ -355,14 +333,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
 ##  version  R version 4.0.2 (2020-06-22)
-##  os       macOS Catalina 10.15.6      
+##  os       macOS Catalina 10.15.7      
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-21                  
+##  date     2020-10-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        
@@ -375,7 +353,6 @@ devtools::session_info()
 ##  callr            3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
 ##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli              2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
-##  codetools        0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace       1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon           1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI              1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -387,7 +364,6 @@ devtools::session_info()
 ##  ellipsis         0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate         0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi            0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  farver           2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats        * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs               1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
 ##  generics         0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -401,14 +377,11 @@ devtools::session_info()
 ##  httr             1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
 ##  jsonlite         1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
 ##  knitr            1.29    2020-06-23 [1] CRAN (R 4.0.1)
-##  labeling         0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice          0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle        0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate        1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
 ##  magrittr         1.5     2014-11-22 [1] CRAN (R 4.0.0)
-##  Matrix           1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise          1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  mgcv             1.8-31  2019-11-09 [1] CRAN (R 4.0.2)
 ##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
 ##  nlme             3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
