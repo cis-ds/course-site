@@ -31,7 +31,7 @@ usethis::use_course("uc-cfss/data-transformation")
 
 {{% /alert %}}
 
-The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2013 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2016 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
 
 {{% alert warning %}}
 
@@ -105,7 +105,7 @@ filter(.data = scorecard, firstgen > .40)
   </p>
 </details>
 
-## Generate a data frame with the 10 most expensive colleges in 2013
+## Generate a data frame with the 10 most expensive colleges in 2016
 
 <details> 
   <summary>Click for the solution</summary>
@@ -137,33 +137,31 @@ arrange(.data = scorecard, desc(cost)) %>%
 ## #   openadmp <fct>
 ```
 
- We can also use the `top_n()` function in `dplyr` to accomplish the same thing in one line of code.
+  We can also use the `slice_max()` function in `dplyr` to accomplish the same thing in one line of code.
 
 
 ```r
-top_n(x = scorecard, n = 10, wt = cost)
+slice_max(.data = scorecard, n = 10, cost)
 ```
 
 ```
 ## # A tibble: 10 x 14
 ##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
 ##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
-##  1 179867 Wash… MO    Priv…  0.165    1472 67751    134640  0.0833    0.940
-##  2 123961 Univ… CA    Priv…  0.166    1395 67064    132408  0.217     0.920
-##  3 147767 Nort… IL    Priv…  0.107    1470 67887    154701  0.142     0.935
-##  4 120254 Occi… CA    Priv…  0.458    1315 67046    101637  0.202     0.808
+##  1 144050 Univ… IL    Priv…  0.0794   1508 70100    166221  0.109     0.942
+##  2 115409 Harv… CA    Priv…  0.129    1496 69355    123039  0.12      0.933
+##  3 190150 Colu… NY    Priv…  0.0683   1496 69021    168867  0.224     0.941
+##  4 147767 Nort… IL    Priv…  0.107    1470 67887    154701  0.142     0.935
 ##  5 212054 Drex… PA    Priv…  0.746    1204 67821     99576  0.220     0.698
-##  6 190150 Colu… NY    Priv…  0.0683   1496 69021    168867  0.224     0.941
-##  7 115409 Harv… CA    Priv…  0.129    1496 69355    123039  0.12      0.933
-##  8 182670 Dart… NH    Priv…  0.106    1441 67044    137502  0.142     0.966
-##  9 144050 Univ… IL    Priv…  0.0794   1508 70100    166221  0.109     0.942
-## 10 193900 New … NY    Priv…  0.319    1371 67637    126504  0.211     0.846
+##  6 179867 Wash… MO    Priv…  0.165    1472 67751    134640  0.0833    0.940
+##  7 193900 New … NY    Priv…  0.319    1371 67637    126504  0.211     0.846
+##  8 123961 Univ… CA    Priv…  0.166    1395 67064    132408  0.217     0.920
+##  9 120254 Occi… CA    Priv…  0.458    1315 67046    101637  0.202     0.808
+## 10 182670 Dart… NH    Priv…  0.106    1441 67044    137502  0.142     0.966
 ## # … with 4 more variables: firstgen <dbl>, debt <dbl>, locale <fct>,
 ## #   openadmp <fct>
 ```
 
-  Notice that the resulting data frame is not sorted in order from most to least expensive - instead it is sorted in the original order from the data frame, but still only contains the 10 most expensive schools based on cost.
-  
   </p>
 </details>
 
@@ -330,7 +328,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-29                  
+##  date     2020-10-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -343,6 +341,7 @@ devtools::session_info()
 ##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -384,6 +383,7 @@ devtools::session_info()
 ##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  rcfss       * 0.2.0   2020-09-05 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
@@ -404,6 +404,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
 ##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
 ##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
