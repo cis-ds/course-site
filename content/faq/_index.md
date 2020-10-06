@@ -131,23 +131,22 @@ A highly selective sampling of feedback from past course evaluations:
     * [RStudio IDE](https://github.com/rstudio/cheatsheets/raw/master/source/pdfs/rstudio-IDE-cheatsheet.pdf)
     * [And more!](https://www.rstudio.com/resources/cheatsheets/)
     
-### Resources for Under-represented Groups in Programming
-* [R LGBTQ Twitter](https://twitter.com/r_lgbtq)
-  * Affinity group for queer people in the R community -- twitter often promotes events, panels and talks by and for queer R users. 
-* [Gayta Science Twitter](https://twitter.com/gaytascience) 
-  * Alliance that uses data science techniques to give LGBTQ+ experiences a voice -- twitter will often share data-driven work concerning the LGBTQ+ community. 
-* [RLadies Community Slack](http://bit.ly/rladies-slack)
-  * A global programming meetup for non-binary, trans, and female R users. 
-* [R Ladies Chicago Slack](https://rladiesinvite.herokuapp.com/)
-  * Local Chicago chapter of R Ladies -- hosts events, talks, and projects in the Chicago-land area. 
-* [RLadies Remote Twitter](https://twitter.com/RLadiesRemote)
-  * Remote chapter of R Ladies -- has slack coffee chats to discuss programming topics in a supportive environment. 
-* [People of Color Code Meetup](https://www.meetup.com/People-of-Color-Code/)
-  * A meetup for POC software developers -- has events where POC devs can work on personal projects, collaborate, and learn. 
-* [R Forwards](https://forwards.github.io/)
-  * A task force set up by the R Foundation to address the under-representation of under-represented groups in the R community -- collects representation data in the R community, produces workshops and teaching materials 
-* [R Community Diversity and Inclusion Working Group](https://github.com/RConsortium/RCDI-WG)
-  * Working group set up by the R Consortium to encourage and support diversity and inclusion across a variety of events and platforms in the R community 
+### Resources for under-represented groups in programming
+
+{{% alert note %}}
+
+Thanks to [Angela Li](https://angela-li.github.io/) for compiling these recommendations.
+
+{{% /alert %}}
+
+* [R LGBTQ Twitter](https://twitter.com/r_lgbtq): Affinity group for queer people in the R community -- Twitter often promotes events, panels and talks by and for queer R users. 
+* [Gayta Science Twitter](https://twitter.com/gaytascience): Alliance that uses data science techniques to give LGBTQ+ experiences a voice -- Twitter will often share data-driven work concerning the LGBTQ+ community. 
+* [RLadies Community Slack](http://bit.ly/rladies-slack): A global programming meetup for non-binary, trans, and female R users. 
+* [R Ladies Chicago Slack](https://rladiesinvite.herokuapp.com/): Local Chicago chapter of R Ladies -- hosts events, talks, and projects in the Chicago-land area. 
+* [RLadies Remote Twitter](https://twitter.com/RLadiesRemote): Remote chapter of R Ladies -- has Slack coffee chats to discuss programming topics in a supportive environment. 
+* [People of Color Code Meetup](https://www.meetup.com/People-of-Color-Code/): A meetup for POC software developers -- has events where POC developers can work on personal projects, collaborate, and learn. 
+* [R Forwards](https://forwards.github.io/): A task force set up by the R Foundation to address the under-representation of under-represented groups in the R community -- collects representation data in the R community, produces workshops and teaching materials 
+* [R Community Diversity and Inclusion Working Group](https://github.com/RConsortium/RCDI-WG): Working group set up by the R Consortium to encourage and support diversity and inclusion across a variety of events and platforms in the R community 
 
 ## Software
 
