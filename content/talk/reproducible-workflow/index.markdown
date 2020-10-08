@@ -1,7 +1,7 @@
 ---
 title: "Reproducible workflow"
-date: 2020-11-03T09:30:00-06:00
-publishDate: 2019-05-01T09:30:00-06:00
+date: 2020-11-03T13:00:00-06:00
+publishDate: 2019-05-01T13:00:00-06:00
 draft: false
 type: "talk"
 

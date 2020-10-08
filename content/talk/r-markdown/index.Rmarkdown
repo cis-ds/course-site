@@ -1,7 +1,7 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2020-10-29T09:30:00-06:00
-publishDate: 2019-03-01T09:30:00-06:00
+date: 2020-10-29T13:00:00-06:00
+publishDate: 2019-03-01T13:00:00-06:00
 draft: false
 type: "talk"
 
