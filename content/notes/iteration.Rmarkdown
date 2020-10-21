@@ -330,14 +330,14 @@ map_dbl(diamonds, max)
 
 ## `across()`
 
-When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `mtcars`. If we wanted to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
+When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `mtcars`. If we want to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
 
 ```{r mtcars-mean-single-column}
 mtcars %>%
   summarize(mpg = mean(mpg))
 ```
 
-If we wanted to calculate the mean for all of the columns, we'd have to duplicate this code many times over:
+If we want to calculate the mean for all of the columns, we would have to duplicate this code many times over:
 
 ```{r mtcars-mean-all-columns}
 mtcars %>%
@@ -354,17 +354,20 @@ mtcars %>%
             carb = mean(carb))
 ```
 
-But this process is very repetitive and prone to mistakes - I can't tell you how many typos I originally had in this code when I first wrote it. We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **the `across()` function**.
+But this process is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it.
+
+We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **the `across()` function**.
 
 `across()` makes it easy to apply the same transformation to multiple columns, allowing you to use `select()` semantics inside `summarize()` and `mutate()`, and other `dplyr` verbs (or functions).
 
 `across()` has two primary arguments:  
-* The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like select()) so you can pick variables by position, name, and type. 
+
+* The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like `select()`) so you can pick variables by position, name, and type. 
 * The second argument, `.fns`, is a function or list of functions to apply to each column. This can also be a purrr style formula (or list of formulas) like `~ .x / 2`.
 
 {{% alert note %}}
 
-`across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dyplr` to access this function.
+`across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dplyr` to access this function.
 
 {{% /alert %}}
 
@@ -388,7 +391,14 @@ mtcars %>%
   summarize(across(everything(), .fns = list(min, max)))
 ```
 
-Because `across()` is usually used in combination with `summarise()` and `mutate()`, it doesn’t select grouping variables in order to avoid accidentally modifying them:
+To clearly distinguish each summarized variable, we can name them in the list:
+
+```{r summarize-across-everything-fns-named}
+mtcars %>% 
+  summarize(across(everything(), .fns = list(min = min, max = max)))
+```
+
+Because `across()` is usually used in combination with `summarise()` and `mutate()`, it does not select grouping variables in order to avoid accidentally modifying them:
 
 ```{r summarize-across-everything-group-by}
 mtcars %>%
@@ -436,7 +446,11 @@ worldbank %>%
 
 (Note that `na.rm = TRUE` is passed on to `mean()` in the same way as in `purrr::map()`.)
 
-`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with “x”: `across(where(is.numeric) & starts_with("x"))`.
+`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with "x":
+
+```r
+across(where(is.numeric) & starts_with("x"))
+```
 
 ## Mutate
 
@@ -449,9 +463,7 @@ mtcars %>%
 
 ## Filter
 
-`across()` can also useful when used in conjunction with `filter()`.
-
-Find all rows where no variable has missing values:
+`across()` can also be useful when used in conjunction with `filter()`. For example, we can find all rows where no variable has missing values:
 
 ```{r filter-across-everything}
 worldbank %>% 

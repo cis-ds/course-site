@@ -200,18 +200,7 @@ mpg_preall <- bind_rows(mpg_preall)
 
 Let's compare the time it takes to complete each of these loops by replicating each example 100 times and measuring how long it takes for the expression to evaluate.
 
-
-```
-## Error in library(microbenchmark): there is no package called 'microbenchmark'
-```
-
-```
-## Error in microbenchmark(`No preallocation` = {: could not find function "microbenchmark"
-```
-
-```
-## Error in autoplot(times): object 'times' not found
-```
+<img src="/notes/iteration_files/figure-html/preallocate-1.png" width="672" />
 
 Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 30.
 
@@ -334,8 +323,8 @@ output
 ```
 
 ```
-##  [1]     5.01     5.00     7.00     8.00    79.00    95.00 18823.00
-##  [8]    10.74    58.90    31.80
+##  [1]     5.01     5.00     7.00     8.00    79.00    95.00 18823.00    10.74
+##  [9]    58.90    31.80
 ```
 
 To preserve the name attributes from `diamonds`, use the `names()` function to extract the names of each column in `diamonds` and apply them as the names to the `output` vector:
@@ -538,7 +527,7 @@ map_dbl(diamonds, max)
 
 ## `across()`
 
-When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `mtcars`. If we wanted to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
+When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `mtcars`. If we want to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
 
 
 ```r
@@ -551,7 +540,7 @@ mtcars %>%
 ## 1 20.09062
 ```
 
-If we wanted to calculate the mean for all of the columns, we'd have to duplicate this code many times over:
+If we want to calculate the mean for all of the columns, we would have to duplicate this code many times over:
 
 
 ```r
@@ -576,17 +565,20 @@ mtcars %>%
 ## 1 0.40625 3.6875 2.8125
 ```
 
-But this process is very repetitive and prone to mistakes - I can't tell you how many typos I originally had in this code when I first wrote it. We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **the `across()` function**.
+But this process is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it.
+
+We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **the `across()` function**.
 
 `across()` makes it easy to apply the same transformation to multiple columns, allowing you to use `select()` semantics inside `summarize()` and `mutate()`, and other `dplyr` verbs (or functions).
 
 `across()` has two primary arguments:  
-* The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like select()) so you can pick variables by position, name, and type. 
+
+* The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like `select()`) so you can pick variables by position, name, and type. 
 * The second argument, `.fns`, is a function or list of functions to apply to each column. This can also be a purrr style formula (or list of formulas) like `~ .x / 2`.
 
 {{% alert note %}}
 
-`across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dyplr` to access this function.
+`across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dplyr` to access this function.
 
 {{% /alert %}}
 
@@ -605,10 +597,10 @@ mtcars %>%
 ```
 
 ```
-##        mpg    cyl     disp       hp     drat      wt     qsec     vs
-## 1 20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375
-##        am   gear   carb
-## 1 0.40625 3.6875 2.8125
+##        mpg    cyl     disp       hp     drat      wt     qsec     vs      am
+## 1 20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375 0.40625
+##     gear   carb
+## 1 3.6875 2.8125
 ```
 
 If you want to apply multiple summaries, you store the functions in a `list()`:
@@ -620,13 +612,30 @@ mtcars %>%
 ```
 
 ```
-##   mpg_1 mpg_2 cyl_1 cyl_2 disp_1 disp_2 hp_1 hp_2 drat_1 drat_2  wt_1
-## 1  10.4  33.9     4     8   71.1    472   52  335   2.76   4.93 1.513
-##    wt_2 qsec_1 qsec_2 vs_1 vs_2 am_1 am_2 gear_1 gear_2 carb_1 carb_2
-## 1 5.424   14.5   22.9    0    1    0    1      3      5      1      8
+##   mpg_1 mpg_2 cyl_1 cyl_2 disp_1 disp_2 hp_1 hp_2 drat_1 drat_2  wt_1  wt_2
+## 1  10.4  33.9     4     8   71.1    472   52  335   2.76   4.93 1.513 5.424
+##   qsec_1 qsec_2 vs_1 vs_2 am_1 am_2 gear_1 gear_2 carb_1 carb_2
+## 1   14.5   22.9    0    1    0    1      3      5      1      8
 ```
 
-Because `across()` is usually used in combination with `summarise()` and `mutate()`, it doesn’t select grouping variables in order to avoid accidentally modifying them:
+To clearly distinguish each summarized variable, we can name them in the list:
+
+
+```r
+mtcars %>% 
+  summarize(across(everything(), .fns = list(min = min, max = max)))
+```
+
+```
+##   mpg_min mpg_max cyl_min cyl_max disp_min disp_max hp_min hp_max drat_min
+## 1    10.4    33.9       4       8     71.1      472     52    335     2.76
+##   drat_max wt_min wt_max qsec_min qsec_max vs_min vs_max am_min am_max gear_min
+## 1     4.93  1.513  5.424     14.5     22.9      0      1      0      1        3
+##   gear_max carb_min carb_max
+## 1        5        1        8
+```
+
+Because `across()` is usually used in combination with `summarise()` and `mutate()`, it does not select grouping variables in order to avoid accidentally modifying them:
 
 
 ```r
@@ -717,13 +726,12 @@ worldbank%>%
 ##   <chr>   <chr>   <chr>  <chr>  <chr>   <chr>   <chr>     <chr>    
 ## 1 ARG     USA     2005   2017   AR      US      Argentina United S…
 ## # … with 18 more variables: perc_energy_fosfuel_1 <dbl>,
-## #   perc_energy_fosfuel_2 <dbl>, rnd_gdpshare_1 <dbl>,
-## #   rnd_gdpshare_2 <dbl>, percgni_adj_gross_savings_1 <dbl>,
-## #   percgni_adj_gross_savings_2 <dbl>, real_netinc_percap_1 <dbl>,
-## #   real_netinc_percap_2 <dbl>, gdp_capita_1 <dbl>, gdp_capita_2 <dbl>,
-## #   top10perc_incshare_1 <dbl>, top10perc_incshare_2 <dbl>,
-## #   employment_ratio_1 <dbl>, employment_ratio_2 <dbl>,
-## #   pop_growth_1 <dbl>, pop_growth_2 <dbl>, pop_1 <dbl>, pop_2 <dbl>
+## #   perc_energy_fosfuel_2 <dbl>, rnd_gdpshare_1 <dbl>, rnd_gdpshare_2 <dbl>,
+## #   percgni_adj_gross_savings_1 <dbl>, percgni_adj_gross_savings_2 <dbl>,
+## #   real_netinc_percap_1 <dbl>, real_netinc_percap_2 <dbl>, gdp_capita_1 <dbl>,
+## #   gdp_capita_2 <dbl>, top10perc_incshare_1 <dbl>, top10perc_incshare_2 <dbl>,
+## #   employment_ratio_1 <dbl>, employment_ratio_2 <dbl>, pop_growth_1 <dbl>,
+## #   pop_growth_2 <dbl>, pop_1 <dbl>, pop_2 <dbl>
 ```
 
 ### `summarize()`, `across()`, and `where()`
@@ -758,7 +766,11 @@ worldbank %>%
 
 (Note that `na.rm = TRUE` is passed on to `mean()` in the same way as in `purrr::map()`.)
 
-`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with “x”: `across(where(is.numeric) & starts_with("x"))`.
+`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with "x":
+
+```r
+across(where(is.numeric) & starts_with("x"))
+```
 
 ## Mutate
 
@@ -771,79 +783,77 @@ mtcars %>%
 ```
 
 ```
-##         mpg       cyl     disp       hp      drat        wt     qsec   vs
-## 1  1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4183013 1.216430 -Inf
-## 2  1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4586378 1.230960 -Inf
-## 3  1.357935 0.6020600 2.033424 1.968483 0.5854607 0.3654880 1.269746    0
-## 4  1.330414 0.7781513 2.411620 2.041393 0.4885507 0.5071810 1.288696    0
-## 5  1.271842 0.9030900 2.556303 2.243038 0.4983106 0.5365584 1.230960 -Inf
-## 6  1.257679 0.7781513 2.352183 2.021189 0.4409091 0.5390761 1.305781    0
-## 7  1.155336 0.9030900 2.556303 2.389166 0.5065050 0.5526682 1.199755 -Inf
-## 8  1.387390 0.6020600 2.166430 1.792392 0.5670264 0.5037907 1.301030    0
-## 9  1.357935 0.6020600 2.148603 1.977724 0.5932861 0.4983106 1.359835    0
-## 10 1.283301 0.7781513 2.224274 2.089905 0.5932861 0.5365584 1.262451    0
-## 11 1.250420 0.7781513 2.224274 2.089905 0.5932861 0.5365584 1.276462    0
-## 12 1.214844 0.9030900 2.440594 2.255273 0.4871384 0.6095944 1.240549 -Inf
-## 13 1.238046 0.9030900 2.440594 2.255273 0.4871384 0.5717088 1.245513 -Inf
-## 14 1.181844 0.9030900 2.440594 2.255273 0.4871384 0.5774918 1.255273 -Inf
-## 15 1.017033 0.9030900 2.673942 2.311754 0.4668676 0.7201593 1.254790 -Inf
-## 16 1.017033 0.9030900 2.662758 2.332438 0.4771213 0.7343197 1.250908 -Inf
-## 17 1.167317 0.9030900 2.643453 2.361728 0.5092025 0.7279477 1.241048 -Inf
-## 18 1.510545 0.6020600 1.895975 1.819544 0.6106602 0.3424227 1.289366    0
-## 19 1.482874 0.6020600 1.879096 1.716003 0.6928469 0.2081725 1.267641    0
-## 20 1.530200 0.6020600 1.851870 1.812913 0.6253125 0.2636361 1.298853    0
-## 21 1.332438 0.6020600 2.079543 1.986772 0.5682017 0.3918169 1.301247    0
-## 22 1.190332 0.9030900 2.502427 2.176091 0.4409091 0.5465427 1.227115 -Inf
-## 23 1.181844 0.9030900 2.482874 2.176091 0.4983106 0.5359267 1.238046 -Inf
-## 24 1.123852 0.9030900 2.544068 2.389166 0.5717088 0.5843312 1.187803 -Inf
-## 25 1.283301 0.9030900 2.602060 2.243038 0.4885507 0.5848963 1.231724 -Inf
-## 26 1.436163 0.6020600 1.897627 1.819544 0.6106602 0.2866810 1.276462    0
-## 27 1.414973 0.6020600 2.080266 1.959041 0.6464037 0.3304138 1.222716 -Inf
-## 28 1.482874 0.6020600 1.978181 2.053078 0.5763414 0.1798389 1.227887    0
-## 29 1.198657 0.9030900 2.545307 2.421604 0.6253125 0.5010593 1.161368 -Inf
-## 30 1.294466 0.7781513 2.161368 2.243038 0.5587086 0.4424798 1.190332 -Inf
-## 31 1.176091 0.9030900 2.478566 2.525045 0.5490033 0.5526682 1.164353 -Inf
-## 32 1.330414 0.6020600 2.082785 2.037426 0.6138418 0.4440448 1.269513    0
-##      am      gear      carb
-## 1     0 0.6020600 0.6020600
-## 2     0 0.6020600 0.6020600
-## 3     0 0.6020600 0.0000000
-## 4  -Inf 0.4771213 0.0000000
-## 5  -Inf 0.4771213 0.3010300
-## 6  -Inf 0.4771213 0.0000000
-## 7  -Inf 0.4771213 0.6020600
-## 8  -Inf 0.6020600 0.3010300
-## 9  -Inf 0.6020600 0.3010300
-## 10 -Inf 0.6020600 0.6020600
-## 11 -Inf 0.6020600 0.6020600
-## 12 -Inf 0.4771213 0.4771213
-## 13 -Inf 0.4771213 0.4771213
-## 14 -Inf 0.4771213 0.4771213
-## 15 -Inf 0.4771213 0.6020600
-## 16 -Inf 0.4771213 0.6020600
-## 17 -Inf 0.4771213 0.6020600
-## 18    0 0.6020600 0.0000000
-## 19    0 0.6020600 0.3010300
-## 20    0 0.6020600 0.0000000
-## 21 -Inf 0.4771213 0.0000000
-## 22 -Inf 0.4771213 0.3010300
-## 23 -Inf 0.4771213 0.3010300
-## 24 -Inf 0.4771213 0.6020600
-## 25 -Inf 0.4771213 0.3010300
-## 26    0 0.6020600 0.0000000
-## 27    0 0.6989700 0.3010300
-## 28    0 0.6989700 0.3010300
-## 29    0 0.6989700 0.6020600
-## 30    0 0.6989700 0.7781513
-## 31    0 0.6989700 0.9030900
-## 32    0 0.6020600 0.3010300
+##         mpg       cyl     disp       hp      drat        wt     qsec   vs   am
+## 1  1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4183013 1.216430 -Inf    0
+## 2  1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4586378 1.230960 -Inf    0
+## 3  1.357935 0.6020600 2.033424 1.968483 0.5854607 0.3654880 1.269746    0    0
+## 4  1.330414 0.7781513 2.411620 2.041393 0.4885507 0.5071810 1.288696    0 -Inf
+## 5  1.271842 0.9030900 2.556303 2.243038 0.4983106 0.5365584 1.230960 -Inf -Inf
+## 6  1.257679 0.7781513 2.352183 2.021189 0.4409091 0.5390761 1.305781    0 -Inf
+## 7  1.155336 0.9030900 2.556303 2.389166 0.5065050 0.5526682 1.199755 -Inf -Inf
+## 8  1.387390 0.6020600 2.166430 1.792392 0.5670264 0.5037907 1.301030    0 -Inf
+## 9  1.357935 0.6020600 2.148603 1.977724 0.5932861 0.4983106 1.359835    0 -Inf
+## 10 1.283301 0.7781513 2.224274 2.089905 0.5932861 0.5365584 1.262451    0 -Inf
+## 11 1.250420 0.7781513 2.224274 2.089905 0.5932861 0.5365584 1.276462    0 -Inf
+## 12 1.214844 0.9030900 2.440594 2.255273 0.4871384 0.6095944 1.240549 -Inf -Inf
+## 13 1.238046 0.9030900 2.440594 2.255273 0.4871384 0.5717088 1.245513 -Inf -Inf
+## 14 1.181844 0.9030900 2.440594 2.255273 0.4871384 0.5774918 1.255273 -Inf -Inf
+## 15 1.017033 0.9030900 2.673942 2.311754 0.4668676 0.7201593 1.254790 -Inf -Inf
+## 16 1.017033 0.9030900 2.662758 2.332438 0.4771213 0.7343197 1.250908 -Inf -Inf
+## 17 1.167317 0.9030900 2.643453 2.361728 0.5092025 0.7279477 1.241048 -Inf -Inf
+## 18 1.510545 0.6020600 1.895975 1.819544 0.6106602 0.3424227 1.289366    0    0
+## 19 1.482874 0.6020600 1.879096 1.716003 0.6928469 0.2081725 1.267641    0    0
+## 20 1.530200 0.6020600 1.851870 1.812913 0.6253125 0.2636361 1.298853    0    0
+## 21 1.332438 0.6020600 2.079543 1.986772 0.5682017 0.3918169 1.301247    0 -Inf
+## 22 1.190332 0.9030900 2.502427 2.176091 0.4409091 0.5465427 1.227115 -Inf -Inf
+## 23 1.181844 0.9030900 2.482874 2.176091 0.4983106 0.5359267 1.238046 -Inf -Inf
+## 24 1.123852 0.9030900 2.544068 2.389166 0.5717088 0.5843312 1.187803 -Inf -Inf
+## 25 1.283301 0.9030900 2.602060 2.243038 0.4885507 0.5848963 1.231724 -Inf -Inf
+## 26 1.436163 0.6020600 1.897627 1.819544 0.6106602 0.2866810 1.276462    0    0
+## 27 1.414973 0.6020600 2.080266 1.959041 0.6464037 0.3304138 1.222716 -Inf    0
+## 28 1.482874 0.6020600 1.978181 2.053078 0.5763414 0.1798389 1.227887    0    0
+## 29 1.198657 0.9030900 2.545307 2.421604 0.6253125 0.5010593 1.161368 -Inf    0
+## 30 1.294466 0.7781513 2.161368 2.243038 0.5587086 0.4424798 1.190332 -Inf    0
+## 31 1.176091 0.9030900 2.478566 2.525045 0.5490033 0.5526682 1.164353 -Inf    0
+## 32 1.330414 0.6020600 2.082785 2.037426 0.6138418 0.4440448 1.269513    0    0
+##         gear      carb
+## 1  0.6020600 0.6020600
+## 2  0.6020600 0.6020600
+## 3  0.6020600 0.0000000
+## 4  0.4771213 0.0000000
+## 5  0.4771213 0.3010300
+## 6  0.4771213 0.0000000
+## 7  0.4771213 0.6020600
+## 8  0.6020600 0.3010300
+## 9  0.6020600 0.3010300
+## 10 0.6020600 0.6020600
+## 11 0.6020600 0.6020600
+## 12 0.4771213 0.4771213
+## 13 0.4771213 0.4771213
+## 14 0.4771213 0.4771213
+## 15 0.4771213 0.6020600
+## 16 0.4771213 0.6020600
+## 17 0.4771213 0.6020600
+## 18 0.6020600 0.0000000
+## 19 0.6020600 0.3010300
+## 20 0.6020600 0.0000000
+## 21 0.4771213 0.0000000
+## 22 0.4771213 0.3010300
+## 23 0.4771213 0.3010300
+## 24 0.4771213 0.6020600
+## 25 0.4771213 0.3010300
+## 26 0.6020600 0.0000000
+## 27 0.6989700 0.3010300
+## 28 0.6989700 0.3010300
+## 29 0.6989700 0.6020600
+## 30 0.6989700 0.7781513
+## 31 0.6989700 0.9030900
+## 32 0.6020600 0.3010300
 ```
 
 ## Filter
 
-`across()` can also useful when used in conjunction with `filter()`.
-
-Find all rows where no variable has missing values:
+`across()` can also be useful when used in conjunction with `filter()`. For example, we can find all rows where no variable has missing values:
 
 
 ```r
@@ -883,88 +893,98 @@ devtools::session_info()
 ```
 
 ```
-## ─ Session info ──────────────────────────────────────────────────────────
-##  setting  value                                      
-##  version  R version 3.6.3 Patched (2020-04-28 r78617)
-##  os       OS X El Capitan 10.11.6                    
-##  system   x86_64, darwin15.6.0                       
-##  ui       X11                                        
-##  language (EN)                                       
-##  collate  en_US.UTF-8                                
-##  ctype    en_US.UTF-8                                
-##  tz       America/Chicago                            
-##  date     2020-10-21                                 
+## ─ Session info ───────────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 4.0.2 (2020-06-22)
+##  os       macOS Catalina 10.15.7      
+##  system   x86_64, darwin17.0          
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Chicago             
+##  date     2020-10-21                  
 ## 
-## ─ Packages ──────────────────────────────────────────────────────────────
-##  package     * version date       lib source                        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)                
-##  backports     1.1.4   2019-04-10 [1] CRAN (R 3.6.0)                
-##  broom         0.5.2   2019-04-07 [1] CRAN (R 3.6.0)                
-##  callr         3.2.0   2019-03-15 [1] CRAN (R 3.6.0)                
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 3.6.0)                
-##  cli           1.1.0   2019-03-19 [1] CRAN (R 3.6.0)                
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 3.6.0)                
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)                
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 3.6.0)                
-##  dbplyr        1.4.2   2019-06-17 [1] CRAN (R 3.6.0)                
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)                
-##  devtools      2.0.2   2019-04-08 [1] CRAN (R 3.6.0)                
-##  digest        0.6.19  2019-05-20 [1] CRAN (R 3.6.0)                
-##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 3.6.2)                
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)                
-##  forcats     * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)                
-##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)                
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 3.6.0)                
-##  ggplot2     * 3.3.0   2020-03-05 [1] CRAN (R 3.6.0)                
-##  glue          1.4.0   2020-04-03 [1] CRAN (R 3.6.2)                
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 3.6.0)                
-##  haven         2.2.0   2019-11-08 [1] CRAN (R 3.6.0)                
-##  here          0.1     2017-05-28 [1] CRAN (R 3.6.0)                
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 3.6.0)                
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 3.6.0)                
-##  jsonlite      1.6     2018-12-07 [1] CRAN (R 3.6.0)                
-##  knitr       * 1.23    2019-05-18 [1] CRAN (R 3.6.0)                
-##  lattice       0.20-38 2018-11-04 [1] CRAN (R 3.6.3)                
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 3.6.0)                
-##  lubridate     1.7.4   2018-04-11 [1] CRAN (R 3.6.0)                
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)                
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)                
-##  modelr        0.1.6   2020-02-22 [1] CRAN (R 3.6.0)                
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 3.6.0)                
-##  nlme          3.1-144 2020-02-06 [1] CRAN (R 3.6.3)                
-##  pillar        1.4.3   2019-12-20 [1] CRAN (R 3.6.0)                
-##  pkgbuild      1.0.3   2019-03-20 [1] CRAN (R 3.6.0)                
-##  pkgconfig     2.0.2   2018-08-16 [1] CRAN (R 3.6.0)                
-##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)                
-##  prettyunits   1.0.2   2015-07-13 [1] CRAN (R 3.6.0)                
-##  processx      3.3.1   2019-05-08 [1] CRAN (R 3.6.0)                
-##  ps            1.3.0   2018-12-21 [1] CRAN (R 3.6.0)                
-##  purrr       * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)                
-##  R6            2.4.0   2019-02-14 [1] CRAN (R 3.6.0)                
-##  rcfss       * 0.2.0   2020-10-06 [1] Github (uc-cfss/rcfss@1041257)
-##  Rcpp          1.0.1   2019-03-17 [1] CRAN (R 3.6.0)                
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)                
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 3.6.0)                
-##  remotes       2.1.0   2019-06-24 [1] CRAN (R 3.6.0)                
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 3.6.0)                
-##  rlang         0.4.8   2020-10-08 [1] CRAN (R 3.6.2)                
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)                
-##  rstudioapi    0.10    2019-03-19 [1] CRAN (R 3.6.0)                
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 3.6.0)                
-##  scales        1.0.0   2018-08-09 [1] CRAN (R 3.6.0)                
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)                
-##  stringi       1.4.6   2020-02-17 [1] CRAN (R 3.6.0)                
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)                
-##  testthat      2.1.1   2019-04-23 [1] CRAN (R 3.6.0)                
-##  tibble      * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)                
-##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 3.6.2)                
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 3.6.2)                
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)                
-##  usethis       1.5.0   2019-04-07 [1] CRAN (R 3.6.0)                
-##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 3.6.2)                
-##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)                
-##  xfun          0.7     2019-05-14 [1] CRAN (R 3.6.0)                
-##  xml2          1.3.0   2020-04-01 [1] CRAN (R 3.6.2)                
+## ─ Packages ───────────────────────────────────────────────────────────────────
+##  package        * version date       lib source        
+##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports        1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
+##  blob             1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown         0.20.1  2020-10-19 [1] local         
+##  bookdown         0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom            0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr            3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
+##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli              2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools        0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
+##  colorspace       1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon           1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI              1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr           1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  desc             1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools         2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
+##  digest           0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr          * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
+##  ellipsis         0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate         0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi            0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats        * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
+##  fs               1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
+##  generics         0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2        * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue             1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven            2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
+##  here             0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hms              0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools        0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  httr             1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jsonlite         1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr            1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  lifecycle        0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  lubridate        1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
+##  magrittr         1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  memoise          1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  microbenchmark * 1.4-7   2019-09-24 [1] CRAN (R 4.0.0)
+##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nycflights13   * 1.0.1   2019-09-16 [1] CRAN (R 4.0.0)
+##  pillar           1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild         1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
+##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload          1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx         3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps               1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
+##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6               2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  rcfss          * 0.2.0   2020-10-13 [1] local         
+##  Rcpp             1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
+##  readr          * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl           1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes          2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
+##  reprex           0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang            0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown        2.4     2020-09-30 [1] CRAN (R 4.0.2)
+##  rprojroot        1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  rstudioapi       0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest            0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
+##  scales           1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  stringi          1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
+##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat         2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble         * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr          * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  tidyselect       1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse      * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
+##  usethis          1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8             1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
+##  vctrs            0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  withr            2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  xfun             0.18    2020-09-29 [1] CRAN (R 4.0.2)
+##  xml2             1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml             2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

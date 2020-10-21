@@ -59,7 +59,7 @@ math: false
 * [Data storage types](/notes/vectors/)
 * [Iteration](/notes/iteration/)
 
-* [Scoped verbs](https://dcl-2017-04.github.io/curriculum/manip-scoped.html)
+* [Column-wise operations](https://dplyr.tidyverse.org/dev/articles/colwise.html)
 
 ## What you need to do after class
 
