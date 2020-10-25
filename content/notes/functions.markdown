@@ -34,11 +34,11 @@ usethis::use_course("uc-cfss/pipes-and-functions-in-r")
 
 **Functions** are an important tool in the computational social scientist's toolkit. They enable you to avoid repetition and copy-and-paste and greatly increase the efficiency of your code writing.
 
-* **They are easy to reuse**. If an update to the code is necessary, you revise it in one location and the changes propogate to all over components that implement the function.
+* **They are easy to reuse**. If an update to the code is necessary, you revise it in one location and the changes propagate to all over components that implement the function.
 * **They are self-documenting**. [Give your function a good name](http://r4ds.had.co.nz/functions.html#functions-are-for-humans-and-computers) and you will easily remember the function and its purpose.
 * **They are easy-ier to debug**. There are fewer chances to make mistakes because the code only exists in one location. When copying and pasting, you may forget to copy an important line or fail to update a line in one location.
 
-In fact, you have used functions the entire time you have programmed in R. The only difference is that the functions were written for you. `tidyr`, `dplyr`, `ggplot2`, all of these libraries contain major functions for tidying, transforming, and visualizing data. **You have the power to write your own functions.** Well, if you don't already you soon will.
+In fact, you have used [functions](https://r-coder.com/function-r/) the entire time you have programmed in R. The only difference is that the functions were written for you. `tidyr`, `dplyr`, `ggplot2`, all of these libraries contain major functions for tidying, transforming, and visualizing data. **You have the power to write your own functions.** Well, if you don't already you soon will.
 
 {{% alert note %}}
 
