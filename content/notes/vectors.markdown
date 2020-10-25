@@ -33,7 +33,7 @@ usethis::use_course("uc-cfss/vectors-and-iteration")
 
 {{% /alert %}}
 
-So far the only type of data object in R you have encountered is a `data.frame` (or the `tidyverse` variant `tibble`). At its core though, the primary method of data storage in R is the **vector**. So far we have only encountered vectors as components of a **data frame**; data frames are built from vectors. There are a few different types of vectors: logical, numeric, and character. But now we want to understand more precisely how these data objects are structured and related to one another.
+So far the only type of data object in R you have encountered is a `data.frame` (or the `tidyverse` variant `tibble`). At its core though, the primary method of data storage in R is the **vector**. So far we have only encountered vectors as components of a **data frame**; data frames are built from [vectors](https://r-coder.com/vector-r/). There are a few different types of vectors: logical, numeric, and character. But now we want to understand more precisely how these data objects are structured and related to one another.
 
 ## Types of vectors
 
@@ -44,7 +44,7 @@ There are two categories of vectors:
 1. **Atomic vectors** - these are the types previously covered, including logical, integer, double, and character.
 1. **Lists** - there are new and we will cover them later in this module. Lists are distinct from atomic vectors because lists can contain other lists.
 
-Atomic vectors are **homogenous** - that is, all elements of the vector must be the same type. Lists can be **hetergenous** and contain multiple types of elements. `NULL` is the counterpart to `NA`. While `NA` represents the absence of a value, `NULL` represents the absence of a vector.
+Atomic vectors are **homogenous** - that is, all elements of the vector must be the same type. Lists can be **heterogeneous** and contain multiple types of elements. `NULL` is the counterpart to `NA`. While `NA` represents the absence of a value, `NULL` represents the absence of a vector.
 
 ## Atomic vectors
 
