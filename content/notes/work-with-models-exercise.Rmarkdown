@@ -1,0 +1,207 @@
+---
+title: "Working with statistical models"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+categories: ["stat-learn"]
+
+menu:
+  notes:
+    parent: Statistical learning
+    weight: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE,
+                      message = FALSE,
+                      warning = FALSE)
+```
+
+```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
+library(tidyverse)
+library(tidymodels)
+library(modelr)
+library(rcfss)
+
+set.seed(123)
+
+theme_set(theme_minimal())
+```
+
+{{% alert note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/statistical-learning")
+```
+
+{{% /alert %}}
+
+## Exercise: linear regression with `scorecard`
+
+Recall the `scorecard` data set which contains information on U.S. institutions of higher learning.
+
+```{r scorecard}
+scorecard
+```
+
+Answer the following questions using the statistical modeling tools you have learned.
+
+1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-point}
+    ggplot(scorecard, aes(admrate, cost)) +
+      geom_point() +
+      geom_smooth(method = "lm")
+    ```    
+    
+      </p>
+    </details>
+
+1. Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-mod}
+    scorecard_mod <- lm(cost ~ admrate, data = scorecard)
+    tidy(scorecard_mod)
+    ```
+    
+      </p>
+    </details>
+
+1. Estimate separate linear regression models of the relationship between admission rate and cost for each type of college. Report the estimated parameters and standard errors in a tidy data frame.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-sep-lm}
+    # model-building function
+    type_model <- function(df) {
+      lm(cost ~ admrate, data = df)
+    }
+    
+    # nest the data frame
+    by_type <- scorecard %>%
+      group_by(type) %>%
+      nest()
+    by_type
+    
+    # estimate the models
+    by_type <- by_type %>%
+      mutate(model = map(data, type_model))
+    by_type
+    
+    # extract the parameters and print a tidy data frame
+    by_type %>%
+      mutate(results = map(model, tidy)) %>%
+      unnest(results)
+    ```
+    
+    The same approach by using an anonymous function with the [one-sided formula format](http://r4ds.had.co.nz/iteration.html#shortcuts):
+    
+    ```{r scorecard-sep-anon, eval = FALSE}
+    by_type %>%
+      mutate(model = map(data, ~lm(cost ~ admrate, data = .)),
+             results = map(model, tidy)) %>%
+      unnest(results)
+    ```
+    
+      </p>
+    </details>
+
+## Exercise: logistic regression with `mental_health`
+
+Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
+
+Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidental election.
+
+```{r mental-health}
+mental_health
+```
+
+1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and plot the logistic regression line using `ggplot`.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-model, dependson="mental-health"}
+    # estimate model
+    mh_model <- glm(vote96 ~ mhealth, data = mental_health,
+                    family = binomial)
+    tidy(mh_model)
+    
+    # estimate predicted probabilities
+    mh_health <- augment(mh_model,
+                         newdata = data_grid(mental_health, mhealth),
+                         type.predict = "response")
+    mh_health
+    
+    # graph the line
+    ggplot(mh_health, aes(mhealth, .fitted)) +
+      geom_line() +
+      labs(title = "Relationship Between Mental Health and Voter Turnout",
+           y = "Predicted Probability of Voting") +
+      scale_y_continuous(limits = c(0, 1))
+    ```    
+    
+      </p>
+    </details>
+
+1. Calculate the error rate of the model.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-model-error, dependson="mental-health"}
+    mh_model_accuracy <- augment(mh_model, type.predict = "response") %>%
+      mutate(.pred = as.numeric(.fitted > .5))
+    
+    (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$.pred,
+                          na.rm = TRUE))
+    ```    
+    
+      </p>
+    </details>
+
+1. Estimate a second logistic regression model of voter turnout using all the predictors. Calculate it's error rate, and compare it to the original model. Which is better?
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r mh-model-all, dependson="mental-health"}
+    # estimate model
+    mh_model_all <- glm(vote96 ~ ., data = mental_health,
+                    family = binomial)
+    tidy(mh_model_all)
+    
+    # calculate error rate
+    mh_model_all_accuracy <- augment(mh_model_all, type.predict = "response") %>%
+      mutate(.pred = as.numeric(.fitted > .5))
+    
+    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 != mh_model_all_accuracy$.pred,
+                              na.rm = TRUE))
+    ```
+    
+    The model with all predictors has a `r formatC((mh_model_err - mh_model_all_err) * 100, digits = 3)`% lower error rate than predictions based only on mental health.
+    
+      </p>
+    </details>
+    
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
