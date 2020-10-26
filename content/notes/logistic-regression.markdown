@@ -126,12 +126,25 @@ Let's concentrate first on the relationship between age and survival. Using the 
 
 
 ```r
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
+# estimate model
+lin_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(Survived ~ Age, data = titanic)
+
+# visualize predicted values
+age_vals <- tibble(
+  Age = 0:80
+)
+
+bind_cols(age_vals,
+          predict(lin_fit, new_data = age_vals)) %>%
+  ggplot(mapping = aes(x = Age, y = .pred)) +
+  geom_point(data = titanic, mapping = aes(x = Age, y = Survived)) +
+  geom_line() +
+  ylim(0, 1)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic_ols-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/titanic-ols-1.png" width="672" />
 
 Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are $0$ and $1$. Yet the linear regression model gives us predicted values such as $.4$ and $.25$. How should we interpret those?
 
@@ -139,13 +152,20 @@ One possibility is that these values are **predicted probabilities**. That is, t
 
 
 ```r
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  xlim(0, 200)
+# visualize predicted values
+age_vals <- tibble(
+  Age = 0:200
+)
+
+bind_cols(age_vals,
+          predict(lin_fit, new_data = age_vals)) %>%
+  ggplot(mapping = aes(x = Age, y = .pred)) +
+  geom_point(data = titanic, mapping = aes(x = Age, y = Survived)) +
+  geom_line() +
+  ylim(NA, 1)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic_ols_old-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/titanic-ols-old-1.png" width="672" />
 
 What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
 
@@ -505,9 +525,7 @@ devtools::session_info()
 ##  titanic     * 0.1.0      2015-08-31 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
-##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
-##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)

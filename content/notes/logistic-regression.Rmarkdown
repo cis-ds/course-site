@@ -115,21 +115,41 @@ So if this is our data, `Survived` is our **response variable** and the remainin
 
 Let's concentrate first on the relationship between age and survival. Using the methods we previously learned, we could estimate a linear regression model:
 
-```{r titanic_ols}
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
+```{r titanic-ols, dependson = "titanic"}
+# estimate model
+lin_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(Survived ~ Age, data = titanic)
+
+# visualize predicted values
+age_vals <- tibble(
+  Age = 0:80
+)
+
+bind_cols(age_vals,
+          predict(lin_fit, new_data = age_vals)) %>%
+  ggplot(mapping = aes(x = Age, y = .pred)) +
+  geom_point(data = titanic, mapping = aes(x = Age, y = Survived)) +
+  geom_line() +
+  ylim(0, 1)
 ```
 
 Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are $0$ and $1$. Yet the linear regression model gives us predicted values such as $.4$ and $.25$. How should we interpret those?
 
 One possibility is that these values are **predicted probabilities**. That is, the estimated probability a passenger will survive given their age. So someone with a predicted probability of $.4$ has a 40% chance of surviving. Okay, but notice that because the line is linear and continuous, it extends infinitely in both directions of age.
 
-```{r titanic_ols_old}
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  xlim(0, 200)
+```{r titanic-ols-old, dependson = "titanic-ols"}
+# visualize predicted values
+age_vals <- tibble(
+  Age = 0:200
+)
+
+bind_cols(age_vals,
+          predict(lin_fit, new_data = age_vals)) %>%
+  ggplot(mapping = aes(x = Age, y = .pred)) +
+  geom_point(data = titanic, mapping = aes(x = Age, y = Survived)) +
+  geom_line() +
+  ylim(NA, 1)
 ```
 
 What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
