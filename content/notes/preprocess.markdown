@@ -104,7 +104,7 @@ Table: Table 1: Data summary
 
 `rcfss::gss` contains a selection of variables from the 2012 GSS. We are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
 
-The outcome of interest `colrac` is a binary variable coded as either `TRUE` (respondent believes the person should be allowed to teach) or `FALSE` (respondent believes the person should not allowed to teach). To make it easier to plug this column into our `tidymodels` workflow, I convert it to a factor column indicating "Yes" or "No".
+The outcome of interest `colrac` is a factor variable coded as either `"ALLOWED"` (respondent believes the person should be allowed to teach) or `"NOT ALLOWED"` (respondent believes the person should not allowed to teach).
 
 {{% alert note %}}
 
@@ -532,7 +532,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-02                  
+##  date     2020-11-03                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
