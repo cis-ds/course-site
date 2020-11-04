@@ -17,7 +17,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice estimating models in R."
+summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice estimating models in R using the `tidymodels` framework."
 
 # Location of event.
 location: "Online"
@@ -45,15 +45,16 @@ math: false
 
 * Review the major goals of statistical learning
 * Explain the difference between parametric and non-parametric methods
-* Introduce linear models
 * Demonstrate how to estimate a linear model in R using `lm()`
-* Demonstrate how to estimate a linear model using `tidymodels` and the `parsnip` package
-* Practice estimating linear models
-* Demonstrate the use of logistic regression for classification
+* Introduce the `tidymodels` and `parsnip` packages for estimating regression models
+* Practice estimating linear and logistic regression models
 
 ## Before class
 
-* This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
+* Read [Build a model](/notes/start-with-models/)
+* Read [Logistic regress](/notes/logistic-regression/)
+
+This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
 ##### For those with little/no statistics training
 
@@ -69,6 +70,7 @@ math: false
 * [Statistical learning: the basics](/notes/statistical-learning/)
 * [Build a model](/notes/start-with-models/)
 * [Logistic regression](/notes/logistic-regression/)
+* [Working with statistical models](/notes/work-with-models-exercise/)
 
 ### Additional readings
 
