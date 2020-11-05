@@ -19,7 +19,6 @@ menu:
 ```r
 library(tidyverse)
 library(tidymodels)
-library(modelr)
 library(rcfss)
 
 set.seed(123)
@@ -92,8 +91,10 @@ Answer the following questions using the statistical modeling tools you have lea
 
     
     ```r
-    scorecard_mod <- lm(cost ~ admrate, data = scorecard)
-    tidy(scorecard_mod)
+    scorecard_fit <- linear_reg() %>%
+      set_engine("lm") %>%
+      fit(cost ~ admrate, data = scorecard)
+    tidy(scorecard_fit)
     ```
     
     ```
@@ -107,7 +108,7 @@ Answer the following questions using the statistical modeling tools you have lea
       </p>
     </details>
 
-1. Estimate separate linear regression models of the relationship between admission rate and cost for each type of college. Report the estimated parameters and standard errors in a tidy data frame.
+1. Estimate a linear regression of the relationship between admission rate and cost, while also accounting for type of college and percent of Pell Grant recipients.
 
     <details> 
       <summary>Click for the solution</summary>
@@ -115,73 +116,21 @@ Answer the following questions using the statistical modeling tools you have lea
 
     
     ```r
-    # model-building function
-    type_model <- function(df) {
-      lm(cost ~ admrate, data = df)
-    }
-    
-    # nest the data frame
-    by_type <- scorecard %>%
-      group_by(type) %>%
-      nest()
-    by_type
+     scorecard_fit <- linear_reg() %>%
+      set_engine("lm") %>%
+      fit(cost ~ admrate + type + pctpell, data = scorecard)
+    tidy(scorecard_fit)
     ```
     
     ```
-    ## # A tibble: 3 x 2
-    ## # Groups:   type [3]
-    ##   type                data                 
-    ##   <fct>               <list>               
-    ## 1 Private, nonprofit  <tibble [1,093 × 13]>
-    ## 2 Public              <tibble [552 × 13]>  
-    ## 3 Private, for-profit <tibble [88 × 13]>
-    ```
-    
-    ```r
-    # estimate the models
-    by_type <- by_type %>%
-      mutate(model = map(data, type_model))
-    by_type
-    ```
-    
-    ```
-    ## # A tibble: 3 x 3
-    ## # Groups:   type [3]
-    ##   type                data                  model 
-    ##   <fct>               <list>                <list>
-    ## 1 Private, nonprofit  <tibble [1,093 × 13]> <lm>  
-    ## 2 Public              <tibble [552 × 13]>   <lm>  
-    ## 3 Private, for-profit <tibble [88 × 13]>    <lm>
-    ```
-    
-    ```r
-    # extract the parameters and print a tidy data frame
-    by_type %>%
-      mutate(results = map(model, tidy)) %>%
-      unnest(results)
-    ```
-    
-    ```
-    ## # A tibble: 6 x 8
-    ## # Groups:   type [3]
-    ##   type         data         model term    estimate std.error statistic   p.value
-    ##   <fct>        <list>       <lis> <chr>      <dbl>     <dbl>     <dbl>     <dbl>
-    ## 1 Private, no… <tibble [1,… <lm>  (Inter…   54497.     1270.     42.9  1.76e-234
-    ## 2 Private, no… <tibble [1,… <lm>  admrate  -20204.     1881.    -10.7  1.26e- 25
-    ## 3 Public       <tibble [55… <lm>  (Inter…   21844.      812.     26.9  4.55e-102
-    ## 4 Public       <tibble [55… <lm>  admrate   -1150.     1137.     -1.01 3.13e-  1
-    ## 5 Private, fo… <tibble [88… <lm>  (Inter…   28326.     3677.      7.70 4.36e- 11
-    ## 6 Private, fo… <tibble [88… <lm>  admrate    4993.     4718.      1.06 2.93e-  1
-    ```
-    
-    The same approach by using an anonymous function with the [one-sided formula format](http://r4ds.had.co.nz/iteration.html#shortcuts):
-    
-    
-    ```r
-    by_type %>%
-      mutate(model = map(data, ~lm(cost ~ admrate, data = .)),
-             results = map(model, tidy)) %>%
-      unnest(results)
+    ## # A tibble: 5 x 5
+    ##   term                    estimate std.error statistic   p.value
+    ##   <chr>                      <dbl>     <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept)               44347.      925.      47.9 5.47e-317
+    ## 2 admrate                  -10758.     1068.     -10.1 3.12e- 23
+    ## 3 typePrivate, nonprofit    19205.      462.      41.6 1.24e-260
+    ## 4 typePrivate, for-profit   18067.     1080.      16.7 3.40e- 58
+    ## 5 pctpell                  -41725.     1322.     -31.6 3.11e-172
     ```
     
       </p>
@@ -191,7 +140,7 @@ Answer the following questions using the statistical modeling tools you have lea
 
 Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
-Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidental election.
+Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
 
 
 ```r
@@ -215,7 +164,7 @@ mental_health
 ## # … with 1,307 more rows
 ```
 
-1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and plot the logistic regression line using `ggplot`.
+1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and a 95% confidence interval, and plot the logistic regression predictions using `ggplot`.
 
     <details> 
       <summary>Click for the solution</summary>
@@ -223,51 +172,39 @@ mental_health
 
     
     ```r
+    # convert vote96 to a factor column
+    mental_health <- rcfss::mental_health %>%
+      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
+    ```
+    
+    
+    ```r
     # estimate model
-    mh_model <- glm(vote96 ~ mhealth, data = mental_health,
-                    family = binomial)
-    tidy(mh_model)
-    ```
+    mh_mod <- logistic_reg() %>%
+      set_engine("glm") %>%
+      fit(vote96 ~ mhealth, data = mental_health)
     
-    ```
-    ## # A tibble: 2 x 5
-    ##   term        estimate std.error statistic  p.value
-    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>
-    ## 1 (Intercept)    1.22     0.0890     13.7  6.28e-43
-    ## 2 mhealth       -0.177    0.0222     -7.97 1.61e-15
-    ```
+    # generate predicted probabilities + confidence intervals
+    new_points <- tibble(
+      mhealth = seq(
+        from = min(mental_health$mhealth),
+        to = max(mental_health$mhealth)
+      )
+    )
     
-    ```r
-    # estimate predicted probabilities
-    mh_health <- augment(mh_model,
-                         newdata = data_grid(mental_health, mhealth),
-                         type.predict = "response")
-    mh_health
-    ```
-    
-    ```
-    ## # A tibble: 10 x 2
-    ##    mhealth .fitted
-    ##      <dbl>   <dbl>
-    ##  1       0   0.773
-    ##  2       1   0.740
-    ##  3       2   0.705
-    ##  4       3   0.667
-    ##  5       4   0.626
-    ##  6       5   0.584
-    ##  7       6   0.541
-    ##  8       7   0.496
-    ##  9       8   0.452
-    ## 10       9   0.409
-    ```
-    
-    ```r
-    # graph the line
-    ggplot(mh_health, aes(mhealth, .fitted)) +
-      geom_line() +
+    bind_cols(
+      new_points,
+      # predicted probabilities
+      predict(mh_mod, new_data = new_points, type = "prob"),
+      # confidence intervals
+      predict(mh_mod, new_data = new_points, type = "conf_int")
+    ) %>%
+      # graph the predictions
+      ggplot(mapping = aes(x = mhealth, y = .pred_Voted)) +
+      geom_pointrange(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted)) +
       labs(title = "Relationship Between Mental Health and Voter Turnout",
-           y = "Predicted Probability of Voting") +
-      scale_y_continuous(limits = c(0, 1))
+           x = "Mental health status",
+           y = "Predicted Probability of Voting")
     ```
     
     <img src="/notes/work-with-models-exercise_files/figure-html/mh-model-1.png" width="672" />
@@ -275,7 +212,7 @@ mental_health
       </p>
     </details>
 
-1. Calculate the error rate of the model.
+1. Estimate a second logistic regression model of voter turnout using using age and gender (i.e. the `female` column). Extract predicted probabilities and confidence intervals for all possible values of age, and visualize using `ggplot()`.
 
     <details> 
       <summary>Click for the solution</summary>
@@ -283,59 +220,47 @@ mental_health
 
     
     ```r
-    mh_model_accuracy <- augment(mh_model, type.predict = "response") %>%
-      mutate(.pred = as.numeric(.fitted > .5))
+    # recode female
+    mental_health <- rcfss::mental_health %>%
+      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")),
+             female = factor(female, labels = c("Male", "Female")))
     
-    (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$.pred,
-                          na.rm = TRUE))
-    ```
-    
-    ```
-    ## [1] 0.317388
-    ```
-    
-      </p>
-    </details>
-
-1. Estimate a second logistic regression model of voter turnout using all the predictors. Calculate it's error rate, and compare it to the original model. Which is better?
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    
-    ```r
     # estimate model
-    mh_model_all <- glm(vote96 ~ ., data = mental_health,
-                    family = binomial)
-    tidy(mh_model_all)
+    mh_int_mod <- logistic_reg() %>%
+      set_engine("glm") %>%
+      fit(vote96 ~ age * female, data = mental_health)
+    
+    # generate predicted probabilities + confidence intervals
+    new_points <- expand.grid(
+      age = seq(
+        from = min(mental_health$age),
+        to = max(mental_health$age)
+      ),
+      female = unique(mental_health$female)
+    )
+    
+    bind_cols(
+      new_points,
+      # predicted probabilities
+      predict(mh_int_mod, new_data = new_points, type = "prob"),
+      # confidence intervals
+      predict(mh_int_mod, new_data = new_points, type = "conf_int")
+    ) %>%
+      # graph the predictions
+      ggplot(mapping = aes(x = age, y = .pred_Voted, color = female)) +
+      # predicted probability
+      geom_line(linetype = 2) +
+      # confidence interval
+      geom_ribbon(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted,
+                                fill = female), alpha = .2) +
+      scale_color_viridis_d(end = 0.7, aesthetics = c("color", "fill"),
+                            name = NULL) +
+      labs(title = "Relationship Between Age and Voter Turnout",
+           x = "Age",
+           y = "Predicted Probability of Voting")
     ```
     
-    ```
-    ## # A tibble: 5 x 5
-    ##   term        estimate std.error statistic  p.value
-    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>
-    ## 1 (Intercept)  -4.26     0.469      -9.07  1.18e-19
-    ## 2 age           0.0446   0.00446    10.0   1.47e-23
-    ## 3 educ          0.258    0.0266      9.70  3.15e-22
-    ## 4 female       -0.0388   0.130      -0.298 7.65e- 1
-    ## 5 mhealth      -0.118    0.0241     -4.90  9.51e- 7
-    ```
-    
-    ```r
-    # calculate error rate
-    mh_model_all_accuracy <- augment(mh_model_all, type.predict = "response") %>%
-      mutate(.pred = as.numeric(.fitted > .5))
-    
-    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 != mh_model_all_accuracy$.pred,
-                              na.rm = TRUE))
-    ```
-    
-    ```
-    ## [1] 0.2786636
-    ```
-    
-    The model with all predictors has a 3.87% lower error rate than predictions based only on mental health.
+    <img src="/notes/work-with-models-exercise_files/figure-html/mh-model-all-1.png" width="672" />
     
       </p>
     </details>
@@ -359,7 +284,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-10-26                  
+##  date     2020-11-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
@@ -443,7 +368,7 @@ devtools::session_info()
 ##  ps            1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.0      2020-10-13 [1] local         
+##  rcfss       * 0.2.1      2020-11-02 [1] local         
 ##  Rcpp          1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
@@ -476,6 +401,7 @@ devtools::session_info()
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
 ##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
+##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)

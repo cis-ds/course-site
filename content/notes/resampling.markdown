@@ -10,7 +10,7 @@ categories: ["stat-learn"]
 menu:
   notes:
     parent: Statistical learning
-    weight: 5
+    weight: 6
 ---
 
 
@@ -504,7 +504,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-03                  
+##  date     2020-11-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
