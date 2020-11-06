@@ -1,5 +1,5 @@
 ---
-title: "Build a model"
+title: "Build a linear model"
 date: 2019-03-01
 
 type: docs
@@ -429,7 +429,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-10-26                  
+##  date     2020-11-06                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        
@@ -535,7 +535,7 @@ devtools::session_info()
 ##  ps             1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6             2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss        * 0.2.0      2020-10-13 [1] local         
+##  rcfss        * 0.2.1      2020-11-02 [1] local         
 ##  Rcpp         * 1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
 ##  RcppParallel   5.0.2      2020-06-24 [1] CRAN (R 4.0.2)
 ##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
