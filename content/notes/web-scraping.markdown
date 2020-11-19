@@ -276,10 +276,10 @@ frozen
 ```
 
 ```
-## {xml_document}
+## {html_document}
 ## <html xmlns:og="http://ogp.me/ns#" xmlns:fb="http://www.facebook.com/2008/fbml">
-## [1] <head>\n<meta http-equiv="Content-Type" content="text/html; charset= ...
-## [2] <body id="styleguide-v2" class="fixed">\n\n            <img height=" ...
+## [1] <head>\n<meta http-equiv="Content-Type" content="text/html; charset=UTF-8 ...
+## [2] <body id="styleguide-v2" class="fixed">\n            <img height="1" widt ...
 ```
 
 {{% alert note %}}
@@ -298,7 +298,7 @@ itals
 
 ```
 ## {xml_nodeset (1)}
-## [1] <em class="nobr">Written by\n<a href="/search/title?plot_author=DeAl ...
+## [1] <em class="nobr">Written by\n<a href="/search/title?plot_author=DeAlan%20 ...
 ```
 
 * The first argument to `html_nodes()` is the HTML document or a node previously extracted from the document
@@ -313,7 +313,7 @@ itals
 
 ```
 ## {xml_nodeset (1)}
-## [1] <em class="nobr">Written by\n<a href="/search/title?plot_author=DeAl ...
+## [1] <em class="nobr">Written by\n<a href="/search/title?plot_author=DeAlan%20 ...
 ```
 
 ```r
@@ -338,7 +338,7 @@ html_children(itals)
 
 ```
 ## {xml_nodeset (1)}
-## [1] <a href="/search/title?plot_author=DeAlan%20Wilson%20for%20ComedyE.c ...
+## [1] <a href="/search/title?plot_author=DeAlan%20Wilson%20for%20ComedyE.com&am ...
 ```
 
 ```r
@@ -380,52 +380,54 @@ html_text(cast)
 ```
 
 ```
-##  [1] "Edit"                                                         
-##  [2] ""                                                             
-##  [3] " Kristen Bell\n"                                              
-##  [4] "Anna"                                                         
-##  [5] ""                                                             
-##  [6] " Idina Menzel\n"                                              
-##  [7] "Elsa"                                                         
-##  [8] ""                                                             
-##  [9] " Jonathan Groff\n"                                            
-## [10] "Kristoff"                                                     
-## [11] ""                                                             
-## [12] " Josh Gad\n"                                                  
-## [13] "Olaf"                                                         
-## [14] ""                                                             
-## [15] " Santino Fontana\n"                                           
-## [16] "Hans"                                                         
-## [17] ""                                                             
-## [18] " Alan Tudyk\n"                                                
-## [19] "Duke"                                                         
-## [20] ""                                                             
-## [21] " Ciarán Hinds\n"                                              
-## [22] "Pabbie"                                                       
-## [23] "Grandpa"                                                      
-## [24] ""                                                             
-## [25] " Chris Williams\n"                                            
-## [26] "Oaken"                                                        
-## [27] ""                                                             
-## [28] " Stephen J. Anderson\n"                                       
-## [29] ""                                                             
-## [30] " Maia Wilson\n"                                               
-## [31] "Bulda"                                                        
-## [32] ""                                                             
-## [33] " Edie McClurg\n"                                              
-## [34] ""                                                             
-## [35] " Robert Pine\n"                                               
-## [36] ""                                                             
-## [37] " Maurice LaMarche\n"                                          
-## [38] "King"                                                         
-## [39] ""                                                             
-## [40] " Livvy Stubenrauch\n"                                         
-## [41] "Young Anna"                                                   
-## [42] ""                                                             
-## [43] " Eva Bella\n"                                                 
-## [44] "Young Elsa"                                                   
-## [45] "See full cast"                                                
-## [46] " \nView production, box office, & company info on IMDbPro\n\n"
+##  [1] "Edit"                                              
+##  [2] ""                                                  
+##  [3] " Kristen Bell\n"                                   
+##  [4] "Anna"                                              
+##  [5] ""                                                  
+##  [6] " Idina Menzel\n"                                   
+##  [7] "Elsa"                                              
+##  [8] ""                                                  
+##  [9] " Jonathan Groff\n"                                 
+## [10] "Kristoff"                                          
+## [11] ""                                                  
+## [12] " Josh Gad\n"                                       
+## [13] "Olaf"                                              
+## [14] ""                                                  
+## [15] " Santino Fontana\n"                                
+## [16] "Hans"                                              
+## [17] ""                                                  
+## [18] " Alan Tudyk\n"                                     
+## [19] "Duke"                                              
+## [20] ""                                                  
+## [21] " Ciarán Hinds\n"                                   
+## [22] "Pabbie"                                            
+## [23] "Grandpa"                                           
+## [24] ""                                                  
+## [25] " Chris Williams\n"                                 
+## [26] "Oaken"                                             
+## [27] ""                                                  
+## [28] " Stephen J. Anderson\n"                            
+## [29] "Kai"                                               
+## [30] ""                                                  
+## [31] " Maia Wilson\n"                                    
+## [32] "Bulda"                                             
+## [33] ""                                                  
+## [34] " Edie McClurg\n"                                   
+## [35] ""                                                  
+## [36] " Robert Pine\n"                                    
+## [37] "Bishop"                                            
+## [38] ""                                                  
+## [39] " Maurice LaMarche\n"                               
+## [40] "King"                                              
+## [41] ""                                                  
+## [42] " Livvy Stubenrauch\n"                              
+## [43] "Young Anna"                                        
+## [44] ""                                                  
+## [45] " Eva Bella\n"                                      
+## [46] "Young Elsa"                                        
+## [47] "See full cast"                                     
+## [48] " \nView production, box office, & company info\n\n"
 ```
     
   </p>
@@ -474,14 +476,24 @@ html_text(cast2)
 ```
 
 ```
-##  [1] " Kristen Bell\n"        " Idina Menzel\n"       
-##  [3] " Jonathan Groff\n"      " Josh Gad\n"           
-##  [5] " Santino Fontana\n"     " Alan Tudyk\n"         
-##  [7] " Ciarán Hinds\n"        " Chris Williams\n"     
-##  [9] " Stephen J. Anderson\n" " Maia Wilson\n"        
-## [11] " Edie McClurg\n"        " Robert Pine\n"        
-## [13] " Maurice LaMarche\n"    " Livvy Stubenrauch\n"  
-## [15] " Eva Bella\n"
+##  [1] " Kristen Bell\n"        " Idina Menzel\n"        " Jonathan Groff\n"     
+##  [4] " Josh Gad\n"            " Santino Fontana\n"     " Alan Tudyk\n"         
+##  [7] " Ciarán Hinds\n"        " Chris Williams\n"      " Stephen J. Anderson\n"
+## [10] " Maia Wilson\n"         " Edie McClurg\n"        " Robert Pine\n"        
+## [13] " Maurice LaMarche\n"    " Livvy Stubenrauch\n"   " Eva Bella\n"
+```
+
+```r
+# remove whitespace
+html_text(cast2) %>% str_trim(side = "both")
+```
+
+```
+##  [1] "Kristen Bell"        "Idina Menzel"        "Jonathan Groff"     
+##  [4] "Josh Gad"            "Santino Fontana"     "Alan Tudyk"         
+##  [7] "Ciarán Hinds"        "Chris Williams"      "Stephen J. Anderson"
+## [10] "Maia Wilson"         "Edie McClurg"        "Robert Pine"        
+## [13] "Maurice LaMarche"    "Livvy Stubenrauch"   "Eva Bella"
 ```
     
   </p>
@@ -506,7 +518,7 @@ html_text(col)
 ```
 
 ```
-## [1] "147.3"
+## [1] "134.4"
 ```
 
 ```r
@@ -517,7 +529,7 @@ sterling %>%
 ```
 
 ```
-## [1] "147.3"
+## [1] "134.4"
 ```
     
   </p>
@@ -540,13 +552,13 @@ tables %>%
 
 ```
 ##     COST OF LIVING Sterling Virginia      USA
-## 1          Overall    147.3    113.8      100
-## 2          Grocery    105.3     98.8      100
-## 3           Health       94    101.5      100
-## 4          Housing    216.9    135.1      100
-## 5 Median Home Cost $405,700 $252,700 $216,200
+## 1          Overall    134.4    103.7      100
+## 2          Grocery    110.3     99.6      100
+## 3           Health     99.3    102.4      100
+## 4          Housing    185.3    111.8      100
+## 5 Median Home Cost $428,500 $258,400 $231,200
 ## 6        Utilities     98.6     99.3      100
-## 7   Transportation    141.4    115.5      100
+## 7   Transportation    118.6     99.4      100
 ## 8    Miscellaneous    118.2    100.5      100
 ```
 
@@ -569,16 +581,16 @@ html_table(climate, header = TRUE, fill = TRUE)[[1]]
 ```
 
 ```
-##                         CLIMATE Sterling, Virginia United States
-## 1                Rainfall (in.)               43.1          39.2
-## 2                Snowfall (in.)               21.3          25.8
-## 3            Precipitation Days              106.0         102.0
-## 4                    Sunny Days              197.0         205.0
-## 5                Avg. July High               86.3          86.1
-## 6                 Avg. Jan. Low               23.1          22.6
-## 7 Comfort Index (higher=better)               47.0          54.0
-## 8                      UV Index                4.0           4.3
-## 9                 Elevation ft.              292.0        2443.0
+##                                 Sterling, Virginia United States
+## 1                      Rainfall           42.0 in.      38.1 in.
+## 2                      Snowfall           21.5 in.      27.8 in.
+## 3                 Precipitation         116.2 days    106.2 days
+## 4                         Sunny           197 days      205 days
+## 5                Avg. July High              85.8°         85.8°
+## 6                 Avg. Jan. Low              23.5°         21.7°
+## 7 Comfort Index (higher=better)                7.3             7
+## 8                      UV Index                  4           4.3
+## 9                     Elevation            292 ft.      2443 ft.
 ```
 
 ```r
@@ -589,16 +601,16 @@ sterling_climate %>%
 ```
 
 ```
-##                         CLIMATE Sterling, Virginia United States
-## 1                Rainfall (in.)               43.1          39.2
-## 2                Snowfall (in.)               21.3          25.8
-## 3            Precipitation Days              106.0         102.0
-## 4                    Sunny Days              197.0         205.0
-## 5                Avg. July High               86.3          86.1
-## 6                 Avg. Jan. Low               23.1          22.6
-## 7 Comfort Index (higher=better)               47.0          54.0
-## 8                      UV Index                4.0           4.3
-## 9                 Elevation ft.              292.0        2443.0
+##                                 Sterling, Virginia United States
+## 1                      Rainfall           42.0 in.      38.1 in.
+## 2                      Snowfall           21.5 in.      27.8 in.
+## 3                 Precipitation         116.2 days    106.2 days
+## 4                         Sunny           197 days      205 days
+## 5                Avg. July High              85.8°         85.8°
+## 6                 Avg. Jan. Low              23.5°         21.7°
+## 7 Comfort Index (higher=better)                7.3             7
+## 8                      UV Index                  4           4.3
+## 9                     Elevation            292 ft.      2443 ft.
 ```
     
   </p>
@@ -629,83 +641,84 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-29                  
+##  date     2020-11-19                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-07-02 [1] local         
-##  bookdown      0.20    2020-06-23 [1] CRAN (R 4.0.2)
-##  broom         0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
-##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  blogdown      0.20.1  2020-10-19 [1] local         
+##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  curl          4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools      2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
 ##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr       * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
-##  glue          1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
-##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
-##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
-##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
+##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  nlme          3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
-##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes       2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang         0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
-##  rmarkdown     2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
 ##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest       * 0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  rvest       * 0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  selectr       0.4-2   2019-11-20 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi       1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
 ##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
-##  tidyr       * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
-##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
-##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
-##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  xml2        * 1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
