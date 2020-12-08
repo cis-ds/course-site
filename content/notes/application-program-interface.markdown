@@ -46,9 +46,55 @@ In the simplest case, the data you need is already on the internet in a tabular 
 
 Even in this instance, files may need cleaning and transformation when you bring them into R.
 
-## Data supplied on the web
+## Data supplied on the web - APIs
 
 Many times, the data that you want is not already organized into one or a few tables that you can read directly into R. More frequently, you find this data is given in the form of an API. **A**pplication **P**rogramming **I**nterfaces (APIs) are descriptions of the kind of requests that can be made of a certain piece of software, and descriptions of the kind of answers that are returned. Many sources of data - databases, websites, services - have made all (or part) of their data available via APIs over the internet. Computer programs ("clients") can make requests of the server, and the server will respond by sending data (or an error message). This client can be many kinds of other programs or websites, including R running from your laptop.
+
+### Some basic terminology
+
+- **Representational State Transfer** (REST) - these allow us to query databases using URLs, just like you would construct a URL to view a web page.
+- **Uniform Resource Location** (URL) - a string of characters that uses the Hypertext Transfer Protocol (HTTP) and points to a data resource. On the world wide web this is typically a file written in Hypertext Markup Language (HTML). Here, it will return a file containing a subset of a database.
+- HTTP methods/verbs
+    - **GET**: fetch an existing resource. The URL contains all the necessary information the server needs to locate and return the resource.
+    - **POST**: create a new resource. POST requests usually carry a payload that specifies the data for the new resource.
+    - **PUT**: update an existing resource. The payload may contain the updated data for the resource.
+    - **DELETE**: delete an existing resource.
+    - The most common method you will use for an API is GET.
+
+### How Do GET Requests Work? 
+
+#### A Web Browsing Example {-}
+
+As you might suspect from the example above, surfing the web is basically equivalent to sending a bunch of `GET` requests to different servers and asking for different files written in HTML.
+
+Suppose, for instance, you wanted to look something up on Wikipedia. The first step would be to open your web browser and type in `http://www.wikipedia.org`. Once you hit return, you would see the page below.  
+
+![](/img/wikipedia.png)
+
+Several different processes occurred, however, between hitting "return" and the page finally being rendered. In order:
+
+1. The web browser took the entered character string, used the command-line tool "Curl" to write a properly formatted HTTP GET request, and submitted it to the server that hosts the Wikipedia homepage.
+1. After receiving this request, the server sent an HTTP response, from which Curl extracted the HTML code for the page (partially shown below).
+1. The raw HTML code was parsed and then executed by the web browser, rendering the page as seen in the window.
+
+
+```
+## No encoding supplied: defaulting to UTF-8.
+```
+
+```
+## [1] "<!DOCTYPE html>\n<html lang=\"mul\" class=\"no-js\">\n<head>\n<meta charset=\"utf-8\">\n<title>Wikipedia</title>\n<meta name=\"description\" content=\"Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.\">\n<script>\ndocument.documentElement.className = document.documentElement.className.replace( /(^|\\s)no-js(\\s|$)/, \"$1js-enabled$2\" );\n</script>\n<meta name=\"viewport\" content=\"initial-scale=1,user-scalable=yes\">\n<link rel=\"apple-touch-icon\" href=\"/static/apple-touch/wikipedia.png\">\n<link rel=\"shortcut icon\" href=\"/static/favicon/wikipedia.ico\">\n<link rel=\"license\" href=\"//creativecommons.org/licenses/by-sa/3.0/\">\n<style>\n.sprite{background-image:url(portal/wikipedia.org/assets/img/sprite-46c49284.png);background-image:linear-gradient(transparent,transparent),url(portal/wikipedia.org/assets/img/sprite-46c49284.svg);background-repeat:no-repeat;display:inline-block;vertical-align:middle}.svg-Commons-logo_sister{background-posit"
+```
+
+#### Web Browsing as a Template for RESTful Database Querying
+
+The process of web browsing described above is a close analogue for the process of database querying via RESTful APIs, with only a few adjustments:
+
+1. While the Curl tool will still be used to send HTML GET requests to the servers hosting our databases of interest, the character string that we supply to Curl must be constructed so that the resulting request can be interpreted and succesfully acted upon by the server.  In particular, it is likely that the character string must encode **search terms and/or filtering parameters**, as well as one or more **authentication codes**.  While the terms are often similar across APIs, most are API-specific.
+
+2. Unlike with web browsing, the content of the server's response that is extracted by Curl is unlikely to be HTML code.  Rather, it will likely be **raw text response that can be parsed into one of a few file formats commonly used for data storage**.  The usual suspects include .csv, .xml, and .json files.
+
+3. Whereas the web browser capably parsed and executed the HTML code, **one or more facilities in R, Python, or other programming languages will be necessary for parsing the server response and converting it into a format for local storage** (e.g., matrices, dataframes, databases, lists, etc.).
 
 ## Install and play packages
 
@@ -700,6 +746,8 @@ ggplot(data = loudoun) +
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
 
+- Explanation of APIs drawn from Rochelle Terman's [Collecting Data from the Web](https://plsc-31101.github.io/course/collecting-data-from-the-web.html)
+
 ## Session Info
 
 
@@ -719,7 +767,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-17                  
+##  date     2020-12-08                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
@@ -787,7 +835,6 @@ devtools::session_info()
 ##  pkgbuild       1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
 ##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
-##  plyr           1.8.6   2020-03-03 [1] CRAN (R 4.0.0)
 ##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
 ##  processx       3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
 ##  ps             1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
@@ -802,7 +849,6 @@ devtools::session_info()
 ##  rebird       * 1.1.0   2019-10-24 [1] CRAN (R 4.0.0)
 ##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex         0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  reshape2       1.4.4   2020-04-09 [1] CRAN (R 4.0.0)
 ##  rgdal          1.5-17  2020-10-08 [1] CRAN (R 4.0.2)
 ##  rlang          0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
 ##  rmarkdown      2.4     2020-09-30 [1] CRAN (R 4.0.2)
