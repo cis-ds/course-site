@@ -208,19 +208,19 @@ grid
 ```
 
 ```
-## # A tibble: 10 x 3
-##        x .fitted .se.fit
-##    <int>   <dbl>   <dbl>
-##  1     1    6.27   0.748
-##  2     2    8.32   0.634
-##  3     3   10.4    0.533
-##  4     4   12.4    0.454
-##  5     5   14.5    0.408
-##  6     6   16.5    0.408
-##  7     7   18.6    0.454
-##  8     8   20.6    0.533
-##  9     9   22.7    0.634
-## 10    10   24.7    0.748
+## # A tibble: 10 x 2
+##        x .fitted
+##    <int>   <dbl>
+##  1     1    6.27
+##  2     2    8.32
+##  3     3   10.4 
+##  4     4   12.4 
+##  5     5   14.5 
+##  6     6   16.5 
+##  7     7   18.6 
+##  8     8   20.6 
+##  9     9   22.7 
+## 10    10   24.7
 ```
 
 Using this information, we can draw the best-fit line without using `geom_smooth()`, and instead build it directly from the predicted values.
@@ -248,19 +248,19 @@ sim1_resid
 ```
 
 ```
-## # A tibble: 30 x 9
-##        y     x .fitted .se.fit   .resid   .hat .sigma     .cooksd .std.resid
-##    <dbl> <int>   <dbl>   <dbl>    <dbl>  <dbl>  <dbl>       <dbl>      <dbl>
-##  1  4.20     1    6.27   0.748 -2.07    0.115    2.20 0.0651        -1.00   
-##  2  7.51     1    6.27   0.748  1.24    0.115    2.23 0.0232         0.598  
-##  3  2.13     1    6.27   0.748 -4.15    0.115    2.08 0.261         -2.00   
-##  4  8.99     2    8.32   0.634  0.665   0.0828   2.24 0.00449        0.315  
-##  5 10.2      2    8.32   0.634  1.92    0.0828   2.21 0.0374         0.910  
-##  6 11.3      2    8.32   0.634  2.97    0.0828   2.16 0.0897         1.41   
-##  7  7.36     3   10.4    0.533 -3.02    0.0586   2.16 0.0621        -1.41   
-##  8 10.5      3   10.4    0.533  0.130   0.0586   2.24 0.000115       0.0608 
-##  9 10.5      3   10.4    0.533  0.136   0.0586   2.24 0.000126       0.0637 
-## 10 12.4      4   12.4    0.454  0.00763 0.0424   2.24 0.000000278    0.00354
+## # A tibble: 30 x 8
+##        y     x .fitted   .resid .std.resid   .hat .sigma     .cooksd
+##    <dbl> <int>   <dbl>    <dbl>      <dbl>  <dbl>  <dbl>       <dbl>
+##  1  4.20     1    6.27 -2.07      -1.00    0.115    2.20 0.0651     
+##  2  7.51     1    6.27  1.24       0.598   0.115    2.23 0.0232     
+##  3  2.13     1    6.27 -4.15      -2.00    0.115    2.08 0.261      
+##  4  8.99     2    8.32  0.665      0.315   0.0828   2.24 0.00449    
+##  5 10.2      2    8.32  1.92       0.910   0.0828   2.21 0.0374     
+##  6 11.3      2    8.32  2.97       1.41    0.0828   2.16 0.0897     
+##  7  7.36     3   10.4  -3.02      -1.41    0.0586   2.16 0.0621     
+##  8 10.5      3   10.4   0.130      0.0608  0.0586   2.24 0.000115   
+##  9 10.5      3   10.4   0.136      0.0637  0.0586   2.24 0.000126   
+## 10 12.4      4   12.4   0.00763    0.00354 0.0424   2.24 0.000000278
 ## # … with 20 more rows
 ```
 
@@ -371,19 +371,19 @@ grid
 ```
 
 ```
-## # A tibble: 1,704 x 4
-##     year country     .fitted .se.fit
-##    <int> <fct>         <dbl>   <dbl>
-##  1  1952 Afghanistan    50.5   0.530
-##  2  1952 Albania        50.5   0.530
-##  3  1952 Algeria        50.5   0.530
-##  4  1952 Angola         50.5   0.530
-##  5  1952 Argentina      50.5   0.530
-##  6  1952 Australia      50.5   0.530
-##  7  1952 Austria        50.5   0.530
-##  8  1952 Bahrain        50.5   0.530
-##  9  1952 Bangladesh     50.5   0.530
-## 10  1952 Belgium        50.5   0.530
+## # A tibble: 1,704 x 3
+##     year country     .fitted
+##    <int> <fct>         <dbl>
+##  1  1952 Afghanistan    50.5
+##  2  1952 Albania        50.5
+##  3  1952 Algeria        50.5
+##  4  1952 Angola         50.5
+##  5  1952 Argentina      50.5
+##  6  1952 Australia      50.5
+##  7  1952 Austria        50.5
+##  8  1952 Bahrain        50.5
+##  9  1952 Bangladesh     50.5
+## 10  1952 Belgium        50.5
 ## # … with 1,694 more rows
 ```
 
@@ -512,19 +512,19 @@ augment(gapminder_mod) %>%
 ```
 
 ```
-## # A tibble: 1,704 x 9
-##    lifeExp  year .fitted .se.fit .resid     .hat .sigma  .cooksd .std.resid
-##      <dbl> <int>   <dbl>   <dbl>  <dbl>    <dbl>  <dbl>    <dbl>      <dbl>
-##  1    28.8  1952    50.5   0.530  -21.7 0.00208    11.6 0.00363       -1.87
-##  2    30.3  1957    52.1   0.463  -21.8 0.00158    11.6 0.00279       -1.88
-##  3    32.0  1962    53.8   0.401  -21.8 0.00119    11.6 0.00209       -1.87
-##  4    34.0  1967    55.4   0.348  -21.4 0.000895   11.6 0.00151       -1.84
-##  5    36.1  1972    57.0   0.307  -20.9 0.000698   11.6 0.00113       -1.80
-##  6    38.4  1977    58.7   0.285  -20.2 0.000599   11.6 0.000907      -1.74
-##  7    39.9  1982    60.3   0.285  -20.4 0.000599   11.6 0.000926      -1.76
-##  8    40.8  1987    61.9   0.307  -21.1 0.000698   11.6 0.00115       -1.81
-##  9    41.7  1992    63.5   0.348  -21.9 0.000895   11.6 0.00159       -1.88
-## 10    41.8  1997    65.2   0.401  -23.4 0.00119    11.6 0.00242       -2.01
+## # A tibble: 1,704 x 8
+##    lifeExp  year .fitted .resid .std.resid     .hat .sigma  .cooksd
+##      <dbl> <int>   <dbl>  <dbl>      <dbl>    <dbl>  <dbl>    <dbl>
+##  1    28.8  1952    50.5  -21.7      -1.87 0.00208    11.6 0.00363 
+##  2    30.3  1957    52.1  -21.8      -1.88 0.00158    11.6 0.00279 
+##  3    32.0  1962    53.8  -21.8      -1.87 0.00119    11.6 0.00209 
+##  4    34.0  1967    55.4  -21.4      -1.84 0.000895   11.6 0.00151 
+##  5    36.1  1972    57.0  -20.9      -1.80 0.000698   11.6 0.00113 
+##  6    38.4  1977    58.7  -20.2      -1.74 0.000599   11.6 0.000907
+##  7    39.9  1982    60.3  -20.4      -1.76 0.000599   11.6 0.000926
+##  8    40.8  1987    61.9  -21.1      -1.81 0.000698   11.6 0.00115 
+##  9    41.7  1992    63.5  -21.9      -1.88 0.000895   11.6 0.00159 
+## 10    41.8  1997    65.2  -23.4      -2.01 0.00119    11.6 0.00242 
 ## # … with 1,694 more rows
 ```
 
@@ -540,11 +540,11 @@ glance(gapminder_mod)
 ```
 
 ```
-## # A tibble: 1 x 11
+## # A tibble: 1 x 12
 ##   r.squared adj.r.squared sigma statistic  p.value    df logLik    AIC    BIC
-##       <dbl>         <dbl> <dbl>     <dbl>    <dbl> <int>  <dbl>  <dbl>  <dbl>
-## 1     0.190         0.189  11.6      399. 7.55e-80     2 -6598. 13202. 13218.
-## # … with 2 more variables: deviance <dbl>, df.residual <int>
+##       <dbl>         <dbl> <dbl>     <dbl>    <dbl> <dbl>  <dbl>  <dbl>  <dbl>
+## 1     0.190         0.189  11.6      399. 7.55e-80     1 -6598. 13202. 13218.
+## # … with 3 more variables: deviance <dbl>, df.residual <int>, nobs <int>
 ```
 
 While `broom` may not work with every model in R, it is compatible with a wide range of common statistical models. A full list of models with which `broom` is compatible can be found on the [GitHub page for the package](https://github.com/dgrtwo/broom).
@@ -771,26 +771,26 @@ scorecard
 ```
 
 ```
-## # A tibble: 1,733 x 14
-##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
-##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
-##  1 147244 Mill… IL    Priv…   0.638   1047 43149     55197   0.405    0.600
-##  2 147341 Monm… IL    Priv…   0.521   1045 45005     61101   0.413    0.558
-##  3 145691 Illi… IL    Priv…   0.540     NA 41869     63765   0.419    0.68 
-##  4 148131 Quin… IL    Priv…   0.662    991 39686     50166   0.379    0.511
-##  5 146667 Linc… IL    Priv…   0.529   1007 25542     52713   0.464    0.613
-##  6 150774 Holy… IN    Priv…   0.910   1053 39437     47367   0.286    0.407
-##  7 150941 Hunt… IN    Priv…   0.892   1019 36227     58563   0.350    0.654
-##  8 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
-##  9 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
-## 10 151111 Indi… IN    Publ…   0.740   1025 20451     76608   0.381    0.463
-## # … with 1,723 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
-## #   locale <fct>, openadmp <fct>
+## # A tibble: 1,753 x 15
+##    unitid name  state type  admrate satavg  cost netcost avgfacsal pctpell
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>   <dbl>     <dbl>   <dbl>
+##  1 420325 Yesh… NY    Priv…  0.531      NA 14874    4018     26253   0.958
+##  2 430485 The … NE    Priv…  0.667      NA 41627   39020     54000   0.529
+##  3 100654 Alab… AL    Publ…  0.899     957 22489   14444     63909   0.707
+##  4 102234 Spri… AL    Priv…  0.658    1130 51969   19718     60048   0.342
+##  5 100724 Alab… AL    Publ…  0.977     972 21476   13043     69786   0.745
+##  6 106467 Arka… AR    Publ…  0.902      NA 18627   12362     61497   0.396
+##  7 106704 Univ… AR    Publ…  0.911    1186 21350   14723     63360   0.430
+##  8 109651 Art … CA    Priv…  0.676      NA 64097   43010     69984   0.307
+##  9 110404 Cali… CA    Priv…  0.0662   1566 68901   23820    179937   0.142
+## 10 112394 Cogs… CA    Priv…  0.579      NA 35351   31537     66636   0.461
+## # … with 1,743 more rows, and 5 more variables: comprate <dbl>, firstgen <dbl>,
+## #   debt <dbl>, locale <fct>, openadmp <fct>
 ```
 
 Answer the following questions using the statistical modeling tools you have learned.
 
-1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
+1. What is the relationship between admission rate and net cost? Report this relationship using a scatterplot and a linear best-fit line.
 
     <details> 
       <summary>Click for the solution</summary>
@@ -798,7 +798,7 @@ Answer the following questions using the statistical modeling tools you have lea
 
     
     ```r
-    ggplot(scorecard, aes(admrate, cost)) +
+    ggplot(scorecard, aes(admrate, netcost)) +
       geom_point() +
       geom_smooth(method = "lm")
     ```
@@ -816,7 +816,7 @@ Answer the following questions using the statistical modeling tools you have lea
 
     
     ```r
-    scorecard_mod <- lm(cost ~ admrate, data = scorecard)
+    scorecard_mod <- lm(netcost ~ admrate, data = scorecard)
     tidy(scorecard_mod)
     ```
     
@@ -824,8 +824,8 @@ Answer the following questions using the statistical modeling tools you have lea
     ## # A tibble: 2 x 5
     ##   term        estimate std.error statistic   p.value
     ##   <chr>          <dbl>     <dbl>     <dbl>     <dbl>
-    ## 1 (Intercept)   47723.     1187.      40.2 2.08e-248
-    ## 2 admrate      -19972.     1714.     -11.7 3.06e- 30
+    ## 1 (Intercept)   23820.      657.     36.3  2.72e-214
+    ## 2 admrate       -5119.      934.     -5.48 4.93e-  8
     ```
     
       </p>
@@ -841,7 +841,7 @@ Answer the following questions using the statistical modeling tools you have lea
     ```r
     # model-building function
     type_model <- function(df) {
-      lm(cost ~ admrate, data = df)
+      lm(netcost ~ admrate, data = df)
     }
     
     # nest the data frame
@@ -856,9 +856,9 @@ Answer the following questions using the statistical modeling tools you have lea
     ## # Groups:   type [3]
     ##   type                data                 
     ##   <fct>               <list>               
-    ## 1 Private, nonprofit  <tibble [1,093 × 13]>
-    ## 2 Public              <tibble [552 × 13]>  
-    ## 3 Private, for-profit <tibble [88 × 13]>
+    ## 1 Private, nonprofit  <tibble [1,110 × 14]>
+    ## 2 Private, for-profit <tibble [91 × 14]>   
+    ## 3 Public              <tibble [552 × 14]>
     ```
     
     ```r
@@ -873,9 +873,9 @@ Answer the following questions using the statistical modeling tools you have lea
     ## # Groups:   type [3]
     ##   type                data                  model 
     ##   <fct>               <list>                <list>
-    ## 1 Private, nonprofit  <tibble [1,093 × 13]> <lm>  
-    ## 2 Public              <tibble [552 × 13]>   <lm>  
-    ## 3 Private, for-profit <tibble [88 × 13]>    <lm>
+    ## 1 Private, nonprofit  <tibble [1,110 × 14]> <lm>  
+    ## 2 Private, for-profit <tibble [91 × 14]>    <lm>  
+    ## 3 Public              <tibble [552 × 14]>   <lm>
     ```
     
     ```r
@@ -890,12 +890,12 @@ Answer the following questions using the statistical modeling tools you have lea
     ## # Groups:   type [3]
     ##   type         data         model term    estimate std.error statistic   p.value
     ##   <fct>        <list>       <lis> <chr>      <dbl>     <dbl>     <dbl>     <dbl>
-    ## 1 Private, no… <tibble [1,… <lm>  (Inter…   54497.     1270.     42.9  1.76e-234
-    ## 2 Private, no… <tibble [1,… <lm>  admrate  -20204.     1881.    -10.7  1.26e- 25
-    ## 3 Public       <tibble [55… <lm>  (Inter…   21844.      812.     26.9  4.55e-102
-    ## 4 Public       <tibble [55… <lm>  admrate   -1150.     1137.     -1.01 3.13e-  1
-    ## 5 Private, fo… <tibble [88… <lm>  (Inter…   28326.     3677.      7.70 4.36e- 11
-    ## 6 Private, fo… <tibble [88… <lm>  admrate    4993.     4718.      1.06 2.93e-  1
+    ## 1 Private, no… <tibble [1,… <lm>  (Inter…   26331.      739.   35.6    8.16e-185
+    ## 2 Private, no… <tibble [1,… <lm>  admrate   -5331.     1078.   -4.94   8.82e-  7
+    ## 3 Private, fo… <tibble [91… <lm>  (Inter…   27053.     3339.    8.10   5.50e- 12
+    ## 4 Private, fo… <tibble [91… <lm>  admrate    -282.     4512.   -0.0625 9.50e-  1
+    ## 5 Public       <tibble [55… <lm>  (Inter…   12391.      788.   15.7    3.16e- 46
+    ## 6 Public       <tibble [55… <lm>  admrate    2976.     1079.    2.76   5.99e-  3
     ```
     
     The same approach by using an anonymous function with the [one-sided formula format](http://r4ds.had.co.nz/iteration.html#shortcuts):
@@ -903,7 +903,7 @@ Answer the following questions using the statistical modeling tools you have lea
     
     ```r
     by_type %>%
-      mutate(model = map(data, ~lm(cost ~ admrate, data = .)),
+      mutate(model = map(data, ~lm(netcost ~ admrate, data = .)),
              results = map(model, tidy)) %>%
       unnest(results)
     ```
@@ -930,84 +930,91 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-29                  
+##  date     2020-12-08                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-07-02 [1] local         
-##  bookdown      0.20    2020-06-23 [1] CRAN (R 4.0.2)
-##  broom       * 0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
-##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  blogdown      0.20.1  2020-10-19 [1] local         
+##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom       * 0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools      2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
 ##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr       * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
+##  gapminder   * 0.3.0   2017-10-31 [1] CRAN (R 4.0.0)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
-##  glue          1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
-##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
-##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv          1.8-33  2020-08-27 [1] CRAN (R 4.0.2)
 ##  modelr      * 0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  nlme          3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
+##  nlme          3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
-##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.0   2020-09-05 [1] local         
+##  rcfss       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes       2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang         0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
-##  rmarkdown     2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
 ##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi       1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
 ##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
-##  tidyr       * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
-##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
-##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
-##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
+##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

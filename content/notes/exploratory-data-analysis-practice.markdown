@@ -31,7 +31,7 @@ usethis::use_course("uc-cfss/exploratory-data-analysis")
 
 {{% /alert %}}
 
-The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2016 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
 
 {{% alert warning %}}
 
@@ -47,21 +47,22 @@ glimpse(scorecard)
 ```
 
 ```
-## Rows: 1,733
-## Columns: 14
-## $ unitid    <int> 147244, 147341, 145691, 148131, 146667, 150774, 150941, 148…
-## $ name      <chr> "Millikin University", "Monmouth College", "Illinois Colleg…
-## $ state     <chr> "IL", "IL", "IL", "IL", "IL", "IN", "IN", "IL", "IL", "IN",…
-## $ type      <fct> "Private, nonprofit", "Private, nonprofit", "Private, nonpr…
-## $ admrate   <dbl> 0.6380, 0.5206, 0.5403, 0.6623, 0.5288, 0.9101, 0.8921, 0.4…
-## $ satavg    <dbl> 1047, 1045, NA, 991, 1007, 1053, 1019, 1068, 1009, 1025, 10…
-## $ cost      <int> 43149, 45005, 41869, 39686, 25542, 39437, 36227, 39175, 382…
-## $ avgfacsal <dbl> 55197, 61101, 63765, 50166, 52713, 47367, 58563, 70425, 656…
-## $ pctpell   <dbl> 0.4054, 0.4127, 0.4191, 0.3789, 0.4640, 0.2857, 0.3502, 0.3…
-## $ comprate  <dbl> 0.6004, 0.5577, 0.6800, 0.5110, 0.6132, 0.4069, 0.6540, 0.6…
-## $ firstgen  <dbl> 0.3184783, 0.3224401, 0.3109756, 0.3300493, 0.3122172, 0.28…
-## $ debt      <dbl> 20375.0, 20000.0, 22300.0, 13000.0, 17500.0, 11000.0, 22500…
-## $ locale    <fct> City, Town, Town, Town, Town, Suburb, Town, Suburb, City, C…
+## Rows: 1,753
+## Columns: 15
+## $ unitid    <int> 420325, 430485, 100654, 102234, 100724, 106467, 106704, 109…
+## $ name      <chr> "Yeshiva D'monsey Rabbinical College", "The Creative Center…
+## $ state     <chr> "NY", "NE", "AL", "AL", "AL", "AR", "AR", "CA", "CA", "CA",…
+## $ type      <fct> "Private, nonprofit", "Private, for-profit", "Public", "Pri…
+## $ admrate   <dbl> 0.5313, 0.6667, 0.8986, 0.6577, 0.9774, 0.9024, 0.9110, 0.6…
+## $ satavg    <dbl> NA, NA, 957, 1130, 972, NA, 1186, NA, 1566, NA, NA, 1053, 1…
+## $ cost      <int> 14874, 41627, 22489, 51969, 21476, 18627, 21350, 64097, 689…
+## $ netcost   <dbl> 4018, 39020, 14444, 19718, 13043, 12362, 14723, 43010, 2382…
+## $ avgfacsal <dbl> 26253, 54000, 63909, 60048, 69786, 61497, 63360, 69984, 179…
+## $ pctpell   <dbl> 0.9583, 0.5294, 0.7067, 0.3420, 0.7448, 0.3955, 0.4298, 0.3…
+## $ comprate  <dbl> 0.6667, 0.6667, 0.2685, 0.5864, 0.3001, 0.4069, 0.4113, 0.7…
+## $ firstgen  <dbl> NA, NA, 0.3658281, 0.2516340, 0.3434343, 0.4574780, 0.34595…
+## $ debt      <dbl> NA, 12000, 15500, 18270, 18679, 12000, 13100, 27811, 8013, …
+## $ locale    <fct> Suburb, City, City, City, City, Town, City, City, City, Cit…
 ## $ openadmp  <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No,…
 ```
 
@@ -85,7 +86,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 459 rows containing non-finite values (stat_boxplot).
+## Warning: Removed 475 rows containing non-finite values (stat_boxplot).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-boxplot-1.png" width="672" />
@@ -105,7 +106,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 459 rows containing non-finite values (stat_bin).
+## Warning: Removed 475 rows containing non-finite values (stat_bin).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-histo-freq-1.png" width="672" />
@@ -121,7 +122,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 459 rows containing non-finite values (stat_bin).
+## Warning: Removed 475 rows containing non-finite values (stat_bin).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-histo-freq-2.png" width="672" />
@@ -141,7 +142,7 @@ There are far fewer private, for-profit colleges than the other categories. A bo
   </p>
 </details>
 
-## What is the relationship between college attendance cost and faculty salaries? How does this relationship differ across types of colleges?
+## What is the relationship between net cost of attendance and faculty salaries? How does this relationship differ across types of colleges?
 
 <details> 
   <summary>Click for the solution</summary>
@@ -151,7 +152,7 @@ There are far fewer private, for-profit colleges than the other categories. A bo
 ```r
 # geom_point
 ggplot(data = scorecard,
-       mapping = aes(x = cost, y = avgfacsal)) +
+       mapping = aes(x = netcost, y = avgfacsal)) +
   geom_point() +
   geom_smooth()
 ```
@@ -161,11 +162,11 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 52 rows containing non-finite values (stat_smooth).
+## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 ```
 
 ```
-## Warning: Removed 52 rows containing missing values (geom_point).
+## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-1.png" width="672" />
@@ -173,7 +174,7 @@ ggplot(data = scorecard,
 ```r
 # geom_point with alpha transparency to reveal dense clusters
 ggplot(data = scorecard,
-       mapping = aes(x = cost, y = avgfacsal)) +
+       mapping = aes(x = netcost, y = avgfacsal)) +
   geom_point(alpha = .2) +
   geom_smooth()
 ```
@@ -183,9 +184,9 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 52 rows containing non-finite values (stat_smooth).
+## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 
-## Warning: Removed 52 rows containing missing values (geom_point).
+## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-2.png" width="672" />
@@ -193,13 +194,13 @@ ggplot(data = scorecard,
 ```r
 # geom_hex
 ggplot(data = scorecard,
-       mapping = aes(x = cost, y = avgfacsal)) +
+       mapping = aes(x = netcost, y = avgfacsal)) +
   geom_hex() +
   geom_smooth()
 ```
 
 ```
-## Warning: Removed 52 rows containing non-finite values (stat_binhex).
+## Warning: Removed 46 rows containing non-finite values (stat_binhex).
 ```
 
 ```
@@ -207,7 +208,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 52 rows containing non-finite values (stat_smooth).
+## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-3.png" width="672" />
@@ -215,7 +216,7 @@ ggplot(data = scorecard,
 ```r
 # geom_point with smoothing lines for each type
 ggplot(data = scorecard,
-       mapping = aes(x = cost,
+       mapping = aes(x = netcost,
                      y = avgfacsal,
                      color = type)) +
   geom_point(alpha = .2) +
@@ -227,9 +228,9 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 52 rows containing non-finite values (stat_smooth).
+## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 
-## Warning: Removed 52 rows containing missing values (geom_point).
+## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-4.png" width="672" />
@@ -237,7 +238,7 @@ ggplot(data = scorecard,
 ```r
 # geom_point with facets for each type
 ggplot(data = scorecard,
-       mapping = aes(x = cost,
+       mapping = aes(x = netcost,
                      y = avgfacsal,
                      color = type)) +
   geom_point(alpha = .2) +
@@ -250,9 +251,9 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 52 rows containing non-finite values (stat_smooth).
+## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 
-## Warning: Removed 52 rows containing missing values (geom_point).
+## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-5.png" width="672" />
@@ -276,7 +277,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 96 rows containing missing values (geom_point).
+## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-scatter-1.png" width="672" />
@@ -291,7 +292,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 96 rows containing missing values (geom_point).
+## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-jitter-1.png" width="672" />
@@ -306,7 +307,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 96 rows containing missing values (geom_point).
+## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-alpha-1.png" width="672" />
@@ -321,7 +322,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 96 rows containing non-finite values (stat_binhex).
+## Warning: Removed 108 rows containing non-finite values (stat_binhex).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-bin-1.png" width="672" />
@@ -341,11 +342,11 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 96 rows containing non-finite values (stat_smooth).
+## Warning: Removed 108 rows containing non-finite values (stat_smooth).
 ```
 
 ```
-## Warning: Removed 96 rows containing missing values (geom_point).
+## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-smooth-1.png" width="672" />
@@ -374,83 +375,91 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-10-05                  
+##  date     2020-12-08                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-07-02 [1] local         
-##  bookdown      0.20    2020-06-23 [1] CRAN (R 4.0.2)
-##  broom         0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
-##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  blogdown      0.20.1  2020-10-19 [1] local         
+##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools      2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
 ##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr       * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
-##  glue          1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hexbin        1.28.1  2020-02-03 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
-##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
-##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv          1.8-33  2020-08-27 [1] CRAN (R 4.0.2)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  nlme          3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
+##  nlme          3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
-##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  rcfss       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes       2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang         0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
-##  rmarkdown     2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
 ##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi       1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
 ##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
-##  tidyr       * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
-##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
-##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
-##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
+##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
