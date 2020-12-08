@@ -42,15 +42,19 @@ Most GET request URLs for API querying have three or four components:
 
 3. **Search Parameters**: A character string appended to a base URL that tells the server what to extract from the database; basically a series of filters used to point to specific parts of a database.
 
-4. **Response Format**: A character string indicating how the response should be formatted; usually one of .csv, .json, or .xml.
+4. **Response Format**: A character string indicating how the response should be formatted; usually one of `.csv`, `.json`, or `.xml`.
 
 ## Determining the shape of the API request
 
-You can play around with the parameters on the OMDB website, and look at the resulting API call and the query you get back:
+You can play around with the parameters on the [OMDB website](http://www.omdbapi.com/), and look at the resulting API call and the query you get back:
 
 ![](/img/ombd.png)
 
-Let's experiment with different values of the `title` and `year` fields. Notice the pattern in the request. For example for Title = Sharknado and Year = 2013, we get:
+Let's experiment with different values of the `title` and `year` fields. Notice the pattern in the request. For example let's consider the 2013 television disaster thriller *Sharknado*:
+
+{{< youtube 9LmAEVdPhl4 >}}
+
+Given the Title "Sharknado" and the release year "2013", we get:
 
 ``` http
 http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013
@@ -71,7 +75,7 @@ How can we create this request in R?
 
 ## `httr::GET()`
 
-`httr` is yet another star in the tidyverse, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, most importantly GET. HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there. An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/).
+`httr` is yet another star in the `tidyverse`, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, most importantly GET. HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there.^[An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/).]
 
 `httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`). They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output.
 
@@ -92,7 +96,9 @@ We can read the content of the server's response using the `content()` function:
 
 
 ```r
-content(sharknado, type = "text")
+content(sharknado, type = "text") %>%
+  # print the contents in a clear structure
+  prettify()
 ```
 
 ```
@@ -100,22 +106,46 @@ content(sharknado, type = "text")
 ```
 
 ```
-## [1] "{\"Title\":\"Sharknado\",\"Year\":\"2013\",\"Rated\":\"TV-14\",\"Released\":\"11 Jul 2013\",\"Runtime\":\"86 min\",\"Genre\":\"Action, Adventure, Comedy, Horror, Sci-Fi, Thriller\",\"Director\":\"Anthony C. Ferrante\",\"Writer\":\"Thunder Levin\",\"Actors\":\"Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo\",\"Plot\":\"When a freak hurricane swamps Los Angeles, nature's deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.\",\"Language\":\"English\",\"Country\":\"USA\",\"Awards\":\"1 win & 2 nominations.\",\"Poster\":\"https://m.media-amazon.com/images/M/MV5BODcwZWFiNTEtNDgzMC00ZmE2LWExMzYtNzZhZDgzNDc5NDkyXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg\",\"Ratings\":[{\"Source\":\"Internet Movie Database\",\"Value\":\"3.3/10\"},{\"Source\":\"Rotten Tomatoes\",\"Value\":\"78%\"}],\"Metascore\":\"N/A\",\"imdbRating\":\"3.3\",\"imdbVotes\":\"46,218\",\"imdbID\":\"tt2724064\",\"Type\":\"movie\",\"DVD\":\"N/A\",\"BoxOffice\":\"N/A\",\"Production\":\"The Asylum, Southward Films\",\"Website\":\"N/A\",\"Response\":\"True\"}"
+## {
+##     "Title": "Sharknado",
+##     "Year": "2013",
+##     "Rated": "TV-14",
+##     "Released": "11 Jul 2013",
+##     "Runtime": "86 min",
+##     "Genre": "Action, Adventure, Comedy, Horror, Sci-Fi, Thriller",
+##     "Director": "Anthony C. Ferrante",
+##     "Writer": "Thunder Levin",
+##     "Actors": "Ian Ziering, Tara Reid, John Heard, Cassandra Scerbo",
+##     "Plot": "When a freak hurricane swamps Los Angeles, nature's deadliest killer rules sea, land, and air as thousands of sharks terrorize the waterlogged populace.",
+##     "Language": "English",
+##     "Country": "USA",
+##     "Awards": "1 win & 2 nominations.",
+##     "Poster": "https://m.media-amazon.com/images/M/MV5BODcwZWFiNTEtNDgzMC00ZmE2LWExMzYtNzZhZDgzNDc5NDkyXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg",
+##     "Ratings": [
+##         {
+##             "Source": "Internet Movie Database",
+##             "Value": "3.3/10"
+##         },
+##         {
+##             "Source": "Rotten Tomatoes",
+##             "Value": "78%"
+##         }
+##     ],
+##     "Metascore": "N/A",
+##     "imdbRating": "3.3",
+##     "imdbVotes": "46,218",
+##     "imdbID": "tt2724064",
+##     "Type": "movie",
+##     "DVD": "N/A",
+##     "BoxOffice": "N/A",
+##     "Production": "The Asylum, Southward Films",
+##     "Website": "N/A",
+##     "Response": "True"
+## }
+## 
 ```
 
-What you can see here is **J**ava**S**cript **O**bject **N**otation and e**X**tensible **M**arkup **L**anguage (JSON) text encoded as plain text. JSON is a format for storing data like a nested array (list) built on key/value pairs. An example of JSON from [this wonderful site](https://zapier.com/learn/apis/chapter-3-data-formats/):
-
-```javascript
-{
-  "crust": "original",
-  "toppings": ["cheese", "pepperoni", "garlic"],
-  "status": "cooking",
-  "customer": {
-    "name": "Brian",
-    "phone": "573-111-1111"
-  }
-}
-```
+What you can see here is **J**ava**S**cript **O**bject **N**otation and e**X**tensible **M**arkup **L**anguage (JSON) text encoded as plain text. JSON is a format for storing data like a nested array (list) built on key/value pairs.
 
 We want to convert the results from JSON format to something easier to work with - notably a data frame. For relatively simple API queries, one can use `as_tibble()` to convert the output to a data frame:
 
@@ -146,73 +176,19 @@ Note there are two rows of observations when we would have expected a single row
 
 ## Additional information from `GET()`
 
-In addition, `httr` gives us access to lots of useful information about the quality of our response. For example, the header:
+In addition, `GET()` gives us access to lots of useful information about the quality of our response. For example, the URL that was constructed to generate the query:
 
 
 ```r
-headers(sharknado)
+sharknado$url
 ```
 
+
 ```
-## $date
-## [1] "Tue, 08 Dec 2020 17:49:11 GMT"
-## 
-## $`content-type`
-## [1] "application/json; charset=utf-8"
-## 
-## $`transfer-encoding`
-## [1] "chunked"
-## 
-## $connection
-## [1] "keep-alive"
-## 
-## $`set-cookie`
-## [1] "__cfduid=d50a1632c056806fcc99652e017bc15781607449751; expires=Thu, 07-Jan-21 17:49:11 GMT; path=/; domain=.omdbapi.com; HttpOnly; SameSite=Lax"
-## 
-## $`cache-control`
-## [1] "public, max-age=86400"
-## 
-## $expires
-## [1] "Tue, 08 Dec 2020 18:28:33 GMT"
-## 
-## $`last-modified`
-## [1] "Tue, 08 Dec 2020 17:28:33 GMT"
-## 
-## $vary
-## [1] "*, Accept-Encoding"
-## 
-## $`x-aspnet-version`
-## [1] "4.0.30319"
-## 
-## $`x-powered-by`
-## [1] "ASP.NET"
-## 
-## $`access-control-allow-origin`
-## [1] "*"
-## 
-## $`cf-cache-status`
-## [1] "HIT"
-## 
-## $age
-## [1] "1238"
-## 
-## $`cf-request-id`
-## [1] "06e511c6ff0000043a65b87000000001"
-## 
-## $server
-## [1] "cloudflare"
-## 
-## $`cf-ray`
-## [1] "5fe852519d59043a-ORD"
-## 
-## $`content-encoding`
-## [1] "gzip"
-## 
-## attr(,"class")
-## [1] "insensitive" "list"
+## [1] "http://www.omdbapi.com/?t=Sharknado&y=2013&apikey=[apikey]"
 ```
 
-And also a handy means to extract specifically the HTTP status code:
+We can also extract the HTTP status code from the query:
 
 
 ```r
@@ -222,6 +198,8 @@ status_code(sharknado)
 ```
 ## [1] 200
 ```
+
+Status codes are useful indications of how the query was handled by the server and are important for troubleshooting issues when you do not receive the intended response.
 
 Code^[[HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html)] | Status
 -------|--------|
@@ -267,7 +245,8 @@ Now we need to construct the list of movies to search over.
 
 
 ```r
-sharknados <- c("Sharknado", "Sharknado 2", "Sharknado 3", "Sharknado 4", "Sharknado 5")
+sharknados <- c("Sharknado", "Sharknado 2", "Sharknado 3",
+                "Sharknado 4", "Sharknado 5")
 ```
 
 Finally we can apply the function to each film. To avoid overwhelming the server with too many queries, we can slow down the iteration using `slowly()`.
