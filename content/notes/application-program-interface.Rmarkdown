@@ -22,6 +22,7 @@ knitr::opts_chunk$set(cache = TRUE)
 library(tidyverse)
 library(forcats)
 library(broom)
+library(wbstats)
 library(wordcloud)
 library(tidytext)
 library(viridis)
@@ -106,65 +107,91 @@ Why do we want this?
 * ease
 * scaling
 
-## Sightings of birds: `rebird`
+## Obtaining World Bank indicators
 
-[`rebird`](https://github.com/ropensci/rebird) is an R interface for the [ebird](http://ebird.org/content/ebird/) database. e-Bird lets birders upload sightings of birds, and allows everyone access to those data.
+The [World Bank](https://www.worldbank.org/) contains a rich and detailed set of socioeconomic indicators spanning several decades and dozens of topics. Their data is available for bulk download as CSV files from their [website](https://data.worldbank.org/); you previously practiced [importing and wrangling this data for all countries](/homework/programming/). However as you noted in that assignment, frequently you only need to obtain a handful of indicators or a subset of countries.
 
-```{r rebird-install, eval = FALSE}
-install.packages("rebird")
+To provide more granular access to this information, the World Bank provides a [RESTful API](https://datahelpdesk.worldbank.org/knowledgebase/topics/125589) for querying and obtaining a portion of their database programmatically. The [`wbstats`](http://nset-ornl.github.io/wbstats/) implements this API in R to allow for relatively easy access to the API and return the results in a tidy data frame.
+
+### Finding available data with `wb_cachelist`
+
+`wb_cachelist` contains a snapshot of available countries, indicators, and other relevant information obtainable through the WB API.
+
+```{r wb-cachelist}
+library(wbstats)
+
+str(wb_cachelist, max.level = 1)
+glimpse(wb_cachelist$countries)
 ```
 
-```{r rebird, message = FALSE}
-library(rebird)
+### Search available data with `wb_search()`
+
+`wb_search()` searches through the `wb_cachelist$indicators` data frame to find indicators that match the search pattern.^[Alternatively, you can use the [web interface](https://data.worldbank.org/indicator) to determine specific indicators and their IDs.]
+
+```{r wb-search}
+wb_search("unemployment")
+wb_search("labor force")
+wb_search("labor force", fields = "indicator")  # limit search to just the indicator name
 ```
 
-### Search birds by geography
+### Downloading data with `wb_data()`
 
-The ebird website categorizes some popular locations as "Hotspots". These are areas where there are both lots of birds and lots of birders. Once such location is at Lincoln Park Zoo in Chicago. You can see data for this site at [http://ebird.org/ebird/hotspot/L1573785](http://ebird.org/ebird/hotspot/L1573785)
+Once you have the set of indicators you would like to obtain, you can use the `wb_data()` function to generate the API query and download the results. Let's say we want to obtain information on [the percent of females participating in the labor force](https://data.worldbank.org/indicator/SL.TLF.TOTL.FE.ZS?view=chart). The indicator ID is `SL.TLF.TOTL.FE.ZS`. We can download the indicator for all countries from 1990-2020 using:
 
-At that link, you can see a page like this:
-
-![Lincoln Park Zoo](/img/lincoln_park_zoo.png)
-
-The data already look to be organized in a data frame! `rebird` allows us to read these data directly into R.
-
-{{% alert note %}}
-
-The ID code for Lincoln Park Zoo is **L1573785**.
-
-{{% /alert %}}
-
-```{r rebird-lincoln-park}
-ebirdhotspot(locID = "L1573785", key = getOption("EBIRD_KEY")) %>%
-  as_tibble()
+```{r female-labor}
+female_labor <- wb_data(
+  indicator = "SL.TLF.TOTL.FE.ZS",
+  start_date = 1990,
+  end_date = 2020
+)
+female_labor
 ```
 
-We can use the function `ebirdgeo` to get a list for an area. (Note that South and West are negative):
+Note the column containing our indicator uses the indicator ID as its name. This is rather unintuitive, so we can adjust it directly in the function.
 
-```{r rebird-location}
-chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298, key = getOption("EBIRD_KEY"))
-chibirds %>%
-  as_tibble() %>%
-  glimpse()
+```{r female-labor-clean}
+female_labor <- wb_data(
+  indicator = c("fem_lab_part" = "SL.TLF.TOTL.FE.ZS"),
+  start_date = 1990,
+  end_date = 2020
+)
+female_labor
 ```
 
-**Note**: Check the defaults on this function. e.g. radius of circle, time of year.
-
-We can also search by "region", which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters **FR**:
-
-```{r rebird-france}
-frenchbirds <- ebirdregion("FR", key = getOption("EBIRD_KEY"))
-
-frenchbirds %>%
-  as_tibble() %>%
-  glimpse()
+```{r female-labor-plot, dependson = "female-labor-clean", message = FALSE, warning = FALSE}
+ggplot(data = female_labor, mapping = aes(x = date, y = fem_lab_part)) +
+  geom_line(mapping = aes(group = country), alpha = .1) +
+  geom_smooth() +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(
+    title = "Labor force participation",
+    x = "Year",
+    y = "Percent of total labor force which is female",
+    caption = "Source: World Bank"
+  )
 ```
 
-`rebird` **knows where you are**:
+By default, `wb_data()` returns queries as data frames in a wide format. So if we request multiple indicators, each indicator will be stored in its own column.
 
-```{r rebird-where-am-i}
-ebirdgeo(key = getOption("EBIRD_KEY")) %>%
-  as_tibble()
+```{r female-educ, message = FALSE, warning = FALSE}
+female_vars <- wb_data(
+  indicator = c("fem_lab_part" = "SL.TLF.TOTL.FE.ZS",
+                "fem_educ_sec" = "SE.SEC.CUAT.UP.FE.ZS"),
+  start_date = 1990,
+  end_date = 2020
+)
+
+ggplot(data = female_vars, mapping = aes(x = fem_educ_sec, y = fem_lab_part)) +
+  geom_point(alpha = .2) +
+  geom_smooth() +
+  scale_x_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(
+    title = "Female labor force participation",
+    x = "Percent of females 25+ who completed secondary school",
+    y = "Percent of total labor force which is female",
+    caption = "Source: World Bank"
+  )
 ```
 
 ## Searching geographic info: `geonames`
