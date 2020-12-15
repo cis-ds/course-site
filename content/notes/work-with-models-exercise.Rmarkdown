@@ -21,7 +21,8 @@ knitr::opts_chunk$set(cache = TRUE,
 
 ```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
 library(tidyverse)
-library(broom)
+library(tidymodels)
+library(rcfss)
 
 set.seed(123)
 
@@ -33,306 +34,173 @@ theme_set(theme_minimal())
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("uc-cfss/working-with-statistical-models")
+usethis::use_course("uc-cfss/statistical-learning")
 ```
 
 {{% /alert %}}
 
-## Load `socviz::county_data`
+## Exercise: linear regression with `scorecard`
 
-```{r county-data}
-library(socviz)
+Recall the `scorecard` data set which contains information on U.S. institutions of higher learning.
 
-data("county_data")
-glimpse(county_data)
+```{r scorecard}
+scorecard
 ```
 
-{{% alert note %}}
+Answer the following questions using the statistical modeling tools you have learned.
 
-Use `?county_data` to view the documentation for the dataset.
-
-{{% /alert %}}
-
-## Visualize a basic linear regression model
-
-Generate a graph using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Overlay a linear regression best fit line on top of a scatterplot.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-```{r lm-chart, dependson = "county-data"}
-ggplot(data = county_data,
-       mapping = aes(x = hh_income, y = per_dem_2016)) +
-  # use alpha to increase transparency of individual points
-  geom_point(alpha = .1) +
-  # manually specify a linear regression line
-  geom_smooth(method = "lm") +
-  # format labels and axes tick marks
-  scale_x_continuous(labels = scales::dollar) +
-  scale_y_continuous(labels = scales::percent) +
-  labs(title = "2016 U.S. presidential election",
-       subtitle = "By county",
-       x = "Median household income",
-       y = "2016 Democratic presidential vote")
-```
-
-  </p>
-</details>
-
-## Combine plots to show different models
-
-Generate three separate graphs using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Each graph should use a different statistical algorithm:
-
-1. A standard linear regression model
-1. A linear regression model with a second-order polynomial for income
-1. A generalized additive model (`method = "gam"`)
-
-Combine them together into a single plotting object using [`patchwork`](https://github.com/thomasp85/patchwork).
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-```{r combined-chart, dependson = "county-data", fig.asp = 1.4}
-library(patchwork)
-
-# create core ggplot() which contains components used for all plots
-p <- ggplot(
-  data = county_data,
-  mapping = aes(x = hh_income, y = per_dem_2016)
-) +
-  # use alpha to increase transparency of individual points
-  geom_point(alpha = .1) +
-  # format labels and axes tick marks
-  scale_x_continuous(labels = scales::dollar) +
-  scale_y_continuous(labels = scales::percent) +
-  labs(
-    x = "Median household income",
-    y = "2016 Democratic presidential vote"
-  )
-
-# plot using linear regression model
-p_lm <- p +
-  geom_smooth(method = "lm")
-
-# plot using polynomial for income
-p_lm_2 <- p +
-  geom_smooth(method = "lm", formula = y ~ poly(x, degree = 2))
-
-# plot using gam
-p_gam <- p +
-  geom_smooth(method = "gam")
-
-# combine together
-p_lm +
-  p_lm_2 +
-  p_gam +
-  plot_layout(ncol = 1) +
-  plot_annotation(
-    title = "2016 U.S. presidential election",
-    subtitle = "By county"
-  )
-```
-
-  </p>
-</details>
-
-## Show several fits at once with a legend
-
-Generate a single graph using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Draw three separate smoothing lines using the following methods:
-
-1. A standard linear regression model
-1. A linear regression model with a second-order polynomial for income
-1. A generalized additive model (`method = "gam"`)
-
-The graph should be a single `ggplot()` object with properly labeled elements.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-```{r mult-fit-legend, dependson = "county-data"}
-# reuse core ggplot object, adding three separate geom_smooth() functions
-p +
-  geom_smooth(
-    method = "lm",
-    mapping = aes(color = "OLS", fill = "OLS")
-  ) +
-  geom_smooth(
-    method = "lm",
-    formula = y ~ poly(x, degree = 2),
-    mapping = aes(color = "Polynomial", fill = "Polynomial")
-  ) +
-  geom_smooth(
-    method = "gam",
-    mapping = aes(color = "GAM", fill = "GAM")
-  ) +
-  # use an appropriate color palette
-  scale_color_brewer(
-    # qualitative variable
-    type = "qual",
-    # use the same palette for the fill aesthetic too
-    aesthetics = c("color", "fill")
-    ) +
-  # add meaningful labels
-  labs(
-    title = "2016 U.S. presidential election",
-    subtitle = "By county",
-    color = "Models",
-    fill = "Models"
-    ) +
-  # move the legend to the bottom
-  theme(legend.position = "bottom")
-```
-
-  </p>
-</details>
-
-## Generate a coefficient plot
-
-Estimate a linear regression model predicting 2016 Democratic presidential vote share as a function of percentage of female persons (`female`), percentage of white persons (`white`), percentage of black persons (`black`), and median household income (`hh_income`) in thousands of dollars. To make the graph easier to interpret, measure median household income in thousands of dollars (i.e. divide `hh_income` by 1,000) and multiply `per_dem_2016` by 100 (so it scales between 0-100).
-
-Generate a coefficient plot to visualize the OLS estimates and confidence intervals.
-
-1. Generate the plot manually using `broom::tidy()` to extract the coefficient estimates and 95% confidence intervals from the model object.
+1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
 
     <details> 
       <summary>Click for the solution</summary>
       <p>
+
+    ```{r scorecard-point}
+    ggplot(scorecard, aes(admrate, cost)) +
+      geom_point() +
+      geom_smooth(method = "lm")
+    ```    
     
-    ```{r ols-mod, dependson = "county-data"}
-    # modify hh_income
-    county_data <- county_data %>%
-      mutate(hh_income_10 = hh_income / 1e03,
-             per_dem_2016_100 = per_dem_2016 * 100)
-    
-    # estimate ols model using lm()
-    vote_mod <- lm(per_dem_2016_100 ~ female + white + black + hh_income_10,
-                   data = county_data)
-    summary(vote_mod)
-    ```
-    
-    ```{r ols-mod-viz-broom, dependson = c("county-data", "ols-mod")}
-    # extract coefficients using tidy()
-    vote_mod_coef <- tidy(vote_mod, conf.int = TRUE)
-    vote_mod_coef
-    
-    # clean up the term names to be human readable
-    vote_mod_coef %>%
-      filter(term != "(Intercept)") %>%
-      mutate(
-        # fix variable labels
-        term = recode(
-          term,
-          black = "Percent black",
-          female = "Percent female",
-          hh_income_10 = "Median household income",
-          white = "Percent white"
-        )
-      ) %>%
-      # generate plot
-      ggplot(mapping = aes(x = reorder(term, estimate),
-                           y = estimate,
-                           ymin = conf.low,
-                           ymax = conf.high)) +
-      geom_pointrange() +
-      coord_flip() +
-      labs(x = "Coefficient",
-           y = "Value")
+      </p>
+    </details>
+
+1. Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    ```{r scorecard-mod}
+    scorecard_fit <- linear_reg() %>%
+      set_engine("lm") %>%
+      fit(cost ~ admrate, data = scorecard)
+    tidy(scorecard_fit)
     ```
     
       </p>
     </details>
 
-1. Use the `coefplot` package to automatically generate the coefficient plot.
+1. Estimate a linear regression of the relationship between admission rate and cost, while also accounting for type of college and percent of Pell Grant recipients, and report your results in a tidy table.
 
     <details> 
       <summary>Click for the solution</summary>
       <p>
-    
-    ```{r ols-mod-viz-coefplot, dependson = c("county-data", "ols-mod")}
-    library(coefplot)
-    coefplot(vote_mod, sort = "magnitude", intercept = FALSE)
+
+    ```{r scorecard-mult-var}
+     scorecard_fit <- linear_reg() %>%
+      set_engine("lm") %>%
+      fit(cost ~ admrate + type + pctpell, data = scorecard)
+    tidy(scorecard_fit)
     ```
     
       </p>
     </details>
 
-## Visualize marginal effects
+## Exercise: logistic regression with `mental_health`
 
-Estimate a logistic regression model predicting the county-level winner of the 2016 presidential election (`winner`) as a function of percentage of female persons (`female`), percentage of white persons (`white`), percentage of black persons (`black`), median household income (`hh_income`) in thousands of dollars, and census region  (`census_region`). To make the graph easier to interpret, measure median household income in thousands of dollars (i.e. divide `hh_income` by 1,000).
+Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
-{{% alert note %}}
+Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
 
-The dependent variable in a `glm()` object must be either a numeric column or a factor column. You should first convert `winner` to either be numeric or a factor prior to estimating the model.
-
-{{% /alert %}}
-
-Plot the average marginal effect of each variable using the `margins` package to visualize the logistic regression estimates and confidence intervals.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-```{r logit-mod, dependson = "county-data"}
-# convert winner to a factor column
-county_data <- county_data %>%
-  mutate(winner = factor(winner))
-
-# estimate logistic regression model using glm()
-vote_logit_mod <- glm(
-  winner ~ female + black + white + hh_income_10 + census_region,
-  family = "binomial",
-  data = county_data
-)
-
-summary(vote_logit_mod)
+```{r mental-health}
+mental_health
 ```
 
-```{r logit-mod-margins, dependson = c("county-data", "logit-mod")}
-library(margins)
+1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and a 95% confidence interval, and plot the logistic regression predictions using `ggplot`.
 
-# estimate marginal effects
-vote_logit_marg <- margins(vote_logit_mod)
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
 
-# extract average marginal effects
-vote_logit_marg_tbl <- summary(vote_logit_marg) %>%
-  as_tibble() %>%
-  mutate(
-    # remove prefixes from variable labels using socviz::prefix_strip
-    factor = prefix_strip(factor, "census_region"),
-    # fix variable labels
-    factor = recode(
-      factor,
-      Black = "Percent black",
-      Female = "Percent female",
-      Hh_income_10 = "Median household income",
-      White = "Percent white"
+    ```{r mh-factor}
+    # convert vote96 to a factor column
+    mental_health <- rcfss::mental_health %>%
+      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
+    ```
+    
+    ```{r mh-model, dependson = "mh-factor"}
+    # estimate model
+    mh_mod <- logistic_reg() %>%
+      set_engine("glm") %>%
+      fit(vote96 ~ mhealth, data = mental_health)
+    
+    # generate predicted probabilities + confidence intervals
+    new_points <- tibble(
+      mhealth = seq(
+        from = min(mental_health$mhealth),
+        to = max(mental_health$mhealth)
+      )
     )
-  )
-vote_logit_marg_tbl
+    
+    bind_cols(
+      new_points,
+      # predicted probabilities
+      predict(mh_mod, new_data = new_points, type = "prob"),
+      # confidence intervals
+      predict(mh_mod, new_data = new_points, type = "conf_int")
+    ) %>%
+      # graph the predictions
+      ggplot(mapping = aes(x = mhealth, y = .pred_Voted)) +
+      geom_pointrange(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted)) +
+      labs(title = "Relationship Between Mental Health and Voter Turnout",
+           x = "Mental health status",
+           y = "Predicted Probability of Voting")
+    ```    
+    
+      </p>
+    </details>
 
-# plot using ggplot()
-ggplot(data = vote_logit_marg_tbl,
-       mapping = aes(x = reorder(factor, AME),
-                     y = AME,
-                     ymin = lower,
-                     ymax = upper)) +
-  # add line indicating null (0) effect
-  geom_hline(yintercept = 0, color = "gray80") +
-  # add point range plot to visualize estimate and confidence interval
-  geom_pointrange() +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Average marginal effect")
-```
+1. Estimate a second logistic regression model of voter turnout using using age and gender (i.e. the `female` column). Extract predicted probabilities and confidence intervals for all possible values of age, and visualize using `ggplot()`.
 
-  </p>
-</details>
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
 
-
-### Session Info
+    ```{r mh-model-all, dependson="mental-health"}
+    # recode female
+    mental_health <- rcfss::mental_health %>%
+      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")),
+             female = factor(female, labels = c("Male", "Female")))
+    
+    # estimate model
+    mh_int_mod <- logistic_reg() %>%
+      set_engine("glm") %>%
+      fit(vote96 ~ age * female, data = mental_health)
+    
+    # generate predicted probabilities + confidence intervals
+    new_points <- expand.grid(
+      age = seq(
+        from = min(mental_health$age),
+        to = max(mental_health$age)
+      ),
+      female = unique(mental_health$female)
+    )
+    
+    bind_cols(
+      new_points,
+      # predicted probabilities
+      predict(mh_int_mod, new_data = new_points, type = "prob"),
+      # confidence intervals
+      predict(mh_int_mod, new_data = new_points, type = "conf_int")
+    ) %>%
+      # graph the predictions
+      ggplot(mapping = aes(x = age, y = .pred_Voted, color = female)) +
+      # predicted probability
+      geom_line(linetype = 2) +
+      # confidence interval
+      geom_ribbon(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted,
+                                fill = female), alpha = .2) +
+      scale_color_viridis_d(end = 0.7, aesthetics = c("color", "fill"),
+                            name = NULL) +
+      labs(title = "Relationship Between Age and Voter Turnout",
+           x = "Age",
+           y = "Predicted Probability of Voting")
+    ```
+    
+      </p>
+    </details>
+    
+## Session Info
 
 ```{r child = here::here("R", "_session-info.Rmd")}
 ```

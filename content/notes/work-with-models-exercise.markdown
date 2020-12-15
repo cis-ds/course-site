@@ -18,7 +18,8 @@ menu:
 
 ```r
 library(tidyverse)
-library(broom)
+library(tidymodels)
+library(rcfss)
 
 set.seed(123)
 
@@ -30,451 +31,241 @@ theme_set(theme_minimal())
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("uc-cfss/working-with-statistical-models")
+usethis::use_course("uc-cfss/statistical-learning")
 ```
 
 {{% /alert %}}
 
-## Load `socviz::county_data`
+## Exercise: linear regression with `scorecard`
+
+Recall the `scorecard` data set which contains information on U.S. institutions of higher learning.
 
 
 ```r
-library(socviz)
-
-data("county_data")
-glimpse(county_data)
+scorecard
 ```
 
 ```
-## Observations: 3,195
-## Variables: 32
-## $ id               <chr> "0", "01000", "01001", "01003", "01005", "01007…
-## $ name             <chr> NA, "1", "Autauga County", "Baldwin County", "B…
-## $ state            <fct> NA, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL, AL,…
-## $ census_region    <fct> NA, South, South, South, South, South, South, S…
-## $ pop_dens         <fct> "[   50,  100)", "[   50,  100)", "[   50,  100…
-## $ pop_dens4        <fct> "[ 45,  118)", "[ 45,  118)", "[ 45,  118)", "[…
-## $ pop_dens6        <fct> "[ 82,  215)", "[ 82,  215)", "[ 82,  215)", "[…
-## $ pct_black        <fct> "[10.0,15.0)", "[25.0,50.0)", "[15.0,25.0)", "[…
-## $ pop              <int> 318857056, 4849377, 55395, 200111, 26887, 22506…
-## $ female           <dbl> 50.8, 51.5, 51.5, 51.2, 46.5, 46.0, 50.6, 45.2,…
-## $ white            <dbl> 77.7, 69.8, 78.1, 87.3, 50.2, 76.3, 96.0, 27.2,…
-## $ black            <dbl> 13.2, 26.6, 18.4, 9.5, 47.6, 22.1, 1.8, 69.9, 4…
-## $ travel_time      <dbl> 25.5, 24.2, 26.2, 25.9, 24.6, 27.6, 33.9, 26.9,…
-## $ land_area        <dbl> 3531905.43, 50645.33, 594.44, 1589.78, 884.88, …
-## $ hh_income        <int> 53046, 43253, 53682, 50221, 32911, 36447, 44145…
-## $ su_gun4          <fct> NA, NA, "[11,54]", "[11,54]", "[ 5, 8)", "[11,5…
-## $ su_gun6          <fct> NA, NA, "[10,12)", "[10,12)", "[ 7, 8)", "[10,1…
-## $ fips             <dbl> 0, 1000, 1001, 1003, 1005, 1007, 1009, 1011, 10…
-## $ votes_dem_2016   <int> NA, NA, 5908, 18409, 4848, 1874, 2150, 3530, 37…
-## $ votes_gop_2016   <int> NA, NA, 18110, 72780, 5431, 6733, 22808, 1139, …
-## $ total_votes_2016 <int> NA, NA, 24661, 94090, 10390, 8748, 25384, 4701,…
-## $ per_dem_2016     <dbl> NA, NA, 0.23956855, 0.19565310, 0.46660250, 0.2…
-## $ per_gop_2016     <dbl> NA, NA, 0.7343579, 0.7735147, 0.5227141, 0.7696…
-## $ diff_2016        <int> NA, NA, 12202, 54371, 583, 4859, 20658, 2391, 1…
-## $ per_dem_2012     <dbl> NA, NA, 0.2657577, 0.2156657, 0.5125229, 0.2621…
-## $ per_gop_2012     <dbl> NA, NA, 0.7263374, 0.7738975, 0.4833755, 0.7306…
-## $ diff_2012        <int> NA, NA, 11012, 47443, 334, 3931, 17780, 2808, 7…
-## $ winner           <chr> NA, NA, "Trump", "Trump", "Trump", "Trump", "Tr…
-## $ partywinner16    <chr> NA, NA, "Republican", "Republican", "Republican…
-## $ winner12         <chr> NA, NA, "Romney", "Romney", "Obama", "Romney", …
-## $ partywinner12    <chr> NA, NA, "Republican", "Republican", "Democrat",…
-## $ flipped          <chr> NA, NA, "No", "No", "Yes", "No", "No", "No", "N…
+## # A tibble: 1,733 x 14
+##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
+##  1 147244 Mill… IL    Priv…   0.638   1047 43149     55197   0.405    0.600
+##  2 147341 Monm… IL    Priv…   0.521   1045 45005     61101   0.413    0.558
+##  3 145691 Illi… IL    Priv…   0.540     NA 41869     63765   0.419    0.68 
+##  4 148131 Quin… IL    Priv…   0.662    991 39686     50166   0.379    0.511
+##  5 146667 Linc… IL    Priv…   0.529   1007 25542     52713   0.464    0.613
+##  6 150774 Holy… IN    Priv…   0.910   1053 39437     47367   0.286    0.407
+##  7 150941 Hunt… IN    Priv…   0.892   1019 36227     58563   0.350    0.654
+##  8 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
+##  9 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
+## 10 151111 Indi… IN    Publ…   0.740   1025 20451     76608   0.381    0.463
+## # … with 1,723 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
+## #   locale <fct>, openadmp <fct>
 ```
 
-{{% alert note %}}
+Answer the following questions using the statistical modeling tools you have learned.
 
-Use `?county_data` to view the documentation for the dataset.
-
-{{% /alert %}}
-
-## Visualize a basic linear regression model
-
-Generate a graph using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Overlay a linear regression best fit line on top of a scatterplot.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-
-```r
-ggplot(data = county_data,
-       mapping = aes(x = hh_income, y = per_dem_2016)) +
-  # use alpha to increase transparency of individual points
-  geom_point(alpha = .1) +
-  # manually specify a linear regression line
-  geom_smooth(method = "lm") +
-  # format labels and axes tick marks
-  scale_x_continuous(labels = scales::dollar) +
-  scale_y_continuous(labels = scales::percent) +
-  labs(title = "2016 U.S. presidential election",
-       subtitle = "By county",
-       x = "Median household income",
-       y = "2016 Democratic presidential vote")
-```
-
-<img src="/notes/work-with-models-exercise_files/figure-html/lm-chart-1.png" width="672" />
-
-  </p>
-</details>
-
-## Combine plots to show different models
-
-Generate three separate graphs using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Each graph should use a different statistical algorithm:
-
-1. A standard linear regression model
-1. A linear regression model with a second-order polynomial for income
-1. A generalized additive model (`method = "gam"`)
-
-Combine them together into a single plotting object using [`patchwork`](https://github.com/thomasp85/patchwork).
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-
-```r
-library(patchwork)
-
-# create core ggplot() which contains components used for all plots
-p <- ggplot(
-  data = county_data,
-  mapping = aes(x = hh_income, y = per_dem_2016)
-) +
-  # use alpha to increase transparency of individual points
-  geom_point(alpha = .1) +
-  # format labels and axes tick marks
-  scale_x_continuous(labels = scales::dollar) +
-  scale_y_continuous(labels = scales::percent) +
-  labs(
-    x = "Median household income",
-    y = "2016 Democratic presidential vote"
-  )
-
-# plot using linear regression model
-p_lm <- p +
-  geom_smooth(method = "lm")
-
-# plot using polynomial for income
-p_lm_2 <- p +
-  geom_smooth(method = "lm", formula = y ~ poly(x, degree = 2))
-
-# plot using gam
-p_gam <- p +
-  geom_smooth(method = "gam")
-
-# combine together
-p_lm +
-  p_lm_2 +
-  p_gam +
-  plot_layout(ncol = 1) +
-  plot_annotation(
-    title = "2016 U.S. presidential election",
-    subtitle = "By county"
-  )
-```
-
-<img src="/notes/work-with-models-exercise_files/figure-html/combined-chart-1.png" width="672" />
-
-  </p>
-</details>
-
-## Show several fits at once with a legend
-
-Generate a single graph using `ggplot2` to visualize the relationship between median household income (`hh_income`) and percent of votes cast for the Democratic presidential candidate in 2016 (`per_dem_2016`). Draw three separate smoothing lines using the following methods:
-
-1. A standard linear regression model
-1. A linear regression model with a second-order polynomial for income
-1. A generalized additive model (`method = "gam"`)
-
-The graph should be a single `ggplot()` object with properly labeled elements.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-
-```r
-# reuse core ggplot object, adding three separate geom_smooth() functions
-p +
-  geom_smooth(
-    method = "lm",
-    mapping = aes(color = "OLS", fill = "OLS")
-  ) +
-  geom_smooth(
-    method = "lm",
-    formula = y ~ poly(x, degree = 2),
-    mapping = aes(color = "Polynomial", fill = "Polynomial")
-  ) +
-  geom_smooth(
-    method = "gam",
-    mapping = aes(color = "GAM", fill = "GAM")
-  ) +
-  # use an appropriate color palette
-  scale_color_brewer(
-    # qualitative variable
-    type = "qual",
-    # use the same palette for the fill aesthetic too
-    aesthetics = c("color", "fill")
-    ) +
-  # add meaningful labels
-  labs(
-    title = "2016 U.S. presidential election",
-    subtitle = "By county",
-    color = "Models",
-    fill = "Models"
-    ) +
-  # move the legend to the bottom
-  theme(legend.position = "bottom")
-```
-
-<img src="/notes/work-with-models-exercise_files/figure-html/mult-fit-legend-1.png" width="672" />
-
-  </p>
-</details>
-
-## Generate a coefficient plot
-
-Estimate a linear regression model predicting 2016 Democratic presidential vote share as a function of percentage of female persons (`female`), percentage of white persons (`white`), percentage of black persons (`black`), and median household income (`hh_income`) in thousands of dollars. To make the graph easier to interpret, measure median household income in thousands of dollars (i.e. divide `hh_income` by 1,000) and multiply `per_dem_2016` by 100 (so it scales between 0-100).
-
-Generate a coefficient plot to visualize the OLS estimates and confidence intervals.
-
-1. Generate the plot manually using `broom::tidy()` to extract the coefficient estimates and 95% confidence intervals from the model object.
+1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
 
     <details> 
       <summary>Click for the solution</summary>
       <p>
-    
-    
-    ```r
-    # modify hh_income
-    county_data <- county_data %>%
-      mutate(hh_income_10 = hh_income / 1e03,
-             per_dem_2016_100 = per_dem_2016 * 100)
-    
-    # estimate ols model using lm()
-    vote_mod <- lm(per_dem_2016_100 ~ female + white + black + hh_income_10,
-                   data = county_data)
-    summary(vote_mod)
-    ```
-    
-    ```
-    ## 
-    ## Call:
-    ## lm(formula = per_dem_2016_100 ~ female + white + black + hh_income_10, 
-    ##     data = county_data)
-    ## 
-    ## Residuals:
-    ##     Min      1Q  Median      3Q     Max 
-    ## -30.518  -7.687  -1.836   5.928  61.034 
-    ## 
-    ## Coefficients:
-    ##              Estimate Std. Error t value Pr(>|t|)    
-    ## (Intercept)  11.36467    5.08611   2.234   0.0255 *  
-    ## female        0.84575    0.09336   9.059  < 2e-16 ***
-    ## white        -0.45935    0.02344 -19.600  < 2e-16 ***
-    ## black         0.15865    0.02698   5.881  4.5e-09 ***
-    ## hh_income_10  0.34585    0.01804  19.170  < 2e-16 ***
-    ## ---
-    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-    ## 
-    ## Residual standard error: 11.63 on 3136 degrees of freedom
-    ##   (54 observations deleted due to missingness)
-    ## Multiple R-squared:  0.4225,	Adjusted R-squared:  0.4218 
-    ## F-statistic: 573.7 on 4 and 3136 DF,  p-value: < 2.2e-16
-    ```
-    
+
     
     ```r
-    # extract coefficients using tidy()
-    vote_mod_coef <- tidy(vote_mod, conf.int = TRUE)
-    vote_mod_coef
+    ggplot(scorecard, aes(admrate, cost)) +
+      geom_point() +
+      geom_smooth(method = "lm")
     ```
     
-    ```
-    ## # A tibble: 5 x 7
-    ##   term         estimate std.error statistic  p.value conf.low conf.high
-    ##   <chr>           <dbl>     <dbl>     <dbl>    <dbl>    <dbl>     <dbl>
-    ## 1 (Intercept)    11.4      5.09        2.23 2.55e- 2    1.39     21.3  
-    ## 2 female          0.846    0.0934      9.06 2.26e-19    0.663     1.03 
-    ## 3 white          -0.459    0.0234    -19.6  8.67e-81   -0.505    -0.413
-    ## 4 black           0.159    0.0270      5.88 4.50e- 9    0.106     0.212
-    ## 5 hh_income_10    0.346    0.0180     19.2  1.51e-77    0.310     0.381
-    ```
-    
-    ```r
-    # clean up the term names to be human readable
-    vote_mod_coef %>%
-      filter(term != "(Intercept)") %>%
-      mutate(
-        # fix variable labels
-        term = recode(
-          term,
-          black = "Percent black",
-          female = "Percent female",
-          hh_income_10 = "Median household income",
-          white = "Percent white"
-        )
-      ) %>%
-      # generate plot
-      ggplot(mapping = aes(x = reorder(term, estimate),
-                           y = estimate,
-                           ymin = conf.low,
-                           ymax = conf.high)) +
-      geom_pointrange() +
-      coord_flip() +
-      labs(x = "Coefficient",
-           y = "Value")
-    ```
-    
-    <img src="/notes/work-with-models-exercise_files/figure-html/ols-mod-viz-broom-1.png" width="672" />
+    <img src="/notes/work-with-models-exercise_files/figure-html/scorecard-point-1.png" width="672" />
     
       </p>
     </details>
 
-1. Use the `coefplot` package to automatically generate the coefficient plot.
+1. Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.
 
     <details> 
       <summary>Click for the solution</summary>
       <p>
-    
+
     
     ```r
-    library(coefplot)
-    coefplot(vote_mod, sort = "magnitude", intercept = FALSE)
+    scorecard_fit <- linear_reg() %>%
+      set_engine("lm") %>%
+      fit(cost ~ admrate, data = scorecard)
+    tidy(scorecard_fit)
     ```
     
-    <img src="/notes/work-with-models-exercise_files/figure-html/ols-mod-viz-coefplot-1.png" width="672" />
+    ```
+    ## # A tibble: 2 x 5
+    ##   term        estimate std.error statistic   p.value
+    ##   <chr>          <dbl>     <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept)   47723.     1187.      40.2 2.08e-248
+    ## 2 admrate      -19972.     1714.     -11.7 3.06e- 30
+    ```
     
       </p>
     </details>
 
-## Visualize marginal effects
+1. Estimate a linear regression of the relationship between admission rate and cost, while also accounting for type of college and percent of Pell Grant recipients, and report your results in a tidy table.
 
-Estimate a logistic regression model predicting the county-level winner of the 2016 presidential election (`winner`) as a function of percentage of female persons (`female`), percentage of white persons (`white`), percentage of black persons (`black`), median household income (`hh_income`) in thousands of dollars, and census region  (`census_region`). To make the graph easier to interpret, measure median household income in thousands of dollars (i.e. divide `hh_income` by 1,000).
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
 
-{{% alert note %}}
+    
+    ```r
+     scorecard_fit <- linear_reg() %>%
+      set_engine("lm") %>%
+      fit(cost ~ admrate + type + pctpell, data = scorecard)
+    tidy(scorecard_fit)
+    ```
+    
+    ```
+    ## # A tibble: 5 x 5
+    ##   term                    estimate std.error statistic   p.value
+    ##   <chr>                      <dbl>     <dbl>     <dbl>     <dbl>
+    ## 1 (Intercept)               44347.      925.      47.9 5.47e-317
+    ## 2 admrate                  -10758.     1068.     -10.1 3.12e- 23
+    ## 3 typePrivate, nonprofit    19205.      462.      41.6 1.24e-260
+    ## 4 typePrivate, for-profit   18067.     1080.      16.7 3.40e- 58
+    ## 5 pctpell                  -41725.     1322.     -31.6 3.11e-172
+    ```
+    
+      </p>
+    </details>
 
-The dependent variable in a `glm()` object must be either a numeric column or a factor column. You should first convert `winner` to either be numeric or a factor prior to estimating the model.
+## Exercise: logistic regression with `mental_health`
 
-{{% /alert %}}
+Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
-Plot the average marginal effect of each variable using the `margins` package to visualize the logistic regression estimates and confidence intervals.
-
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-
-
-```r
-# convert winner to a factor column
-county_data <- county_data %>%
-  mutate(winner = factor(winner))
-
-# estimate logistic regression model using glm()
-vote_logit_mod <- glm(
-  winner ~ female + black + white + hh_income_10 + census_region,
-  family = "binomial",
-  data = county_data
-)
-
-summary(vote_logit_mod)
-```
-
-```
-## 
-## Call:
-## glm(formula = winner ~ female + black + white + hh_income_10 + 
-##     census_region, family = "binomial", data = county_data)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -3.7687   0.1417   0.2733   0.4651   2.0126  
-## 
-## Coefficients:
-##                         Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)            10.268138   1.616205   6.353 2.11e-10 ***
-## female                 -0.182389   0.030969  -5.889 3.88e-09 ***
-## black                  -0.069698   0.007619  -9.148  < 2e-16 ***
-## white                   0.043711   0.005210   8.390  < 2e-16 ***
-## hh_income_10           -0.044977   0.004735  -9.499  < 2e-16 ***
-## census_regionNortheast -1.669512   0.210934  -7.915 2.48e-15 ***
-## census_regionSouth      1.385163   0.222154   6.235 4.51e-10 ***
-## census_regionWest      -1.497713   0.183680  -8.154 3.52e-16 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 2713.2  on 3140  degrees of freedom
-## Residual deviance: 1796.0  on 3133  degrees of freedom
-##   (54 observations deleted due to missingness)
-## AIC: 1812
-## 
-## Number of Fisher Scoring iterations: 6
-```
+Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
 
 
 ```r
-library(margins)
+mental_health
+```
 
-# estimate marginal effects
-vote_logit_marg <- margins(vote_logit_mod)
+```
+## # A tibble: 1,317 x 5
+##    vote96   age  educ female mhealth
+##     <dbl> <dbl> <dbl>  <dbl>   <dbl>
+##  1      1    60    12      0       0
+##  2      1    36    12      0       1
+##  3      0    21    13      0       7
+##  4      0    29    13      0       6
+##  5      1    39    18      1       2
+##  6      1    41    15      1       1
+##  7      1    48    20      0       2
+##  8      0    20    12      1       9
+##  9      0    27    11      1       9
+## 10      0    34     7      1       2
+## # … with 1,307 more rows
+```
 
-# extract average marginal effects
-vote_logit_marg_tbl <- summary(vote_logit_marg) %>%
-  as_tibble() %>%
-  mutate(
-    # remove prefixes from variable labels using socviz::prefix_strip
-    factor = prefix_strip(factor, "census_region"),
-    # fix variable labels
-    factor = recode(
-      factor,
-      Black = "Percent black",
-      Female = "Percent female",
-      Hh_income_10 = "Median household income",
-      White = "Percent white"
+1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and a 95% confidence interval, and plot the logistic regression predictions using `ggplot`.
+
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
+
+    
+    ```r
+    # convert vote96 to a factor column
+    mental_health <- rcfss::mental_health %>%
+      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
+    ```
+    
+    
+    ```r
+    # estimate model
+    mh_mod <- logistic_reg() %>%
+      set_engine("glm") %>%
+      fit(vote96 ~ mhealth, data = mental_health)
+    
+    # generate predicted probabilities + confidence intervals
+    new_points <- tibble(
+      mhealth = seq(
+        from = min(mental_health$mhealth),
+        to = max(mental_health$mhealth)
+      )
     )
-  )
-vote_logit_marg_tbl
-```
+    
+    bind_cols(
+      new_points,
+      # predicted probabilities
+      predict(mh_mod, new_data = new_points, type = "prob"),
+      # confidence intervals
+      predict(mh_mod, new_data = new_points, type = "conf_int")
+    ) %>%
+      # graph the predictions
+      ggplot(mapping = aes(x = mhealth, y = .pred_Voted)) +
+      geom_pointrange(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted)) +
+      labs(title = "Relationship Between Mental Health and Voter Turnout",
+           x = "Mental health status",
+           y = "Predicted Probability of Voting")
+    ```
+    
+    <img src="/notes/work-with-models-exercise_files/figure-html/mh-model-1.png" width="672" />
+    
+      </p>
+    </details>
 
-```
-## # A tibble: 7 x 7
-##   factor                       AME      SE     z        p    lower    upper
-##   <chr>                      <dbl>   <dbl> <dbl>    <dbl>    <dbl>    <dbl>
-## 1 Percent black           -0.00595 6.30e-4 -9.44 3.64e-21 -0.00718 -0.00471
-## 2 Northeast               -0.198   2.87e-2 -6.89 5.73e-12 -0.254   -0.141  
-## 3 South                    0.0886  1.36e-2  6.51 7.46e-11  0.0619   0.115  
-## 4 West                    -0.172   2.22e-2 -7.75 9.49e-15 -0.215   -0.128  
-## 5 Percent female          -0.0156  2.60e-3 -5.98 2.30e- 9 -0.0207  -0.0105 
-## 6 Median household income -0.00384 3.86e-4 -9.93 2.97e-23 -0.00459 -0.00308
-## 7 Percent white            0.00373 4.26e-4  8.76 1.91e-18  0.00290  0.00456
-```
+1. Estimate a second logistic regression model of voter turnout using using age and gender (i.e. the `female` column). Extract predicted probabilities and confidence intervals for all possible values of age, and visualize using `ggplot()`.
 
-```r
-# plot using ggplot()
-ggplot(data = vote_logit_marg_tbl,
-       mapping = aes(x = reorder(factor, AME),
-                     y = AME,
-                     ymin = lower,
-                     ymax = upper)) +
-  # add line indicating null (0) effect
-  geom_hline(yintercept = 0, color = "gray80") +
-  # add point range plot to visualize estimate and confidence interval
-  geom_pointrange() +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Average marginal effect")
-```
+    <details> 
+      <summary>Click for the solution</summary>
+      <p>
 
-<img src="/notes/work-with-models-exercise_files/figure-html/logit-mod-margins-1.png" width="672" />
-
-  </p>
-</details>
-
-
-### Session Info
+    
+    ```r
+    # recode female
+    mental_health <- rcfss::mental_health %>%
+      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")),
+             female = factor(female, labels = c("Male", "Female")))
+    
+    # estimate model
+    mh_int_mod <- logistic_reg() %>%
+      set_engine("glm") %>%
+      fit(vote96 ~ age * female, data = mental_health)
+    
+    # generate predicted probabilities + confidence intervals
+    new_points <- expand.grid(
+      age = seq(
+        from = min(mental_health$age),
+        to = max(mental_health$age)
+      ),
+      female = unique(mental_health$female)
+    )
+    
+    bind_cols(
+      new_points,
+      # predicted probabilities
+      predict(mh_int_mod, new_data = new_points, type = "prob"),
+      # confidence intervals
+      predict(mh_int_mod, new_data = new_points, type = "conf_int")
+    ) %>%
+      # graph the predictions
+      ggplot(mapping = aes(x = age, y = .pred_Voted, color = female)) +
+      # predicted probability
+      geom_line(linetype = 2) +
+      # confidence interval
+      geom_ribbon(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted,
+                                fill = female), alpha = .2) +
+      scale_color_viridis_d(end = 0.7, aesthetics = c("color", "fill"),
+                            name = NULL) +
+      labs(title = "Relationship Between Age and Voter Turnout",
+           x = "Age",
+           y = "Predicted Probability of Voting")
+    ```
+    
+    <img src="/notes/work-with-models-exercise_files/figure-html/mh-model-all-1.png" width="672" />
+    
+      </p>
+    </details>
+    
+## Session Info
 
 
 
@@ -493,85 +284,118 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-09-29                  
+##  date     2020-11-06                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
-##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-07-02 [1] local         
-##  bookdown      0.20    2020-06-23 [1] CRAN (R 4.0.2)
-##  broom       * 0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
-##  callr         3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
-##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools      2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
-##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr       * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
-##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs            1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
-##  glue          1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
-##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
-##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
-##  httr          1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
-##  jsonlite      1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
-##  knitr         1.29    2020-06-23 [1] CRAN (R 4.0.1)
-##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  nlme          3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
-##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
-##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
-##  ps            1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr       * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes       2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang         0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
-##  rmarkdown     2.3     2020-06-18 [1] CRAN (R 4.0.2)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest         0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi       1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
-##  tidyr       * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis       1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
-##  vctrs         0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
-##  withr         2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
-##  xfun          0.15    2020-06-21 [1] CRAN (R 4.0.1)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
+##  package     * version    date       lib source        
+##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
+##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
+##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown      0.20.1     2020-10-19 [1] local         
+##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
+##  broom       * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
+##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
+##  cellranger    1.1.0      2016-07-27 [1] CRAN (R 4.0.0)
+##  class         7.3-17     2020-04-26 [1] CRAN (R 4.0.2)
+##  cli           2.1.0      2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16     2018-12-24 [1] CRAN (R 4.0.2)
+##  colorspace    1.4-1      2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon        1.3.4      2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI           1.1.0      2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr        1.4.4      2020-05-27 [1] CRAN (R 4.0.0)
+##  desc          1.2.0      2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools      2.3.2      2020-09-18 [1] CRAN (R 4.0.2)
+##  dials       * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)
+##  DiceDesign    1.8-1      2019-07-31 [1] CRAN (R 4.0.0)
+##  digest        0.6.25     2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.2      2020-08-18 [1] CRAN (R 4.0.2)
+##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
+##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
+##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
+##  furrr         0.2.0      2020-10-12 [1] CRAN (R 4.0.2)
+##  future        1.19.1     2020-09-22 [1] CRAN (R 4.0.2)
+##  generics      0.0.2      2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.2      2020-06-19 [1] CRAN (R 4.0.2)
+##  globals       0.13.1     2020-10-11 [1] CRAN (R 4.0.2)
+##  glue          1.4.2      2020-08-27 [1] CRAN (R 4.0.2)
+##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)
+##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)
+##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
+##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
+##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
+##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
+##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
+##  infer       * 0.5.3      2020-07-14 [1] CRAN (R 4.0.2)
+##  ipred         0.9-9      2019-04-28 [1] CRAN (R 4.0.0)
+##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
+##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
+##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
+##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
+##  lifecycle     0.2.0      2020-03-06 [1] CRAN (R 4.0.0)
+##  listenv       0.8.0      2019-12-05 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.9      2020-06-08 [1] CRAN (R 4.0.2)
+##  magrittr      1.5        2014-11-22 [1] CRAN (R 4.0.0)
+##  MASS          7.3-53     2020-09-09 [1] CRAN (R 4.0.2)
+##  Matrix        1.2-18     2019-11-27 [1] CRAN (R 4.0.2)
+##  memoise       1.1.0      2017-04-21 [1] CRAN (R 4.0.0)
+##  modeldata   * 0.0.2      2020-06-22 [1] CRAN (R 4.0.2)
+##  modelr        0.1.8      2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)
+##  nnet          7.3-14     2020-04-26 [1] CRAN (R 4.0.2)
+##  parsnip     * 0.1.3      2020-08-04 [1] CRAN (R 4.0.2)
+##  pillar        1.4.6      2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild      1.1.0      2020-07-13 [1] CRAN (R 4.0.2)
+##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload       1.1.0      2020-05-29 [1] CRAN (R 4.0.0)
+##  plyr          1.8.6      2020-03-03 [1] CRAN (R 4.0.0)
+##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.0)
+##  pROC          1.16.2     2020-03-19 [1] CRAN (R 4.0.0)
+##  processx      3.4.4      2020-09-03 [1] CRAN (R 4.0.2)
+##  prodlim       2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)
+##  ps            1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
+##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
+##  R6            2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
+##  rcfss       * 0.2.1      2020-11-02 [1] local         
+##  Rcpp          1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
+##  readr       * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
+##  recipes     * 0.1.13     2020-06-23 [1] CRAN (R 4.0.2)
+##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)
+##  reprex        0.3.0      2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang         0.4.8      2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.4        2020-09-30 [1] CRAN (R 4.0.2)
+##  rpart         4.1-15     2019-04-12 [1] CRAN (R 4.0.2)
+##  rprojroot     1.3-2      2018-01-03 [1] CRAN (R 4.0.0)
+##  rsample     * 0.0.8      2020-09-23 [1] CRAN (R 4.0.2)
+##  rstudioapi    0.11       2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest         0.3.6      2020-07-25 [1] CRAN (R 4.0.2)
+##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)
+##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)
+##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)
+##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.2)
+##  testthat      2.3.2      2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3      2020-07-10 [1] CRAN (R 4.0.2)
+##  tidymodels  * 0.1.1      2020-07-14 [1] CRAN (R 4.0.2)
+##  tidyr       * 1.1.2      2020-08-27 [1] CRAN (R 4.0.2)
+##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse   * 1.3.0      2019-11-21 [1] CRAN (R 4.0.0)
+##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
+##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
+##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
+##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
+##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
+##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)
+##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
+##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

@@ -19,9 +19,8 @@ menu:
 
 ```r
 library(tidyverse)
-library(modelr)
-library(broom)
-set.seed(1234)
+library(tidymodels)
+set.seed(123)
 
 theme_set(theme_minimal())
 ```
@@ -127,12 +126,25 @@ Let's concentrate first on the relationship between age and survival. Using the 
 
 
 ```r
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE)
+# estimate model
+lin_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(Survived ~ Age, data = titanic)
+
+# visualize predicted values
+age_vals <- tibble(
+  Age = 0:80
+)
+
+bind_cols(age_vals,
+          predict(lin_fit, new_data = age_vals)) %>%
+  ggplot(mapping = aes(x = Age, y = .pred)) +
+  geom_point(data = titanic, mapping = aes(x = Age, y = Survived)) +
+  geom_line() +
+  ylim(0, 1)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic_ols-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/titanic-ols-1.png" width="672" />
 
 Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are $0$ and $1$. Yet the linear regression model gives us predicted values such as $.4$ and $.25$. How should we interpret those?
 
@@ -140,13 +152,20 @@ One possibility is that these values are **predicted probabilities**. That is, t
 
 
 ```r
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "lm", se = FALSE, fullrange = TRUE) +
-  xlim(0, 200)
+# visualize predicted values
+age_vals <- tibble(
+  Age = 0:200
+)
+
+bind_cols(age_vals,
+          predict(lin_fit, new_data = age_vals)) %>%
+  ggplot(mapping = aes(x = Age, y = .pred)) +
+  geom_point(data = titanic, mapping = aes(x = Age, y = Survived)) +
+  geom_line() +
+  ylim(NA, 1)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic_ols_old-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/titanic-ols-old-1.png" width="672" />
 
 What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
 
@@ -186,132 +205,97 @@ $$
 
 The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $\Pr(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
 
-We can estimate the logistic regression model using the `glm` function.
+Using `tidymodels` and the `parsnip` package, we can estimate this model. Unlike our [previous example](/notes/start-with-models/), we will use `logistic_reg()` since we are working with a binary outcome. Note that we also need to ensure our outcome variable (`Survived`) is stored as a factor column so that `parsnip` recognizes it as a categorical variable.
 
 
 ```r
-survive_age <- glm(Survived ~ Age, data = titanic, family = binomial)
-summary(survive_age)
+titanic <- titanic_train %>%
+  as_tibble() %>%
+  # convert Survived to factor column
+  mutate(Survived = factor(x = Survived,
+                           levels = 0:1,
+                           labels = c("No", "Yes")))
+```
+
+
+```r
+log_mod <- logistic_reg() %>%
+  set_engine("glm")
+
+log_fit <- log_mod %>%
+  fit(Survived ~ Age, data = titanic)
+log_fit
 ```
 
 ```
+## parsnip model object
 ## 
-## Call:
-## glm(formula = Survived ~ Age, family = binomial, data = titanic)
+## Fit time:  9ms 
 ## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.1488  -1.0361  -0.9544   1.3159   1.5908  
+## Call:  stats::glm(formula = Survived ~ Age, family = stats::binomial, 
+##     data = data)
 ## 
 ## Coefficients:
-##             Estimate Std. Error z value Pr(>|z|)  
-## (Intercept) -0.05672    0.17358  -0.327   0.7438  
-## Age         -0.01096    0.00533  -2.057   0.0397 *
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## (Intercept)          Age  
+##    -0.05672     -0.01096  
 ## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 964.52  on 713  degrees of freedom
-## Residual deviance: 960.23  on 712  degrees of freedom
+## Degrees of Freedom: 713 Total (i.e. Null);  712 Residual
 ##   (177 observations deleted due to missingness)
-## AIC: 964.23
-## 
-## Number of Fisher Scoring iterations: 4
+## Null Deviance:	    964.5 
+## Residual Deviance: 960.2 	AIC: 964.2
+```
+
+```r
+tidy(log_fit)
+```
+
+```
+## # A tibble: 2 x 5
+##   term        estimate std.error statistic p.value
+##   <chr>          <dbl>     <dbl>     <dbl>   <dbl>
+## 1 (Intercept)  -0.0567   0.174      -0.327  0.744 
+## 2 Age          -0.0110   0.00533    -2.06   0.0397
 ```
 
 Which produces a line that looks like this:
 
 
 ```r
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "glm",
-              method.args = list(family = "binomial"),
-              se = FALSE)
+# estimate predicted probabilities
+new_ages <- tibble(Age = 0:80)
+new_ages_pred <- predict(log_fit, new_data = new_ages, type = "prob")
+
+# visualize results
+new_ages %>%
+  bind_cols(new_ages_pred) %>%
+  ggplot(mapping = aes(x = Age, y = .pred_Yes)) +
+  geom_line() +
+  ylim(0, 1) +
+  ylab("Probability of survival")
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic_age_glm_plot-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/titanic-age-plot-1.png" width="672" />
 
 It's hard to tell, but the line is not perfectly linear. Let's expand the range of the x-axis to prove this:
 
 
 ```r
-ggplot(titanic, aes(Age, Survived)) +
-  geom_point() +
-  geom_smooth(method = "glm", method.args = list(family = "binomial"),
-              se = FALSE, fullrange = TRUE) +
-  xlim(0, 200)
+# estimate predicted probabilities
+new_ages <- tibble(Age = 0:200)
+new_ages_pred <- predict(log_fit, new_data = new_ages, type = "prob")
+
+# visualize results
+new_ages %>%
+  bind_cols(new_ages_pred) %>%
+  ggplot(mapping = aes(x = Age, y = .pred_Yes)) +
+  geom_line() +
+  ylim(0, 1) +
+  ylab("Probability of survival")
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic_age_glm_plot_wide-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/titanic-age-plot-long-1.png" width="672" />
 
 No more predictions that a 200 year old has a $-.1$ probability of surviving!
-
-## Adding predictions
-
-To visualise the predictions from a model, we start by generating an evenly spaced grid of values that covers the region where our data lies. First we use `modelr::data_grid()` to create a cleaned data frame of potential values:
-
-
-```r
-titanic_age <- titanic %>%
-  data_grid(Age)
-titanic_age
-```
-
-```
-## # A tibble: 89 x 1
-##      Age
-##    <dbl>
-##  1  0.42
-##  2  0.67
-##  3  0.75
-##  4  0.83
-##  5  0.92
-##  6  1   
-##  7  2   
-##  8  3   
-##  9  4   
-## 10  5   
-## # … with 79 more rows
-```
-
-Next we use the `broom::augment()` function to produce the predicted probabilities. By default, `augment()` will generate predicted values in terms of the [**log-odds**](https://wiki.lesswrong.com/wiki/Log_odds) for the outcome. To get predicted probabilities, we explicitly specify the scale of the predicted values with `type.predict = "response'`:
-
-
-```r
-titanic_age <- augment(survive_age, type.predict = "response")
-titanic_age
-```
-
-```
-## # A tibble: 714 x 10
-##    .rownames Survived   Age .fitted .se.fit .resid    .hat .sigma .cooksd
-##    <chr>        <int> <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>   <dbl>
-##  1 1                0    22   0.426  0.0209 -1.05  0.00179   1.16 6.68e-4
-##  2 2                1    38   0.384  0.0212  1.38  0.00190   1.16 1.53e-3
-##  3 3                1    26   0.415  0.0190  1.33  0.00149   1.16 1.05e-3
-##  4 4                1    35   0.392  0.0196  1.37  0.00162   1.16 1.26e-3
-##  5 5                0    35   0.392  0.0196 -0.997 0.00162   1.16 5.22e-4
-##  6 7                0    54   0.343  0.0344 -0.917 0.00524   1.16 1.38e-3
-##  7 8                0     2   0.480  0.0410 -1.14  0.00672   1.16 3.15e-3
-##  8 9                1    27   0.413  0.0188  1.33  0.00145   1.16 1.03e-3
-##  9 10               1    14   0.448  0.0276  1.27  0.00308   1.16 1.91e-3
-## 10 11               1     4   0.475  0.0386  1.22  0.00597   1.16 3.34e-3
-## # … with 704 more rows, and 1 more variable: .std.resid <dbl>
-```
-
-With this information, we can now plot the logistic regression line using the estimated model (and not just `ggplot2::geom_smooth()`):
-
-
-```r
-ggplot(titanic_age, aes(Age, .fitted)) +
-  geom_line() +
-  labs(title = "Relationship Between Age and Surviving the Titanic",
-       y = "Predicted Probability of Survival")
-```
-
-<img src="/notes/logistic-regression_files/figure-html/plot_pred-1.png" width="672" />
 
 ## Multiple predictors
 
@@ -319,168 +303,48 @@ But as the old principle of the sea goes, ["women and children first"](https://e
 
 
 ```r
-survive_age_woman <- glm(Survived ~ Age + Sex, data = titanic,
-                         family = binomial)
-summary(survive_age_woman)
+mult_fit <- log_mod %>%
+  fit(Survived ~ Age + Sex, data = titanic)
+tidy(mult_fit)
 ```
 
 ```
-## 
-## Call:
-## glm(formula = Survived ~ Age + Sex, family = binomial, data = titanic)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.7405  -0.6885  -0.6558   0.7533   1.8989  
-## 
-## Coefficients:
-##              Estimate Std. Error z value Pr(>|z|)    
-## (Intercept)  1.277273   0.230169   5.549 2.87e-08 ***
-## Age         -0.005426   0.006310  -0.860     0.39    
-## Sexmale     -2.465920   0.185384 -13.302  < 2e-16 ***
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 964.52  on 713  degrees of freedom
-## Residual deviance: 749.96  on 711  degrees of freedom
-##   (177 observations deleted due to missingness)
-## AIC: 755.96
-## 
-## Number of Fisher Scoring iterations: 4
+## # A tibble: 3 x 5
+##   term        estimate std.error statistic  p.value
+##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>
+## 1 (Intercept)  1.28      0.230       5.55  2.87e- 8
+## 2 Age         -0.00543   0.00631    -0.860 3.90e- 1
+## 3 Sexmale     -2.47      0.185     -13.3   2.26e-40
 ```
 
-The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of sex. Likewise, it also tells us the relationship between sex and survival, after controlling for the effects of age. To get a better visualization of this, let's use `data_grid()` and `add_predictions()` again:
+The coefficients essentially tell us the relationship between each individual predictor and the response, **independent of other predictors**. So this model tells us the relationship between age and survival, after controlling for the effects of sex. Likewise, it also tells us the relationship between sex and survival, after controlling for the effects of age.
+
+To get a better visualization of this, let's again use `predict()` to generate predicted values for individuals based on their ages and sex:
 
 
 ```r
-titanic_age_sex <- augment(survive_age_woman,
-                           newdata = data_grid(titanic, Age, Sex),
-                           type.predict = "response")
-titanic_age_sex
-```
+age_sex_vals <- expand.grid(
+  Age = 0:80,
+  Sex = c("male", "female")
+)
 
-```
-## # A tibble: 178 x 4
-##      Age Sex    .fitted .se.fit
-##    <dbl> <chr>    <dbl>   <dbl>
-##  1  0.42 female   0.782  0.0389
-##  2  0.42 male     0.233  0.0394
-##  3  0.67 female   0.781  0.0388
-##  4  0.67 male     0.233  0.0391
-##  5  0.75 female   0.781  0.0387
-##  6  0.75 male     0.233  0.0390
-##  7  0.83 female   0.781  0.0386
-##  8  0.83 male     0.233  0.0389
-##  9  0.92 female   0.781  0.0386
-## 10  0.92 male     0.233  0.0388
-## # … with 168 more rows
-```
+age_sex_pred <- predict(mult_fit, new_data = age_sex_vals, type = "prob")
 
-With these predicted probabilities, we can now plot the separate effects of age and sex:
-
-
-```r
-ggplot(titanic_age_sex, aes(Age, .fitted, color = Sex)) +
+age_sex_vals %>%
+  bind_cols(age_sex_pred) %>%
+  ggplot(mapping = aes(x = Age,
+                       y = .pred_Yes,
+                       color = Sex)) +
   geom_line() +
   labs(title = "Probability of Surviving the Titanic",
        y = "Predicted Probability of Survival",
-       color = "Sex")
+       color = "Sex") +
+  scale_color_viridis_d(end = 0.7)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/survive_age_woman_plot-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/survive-age-woman-pred-1.png" width="672" />
 
 This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's sex was much more important. Females survived at much higher rates than males, regardless of age.
-
-## Quadratic terms
-
-Logistic regression, like linear regression, assumes each predictor has an independent and linear relationship with the response. That is, it assumes the relationship takes the form $y = \beta_0 + \beta_{1}x$ and looks something like this:
-
-
-```r
-sim_line <- tibble(x = runif(1000),
-                   y = x * 1)
-
-ggplot(sim_line, aes(x, y)) +
-  geom_line()
-```
-
-<img src="/notes/logistic-regression_files/figure-html/straight_line-1.png" width="672" />
-
-But from algebra we know that variables can have non-linear relationships. Perhaps instead the relationship is parabolic like $y = \beta_0 + \beta_{1}x + \beta_{2}x^2$:
-
-
-```r
-sim_line <- tibble(x = runif(1000, -1, 1),
-                   y = x^2 + x)
-
-ggplot(sim_line, aes(x, y)) +
-  geom_line()
-```
-
-<img src="/notes/logistic-regression_files/figure-html/parabola-1.png" width="672" />
-
-Or a more general quadratic equation $y = \beta_0 + \beta_{1}x + \beta_{2}x^2 + \beta_{3}x^3$:
-
-
-```r
-sim_line <- tibble(x = runif(1000, -1, 1),
-                   y = x^3 + x^2 + x)
-
-ggplot(sim_line, aes(x, y)) +
-  geom_line()
-```
-
-<img src="/notes/logistic-regression_files/figure-html/quadratic-1.png" width="672" />
-
-These can be accounted for in a logistic regression:
-
-
-```r
-survive_age_square <- glm(Survived ~ Age + I(Age^2), data = titanic,
-                          family = binomial)
-summary(survive_age_square)
-```
-
-```
-## 
-## Call:
-## glm(formula = Survived ~ Age + I(Age^2), family = binomial, data = titanic)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.2777  -1.0144  -0.9516   1.3421   1.4278  
-## 
-## Coefficients:
-##               Estimate Std. Error z value Pr(>|z|)  
-## (Intercept)  0.2688449  0.2722529   0.987   0.3234  
-## Age         -0.0365193  0.0172749  -2.114   0.0345 *
-## I(Age^2)     0.0003965  0.0002538   1.562   0.1183  
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 964.52  on 713  degrees of freedom
-## Residual deviance: 957.81  on 711  degrees of freedom
-##   (177 observations deleted due to missingness)
-## AIC: 963.81
-## 
-## Number of Fisher Scoring iterations: 4
-```
-
-```r
-augment(survive_age_square,
-        newdata = data_grid(titanic, Age),
-        type.predict = "response") %>%
-  ggplot(aes(Age, .fitted)) +
-  geom_line() +
-  labs(title = "Relationship Between Age and Surviving the Titanic",
-       y = "Predicted Probability of Survival")
-```
-
-<img src="/notes/logistic-regression_files/figure-html/titanic-square-1.png" width="672" />
 
 ## Interactive terms
 
@@ -502,272 +366,50 @@ $$
 f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex} + \beta_{3}(\text{age} \times \text{sex})
 $$
 
-This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula for the `glm()` function:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
+This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula in `fit()`:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
 
 
 ```r
-survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
-                           family = binomial)
-summary(survive_age_woman_x)
+int_fit <- log_mod %>%
+  fit(Survived ~ Age * Sex, data = titanic)
+tidy(int_fit)
 ```
 
 ```
-## 
-## Call:
-## glm(formula = Survived ~ Age * Sex, family = binomial, data = titanic)
-## 
-## Deviance Residuals: 
-##     Min       1Q   Median       3Q      Max  
-## -1.9401  -0.7136  -0.5883   0.7626   2.2455  
-## 
-## Coefficients:
-##             Estimate Std. Error z value Pr(>|z|)   
-## (Intercept)  0.59380    0.31032   1.913  0.05569 . 
-## Age          0.01970    0.01057   1.863  0.06240 . 
-## Sexmale     -1.31775    0.40842  -3.226  0.00125 **
-## Age:Sexmale -0.04112    0.01355  -3.034  0.00241 **
-## ---
-## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-## 
-## (Dispersion parameter for binomial family taken to be 1)
-## 
-##     Null deviance: 964.52  on 713  degrees of freedom
-## Residual deviance: 740.40  on 710  degrees of freedom
-##   (177 observations deleted due to missingness)
-## AIC: 748.4
-## 
-## Number of Fisher Scoring iterations: 4
+## # A tibble: 4 x 5
+##   term        estimate std.error statistic p.value
+##   <chr>          <dbl>     <dbl>     <dbl>   <dbl>
+## 1 (Intercept)   0.594     0.310       1.91 0.0557 
+## 2 Age           0.0197    0.0106      1.86 0.0624 
+## 3 Sexmale      -1.32      0.408      -3.23 0.00125
+## 4 Age:Sexmale  -0.0411    0.0136     -3.03 0.00241
 ```
 
 As before, let's estimate predicted probabilities and plot the interactive effects of age and sex.
 
 
 ```r
-titanic_age_sex_x <- augment(survive_age_woman_x,
-                             newdata = data_grid(titanic, Age, Sex),
-                             type.predict = "response")
-titanic_age_sex_x
-```
+int_pred <- predict(int_fit, new_data = age_sex_vals, type = "prob")
 
-```
-## # A tibble: 178 x 4
-##      Age Sex    .fitted .se.fit
-##    <dbl> <chr>    <dbl>   <dbl>
-##  1  0.42 female   0.646  0.0701
-##  2  0.42 male     0.325  0.0575
-##  3  0.67 female   0.647  0.0694
-##  4  0.67 male     0.323  0.0570
-##  5  0.75 female   0.648  0.0692
-##  6  0.75 male     0.323  0.0568
-##  7  0.83 female   0.648  0.0690
-##  8  0.83 male     0.323  0.0567
-##  9  0.92 female   0.648  0.0688
-## 10  0.92 male     0.322  0.0565
-## # … with 168 more rows
-```
-
-
-```r
-ggplot(titanic_age_sex_x, aes(Age, .fitted, color = Sex)) +
+age_sex_vals %>%
+  bind_cols(int_pred) %>%
+  ggplot(mapping = aes(x = Age,
+                       y = .pred_Yes,
+                       color = Sex)) +
   geom_line() +
   labs(title = "Probability of Surviving the Titanic",
        y = "Predicted Probability of Survival",
-       color = "Sex")
+       color = "Sex") +
+  scale_color_viridis_d(end = 0.7)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/age_woman_plot-1.png" width="672" />
+<img src="/notes/logistic-regression_files/figure-html/age-woman-cross-pred-1.png" width="672" />
 
 And now our minds are blown once again! For women, as age increases the probability of survival also increases. However for men, we see the opposite relationship: as age increases the probability of survival **decreases**. Again, the basic principle of saving women and children first can be seen empirically in the estimated probability of survival. Male children are treated similarly to female children, and their survival is prioritized. Even still, the odds of survival are always worse for men than women, but the regression function clearly shows a difference from our previous results.
 
-You may think then that it makes sense to throw in interaction terms (and quadratic terms) willy-nilly to all your regression models since we never know for sure if the relationship is strictly linear and independent. You could do that, but once you start adding more predictors (3, 4, 5, etc.) that will get very difficult to keep track of (five-way interactions are extremely difficult to interpret - even three-way get to be problematic). The best advice is to use theory and your domain knowledge as your guide. Do you have a reason to believe the relationship should be interactive? If so, test for it. If not, don't.
+You may think then that it makes sense to throw in interaction terms willy-nilly to all your regression models since we never know for sure if the relationship is strictly linear and independent. You could do that, but once you start adding more predictors (3, 4, 5, etc.) that will get very difficult to keep track of (five-way interactions are extremely difficult to interpret - even three-way get to be problematic). The best advice is to use theory and your domain knowledge as your guide. Do you have a reason to believe the relationship should be interactive? If so, test for it. If not, don't.
 
-## Comparing models
-
-How do we know if a logistic regression model is good or bad? One evalation criteria simply asks: how many prediction errors did the model make? For instance, how often did our basic model just using age perform? First we need to get the predicted probabilities for each individual in the original dataset, convert the probability to a prediction (I use a $.5$ cut-point), then see what percentage of predictions were the same as the actual survivals?
-
-
-```r
-age_accuracy <- augment(survive_age, type.predict = "response") %>%
-  mutate(.pred = as.numeric(.fitted > .5))
-
-mean(age_accuracy$Survived != age_accuracy$.pred, na.rm = TRUE)
-```
-
-```
-## [1] 0.4061625
-```
-
-$40.6\%$ of the predictions based on age were incorrect. If we flipped a coin to make our predictions, we'd be right about 50% of the time. So this is a decent improvement. Of course, we also know that $61.6\%$ of passengers died in the sinking, so if we just guessed that every passenger died we'd still make fewer mistakes than our predictive model. Maybe this model isn't so great after all. What about our interactive age and sex model?
-
-
-```r
-x_accuracy <- augment(survive_age_woman_x, type.predict = "response") %>%
-  mutate(.pred = as.numeric(.fitted > .5))
-
-mean(x_accuracy$Survived != x_accuracy$.pred, na.rm = TRUE)
-```
-
-```
-## [1] 0.219888
-```
-
-This model is much better. Just by knowing an individual's age and sex, our model is incorrect only   22% of the time.
-
-## Exercise: logistic regression with `mental_health`
-
-Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
-
-Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidental election.
-
-
-```r
-library(rcfss)
-mental_health
-```
-
-```
-## # A tibble: 1,317 x 5
-##    vote96   age  educ female mhealth
-##     <dbl> <dbl> <dbl>  <dbl>   <dbl>
-##  1      1    60    12      0       0
-##  2      1    36    12      0       1
-##  3      0    21    13      0       7
-##  4      0    29    13      0       6
-##  5      1    39    18      1       2
-##  6      1    41    15      1       1
-##  7      1    48    20      0       2
-##  8      0    20    12      1       9
-##  9      0    27    11      1       9
-## 10      0    34     7      1       2
-## # … with 1,307 more rows
-```
-
-1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and plot the logistic regression line using `ggplot`.
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    
-    ```r
-    # estimate model
-    mh_model <- glm(vote96 ~ mhealth, data = mental_health,
-                    family = binomial)
-    tidy(mh_model)
-    ```
-    
-    ```
-    ## # A tibble: 2 x 5
-    ##   term        estimate std.error statistic  p.value
-    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>
-    ## 1 (Intercept)    1.22     0.0890     13.7  6.28e-43
-    ## 2 mhealth       -0.177    0.0222     -7.97 1.61e-15
-    ```
-    
-    ```r
-    # estimate predicted probabilities
-    mh_health <- augment(mh_model,
-                         newdata = data_grid(mental_health, mhealth),
-                         type.predict = "response")
-    mh_health
-    ```
-    
-    ```
-    ## # A tibble: 10 x 3
-    ##    mhealth .fitted .se.fit
-    ##      <dbl>   <dbl>   <dbl>
-    ##  1       0   0.773  0.0156
-    ##  2       1   0.740  0.0143
-    ##  3       2   0.705  0.0133
-    ##  4       3   0.667  0.0134
-    ##  5       4   0.626  0.0151
-    ##  6       5   0.584  0.0183
-    ##  7       6   0.541  0.0225
-    ##  8       7   0.496  0.0270
-    ##  9       8   0.452  0.0315
-    ## 10       9   0.409  0.0355
-    ```
-    
-    ```r
-    # graph the line
-    ggplot(mh_health, aes(mhealth, .fitted)) +
-      geom_line() +
-      labs(title = "Relationship Between Mental Health and Voter Turnout",
-           y = "Predicted Probability of Voting") +
-      scale_y_continuous(limits = c(0, 1))
-    ```
-    
-    <img src="/notes/logistic-regression_files/figure-html/mh-model-1.png" width="672" />
-    
-      </p>
-    </details>
-
-1. Calculate the error rate of the model.
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    
-    ```r
-    mh_model_accuracy <- augment(mh_model, type.predict = "response") %>%
-      mutate(.pred = as.numeric(.fitted > .5))
-    
-    (mh_model_err <- mean(mh_model_accuracy$vote96 != mh_model_accuracy$.pred,
-                          na.rm = TRUE))
-    ```
-    
-    ```
-    ## [1] 0.317388
-    ```
-    
-      </p>
-    </details>
-
-1. Estimate a second logistic regression model of voter turnout using all the predictors. Calculate it's error rate, and compare it to the original model. Which is better?
-
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    
-    ```r
-    # estimate model
-    mh_model_all <- glm(vote96 ~ ., data = mental_health,
-                    family = binomial)
-    tidy(mh_model_all)
-    ```
-    
-    ```
-    ## # A tibble: 5 x 5
-    ##   term        estimate std.error statistic  p.value
-    ##   <chr>          <dbl>     <dbl>     <dbl>    <dbl>
-    ## 1 (Intercept)  -4.26     0.469      -9.07  1.18e-19
-    ## 2 age           0.0446   0.00446    10.0   1.47e-23
-    ## 3 educ          0.258    0.0266      9.70  3.15e-22
-    ## 4 female       -0.0388   0.130      -0.298 7.65e- 1
-    ## 5 mhealth      -0.118    0.0241     -4.90  9.51e- 7
-    ```
-    
-    ```r
-    # calculate error rate
-    mh_model_all_accuracy <- augment(mh_model_all, type.predict = "response") %>%
-      mutate(.pred = as.numeric(.fitted > .5))
-    
-    (mh_model_all_err <- mean(mh_model_all_accuracy$vote96 != mh_model_all_accuracy$.pred,
-                              na.rm = TRUE))
-    ```
-    
-    ```
-    ## [1] 0.2786636
-    ```
-    
-    The model with all predictors has a 3.87% lower error rate than predictions based only on mental health.
-    
-      </p>
-    </details>
-    
-### Session Info
+## Session Info
 
 
 
@@ -786,83 +428,117 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-11                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
-##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
-##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
-##  broom       * 0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
-##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
-##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
-##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
-##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
-##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
-##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
-##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  modelr      * 0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
-##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
-##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
-##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
-##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
-##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
-##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
+##  package     * version    date       lib source        
+##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
+##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
+##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown      0.21       2020-12-11 [1] local         
+##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
+##  broom       * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
+##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
+##  cellranger    1.1.0      2016-07-27 [1] CRAN (R 4.0.0)
+##  class         7.3-17     2020-04-26 [1] CRAN (R 4.0.2)
+##  cli           2.1.0      2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16     2018-12-24 [1] CRAN (R 4.0.2)
+##  colorspace    1.4-1      2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon        1.3.4      2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI           1.1.0      2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr        1.4.4      2020-05-27 [1] CRAN (R 4.0.0)
+##  desc          1.2.0      2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools      2.3.2      2020-09-18 [1] CRAN (R 4.0.2)
+##  dials       * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)
+##  DiceDesign    1.8-1      2019-07-31 [1] CRAN (R 4.0.0)
+##  digest        0.6.25     2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr       * 1.0.2      2020-08-18 [1] CRAN (R 4.0.2)
+##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
+##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
+##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
+##  furrr         0.2.0      2020-10-12 [1] CRAN (R 4.0.2)
+##  future        1.19.1     2020-09-22 [1] CRAN (R 4.0.2)
+##  generics      0.0.2      2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2     * 3.3.2      2020-06-19 [1] CRAN (R 4.0.2)
+##  globals       0.13.1     2020-10-11 [1] CRAN (R 4.0.2)
+##  glue          1.4.2      2020-08-27 [1] CRAN (R 4.0.2)
+##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)
+##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)
+##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
+##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
+##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
+##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
+##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
+##  infer       * 0.5.3      2020-07-14 [1] CRAN (R 4.0.2)
+##  ipred         0.9-9      2019-04-28 [1] CRAN (R 4.0.0)
+##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
+##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
+##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
+##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
+##  lifecycle     0.2.0      2020-03-06 [1] CRAN (R 4.0.0)
+##  listenv       0.8.0      2019-12-05 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.9      2020-06-08 [1] CRAN (R 4.0.2)
+##  magrittr      1.5        2014-11-22 [1] CRAN (R 4.0.0)
+##  MASS          7.3-53     2020-09-09 [1] CRAN (R 4.0.2)
+##  Matrix        1.2-18     2019-11-27 [1] CRAN (R 4.0.2)
+##  memoise       1.1.0      2017-04-21 [1] CRAN (R 4.0.0)
+##  modeldata   * 0.0.2      2020-06-22 [1] CRAN (R 4.0.2)
+##  modelr        0.1.8      2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)
+##  nnet          7.3-14     2020-04-26 [1] CRAN (R 4.0.2)
+##  parsnip     * 0.1.3      2020-08-04 [1] CRAN (R 4.0.2)
+##  pillar        1.4.6      2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild      1.1.0      2020-07-13 [1] CRAN (R 4.0.2)
+##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload       1.1.0      2020-05-29 [1] CRAN (R 4.0.0)
+##  plyr          1.8.6      2020-03-03 [1] CRAN (R 4.0.0)
+##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.0)
+##  pROC          1.16.2     2020-03-19 [1] CRAN (R 4.0.0)
+##  processx      3.4.4      2020-09-03 [1] CRAN (R 4.0.2)
+##  prodlim       2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)
+##  ps            1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
+##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
+##  R6            2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
+##  Rcpp          1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
+##  readr       * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
+##  recipes     * 0.1.13     2020-06-23 [1] CRAN (R 4.0.2)
+##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)
+##  reprex        0.3.0      2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang         0.4.8      2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.4        2020-09-30 [1] CRAN (R 4.0.2)
+##  rpart         4.1-15     2019-04-12 [1] CRAN (R 4.0.2)
+##  rprojroot     1.3-2      2018-01-03 [1] CRAN (R 4.0.0)
+##  rsample     * 0.0.8      2020-09-23 [1] CRAN (R 4.0.2)
+##  rstudioapi    0.11       2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest         0.3.6      2020-07-25 [1] CRAN (R 4.0.2)
+##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)
+##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)
+##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)
+##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.2)
+##  testthat      2.3.2      2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble      * 3.0.3      2020-07-10 [1] CRAN (R 4.0.2)
+##  tidymodels  * 0.1.1      2020-07-14 [1] CRAN (R 4.0.2)
+##  tidyr       * 1.1.2      2020-08-27 [1] CRAN (R 4.0.2)
+##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse   * 1.3.0      2019-11-21 [1] CRAN (R 4.0.0)
+##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
+##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
+##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
+##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
+##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
+##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)
+##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
+##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

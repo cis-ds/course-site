@@ -17,7 +17,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice working with model objects in R."
+summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice estimating models in R using the `tidymodels` framework."
 
 # Location of event.
 location: "Online"
@@ -45,17 +45,16 @@ math: false
 
 * Review the major goals of statistical learning
 * Explain the difference between parametric and non-parametric methods
-* Introduce linear models and ordinary least squares regression
 * Demonstrate how to estimate a linear model in R using `lm()`
-* Demonstrate how to extract model statistics using [`broom`](https://cran.r-project.org/web/packages/broom/index.html) and [`modelr`](https://github.com/hadley/modelr)
-* Practice estimating and interpreting linear models
-* Demonstrate the use of logistic regression for classification
-* Identify methods for assessing classification model accuracy
+* Introduce the `tidymodels` and `parsnip` packages for estimating regression models
+* Practice estimating linear and logistic regression models
 
 ## Before class
 
-* Read chapters 22-25 in [R for Data Science](http://r4ds.had.co.nz/)
-* This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
+* Read [Build a model](/notes/start-with-models/)
+* Read [Logistic regress](/notes/logistic-regression/)
+
+This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
 ##### For those with little/no statistics training
 
@@ -69,13 +68,12 @@ math: false
 ## Class materials
 
 * [Statistical learning: the basics](/notes/statistical-learning/)
-* [Linear regression](/notes/linear-models/)
+* [Build a model](/notes/start-with-models/)
 * [Logistic regression](/notes/logistic-regression/)
+* [Working with statistical models](/notes/work-with-models-exercise/)
 
 ### Additional readings
 
-* [Vignette on `broom`](https://cran.r-project.org/web/packages/broom/vignettes/broom.html)
-* [Examples of estimating common statistical models in R](http://www.ats.ucla.edu/stat/dae/)
 * [`caret`](https://topepo.github.io/caret/) - a package which unifies hundreds of separate algorithms for generating statistical/machine learning models into a single standardized interface. Very robust, but pre-`tidyverse` and on the path to deprecation.
 * [`tidymodels`](https://www.tidymodels.org/start/) - a collection of packages for machine and statistical learning using `tidyverse` principles.
 
