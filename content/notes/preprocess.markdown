@@ -47,11 +47,11 @@ and so on. If you are familiar with R's formula interface, a lot of this might s
 
 The [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.^[Conducted by NORC at the University of Chicago.]
 
-{{% alert note %}}
+{{% callout note %}}
 
 [The GSS gathers data on contemporary American society in order to monitor and explain trends and constants in attitudes, behaviors, and attributes. Hundreds of trends have been tracked since 1972. In addition, since the GSS adopted questions from earlier surveys, trends can be followed for up to 70 years. The GSS contains a standard core of demographic, behavioral, and attitudinal questions, plus topics of special interest. Among the topics covered are civil liberties, crime and violence, intergroup tolerance, morality, national spending priorities, psychological well-being, social mobility, and stress and traumatic events.](http://gss.norc.org/About-The-GSS)
 
-{{% /alert %}}
+{{% /callout %}}
 
 
 ```r
@@ -106,11 +106,11 @@ Table: Table 1: Data summary
 
 The outcome of interest `colrac` is a factor variable coded as either `"ALLOWED"` (respondent believes the person should be allowed to teach) or `"NOT ALLOWED"` (respondent believes the person should not allowed to teach).
 
-{{% alert note %}}
+{{% callout note %}}
 
 Documentation for the other predictors (if the variable is not clearly coded) can be viewed [here](https://gssdataexplorer.norc.org/variables/vfilter). You can also run `?gss` to open a documentation file in R.
 
-{{% /alert %}}
+{{% /callout %}}
 
 We can see that about 48% of respondents who answered the question think a person who believes that Blacks are genetically inferior should be allowed to teach in a college or university. 
 
@@ -532,7 +532,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-05                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
@@ -540,7 +540,7 @@ devtools::session_info()
 ##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
 ##  base64enc     0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
 ##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1     2020-10-19 [1] local         
+##  blogdown      0.21       2020-12-11 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -611,7 +611,7 @@ devtools::session_info()
 ##  ps            1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.1      2020-11-02 [1] local         
+##  rcfss       * 0.2.1      2020-12-08 [1] local         
 ##  Rcpp          1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)

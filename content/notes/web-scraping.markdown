@@ -24,7 +24,7 @@ library(rvest)
 theme_set(theme_minimal())
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Run the code below in your console to download this exercise as a set of R scripts.
 
@@ -32,7 +32,7 @@ Run the code below in your console to download this exercise as a set of R scrip
 usethis::use_course("uc-cfss/getting-data-from-the-web-scraping")
 ```
 
-{{% /alert %}}
+{{% /callout %}}
 
 What if data is present on a website, but isn't provided in an API at all? It is possible to grab that information too. How easy that is to do depends a lot on the quality of the website that we are using.
 
@@ -84,11 +84,11 @@ HTML code looks something like this:
 
 HTML code consists of **markup** code used to annotate text, images, and other content for display in a web browswer. As you can see, the code above consists of HTML **elements** which are created by a tag `<>`. Elements can also have **attributes** that configure the elements or adjust their behavior.
 
-{{% alert note %}}
+{{% callout note %}}
 
 You can think of elements as R functions, and attributes are the arguments to functions. Not all functions require arguments, or they use default arguments.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ```html
 <a href="http://github.com">GitHub</a>
@@ -234,11 +234,11 @@ none   | tag
 .      | class
 #      | id
 
-{{% alert note %}}
+{{% callout note %}}
 
 [CSS diner](http://flukeout.github.io) is a JavaScript-based interactive game for learning and practicing CSS selectors. Take some time to play and learn more about CSS selector combinations.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Find the CSS selector
 
@@ -282,11 +282,11 @@ frozen
 ## [2] <body id="styleguide-v2" class="fixed">\n            <img height="1" widt ...
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 It is always a good practice when web scraping to store the output of `read_html()` in an object immediately, then apply further functions to the stored HTML file. Otherwise you send a request to the server every time you extract information from the HTML. For longer-term projects, you can store `read_html()` objects locally on your computer using `readr::write_rds()` and retrieve them using `readr::read_rds()`. This caches a local copy of the file so you always have a copy preserved, in case the webpage's underlying HTML code is modified (or the website is taken offline).
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Extract nodes
 
@@ -454,11 +454,11 @@ Do you collect the cast names and only the cast names? We've scraped too much. T
 1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
 1. Copy the selector to use with `html_nodes()`
 
-{{% alert note %}}
+{{% callout note %}}
 
 When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Practice using SelectorGadget
 
@@ -641,23 +641,21 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-19                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-10-19 [1] local         
+##  blogdown      0.21    2020-12-11 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
-##  curl          4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
@@ -706,7 +704,6 @@ devtools::session_info()
 ##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
 ##  rvest       * 0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
-##  selectr       0.4-2   2019-11-20 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
 ##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)

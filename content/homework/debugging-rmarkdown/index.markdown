@@ -31,11 +31,11 @@ The homework repository contains a file called `hiv-profile.Rmd`.
 1. The file has some problems. Fix the problems so you can successfully knit the document in its existing form.
 1. Create a [parameterized report](https://r4ds.had.co.nz/r-markdown.html#parameters) that allows you generate `hiv-profile.Rmd` for any country in the dataset. Use this parameterized R Markdown document to generate a separate report for each country and save them as HTML documents to a folder called `reports`.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Each file should be named after the country's iso3 code. For example, the report for the United States should be called `USA.html`.
 
-{{% /alert %}}
+{{% /callout %}}
 
 # Submit the assignment
 

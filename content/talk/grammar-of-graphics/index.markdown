@@ -92,8 +92,8 @@ math: false
 * [Complete the first homework assignment](/homework/edit-readme/)
 * Install the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console. We will be using data from this package in class next week.
 
-{{% alert note %}}
+{{% callout note %}}
 
 If you do not already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")` in the console.
 
-{{% /alert %}}
+{{% /callout %}}

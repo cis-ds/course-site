@@ -15,11 +15,11 @@ aliases: "/hw00_asking_questions.html"
 
 Asking questions is an important part of this class. Remember the **15 minute rule**:
 
-{{% alert note %}}
+{{% callout note %}}
 
 Once you've spent 15 minutes attempting to troubleshoot a problem, **you must ask for help**.
 
-{{% /alert %}}
+{{% /callout %}}
 
 Questions should be posted to [the class discussion repo on GitHub](https://github.com/uc-cfss/Discussion). However, there are good and bad ways to ask questions. Here are some tips you should always follow when posting questions.
 
@@ -78,10 +78,11 @@ The relevant bit of GitHub-flavored Markdown is ready to be pasted from your cli
 ``` r
 library(tidyverse)
 count(diamonds, colour)
-#> Error: Column `colour` is unknown
+#> Error: Must group by variables found in `.data`.
+#> * Column `colour` is not found.
 ```
 
-<sup>Created on 2020-04-10 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
+<sup>Created on 2020-12-15 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
@@ -90,18 +91,19 @@ Here's what that Markdown would look like rendered in a GitHub issue:
 ``` r
 library(tidyverse)
 count(diamonds, colour)
-#> Error: Column `colour` is unknown
+#> Error: Must group by variables found in `.data`.
+#> * Column `colour` is not found.
 ```
 
-<sup>Created on 2020-04-10 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
+<sup>Created on 2020-12-15 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 
-{{% alert note %}}
+{{% callout note %}}
 
 To ensure your example is a reproducible example, you need to make sure to load all necessary packages and data objects at the top of your copied code. This may involve opening a new tab in the editor panel and writing a short version of the script that only includes the essentials, then copying that script to the clipboard and `reprex()` it.
 
-{{% /alert %}}
+{{% /callout %}}
 
 
 

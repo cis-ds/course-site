@@ -24,7 +24,7 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Run the code below in your console to download this exercise as a set of R scripts.
 
@@ -32,7 +32,7 @@ Run the code below in your console to download this exercise as a set of R scrip
 usethis::use_course("uc-cfss/vectors-and-iteration")
 ```
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Writing `for` loops
 
@@ -353,11 +353,11 @@ output
 ##    58.90    31.80
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Notice that all the columns have a maximum value, even the apparently text-based columns. This is because `cut`, `color`, and `clarity` are all stored as factor columns. Remember that [factor vectors are built on top of integers](http://r4ds.had.co.nz/vectors.html#factors-1), so the underlying values are numeric. As a result we can apply `max()` to a factor vector and still retrieve a (partially) meaningful result.
 
-{{% /alert %}}
+{{% /callout %}}
 
   </p>
 </details>
@@ -576,11 +576,11 @@ We've seen how to use loops and `map()` functions to solve this task - let's che
 * The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like `select()`) so you can pick variables by position, name, and type. 
 * The second argument, `.fns`, is a function or list of functions to apply to each column. This can also be a purrr style formula (or list of formulas) like `~ .x / 2`.
 
-{{% alert note %}}
+{{% callout note %}}
 
 `across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dplyr` to access this function.
 
-{{% /alert %}}
+{{% /callout %}}
 
 Here are a couple of examples of `across()` in conjunction with its favorite verb, `summarize()`:
 
@@ -903,14 +903,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-10-26                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-10-19 [1] local         
+##  blogdown      0.21    2020-12-11 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -955,7 +955,7 @@ devtools::session_info()
 ##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.0   2020-10-13 [1] local         
+##  rcfss       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)

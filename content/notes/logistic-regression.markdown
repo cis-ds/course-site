@@ -25,7 +25,7 @@ set.seed(123)
 theme_set(theme_minimal())
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Run the code below in your console to download this exercise as a set of R scripts.
 
@@ -33,7 +33,7 @@ Run the code below in your console to download this exercise as a set of R scrip
 usethis::use_course("uc-cfss/statistical-learning")
 ```
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Classification problems
 

@@ -31,11 +31,11 @@ theme_set(theme_minimal())
 
 [`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Obtain map images
 
@@ -102,11 +102,11 @@ get_stamenmap(bbox = chi_bb,
 
 Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000) to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ### Center/zoom
 
@@ -129,11 +129,11 @@ get_googlemap(center = chi_center,
   ggmap()
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Types of map tiles
 
@@ -147,21 +147,21 @@ Google Maps is a bit more limited, but still offers a few major types:
 
 See the documentation for the `get_*map()` function for the exact code necessary to get each type of map.
 
-{{% alert note %}}
+{{% callout note %}}
 
 `get_map()` is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_googlemap()`, `get_stamenmap()`, and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Import crime data
 
 Now that we can obtain map tiles and draw them using `ggmap()`, let's explore how to add data to the map. The city of Chicago has [an excellent data portal](https://data.cityofchicago.org/) publishing a large volume of public records. Here we'll look at [crime data from 2017](https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr).^[[Full documentation of the data from the larger 2001-present crime dataset.](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2).] I previously downloaded a `.csv` file containing all the records, which I import using `read_csv()`:
 
-{{% alert note %}}
+{{% callout note %}}
 
 If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://cfss.uchicago.edu/data/Crimes_-_2017.csv")` to download the file from the course website.
 
-{{% /alert %}}
+{{% /callout %}}
 
 
 ```r
@@ -508,103 +508,102 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.1 (2019-07-05)
-##  os       macOS Catalina 10.15.3      
-##  system   x86_64, darwin15.6.0        
+##  version  R version 4.0.2 (2020-06-22)
+##  os       macOS Catalina 10.15.7      
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-02-18                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
-##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-##  backports      1.1.5   2019-10-02 [1] CRAN (R 3.6.0)
-##  bitops         1.0-6   2013-08-17 [1] CRAN (R 3.6.0)
-##  blogdown       0.17.1  2020-02-13 [1] local         
-##  bookdown       0.17    2020-01-11 [1] CRAN (R 3.6.0)
-##  broom          0.5.4   2020-01-27 [1] CRAN (R 3.6.0)
-##  callr          3.4.2   2020-02-12 [1] CRAN (R 3.6.1)
-##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 3.6.0)
-##  cli            2.0.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  colorspace     1.4-1   2019-03-18 [1] CRAN (R 3.6.0)
-##  crayon         1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
-##  DBI            1.1.0   2019-12-15 [1] CRAN (R 3.6.0)
-##  dbplyr         1.4.2   2019-06-17 [1] CRAN (R 3.6.0)
-##  desc           1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-##  devtools       2.2.1   2019-09-24 [1] CRAN (R 3.6.0)
-##  digest         0.6.23  2019-11-23 [1] CRAN (R 3.6.0)
-##  dplyr        * 0.8.4   2020-01-31 [1] CRAN (R 3.6.0)
-##  ellipsis       0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
-##  evaluate       0.14    2019-05-28 [1] CRAN (R 3.6.0)
-##  fansi          0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
-##  forcats      * 0.4.0   2019-02-17 [1] CRAN (R 3.6.0)
-##  fs             1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
-##  generics       0.0.2   2018-11-29 [1] CRAN (R 3.6.0)
-##  ggmap        * 3.0.0   2019-02-05 [1] CRAN (R 3.6.0)
-##  ggplot2      * 3.2.1   2019-08-10 [1] CRAN (R 3.6.0)
-##  glue           1.3.1   2019-03-12 [1] CRAN (R 3.6.0)
-##  gtable         0.3.0   2019-03-25 [1] CRAN (R 3.6.0)
-##  haven          2.2.0   2019-11-08 [1] CRAN (R 3.6.0)
-##  here         * 0.1     2017-05-28 [1] CRAN (R 3.6.0)
-##  hms            0.5.3   2020-01-08 [1] CRAN (R 3.6.0)
-##  htmltools      0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
-##  httr           1.4.1   2019-08-05 [1] CRAN (R 3.6.0)
-##  jpeg           0.1-8.1 2019-10-24 [1] CRAN (R 3.6.0)
-##  jsonlite       1.6.1   2020-02-02 [1] CRAN (R 3.6.0)
-##  knitr          1.28    2020-02-06 [1] CRAN (R 3.6.0)
-##  lattice        0.20-38 2018-11-04 [1] CRAN (R 3.6.1)
-##  lazyeval       0.2.2   2019-03-15 [1] CRAN (R 3.6.0)
-##  lifecycle      0.1.0   2019-08-01 [1] CRAN (R 3.6.0)
-##  lubridate      1.7.4   2018-04-11 [1] CRAN (R 3.6.0)
-##  magrittr       1.5     2014-11-22 [1] CRAN (R 3.6.0)
-##  memoise        1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-##  modelr         0.1.5   2019-08-08 [1] CRAN (R 3.6.0)
-##  munsell        0.5.0   2018-06-12 [1] CRAN (R 3.6.0)
-##  nlme           3.1-144 2020-02-06 [1] CRAN (R 3.6.0)
-##  patchwork    * 1.0.0   2019-12-01 [1] CRAN (R 3.6.1)
-##  pillar         1.4.3   2019-12-20 [1] CRAN (R 3.6.0)
-##  pkgbuild       1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
-##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 3.6.0)
-##  pkgload        1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-##  plyr           1.8.5   2019-12-10 [1] CRAN (R 3.6.0)
-##  png            0.1-7   2013-12-03 [1] CRAN (R 3.6.0)
-##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
-##  processx       3.4.1   2019-07-18 [1] CRAN (R 3.6.0)
-##  ps             1.3.0   2018-12-21 [1] CRAN (R 3.6.0)
-##  purrr        * 0.3.3   2019-10-18 [1] CRAN (R 3.6.0)
-##  R6             2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
-##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 3.6.0)
-##  Rcpp           1.0.3   2019-11-08 [1] CRAN (R 3.6.0)
-##  readr        * 1.3.1   2018-12-21 [1] CRAN (R 3.6.0)
-##  readxl         1.3.1   2019-03-13 [1] CRAN (R 3.6.0)
-##  remotes        2.1.0   2019-06-24 [1] CRAN (R 3.6.0)
-##  reprex         0.3.0   2019-05-16 [1] CRAN (R 3.6.0)
-##  RgoogleMaps    1.4.5.3 2020-02-12 [1] CRAN (R 3.6.1)
-##  rjson          0.2.20  2018-06-08 [1] CRAN (R 3.6.0)
-##  rlang          0.4.4   2020-01-28 [1] CRAN (R 3.6.0)
-##  rmarkdown      2.1     2020-01-20 [1] CRAN (R 3.6.0)
-##  rprojroot      1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
-##  rstudioapi     0.11    2020-02-07 [1] CRAN (R 3.6.0)
-##  rvest          0.3.5   2019-11-08 [1] CRAN (R 3.6.0)
-##  scales         1.1.0   2019-11-18 [1] CRAN (R 3.6.0)
-##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-##  sp             1.3-2   2019-11-07 [1] CRAN (R 3.6.0)
-##  stringi        1.4.5   2020-01-11 [1] CRAN (R 3.6.0)
-##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-##  testthat       2.3.1   2019-12-01 [1] CRAN (R 3.6.0)
-##  tibble       * 2.1.3   2019-06-06 [1] CRAN (R 3.6.0)
-##  tidyr        * 1.0.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  tidyselect     1.0.0   2020-01-27 [1] CRAN (R 3.6.0)
-##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 3.6.0)
-##  usethis        1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
-##  vctrs          0.2.2   2020-01-24 [1] CRAN (R 3.6.0)
-##  withr          2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-##  xfun           0.12    2020-01-13 [1] CRAN (R 3.6.0)
-##  xml2           1.2.2   2019-08-09 [1] CRAN (R 3.6.0)
-##  yaml           2.2.1   2020-02-01 [1] CRAN (R 3.6.0)
+##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports      1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
+##  bitops         1.0-6   2013-08-17 [1] CRAN (R 4.0.0)
+##  blob           1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown       0.21    2020-12-11 [1] local         
+##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom          0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
+##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli            2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  colorspace     1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon         1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI            1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr         1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  desc           1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
+##  digest         0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr        * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
+##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi          0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats      * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
+##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
+##  generics       0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
+##  ggmap        * 3.0.0   2019-02-05 [1] CRAN (R 4.0.0)
+##  ggplot2      * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
+##  here         * 0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hms            0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools      0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jpeg           0.1-8.1 2019-10-24 [1] CRAN (R 4.0.0)
+##  jsonlite       1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr          1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
+##  lifecycle      0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  lubridate      1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
+##  magrittr       1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  memoise        1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  patchwork    * 1.0.1   2020-06-22 [1] CRAN (R 4.0.2)
+##  pillar         1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild       1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
+##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  plyr           1.8.6   2020-03-03 [1] CRAN (R 4.0.0)
+##  png            0.1-7   2013-12-03 [1] CRAN (R 4.0.0)
+##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx       3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps             1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
+##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6             2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.0.0)
+##  Rcpp           1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
+##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
+##  reprex         0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  RgoogleMaps    1.4.5.3 2020-02-12 [1] CRAN (R 4.0.0)
+##  rjson          0.2.20  2018-06-08 [1] CRAN (R 4.0.0)
+##  rlang          0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown      2.4     2020-09-30 [1] CRAN (R 4.0.2)
+##  rprojroot      1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  rstudioapi     0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest          0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
+##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  sp             1.4-4   2020-10-07 [1] CRAN (R 4.0.2)
+##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
+##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat       2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble       * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr        * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
+##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
+##  usethis        1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  vctrs          0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  xfun           0.18    2020-09-29 [1] CRAN (R 4.0.2)
+##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

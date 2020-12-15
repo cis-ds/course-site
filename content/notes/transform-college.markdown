@@ -21,7 +21,7 @@ menu:
 library(tidyverse)
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Run the code below in your console to download this exercise as a set of R scripts.
 
@@ -29,15 +29,15 @@ Run the code below in your console to download this exercise as a set of R scrip
 usethis::use_course("uc-cfss/data-transformation")
 ```
 
-{{% /alert %}}
+{{% /callout %}}
 
 The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2016 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
 
-{{% alert warning %}}
+{{% callout warning %}}
 
 If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
 
-{{% /alert %}}
+{{% /callout %}}
 
 
 ```r
@@ -66,11 +66,11 @@ glimpse(scorecard)
 ## $ openadmp  <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No,…
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 `glimpse()` is part of the `tibble` package and is a transposed version of `print()`: columns run down the page, and data runs across. With a data frame with multiple columns, sometimes there is not enough horizontal space on the screen to print each column. By transposing the data frame, we can see all the columns and the values recorded for the initial rows.
 
-{{% /alert %}}
+{{% /callout %}}
 
 Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of the `dplyr` functions to perform the following tasks.
 
@@ -333,20 +333,19 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-08                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-10-19 [1] local         
+##  blogdown      0.21    2020-12-11 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -386,7 +385,6 @@ devtools::session_info()
 ##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
@@ -407,7 +405,6 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
-##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)

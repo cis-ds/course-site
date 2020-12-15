@@ -77,19 +77,19 @@ The current dataset contains information on every case decided from the 1791-201
 * `minVotes`
 * `term`
 
-{{% alert note %}}
+{{% callout note %}}
 
 Please read the [documentation](http://scdb.wustl.edu/documentation.php) to see how these variables are coded.
 
-{{% /alert %}}
+{{% /callout %}}
 
 Once you import the data files, use your data wrangling and visualization skills to answer the following questions:
 
-{{% alert note %}}
+{{% callout note %}}
 
 Pay careful attention to the unit of analysis required to answer each question. Some questions only require case-level variables, others only require vote-level variables, and some may require combining the two data frames together. Be sure to choose an appropriate relational join function as necessary.
 
-{{% /alert %}}
+{{% /callout %}}
 
 1. What percentage of cases in each term are decided by a one-vote margin (i.e. 5-4, 4-3, etc.)?
 1. For justices [currently serving on the Supreme Court](https://www.supremecourt.gov/about/biographies.aspx), how often have they voted in the conservative direction in cases involving criminal procedure, civil rights, economic activity, and federal taxation?

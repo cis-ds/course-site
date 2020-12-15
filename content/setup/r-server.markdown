@@ -34,11 +34,11 @@ The downside is that you only have access to this server for the duration of the
 1. Use your [CNetID](https://uchicago.service-now.com/it?id=kb_article&kb=KB06000393) and password to login (this is the same username/password you use for other UChicago online services, such as email).
 1. You're done. You should see a fresh RStudio window in your browser.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Only students in this course who have been approved by SSCS can access this server. If you cannot log on to the server, apply for an account at https://iota.uchicago.edu/ (VPN required) and email [sscs@uchicago.edu](mailto:sscs@uchicago.edu) to let them know that you are enrolled in the class.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Test it
 

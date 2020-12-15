@@ -23,7 +23,7 @@ library(rcfss)
 set.seed(1234)
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Run the code below in your console to download this exercise as a set of R scripts.
 
@@ -31,7 +31,7 @@ Run the code below in your console to download this exercise as a set of R scrip
 usethis::use_course("uc-cfss/vectors-and-iteration")
 ```
 
-{{% /alert %}}
+{{% /callout %}}
 
 So far the only type of data object in R you have encountered is a `data.frame` (or the `tidyverse` variant `tibble`). At its core though, the primary method of data storage in R is the **vector**. So far we have only encountered vectors as components of a **data frame**; data frames are built from vectors. There are a few different types of vectors: logical, numeric, and character. But now we want to understand more precisely how these data objects are structured and related to one another.
 
@@ -65,11 +65,11 @@ parse_logical(c("TRUE", "TRUE", "FALSE", "TRUE", "NA"))
 ## [1]  TRUE  TRUE FALSE  TRUE    NA
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Whenever you filter a data frame, R is (in the background) creating a vector of `TRUE` and `FALSE` - whenever the condition is `TRUE`, keep the row, otherwise exclude it.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Numeric vectors
 
@@ -92,11 +92,11 @@ parse_double(c("4.2", "4", "6", "53.2"))
 ## [1]  4.2  4.0  6.0 53.2
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Doubles can store both whole numbers and numbers with decimal points.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Character vectors
 
@@ -433,11 +433,11 @@ str(x_named)
 ##  $ c: num 3
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 If you are running RStudio 1.1 or above, you can also use the [**object explorer**](https://blog.rstudio.com/2017/08/22/rstudio-v1-1-preview-object-explorer/) to interactively examine the structure of objects.
 
-{{% /alert %}}
+{{% /callout %}}
 
 Unlike the other atomic vectors, lists are **recursive**. This means they can:
 
@@ -592,11 +592,11 @@ str(x)
 
 ![Figure 20.2 from [R for Data Science](http://r4ds.had.co.nz/vectors.html#fig:lists-subsetting)](https://r4ds.had.co.nz/diagrams/lists-subsetting.png)
 
-{{% alert note %}}
+{{% callout note %}}
 
 Still confused about list subsetting? [Review the pepper shaker.](http://r4ds.had.co.nz/vectors.html#lists-of-condiments)
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Exercise: subset a list
 
@@ -737,20 +737,19 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-10-19                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-10-16 [1] local         
+##  blogdown      0.21    2020-12-11 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -790,7 +789,7 @@ devtools::session_info()
 ##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.0   2020-10-13 [1] local         
+##  rcfss       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)

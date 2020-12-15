@@ -345,11 +345,11 @@ print(bayes_fit, digits = 5)
 ## * For info on the priors used see ?prior_summary.stanreg
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 This kind of Bayesian analysis (like many models) involves randomly generated numbers in its fitting procedure. We can use `set.seed()` to ensure that the same (pseudo-)random numbers are generated each time we run this code. The number `123` isn't special or related to our data; it is just a "seed" used to choose random numbers.
 
-{{% /alert %}}
+{{% /callout %}}
 
 To update the parameter table, the `tidy()` method is once again used: 
 
@@ -394,11 +394,11 @@ ggplot(data = bayes_plot_data, mapping = aes(x = type)) +
 
 This isn't very different from the non-Bayesian results (except in interpretation). 
 
-{{% alert note %}}
+{{% callout note %}}
 
 The [`parsnip`](https://parsnip.tidymodels.org/) package can work with many model types, engines, and arguments. Check out [tidymodels.org/find/parsnip/](https://www.tidymodels.org/find/parsnip/) to see what is available.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Why does it work that way? {#why}
 
@@ -429,7 +429,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-06                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        
@@ -438,7 +438,7 @@ devtools::session_info()
 ##  base64enc      0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
 ##  bayesplot      1.7.2      2020-05-28 [1] CRAN (R 4.0.0)
 ##  blob           1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown       0.20.1     2020-10-19 [1] local         
+##  blogdown       0.21       2020-12-11 [1] local         
 ##  bookdown       0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  boot           1.3-25     2020-04-26 [1] CRAN (R 4.0.2)
 ##  broom        * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
@@ -535,7 +535,7 @@ devtools::session_info()
 ##  ps             1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6             2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
-##  rcfss        * 0.2.1      2020-11-02 [1] local         
+##  rcfss        * 0.2.1      2020-12-08 [1] local         
 ##  Rcpp         * 1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
 ##  RcppParallel   5.0.2      2020-06-24 [1] CRAN (R 4.0.2)
 ##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)

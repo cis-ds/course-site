@@ -363,11 +363,11 @@ in R. However this is insecure. We don't want to risk committing this line and p
 file.edit(here::here(".Rprofile"))
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Note: you need to have the [`here`](https://cran.r-project.org/web/packages/here/index.html) package installed for that code to work.
 
-{{% /alert %}}
+{{% /callout %}}
 
 This will create a special file called `.Rprofile` in the same directory as your `.Rproj` file (assuming you are working in an R project). The file should open automatically in your RStudio script editor. Add
 
@@ -844,7 +844,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-11                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
@@ -852,7 +852,7 @@ devtools::session_info()
 ##  backports      1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  base64enc      0.1-3   2015-07-28 [1] CRAN (R 4.0.0)
 ##  blob           1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown       0.21    2020-10-11 [1] CRAN (R 4.0.2)
+##  blogdown       0.21    2020-12-11 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom        * 0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)

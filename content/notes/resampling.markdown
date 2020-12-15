@@ -504,14 +504,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-11-05                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1     2020-10-19 [1] local         
+##  blogdown      0.21       2020-12-11 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -582,7 +582,7 @@ devtools::session_info()
 ##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
 ##  ranger      * 0.12.1     2020-01-10 [1] CRAN (R 4.0.0)
-##  rcfss       * 0.2.1      2020-11-02 [1] local         
+##  rcfss       * 0.2.1      2020-12-08 [1] local         
 ##  Rcpp          1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)

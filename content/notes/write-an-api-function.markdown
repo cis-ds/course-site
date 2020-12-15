@@ -57,11 +57,11 @@ Given the Title "Sharknado" and the release year "2013", we get:
 http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 The OMDB API used to be free, however in the past year shifted to a private API key due to overwhelming traffic. See in class for a demo API key you can use.
 
-{{% /alert %}}
+{{% /callout %}}
 
 
 ```r
@@ -165,11 +165,11 @@ sharknado_df
 ## #   Website <chr>, Response <chr>
 ```
 
-{{% alert note %}}
+{{% callout note %}}
 
 Note there are two rows of observations when we would have expected a single row (only one movie). [We'll get to this shortly.](/notes/simplify-nested-lists)
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Additional information from `GET()`
 
@@ -206,11 +206,11 @@ Code^[[HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html)] 
 4xx    | Client error (you did something wrong)
 5xx    | Server error (server did something wrong)
 
-{{% alert note %}}
+{{% callout note %}}
 
 [(Perhaps a more intuitive, cat-based explanation of error codes)](https://www.flickr.com/photos/girliemac/sets/72157628409467125).
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Iteration through a set of movies
 
@@ -327,14 +327,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-08                  
+##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.20.1  2020-10-19 [1] local         
+##  blogdown      0.21    2020-12-11 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
