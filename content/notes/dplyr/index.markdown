@@ -310,6 +310,13 @@ delay <- summarise(
   dist = mean(distance, na.rm = TRUE),
   delay = mean(arr_delay, na.rm = TRUE)
 )
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```r
 delay <- filter(.data = delay, count > 20, dest != "HNL")
 
 ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
@@ -321,7 +328,7 @@ ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="/notes/dplyr_files/figure-html/intermediate-1.png" width="672" />
+<img src="index_files/figure-html/intermediate-1.png" width="672" />
 
 Decomposing the problem, there are three basic steps:
 
@@ -345,6 +352,10 @@ delays <- flights %>%
   filter(count > 20, dest != "HNL")
 ```
 
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
 Now, we don't have to name each intermediate step and store them as data frames. We only store a single data frame (`delays`) which contains the final version of the transformed data frame. We could read this code as use the `flights` data, then group by destination, then summarize for each destination the number of flights, the average disance, and the average delay, then subset only the destinations with at least 20 flights and exclude Honolulu.
 
 ## Things to not do with piping
@@ -361,6 +372,10 @@ delays <- flights %>%
     delay = mean(arr_delay, na.rm = TRUE)
   ) %>% 
   filter(count > 20, dest != "HNL")
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
 Do not do this:
@@ -398,7 +413,8 @@ delays <- flights %>%
 ```
 
 ```
-## Error: Column `.` is unknown
+## Error: Must group by variables found in `.data`.
+## * Column `.` is not found.
 ```
 
 If you use pipes, you don't have to reference the data frame with each function - just the first time at the beginning of the pipe sequence.

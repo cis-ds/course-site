@@ -60,14 +60,14 @@ glimpse(gapminder)
 ```
 
 ```
-## Observations: 1,704
-## Variables: 6
-## $ country   <fct> Afghanistan, Afghanistan, Afghanistan, Afghanistan, Af…
-## $ continent <fct> Asia, Asia, Asia, Asia, Asia, Asia, Asia, Asia, Asia, …
-## $ year      <int> 1952, 1957, 1962, 1967, 1972, 1977, 1982, 1987, 1992, …
-## $ lifeExp   <dbl> 28.8, 30.3, 32.0, 34.0, 36.1, 38.4, 39.9, 40.8, 41.7, …
-## $ pop       <int> 8425333, 9240934, 10267083, 11537966, 13079460, 148803…
-## $ gdpPercap <dbl> 779, 821, 853, 836, 740, 786, 978, 852, 649, 635, 727,…
+## Rows: 1,704
+## Columns: 6
+## $ country   <fct> Afghanistan, Afghanistan, Afghanistan, Afghanistan, Afghani…
+## $ continent <fct> Asia, Asia, Asia, Asia, Asia, Asia, Asia, Asia, Asia, Asia,…
+## $ year      <int> 1952, 1957, 1962, 1967, 1972, 1977, 1982, 1987, 1992, 1997,…
+## $ lifeExp   <dbl> 28.8, 30.3, 32.0, 34.0, 36.1, 38.4, 39.9, 40.8, 41.7, 41.8,…
+## $ pop       <int> 8425333, 9240934, 10267083, 11537966, 13079460, 14880372, 1…
+## $ gdpPercap <dbl> 779, 821, 853, 836, 740, 786, 978, 852, 649, 635, 727, 975,…
 ```
 
 {{% callout note %}}
@@ -94,7 +94,7 @@ ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-<img src="/notes/gapminder_files/figure-html/histo-1.png" width="672" />
+<img src="index_files/figure-html/histo-1.png" width="672" />
 
   </p>
 </details>
@@ -118,7 +118,7 @@ ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-<img src="/notes/gapminder_files/figure-html/histo-facet-1.png" width="672" />
+<img src="index_files/figure-html/histo-facet-1.png" width="672" />
 
   </p>
 </details>
@@ -135,7 +135,7 @@ ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
   geom_boxplot()
 ```
 
-<img src="/notes/gapminder_files/figure-html/boxplot-1.png" width="672" />
+<img src="index_files/figure-html/boxplot-1.png" width="672" />
 
   </p>
 </details>
@@ -152,7 +152,7 @@ ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
   geom_violin()
 ```
 
-<img src="/notes/gapminder_files/figure-html/violin-plot-1.png" width="672" />
+<img src="index_files/figure-html/violin-plot-1.png" width="672" />
 
   </p>
 </details>
@@ -169,7 +169,7 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
   geom_point()
 ```
 
-<img src="/notes/gapminder_files/figure-html/scatter-1.png" width="672" />
+<img src="index_files/figure-html/scatter-1.png" width="672" />
 
   </p>
 </details>
@@ -191,7 +191,7 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
 ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 ```
 
-<img src="/notes/gapminder_files/figure-html/scatter-smooth-1.png" width="672" />
+<img src="index_files/figure-html/scatter-smooth-1.png" width="672" />
 
   </p>
 </details>
@@ -216,7 +216,7 @@ ggplot(data = gapminder,
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="/notes/gapminder_files/figure-html/scatter-color-1.png" width="672" />
+<img src="index_files/figure-html/scatter-color-1.png" width="672" />
 
   </p>
 </details>
@@ -241,7 +241,7 @@ ggplot(data = gapminder,
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="/notes/gapminder_files/figure-html/scatter-facet-1.png" width="672" />
+<img src="index_files/figure-html/scatter-facet-1.png" width="672" />
 
 ```r
 # using facet_grid()
@@ -255,7 +255,7 @@ ggplot(data = gapminder,mapping = aes(x = gdpPercap, y = lifeExp, color = contin
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="/notes/gapminder_files/figure-html/scatter-facet-2.png" width="672" />
+<img src="index_files/figure-html/scatter-facet-2.png" width="672" />
 
 Why use `facet_grid()` here instead of `facet_wrap()`? Good question! Let's reframe it and instead ask, what is the difference between `facet_grid()` and `facet_wrap()`?^[Example drawn from [this StackOverflow thread](https://stackoverflow.com/questions/20457905/whats-the-difference-between-facet-wrap-and-facet-grid-in-ggplot2).]
 
@@ -268,7 +268,7 @@ ggplot(mpg, aes(displ, hwy)) +
   facet_grid(cyl ~ class)
 ```
 
-<img src="/notes/gapminder_files/figure-html/facet-grid-1.png" width="672" />
+<img src="index_files/figure-html/facet-grid-1.png" width="672" />
 
 There are 4 distinct `cyl` and 7 distinct `class` values. This plot  displays $4 \times 7 = 28$ plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
 
@@ -281,7 +281,7 @@ ggplot(mpg, aes(displ, hwy)) +
   facet_wrap(~ cyl + class)
 ```
 
-<img src="/notes/gapminder_files/figure-html/facet-wrap-1.png" width="672" />
+<img src="index_files/figure-html/facet-wrap-1.png" width="672" />
 
 There are 19 plots displayed now, one for every combination of `cyl` and `class`. So for this exercise, I would use `facet_wrap()` because we are faceting on a single variable. If we faceted on multiple variables, `facet_grid()` may be more appropriate.
   </p>
@@ -305,7 +305,7 @@ ggplot(data = gapminder,
 ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 ```
 
-<img src="/notes/gapminder_files/figure-html/text-1.png" width="672" />
+<img src="index_files/figure-html/text-1.png" width="672" />
 
   </p>
 </details>

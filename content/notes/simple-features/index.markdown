@@ -143,8 +143,7 @@ chi_shape <- here("static/data/Boundaries - Community Areas (current)/geo_export
 ## geometry type:  MULTIPOLYGON
 ## dimension:      XY
 ## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
-## epsg (SRID):    4326
-## proj4string:    +proj=longlat +ellps=WGS84 +no_defs
+## geographic CRS: WGS84(DD)
 ```
 
 The short report printed gives the file name, mentions that there are 77 features (records, represented as rows) and 10 fields (attributes, represented as columns), states that the spatial data file is a `MULTIPOLYGON`, provides the bounding box coordinates, and identifies the projection method (which we will discuss later). If we print the first rows of `chi_shape`:
@@ -159,8 +158,7 @@ chi_shape
 ## geometry type:  MULTIPOLYGON
 ## dimension:      XY
 ## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
-## epsg (SRID):    4326
-## proj4string:    +proj=longlat +ellps=WGS84 +no_defs
+## geographic CRS: WGS84(DD)
 ## First 10 features:
 ##    perimeter       community shape_len shape_area area comarea area_numbe
 ## 1          0         DOUGLAS     31027   46004621    0       0         35
@@ -203,13 +201,12 @@ chi_json <- here("static/data/Boundaries - Community Areas (current).geojson") %
 ```
 
 ```
-## Reading layer `OGRGeoJSON' from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/Boundaries - Community Areas (current).geojson' using driver `GeoJSON'
+## Reading layer `Boundaries - Community Areas (current)' from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/Boundaries - Community Areas (current).geojson' using driver `GeoJSON'
 ## Simple feature collection with 77 features and 9 fields
 ## geometry type:  MULTIPOLYGON
 ## dimension:      XY
 ## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
-## epsg (SRID):    4326
-## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+## geographic CRS: WGS 84
 ```
 
 ```r
@@ -221,8 +218,7 @@ chi_json
 ## geometry type:  MULTIPOLYGON
 ## dimension:      XY
 ## bbox:           xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
-## epsg (SRID):    4326
-## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+## geographic CRS: WGS 84
 ## First 10 features:
 ##          community area    shape_area perimeter area_num_1 area_numbe
 ## 1          DOUGLAS    0 46004621.1581         0         35         35
@@ -286,6 +282,7 @@ devtools::session_info()
 ##  class         7.3-17  2020-04-26 [1] CRAN (R 4.0.2)
 ##  classInt      0.4-3   2020-04-07 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)

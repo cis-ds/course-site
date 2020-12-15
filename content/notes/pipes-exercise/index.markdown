@@ -41,18 +41,18 @@ gun_deaths
 
 ```
 ## # A tibble: 100,798 x 10
-##       id  year month intent  police sex     age race      place   education
-##    <int> <int> <dbl> <chr>    <int> <chr> <int> <chr>     <chr>   <fct>    
-##  1     1  2012     1 Suicide      0 M        34 Asian/Pa… Home    BA+      
-##  2     2  2012     1 Suicide      0 F        21 White     Street  Some col…
-##  3     3  2012     1 Suicide      0 M        60 White     Other … BA+      
-##  4     4  2012     2 Suicide      0 M        64 White     Home    BA+      
-##  5     5  2012     2 Suicide      0 M        31 White     Other … HS/GED   
-##  6     6  2012     2 Suicide      0 M        17 Native A… Home    Less tha…
-##  7     7  2012     2 Undete…      0 M        48 White     Home    HS/GED   
-##  8     8  2012     3 Suicide      0 M        41 Native A… Home    HS/GED   
-##  9     9  2012     2 Accide…      0 M        50 White     Other … Some col…
-## 10    10  2012     2 Suicide      0 M        NA Black     Home    <NA>     
+##       id  year month intent   police sex     age race         place    education
+##    <dbl> <dbl> <chr> <chr>     <dbl> <chr> <dbl> <chr>        <chr>    <fct>    
+##  1     1  2012 Jan   Suicide       0 M        34 Asian/Pacif… Home     BA+      
+##  2     2  2012 Jan   Suicide       0 F        21 White        Street   Some col…
+##  3     3  2012 Jan   Suicide       0 M        60 White        Other s… BA+      
+##  4     4  2012 Feb   Suicide       0 M        64 White        Home     BA+      
+##  5     5  2012 Feb   Suicide       0 M        31 White        Other s… HS/GED   
+##  6     6  2012 Feb   Suicide       0 M        17 Native Amer… Home     Less tha…
+##  7     7  2012 Feb   Undeter…      0 M        48 White        Home     HS/GED   
+##  8     8  2012 Mar   Suicide       0 M        41 Native Amer… Home     HS/GED   
+##  9     9  2012 Feb   Acciden…      0 M        50 White        Other s… Some col…
+## 10    10  2012 Feb   Suicide       0 M        NA Black        Home     <NA>     
 ## # … with 100,788 more rows
 ```
 
@@ -66,15 +66,11 @@ gun_deaths
 ```r
 gun_deaths1 <- filter(gun_deaths, sex == "M", race == "White", year == 2012)
 gun_deaths2 <- group_by(gun_deaths1, education)
-```
-
-```
-## Warning: Factor `education` contains implicit NA, consider using
-## `forcats::fct_explicit_na`
-```
-
-```r
 (gun_deaths3 <- summarize(gun_deaths2, n = n()))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
 ```
@@ -105,15 +101,11 @@ gun_deaths2 <- gun_deaths       # copy for demonstration purposes
 
 gun_deaths2 <- filter(gun_deaths2, sex == "M", race == "White", year == 2012)
 gun_deaths2 <- group_by(gun_deaths2, education)
-```
-
-```
-## Warning: Factor `education` contains implicit NA, consider using
-## `forcats::fct_explicit_na`
-```
-
-```r
 (gun_deaths2 <- summarize(gun_deaths2, n = n()))
+```
+
+```
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
 ```
@@ -147,8 +139,7 @@ summarize(
 ```
 
 ```
-## Warning: Factor `education` contains implicit NA, consider using
-## `forcats::fct_explicit_na`
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
 ```
@@ -180,8 +171,7 @@ gun_deaths %>%
 ```
 
 ```
-## Warning: Factor `education` contains implicit NA, consider using
-## `forcats::fct_explicit_na`
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
 ```
@@ -200,11 +190,6 @@ gun_deaths %>%
 gun_deaths %>%
   filter(sex == "M", race == "White", year == 2012) %>%
   count(education)
-```
-
-```
-## Warning: Factor `education` contains implicit NA, consider using
-## `forcats::fct_explicit_na`
 ```
 
 ```
@@ -255,6 +240,7 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -315,6 +301,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)

@@ -46,21 +46,21 @@ scorecard
 ```
 
 ```
-## # A tibble: 1,733 x 14
-##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
-##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
-##  1 147244 Mill… IL    Priv…   0.638   1047 43149     55197   0.405    0.600
-##  2 147341 Monm… IL    Priv…   0.521   1045 45005     61101   0.413    0.558
-##  3 145691 Illi… IL    Priv…   0.540     NA 41869     63765   0.419    0.68 
-##  4 148131 Quin… IL    Priv…   0.662    991 39686     50166   0.379    0.511
-##  5 146667 Linc… IL    Priv…   0.529   1007 25542     52713   0.464    0.613
-##  6 150774 Holy… IN    Priv…   0.910   1053 39437     47367   0.286    0.407
-##  7 150941 Hunt… IN    Priv…   0.892   1019 36227     58563   0.350    0.654
-##  8 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
-##  9 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
-## 10 151111 Indi… IN    Publ…   0.740   1025 20451     76608   0.381    0.463
-## # … with 1,723 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
-## #   locale <fct>, openadmp <fct>
+## # A tibble: 1,753 x 15
+##    unitid name  state type  admrate satavg  cost netcost avgfacsal pctpell
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>   <dbl>     <dbl>   <dbl>
+##  1 420325 Yesh… NY    Priv…  0.531      NA 14874    4018     26253   0.958
+##  2 430485 The … NE    Priv…  0.667      NA 41627   39020     54000   0.529
+##  3 100654 Alab… AL    Publ…  0.899     957 22489   14444     63909   0.707
+##  4 102234 Spri… AL    Priv…  0.658    1130 51969   19718     60048   0.342
+##  5 100724 Alab… AL    Publ…  0.977     972 21476   13043     69786   0.745
+##  6 106467 Arka… AR    Publ…  0.902      NA 18627   12362     61497   0.396
+##  7 106704 Univ… AR    Publ…  0.911    1186 21350   14723     63360   0.430
+##  8 109651 Art … CA    Priv…  0.676      NA 64097   43010     69984   0.307
+##  9 110404 Cali… CA    Priv…  0.0662   1566 68901   23820    179937   0.142
+## 10 112394 Cogs… CA    Priv…  0.579      NA 35351   31537     66636   0.461
+## # … with 1,743 more rows, and 5 more variables: comprate <dbl>, firstgen <dbl>,
+## #   debt <dbl>, locale <fct>, openadmp <fct>
 ```
 
 Answer the following questions using the statistical modeling tools you have learned.
@@ -78,7 +78,7 @@ Answer the following questions using the statistical modeling tools you have lea
       geom_smooth(method = "lm")
     ```
     
-    <img src="/notes/work-with-models-exercise_files/figure-html/scorecard-point-1.png" width="672" />
+    <img src="index_files/figure-html/scorecard-point-1.png" width="672" />
     
       </p>
     </details>
@@ -101,8 +101,8 @@ Answer the following questions using the statistical modeling tools you have lea
     ## # A tibble: 2 x 5
     ##   term        estimate std.error statistic   p.value
     ##   <chr>          <dbl>     <dbl>     <dbl>     <dbl>
-    ## 1 (Intercept)   47723.     1187.      40.2 2.08e-248
-    ## 2 admrate      -19972.     1714.     -11.7 3.06e- 30
+    ## 1 (Intercept)   51723.     1242.      41.6 3.74e-262
+    ## 2 admrate      -22928.     1768.     -13.0 9.32e- 37
     ```
     
       </p>
@@ -126,11 +126,11 @@ Answer the following questions using the statistical modeling tools you have lea
     ## # A tibble: 5 x 5
     ##   term                    estimate std.error statistic   p.value
     ##   <chr>                      <dbl>     <dbl>     <dbl>     <dbl>
-    ## 1 (Intercept)               44347.      925.      47.9 5.47e-317
-    ## 2 admrate                  -10758.     1068.     -10.1 3.12e- 23
-    ## 3 typePrivate, nonprofit    19205.      462.      41.6 1.24e-260
-    ## 4 typePrivate, for-profit   18067.     1080.      16.7 3.40e- 58
-    ## 5 pctpell                  -41725.     1322.     -31.6 3.11e-172
+    ## 1 (Intercept)               47642.     1010.      47.2 1.94e-311
+    ## 2 admrate                  -12456.     1145.     -10.9 1.06e- 26
+    ## 3 typePrivate, nonprofit    20235.      512.      39.5 4.58e-243
+    ## 4 typePrivate, for-profit   16833.     1203.      14.0 3.50e- 42
+    ## 5 pctpell                  -43757.     1465.     -29.9 4.02e-158
     ```
     
       </p>
@@ -207,7 +207,7 @@ mental_health
            y = "Predicted Probability of Voting")
     ```
     
-    <img src="/notes/work-with-models-exercise_files/figure-html/mh-model-1.png" width="672" />
+    <img src="index_files/figure-html/mh-model-1.png" width="672" />
     
       </p>
     </details>
@@ -260,7 +260,7 @@ mental_health
            y = "Predicted Probability of Voting")
     ```
     
-    <img src="/notes/work-with-models-exercise_files/figure-html/mh-model-all-1.png" width="672" />
+    <img src="index_files/figure-html/mh-model-all-1.png" width="672" />
     
       </p>
     </details>
@@ -312,6 +312,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
@@ -334,6 +335,7 @@ devtools::session_info()
 ##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
@@ -344,9 +346,11 @@ devtools::session_info()
 ##  MASS          7.3-53     2020-09-09 [1] CRAN (R 4.0.2)
 ##  Matrix        1.2-18     2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0      2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv          1.8-33     2020-08-27 [1] CRAN (R 4.0.2)
 ##  modeldata   * 0.0.2      2020-06-22 [1] CRAN (R 4.0.2)
 ##  modelr        0.1.8      2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme          3.1-149    2020-08-23 [1] CRAN (R 4.0.2)
 ##  nnet          7.3-14     2020-04-26 [1] CRAN (R 4.0.2)
 ##  parsnip     * 0.1.3      2020-08-04 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6      2020-07-10 [1] CRAN (R 4.0.1)
@@ -389,7 +393,9 @@ devtools::session_info()
 ##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
+##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)

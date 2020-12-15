@@ -30,7 +30,7 @@ By plotting the variables against one another using a scatterplot, we can see th
 
 
 
-<img src="/notes/statistical-learning_files/figure-html/plot_ad-1.png" width="672" />
+<img src="index_files/figure-html/plot_ad-1.png" width="672" />
 
 But there seems to be a lot of noise in the data. How can we summarize this? We can do so by estimating a mathematical equation following the general form:
 
@@ -42,7 +42,7 @@ where $f$ is some fixed, unknown function of the relationship between the indepe
 
 Statistical learning refers to the set of approaches for estimating $f$. There are many potential approaches to defining the functional form of $f$. One approach widely used is called **least squares** - it means that the overall solution minimizes the sum of the squares of the errors made in the results of the equation. The errors are simply the vertical difference between the actual values for $y$ and the predicted values for $y$. Applied here, the results would look like:
 
-<img src="/notes/statistical-learning_files/figure-html/plot_ad_fit-1.png" width="672" />
+<img src="index_files/figure-html/plot_ad_fit-1.png" width="672" />
 
 However statistical learning (and machine learning) allows us to use a wide range of functional forms beyond a simple linear model.
 
@@ -69,7 +69,7 @@ Parametric methods involve a two-stage process:
 1. First make an assumption about the functional form of $f$. For instance, OLS assumes that the relationship between $X$ and $Y$ is **linear**. This greatly simplifies the problem of estimating the model because we know a great deal about the properties of linear models.
 1. After a model has been selected, we need to **fit** or **train** the model using the actual data. We demonstrated this previously with ordinary least squares. The estimation procedure minimizes the sum of the squares of the differences between the observed responses $Y$ and those predicted by a linear function $\hat{Y}$.
 
-<img src="/notes/statistical-learning_files/figure-html/plot_parametric-1.png" width="672" />
+<img src="index_files/figure-html/plot_parametric-1.png" width="672" />
 
 This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as **parametric**, because it simplifies the problem of estimating $f$ to estimating a set of parameters in the function:
 
@@ -89,11 +89,11 @@ One non-parametric method is called **$K$-nearest neighbors regression** (KNN re
 
 With $K=1$, the resulting KNN regression line will fit the training observations extraordinarily well.
 
-<img src="/notes/statistical-learning_files/figure-html/knn-1-1.png" width="672" />
+<img src="index_files/figure-html/knn-1-1.png" width="672" />
 
 Perhaps a bit too well. Compare this to $K=9$:
 
-<img src="/notes/statistical-learning_files/figure-html/knn-9-1.png" width="672" />
+<img src="index_files/figure-html/knn-9-1.png" width="672" />
 
 This smoothing line averages over the nine nearest observations; while still a step function, it is smoother than $K=1$.
 

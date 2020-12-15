@@ -37,7 +37,8 @@ troops <- here("static", "data", "minard-troops.txt") %>%
 ```
 
 ```
-## Parsed with column specification:
+## 
+## ── Column specification ────────────────────────────────────────────────────────
 ## cols(
 ##   long = col_double(),
 ##   lat = col_double(),
@@ -53,7 +54,8 @@ cities <- here("static", "data", "minard-cities.txt") %>%
 ```
 
 ```
-## Parsed with column specification:
+## 
+## ── Column specification ────────────────────────────────────────────────────────
 ## cols(
 ##   long = col_double(),
 ##   lat = col_double(),
@@ -182,7 +184,7 @@ plot_troops <- ggplot(data = troops, mapping = aes(x = long, y = lat)) +
 plot_troops
 ```
 
-<img src="/notes/minard_files/figure-html/plot_troops-1.png" width="672" />
+<img src="index_files/figure-html/plot_troops-1.png" width="672" />
 
 Next let's add the cities layer:
 
@@ -193,7 +195,7 @@ plot_both <- plot_troops +
 plot_both
 ```
 
-<img src="/notes/minard_files/figure-html/plot_cities-1.png" width="672" />
+<img src="index_files/figure-html/plot_cities-1.png" width="672" />
 
 Now that the basic information is on there, we want to clean up the graph and polish the visualization by:
 
@@ -216,7 +218,7 @@ plot_polished <- plot_both +
 plot_polished
 ```
 
-<img src="/notes/minard_files/figure-html/plot_clean-1.png" width="672" />
+<img src="index_files/figure-html/plot_clean-1.png" width="672" />
 
 Finally we can change the default `ggplot` theme to remove the background and grid lines, as well as the legend:
 
@@ -227,7 +229,7 @@ plot_polished +
   theme(legend.position = "none")
 ```
 
-<img src="/notes/minard_files/figure-html/plot_final-1.png" width="672" />
+<img src="index_files/figure-html/plot_final-1.png" width="672" />
 
 ## Session Info
 
@@ -261,6 +263,7 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -272,6 +275,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -285,9 +289,12 @@ devtools::session_info()
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
 ##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr       * 1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  mapproj       1.2.7   2020-02-03 [1] CRAN (R 4.0.0)
+##  maps          3.3.0   2018-04-03 [1] CRAN (R 4.0.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
@@ -320,6 +327,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)

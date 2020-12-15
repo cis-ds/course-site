@@ -122,7 +122,7 @@ ggplot(data = gun_deaths,
        y = "Number of gun deaths")
 ```
 
-<img src="/notes/factors-exercise_files/figure-html/month-deaths-1.png" width="672" />
+<img src="index_files/figure-html/month-deaths-1.png" width="672" />
 
   </p>
 </details>
@@ -145,7 +145,7 @@ gun_deaths %>%
        y = "Number of gun deaths")
 ```
 
-<img src="/notes/factors-exercise_files/figure-html/month-deaths-sort-1.png" width="672" />
+<img src="index_files/figure-html/month-deaths-sort-1.png" width="672" />
 
 ```r
 # with geom_bar() and fct_infreq()
@@ -159,7 +159,7 @@ ggplot(data = gun_deaths,
        y = "Number of gun deaths")
 ```
 
-<img src="/notes/factors-exercise_files/figure-html/month-deaths-sort-2.png" width="672" />
+<img src="index_files/figure-html/month-deaths-sort-2.png" width="672" />
 
   </p>
 </details>
@@ -187,7 +187,7 @@ gun_deaths %>%
        y = "Number of gun deaths")
 ```
 
-<img src="/notes/factors-exercise_files/figure-html/intent-1.png" width="672" />
+<img src="index_files/figure-html/intent-1.png" width="672" />
 
   </p>
 </details>
@@ -216,7 +216,7 @@ gun_deaths %>%
        y = "Number of gun deaths")
 ```
 
-<img src="/notes/factors-exercise_files/figure-html/season-1.png" width="672" />
+<img src="index_files/figure-html/season-1.png" width="672" />
 
   </p>
 </details>

@@ -46,7 +46,8 @@ hamilton <- read_csv(file = here("static", "data", "hamilton.csv")) %>%
 ```
 
 ```
-## Parsed with column specification:
+## 
+## ── Column specification ────────────────────────────────────────────────────────
 ## cols(
 ##   song_number = col_double(),
 ##   song_name = col_character(),
@@ -119,7 +120,7 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_name))) +
   )
 ```
 
-<img src="/notes/hamilton_files/figure-html/song-length-1.png" width="672" />
+<img src="index_files/figure-html/song-length-1.png" width="672" />
 
 As a function of number of words, Non-Stop is the longest song in the musical.
 
@@ -179,7 +180,7 @@ hamilton_tidy %>%
   )
 ```
 
-<img src="/notes/hamilton_files/figure-html/stop-remove-1.png" width="672" />
+<img src="index_files/figure-html/stop-remove-1.png" width="672" />
 
 Now the words seem more relevant to the specific story being told in the musical.
 
@@ -225,7 +226,7 @@ hamilton_tf_idf %>%
   theme(plot.title = element_markdown())
 ```
 
-<img src="/notes/hamilton_files/figure-html/tf-idf-1.png" width="672" />
+<img src="index_files/figure-html/tf-idf-1.png" width="672" />
 
 Again, some expected results stick out. Hamilton is always singing about not throwing away his shot, Eliza is helplessly in love with Alexander, while Burr regrets not being "in the room where it happens". And don't forget King George's love songs to his wayward children.
 
@@ -322,7 +323,7 @@ hamilton_afinn %>%
 ## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
-<img src="/notes/hamilton_files/figure-html/sentiment-song-1.png" width="672" />
+<img src="index_files/figure-html/sentiment-song-1.png" width="672" />
 
 Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective children.
 
@@ -376,7 +377,7 @@ hamilton_afinn %>%
 ## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
-<img src="/notes/hamilton_files/figure-html/sentiment-by-speaker-1.png" width="672" />
+<img src="index_files/figure-html/sentiment-by-speaker-1.png" width="672" />
 
 Given his generally neutral sentiment, Aaron Burr clearly follows his own guidance.
 
@@ -415,7 +416,7 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
         plot.title = element_markdown())
 ```
 
-<img src="/notes/hamilton_files/figure-html/sentiment-cum-1.png" width="672" />
+<img src="index_files/figure-html/sentiment-cum-1.png" width="672" />
 
 After the initial drop from "Alexander Hamilton", the next peaks in the graph show several positive events in Hamilton's life: meeting his friends, becoming Washington's secretary, and meeting and marrying Eliza. The musical experiences a drop in tone during the rough years of the revolution and Hamilton's dismissal back to New York, then rebounds as the revolutionaries close in on victory at Yorktown. Hamilton's challenges as a member of Washington's cabinet and rivalry with Jefferson are captured in the up-and-down swings in the graph, rises up with "One Last Time" and Hamilton writing Washington's Farewell Address, dropping once again with "Hurricane" and the revelation of Hamilton's affair, rising as Alexander and Eliza reconcile before finally descending once more upon Hamilton's death in his duel with Burr.
 
@@ -451,7 +452,7 @@ ggraph(bigram_graph, layout = "fr") +
   theme(plot.title = element_markdown())
 ```
 
-<img src="/notes/hamilton_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 Finally we can examine the colocation of pairs of words to look for common usage. It's apparent there are several major themes detected through this approach, including the Hamilton/Jefferson relationship, "Aaron Burr, sir", Philip's song with his mother (un, deux, trois, quatre, ...), the rising up of the colonies, and those young, scrappy, and hungry men.
 

@@ -129,15 +129,15 @@ glimpse(congress)
 ```
 
 ```
-## Observations: 4,449
-## Variables: 7
-## $ ID       <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, …
-## $ cong     <dbl> 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
-## $ billnum  <dbl> 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4…
-## $ h_or_sen <chr> "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "…
-## $ major    <dbl> 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, …
-## $ text     <chr> "To suspend temporarily the duty on Fast Magenta 2 Stag…
-## $ label    <fct> "Foreign trade", "Foreign trade", "Foreign trade", "For…
+## Rows: 4,449
+## Columns: 7
+## $ ID       <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
+## $ cong     <dbl> 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
+## $ billnum  <dbl> 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, …
+## $ h_or_sen <chr> "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", …
+## $ major    <dbl> 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, 2, 3,…
+## $ text     <chr> "To suspend temporarily the duty on Fast Magenta 2 Stage.", …
+## $ label    <fct> "Foreign trade", "Foreign trade", "Foreign trade", "Foreign …
 ```
 
 [Previously](/notes/supervised-text-classification/), we assumed the documents were structured based on their policy content under [the structure](https://www.comparativeagendas.net/pages/master-codebook):
@@ -340,7 +340,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/top-terms-plot-1.png" width="672" />
+<img src="index_files/figure-html/top-terms-plot-1.png" width="672" />
 
 * Some of these topics are pretty clearly associated with some of the policy topics:
     * "educ", "school", "secondari", "forc", "elementari" seem to be **Education**
@@ -401,7 +401,11 @@ congress_tokens_lite %>%
 ## Joining, by = "document"
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/congress-model-compare-1.png" width="672" />
+```
+## `summarise()` regrouping output by 'topic', 'major' (override with `.groups` argument)
+```
+
+<img src="index_files/figure-html/congress-model-compare-1.png" width="672" />
 
 The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for $\gamma$. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
 
@@ -434,12 +438,12 @@ glimpse(jokes)
 ```
 
 ```
-## Observations: 194,553
-## Variables: 4
-## $ id    <chr> "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1"…
-## $ title <chr> "I hate how you cant even say black paint anymore", "What'…
-## $ body  <chr> "Now I have to say \"Leroy can you please paint the fence?…
-## $ score <dbl> 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, …
+## Rows: 194,553
+## Columns: 4
+## $ id    <chr> "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5t…
+## $ title <chr> "I hate how you cant even say black paint anymore", "What's the…
+## $ body  <chr> "Now I have to say \"Leroy can you please paint the fence?\"", …
+## $ score <dbl> 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0,…
 ```
 
 
@@ -465,20 +469,20 @@ jokes_tokens
 ```
 
 ```
-## # A tibble: 11,121,984 x 5
-##    id     score word       ngram token_id
-##    <chr>  <dbl> <chr>      <int>    <int>
-##  1 1a7xnd    44 what's         1        1
-##  2 1a7xnd    44 the            1        2
-##  3 1a7xnd    44 difference     1        3
-##  4 1a7xnd    44 between        1        4
-##  5 1a7xnd    44 a              1        5
-##  6 1a7xnd    44 hippie         1        6
-##  7 1a7xnd    44 chick          1        7
-##  8 1a7xnd    44 and            1        8
-##  9 1a7xnd    44 a              1        9
-## 10 1a7xnd    44 hockey         1       10
-## # … with 11,121,974 more rows
+## # A tibble: 11,238,469 x 5
+##    id     score word  ngram token_id
+##    <chr>  <dbl> <chr> <int>    <int>
+##  1 1a801u     0 i         1        1
+##  2 1a801u     0 went      1        2
+##  3 1a801u     0 to        1        3
+##  4 1a801u     0 a         1        4
+##  5 1a801u     0 zoo       1        5
+##  6 1a801u     0 and       1        6
+##  7 1a801u     0 there     1        7
+##  8 1a801u     0 was       1        8
+##  9 1a801u     0 only      1        9
+## 10 1a801u     0 one       1       10
+## # … with 11,238,459 more rows
 ```
 
 ```r
@@ -500,9 +504,8 @@ jokes_stop_words <- jokes_tokens %>%
 ```
 
 ```
-## Warning: Expected 5 pieces. Missing pieces filled with `NA` in 8997350
-## rows [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-## 20, ...].
+## Warning: Expected 5 pieces. Missing pieces filled with `NA` in 9090547 rows [1,
+## 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
 ```
 
 ```r
@@ -528,8 +531,8 @@ jokes_dtm
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 49283, terms: 2482)>>
-## Non-/sparse entries: 443901/121876505
+## <<DocumentTermMatrix (documents: 49220, terms: 2489)>>
+## Non-/sparse entries: 445215/122063365
 ## Sparsity           : 100%
 ## Maximal term length: 23
 ## Weighting          : term frequency (tf)
@@ -581,7 +584,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/jokes-4-topn-1.png" width="672" />
+<img src="index_files/figure-html/jokes-4-topn-1.png" width="672" />
 
 ### $k=12$
 
@@ -617,7 +620,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/jokes-12-topn-1.png" width="672" />
+<img src="index_files/figure-html/jokes-12-topn-1.png" width="672" />
 
 Alas, this is the problem with LDA. Several different values for $k$ may be plausible, but by increasing $k$ we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
 
@@ -633,7 +636,7 @@ perplexity(jokes_lda12)
 ```
 
 ```
-## [1] 1190.231
+## [1] 1206.553
 ```
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
@@ -671,7 +674,7 @@ tibble(k = n_topics,
        y = "Perplexity")
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
+<img src="index_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
 
 It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let's look just at the first 12 topics produced by the model (`ggplot2` has difficulty rendering a graph for 100 separate facets):
 
@@ -696,7 +699,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="/notes/topic-modeling_files/figure-html/jokes-100-topn-1.png" width="672" />
+<img src="index_files/figure-html/jokes-100-topn-1.png" width="672" />
 
 We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at $k=100$ - would $k=200$ generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
 
@@ -798,6 +801,10 @@ jokes_10_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[3]],
                                        doc_term = jokes_dtm)
 ```
 
+```
+## Loading required package: slam
+```
+
 
 ```r
 serVis(jokes_10_json)
@@ -830,93 +837,104 @@ devtools::session_info()
 ##  date     2020-12-15                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
-##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
-##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
-##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
-##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
-##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
-##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
-##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
-##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
-##  here        * 0.1     2017-05-28 [1] CRAN (R 4.0.0)
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
-##  janeaustenr   0.1.5   2017-06-10 [1] CRAN (R 4.0.0)
-##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
-##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
-##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
-##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
-##  modeltools    0.2-23  2020-03-05 [1] CRAN (R 4.0.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  NLP         * 0.2-0   2018-10-18 [1] CRAN (R 4.0.0)
-##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
-##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
-##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
-##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rjson       * 0.2.20  2018-06-08 [1] CRAN (R 4.0.0)
-##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
-##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  slam          0.1-47  2019-12-21 [1] CRAN (R 4.0.0)
-##  SnowballC     0.7.0   2020-04-01 [1] CRAN (R 4.0.0)
-##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
-##  tictoc      * 1.0     2014-06-17 [1] CRAN (R 4.0.0)
-##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
-##  tidytext    * 0.2.6   2020-09-20 [1] CRAN (R 4.0.2)
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  tm          * 0.7-7   2019-12-12 [1] CRAN (R 4.0.0)
-##  tokenizers    0.2.1   2018-03-29 [1] CRAN (R 4.0.0)
-##  topicmodels * 0.2-11  2020-04-19 [1] CRAN (R 4.0.0)
-##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
-##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
-##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
+##  package     * version date       lib source                               
+##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                       
+##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)                       
+##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)                       
+##  blogdown      0.21    2020-12-11 [1] local                                
+##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)                       
+##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)                       
+##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                       
+##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                       
+##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)                       
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)                       
+##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)                       
+##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)                       
+##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                       
+##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)                       
+##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)                       
+##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                       
+##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)                       
+##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)                       
+##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                       
+##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)                       
+##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)                       
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)                       
+##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)                       
+##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                       
+##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)                       
+##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)                       
+##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                       
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                       
+##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                       
+##  here        * 0.1     2017-05-28 [1] CRAN (R 4.0.0)                       
+##  highr         0.8     2019-03-20 [1] CRAN (R 4.0.0)                       
+##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)                       
+##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)                       
+##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                       
+##  janeaustenr   0.1.5   2017-06-10 [1] CRAN (R 4.0.0)                       
+##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)                       
+##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)                       
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)                       
+##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)                       
+##  LDAvis      * 0.3.2   2015-10-24 [1] CRAN (R 4.0.0)                       
+##  LDAvisData  * 0.1     2020-06-08 [1] Github (cpsievert/LDAvisData@43dd263)
+##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)                       
+##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)                       
+##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)                       
+##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 4.0.2)                       
+##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)                       
+##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                       
+##  modeltools    0.2-23  2020-03-05 [1] CRAN (R 4.0.0)                       
+##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                       
+##  NLP         * 0.2-0   2018-10-18 [1] CRAN (R 4.0.0)                       
+##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)                       
+##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)                       
+##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                       
+##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)                       
+##  plyr          1.8.6   2020-03-03 [1] CRAN (R 4.0.0)                       
+##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                       
+##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)                       
+##  proxy         0.4-24  2020-04-25 [1] CRAN (R 4.0.0)                       
+##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)                       
+##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                       
+##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)                       
+##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)                       
+##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                       
+##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                       
+##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                       
+##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)                       
+##  reshape2      1.4.4   2020-04-09 [1] CRAN (R 4.0.0)                       
+##  rjson       * 0.2.20  2018-06-08 [1] CRAN (R 4.0.0)                       
+##  RJSONIO       1.3-1.4 2020-01-15 [1] CRAN (R 4.0.0)                       
+##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)                       
+##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)                       
+##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)                       
+##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)                       
+##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)                       
+##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                       
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                       
+##  slam        * 0.1-47  2019-12-21 [1] CRAN (R 4.0.0)                       
+##  SnowballC     0.7.0   2020-04-01 [1] CRAN (R 4.0.0)                       
+##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                       
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                       
+##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)                       
+##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)                       
+##  tictoc      * 1.0     2014-06-17 [1] CRAN (R 4.0.0)                       
+##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)                       
+##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                       
+##  tidytext    * 0.2.6   2020-09-20 [1] CRAN (R 4.0.2)                       
+##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                       
+##  tm          * 0.7-7   2019-12-12 [1] CRAN (R 4.0.0)                       
+##  tokenizers    0.2.1   2018-03-29 [1] CRAN (R 4.0.0)                       
+##  topicmodels * 0.2-11  2020-04-19 [1] CRAN (R 4.0.0)                       
+##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)                       
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)                       
+##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)                       
+##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)                       
+##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)                       
+##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                       
+##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                       
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

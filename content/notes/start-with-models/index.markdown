@@ -45,21 +45,21 @@ scorecard
 ```
 
 ```
-## # A tibble: 1,733 x 14
-##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
-##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
-##  1 147244 Mill… IL    Priv…   0.638   1047 43149     55197   0.405    0.600
-##  2 147341 Monm… IL    Priv…   0.521   1045 45005     61101   0.413    0.558
-##  3 145691 Illi… IL    Priv…   0.540     NA 41869     63765   0.419    0.68 
-##  4 148131 Quin… IL    Priv…   0.662    991 39686     50166   0.379    0.511
-##  5 146667 Linc… IL    Priv…   0.529   1007 25542     52713   0.464    0.613
-##  6 150774 Holy… IN    Priv…   0.910   1053 39437     47367   0.286    0.407
-##  7 150941 Hunt… IN    Priv…   0.892   1019 36227     58563   0.350    0.654
-##  8 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
-##  9 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
-## 10 151111 Indi… IN    Publ…   0.740   1025 20451     76608   0.381    0.463
-## # … with 1,723 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
-## #   locale <fct>, openadmp <fct>
+## # A tibble: 1,753 x 15
+##    unitid name  state type  admrate satavg  cost netcost avgfacsal pctpell
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>   <dbl>     <dbl>   <dbl>
+##  1 420325 Yesh… NY    Priv…  0.531      NA 14874    4018     26253   0.958
+##  2 430485 The … NE    Priv…  0.667      NA 41627   39020     54000   0.529
+##  3 100654 Alab… AL    Publ…  0.899     957 22489   14444     63909   0.707
+##  4 102234 Spri… AL    Priv…  0.658    1130 51969   19718     60048   0.342
+##  5 100724 Alab… AL    Publ…  0.977     972 21476   13043     69786   0.745
+##  6 106467 Arka… AR    Publ…  0.902      NA 18627   12362     61497   0.396
+##  7 106704 Univ… AR    Publ…  0.911    1186 21350   14723     63360   0.430
+##  8 109651 Art … CA    Priv…  0.676      NA 64097   43010     69984   0.307
+##  9 110404 Cali… CA    Priv…  0.0662   1566 68901   23820    179937   0.142
+## 10 112394 Cogs… CA    Priv…  0.579      NA 35351   31537     66636   0.461
+## # … with 1,743 more rows, and 5 more variables: comprate <dbl>, firstgen <dbl>,
+## #   debt <dbl>, locale <fct>, openadmp <fct>
 ```
 
 ```r
@@ -67,21 +67,22 @@ glimpse(scorecard)
 ```
 
 ```
-## Rows: 1,733
-## Columns: 14
-## $ unitid    <int> 147244, 147341, 145691, 148131, 146667, 150774, 150941, 148…
-## $ name      <chr> "Millikin University", "Monmouth College", "Illinois Colleg…
-## $ state     <chr> "IL", "IL", "IL", "IL", "IL", "IN", "IN", "IL", "IL", "IN",…
-## $ type      <fct> "Private, nonprofit", "Private, nonprofit", "Private, nonpr…
-## $ admrate   <dbl> 0.6380, 0.5206, 0.5403, 0.6623, 0.5288, 0.9101, 0.8921, 0.4…
-## $ satavg    <dbl> 1047, 1045, NA, 991, 1007, 1053, 1019, 1068, 1009, 1025, 10…
-## $ cost      <int> 43149, 45005, 41869, 39686, 25542, 39437, 36227, 39175, 382…
-## $ avgfacsal <dbl> 55197, 61101, 63765, 50166, 52713, 47367, 58563, 70425, 656…
-## $ pctpell   <dbl> 0.4054, 0.4127, 0.4191, 0.3789, 0.4640, 0.2857, 0.3502, 0.3…
-## $ comprate  <dbl> 0.6004, 0.5577, 0.6800, 0.5110, 0.6132, 0.4069, 0.6540, 0.6…
-## $ firstgen  <dbl> 0.3184783, 0.3224401, 0.3109756, 0.3300493, 0.3122172, 0.28…
-## $ debt      <dbl> 20375.0, 20000.0, 22300.0, 13000.0, 17500.0, 11000.0, 22500…
-## $ locale    <fct> City, Town, Town, Town, Town, Suburb, Town, Suburb, City, C…
+## Rows: 1,753
+## Columns: 15
+## $ unitid    <int> 420325, 430485, 100654, 102234, 100724, 106467, 106704, 109…
+## $ name      <chr> "Yeshiva D'monsey Rabbinical College", "The Creative Center…
+## $ state     <chr> "NY", "NE", "AL", "AL", "AL", "AR", "AR", "CA", "CA", "CA",…
+## $ type      <fct> "Private, nonprofit", "Private, for-profit", "Public", "Pri…
+## $ admrate   <dbl> 0.5313, 0.6667, 0.8986, 0.6577, 0.9774, 0.9024, 0.9110, 0.6…
+## $ satavg    <dbl> NA, NA, 957, 1130, 972, NA, 1186, NA, 1566, NA, NA, 1053, 1…
+## $ cost      <int> 14874, 41627, 22489, 51969, 21476, 18627, 21350, 64097, 689…
+## $ netcost   <dbl> 4018, 39020, 14444, 19718, 13043, 12362, 14723, 43010, 2382…
+## $ avgfacsal <dbl> 26253, 54000, 63909, 60048, 69786, 61497, 63360, 69984, 179…
+## $ pctpell   <dbl> 0.9583, 0.5294, 0.7067, 0.3420, 0.7448, 0.3955, 0.4298, 0.3…
+## $ comprate  <dbl> 0.6667, 0.6667, 0.2685, 0.5864, 0.3001, 0.4069, 0.4113, 0.7…
+## $ firstgen  <dbl> NA, NA, 0.3658281, 0.2516340, 0.3434343, 0.4574780, 0.34595…
+## $ debt      <dbl> NA, 12000, 15500, 18270, 18679, 12000, 13100, 27811, 8013, …
+## $ locale    <fct> Suburb, City, City, City, City, Town, City, City, City, Cit…
 ## $ openadmp  <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No,…
 ```
 
@@ -110,7 +111,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 52 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/start-with-models_files/figure-html/scorecard-plot-1.png" width="672" />
+<img src="index_files/figure-html/scorecard-plot-1.png" width="672" />
 
 We can see that public and private non-profit schools have the strongest correlation between total cost of attendance and average faculty salaries -- private for-profit schools tend to be pretty flat in terms of average salaries regardless of cost of attendance. 
 
@@ -178,11 +179,11 @@ lm_fit
 ## 
 ## Coefficients:
 ##                  (Intercept)                          cost  
-##                    3.697e+04                     1.964e+00  
+##                    3.678e+04                     1.878e+00  
 ##       typePrivate, nonprofit       typePrivate, for-profit  
-##                   -2.490e+04                     9.261e+03  
+##                   -2.349e+04                     7.121e+03  
 ##  cost:typePrivate, nonprofit  cost:typePrivate, for-profit  
-##                   -6.327e-01                    -1.611e+00
+##                   -6.453e-01                    -1.469e+00
 ```
 
 Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. Although the `summary()` function for `lm` objects can provide that, it gives the results back in an unwieldy format. Many models have a `tidy()` method that provides the summary results in a more predictable and useful format (e.g. a data frame with standard column names): 
@@ -196,12 +197,12 @@ tidy(lm_fit)
 ## # A tibble: 6 x 5
 ##   term                           estimate std.error statistic  p.value
 ##   <chr>                             <dbl>     <dbl>     <dbl>    <dbl>
-## 1 (Intercept)                   36969.     3211.        11.5  1.42e-29
-## 2 cost                              1.96      0.149     13.2  8.72e-38
-## 3 typePrivate, nonprofit       -24905.     3572.        -6.97 4.48e-12
-## 4 typePrivate, for-profit        9261.     8317.         1.11 2.66e- 1
-## 5 cost:typePrivate, nonprofit      -0.633     0.153     -4.13 3.86e- 5
-## 6 cost:typePrivate, for-profit     -1.61      0.278     -5.79 8.49e- 9
+## 1 (Intercept)                   36782.     3178.       11.6   7.18e-30
+## 2 cost                              1.88      0.140    13.4   6.60e-39
+## 3 typePrivate, nonprofit       -23489.     3509.       -6.69  2.93e-11
+## 4 typePrivate, for-profit        7121.     7930.        0.898 3.69e- 1
+## 5 cost:typePrivate, nonprofit      -0.645     0.144    -4.48  7.85e- 6
+## 6 cost:typePrivate, for-profit     -1.47      0.256    -5.74  1.11e- 8
 ```
 
 ## Use a model to predict {#predict-model}
@@ -244,9 +245,9 @@ mean_pred
 ## # A tibble: 3 x 1
 ##    .pred
 ##    <dbl>
-## 1 76254.
-## 2 38695.
-## 3 53301.
+## 1 74337.
+## 2 37943.
+## 3 52075.
 ```
 
 When making predictions, the `tidymodels` convention is to always produce a tibble of results with standardized column names. This makes it easy to combine the original data and the predictions in a usable format: 
@@ -264,9 +265,9 @@ conf_int_pred
 ## # A tibble: 3 x 2
 ##   .pred_lower .pred_upper
 ##         <dbl>       <dbl>
-## 1      74884.      77624.
-## 2      36902.      40488.
-## 3      46788.      59815.
+## 1      72886.      75788.
+## 2      36170.      39715.
+## 3      45553.      58597.
 ```
 
 ```r
@@ -288,7 +289,7 @@ ggplot(data = plot_data, mapping = aes(x = type)) +
   labs(y = "Expected average faculty salary")
 ```
 
-<img src="/notes/start-with-models_files/figure-html/lm-all-pred-1.png" width="672" />
+<img src="index_files/figure-html/lm-all-pred-1.png" width="672" />
 
 ## Model with a different engine {#new-engine}
 
@@ -321,24 +322,24 @@ print(bayes_fit, digits = 5)
 ```
 ## parsnip model object
 ## 
-## Fit time:  16.5s 
+## Fit time:  29.7s 
 ## stan_glm
 ##  family:       gaussian [identity]
 ##  formula:      avgfacsal ~ cost * type
-##  observations: 1681
+##  observations: 1701
 ##  predictors:   6
 ## ------
 ##                              Median       MAD_SD      
-## (Intercept)                   36750.20927   2902.55453
-## cost                              1.97283      0.13628
-## typePrivate, nonprofit       -24158.29954   3401.79232
-## typePrivate, for-profit           0.00398      3.63590
-## cost:typePrivate, nonprofit      -0.65329      0.14175
-## cost:typePrivate, for-profit     -1.33632      0.07838
+## (Intercept)                   36248.11865   2992.28884
+## cost                              1.89989      0.13269
+## typePrivate, nonprofit       -22476.17585   3394.23724
+## typePrivate, for-profit          -0.00631      3.71628
+## cost:typePrivate, nonprofit      -0.67817      0.13872
+## cost:typePrivate, for-profit     -1.27142      0.07697
 ## 
 ## Auxiliary parameter(s):
 ##       Median      MAD_SD     
-## sigma 15926.06779   276.24491
+## sigma 15839.43907   274.49064
 ## 
 ## ------
 ## * For help interpreting the printed output see ?print.stanreg
@@ -362,12 +363,12 @@ tidy(bayes_fit, conf.int = TRUE)
 ## # A tibble: 6 x 5
 ##   term                             estimate std.error   conf.low  conf.high
 ##   <chr>                               <dbl>     <dbl>      <dbl>      <dbl>
-## 1 (Intercept)                   36750.      2903.      31813.     41699.   
-## 2 cost                              1.97       0.136       1.74       2.21 
-## 3 typePrivate, nonprofit       -24158.      3402.     -29835.    -18442.   
-## 4 typePrivate, for-profit           0.00398    3.64      -15.9       14.3  
-## 5 cost:typePrivate, nonprofit      -0.653      0.142      -0.895     -0.409
-## 6 cost:typePrivate, for-profit     -1.34       0.0784     -1.47      -1.21
+## 1 (Intercept)                   36248.      2992.      31363.     41235.   
+## 2 cost                              1.90       0.133       1.68       2.11 
+## 3 typePrivate, nonprofit       -22476.      3394.     -28139.    -16884.   
+## 4 typePrivate, for-profit          -0.00631    3.72      -14.7       15.1  
+## 5 cost:typePrivate, nonprofit      -0.678      0.139      -0.903     -0.449
+## 6 cost:typePrivate, for-profit     -1.27       0.0770     -1.40      -1.15
 ```
 
 A goal of the `tidymodels` packages is that the **interfaces to common tasks are standardized** (as seen in the `tidy()` results above). The same is true for getting predictions; we can use the same code even though the underlying packages use very different syntax:
@@ -390,7 +391,7 @@ ggplot(data = bayes_plot_data, mapping = aes(x = type)) +
   labs(y = "Expected average faculty salary")
 ```
 
-<img src="/notes/start-with-models_files/figure-html/stan-pred-1.png" width="672" />
+<img src="index_files/figure-html/stan-pred-1.png" width="672" />
 
 This isn't very different from the non-Bayesian results (except in interpretation). 
 
@@ -467,6 +468,7 @@ devtools::session_info()
 ##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi          0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  farver         2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  fastmap        1.0.1      2019-10-08 [1] CRAN (R 4.0.0)
 ##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach        1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
@@ -497,6 +499,7 @@ devtools::session_info()
 ##  iterators      1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite       1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr          1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling       0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  later          1.1.0.1    2020-06-05 [1] CRAN (R 4.0.1)
 ##  lattice        0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava           1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
@@ -512,6 +515,7 @@ devtools::session_info()
 ##  Matrix         1.2-18     2019-11-27 [1] CRAN (R 4.0.2)
 ##  matrixStats    0.57.0     2020-09-25 [1] CRAN (R 4.0.2)
 ##  memoise        1.1.0      2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv           1.8-33     2020-08-27 [1] CRAN (R 4.0.2)
 ##  mime           0.9        2020-02-04 [1] CRAN (R 4.0.0)
 ##  miniUI         0.1.1.1    2018-05-18 [1] CRAN (R 4.0.0)
 ##  minqa          1.2.4      2014-10-09 [1] CRAN (R 4.0.0)
@@ -577,8 +581,10 @@ devtools::session_info()
 ##  TMB            1.7.18     2020-07-27 [1] CRAN (R 4.0.2)
 ##  tune         * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis        1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8           1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  V8             3.2.0      2020-06-19 [1] CRAN (R 4.0.2)
 ##  vctrs          0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
+##  viridisLite    0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr          2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows    * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun           0.18       2020-09-29 [1] CRAN (R 4.0.2)

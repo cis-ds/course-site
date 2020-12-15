@@ -68,18 +68,18 @@ major_topics <- tibble(
 
 ```
 ## # A tibble: 4,449 x 7
-##       ID  cong billnum h_or_sen major text                    label        
-##    <dbl> <dbl>   <dbl> <chr>    <dbl> <chr>                   <chr>        
-##  1     1   107    4499 HR          18 To suspend temporarily… Foreign trade
-##  2     2   107    4500 HR          18 To suspend temporarily… Foreign trade
-##  3     3   107    4501 HR          18 To suspend temporarily… Foreign trade
-##  4     4   107    4502 HR          18 To reduce temporarily … Foreign trade
-##  5     5   107    4503 HR           5 To amend the Immigrati… Labor and em…
-##  6     6   107    4504 HR          21 To amend title 38, Uni… Public lands…
-##  7     7   107    4505 HR          15 To repeal subtitle B o… Banking, fin…
-##  8     8   107    4506 HR          18 To suspend temporarily… Foreign trade
-##  9     9   107    4507 HR          18 To suspend temporarily… Foreign trade
-## 10    10   107    4508 HR          18 To suspend temporarily… Foreign trade
+##       ID  cong billnum h_or_sen major text                        label         
+##    <dbl> <dbl>   <dbl> <chr>    <dbl> <chr>                       <chr>         
+##  1     1   107    4499 HR          18 To suspend temporarily the… Foreign trade 
+##  2     2   107    4500 HR          18 To suspend temporarily the… Foreign trade 
+##  3     3   107    4501 HR          18 To suspend temporarily the… Foreign trade 
+##  4     4   107    4502 HR          18 To reduce temporarily the … Foreign trade 
+##  5     5   107    4503 HR           5 To amend the Immigration a… Labor and emp…
+##  6     6   107    4504 HR          21 To amend title 38, United … Public lands …
+##  7     7   107    4505 HR          15 To repeal subtitle B of ti… Banking, fina…
+##  8     8   107    4506 HR          18 To suspend temporarily the… Foreign trade 
+##  9     9   107    4507 HR          18 To suspend temporarily the… Foreign trade 
+## 10    10   107    4508 HR          18 To suspend temporarily the… Foreign trade 
 ## # … with 4,439 more rows
 ```
 
@@ -296,7 +296,7 @@ plot_congress %>%
 ## Selecting by tf_idf
 ```
 
-<img src="/notes/supervised-text-classification_files/figure-html/plot-tf-idf-1.png" width="672" />
+<img src="index_files/figure-html/plot-tf-idf-1.png" width="672" />
 
 Do these make sense? I think they do (well, some of them). This suggests a statistical learning model may find these tokens useful in predicting major topic codes.
 
@@ -339,7 +339,7 @@ toc()
 ```
 
 ```
-## 8.406 sec elapsed
+## 11.163 sec elapsed
 ```
 
 
@@ -354,8 +354,9 @@ congress_rf_200 <- train(x = as.matrix(congress_dtm),
 ```
 
 ```
-## Growing trees.. Progress: 47%. Estimated remaining time: 34 seconds.
-## Growing trees.. Progress: 81%. Estimated remaining time: 7 seconds.
+## Growing trees.. Progress: 62%. Estimated remaining time: 19 seconds.
+## Growing trees.. Progress: 70%. Estimated remaining time: 13 seconds.
+## Growing trees.. Progress: 79%. Estimated remaining time: 8 seconds.
 ```
 
 ```r
@@ -363,7 +364,7 @@ toc()
 ```
 
 ```
-## 157.455 sec elapsed
+## 183.628 sec elapsed
 ```
 
 This is why it is important to remove sparse features and simplify the document-term matrix as much as possible - the more text features and observations in the document-term matrix, the longer it takes to train the model.
@@ -389,6 +390,7 @@ congress_rf_200$finalModel
 ## Target node size:                 1 
 ## Variable importance mode:         impurity 
 ## Splitrule:                        extratrees 
+## Number of random splits:          1 
 ## OOB prediction error:             32.37 %
 ```
 
@@ -408,7 +410,7 @@ congress_rf_10$finalModel %>%
        y = "Variable importance (higher is more important)")
 ```
 
-<img src="/notes/supervised-text-classification_files/figure-html/rf-varimp-1.png" width="672" />
+<img src="index_files/figure-html/rf-varimp-1.png" width="672" />
 
 And if we had a test set of observations (or a set of congressional bills never previously hand-coded), we could use this model to predict their major topic codes.
 
@@ -456,9 +458,11 @@ devtools::session_info()
 ##  devtools       2.3.2      2020-09-18 [1] CRAN (R 4.0.2)
 ##  digest         0.6.25     2020-02-23 [1] CRAN (R 4.0.0)
 ##  dplyr        * 1.0.2      2020-08-18 [1] CRAN (R 4.0.2)
+##  e1071          1.7-3      2019-11-26 [1] CRAN (R 4.0.0)
 ##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi          0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  farver         2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach        1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs             1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
@@ -477,6 +481,7 @@ devtools::session_info()
 ##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 4.0.0)
 ##  jsonlite       1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr          1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling       0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice      * 0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava           1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
 ##  lifecycle      0.2.0      2020-03-06 [1] CRAN (R 4.0.0)
@@ -503,6 +508,7 @@ devtools::session_info()
 ##  ps             1.4.0      2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6             2.4.1      2019-11-12 [1] CRAN (R 4.0.0)
+##  ranger         0.12.1     2020-01-10 [1] CRAN (R 4.0.0)
 ##  Rcpp           1.0.5      2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
@@ -525,6 +531,7 @@ devtools::session_info()
 ##  survival       3.2-7      2020-09-28 [1] CRAN (R 4.0.2)
 ##  testthat       2.3.2      2020-03-02 [1] CRAN (R 4.0.0)
 ##  tibble       * 3.0.3      2020-07-10 [1] CRAN (R 4.0.2)
+##  tictoc       * 1.0        2014-06-17 [1] CRAN (R 4.0.0)
 ##  tidyr        * 1.1.2      2020-08-27 [1] CRAN (R 4.0.2)
 ##  tidyselect     1.1.0      2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidytext     * 0.2.6      2020-09-20 [1] CRAN (R 4.0.2)
@@ -533,6 +540,7 @@ devtools::session_info()
 ##  tm           * 0.7-7      2019-12-12 [1] CRAN (R 4.0.0)
 ##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 4.0.0)
 ##  usethis        1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8           1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs          0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun           0.18       2020-09-29 [1] CRAN (R 4.0.2)

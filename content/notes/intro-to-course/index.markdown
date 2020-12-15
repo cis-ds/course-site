@@ -75,20 +75,20 @@ library(tidyverse)
 ```
 
 ```
-## ── Attaching packages ─────────────────────────────────────────────────────────────────── tidyverse 1.2.1 ──
+## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
 ```
 
 ```
-## ✔ ggplot2 3.1.0       ✔ purrr   0.3.2  
-## ✔ tibble  2.1.1       ✔ dplyr   0.8.0.1
-## ✔ tidyr   0.8.3       ✔ stringr 1.4.0  
-## ✔ readr   1.3.1       ✔ forcats 0.4.0
+## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
+## ✓ tibble  3.0.3     ✓ dplyr   1.0.2
+## ✓ tidyr   1.1.2     ✓ stringr 1.4.0
+## ✓ readr   1.4.0     ✓ forcats 0.5.0
 ```
 
 ```
-## ── Conflicts ────────────────────────────────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
 ```
 
 ```r
@@ -121,7 +121,11 @@ ggplot(data = mpg, aes(displ, hwy)) +
   theme_bw(base_size = 16)
 ```
 
-<img src="/notes/intro-to-course_files/figure-html/auto-example-1.png" width="672" />
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+<img src="index_files/figure-html/auto-example-1.png" width="672" />
 
 But we will start small to build our way up to there.
 
@@ -374,7 +378,7 @@ tmls %>%
   ts_plot(by = "weeks")
 ```
 
-<img src="/notes/intro-to-course_files/figure-html/sesame-good-1.png" width="672" />
+<img src="index_files/figure-html/sesame-good-1.png" width="672" />
 
 ## Session Info
 
@@ -431,18 +435,23 @@ devtools::session_info()
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  highr         0.8     2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
 ##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
 ##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
+##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv          1.8-33  2020-08-27 [1] CRAN (R 4.0.2)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme          3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
 ##  openssl       1.4.3   2020-09-18 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
 ##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)

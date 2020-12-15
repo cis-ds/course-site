@@ -385,8 +385,14 @@ This sounds like a classic if-else operation. For each individual, if `education
 ```
 
 ```
-## Warning in if (education == "Less than HS") {: the condition has length > 1
-## and only the first element will be used
+## Warning: Problem with `mutate()` input `hsPlus`.
+## ℹ the condition has length > 1 and only the first element will be used
+## ℹ Input `hsPlus` is `if (...) NULL`.
+```
+
+```
+## Warning in if (education == "Less than HS") {: the condition has length > 1 and
+## only the first element will be used
 ```
 
 ```
@@ -453,9 +459,9 @@ count(educ_ifelse, hsPlus)
 ## # A tibble: 3 x 2
 ##   hsPlus           n
 ##   <chr>        <int>
-## 1 <NA>          1422
-## 2 HS+          77553
-## 3 Less than HS 21823
+## 1 HS+          77553
+## 2 Less than HS 21823
+## 3 <NA>          1422
 ```
 
 ## Exercise: write a `fizzbuzz` function

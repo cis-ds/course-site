@@ -199,7 +199,7 @@ When you knit the document, the R code is executed:
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output: github_document
 ---
@@ -217,7 +217,7 @@ For your homework assignments, we have used `github_document` to generate a [Mar
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output: html_document
 ---
@@ -233,7 +233,7 @@ Each output format has various options to customize the appearance of the final 
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   html_document:
@@ -255,7 +255,7 @@ There are several options that control the visual appearance of HTML documents.
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   html_document:
@@ -272,7 +272,7 @@ Sometimes when knitting an R Markdown document you want to include your R source
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   html_document:
@@ -288,7 +288,7 @@ When `knitr` processes your `.Rmd` document, it creates a Markdown (`.md`) file 
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   html_document:
@@ -310,7 +310,7 @@ output:
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output: pdf_document
 ---
@@ -326,7 +326,7 @@ Many options for HTML documents also work for PDFs. For instance, you create a t
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   pdf_document:
@@ -343,7 +343,7 @@ You cannot customize the `theme` of a `pdf_document` (at least not in the same w
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   pdf_document:
@@ -359,7 +359,7 @@ You can also directly control options in the $\LaTeX$ template itself via the YA
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output: pdf_document
 geometry: margin=1in
@@ -375,7 +375,7 @@ R Markdown documents are converted first to a `.tex` file, and then use the $\La
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   pdf_document:
@@ -402,7 +402,7 @@ You can even render your document into multiple output formats by supplying a li
 ```
 ---
 author: Benjamin Soltoff
-date: '2020-05-06'
+date: '2020-12-15'
 title: Gun deaths
 output:
   pdf_document: default
@@ -540,6 +540,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -601,6 +602,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  whoami        1.3.0   2019-03-19 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)

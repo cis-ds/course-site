@@ -280,16 +280,16 @@ female_labor
 ## # A tibble: 6,727 x 9
 ##    iso2c iso3c country  date fem_lab_part unit  obs_status footnote last_updated
 ##    <chr> <chr> <chr>   <dbl>        <dbl> <chr> <chr>      <chr>    <date>      
-##  1 AW    ABW   Aruba    1990           NA <NA>  <NA>       <NA>     2020-10-15  
-##  2 AW    ABW   Aruba    1991           NA <NA>  <NA>       <NA>     2020-10-15  
-##  3 AW    ABW   Aruba    1992           NA <NA>  <NA>       <NA>     2020-10-15  
-##  4 AW    ABW   Aruba    1993           NA <NA>  <NA>       <NA>     2020-10-15  
-##  5 AW    ABW   Aruba    1994           NA <NA>  <NA>       <NA>     2020-10-15  
-##  6 AW    ABW   Aruba    1995           NA <NA>  <NA>       <NA>     2020-10-15  
-##  7 AW    ABW   Aruba    1996           NA <NA>  <NA>       <NA>     2020-10-15  
-##  8 AW    ABW   Aruba    1997           NA <NA>  <NA>       <NA>     2020-10-15  
-##  9 AW    ABW   Aruba    1998           NA <NA>  <NA>       <NA>     2020-10-15  
-## 10 AW    ABW   Aruba    1999           NA <NA>  <NA>       <NA>     2020-10-15  
+##  1 AW    ABW   Aruba    1990           NA <NA>  <NA>       <NA>     2020-12-14  
+##  2 AW    ABW   Aruba    1991           NA <NA>  <NA>       <NA>     2020-12-14  
+##  3 AW    ABW   Aruba    1992           NA <NA>  <NA>       <NA>     2020-12-14  
+##  4 AW    ABW   Aruba    1993           NA <NA>  <NA>       <NA>     2020-12-14  
+##  5 AW    ABW   Aruba    1994           NA <NA>  <NA>       <NA>     2020-12-14  
+##  6 AW    ABW   Aruba    1995           NA <NA>  <NA>       <NA>     2020-12-14  
+##  7 AW    ABW   Aruba    1996           NA <NA>  <NA>       <NA>     2020-12-14  
+##  8 AW    ABW   Aruba    1997           NA <NA>  <NA>       <NA>     2020-12-14  
+##  9 AW    ABW   Aruba    1998           NA <NA>  <NA>       <NA>     2020-12-14  
+## 10 AW    ABW   Aruba    1999           NA <NA>  <NA>       <NA>     2020-12-14  
 ## # … with 6,717 more rows
 ```
 
@@ -307,7 +307,7 @@ ggplot(data = female_labor, mapping = aes(x = date, y = fem_lab_part)) +
   )
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/female-labor-plot-1.png" width="672" />
+<img src="index_files/figure-html/female-labor-plot-1.png" width="672" />
 
 By default, `wb_data()` returns queries as data frames in a wide format. So if we request multiple indicators, each indicator will be stored in its own column.
 
@@ -333,7 +333,7 @@ ggplot(data = female_vars, mapping = aes(x = fem_educ_sec, y = fem_lab_part)) +
   )
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/female-educ-1.png" width="672" />
+<img src="index_files/figure-html/female-educ-1.png" width="672" />
 
 ## Searching geographic info: `geonames`
 
@@ -413,25 +413,25 @@ countryInfo %>%
 ```
 
 ```
-## Observations: 250
-## Variables: 17
-## $ continent     <chr> "EU", "AS", "AS", "NA", "NA", "EU", "AS", "AF", "A…
-## $ capital       <chr> "Andorra la Vella", "Abu Dhabi", "Kabul", "Saint J…
-## $ languages     <chr> "ca", "ar-AE,fa,en,hi,ur", "fa-AF,ps,uz-AF,tk", "e…
-## $ geonameId     <chr> "3041565", "290557", "1149361", "3576396", "357351…
-## $ south         <chr> "42.428743001", "22.631513764", "29.3770645357176"…
-## $ isoAlpha3     <chr> "AND", "ARE", "AFG", "ATG", "AIA", "ALB", "ARM", "…
-## $ north         <chr> "42.655765", "26.0693916660001", "38.4907920755748…
-## $ fipsCode      <chr> "AN", "AE", "AF", "AC", "AV", "AL", "AM", "AO", "A…
-## $ population    <chr> "84000", "4975593", "29121286", "86754", "13254", …
-## $ east          <chr> "1.78657600000003", "56.381564568", "74.8894511481…
-## $ isoNumeric    <chr> "020", "784", "004", "028", "660", "008", "051", "…
-## $ areaInSqKm    <chr> "468.0", "82880.0", "647500.0", "443.0", "102.0", …
-## $ countryCode   <chr> "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "A…
-## $ west          <chr> "1.41376000100007", "51.572410727", "60.4720833972…
-## $ countryName   <chr> "Principality of Andorra", "United Arab Emirates",…
-## $ continentName <chr> "Europe", "Asia", "Asia", "North America", "North …
-## $ currencyCode  <chr> "EUR", "AED", "AFN", "XCD", "XCD", "ALL", "AMD", "…
+## Rows: 250
+## Columns: 17
+## $ continent     <chr> "EU", "AS", "AS", "NA", "NA", "EU", "AS", "AF", "AN", "…
+## $ capital       <chr> "Andorra la Vella", "Abu Dhabi", "Kabul", "Saint John’s…
+## $ languages     <chr> "ca", "ar-AE,fa,en,hi,ur", "fa-AF,ps,uz-AF,tk", "en-AG"…
+## $ geonameId     <chr> "3041565", "290557", "1149361", "3576396", "3573511", "…
+## $ south         <chr> "42.428743001", "22.6315119400001", "29.3770645357176",…
+## $ isoAlpha3     <chr> "AND", "ARE", "AFG", "ATG", "AIA", "ALB", "ARM", "AGO",…
+## $ north         <chr> "42.655765", "26.0693916590001", "38.4907920755748", "1…
+## $ fipsCode      <chr> "AN", "AE", "AF", "AC", "AV", "AL", "AM", "AO", "AY", "…
+## $ population    <chr> "77006", "9630959", "37172386", "96286", "13254", "2866…
+## $ east          <chr> "1.78657600000003", "56.381222289", "74.8894511481168",…
+## $ isoNumeric    <chr> "020", "784", "004", "028", "660", "008", "051", "024",…
+## $ areaInSqKm    <chr> "468.0", "82880.0", "647500.0", "443.0", "102.0", "2874…
+## $ countryCode   <chr> "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "…
+## $ west          <chr> "1.41376000100007", "51.5904085340001", "60.47208339722…
+## $ countryName   <chr> "Principality of Andorra", "United Arab Emirates", "Isl…
+## $ continentName <chr> "Europe", "Asia", "Asia", "North America", "North Ameri…
+## $ currencyCode  <chr> "EUR", "AED", "AFN", "XCD", "XCD", "ALL", "AMD", "AOA",…
 ```
 
 This country info dataset is very helpful for accessing the rest of the data, because it gives us the standardized codes for country and language.  
@@ -461,47 +461,52 @@ mp_setapikey(key = getOption("manifesto_key"))
 
 ```
 ## Connecting to Manifesto Project DB API... 
-## Connecting to Manifesto Project DB API... corpus version: 2018-2
+## Connecting to Manifesto Project DB API... corpus version: 2020-1
 ```
 
 ```
-## # A tibble: 4,388 x 174
-##    country countryname oecdmember eumember edate        date party
-##      <dbl> <chr>            <dbl>    <dbl> <date>      <dbl> <dbl>
-##  1      11 Sweden               0        0 1944-09-17 194409 11220
-##  2      11 Sweden               0        0 1944-09-17 194409 11320
-##  3      11 Sweden               0        0 1944-09-17 194409 11420
-##  4      11 Sweden               0        0 1944-09-17 194409 11620
-##  5      11 Sweden               0        0 1944-09-17 194409 11810
-##  6      11 Sweden               0        0 1948-09-19 194809 11220
-##  7      11 Sweden               0        0 1948-09-19 194809 11320
-##  8      11 Sweden               0        0 1948-09-19 194809 11420
-##  9      11 Sweden               0        0 1948-09-19 194809 11620
-## 10      11 Sweden               0        0 1948-09-19 194809 11810
-## # … with 4,378 more rows, and 167 more variables: partyname <chr>,
-## #   partyabbrev <chr>, parfam <dbl>, coderid <dbl>, manual <dbl>,
-## #   coderyear <dbl>, testresult <dbl>, testeditsim <dbl>, pervote <dbl>,
-## #   voteest <dbl>, presvote <dbl>, absseat <dbl>, totseats <dbl>,
-## #   progtype <dbl>, datasetorigin <dbl>, corpusversion <chr>, total <dbl>,
-## #   peruncod <dbl>, per101 <dbl>, per102 <dbl>, per103 <dbl>,
-## #   per104 <dbl>, per105 <dbl>, per106 <dbl>, per107 <dbl>, per108 <dbl>,
-## #   per109 <dbl>, per110 <dbl>, per201 <dbl>, per202 <dbl>, per203 <dbl>,
-## #   per204 <dbl>, per301 <dbl>, per302 <dbl>, per303 <dbl>, per304 <dbl>,
-## #   per305 <dbl>, per401 <dbl>, per402 <dbl>, per403 <dbl>, per404 <dbl>,
-## #   per405 <dbl>, per406 <dbl>, per407 <dbl>, per408 <dbl>, per409 <dbl>,
-## #   per410 <dbl>, per411 <dbl>, per412 <dbl>, per413 <dbl>, per414 <dbl>,
-## #   per415 <dbl>, per416 <dbl>, per501 <dbl>, per502 <dbl>, per503 <dbl>,
-## #   per504 <dbl>, per505 <dbl>, per506 <dbl>, per507 <dbl>, per601 <dbl>,
-## #   per602 <dbl>, per603 <dbl>, per604 <dbl>, per605 <dbl>, per606 <dbl>,
-## #   per607 <dbl>, per608 <dbl>, per701 <dbl>, per702 <dbl>, per703 <dbl>,
-## #   per704 <dbl>, per705 <dbl>, per706 <dbl>, per1011 <dbl>,
-## #   per1012 <dbl>, per1013 <dbl>, per1014 <dbl>, per1015 <dbl>,
-## #   per1016 <dbl>, per1021 <dbl>, per1022 <dbl>, per1023 <dbl>,
-## #   per1024 <dbl>, per1025 <dbl>, per1026 <dbl>, per1031 <dbl>,
-## #   per1032 <dbl>, per1033 <dbl>, per2021 <dbl>, per2022 <dbl>,
-## #   per2023 <dbl>, per2031 <dbl>, per2032 <dbl>, per2033 <dbl>,
-## #   per2041 <dbl>, per3011 <dbl>, per3051 <dbl>, per3052 <dbl>,
-## #   per3053 <dbl>, …
+## Warning: `tbl_df()` is deprecated as of dplyr 1.0.0.
+## Please use `tibble::as_tibble()` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_warnings()` to see where this warning was generated.
+```
+
+```
+## # A tibble: 4,582 x 174
+##    country countryname oecdmember eumember edate        date party partyname
+##      <dbl> <chr>            <dbl>    <dbl> <date>      <dbl> <dbl> <chr>    
+##  1      11 Sweden               0        0 1944-09-17 194409 11220 Communis…
+##  2      11 Sweden               0        0 1944-09-17 194409 11320 Social D…
+##  3      11 Sweden               0        0 1944-09-17 194409 11420 People’s…
+##  4      11 Sweden               0        0 1944-09-17 194409 11620 Right Pa…
+##  5      11 Sweden               0        0 1944-09-17 194409 11810 Agrarian…
+##  6      11 Sweden               0        0 1948-09-19 194809 11220 Communis…
+##  7      11 Sweden               0        0 1948-09-19 194809 11320 Social D…
+##  8      11 Sweden               0        0 1948-09-19 194809 11420 People’s…
+##  9      11 Sweden               0        0 1948-09-19 194809 11620 Right Pa…
+## 10      11 Sweden               0        0 1948-09-19 194809 11810 Agrarian…
+## # … with 4,572 more rows, and 166 more variables: partyabbrev <chr>,
+## #   parfam <dbl>, coderid <dbl>, manual <dbl>, coderyear <dbl>,
+## #   testresult <dbl>, testeditsim <dbl>, pervote <dbl>, voteest <dbl>,
+## #   presvote <dbl>, absseat <dbl>, totseats <dbl>, progtype <dbl>,
+## #   datasetorigin <dbl>, corpusversion <chr>, total <dbl>, peruncod <dbl>,
+## #   per101 <dbl>, per102 <dbl>, per103 <dbl>, per104 <dbl>, per105 <dbl>,
+## #   per106 <dbl>, per107 <dbl>, per108 <dbl>, per109 <dbl>, per110 <dbl>,
+## #   per201 <dbl>, per202 <dbl>, per203 <dbl>, per204 <dbl>, per301 <dbl>,
+## #   per302 <dbl>, per303 <dbl>, per304 <dbl>, per305 <dbl>, per401 <dbl>,
+## #   per402 <dbl>, per403 <dbl>, per404 <dbl>, per405 <dbl>, per406 <dbl>,
+## #   per407 <dbl>, per408 <dbl>, per409 <dbl>, per410 <dbl>, per411 <dbl>,
+## #   per412 <dbl>, per413 <dbl>, per414 <dbl>, per415 <dbl>, per416 <dbl>,
+## #   per501 <dbl>, per502 <dbl>, per503 <dbl>, per504 <dbl>, per505 <dbl>,
+## #   per506 <dbl>, per507 <dbl>, per601 <dbl>, per602 <dbl>, per603 <dbl>,
+## #   per604 <dbl>, per605 <dbl>, per606 <dbl>, per607 <dbl>, per608 <dbl>,
+## #   per701 <dbl>, per702 <dbl>, per703 <dbl>, per704 <dbl>, per705 <dbl>,
+## #   per706 <dbl>, per1011 <dbl>, per1012 <dbl>, per1013 <dbl>, per1014 <dbl>,
+## #   per1015 <dbl>, per1016 <dbl>, per1021 <dbl>, per1022 <dbl>, per1023 <dbl>,
+## #   per1024 <dbl>, per1025 <dbl>, per1026 <dbl>, per1031 <dbl>, per1032 <dbl>,
+## #   per1033 <dbl>, per2021 <dbl>, per2022 <dbl>, per2023 <dbl>, per2031 <dbl>,
+## #   per2032 <dbl>, per2033 <dbl>, per2041 <dbl>, per3011 <dbl>, per3051 <dbl>,
+## #   per3052 <dbl>, per3053 <dbl>, per3054 <dbl>, …
 ```
 
 `mp_maindataset()` includes a data frame describing each manifesto included in the database. You can use this database for some exploratory data analysis. For instance, how many manifestos have been published by each political party in Sweden?
@@ -519,7 +524,7 @@ mpds %>%
   coord_flip()
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/manifesto-dist-1.png" width="672" />
+<img src="index_files/figure-html/manifesto-dist-1.png" width="672" />
 
 Or we can use **scaling functions** to identify each party manifesto on an ideological dimension. For example, how have the Democratic and Republican Party manifestos in the United States changed over time?
 
@@ -539,7 +544,7 @@ mpds %>%
   theme(legend.position = "bottom")
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/manifestor-usa-1.png" width="672" />
+<img src="index_files/figure-html/manifestor-usa-1.png" width="672" />
 
 ### Download manifestos
 
@@ -552,8 +557,6 @@ mpds %>%
 ```
 
 ```
-## Connecting to Manifesto Project DB API... 
-## Connecting to Manifesto Project DB API... corpus version: 2020-1 
 ## Connecting to Manifesto Project DB API... 
 ## Connecting to Manifesto Project DB API... corpus version: 2020-1 
 ## Connecting to Manifesto Project DB API... corpus version: 2020-1 
@@ -580,7 +583,7 @@ docs %>%
   comparison.cloud(max.words = 200)
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/manifestor-corpus-1.png" width="672" />
+<img src="index_files/figure-html/manifestor-corpus-1.png" width="672" />
 
 ## Census data with `tidycensus`
 
@@ -648,7 +651,7 @@ ggplot(asia10, aes(x = reorder(NAME, value), y = value)) +
   coord_flip()
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/plot-asia-1.png" width="672" />
+<img src="index_files/figure-html/plot-asia-1.png" width="672" />
 
 Of course this graph is not entirely useful since it is based on the raw frequency of Asian individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:
 
@@ -695,7 +698,7 @@ ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
   coord_flip()
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/asia-total-pop-1.png" width="672" />
+<img src="index_files/figure-html/asia-total-pop-1.png" width="672" />
 
 `get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2012-2016 ACS for counties in Illinois.
 
@@ -748,7 +751,7 @@ usa_inc %>%
        y = "ACS estimate (bars represent margin of error)")
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/income-usa-plot-1.png" width="672" />
+<img src="index_files/figure-html/income-usa-plot-1.png" width="672" />
 
 ### Search for variables
 
@@ -778,31 +781,30 @@ loudoun
 ## geometry type:  MULTIPOLYGON
 ## dimension:      XY
 ## bbox:           xmin: -77.96196 ymin: 38.84645 xmax: -77.32828 ymax: 39.32419
-## epsg (SRID):    4269
-## proj4string:    +proj=longlat +datum=NAD83 +no_defs
+## geographic CRS: NAD83
 ## First 10 features:
 ##          GEOID                                           NAME  variable
-## 1  51107610101 Census Tract 6101.01, Loudoun County, Virginia medincome
-## 2  51107610102 Census Tract 6101.02, Loudoun County, Virginia medincome
-## 3  51107610201 Census Tract 6102.01, Loudoun County, Virginia medincome
-## 4  51107610202 Census Tract 6102.02, Loudoun County, Virginia medincome
-## 5  51107610300    Census Tract 6103, Loudoun County, Virginia medincome
-## 6  51107610400    Census Tract 6104, Loudoun County, Virginia medincome
-## 7  51107610503 Census Tract 6105.03, Loudoun County, Virginia medincome
-## 8  51107610504 Census Tract 6105.04, Loudoun County, Virginia medincome
-## 9  51107610505 Census Tract 6105.05, Loudoun County, Virginia medincome
-## 10 51107610506 Census Tract 6105.06, Loudoun County, Virginia medincome
+## 1  51107610503 Census Tract 6105.03, Loudoun County, Virginia medincome
+## 2  51107610504 Census Tract 6105.04, Loudoun County, Virginia medincome
+## 3  51107611006 Census Tract 6110.06, Loudoun County, Virginia medincome
+## 4  51107611013 Census Tract 6110.13, Loudoun County, Virginia medincome
+## 5  51107611205 Census Tract 6112.05, Loudoun County, Virginia medincome
+## 6  51107610505 Census Tract 6105.05, Loudoun County, Virginia medincome
+## 7  51107610603 Census Tract 6106.03, Loudoun County, Virginia medincome
+## 8  51107611011 Census Tract 6110.11, Loudoun County, Virginia medincome
+## 9  51107611014 Census Tract 6110.14, Loudoun County, Virginia medincome
+## 10 51107611501 Census Tract 6115.01, Loudoun County, Virginia medincome
 ##    estimate   moe                       geometry
-## 1    132833 19347 MULTIPOLYGON (((-77.76219 3...
-## 2    124659 16679 MULTIPOLYGON (((-77.66133 3...
-## 3    141250  6709 MULTIPOLYGON (((-77.79794 3...
-## 4    140481 10796 MULTIPOLYGON (((-77.84565 3...
-## 5    148583  9368 MULTIPOLYGON (((-77.65754 3...
-## 6    128657  9107 MULTIPOLYGON (((-77.60321 3...
-## 7    150982  6323 MULTIPOLYGON (((-77.54714 3...
-## 8    108042  4652 MULTIPOLYGON (((-77.56114 3...
-## 9     45226  7533 MULTIPOLYGON (((-77.56454 3...
-## 10   118750 17032 MULTIPOLYGON (((-77.5484 39...
+## 1    150982  6323 MULTIPOLYGON (((-77.54714 3...
+## 2    108042  4652 MULTIPOLYGON (((-77.56114 3...
+## 3    140365 16252 MULTIPOLYGON (((-77.48743 3...
+## 4    144638 22972 MULTIPOLYGON (((-77.50032 3...
+## 5    101910  9251 MULTIPOLYGON (((-77.39145 3...
+## 6     45226  7533 MULTIPOLYGON (((-77.56454 3...
+## 7     50818  6995 MULTIPOLYGON (((-77.5735 39...
+## 8     96875 14504 MULTIPOLYGON (((-77.51117 3...
+## 9    118077 17241 MULTIPOLYGON (((-77.48567 3...
+## 10    71356 17165 MULTIPOLYGON (((-77.43106 3...
 ```
 
 This looks similar to the previous output but because we set `geometry = TRUE` it is now a simple features data frame with a `geometry` column defining the geographic feature. We can visualize it using `geom_sf()` and `viridis::scale_*_viridis()` to adjust the color palette.
@@ -816,7 +818,7 @@ ggplot(data = loudoun) +
   scale_color_viridis(option = "magma")
 ```
 
-<img src="/notes/application-program-interface_files/figure-html/loudoun-sf-plot-1.png" width="672" />
+<img src="index_files/figure-html/loudoun-sf-plot-1.png" width="672" />
 
 ## Acknowledgments
 

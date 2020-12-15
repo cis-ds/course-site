@@ -164,7 +164,7 @@ Third, there is a substantial amount of missingness to many of the variables in 
 vis_miss(x = gss)
 ```
 
-<img src="/notes/preprocess_files/figure-html/gss-missing-1.png" width="672" />
+<img src="index_files/figure-html/gss-missing-1.png" width="672" />
 
 This can make it challenging to estimate a logistic regression model because we can only include observations with complete records (i.e. no missing values on any of the variables). We'll discuss later in this document specific steps that we can add to our recipe to address this issue before modeling. 
 
@@ -490,7 +490,7 @@ gss_pred %>%
   autoplot()
 ```
 
-<img src="/notes/preprocess_files/figure-html/roc-plot-1.png" width="672" />
+<img src="index_files/figure-html/roc-plot-1.png" width="672" />
 
 Similarly, `roc_auc()` estimates the area under the curve: 
 
@@ -561,6 +561,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
@@ -573,8 +574,10 @@ devtools::session_info()
 ##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)
 ##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
+##  hardhat       0.1.4      2020-07-02 [1] CRAN (R 4.0.2)
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
+##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
@@ -583,6 +586,7 @@ devtools::session_info()
 ##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
@@ -641,6 +645,7 @@ devtools::session_info()
 ##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
 ##  visdat        0.5.3      2019-02-15 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)

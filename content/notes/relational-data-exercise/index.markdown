@@ -98,7 +98,7 @@ flights %>%
 ## Warning: Removed 9374 rows containing non-finite values (stat_smooth).
 ```
 
-<img src="/notes/relational-data-exercise_files/figure-html/age-delay-solution-1.png" width="672" />
+<img src="index_files/figure-html/age-delay-solution-1.png" width="672" />
 
 ```r
 # line graph of average delay by age
@@ -116,14 +116,18 @@ flights %>%
 ```
 
 ```
+## `summarise()` ungrouping output (override with `.groups` argument)
+```
+
+```
 ## Warning: Removed 1 rows containing missing values (geom_point).
 ```
 
 ```
-## Warning: Removed 1 rows containing missing values (geom_path).
+## Warning: Removed 1 row(s) containing missing values (geom_path).
 ```
 
-<img src="/notes/relational-data-exercise_files/figure-html/age-delay-solution-2.png" width="672" />
+<img src="index_files/figure-html/age-delay-solution-2.png" width="672" />
 
 In this situation, `left_join()` could also be used because `ggplot()` and `mean(na.rm = TRUE)` drop missing values (remember that `left_join()` keeps all rows from `flights`, even if we don't have information on the plane).
 
@@ -147,7 +151,7 @@ flights %>%
 ## Warning: Removed 61980 rows containing non-finite values (stat_smooth).
 ```
 
-<img src="/notes/relational-data-exercise_files/figure-html/age-delay-leftjoin-1.png" width="672" />
+<img src="index_files/figure-html/age-delay-leftjoin-1.png" width="672" />
 
 ```r
 flights %>%
@@ -164,14 +168,18 @@ flights %>%
 ```
 
 ```
-## Warning: Removed 2 rows containing missing values (geom_point).
+## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
 ```
-## Warning: Removed 2 rows containing missing values (geom_path).
+## Warning: Removed 1 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/relational-data-exercise_files/figure-html/age-delay-leftjoin-2.png" width="672" />
+```
+## Warning: Removed 1 row(s) containing missing values (geom_path).
+```
+
+<img src="index_files/figure-html/age-delay-leftjoin-2.png" width="672" />
 
 The important takeaway is that departure delays do not appear to increase with plane age -- in fact they seem to decrease slightly (though with an expanding confidence interval). Care to think of a reason why this may be so?
 
@@ -195,25 +203,24 @@ flights %>%
 
 ```
 ## # A tibble: 336,776 x 33
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-##  1  2013     1     1      517            515         2      830
-##  2  2013     1     1      533            529         4      850
-##  3  2013     1     1      542            540         2      923
-##  4  2013     1     1      544            545        -1     1004
-##  5  2013     1     1      554            600        -6      812
-##  6  2013     1     1      554            558        -4      740
-##  7  2013     1     1      555            600        -5      913
-##  8  2013     1     1      557            600        -3      709
-##  9  2013     1     1      557            600        -3      838
-## 10  2013     1     1      558            600        -2      753
-## # … with 336,766 more rows, and 26 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dttm>, name.x <chr>, lat.x <dbl>,
-## #   lon.x <dbl>, alt.x <int>, tz.x <dbl>, dst.x <chr>, tzone.x <chr>,
-## #   name.y <chr>, lat.y <dbl>, lon.y <dbl>, alt.y <int>, tz.y <dbl>,
-## #   dst.y <chr>, tzone.y <chr>
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>          <int>
+##  1  2013     1     1      517            515         2      830            819
+##  2  2013     1     1      533            529         4      850            830
+##  3  2013     1     1      542            540         2      923            850
+##  4  2013     1     1      544            545        -1     1004           1022
+##  5  2013     1     1      554            600        -6      812            837
+##  6  2013     1     1      554            558        -4      740            728
+##  7  2013     1     1      555            600        -5      913            854
+##  8  2013     1     1      557            600        -3      709            723
+##  9  2013     1     1      557            600        -3      838            846
+## 10  2013     1     1      558            600        -2      753            745
+## # … with 336,766 more rows, and 25 more variables: arr_delay <dbl>,
+## #   carrier <chr>, flight <int>, tailnum <chr>, origin <chr>, dest <chr>,
+## #   air_time <dbl>, distance <dbl>, hour <dbl>, minute <dbl>, time_hour <dttm>,
+## #   name.x <chr>, lat.x <dbl>, lon.x <dbl>, alt.x <dbl>, tz.x <dbl>,
+## #   dst.x <chr>, tzone.x <chr>, name.y <chr>, lat.y <dbl>, lon.y <dbl>,
+## #   alt.y <dbl>, tz.y <dbl>, dst.y <chr>, tzone.y <chr>
 ```
 
 Notice that with this approach, we are joining **all** of the columns in `airports`. The instructions just asked for latitude and longitude, so we can create a copy of `airports` that only includes the necessary variables (`lat` and `lon`, plus the primary key variable `faa`) and join `flights` to that data frame:
@@ -230,23 +237,22 @@ flights %>%
 
 ```
 ## # A tibble: 336,776 x 23
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-##  1  2013     1     1      517            515         2      830
-##  2  2013     1     1      533            529         4      850
-##  3  2013     1     1      542            540         2      923
-##  4  2013     1     1      544            545        -1     1004
-##  5  2013     1     1      554            600        -6      812
-##  6  2013     1     1      554            558        -4      740
-##  7  2013     1     1      555            600        -5      913
-##  8  2013     1     1      557            600        -3      709
-##  9  2013     1     1      557            600        -3      838
-## 10  2013     1     1      558            600        -2      753
-## # … with 336,766 more rows, and 16 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dttm>, lat.x <dbl>, lon.x <dbl>, lat.y <dbl>,
-## #   lon.y <dbl>
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>          <int>
+##  1  2013     1     1      517            515         2      830            819
+##  2  2013     1     1      533            529         4      850            830
+##  3  2013     1     1      542            540         2      923            850
+##  4  2013     1     1      544            545        -1     1004           1022
+##  5  2013     1     1      554            600        -6      812            837
+##  6  2013     1     1      554            558        -4      740            728
+##  7  2013     1     1      555            600        -5      913            854
+##  8  2013     1     1      557            600        -3      709            723
+##  9  2013     1     1      557            600        -3      838            846
+## 10  2013     1     1      558            600        -2      753            745
+## # … with 336,766 more rows, and 15 more variables: arr_delay <dbl>,
+## #   carrier <chr>, flight <int>, tailnum <chr>, origin <chr>, dest <chr>,
+## #   air_time <dbl>, distance <dbl>, hour <dbl>, minute <dbl>, time_hour <dttm>,
+## #   lat.x <dbl>, lon.x <dbl>, lat.y <dbl>, lon.y <dbl>
 ```
 
 This is better, but now we have two sets of latitude and longitude variables in the data frame: one for the destination airport, and one for the origin airport. When we perform the second `left_join()` operation, to avoid duplicate variable names the function automatically adds generic `.x` and `.y` suffixes to the output to disambiguate them. This is nice, but we might want something more intuitive to explicitly identify which variables are associated with the destination vs. the origin. To do that, we override the default `suffix` argument with custom suffixes:
@@ -263,23 +269,22 @@ flights %>%
 
 ```
 ## # A tibble: 336,776 x 23
-##     year month   day dep_time sched_dep_time dep_delay arr_time
-##    <int> <int> <int>    <int>          <int>     <dbl>    <int>
-##  1  2013     1     1      517            515         2      830
-##  2  2013     1     1      533            529         4      850
-##  3  2013     1     1      542            540         2      923
-##  4  2013     1     1      544            545        -1     1004
-##  5  2013     1     1      554            600        -6      812
-##  6  2013     1     1      554            558        -4      740
-##  7  2013     1     1      555            600        -5      913
-##  8  2013     1     1      557            600        -3      709
-##  9  2013     1     1      557            600        -3      838
-## 10  2013     1     1      558            600        -2      753
-## # … with 336,766 more rows, and 16 more variables: sched_arr_time <int>,
-## #   arr_delay <dbl>, carrier <chr>, flight <int>, tailnum <chr>,
-## #   origin <chr>, dest <chr>, air_time <dbl>, distance <dbl>, hour <dbl>,
-## #   minute <dbl>, time_hour <dttm>, lat.dest <dbl>, lon.dest <dbl>,
-## #   lat.origin <dbl>, lon.origin <dbl>
+##     year month   day dep_time sched_dep_time dep_delay arr_time sched_arr_time
+##    <int> <int> <int>    <int>          <int>     <dbl>    <int>          <int>
+##  1  2013     1     1      517            515         2      830            819
+##  2  2013     1     1      533            529         4      850            830
+##  3  2013     1     1      542            540         2      923            850
+##  4  2013     1     1      544            545        -1     1004           1022
+##  5  2013     1     1      554            600        -6      812            837
+##  6  2013     1     1      554            558        -4      740            728
+##  7  2013     1     1      555            600        -5      913            854
+##  8  2013     1     1      557            600        -3      709            723
+##  9  2013     1     1      557            600        -3      838            846
+## 10  2013     1     1      558            600        -2      753            745
+## # … with 336,766 more rows, and 15 more variables: arr_delay <dbl>,
+## #   carrier <chr>, flight <int>, tailnum <chr>, origin <chr>, dest <chr>,
+## #   air_time <dbl>, distance <dbl>, hour <dbl>, minute <dbl>, time_hour <dttm>,
+## #   lat.dest <dbl>, lon.dest <dbl>, lat.origin <dbl>, lon.origin <dbl>
 ```
 
   </p>
@@ -321,6 +326,7 @@ devtools::session_info()
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli            2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools      0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace     1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon         1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI            1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -332,6 +338,7 @@ devtools::session_info()
 ##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi          0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver         2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats      * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics       0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -345,12 +352,17 @@ devtools::session_info()
 ##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
 ##  jsonlite       1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr          1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling       0.3     2014-08-23 [1] CRAN (R 4.0.0)
+##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle      0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate      1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr       1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  Matrix         1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise        1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv           1.8-33  2020-08-27 [1] CRAN (R 4.0.2)
 ##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme           3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
 ##  nycflights13 * 1.0.1   2019-09-16 [1] CRAN (R 4.0.0)
 ##  pillar         1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
 ##  pkgbuild       1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
@@ -381,6 +393,7 @@ devtools::session_info()
 ##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis        1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8           1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs          0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun           0.18    2020-09-29 [1] CRAN (R 4.0.2)

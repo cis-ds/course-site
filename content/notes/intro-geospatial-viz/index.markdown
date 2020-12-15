@@ -63,11 +63,11 @@ Geometric visualizations are used to depict spatial features, and with the incor
 
 **Scale** defines the proportion between distances and sizes on a map and their actual distances and sizes on Earth. Depending on the total geographic area for which you have data to visualize, you could create a **small-scale map** or a **large-scale map**. So for instance, a map of the United States would be considered large-scale:
 
-<img src="/notes/intro-geospatial-viz_files/figure-html/large-scale-1.png" width="672" />
+<img src="index_files/figure-html/large-scale-1.png" width="672" />
 
 Whereas a map of Hyde Park would be small-scale:
 
-<img src="/notes/intro-geospatial-viz_files/figure-html/small-scale-1.png" width="672" />
+<img src="index_files/figure-html/small-scale-1.png" width="672" />
 
 The smaller the scale, the easier it is to include additional details in the map.
 
@@ -85,23 +85,23 @@ Projection methods typically maximize the accuracy of one or two of these proper
 
 
 
-<img src="/notes/intro-geospatial-viz_files/figure-html/mercator-1.png" width="672" />
+<img src="index_files/figure-html/mercator-1.png" width="672" />
 
 The farther away from the equator one travels, the more distorted the size of the region.
 
 Another family of projections called **equal-area projections** preserves area ratios, so that the relative size of areas on a map are proportional to their areas on the Earth.
 
-<img src="/notes/intro-geospatial-viz_files/figure-html/equal-area-1.png" width="672" /><img src="/notes/intro-geospatial-viz_files/figure-html/equal-area-2.png" width="672" />
+<img src="index_files/figure-html/equal-area-1.png" width="672" /><img src="index_files/figure-html/equal-area-2.png" width="672" />
 
 The downside is that equal-area projections tend to distory shapes heavily, so shapes of areas can become distorted. No method can be both conformal and equal-area simultaneously, but some methods such as the **Mollweide** projection achieve a trade-off between these sets of characteristics.
 
-<img src="/notes/intro-geospatial-viz_files/figure-html/mollweide-1.png" width="672" />
+<img src="index_files/figure-html/mollweide-1.png" width="672" />
 
 ## Symbols
 
 Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Hyde Park:
 
-<img src="/notes/intro-geospatial-viz_files/figure-html/bb-hydepark-stamen-1.png" width="672" />
+<img src="index_files/figure-html/bb-hydepark-stamen-1.png" width="672" />
 
 * Line are used to indicate roadways
 * Fill is used to indicate type of land (grassland, water, urban, etc.)
@@ -146,8 +146,10 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  class           7.3-17  2020-04-26 [1] CRAN (R 4.0.2)
 ##  classInt        0.4-3   2020-04-07 [1] CRAN (R 4.0.0)
 ##  cli             2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools       0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace      1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon          1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  curl            4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI             1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr          1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc            1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
@@ -158,6 +160,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  ellipsis        0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate        0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi           0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver          2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats       * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs              1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics        0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -174,6 +177,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  jsonlite        1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  KernSmooth      2.23-17 2020-04-26 [1] CRAN (R 4.0.2)
 ##  knitr           1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling        0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice         0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle       0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate       1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
@@ -197,6 +201,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  readxl          1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
 ##  remotes         2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex          0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rgeos           0.5-5   2020-09-07 [1] CRAN (R 4.0.2)
 ##  RgoogleMaps     1.4.5.3 2020-02-12 [1] CRAN (R 4.0.0)
 ##  rjson           0.2.20  2018-06-08 [1] CRAN (R 4.0.0)
 ##  rlang           0.4.8   2020-10-08 [1] CRAN (R 4.0.2)

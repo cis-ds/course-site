@@ -142,7 +142,7 @@ hp_words %>%
 ## Selecting by n
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/word-freq-1.png" width="672" />
+<img src="index_files/figure-html/word-freq-1.png" width="672" />
 
 ## Estimate sentiment
 
@@ -223,7 +223,7 @@ hp_bing %>%
 ## Selecting by n
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/pos-neg-all-series-1.png" width="672" />
+<img src="index_files/figure-html/pos-neg-all-series-1.png" width="672" />
 
 ```r
 # per book
@@ -256,7 +256,7 @@ hp_pos_neg_book %>%
   coord_flip()
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/pos-neg-all-series-2.png" width="672" />
+<img src="index_files/figure-html/pos-neg-all-series-2.png" width="672" />
 
 ```r
 ## negative words
@@ -273,7 +273,7 @@ hp_pos_neg_book %>%
   coord_flip()
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/pos-neg-all-series-3.png" width="672" />
+<img src="index_files/figure-html/pos-neg-all-series-3.png" width="672" />
 
   </p>
 </details>
@@ -342,7 +342,7 @@ hp_afinn %>%
   theme_minimal()
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/sentiment-outliers-1.png" width="672" />
+<img src="index_files/figure-html/sentiment-outliers-1.png" width="672" />
 
 As we can see, "moody" appears quite frequently in the books. In the vast majority of appearances, "moody" is used to refer to the character Alastor "Mad-Eye" Moody and is not meant to convey a specific sentiment.
 
@@ -397,7 +397,7 @@ hp_afinn %>%
   theme_minimal()
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/sentiment-outlier-remove-1.png" width="672" />
+<img src="index_files/figure-html/sentiment-outlier-remove-1.png" width="672" />
 
 ## Visualize the positive/negative sentiment for each book over time using the AFINN dictionary
 
@@ -429,7 +429,7 @@ hp_words %>%
 ## `summarise()` regrouping output by 'book' (override with `.groups` argument)
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/affin-over-time-1.png" width="672" />
+<img src="index_files/figure-html/affin-over-time-1.png" width="672" />
 
 ```r
 # cumulative value
@@ -450,7 +450,7 @@ hp_words %>%
 ## Joining, by = "word"
 ```
 
-<img src="/notes/harry-potter-exercise_files/figure-html/affin-over-time-2.png" width="672" />
+<img src="index_files/figure-html/affin-over-time-2.png" width="672" />
 
   </p>
 </details>

@@ -144,7 +144,7 @@ bind_cols(age_vals,
   ylim(0, 1)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic-ols-1.png" width="672" />
+<img src="index_files/figure-html/titanic-ols-1.png" width="672" />
 
 Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are $0$ and $1$. Yet the linear regression model gives us predicted values such as $.4$ and $.25$. How should we interpret those?
 
@@ -165,7 +165,7 @@ bind_cols(age_vals,
   ylim(NA, 1)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic-ols-old-1.png" width="672" />
+<img src="index_files/figure-html/titanic-ols-old-1.png" width="672" />
 
 What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
 
@@ -230,7 +230,7 @@ log_fit
 ```
 ## parsnip model object
 ## 
-## Fit time:  9ms 
+## Fit time:  5ms 
 ## 
 ## Call:  stats::glm(formula = Survived ~ Age, family = stats::binomial, 
 ##     data = data)
@@ -274,7 +274,7 @@ new_ages %>%
   ylab("Probability of survival")
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic-age-plot-1.png" width="672" />
+<img src="index_files/figure-html/titanic-age-plot-1.png" width="672" />
 
 It's hard to tell, but the line is not perfectly linear. Let's expand the range of the x-axis to prove this:
 
@@ -293,7 +293,7 @@ new_ages %>%
   ylab("Probability of survival")
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/titanic-age-plot-long-1.png" width="672" />
+<img src="index_files/figure-html/titanic-age-plot-long-1.png" width="672" />
 
 No more predictions that a 200 year old has a $-.1$ probability of surviving!
 
@@ -342,7 +342,7 @@ age_sex_vals %>%
   scale_color_viridis_d(end = 0.7)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/survive-age-woman-pred-1.png" width="672" />
+<img src="index_files/figure-html/survive-age-woman-pred-1.png" width="672" />
 
 This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's sex was much more important. Females survived at much higher rates than males, regardless of age.
 
@@ -403,7 +403,7 @@ age_sex_vals %>%
   scale_color_viridis_d(end = 0.7)
 ```
 
-<img src="/notes/logistic-regression_files/figure-html/age-woman-cross-pred-1.png" width="672" />
+<img src="index_files/figure-html/age-woman-cross-pred-1.png" width="672" />
 
 And now our minds are blown once again! For women, as age increases the probability of survival also increases. However for men, we see the opposite relationship: as age increases the probability of survival **decreases**. Again, the basic principle of saving women and children first can be seen empirically in the estimated probability of survival. Male children are treated similarly to female children, and their survival is prioritized. Even still, the odds of survival are always worse for men than women, but the regression function clearly shows a difference from our previous results.
 
@@ -456,6 +456,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
@@ -470,6 +471,7 @@ devtools::session_info()
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
+##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
@@ -478,6 +480,7 @@ devtools::session_info()
 ##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
@@ -530,9 +533,12 @@ devtools::session_info()
 ##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0      2019-11-21 [1] CRAN (R 4.0.0)
 ##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
+##  titanic     * 0.1.0      2015-08-31 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
+##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)

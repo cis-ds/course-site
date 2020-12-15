@@ -125,7 +125,7 @@ Be sure to read ["Using atomic vectors"](http://r4ds.had.co.nz/vectors.html#usin
 ```
 
 ```
-##  [1]  2  6  5  8  9  4  1  7 10  3
+##  [1] 10  6  5  4  1  8  2  7  9  3
 ```
 
 ```r
@@ -133,7 +133,7 @@ x + c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
 ```
 
 ```
-##  [1] 102 106 105 108 109 104 101 107 110 103
+##  [1] 110 106 105 104 101 108 102 107 109 103
 ```
 
 ```r
@@ -141,7 +141,7 @@ x + 100
 ```
 
 ```
-##  [1] 102 106 105 108 109 104 101 107 110 103
+##  [1] 110 106 105 104 101 108 102 107 109 103
 ```
 
 This is why [you don't need to write an iterative operation when performing these basic operations](/notes/functions#exercise:-calculate-the-sum-of-squares-of-two-variables) - R automatically converts it for you.
@@ -750,6 +750,7 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)

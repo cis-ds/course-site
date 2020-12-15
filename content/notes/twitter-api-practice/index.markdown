@@ -93,65 +93,52 @@ rt <- search_tweets(
   n = 3000,
   include_rts = FALSE
 )
-```
-
-```
-## Searching for tweets...
-```
-
-```
-## Finished collecting tweets!
-```
-
-```r
 rt
 ```
 
 ```
-## # A tibble: 2,943 x 88
+## # A tibble: 2,998 x 90
 ##    user_id status_id created_at          screen_name text  source
 ##    <chr>   <chr>     <dttm>              <chr>       <chr> <chr> 
-##  1 619751… 11113265… 2019-03-28 17:57:48 azzyazal    Cool… Twitt…
-##  2 469367… 11113252… 2019-03-28 17:52:41 ebovee09    If y… Twitt…
-##  3 887318… 11113250… 2019-03-28 17:52:03 geospacedm… Asth… Twitt…
-##  4 887318… 11090213… 2019-03-22 09:17:54 geospacedm… In m… Twitt…
-##  5 174434… 11113248… 2019-03-28 17:51:12 tjmahr      dply… Twitt…
-##  6 174434… 11087644… 2019-03-21 16:16:50 tjmahr      "I t… Twitt…
-##  7 174434… 11091554… 2019-03-22 18:10:41 tjmahr      I've… Twitt…
-##  8 174434… 11087684… 2019-03-21 16:32:56 tjmahr      "# g… Twitt…
-##  9 343389… 11109362… 2019-03-27 16:06:51 datavisFri… @_Co… Twitt…
-## 10 343389… 11113238… 2019-03-28 17:47:19 datavisFri… Anot… Twitt…
-## # … with 2,933 more rows, and 82 more variables: display_text_width <dbl>,
+##  1 120362… 13389047… 2020-12-15 17:52:12 icymi_r     "✍️🖥… OneUp…
+##  2 120362… 13383791… 2020-12-14 07:03:43 icymi_r     "✍️🚲… OneUp…
+##  3 120362… 13375125… 2020-12-11 21:40:15 icymi_r     "✍️ … OneUp…
+##  4 120362… 13381597… 2020-12-13 16:32:07 icymi_r     "📦 \… OneUp…
+##  5 120362… 13378834… 2020-12-12 22:14:06 icymi_r     "✍️📊… OneUp…
+##  6 120362… 13382856… 2020-12-14 00:52:09 icymi_r     "📦🗣️… OneUp…
+##  7 120362… 13379146… 2020-12-13 00:18:08 icymi_r     "📦👥 … OneUp…
+##  8 120362… 13375744… 2020-12-12 01:46:14 icymi_r     "✍️🗺… OneUp…
+##  9 120362… 13380384… 2020-12-13 08:30:10 icymi_r     "✍️\… OneUp…
+## 10 120362… 13376977… 2020-12-12 09:56:07 icymi_r     "✍️ … OneUp…
+## # … with 2,988 more rows, and 84 more variables: display_text_width <dbl>,
 ## #   reply_to_status_id <chr>, reply_to_user_id <chr>,
 ## #   reply_to_screen_name <chr>, is_quote <lgl>, is_retweet <lgl>,
-## #   favorite_count <int>, retweet_count <int>, hashtags <list>,
-## #   symbols <list>, urls_url <list>, urls_t.co <list>,
-## #   urls_expanded_url <list>, media_url <list>, media_t.co <list>,
-## #   media_expanded_url <list>, media_type <list>, ext_media_url <list>,
-## #   ext_media_t.co <list>, ext_media_expanded_url <list>,
-## #   ext_media_type <chr>, mentions_user_id <list>,
-## #   mentions_screen_name <list>, lang <chr>, quoted_status_id <chr>,
-## #   quoted_text <chr>, quoted_created_at <dttm>, quoted_source <chr>,
-## #   quoted_favorite_count <int>, quoted_retweet_count <int>,
-## #   quoted_user_id <chr>, quoted_screen_name <chr>, quoted_name <chr>,
-## #   quoted_followers_count <int>, quoted_friends_count <int>,
-## #   quoted_statuses_count <int>, quoted_location <chr>,
-## #   quoted_description <chr>, quoted_verified <lgl>,
-## #   retweet_status_id <chr>, retweet_text <chr>,
-## #   retweet_created_at <dttm>, retweet_source <chr>,
-## #   retweet_favorite_count <int>, retweet_retweet_count <int>,
-## #   retweet_user_id <chr>, retweet_screen_name <chr>, retweet_name <chr>,
+## #   favorite_count <int>, retweet_count <int>, quote_count <int>,
+## #   reply_count <int>, hashtags <list>, symbols <list>, urls_url <list>,
+## #   urls_t.co <list>, urls_expanded_url <list>, media_url <list>,
+## #   media_t.co <list>, media_expanded_url <list>, media_type <list>,
+## #   ext_media_url <list>, ext_media_t.co <list>, ext_media_expanded_url <list>,
+## #   ext_media_type <chr>, mentions_user_id <list>, mentions_screen_name <list>,
+## #   lang <chr>, quoted_status_id <chr>, quoted_text <chr>,
+## #   quoted_created_at <dttm>, quoted_source <chr>, quoted_favorite_count <int>,
+## #   quoted_retweet_count <int>, quoted_user_id <chr>, quoted_screen_name <chr>,
+## #   quoted_name <chr>, quoted_followers_count <int>,
+## #   quoted_friends_count <int>, quoted_statuses_count <int>,
+## #   quoted_location <chr>, quoted_description <chr>, quoted_verified <lgl>,
+## #   retweet_status_id <chr>, retweet_text <chr>, retweet_created_at <dttm>,
+## #   retweet_source <chr>, retweet_favorite_count <int>,
+## #   retweet_retweet_count <int>, retweet_user_id <chr>,
+## #   retweet_screen_name <chr>, retweet_name <chr>,
 ## #   retweet_followers_count <int>, retweet_friends_count <int>,
 ## #   retweet_statuses_count <int>, retweet_location <chr>,
 ## #   retweet_description <chr>, retweet_verified <lgl>, place_url <chr>,
-## #   place_name <chr>, place_full_name <chr>, place_type <chr>,
-## #   country <chr>, country_code <chr>, geo_coords <list>,
-## #   coords_coords <list>, bbox_coords <list>, status_url <chr>,
-## #   name <chr>, location <chr>, description <chr>, url <chr>,
-## #   protected <lgl>, followers_count <int>, friends_count <int>,
-## #   listed_count <int>, statuses_count <int>, favourites_count <int>,
-## #   account_created_at <dttm>, verified <lgl>, profile_url <chr>,
-## #   profile_expanded_url <chr>, account_lang <chr>,
+## #   place_name <chr>, place_full_name <chr>, place_type <chr>, country <chr>,
+## #   country_code <chr>, geo_coords <list>, coords_coords <list>,
+## #   bbox_coords <list>, status_url <chr>, name <chr>, location <chr>,
+## #   description <chr>, url <chr>, protected <lgl>, followers_count <int>,
+## #   friends_count <int>, listed_count <int>, statuses_count <int>,
+## #   favourites_count <int>, account_created_at <dttm>, verified <lgl>,
+## #   profile_url <chr>, profile_expanded_url <chr>, account_lang <lgl>,
 ## #   profile_banner_url <chr>, profile_background_url <chr>,
 ## #   profile_image_url <chr>
 ```
@@ -175,50 +162,48 @@ countvoncount
 ```
 
 ```
-## # A tibble: 1,000 x 88
+## # A tibble: 1,000 x 90
 ##    user_id status_id created_at          screen_name text  source
 ##    <chr>   <chr>     <dttm>              <chr>       <chr> <chr> 
-##  1 555129… 10969201… 2019-02-16 23:52:00 CountVonCo… Two … Count…
-##  2 555129… 10968597… 2019-02-16 19:51:59 CountVonCo… Two … Count…
-##  3 555129… 10965575… 2019-02-15 23:51:03 CountVonCo… Two … Count…
-##  4 555129… 10961514… 2019-02-14 20:57:24 CountVonCo… Two … Count…
-##  5 555129… 10960910… 2019-02-14 16:57:23 CountVonCo… Two … Count…
-##  6 555129… 10957986… 2019-02-13 21:35:28 CountVonCo… Two … Count…
-##  7 555129… 10954232… 2019-02-12 20:43:53 CountVonCo… Two … Count…
-##  8 555129… 10953628… 2019-02-12 16:43:52 CountVonCo… Two … Count…
-##  9 555129… 10951245… 2019-02-12 00:56:53 CountVonCo… Two … Count…
-## 10 555129… 10949886… 2019-02-11 15:56:52 CountVonCo… Two … Count…
-## # … with 990 more rows, and 82 more variables: display_text_width <dbl>,
+##  1 555129… 13388802… 2020-12-15 16:14:49 CountVonCo… Two … Count…
+##  2 555129… 13385933… 2020-12-14 21:14:48 CountVonCo… Two … Count…
+##  3 555129… 13382762… 2020-12-14 00:14:46 CountVonCo… Two … Count…
+##  4 555129… 13381101… 2020-12-13 13:14:46 CountVonCo… Two … Count…
+##  5 555129… 13379440… 2020-12-13 02:14:45 CountVonCo… Two … Count…
+##  6 555129… 13377930… 2020-12-12 16:14:44 CountVonCo… Two … Count…
+##  7 555129… 13375514… 2020-12-12 00:14:43 CountVonCo… Two … Count…
+##  8 555129… 13374910… 2020-12-11 20:14:43 CountVonCo… Two … Count…
+##  9 555129… 13373853… 2020-12-11 13:14:42 CountVonCo… Two … Count…
+## 10 555129… 13372041… 2020-12-11 01:14:42 CountVonCo… Two … Count…
+## # … with 990 more rows, and 84 more variables: display_text_width <dbl>,
 ## #   reply_to_status_id <lgl>, reply_to_user_id <lgl>,
 ## #   reply_to_screen_name <lgl>, is_quote <lgl>, is_retweet <lgl>,
-## #   favorite_count <int>, retweet_count <int>, hashtags <list>,
-## #   symbols <list>, urls_url <list>, urls_t.co <list>,
-## #   urls_expanded_url <list>, media_url <list>, media_t.co <list>,
-## #   media_expanded_url <list>, media_type <list>, ext_media_url <list>,
-## #   ext_media_t.co <list>, ext_media_expanded_url <list>,
-## #   ext_media_type <chr>, mentions_user_id <list>,
-## #   mentions_screen_name <list>, lang <chr>, quoted_status_id <chr>,
-## #   quoted_text <chr>, quoted_created_at <dttm>, quoted_source <chr>,
-## #   quoted_favorite_count <int>, quoted_retweet_count <int>,
-## #   quoted_user_id <chr>, quoted_screen_name <chr>, quoted_name <chr>,
-## #   quoted_followers_count <int>, quoted_friends_count <int>,
-## #   quoted_statuses_count <int>, quoted_location <chr>,
-## #   quoted_description <chr>, quoted_verified <lgl>,
-## #   retweet_status_id <chr>, retweet_text <chr>,
-## #   retweet_created_at <dttm>, retweet_source <chr>,
-## #   retweet_favorite_count <int>, retweet_retweet_count <int>,
-## #   retweet_user_id <chr>, retweet_screen_name <chr>, retweet_name <chr>,
+## #   favorite_count <int>, retweet_count <int>, quote_count <int>,
+## #   reply_count <int>, hashtags <list>, symbols <list>, urls_url <list>,
+## #   urls_t.co <list>, urls_expanded_url <list>, media_url <list>,
+## #   media_t.co <list>, media_expanded_url <list>, media_type <list>,
+## #   ext_media_url <list>, ext_media_t.co <list>, ext_media_expanded_url <list>,
+## #   ext_media_type <chr>, mentions_user_id <list>, mentions_screen_name <list>,
+## #   lang <chr>, quoted_status_id <chr>, quoted_text <chr>,
+## #   quoted_created_at <dttm>, quoted_source <chr>, quoted_favorite_count <int>,
+## #   quoted_retweet_count <int>, quoted_user_id <chr>, quoted_screen_name <chr>,
+## #   quoted_name <chr>, quoted_followers_count <int>,
+## #   quoted_friends_count <int>, quoted_statuses_count <int>,
+## #   quoted_location <chr>, quoted_description <chr>, quoted_verified <lgl>,
+## #   retweet_status_id <chr>, retweet_text <chr>, retweet_created_at <dttm>,
+## #   retweet_source <chr>, retweet_favorite_count <int>,
+## #   retweet_retweet_count <int>, retweet_user_id <chr>,
+## #   retweet_screen_name <chr>, retweet_name <chr>,
 ## #   retweet_followers_count <int>, retweet_friends_count <int>,
 ## #   retweet_statuses_count <int>, retweet_location <chr>,
 ## #   retweet_description <chr>, retweet_verified <lgl>, place_url <chr>,
-## #   place_name <chr>, place_full_name <chr>, place_type <chr>,
-## #   country <chr>, country_code <chr>, geo_coords <list>,
-## #   coords_coords <list>, bbox_coords <list>, status_url <chr>,
-## #   name <chr>, location <chr>, description <chr>, url <lgl>,
-## #   protected <lgl>, followers_count <int>, friends_count <int>,
-## #   listed_count <int>, statuses_count <int>, favourites_count <int>,
-## #   account_created_at <dttm>, verified <lgl>, profile_url <chr>,
-## #   profile_expanded_url <chr>, account_lang <chr>,
+## #   place_name <chr>, place_full_name <chr>, place_type <chr>, country <chr>,
+## #   country_code <chr>, geo_coords <list>, coords_coords <list>,
+## #   bbox_coords <list>, status_url <chr>, name <chr>, location <chr>,
+## #   description <chr>, url <lgl>, protected <lgl>, followers_count <int>,
+## #   friends_count <int>, listed_count <int>, statuses_count <int>,
+## #   favourites_count <int>, account_created_at <dttm>, verified <lgl>,
+## #   profile_url <chr>, profile_expanded_url <chr>, account_lang <lgl>,
 ## #   profile_banner_url <chr>, profile_background_url <chr>,
 ## #   profile_image_url <chr>
 ```
@@ -236,7 +221,7 @@ Because the resulting objects are data frames, you can perform standard data tra
 ts_plot(rt, by = "3 hours")
 ```
 
-<img src="/notes/twitter-api-practice_files/figure-html/rstats-freq-1.png" width="672" />
+<img src="index_files/figure-html/rstats-freq-1.png" width="672" />
 
 The `by` argument allows us to aggregate over different lengths of time.
 
@@ -245,7 +230,7 @@ The `by` argument allows us to aggregate over different lengths of time.
 ts_plot(rt, by = "1 hours")
 ```
 
-<img src="/notes/twitter-api-practice_files/figure-html/rstats-freq-day-1.png" width="672" />
+<img src="index_files/figure-html/rstats-freq-day-1.png" width="672" />
 
 And because `ts_plot()` uses `ggplot2`, we can modify the graphs using familiar `ggplot2` functions:
 
@@ -261,7 +246,7 @@ ts_plot(rt, by = "3 hours") +
   )
 ```
 
-<img src="/notes/twitter-api-practice_files/figure-html/rstats-freq-clean-1.png" width="672" />
+<img src="index_files/figure-html/rstats-freq-clean-1.png" width="672" />
 
 ## Exercise: Practice using `rtweet`
 
@@ -284,7 +269,7 @@ popstars %>%
   ts_plot(by = "week")
 ```
 
-<img src="/notes/twitter-api-practice_files/figure-html/twitter-popstars-1.png" width="672" />
+<img src="index_files/figure-html/twitter-popstars-1.png" width="672" />
     
   </p>
 </details>
@@ -318,6 +303,7 @@ devtools::session_info()
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
+##  askpass       1.1     2019-01-13 [1] CRAN (R 4.0.0)
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
@@ -327,8 +313,10 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  curl          4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
@@ -338,6 +326,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -351,18 +340,21 @@ devtools::session_info()
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
 ##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  openssl       1.4.3   2020-09-18 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
 ##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
 ##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  progress      1.2.2   2019-05-16 [1] CRAN (R 4.0.0)
 ##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
@@ -375,6 +367,7 @@ devtools::session_info()
 ##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
 ##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rtweet      * 0.7.0   2020-01-08 [1] CRAN (R 4.0.0)
 ##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
@@ -386,6 +379,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)

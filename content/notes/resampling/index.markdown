@@ -212,7 +212,7 @@ rf_fit
 ```
 ## parsnip model object
 ## 
-## Fit time:  774ms 
+## Fit time:  454ms 
 ## Ranger result
 ## 
 ## Call:
@@ -510,6 +510,7 @@ devtools::session_info()
 ##  package     * version    date       lib source        
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
+##  base64enc     0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
 ##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
 ##  blogdown      0.21       2020-12-11 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
@@ -544,8 +545,10 @@ devtools::session_info()
 ##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)
 ##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
+##  hardhat       0.1.4      2020-07-02 [1] CRAN (R 4.0.2)
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
+##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
@@ -588,6 +591,7 @@ devtools::session_info()
 ##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
 ##  recipes     * 0.1.13     2020-06-23 [1] CRAN (R 4.0.2)
 ##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)
+##  repr          1.1.0      2020-01-28 [1] CRAN (R 4.0.0)
 ##  reprex        0.3.0      2019-05-16 [1] CRAN (R 4.0.0)
 ##  rlang         0.4.8      2020-10-08 [1] CRAN (R 4.0.2)
 ##  rmarkdown     2.4        2020-09-30 [1] CRAN (R 4.0.2)
@@ -598,6 +602,7 @@ devtools::session_info()
 ##  rvest         0.3.6      2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)
+##  skimr         2.1.2      2020-07-06 [1] CRAN (R 4.0.2)
 ##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)
 ##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.2)
@@ -610,6 +615,7 @@ devtools::session_info()
 ##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)

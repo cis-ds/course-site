@@ -89,7 +89,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 475 rows containing non-finite values (stat_boxplot).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-boxplot-1.png" width="672" />
+<img src="index_files/figure-html/sat-boxplot-1.png" width="672" />
 
 According to this graph, private, nonprofit schools have the highest average SAT score, followed by public and then private, for-profit schools. But this doesn't reveal the entire picture. What happens if we plot a **histogram** or **frequency polygon**?
 
@@ -109,7 +109,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 475 rows containing non-finite values (stat_bin).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-histo-freq-1.png" width="672" />
+<img src="index_files/figure-html/sat-histo-freq-1.png" width="672" />
 
 ```r
 ggplot(data = scorecard,
@@ -125,7 +125,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 475 rows containing non-finite values (stat_bin).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-histo-freq-2.png" width="672" />
+<img src="index_files/figure-html/sat-histo-freq-2.png" width="672" />
 
 Now we can see the averages for each college type are based on widely varying sample sizes.
 
@@ -136,7 +136,7 @@ ggplot(data = scorecard,
   geom_bar()
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/sat-bar-1.png" width="672" />
+<img src="index_files/figure-html/sat-bar-1.png" width="672" />
 
 There are far fewer private, for-profit colleges than the other categories. A boxplot alone would not reveal this detail, which could be important in future analysis.
   </p>
@@ -169,7 +169,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-1.png" width="672" />
+<img src="index_files/figure-html/cost-avgfacsal-1.png" width="672" />
 
 ```r
 # geom_point with alpha transparency to reveal dense clusters
@@ -189,7 +189,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-2.png" width="672" />
+<img src="index_files/figure-html/cost-avgfacsal-2.png" width="672" />
 
 ```r
 # geom_hex
@@ -211,7 +211,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-3.png" width="672" />
+<img src="index_files/figure-html/cost-avgfacsal-3.png" width="672" />
 
 ```r
 # geom_point with smoothing lines for each type
@@ -233,7 +233,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-4.png" width="672" />
+<img src="index_files/figure-html/cost-avgfacsal-4.png" width="672" />
 
 ```r
 # geom_point with facets for each type
@@ -256,7 +256,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/cost-avgfacsal-5.png" width="672" />
+<img src="index_files/figure-html/cost-avgfacsal-5.png" width="672" />
 
   </p>
 </details>
@@ -280,7 +280,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-scatter-1.png" width="672" />
+<img src="index_files/figure-html/pell-scatter-1.png" width="672" />
 
 Hmm. There seem to be a lot of data points. It isn't really clear if there is a trend. What if we **jitter** the data points?
 
@@ -295,7 +295,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-jitter-1.png" width="672" />
+<img src="index_files/figure-html/pell-jitter-1.png" width="672" />
 
 Meh, didn't really do much. What if we make our data points semi-transparent using the `alpha` aesthetic?
 
@@ -310,7 +310,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-alpha-1.png" width="672" />
+<img src="index_files/figure-html/pell-alpha-1.png" width="672" />
 
 Now we're getting somewhere. I'm beginning to see some dense clusters in the middle. Maybe a **hexagon binning** plot would help
 
@@ -325,7 +325,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing non-finite values (stat_binhex).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-bin-1.png" width="672" />
+<img src="index_files/figure-html/pell-bin-1.png" width="672" />
 
 This is getting better. It looks like there might be a downward trend; that is, as the percentage of Pell grant recipients increases, average student debt decreases. Let's confirm this by going back to the scatterplot and overlaying a **smoothing line**.
 
@@ -349,7 +349,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis-practice_files/figure-html/pell-smooth-1.png" width="672" />
+<img src="index_files/figure-html/pell-smooth-1.png" width="672" />
 
 This confirms our initial evidence - there is an apparent negative relationship. Notice how I iterated through several different plots before I created one that provided the most informative visualization. **You will not create the perfect graph on your first attempt.** Trial and error is necessary in this exploratory stage. Be prepared to revise your code again and again.
 

@@ -225,21 +225,20 @@ users %>%
 
 ```
 ## # A tibble: 6 x 30
-##   login     id avatar_url gravatar_id url   html_url followers_url
-##   <chr>  <int> <chr>      <chr>       <chr> <chr>    <chr>        
-## 1 gabo… 6.60e5 https://a… ""          http… https:/… https://api.…
-## 2 jenn… 5.99e5 https://a… ""          http… https:/… https://api.…
-## 3 jtle… 1.57e6 https://a… ""          http… https:/… https://api.…
-## 4 juli… 1.25e7 https://a… ""          http… https:/… https://api.…
-## 5 leep… 3.51e6 https://a… ""          http… https:/… https://api.…
-## 6 masa… 8.36e6 https://a… ""          http… https:/… https://api.…
-## # … with 23 more variables: following_url <chr>, gists_url <chr>,
-## #   starred_url <chr>, subscriptions_url <chr>, organizations_url <chr>,
-## #   repos_url <chr>, events_url <chr>, received_events_url <chr>,
-## #   type <chr>, site_admin <lgl>, name <chr>, company <chr>, blog <chr>,
-## #   location <chr>, email <chr>, public_repos <int>, public_gists <int>,
-## #   followers <int>, following <int>, created_at <chr>, updated_at <chr>,
-## #   bio <chr>, hireable <lgl>
+##   login     id avatar_url gravatar_id url   html_url followers_url following_url
+##   <chr>  <int> <chr>      <chr>       <chr> <chr>    <chr>         <chr>        
+## 1 gabo… 6.60e5 https://a… ""          http… https:/… https://api.… https://api.…
+## 2 jenn… 5.99e5 https://a… ""          http… https:/… https://api.… https://api.…
+## 3 jtle… 1.57e6 https://a… ""          http… https:/… https://api.… https://api.…
+## 4 juli… 1.25e7 https://a… ""          http… https:/… https://api.… https://api.…
+## 5 leep… 3.51e6 https://a… ""          http… https:/… https://api.… https://api.…
+## 6 masa… 8.36e6 https://a… ""          http… https:/… https://api.… https://api.…
+## # … with 22 more variables: gists_url <chr>, starred_url <chr>,
+## #   subscriptions_url <chr>, organizations_url <chr>, repos_url <chr>,
+## #   events_url <chr>, received_events_url <chr>, type <chr>, site_admin <lgl>,
+## #   name <chr>, company <chr>, blog <chr>, location <chr>, email <chr>,
+## #   public_repos <int>, public_gists <int>, followers <int>, following <int>,
+## #   created_at <chr>, updated_at <chr>, bio <chr>, hireable <lgl>
 ```
 
 Extremely easy! However, there are a lot of components in `users`, and we don't necessarily want or need all of them. Instead, we can use `hoist()` to pull out selected components:
@@ -332,16 +331,16 @@ repos %>%
 ## # A tibble: 176 x 5
 ##    login       name        homepage watchers repo             
 ##    <chr>       <chr>       <chr>       <int> <list>           
-##  1 gaborcsardi after       <NA>            5 <named list [65]>
-##  2 gaborcsardi argufy      <NA>           19 <named list [65]>
-##  3 gaborcsardi ask         <NA>            5 <named list [65]>
-##  4 gaborcsardi baseimports <NA>            0 <named list [65]>
-##  5 gaborcsardi citest      <NA>            0 <named list [65]>
+##  1 gaborcsardi after        <NA>           5 <named list [65]>
+##  2 gaborcsardi argufy       <NA>          19 <named list [65]>
+##  3 gaborcsardi ask          <NA>           5 <named list [65]>
+##  4 gaborcsardi baseimports  <NA>           0 <named list [65]>
+##  5 gaborcsardi citest       <NA>           0 <named list [65]>
 ##  6 gaborcsardi clisymbols  ""             18 <named list [65]>
-##  7 gaborcsardi cmaker      <NA>            0 <named list [65]>
-##  8 gaborcsardi cmark       <NA>            0 <named list [65]>
-##  9 gaborcsardi conditions  <NA>            0 <named list [65]>
-## 10 gaborcsardi crayon      <NA>           52 <named list [65]>
+##  7 gaborcsardi cmaker       <NA>           0 <named list [65]>
+##  8 gaborcsardi cmark        <NA>           0 <named list [65]>
+##  9 gaborcsardi conditions   <NA>           0 <named list [65]>
+## 10 gaborcsardi crayon       <NA>          52 <named list [65]>
 ## # … with 166 more rows
 ```
 
@@ -405,26 +404,24 @@ tibble(repo = gh_repos) %>%
 ##  8 6.80e7 cmark gaborcsa… <nam… FALSE   https:/… CommonMark… TRUE  http…
 ##  9 6.32e7 cond… gaborcsa… <nam… FALSE   https:/… <NA>        TRUE  http…
 ## 10 2.43e7 cray… gaborcsa… <nam… FALSE   https:/… R package … FALSE http…
-## # … with 166 more rows, and 58 more variables: forks_url <chr>,
-## #   keys_url <chr>, collaborators_url <chr>, teams_url <chr>,
-## #   hooks_url <chr>, issue_events_url <chr>, events_url <chr>,
-## #   assignees_url <chr>, branches_url <chr>, tags_url <chr>,
-## #   blobs_url <chr>, git_tags_url <chr>, git_refs_url <chr>,
-## #   trees_url <chr>, statuses_url <chr>, languages_url <chr>,
-## #   stargazers_url <chr>, contributors_url <chr>, subscribers_url <chr>,
-## #   subscription_url <chr>, commits_url <chr>, git_commits_url <chr>,
-## #   comments_url <chr>, issue_comment_url <chr>, contents_url <chr>,
-## #   compare_url <chr>, merges_url <chr>, archive_url <chr>,
+## # … with 166 more rows, and 58 more variables: forks_url <chr>, keys_url <chr>,
+## #   collaborators_url <chr>, teams_url <chr>, hooks_url <chr>,
+## #   issue_events_url <chr>, events_url <chr>, assignees_url <chr>,
+## #   branches_url <chr>, tags_url <chr>, blobs_url <chr>, git_tags_url <chr>,
+## #   git_refs_url <chr>, trees_url <chr>, statuses_url <chr>,
+## #   languages_url <chr>, stargazers_url <chr>, contributors_url <chr>,
+## #   subscribers_url <chr>, subscription_url <chr>, commits_url <chr>,
+## #   git_commits_url <chr>, comments_url <chr>, issue_comment_url <chr>,
+## #   contents_url <chr>, compare_url <chr>, merges_url <chr>, archive_url <chr>,
 ## #   downloads_url <chr>, issues_url <chr>, pulls_url <chr>,
 ## #   milestones_url <chr>, notifications_url <chr>, labels_url <chr>,
 ## #   releases_url <chr>, deployments_url <chr>, created_at <chr>,
 ## #   updated_at <chr>, pushed_at <chr>, git_url <chr>, ssh_url <chr>,
 ## #   clone_url <chr>, svn_url <chr>, size <int>, stargazers_count <int>,
 ## #   watchers_count <int>, language <chr>, has_issues <lgl>,
-## #   has_downloads <lgl>, has_wiki <lgl>, has_pages <lgl>,
-## #   forks_count <int>, open_issues_count <int>, forks <int>,
-## #   open_issues <int>, watchers <int>, default_branch <chr>,
-## #   homepage <chr>
+## #   has_downloads <lgl>, has_wiki <lgl>, has_pages <lgl>, forks_count <int>,
+## #   open_issues_count <int>, forks <int>, open_issues <int>, watchers <int>,
+## #   default_branch <chr>, homepage <chr>
 ```
 
 ## ASOIAF characters
@@ -472,16 +469,16 @@ chars2
 ## # A tibble: 30 x 18
 ##    url      id name  gender culture born  died  alive titles aliases father
 ##    <chr> <int> <chr> <chr>  <chr>   <chr> <chr> <lgl> <list> <list>  <chr> 
-##  1 http…  1022 Theo… Male   Ironbo… In 2… ""    TRUE  <chr … <chr [… ""    
-##  2 http…  1052 Tyri… Male   ""      In 2… ""    TRUE  <chr … <chr [… ""    
-##  3 http…  1074 Vict… Male   Ironbo… In 2… ""    TRUE  <chr … <chr [… ""    
-##  4 http…  1109 Will  Male   ""      ""    In 2… FALSE <chr … <chr [… ""    
-##  5 http…  1166 Areo… Male   Norvos… In 2… ""    TRUE  <chr … <chr [… ""    
-##  6 http…  1267 Chett Male   ""      At H… In 2… FALSE <chr … <chr [… ""    
-##  7 http…  1295 Cres… Male   ""      In 2… In 2… FALSE <chr … <chr [… ""    
-##  8 http…   130 Aria… Female Dornish In 2… ""    TRUE  <chr … <chr [… ""    
-##  9 http…  1303 Daen… Female Valyri… In 2… ""    TRUE  <chr … <chr [… ""    
-## 10 http…  1319 Davo… Male   Wester… In 2… ""    TRUE  <chr … <chr [… ""    
+##  1 http…  1022 Theo… Male   "Ironb… "In … ""    TRUE  <chr … <chr [… ""    
+##  2 http…  1052 Tyri… Male   ""      "In … ""    TRUE  <chr … <chr [… ""    
+##  3 http…  1074 Vict… Male   "Ironb… "In … ""    TRUE  <chr … <chr [… ""    
+##  4 http…  1109 Will  Male   ""      ""    "In … FALSE <chr … <chr [… ""    
+##  5 http…  1166 Areo… Male   "Norvo… "In … ""    TRUE  <chr … <chr [… ""    
+##  6 http…  1267 Chett Male   ""      "At … "In … FALSE <chr … <chr [… ""    
+##  7 http…  1295 Cres… Male   ""      "In … "In … FALSE <chr … <chr [… ""    
+##  8 http…   130 Aria… Female "Dorni… "In … ""    TRUE  <chr … <chr [… ""    
+##  9 http…  1303 Daen… Female "Valyr… "In … ""    TRUE  <chr … <chr [… ""    
+## 10 http…  1319 Davo… Male   "Weste… "In … ""    TRUE  <chr … <chr [… ""    
 ## # … with 20 more rows, and 7 more variables: mother <chr>, spouse <chr>,
 ## #   allegiances <list>, books <list>, povBooks <list>, tvSeries <list>,
 ## #   playedBy <list>
@@ -502,10 +499,10 @@ chars2 %>%
 ##  1 <chr [3]> <chr [4]>  <chr [1]>   <chr [3]> <chr [2]> <chr [6]> <chr [1]>
 ##  2 <chr [2]> <chr [11]> <chr [1]>   <chr [2]> <chr [4]> <chr [6]> <chr [1]>
 ##  3 <chr [2]> <chr [1]>  <chr [1]>   <chr [3]> <chr [2]> <chr [1]> <chr [1]>
-##  4 <chr [1]> <chr [1]>  <???>       <chr [1]> <chr [1]> <chr [1]> <chr [1]>
+##  4 <chr [1]> <chr [1]>  <NULL>      <chr [1]> <chr [1]> <chr [1]> <chr [1]>
 ##  5 <chr [1]> <chr [1]>  <chr [1]>   <chr [3]> <chr [2]> <chr [2]> <chr [1]>
-##  6 <chr [1]> <chr [1]>  <???>       <chr [2]> <chr [1]> <chr [1]> <chr [1]>
-##  7 <chr [1]> <chr [1]>  <???>       <chr [2]> <chr [1]> <chr [1]> <chr [1]>
+##  6 <chr [1]> <chr [1]>  <NULL>      <chr [2]> <chr [1]> <chr [1]> <chr [1]>
+##  7 <chr [1]> <chr [1]>  <NULL>      <chr [2]> <chr [1]> <chr [1]> <chr [1]>
 ##  8 <chr [1]> <chr [1]>  <chr [1]>   <chr [4]> <chr [1]> <chr [1]> <chr [1]>
 ##  9 <chr [5]> <chr [11]> <chr [1]>   <chr [1]> <chr [4]> <chr [6]> <chr [1]>
 ## 10 <chr [4]> <chr [5]>  <chr [2]>   <chr [1]> <chr [3]> <chr [5]> <chr [1]>
@@ -550,18 +547,18 @@ chars2 %>%
 
 ```
 ## # A tibble: 60 x 2
-##    name              title                                               
-##    <chr>             <chr>                                               
-##  1 Theon Greyjoy     Prince of Winterfell                                
-##  2 Theon Greyjoy     Captain of Sea Bitch                                
-##  3 Theon Greyjoy     Lord of the Iron Islands (by law of the green lands)
-##  4 Tyrion Lannister  Acting Hand of the King (former)                    
-##  5 Tyrion Lannister  Master of Coin (former)                             
-##  6 Victarion Greyjoy Lord Captain of the Iron Fleet                      
-##  7 Victarion Greyjoy Master of the Iron Victory                          
-##  8 Will              ""                                                  
-##  9 Areo Hotah        Captain of the Guard at Sunspear                    
-## 10 Chett             ""                                                  
+##    name              title                                                 
+##    <chr>             <chr>                                                 
+##  1 Theon Greyjoy     "Prince of Winterfell"                                
+##  2 Theon Greyjoy     "Captain of Sea Bitch"                                
+##  3 Theon Greyjoy     "Lord of the Iron Islands (by law of the green lands)"
+##  4 Tyrion Lannister  "Acting Hand of the King (former)"                    
+##  5 Tyrion Lannister  "Master of Coin (former)"                             
+##  6 Victarion Greyjoy "Lord Captain of the Iron Fleet"                      
+##  7 Victarion Greyjoy "Master of the Iron Victory"                          
+##  8 Will              ""                                                    
+##  9 Areo Hotah        "Captain of the Guard at Sunspear"                    
+## 10 Chett             ""                                                    
 ## # … with 50 more rows
 ```
 
@@ -585,18 +582,18 @@ tibble(char = got_chars) %>%
 
 ```
 ## # A tibble: 60 x 2
-##    name              title                                               
-##    <chr>             <chr>                                               
-##  1 Theon Greyjoy     Prince of Winterfell                                
-##  2 Theon Greyjoy     Captain of Sea Bitch                                
-##  3 Theon Greyjoy     Lord of the Iron Islands (by law of the green lands)
-##  4 Tyrion Lannister  Acting Hand of the King (former)                    
-##  5 Tyrion Lannister  Master of Coin (former)                             
-##  6 Victarion Greyjoy Lord Captain of the Iron Fleet                      
-##  7 Victarion Greyjoy Master of the Iron Victory                          
-##  8 Will              ""                                                  
-##  9 Areo Hotah        Captain of the Guard at Sunspear                    
-## 10 Chett             ""                                                  
+##    name              title                                                 
+##    <chr>             <chr>                                                 
+##  1 Theon Greyjoy     "Prince of Winterfell"                                
+##  2 Theon Greyjoy     "Captain of Sea Bitch"                                
+##  3 Theon Greyjoy     "Lord of the Iron Islands (by law of the green lands)"
+##  4 Tyrion Lannister  "Acting Hand of the King (former)"                    
+##  5 Tyrion Lannister  "Master of Coin (former)"                             
+##  6 Victarion Greyjoy "Lord Captain of the Iron Fleet"                      
+##  7 Victarion Greyjoy "Master of the Iron Victory"                          
+##  8 Will              ""                                                    
+##  9 Areo Hotah        "Captain of the Guard at Sunspear"                    
+## 10 Chett             ""                                                    
 ## # … with 50 more rows
 ```
 
@@ -634,6 +631,17 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
             height = "average_height") %>%
       # fix height to be a numeric column
       mutate(height = parse_number(height))
+    ```
+    
+    ```
+    ## Warning: Problem with `mutate()` input `height`.
+    ## ℹ 3 parsing failures.
+    ## row col expected  actual
+    ##  19  -- a number unknown
+    ##  29  -- a number unknown
+    ##  35  -- a number n/a    
+    ## 
+    ## ℹ Input `height` is `parse_number(height)`.
     ```
     
     ```
@@ -681,7 +689,7 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
     ## Warning: Removed 3 rows containing non-finite values (stat_bin).
     ```
     
-    <img src="/notes/simplify-nested-lists_files/figure-html/sw-avg-height-1.png" width="672" />
+    <img src="index_files/figure-html/sw-avg-height-1.png" width="672" />
     
       </p>
     </details>
@@ -717,9 +725,9 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
     ##  8 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
     ##  9 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
     ## 10 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
-    ## # … with 163 more rows, and 8 more variables: homeworld <chr>,
-    ## #   films <chr>, species <chr>, vehicles <list>, starships <list>,
-    ## #   created <chr>, edited <chr>, url <chr>
+    ## # … with 163 more rows, and 8 more variables: homeworld <chr>, films <chr>,
+    ## #   species <chr>, vehicles <list>, starships <list>, created <chr>,
+    ## #   edited <chr>, url <chr>
     ```
     
     ```r
@@ -736,7 +744,7 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
            y = "Number of film appearances")
     ```
     
-    <img src="/notes/simplify-nested-lists_files/figure-html/sw-film-appearances-1.png" width="672" />
+    <img src="index_files/figure-html/sw-film-appearances-1.png" width="672" />
     
       </p>
     </details>
@@ -778,8 +786,10 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  curl          4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
@@ -789,6 +799,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver        2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -802,6 +813,7 @@ devtools::session_info()
 ##  httr        * 1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
 ##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
@@ -838,6 +850,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)

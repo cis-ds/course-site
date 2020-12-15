@@ -414,20 +414,21 @@ html_text(cast)
 ## [32] "Bulda"                                             
 ## [33] ""                                                  
 ## [34] " Edie McClurg\n"                                   
-## [35] ""                                                  
-## [36] " Robert Pine\n"                                    
-## [37] "Bishop"                                            
-## [38] ""                                                  
-## [39] " Maurice LaMarche\n"                               
-## [40] "King"                                              
-## [41] ""                                                  
-## [42] " Livvy Stubenrauch\n"                              
-## [43] "Young Anna"                                        
-## [44] ""                                                  
-## [45] " Eva Bella\n"                                      
-## [46] "Young Elsa"                                        
-## [47] "See full cast"                                     
-## [48] " \nView production, box office, & company info\n\n"
+## [35] "Gerda"                                             
+## [36] ""                                                  
+## [37] " Robert Pine\n"                                    
+## [38] "Bishop"                                            
+## [39] ""                                                  
+## [40] " Maurice LaMarche\n"                               
+## [41] "King"                                              
+## [42] ""                                                  
+## [43] " Livvy Stubenrauch\n"                              
+## [44] "Young Anna"                                        
+## [45] ""                                                  
+## [46] " Eva Bella\n"                                      
+## [47] "Young Elsa"                                        
+## [48] "See full cast"                                     
+## [49] " \nView production, box office, & company info\n\n"
 ```
     
   </p>
@@ -654,8 +655,10 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  curl          4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
@@ -704,6 +707,7 @@ devtools::session_info()
 ##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
 ##  rvest       * 0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  selectr       0.4-2   2019-11-20 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
 ##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)

@@ -48,7 +48,7 @@ ggplot(data = penguins,
   geom_smooth()
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/penguins-eda-1.png" width="672" />
+<img src="index_files/figure-html/penguins-eda-1.png" width="672" />
 
 This is a great exploratory graph: it took just three lines of code and clearly establishes a positive relationship between the flipper length and body mass of a penguin. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
 
@@ -65,7 +65,7 @@ ggplot(data = penguins,
   theme_minimal()
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/penguins-final-1.png" width="672" />
+<img src="index_files/figure-html/penguins-final-1.png" width="672" />
 
 These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
 
@@ -150,7 +150,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-1.png" width="672" />
+<img src="index_files/figure-html/histogram-1.png" width="672" />
 
 It appears there are three sets of peak values for cost of attendance, around 20,000, 40,000, and 65,000 dollars in declining overall frequency. This could suggest some underlying factor or set of differences between the universities that clusters them into separate groups based on cost of attendance.
 
@@ -167,7 +167,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-50-1.png" width="672" />
+<img src="index_files/figure-html/histogram-bins-50-1.png" width="672" />
 
 
 ```r
@@ -180,7 +180,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-10-1.png" width="672" />
+<img src="index_files/figure-html/histogram-bins-10-1.png" width="672" />
 
 Different `bins` can lead to different inferences about the data. Here if we set a larger number of bins, the overall picture seems to be the same - the distribution is trimodal. But if we collapse the number of bins to 10, we lose the clarity of each of these peaks.
 
@@ -193,7 +193,7 @@ ggplot(data = scorecard,
   geom_bar()
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/barplot-1.png" width="672" />
+<img src="index_files/figure-html/barplot-1.png" width="672" />
 
 To examine the distribution of a categorical variable, we can use a **bar chart**. Here we see the most common type of four-year college is a private, nonprofit institution.
 
@@ -220,7 +220,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing non-finite values (stat_boxplot).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/boxplot-1.png" width="672" />
+<img src="index_files/figure-html/boxplot-1.png" width="672" />
 
 Here we see that on average, public universities are least expensive, followed by private for-profit institutions. I was somewhat surprised by this since for-profit institutions by definition seek to generate a profit, so wouldn't they be the most expensive? But perhaps this makes sense, because they have to attract students so need to offer a better financial value than competing nonprofit or public institutions. Is there a better explanation for these differences? Another question you could explore after viewing this visualization.
 
@@ -237,7 +237,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-1.png" width="672" />
+<img src="index_files/figure-html/scatterplot-1.png" width="672" />
 
 As the sticker price increases, the net cost also increases though with significant variation. Some schools have a much lower net cost than their advertised price.
 
@@ -261,7 +261,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/histogram-facet-1.png" width="672" />
+<img src="index_files/figure-html/histogram-facet-1.png" width="672" />
 
 This helps answer one of our earlier questions. Colleges in the 20,000 dollar range tend to be public universities, while the heaps around 40,000 and 65,000 dollars are from private nonprofits.
 
@@ -279,7 +279,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-facet-1.png" width="672" />
+<img src="index_files/figure-html/scatterplot-facet-1.png" width="672" />
 
 ## Utilizing additional channels
 
@@ -300,7 +300,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 41 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-color-1.png" width="672" />
+<img src="index_files/figure-html/scatterplot-color-1.png" width="672" />
 
 We can even use a fourth channel to communicate another variable (median debt load after leaving school) by making use of the size channel:
 
@@ -318,7 +318,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 128 rows containing missing values (geom_point).
 ```
 
-<img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-color-size-1.png" width="672" />
+<img src="index_files/figure-html/scatterplot-color-size-1.png" width="672" />
 
 Note that some channels are not always appropriate, even if they can technically be implemented. For example, the graph above has become quite challenging to read due to so many overlapping data points. Just because one **can** construct a graph does not mean one **should** construct a graph.
 

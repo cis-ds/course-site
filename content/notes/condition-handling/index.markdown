@@ -130,7 +130,7 @@ ggplot(diamonds, aes(carat, price)) +
 ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 ```
 
-<img src="/notes/condition-handling_files/figure-html/message_ggplot-1.png" width="672" />
+<img src="index_files/figure-html/message_ggplot-1.png" width="672" />
 
 Did you see the message?
 
@@ -147,7 +147,11 @@ ggplot(diamonds, aes(carat, price)) +
   geom_smooth(method = "lm")
 ```
 
-<img src="/notes/condition-handling_files/figure-html/message_ggplot_override-1.png" width="672" />
+```
+## `geom_smooth()` using formula 'y ~ x'
+```
+
+<img src="index_files/figure-html/message_ggplot_override-1.png" width="672" />
 
 The nice thing about messages is that they can be suppressed using the `suppressMessages()` function. This way if your function produces dozens or hundreds of messages, you can block them from being printed. A nice feature if you are knitting an R Markdown document. If you were to include messages simply by using the `print()` function, they could not be ignored.
 
@@ -567,25 +571,25 @@ y$result[is_ok] %>%
     ```
     ## List of 10
     ##  $ :List of 2
-    ##   ..$ result: int 100798
+    ##   ..$ result: num 100798
     ##   ..$ error : NULL
     ##  $ :List of 2
-    ##   ..$ result: int 2014
+    ##   ..$ result: num 2014
     ##   ..$ error : NULL
     ##  $ :List of 2
-    ##   ..$ result: num 12
+    ##   ..$ result: chr "Sep"
     ##   ..$ error : NULL
     ##  $ :List of 2
     ##   ..$ result: chr "Undetermined"
     ##   ..$ error : NULL
     ##  $ :List of 2
-    ##   ..$ result: int 1
+    ##   ..$ result: num 1
     ##   ..$ error : NULL
     ##  $ :List of 2
     ##   ..$ result: chr "M"
     ##   ..$ error : NULL
     ##  $ :List of 2
-    ##   ..$ result: int 107
+    ##   ..$ result: num 107
     ##   ..$ error : NULL
     ##  $ :List of 2
     ##   ..$ result: chr "White"
@@ -597,7 +601,7 @@ y$result[is_ok] %>%
     ##   ..$ result: NULL
     ##   ..$ error :List of 2
     ##   .. ..$ message: chr "'max' not meaningful for factors"
-    ##   .. ..$ call   : language Summary.factor(c(4L, 3L, 4L, 4L, 2L, 1L, 2L, 2L, 3L, NA, 3L, 2L, 1L,  2L, 2L, 2L, 4L, 2L, 3L, 2L, 2L, 2L, 2L, 3L,| __truncated__ ...
+    ##   .. ..$ call   : language Summary.factor(c(4L, 3L, 4L, 4L, 2L, 1L, 2L, 2L, 3L, NA, 3L, 2L, 1L, 2L,  2L, 2L, 4L, 2L, 3L, 2L, 2L, 2L, 2L, 3L,| __truncated__ ...
     ##   .. ..- attr(*, "class")= chr [1:3] "simpleError" "error" "condition"
     ```
     
@@ -626,7 +630,7 @@ y$result[is_ok] %>%
     ## 
     ## $month
     ## $month$result
-    ## [1] 12
+    ## [1] "Sep"
     ## 
     ## $month$error
     ## NULL
@@ -712,13 +716,13 @@ y$result[is_ok] %>%
     
     ```
     ## List of 10
-    ##  $ : int 100798
-    ##  $ : int 2014
-    ##  $ : num 12
+    ##  $ : num 100798
+    ##  $ : num 2014
+    ##  $ : chr "Sep"
     ##  $ : chr "Undetermined"
-    ##  $ : int 1
+    ##  $ : num 1
     ##  $ : chr "M"
-    ##  $ : int 107
+    ##  $ : num 107
     ##  $ : chr "White"
     ##  $ : chr "Trade/service area"
     ##  $ : logi NA
@@ -738,7 +742,7 @@ y$result[is_ok] %>%
     ## [1] 2014
     ## 
     ## $month
-    ## [1] 12
+    ## [1] "Sep"
     ## 
     ## $intent
     ## [1] "Undetermined"
@@ -776,7 +780,7 @@ y$result[is_ok] %>%
     ## [1] 2014
     ## 
     ## $month
-    ## [1] 12
+    ## [1] "Sep"
     ## 
     ## $intent
     ## [1] "Undetermined"
