@@ -40,30 +40,22 @@ usethis::use_course("uc-cfss/getting-data-from-the-web-api-access")
 Not all lists are easily coerced into data frames by simply calling `content() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
 
 ```{r omdb-recursive, error = TRUE, warning = FALSE}
-# omdb API function
-omdb <- function(Key, Title, Year, Plot, Format){
-  baseurl <- "http://www.omdbapi.com/?"
-  params <- c("apikey=", "t=", "y=", "plot=", "r=")
-  values <- c(Key, Title, Year, Plot, Format)
-  param_values <- map2_chr(params, values, str_c)
-  args <- str_c(param_values, collapse = "&")
-  str_c(baseurl, args)
-}
-
-# query the API
-sharknado_json <- omdb(getOption("omdb_key"), "Sharknado", "2013", "short", "json")
-response_json <- GET(sharknado_json)
+sharknado <- GET(url = "http://www.omdbapi.com/?",
+    query = list(t = "Sharknado",
+                 y = 2013,
+                 apikey = getOption("omdb_key"))
+)
 
 # convert to data frame
-content(response_json, as = "parsed", type = "application/json") %>% 
+content(sharknado, as = "parsed", type = "application/json") %>% 
   as_tibble()
 ```
 
 Wait a minute, what happened? Look at the structure of `content()`:
 
 ```{r omdb-str, dependson = "omdb-recursive"}
-sharknado <- content(response_json, as = "parsed", type = "application/json")
-str(sharknado)
+content(sharknado) %>%
+  str()
 ```
 
 Look at the `ratings` element: **it is a data frame**. Remember that data frames are just a special type of list, so what we have here is a list inside of a list (aka a **recursive list**). We cannot easily **flatten** this into a data frame, because the `ratings` element is not an atomic vector of length 1 like all the other elements in `sharknado`. Instead, we have to think of another way to convert it to a data frame.

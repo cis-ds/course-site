@@ -21,6 +21,7 @@ menu:
 library(tidyverse)
 library(forcats)
 library(broom)
+library(wbstats)
 library(wordcloud)
 library(tidytext)
 library(viridis)
@@ -46,9 +47,55 @@ In the simplest case, the data you need is already on the internet in a tabular 
 
 Even in this instance, files may need cleaning and transformation when you bring them into R.
 
-## Data supplied on the web
+## Data supplied on the web - APIs
 
 Many times, the data that you want is not already organized into one or a few tables that you can read directly into R. More frequently, you find this data is given in the form of an API. **A**pplication **P**rogramming **I**nterfaces (APIs) are descriptions of the kind of requests that can be made of a certain piece of software, and descriptions of the kind of answers that are returned. Many sources of data - databases, websites, services - have made all (or part) of their data available via APIs over the internet. Computer programs ("clients") can make requests of the server, and the server will respond by sending data (or an error message). This client can be many kinds of other programs or websites, including R running from your laptop.
+
+### Some basic terminology
+
+- **Representational State Transfer** (REST) - these allow us to query databases using URLs, just like you would construct a URL to view a web page.
+- **Uniform Resource Location** (URL) - a string of characters that uses the Hypertext Transfer Protocol (HTTP) and points to a data resource. On the world wide web this is typically a file written in Hypertext Markup Language (HTML). Here, it will return a file containing a subset of a database.
+- HTTP methods/verbs
+    - **GET**: fetch an existing resource. The URL contains all the necessary information the server needs to locate and return the resource.
+    - **POST**: create a new resource. POST requests usually carry a payload that specifies the data for the new resource.
+    - **PUT**: update an existing resource. The payload may contain the updated data for the resource.
+    - **DELETE**: delete an existing resource.
+    - The most common method you will use for an API is GET.
+
+### How Do GET Requests Work? 
+
+#### A Web Browsing Example {-}
+
+As you might suspect from the example above, surfing the web is basically equivalent to sending a bunch of `GET` requests to different servers and asking for different files written in HTML.
+
+Suppose, for instance, you wanted to look something up on Wikipedia. The first step would be to open your web browser and type in `http://www.wikipedia.org`. Once you hit return, you would see the page below.  
+
+![](/img/wikipedia.png)
+
+Several different processes occurred, however, between hitting "return" and the page finally being rendered. In order:
+
+1. The web browser took the entered character string, used the command-line tool "Curl" to write a properly formatted HTTP GET request, and submitted it to the server that hosts the Wikipedia homepage.
+1. After receiving this request, the server sent an HTTP response, from which Curl extracted the HTML code for the page (partially shown below).
+1. The raw HTML code was parsed and then executed by the web browser, rendering the page as seen in the window.
+
+
+```
+## No encoding supplied: defaulting to UTF-8.
+```
+
+```
+## [1] "<!DOCTYPE html>\n<html lang=\"mul\" class=\"no-js\">\n<head>\n<meta charset=\"utf-8\">\n<title>Wikipedia</title>\n<meta name=\"description\" content=\"Wikipedia is a free online encyclopedia, created and edited by volunteers around the world and hosted by the Wikimedia Foundation.\">\n<script>\ndocument.documentElement.className = document.documentElement.className.replace( /(^|\\s)no-js(\\s|$)/, \"$1js-enabled$2\" );\n</script>\n<meta name=\"viewport\" content=\"initial-scale=1,user-scalable=yes\">\n<link rel=\"apple-touch-icon\" href=\"/static/apple-touch/wikipedia.png\">\n<link rel=\"shortcut icon\" href=\"/static/favicon/wikipedia.ico\">\n<link rel=\"license\" href=\"//creativecommons.org/licenses/by-sa/3.0/\">\n<style>\n.sprite{background-image:url(portal/wikipedia.org/assets/img/sprite-46c49284.png);background-image:linear-gradient(transparent,transparent),url(portal/wikipedia.org/assets/img/sprite-46c49284.svg);background-repeat:no-repeat;display:inline-block;vertical-align:middle}.svg-Commons-logo_sister{background-posit"
+```
+
+#### Web Browsing as a Template for RESTful Database Querying
+
+The process of web browsing described above is a close analogue for the process of database querying via RESTful APIs, with only a few adjustments:
+
+1. While the Curl tool will still be used to send HTML GET requests to the servers hosting our databases of interest, the character string that we supply to Curl must be constructed so that the resulting request can be interpreted and successfully acted upon by the server.  In particular, it is likely that the character string must encode **search terms and/or filtering parameters**, as well as one or more **authentication codes**.  While the terms are often similar across APIs, most are API-specific.
+
+2. Unlike with web browsing, the content of the server's response that is extracted by Curl is unlikely to be HTML code.  Rather, it will likely be **raw text response that can be parsed into one of a few file formats commonly used for data storage**.  The usual suspects include `.csv`, `.xml`, and `.json` files.
+
+3. Whereas the web browser capably parsed and executed the HTML code, **one or more facilities in R, Python, or other programming languages will be necessary for parsing the server response and converting it into a format for local storage** (e.g., matrices, dataframes, databases, lists, etc.).
 
 ## Install and play packages
 
@@ -62,155 +109,231 @@ Why do we want this?
 * ease
 * scaling
 
-## Sightings of birds: `rebird`
+## Obtaining World Bank indicators
 
-[`rebird`](https://github.com/ropensci/rebird) is an R interface for the [ebird](http://ebird.org/content/ebird/) database. e-Bird lets birders upload sightings of birds, and allows everyone access to those data.
+The [World Bank](https://www.worldbank.org/) contains a rich and detailed set of socioeconomic indicators spanning several decades and dozens of topics. Their data is available for bulk download as CSV files from their [website](https://data.worldbank.org/); you previously practiced [importing and wrangling this data for all countries](/homework/programming/). However as you noted in that assignment, frequently you only need to obtain a handful of indicators or a subset of countries.
 
+To provide more granular access to this information, the World Bank provides a [RESTful API](https://datahelpdesk.worldbank.org/knowledgebase/topics/125589) for querying and obtaining a portion of their database programmatically. The [`wbstats`](http://nset-ornl.github.io/wbstats/) implements this API in R to allow for relatively easy access to the API and return the results in a tidy data frame.
 
-```r
-install.packages("rebird")
-```
+### Finding available data with `wb_cachelist`
 
-
-```r
-library(rebird)
-```
-
-## Search birds by geography
-
-The ebird website categorizes some popular locations as "Hotspots". These are areas where there are both lots of birds and lots of birders. Once such location is at Lincoln Park Zoo in Chicago. You can see data for this site at [http://ebird.org/ebird/hotspot/L1573785](http://ebird.org/ebird/hotspot/L1573785)
-
-At that link, you can see a page like this:
-
-![Lincoln Park Zoo](/img/lincoln_park_zoo.png)
-
-The data already look to be organized in a data frame! `rebird` allows us to read these data directly into R.
-
-{{% alert note %}}
-
-The ID code for Lincoln Park Zoo is **L1573785**.
-
-{{% /alert %}}
+`wb_cachelist` contains a snapshot of available countries, indicators, and other relevant information obtainable through the WB API.
 
 
 ```r
-ebirdhotspot(locID = "L1573785", key = getOption("EBIRD_KEY")) %>%
-  as_tibble()
+library(wbstats)
+
+str(wb_cachelist, max.level = 1)
 ```
 
 ```
-## Warning: Deprecated: 'ebirdhotspot' will be removed in the next version of
-## rebird as it might not be suported in the new eBird API. Use 'ebirdregion'
-## instead.
+## List of 8
+##  $ countries    : tibble [304 × 18] (S3: tbl_df/tbl/data.frame)
+##  $ indicators   : tibble [16,649 × 8] (S3: tbl_df/tbl/data.frame)
+##  $ sources      : tibble [63 × 9] (S3: tbl_df/tbl/data.frame)
+##  $ topics       : tibble [21 × 3] (S3: tbl_df/tbl/data.frame)
+##  $ regions      : tibble [48 × 4] (S3: tbl_df/tbl/data.frame)
+##  $ income_levels: tibble [7 × 3] (S3: tbl_df/tbl/data.frame)
+##  $ lending_types: tibble [4 × 3] (S3: tbl_df/tbl/data.frame)
+##  $ languages    : tibble [23 × 3] (S3: tbl_df/tbl/data.frame)
+```
+
+```r
+glimpse(wb_cachelist$countries)
 ```
 
 ```
-## # A tibble: 54 x 12
-##    speciesCode comName sciName locId locName obsDt howMany   lat   lng
-##    <chr>       <chr>   <chr>   <chr> <chr>   <chr>   <int> <dbl> <dbl>
-##  1 cangoo      Canada… Branta… L157… Lincol… 2019…      17  41.9 -87.6
-##  2 wooduc      Wood D… Aix sp… L157… Lincol… 2019…       2  41.9 -87.6
-##  3 mallar3     Mallard Anas p… L157… Lincol… 2019…       6  41.9 -87.6
-##  4 gresca      Greate… Aythya… L157… Lincol… 2019…       1  41.9 -87.6
-##  5 buffle      Buffle… Buceph… L157… Lincol… 2019…       1  41.9 -87.6
-##  6 comgol      Common… Buceph… L157… Lincol… 2019…       4  41.9 -87.6
-##  7 hoomer      Hooded… Lophod… L157… Lincol… 2019…       1  41.9 -87.6
-##  8 moudov      Mourni… Zenaid… L157… Lincol… 2019…       2  41.9 -87.6
-##  9 ribgul      Ring-b… Larus … L157… Lincol… 2019…       9  41.9 -87.6
-## 10 yebsap      Yellow… Sphyra… L157… Lincol… 2019…       1  41.9 -87.6
-## # … with 44 more rows, and 3 more variables: obsValid <lgl>,
-## #   obsReviewed <lgl>, locationPrivate <lgl>
+## Rows: 304
+## Columns: 18
+## $ iso3c              <chr> "ABW", "AFG", "AFR", "AGO", "ALB", "AND", "ANR", "…
+## $ iso2c              <chr> "AW", "AF", "A9", "AO", "AL", "AD", "L5", "1A", "A…
+## $ country            <chr> "Aruba", "Afghanistan", "Africa", "Angola", "Alban…
+## $ capital_city       <chr> "Oranjestad", "Kabul", NA, "Luanda", "Tirane", "An…
+## $ longitude          <dbl> -70.01670, 69.17610, NA, 13.24200, 19.81720, 1.521…
+## $ latitude           <dbl> 12.51670, 34.52280, NA, -8.81155, 41.33170, 42.507…
+## $ region_iso3c       <chr> "LCN", "SAS", NA, "SSF", "ECS", "ECS", NA, NA, "ME…
+## $ region_iso2c       <chr> "ZJ", "8S", NA, "ZG", "Z7", "Z7", NA, NA, "ZQ", "Z…
+## $ region             <chr> "Latin America & Caribbean", "South Asia", "Aggreg…
+## $ admin_region_iso3c <chr> NA, "SAS", NA, "SSA", "ECA", NA, NA, NA, NA, "LAC"…
+## $ admin_region_iso2c <chr> NA, "8S", NA, "ZF", "7E", NA, NA, NA, NA, "XJ", "7…
+## $ admin_region       <chr> NA, "South Asia", NA, "Sub-Saharan Africa (excludi…
+## $ income_level_iso3c <chr> "HIC", "LIC", NA, "LMC", "UMC", "HIC", NA, NA, "HI…
+## $ income_level_iso2c <chr> "XD", "XM", NA, "XN", "XT", "XD", NA, NA, "XD", "X…
+## $ income_level       <chr> "High income", "Low income", "Aggregates", "Lower …
+## $ lending_type_iso3c <chr> "LNX", "IDX", NA, "IBD", "IBD", "LNX", NA, NA, "LN…
+## $ lending_type_iso2c <chr> "XX", "XI", NA, "XF", "XF", "XX", NA, NA, "XX", "X…
+## $ lending_type       <chr> "Not classified", "IDA", "Aggregates", "IBRD", "IB…
 ```
 
-We can use the function `ebirdgeo` to get a list for an area. (Note that South and West are negative):
+### Search available data with `wb_search()`
+
+`wb_search()` searches through the `wb_cachelist$indicators` data frame to find indicators that match the search pattern.^[Alternatively, you can use the [web interface](https://data.worldbank.org/indicator) to determine specific indicators and their IDs.]
 
 
 ```r
-chibirds <- ebirdgeo(lat = 41.8781, lng = -87.6298, key = getOption("EBIRD_KEY"))
-chibirds %>%
-  as_tibble() %>%
-  glimpse()
+wb_search("unemployment")
 ```
 
 ```
-## Observations: 147
-## Variables: 12
-## $ speciesCode     <chr> "daejun", "cangoo", "wooduc", "buwtea", "mallar3…
-## $ comName         <chr> "Dark-eyed Junco", "Canada Goose", "Wood Duck", …
-## $ sciName         <chr> "Junco hyemalis", "Branta canadensis", "Aix spon…
-## $ locId           <chr> "L6822227", "L143490", "L143490", "L143490", "L1…
-## $ locName         <chr> "Backyard, Chicago, Illinois, US", "Thatcher Woo…
-## $ obsDt           <chr> "2019-03-28 09:54", "2019-03-28 09:17", "2019-03…
-## $ howMany         <int> 1, 2, 3, 2, 2, 1, 2, 1, 3, 2, 2, 1, 1, 1, 2, 79,…
-## $ lat             <dbl> 41.89829, 41.89357, 41.89357, 41.89357, 41.89357…
-## $ lng             <dbl> -87.68245, -87.82979, -87.82979, -87.82979, -87.…
-## $ obsValid        <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, …
-## $ obsReviewed     <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,…
-## $ locationPrivate <lgl> TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, …
+## # A tibble: 61 x 3
+##    indicator_id indicator                      indicator_desc                   
+##    <chr>        <chr>                          <chr>                            
+##  1 fin37.t.a    Received government transfers… The percentage of respondents wh…
+##  2 fin37.t.a.1  Received government transfers… The percentage of respondents wh…
+##  3 fin37.t.a.10 Received government transfers… The percentage of respondents wh…
+##  4 fin37.t.a.11 Received government transfers… The percentage of respondents wh…
+##  5 fin37.t.a.2  Received government transfers… The percentage of respondents wh…
+##  6 fin37.t.a.3  Received government transfers… The percentage of respondents wh…
+##  7 fin37.t.a.4  Received government transfers… The percentage of respondents wh…
+##  8 fin37.t.a.5  Received government transfers… The percentage of respondents wh…
+##  9 fin37.t.a.6  Received government transfers… The percentage of respondents wh…
+## 10 fin37.t.a.7  Received government transfers… The percentage of respondents wh…
+## # … with 51 more rows
 ```
 
-**Note**: Check the defaults on this function. e.g. radius of circle, time of year.
+```r
+wb_search("labor force")
+```
 
-We can also search by "region", which refers to short codes which serve as common shorthands for different political units. For example, France is represented by the letters **FR**:
+```
+## # A tibble: 245 x 3
+##    indicator_id   indicator                 indicator_desc                      
+##    <chr>          <chr>                     <chr>                               
+##  1 9.0.Employee.… Employees (%)             Share of the labor force (ages 18-6…
+##  2 9.0.Employee.… Employees-Bottom 40 Perc… Share of the labor force (ages 18-6…
+##  3 9.0.Employee.… Employees-Top 60 Percent… Share of the labor force (ages 18-6…
+##  4 9.0.Employer.… Employers (%)             Share of the labor force (ages 18-6…
+##  5 9.0.Employer.… Employers-Bottom 40 Perc… Share of the labor force (ages 18-6…
+##  6 9.0.Employer.… Employers-Top 60 Percent… Share of the labor force (ages 18-6…
+##  7 9.0.Labor.All  Labor Force Participatio… Share of the population (ages 18-65…
+##  8 9.0.Labor.B40  Labor Force Participatio… Share of the population (ages 18-65…
+##  9 9.0.Labor.T60  Labor Force Participatio… Share of the population (ages 18-65…
+## 10 9.0.SelfEmp.A… Self-Employed (%)         Share of the labor force (ages 18-6…
+## # … with 235 more rows
+```
+
+```r
+wb_search("labor force", fields = "indicator")  # limit search to just the indicator name
+```
+
+```
+## # A tibble: 176 x 3
+##    indicator_id  indicator                   indicator_desc                     
+##    <chr>         <chr>                       <chr>                              
+##  1 9.0.Labor.All Labor Force Participation … Share of the population (ages 18-6…
+##  2 9.0.Labor.B40 Labor Force Participation … Share of the population (ages 18-6…
+##  3 9.0.Labor.T60 Labor Force Participation … Share of the population (ages 18-6…
+##  4 9.1.Labor.All Labor Force Participation … Share of the male population (ages…
+##  5 9.1.Labor.B40 Labor Force Participation … Share of the male population (ages…
+##  6 9.1.Labor.T60 Labor Force Participation … Share of the male population (ages…
+##  7 9.2.Labor.All Labor Force Participation … Share of the female population (ag…
+##  8 9.2.Labor.B40 Labor Force Participation … Share of the female population (ag…
+##  9 9.2.Labor.T60 Labor Force Participation … Share of the female population (ag…
+## 10 account.t.d.… Account, in labor force (%… The percentage of respondents who …
+## # … with 166 more rows
+```
+
+### Downloading data with `wb_data()`
+
+Once you have the set of indicators you would like to obtain, you can use the `wb_data()` function to generate the API query and download the results. Let's say we want to obtain information on [the percent of females participating in the labor force](https://data.worldbank.org/indicator/SL.TLF.TOTL.FE.ZS?view=chart). The indicator ID is `SL.TLF.TOTL.FE.ZS`. We can download the indicator for all countries from 1990-2020 using:
 
 
 ```r
-frenchbirds <- ebirdregion("FR", key = getOption("EBIRD_KEY"))
-
-frenchbirds %>%
-  as_tibble() %>%
-  glimpse()
+female_labor <- wb_data(
+  indicator = "SL.TLF.TOTL.FE.ZS",
+  start_date = 1990,
+  end_date = 2020
+)
+female_labor
 ```
 
 ```
-## Observations: 246
-## Variables: 12
-## $ speciesCode     <chr> "blackc1", "winwre4", "rocpig", "rinphe", "marti…
-## $ comName         <chr> "Eurasian Blackcap", "Eurasian Wren", "Rock Pige…
-## $ sciName         <chr> "Sylvia atricapilla", "Troglodytes troglodytes",…
-## $ locId           <chr> "L8920860", "L8920860", "L8920860", "L8920860", …
-## $ locName         <chr> "Miannay FR-Picardy (50,0980,1,7184)", "Miannay …
-## $ obsDt           <chr> "2019-03-28 14:45", "2019-03-28 14:45", "2019-03…
-## $ howMany         <int> 1, 1, 4, 1, 2, 1, 15, 3, 1, 1, 2, 1, 2, 1, 5, 2,…
-## $ lat             <dbl> 50.09798, 50.09798, 50.09798, 50.09798, 50.09798…
-## $ lng             <dbl> 1.718410, 1.718410, 1.718410, 1.718410, 1.718410…
-## $ obsValid        <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, …
-## $ obsReviewed     <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,…
-## $ locationPrivate <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, …
+## # A tibble: 6,727 x 9
+##    iso2c iso3c country  date SL.TLF.TOTL.FE.… unit  obs_status footnote
+##    <chr> <chr> <chr>   <dbl>            <dbl> <chr> <chr>      <chr>   
+##  1 AW    ABW   Aruba    1990               NA <NA>  <NA>       <NA>    
+##  2 AW    ABW   Aruba    1991               NA <NA>  <NA>       <NA>    
+##  3 AW    ABW   Aruba    1992               NA <NA>  <NA>       <NA>    
+##  4 AW    ABW   Aruba    1993               NA <NA>  <NA>       <NA>    
+##  5 AW    ABW   Aruba    1994               NA <NA>  <NA>       <NA>    
+##  6 AW    ABW   Aruba    1995               NA <NA>  <NA>       <NA>    
+##  7 AW    ABW   Aruba    1996               NA <NA>  <NA>       <NA>    
+##  8 AW    ABW   Aruba    1997               NA <NA>  <NA>       <NA>    
+##  9 AW    ABW   Aruba    1998               NA <NA>  <NA>       <NA>    
+## 10 AW    ABW   Aruba    1999               NA <NA>  <NA>       <NA>    
+## # … with 6,717 more rows, and 1 more variable: last_updated <date>
 ```
 
-`rebird` **knows where you are**:
+Note the column containing our indicator uses the indicator ID as its name. This is rather unintuitive, so we can adjust it directly in the function.
 
 
 ```r
-ebirdgeo(key = getOption("EBIRD_KEY")) %>%
-  as_tibble()
+female_labor <- wb_data(
+  indicator = c("fem_lab_part" = "SL.TLF.TOTL.FE.ZS"),
+  start_date = 1990,
+  end_date = 2020
+)
+female_labor
 ```
 
 ```
-## Warning: As a complete lat/long pair was not provided, your location was
-## determined using your computer's public-facing IP address. This will likely
-## not reflect your physical location if you are using a remote server or
-## proxy.
+## # A tibble: 6,727 x 9
+##    iso2c iso3c country  date fem_lab_part unit  obs_status footnote last_updated
+##    <chr> <chr> <chr>   <dbl>        <dbl> <chr> <chr>      <chr>    <date>      
+##  1 AW    ABW   Aruba    1990           NA <NA>  <NA>       <NA>     2020-10-15  
+##  2 AW    ABW   Aruba    1991           NA <NA>  <NA>       <NA>     2020-10-15  
+##  3 AW    ABW   Aruba    1992           NA <NA>  <NA>       <NA>     2020-10-15  
+##  4 AW    ABW   Aruba    1993           NA <NA>  <NA>       <NA>     2020-10-15  
+##  5 AW    ABW   Aruba    1994           NA <NA>  <NA>       <NA>     2020-10-15  
+##  6 AW    ABW   Aruba    1995           NA <NA>  <NA>       <NA>     2020-10-15  
+##  7 AW    ABW   Aruba    1996           NA <NA>  <NA>       <NA>     2020-10-15  
+##  8 AW    ABW   Aruba    1997           NA <NA>  <NA>       <NA>     2020-10-15  
+##  9 AW    ABW   Aruba    1998           NA <NA>  <NA>       <NA>     2020-10-15  
+## 10 AW    ABW   Aruba    1999           NA <NA>  <NA>       <NA>     2020-10-15  
+## # … with 6,717 more rows
 ```
 
+
+```r
+ggplot(data = female_labor, mapping = aes(x = date, y = fem_lab_part)) +
+  geom_line(mapping = aes(group = country), alpha = .1) +
+  geom_smooth() +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(
+    title = "Labor force participation",
+    x = "Year",
+    y = "Percent of total labor force which is female",
+    caption = "Source: World Bank"
+  )
 ```
-## # A tibble: 133 x 12
-##    speciesCode comName sciName locId locName obsDt howMany   lat   lng
-##    <chr>       <chr>   <chr>   <chr> <chr>   <chr>   <int> <dbl> <dbl>
-##  1 cangoo      Canada… Branta… L694… Lake i… 2019…       8  41.7 -88.0
-##  2 wooduc      Wood D… Aix sp… L694… Lake i… 2019…       7  41.7 -88.0
-##  3 mallar3     Mallard Anas p… L694… Lake i… 2019…       6  41.7 -88.0
-##  4 moudov      Mourni… Zenaid… L694… Lake i… 2019…       2  41.7 -88.0
-##  5 whbnut      White-… Sitta … L694… Lake i… 2019…       1  41.7 -88.0
-##  6 amerob      Americ… Turdus… L694… Lake i… 2019…       6  41.7 -88.0
-##  7 houfin      House … Haemor… L694… Lake i… 2019…       4  41.7 -88.0
-##  8 amegfi      Americ… Spinus… L694… Lake i… 2019…       1  41.7 -88.0
-##  9 rewbla      Red-wi… Agelai… L694… Lake i… 2019…      15  41.7 -88.0
-## 10 rusbla      Rusty … Euphag… L694… Lake i… 2019…       2  41.7 -88.0
-## # … with 123 more rows, and 3 more variables: obsValid <lgl>,
-## #   obsReviewed <lgl>, locationPrivate <lgl>
+
+<img src="/notes/application-program-interface_files/figure-html/female-labor-plot-1.png" width="672" />
+
+By default, `wb_data()` returns queries as data frames in a wide format. So if we request multiple indicators, each indicator will be stored in its own column.
+
+
+```r
+female_vars <- wb_data(
+  indicator = c("fem_lab_part" = "SL.TLF.TOTL.FE.ZS",
+                "fem_educ_sec" = "SE.SEC.CUAT.UP.FE.ZS"),
+  start_date = 1990,
+  end_date = 2020
+)
+
+ggplot(data = female_vars, mapping = aes(x = fem_educ_sec, y = fem_lab_part)) +
+  geom_point(alpha = .2) +
+  geom_smooth() +
+  scale_x_continuous(labels = scales::percent_format(scale = 1)) +
+  scale_y_continuous(labels = scales::percent_format(scale = 1)) +
+  labs(
+    title = "Female labor force participation",
+    x = "Percent of females 25+ who completed secondary school",
+    y = "Percent of total labor force which is female",
+    caption = "Source: World Bank"
+  )
 ```
+
+<img src="/notes/application-program-interface_files/figure-html/female-educ-1.png" width="672" />
 
 ## Searching geographic info: `geonames`
 
@@ -220,7 +343,7 @@ ebirdgeo(key = getOption("EBIRD_KEY")) %>%
 library(geonames)
 ```
 
-## API authentication
+### API authentication
 
 Many APIs require you to register for access. This allows them to track which users are submitting queries and manage demand - if you submit too many queries too quickly, you might be **rate-limited** and your requests de-prioritized or blocked. Always check the API access policy of the web site to determine what these limits are.
 
@@ -254,7 +377,7 @@ options(geonamesUsername = "my_user_name")
 
 to that file, replacing `my_user_name` with your Geonames username.
 
-### Important
+#### Important
 
 * Make sure your `.Rprofile` ends with a blank line
 * Make sure `.Rprofile` is included in your `.gitignore` file, otherwise it will be synced with Github
@@ -273,7 +396,7 @@ key <- getOption("this_is_my_key")
 
 This is a simple means to keep your keys private, especially if you are sharing the same authentication across several projects. Remember that using `.Rprofile` makes your code un-reproducible. In this case, that is exactly what we want!
 
-## Using Geonames
+### Using Geonames
 
 What can we do? Get access to lots of geographical information via the various ["web services"](http://www.geonames.org/export/ws-overview.html)
 
@@ -317,7 +440,7 @@ This country info dataset is very helpful for accessing the rest of the data, be
 
 [The Manifesto Project](https://manifesto-project.wzb.eu/) collects and organizes political party manifestos from around the world. It currently covers over 1000 parties from 1945 until today in over 50 countries on five continents. We can use the [`manifestoR` package](https://github.com/ManifestoProject/manifestoR) to access the API and download those manifestos for analysis in R.
 
-## Load library and set API key
+### Load library and set API key
 
 Accessing data from the Manifesto Project API requires an authentication key. You can create an account and key [here](https://manifesto-project.wzb.eu/signup). Here I store my key in `.Rprofile` and retrieve it using `mp_setapikey()`.
 
@@ -329,7 +452,7 @@ library(manifestoR)
 mp_setapikey(key = getOption("manifesto_key"))
 ```
 
-## Retrieve the database
+### Retrieve the database
 
 
 ```r
@@ -418,29 +541,29 @@ mpds %>%
 
 <img src="/notes/application-program-interface_files/figure-html/manifestor-usa-1.png" width="672" />
 
-## Download manifestos
+### Download manifestos
 
-`mp_corpus()` can be used to download the original manifestos as full text documents stored as a [**corpus**](/notes/text-analysis-workflow/#extract-documents-and-move-into-a-corpus). Once you obtain the corpus, you can perform [text analysis](/notes/text-analysis-workflow/). As an example, let's compare the most common words in the Democratic and Republican Party manifestos from the 2012 U.S. presidential election:
+`mp_corpus()` can be used to download the original manifestos as full text documents stored as a [**corpus**](/notes/text-analysis-workflow/#extract-documents-and-move-into-a-corpus). Once you obtain the corpus, you can perform [text analysis](/notes/text-analysis-workflow/). As an example, let's compare the most common words in the Democratic and Republican Party manifestos from the 2016 U.S. presidential election:
 
 
 ```r
 # download documents
-(docs <- mp_corpus(countryname == "United States" & edate > as.Date("2012-01-01")))
+(docs <- mp_corpus(countryname == "United States" & edate > as.Date("2016-01-01")))
 ```
 
 ```
 ## Connecting to Manifesto Project DB API... 
-## Connecting to Manifesto Project DB API... corpus version: 2018-2 
+## Connecting to Manifesto Project DB API... corpus version: 2020-1 
 ## Connecting to Manifesto Project DB API... 
-## Connecting to Manifesto Project DB API... corpus version: 2018-2 
-## Connecting to Manifesto Project DB API... corpus version: 2018-2 
-## Connecting to Manifesto Project DB API... corpus version: 2018-2
+## Connecting to Manifesto Project DB API... corpus version: 2020-1 
+## Connecting to Manifesto Project DB API... corpus version: 2020-1 
+## Connecting to Manifesto Project DB API... corpus version: 2020-1
 ```
 
 ```
 ## <<ManifestoCorpus>>
 ## Metadata:  corpus specific: 0, document level (indexed): 0
-## Content:  documents: 4
+## Content:  documents: 2
 ```
 
 ```r
@@ -472,7 +595,7 @@ library(tidycensus)
 census_api_key("YOUR API KEY GOES HERE", install = TRUE)
 ```
 
-## Obtaining data
+### Obtaining data
 
 `get_decennial()` allows you to obtain data from the 1990, 2000, and 2010 decennial US censuses. Let's look at the number of individuals of Asian ethnicity by state in 2010:
 
@@ -627,11 +750,11 @@ usa_inc %>%
 
 <img src="/notes/application-program-interface_files/figure-html/income-usa-plot-1.png" width="672" />
 
-## Search for variables
+### Search for variables
 
 `get_acs()` or `get_decennial()` requires knowing the variable ID, of which there are thousands. `load_variables()` downloads a list of variable IDs and labels for a given Census or ACS and dataset. You can then use `View()` to interactively browse through and filter for variables in RStudio.
 
-## Drawing maps
+### Drawing maps
 
 `tidycensus` also can return [simple feature geometry](/notes/simple-features/) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](/notes/vector-maps/) Let's look at median household income by Census tracts from the 2012-2016 ACS in Loudoun County, Virginia:
 
@@ -700,6 +823,8 @@ ggplot(data = loudoun) +
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
 
+- Explanation of APIs drawn from Rochelle Terman's [Collecting Data from the Web](https://plsc-31101.github.io/course/collecting-data-from-the-web.html)
+
 ## Session Info
 
 
@@ -711,132 +836,116 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 3.6.3 (2020-02-29)
-##  os       macOS Catalina 10.15.4      
-##  system   x86_64, darwin15.6.0        
+##  version  R version 4.0.2 (2020-06-22)
+##  os       macOS Catalina 10.15.7      
+##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-05-27                  
+##  date     2020-12-11                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version    date       lib source                      
-##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 3.6.0)              
-##  backports      1.1.7      2020-05-13 [1] CRAN (R 3.6.2)              
-##  base64enc      0.1-3      2015-07-28 [1] CRAN (R 3.6.0)              
-##  blogdown       0.18.1     2020-04-28 [1] local                       
-##  bookdown       0.18       2020-03-05 [1] CRAN (R 3.6.0)              
-##  broom        * 0.5.5      2020-02-29 [1] CRAN (R 3.6.0)              
-##  callr          3.4.3      2020-03-28 [1] CRAN (R 3.6.2)              
-##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 3.6.0)              
-##  class          7.3-16     2020-03-25 [1] CRAN (R 3.6.3)              
-##  classInt       0.4-2      2019-10-17 [1] CRAN (R 3.6.0)              
-##  cli            2.0.2      2020-02-28 [1] CRAN (R 3.6.0)              
-##  codetools      0.2-16     2018-12-24 [1] CRAN (R 3.6.3)              
-##  colorspace     1.4-1      2019-03-18 [1] CRAN (R 3.6.0)              
-##  crayon         1.3.4      2017-09-16 [1] CRAN (R 3.6.0)              
-##  DBI            1.1.0      2019-12-15 [1] CRAN (R 3.6.0)              
-##  dbplyr         1.4.2      2019-06-17 [1] CRAN (R 3.6.0)              
-##  desc           1.2.0      2018-05-01 [1] CRAN (R 3.6.0)              
-##  devtools       2.2.2      2020-02-17 [1] CRAN (R 3.6.0)              
-##  digest         0.6.25     2020-02-23 [1] CRAN (R 3.6.0)              
-##  dplyr        * 0.8.5      2020-03-07 [1] CRAN (R 3.6.0)              
-##  DT             0.13       2020-03-23 [1] CRAN (R 3.6.3)              
-##  e1071          1.7-3      2019-11-26 [1] CRAN (R 3.6.0)              
-##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 3.6.2)              
-##  evaluate       0.14       2019-05-28 [1] CRAN (R 3.6.0)              
-##  fansi          0.4.1      2020-01-08 [1] CRAN (R 3.6.0)              
-##  farver         2.0.3      2020-01-16 [1] CRAN (R 3.6.0)              
-##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 3.6.0)              
-##  foreign        0.8-76     2020-03-03 [1] CRAN (R 3.6.0)              
-##  fs             1.3.2      2020-03-05 [1] CRAN (R 3.6.0)              
-##  functional     0.6        2014-07-16 [1] CRAN (R 3.6.0)              
-##  generics       0.0.2      2018-11-29 [1] CRAN (R 3.6.0)              
-##  geonames     * 0.999      2019-02-19 [1] CRAN (R 3.6.0)              
-##  ggplot2      * 3.3.0      2020-03-05 [1] CRAN (R 3.6.0)              
-##  glue           1.4.1      2020-05-13 [1] CRAN (R 3.6.2)              
-##  gridExtra      2.3        2017-09-09 [1] CRAN (R 3.6.0)              
-##  gtable         0.3.0      2019-03-25 [1] CRAN (R 3.6.0)              
-##  haven          2.2.0      2019-11-08 [1] CRAN (R 3.6.0)              
-##  here           0.1        2017-05-28 [1] CRAN (R 3.6.0)              
-##  hms            0.5.3      2020-01-08 [1] CRAN (R 3.6.0)              
-##  htmltools      0.4.0      2019-10-04 [1] CRAN (R 3.6.0)              
-##  htmlwidgets    1.5.1      2019-10-08 [1] CRAN (R 3.6.0)              
-##  httr           1.4.1      2019-08-05 [1] CRAN (R 3.6.0)              
-##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 3.6.0)              
-##  jsonlite       1.6.1      2020-02-02 [1] CRAN (R 3.6.0)              
-##  KernSmooth     2.23-16    2019-10-15 [1] CRAN (R 3.6.3)              
-##  knitr          1.28       2020-02-06 [1] CRAN (R 3.6.0)              
-##  labeling       0.3        2014-08-23 [1] CRAN (R 3.6.0)              
-##  lattice        0.20-40    2020-02-19 [1] CRAN (R 3.6.0)              
-##  lifecycle      0.2.0      2020-03-06 [1] CRAN (R 3.6.0)              
-##  lubridate      1.7.8      2020-04-06 [1] CRAN (R 3.6.2)              
-##  magrittr       1.5        2014-11-22 [1] CRAN (R 3.6.0)              
-##  manifestoR   * 1.3.0      2018-05-28 [1] CRAN (R 3.6.0)              
-##  maptools       0.9-9      2019-12-01 [1] CRAN (R 3.6.0)              
-##  Matrix         1.2-18     2019-11-27 [1] CRAN (R 3.6.3)              
-##  memoise        1.1.0      2017-04-21 [1] CRAN (R 3.6.0)              
-##  mnormt         1.5-6      2020-02-03 [1] CRAN (R 3.6.0)              
-##  modelr         0.1.6      2020-02-22 [1] CRAN (R 3.6.0)              
-##  munsell        0.5.0      2018-06-12 [1] CRAN (R 3.6.0)              
-##  nlme           3.1-145    2020-03-04 [1] CRAN (R 3.6.0)              
-##  NLP          * 0.2-0      2018-10-18 [1] CRAN (R 3.6.0)              
-##  pillar         1.4.4      2020-05-05 [1] CRAN (R 3.6.2)              
-##  pkgbuild       1.0.8      2020-05-07 [1] CRAN (R 3.6.2)              
-##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 3.6.0)              
-##  pkgload        1.0.2      2018-10-29 [1] CRAN (R 3.6.0)              
-##  prettyunits    1.1.1      2020-01-24 [1] CRAN (R 3.6.0)              
-##  processx       3.4.2      2020-02-09 [1] CRAN (R 3.6.0)              
-##  ps             1.3.3      2020-05-08 [1] CRAN (R 3.6.2)              
-##  psych          1.9.12.31  2020-01-08 [1] CRAN (R 3.6.0)              
-##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 3.6.2)              
-##  R6             2.4.1      2019-11-12 [1] CRAN (R 3.6.0)              
-##  rappdirs       0.3.1      2016-03-28 [1] CRAN (R 3.6.0)              
-##  RColorBrewer * 1.1-2      2014-12-07 [1] CRAN (R 3.6.0)              
-##  Rcpp           1.0.4      2020-03-17 [1] CRAN (R 3.6.0)              
-##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)              
-##  readxl         1.3.1      2019-03-13 [1] CRAN (R 3.6.0)              
-##  rebird       * 1.1.0      2019-10-24 [1] CRAN (R 3.6.0)              
-##  remotes        2.1.1      2020-02-15 [1] CRAN (R 3.6.0)              
-##  reprex         0.3.0      2019-05-16 [1] CRAN (R 3.6.0)              
-##  rgdal          1.4-8      2019-11-27 [1] CRAN (R 3.6.0)              
-##  rlang          0.4.6.9000 2020-05-21 [1] Github (r-lib/rlang@691b5a8)
-##  rmarkdown      2.1        2020-01-20 [1] CRAN (R 3.6.0)              
-##  rprojroot      1.3-2      2018-01-03 [1] CRAN (R 3.6.0)              
-##  rstudioapi     0.11       2020-02-07 [1] CRAN (R 3.6.0)              
-##  rvest          0.3.5      2019-11-08 [1] CRAN (R 3.6.0)              
-##  scales         1.1.1      2020-05-11 [1] CRAN (R 3.6.2)              
-##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.6.0)              
-##  sf             0.8-1      2020-01-28 [1] CRAN (R 3.6.0)              
-##  slam           0.1-47     2019-12-21 [1] CRAN (R 3.6.0)              
-##  SnowballC      0.6.0      2019-01-15 [1] CRAN (R 3.6.0)              
-##  sp             1.4-1      2020-02-28 [1] CRAN (R 3.6.0)              
-##  stringi        1.4.6      2020-02-17 [1] CRAN (R 3.6.0)              
-##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.6.0)              
-##  testthat       2.3.2      2020-03-02 [1] CRAN (R 3.6.0)              
-##  tibble       * 3.0.1      2020-04-20 [1] CRAN (R 3.6.2)              
-##  tidycensus   * 0.9.6      2020-01-25 [1] CRAN (R 3.6.0)              
-##  tidyr        * 1.1.0      2020-05-20 [1] CRAN (R 3.6.2)              
-##  tidyselect     1.1.0      2020-05-11 [1] CRAN (R 3.6.2)              
-##  tidytext     * 0.2.3      2020-03-04 [1] CRAN (R 3.6.0)              
-##  tidyverse    * 1.3.0      2019-11-21 [1] CRAN (R 3.6.0)              
-##  tigris         0.9.2      2020-02-04 [1] CRAN (R 3.6.0)              
-##  tm           * 0.7-7      2019-12-12 [1] CRAN (R 3.6.0)              
-##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 3.6.0)              
-##  units          0.6-6      2020-03-16 [1] CRAN (R 3.6.0)              
-##  usethis        1.5.1      2019-07-04 [1] CRAN (R 3.6.0)              
-##  uuid           0.1-4      2020-02-26 [1] CRAN (R 3.6.0)              
-##  vctrs          0.3.0.9000 2020-05-21 [1] Github (r-lib/vctrs@f476e06)
-##  viridis      * 0.5.1      2018-03-29 [1] CRAN (R 3.6.0)              
-##  viridisLite  * 0.3.0      2018-02-01 [1] CRAN (R 3.6.0)              
-##  withr          2.2.0      2020-04-20 [1] CRAN (R 3.6.2)              
-##  wordcloud    * 2.6        2018-08-24 [1] CRAN (R 3.6.0)              
-##  xfun           0.14       2020-05-20 [1] CRAN (R 3.6.2)              
-##  xml2           1.3.2      2020-04-23 [1] CRAN (R 3.6.2)              
-##  yaml           2.2.1      2020-02-01 [1] CRAN (R 3.6.0)              
-##  zoo            1.8-7      2020-01-10 [1] CRAN (R 3.6.0)              
+##  package      * version date       lib source        
+##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports      1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
+##  base64enc      0.1-3   2015-07-28 [1] CRAN (R 4.0.0)
+##  blob           1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  blogdown       0.21    2020-10-11 [1] CRAN (R 4.0.2)
+##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom        * 0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
+##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli            2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  colorspace     1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  crayon         1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
+##  DBI            1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
+##  dbplyr         1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  desc           1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
+##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
+##  digest         0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  dplyr        * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
+##  DT             0.15    2020-08-05 [1] CRAN (R 4.0.2)
+##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
+##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi          0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  forcats      * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
+##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
+##  functional     0.6     2014-07-16 [1] CRAN (R 4.0.0)
+##  generics       0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
+##  ggplot2      * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  gridExtra      2.3     2017-09-09 [1] CRAN (R 4.0.0)
+##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
+##  here           0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  hms            0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
+##  htmltools      0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  htmlwidgets    1.5.2   2020-10-03 [1] CRAN (R 4.0.2)
+##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  janeaustenr    0.1.5   2017-06-10 [1] CRAN (R 4.0.0)
+##  jsonlite       1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr          1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
+##  lifecycle      0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  lubridate      1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
+##  magrittr       1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  manifestoR   * 1.4.0   2020-04-21 [1] CRAN (R 4.0.0)
+##  Matrix         1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
+##  memoise        1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mnormt         2.0.2   2020-09-01 [1] CRAN (R 4.0.2)
+##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  nlme           3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
+##  NLP          * 0.2-0   2018-10-18 [1] CRAN (R 4.0.0)
+##  pillar         1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
+##  pkgbuild       1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
+##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx       3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps             1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
+##  psych          2.0.9   2020-10-05 [1] CRAN (R 4.0.2)
+##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6             2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.0.0)
+##  Rcpp           1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
+##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
+##  reprex         0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang          0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown      2.4     2020-09-30 [1] CRAN (R 4.0.2)
+##  rprojroot      1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  rstudioapi     0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rvest          0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
+##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  slam           0.1-47  2019-12-21 [1] CRAN (R 4.0.0)
+##  SnowballC      0.7.0   2020-04-01 [1] CRAN (R 4.0.0)
+##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
+##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat       2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
+##  tibble       * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr        * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
+##  tidytext     * 0.2.6   2020-09-20 [1] CRAN (R 4.0.2)
+##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
+##  tm           * 0.7-7   2019-12-12 [1] CRAN (R 4.0.0)
+##  tmvnsim        1.0-2   2016-12-15 [1] CRAN (R 4.0.0)
+##  tokenizers     0.2.1   2018-03-29 [1] CRAN (R 4.0.0)
+##  usethis        1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  vctrs          0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  viridis      * 0.5.1   2018-03-29 [1] CRAN (R 4.0.0)
+##  viridisLite  * 0.3.0   2018-02-01 [1] CRAN (R 4.0.0)
+##  wbstats      * 1.0.4   2020-12-05 [1] CRAN (R 4.0.2)
+##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  wordcloud    * 2.6     2018-08-24 [1] CRAN (R 4.0.0)
+##  xfun           0.18    2020-09-29 [1] CRAN (R 4.0.2)
+##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
+##  zoo            1.8-8   2020-05-02 [1] CRAN (R 4.0.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
+## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

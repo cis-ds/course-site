@@ -71,7 +71,7 @@ These additional details are very helpful in communicating the meaning of the gr
 
 ## Scorecard
 
-The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2016 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub.  Here let's examine the data to answer the following question: **how does cost of attendance vary across universities?**
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub.  Here let's examine the data to answer the following question: **how does cost of attendance vary across universities?**
 
 ## Import the data
 
@@ -86,21 +86,21 @@ scorecard
 ```
 
 ```
-## # A tibble: 1,733 x 14
-##    unitid name  state type  admrate satavg  cost avgfacsal pctpell comprate
-##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>     <dbl>   <dbl>    <dbl>
-##  1 147244 Mill… IL    Priv…   0.638   1047 43149     55197   0.405    0.600
-##  2 147341 Monm… IL    Priv…   0.521   1045 45005     61101   0.413    0.558
-##  3 145691 Illi… IL    Priv…   0.540     NA 41869     63765   0.419    0.68 
-##  4 148131 Quin… IL    Priv…   0.662    991 39686     50166   0.379    0.511
-##  5 146667 Linc… IL    Priv…   0.529   1007 25542     52713   0.464    0.613
-##  6 150774 Holy… IN    Priv…   0.910   1053 39437     47367   0.286    0.407
-##  7 150941 Hunt… IN    Priv…   0.892   1019 36227     58563   0.350    0.654
-##  8 148584 Univ… IL    Priv…   0.492   1068 39175     70425   0.382    0.629
-##  9 148627 Sain… IL    Priv…   0.752   1009 38260     65619   0.533    0.510
-## 10 151111 Indi… IN    Publ…   0.740   1025 20451     76608   0.381    0.463
-## # … with 1,723 more rows, and 4 more variables: firstgen <dbl>, debt <dbl>,
-## #   locale <fct>, openadmp <fct>
+## # A tibble: 1,753 x 15
+##    unitid name  state type  admrate satavg  cost netcost avgfacsal pctpell
+##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>   <dbl>     <dbl>   <dbl>
+##  1 420325 Yesh… NY    Priv…  0.531      NA 14874    4018     26253   0.958
+##  2 430485 The … NE    Priv…  0.667      NA 41627   39020     54000   0.529
+##  3 100654 Alab… AL    Publ…  0.899     957 22489   14444     63909   0.707
+##  4 102234 Spri… AL    Priv…  0.658    1130 51969   19718     60048   0.342
+##  5 100724 Alab… AL    Publ…  0.977     972 21476   13043     69786   0.745
+##  6 106467 Arka… AR    Publ…  0.902      NA 18627   12362     61497   0.396
+##  7 106704 Univ… AR    Publ…  0.911    1186 21350   14723     63360   0.430
+##  8 109651 Art … CA    Priv…  0.676      NA 64097   43010     69984   0.307
+##  9 110404 Cali… CA    Priv…  0.0662   1566 68901   23820    179937   0.142
+## 10 112394 Cogs… CA    Priv…  0.579      NA 35351   31537     66636   0.461
+## # … with 1,743 more rows, and 5 more variables: comprate <dbl>, firstgen <dbl>,
+## #   debt <dbl>, locale <fct>, openadmp <fct>
 ```
 
 ```r
@@ -108,21 +108,22 @@ glimpse(x = scorecard)
 ```
 
 ```
-## Rows: 1,733
-## Columns: 14
-## $ unitid    <int> 147244, 147341, 145691, 148131, 146667, 150774, 150941, 148…
-## $ name      <chr> "Millikin University", "Monmouth College", "Illinois Colleg…
-## $ state     <chr> "IL", "IL", "IL", "IL", "IL", "IN", "IN", "IL", "IL", "IN",…
-## $ type      <fct> "Private, nonprofit", "Private, nonprofit", "Private, nonpr…
-## $ admrate   <dbl> 0.6380, 0.5206, 0.5403, 0.6623, 0.5288, 0.9101, 0.8921, 0.4…
-## $ satavg    <dbl> 1047, 1045, NA, 991, 1007, 1053, 1019, 1068, 1009, 1025, 10…
-## $ cost      <int> 43149, 45005, 41869, 39686, 25542, 39437, 36227, 39175, 382…
-## $ avgfacsal <dbl> 55197, 61101, 63765, 50166, 52713, 47367, 58563, 70425, 656…
-## $ pctpell   <dbl> 0.4054, 0.4127, 0.4191, 0.3789, 0.4640, 0.2857, 0.3502, 0.3…
-## $ comprate  <dbl> 0.6004, 0.5577, 0.6800, 0.5110, 0.6132, 0.4069, 0.6540, 0.6…
-## $ firstgen  <dbl> 0.3184783, 0.3224401, 0.3109756, 0.3300493, 0.3122172, 0.28…
-## $ debt      <dbl> 20375.0, 20000.0, 22300.0, 13000.0, 17500.0, 11000.0, 22500…
-## $ locale    <fct> City, Town, Town, Town, Town, Suburb, Town, Suburb, City, C…
+## Rows: 1,753
+## Columns: 15
+## $ unitid    <int> 420325, 430485, 100654, 102234, 100724, 106467, 106704, 109…
+## $ name      <chr> "Yeshiva D'monsey Rabbinical College", "The Creative Center…
+## $ state     <chr> "NY", "NE", "AL", "AL", "AL", "AR", "AR", "CA", "CA", "CA",…
+## $ type      <fct> "Private, nonprofit", "Private, for-profit", "Public", "Pri…
+## $ admrate   <dbl> 0.5313, 0.6667, 0.8986, 0.6577, 0.9774, 0.9024, 0.9110, 0.6…
+## $ satavg    <dbl> NA, NA, 957, 1130, 972, NA, 1186, NA, 1566, NA, NA, 1053, 1…
+## $ cost      <int> 14874, 41627, 22489, 51969, 21476, 18627, 21350, 64097, 689…
+## $ netcost   <dbl> 4018, 39020, 14444, 19718, 13043, 12362, 14723, 43010, 2382…
+## $ avgfacsal <dbl> 26253, 54000, 63909, 60048, 69786, 61497, 63360, 69984, 179…
+## $ pctpell   <dbl> 0.9583, 0.5294, 0.7067, 0.3420, 0.7448, 0.3955, 0.4298, 0.3…
+## $ comprate  <dbl> 0.6667, 0.6667, 0.2685, 0.5864, 0.3001, 0.4069, 0.4113, 0.7…
+## $ firstgen  <dbl> NA, NA, 0.3658281, 0.2516340, 0.3434343, 0.4574780, 0.34595…
+## $ debt      <dbl> NA, 12000, 15500, 18270, 18679, 12000, 13100, 27811, 8013, …
+## $ locale    <fct> Suburb, City, City, City, City, Town, City, City, City, Cit…
 ## $ openadmp  <fct> No, No, No, No, No, No, No, No, No, No, No, No, No, No, No,…
 ```
 
@@ -146,7 +147,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 42 rows containing non-finite values (stat_bin).
+## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-1.png" width="672" />
@@ -163,7 +164,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 42 rows containing non-finite values (stat_bin).
+## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-50-1.png" width="672" />
@@ -176,7 +177,7 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 42 rows containing non-finite values (stat_bin).
+## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-bins-10-1.png" width="672" />
@@ -216,29 +217,29 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 42 rows containing non-finite values (stat_boxplot).
+## Warning: Removed 41 rows containing non-finite values (stat_boxplot).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/boxplot-1.png" width="672" />
 
 Here we see that on average, public universities are least expensive, followed by private for-profit institutions. I was somewhat surprised by this since for-profit institutions by definition seek to generate a profit, so wouldn't they be the most expensive? But perhaps this makes sense, because they have to attract students so need to offer a better financial value than competing nonprofit or public institutions. Is there a better explanation for these differences? Another question you could explore after viewing this visualization.
 
-If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between financial aid awards^[Percentage of undergraduates who receive a [Pell Grant](https://studentaid.gov/understand-aid/types/grants/pell/), regularly employed as a proxy for low-income students.] and cost of attendance:
+If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between annual cost of attendance (sticker price) and net cost of attendance (average amount actually paid by a student):
 
 
 ```r
 ggplot(data = scorecard,
-       mapping = aes(x = pctpell, y = cost)) +
+       mapping = aes(x = cost, y = netcost)) +
   geom_point()
 ```
 
 ```
-## Warning: Removed 42 rows containing missing values (geom_point).
+## Warning: Removed 41 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-1.png" width="672" />
 
-As percentage of Pell Grant recipients increases, average cost of attendance declines.
+As the sticker price increases, the net cost also increases though with significant variation. Some schools have a much lower net cost than their advertised price.
 
 ## Multiple window plots
 
@@ -257,25 +258,25 @@ ggplot(data = scorecard,
 ```
 
 ```
-## Warning: Removed 42 rows containing non-finite values (stat_bin).
+## Warning: Removed 41 rows containing non-finite values (stat_bin).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/histogram-facet-1.png" width="672" />
 
 This helps answer one of our earlier questions. Colleges in the 20,000 dollar range tend to be public universities, while the heaps around 40,000 and 65,000 dollars are from private nonprofits.
 
-You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between Pell Grant recipients and cost of attendance by college type:
+You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between annual cost and net cost of attendance by college type:
 
 
 ```r
 ggplot(data = scorecard,
-       mapping = aes(x = pctpell, y = cost)) +
+       mapping = aes(x = cost, y = netcost)) +
   geom_point() +
   facet_wrap(~ type)
 ```
 
 ```
-## Warning: Removed 42 rows containing missing values (geom_point).
+## Warning: Removed 41 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-facet-1.png" width="672" />
@@ -289,14 +290,14 @@ Depending on the type of graph and variables you wish to encode, there are sever
 
 ```r
 ggplot(data = scorecard,
-       mapping = aes(x = pctpell,
-                     y = cost,
+       mapping = aes(x = cost,
+                     y = netcost,
                      color = type)) +
   geom_point()
 ```
 
 ```
-## Warning: Removed 42 rows containing missing values (geom_point).
+## Warning: Removed 41 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-color-1.png" width="672" />
@@ -306,15 +307,15 @@ We can even use a fourth channel to communicate another variable (median debt lo
 
 ```r
 ggplot(data = scorecard,
-       mapping = aes(x = pctpell,
-                     y = cost,
+       mapping = aes(x = cost,
+                     y = netcost,
                      color = type,
                      size = debt)) +
   geom_point()
 ```
 
 ```
-## Warning: Removed 113 rows containing missing values (geom_point).
+## Warning: Removed 128 rows containing missing values (geom_point).
 ```
 
 <img src="/notes/exploratory-data-analysis_files/figure-html/scatterplot-color-size-1.png" width="672" />
@@ -340,84 +341,91 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-10-05                  
+##  date     2020-12-08                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        
 ##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports        1.1.7   2020-05-13 [1] CRAN (R 4.0.0)
+##  backports        1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob             1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown         0.20.1  2020-07-02 [1] local         
-##  bookdown         0.20    2020-06-23 [1] CRAN (R 4.0.2)
-##  broom            0.5.6   2020-04-20 [1] CRAN (R 4.0.0)
-##  callr            3.4.3   2020-03-28 [1] CRAN (R 4.0.0)
+##  blogdown         0.20.1  2020-10-19 [1] local         
+##  bookdown         0.21    2020-10-13 [1] CRAN (R 4.0.2)
+##  broom            0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  callr            3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli              2.0.2   2020-02-28 [1] CRAN (R 4.0.0)
+##  cli              2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  codetools        0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace       1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon           1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI              1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr           1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc             1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
-##  devtools         2.3.0   2020-04-10 [1] CRAN (R 4.0.0)
+##  devtools         2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
 ##  digest           0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
-##  dplyr          * 1.0.0   2020-05-29 [1] CRAN (R 4.0.0)
+##  dplyr          * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
 ##  ellipsis         0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate         0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi            0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
+##  farver           2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats        * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
-##  fs               1.4.1   2020-04-04 [1] CRAN (R 4.0.0)
+##  fs               1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics         0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2        * 3.3.1   2020-05-28 [1] CRAN (R 4.0.0)
-##  glue             1.4.1   2020-05-13 [1] CRAN (R 4.0.0)
+##  ggplot2        * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  glue             1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven            2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here             0.1     2017-05-28 [1] CRAN (R 4.0.0)
 ##  hms              0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
-##  htmltools        0.4.0   2019-10-04 [1] CRAN (R 4.0.0)
-##  httr             1.4.1   2019-08-05 [1] CRAN (R 4.0.0)
-##  jsonlite         1.7.0   2020-06-25 [1] CRAN (R 4.0.2)
-##  knitr            1.29    2020-06-23 [1] CRAN (R 4.0.1)
+##  htmltools        0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
+##  httr             1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jsonlite         1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  knitr            1.30    2020-09-22 [1] CRAN (R 4.0.2)
+##  labeling         0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice          0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle        0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate        1.7.8   2020-04-06 [1] CRAN (R 4.0.0)
+##  lubridate        1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr         1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  Matrix           1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise          1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
+##  mgcv             1.8-33  2020-08-27 [1] CRAN (R 4.0.2)
 ##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  nlme             3.1-148 2020-05-24 [1] CRAN (R 4.0.2)
+##  nlme             3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
 ##  palmerpenguins * 0.1.0   2020-07-23 [1] CRAN (R 4.0.2)
 ##  pillar           1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild         1.0.8   2020-05-07 [1] CRAN (R 4.0.0)
+##  pkgbuild         1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
 ##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload          1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx         3.4.2   2020-02-09 [1] CRAN (R 4.0.0)
-##  ps               1.3.3   2020-05-08 [1] CRAN (R 4.0.0)
+##  processx         3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
+##  ps               1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6               2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  rcfss          * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp             1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
-##  readr          * 1.3.1   2018-12-21 [1] CRAN (R 4.0.0)
+##  readr          * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl           1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
-##  remotes          2.1.1   2020-02-15 [1] CRAN (R 4.0.0)
+##  remotes          2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex           0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang            0.4.6   2020-05-02 [1] CRAN (R 4.0.1)
-##  rmarkdown        2.3     2020-06-18 [1] CRAN (R 4.0.2)
+##  rlang            0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
+##  rmarkdown        2.4     2020-09-30 [1] CRAN (R 4.0.2)
 ##  rprojroot        1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
 ##  rstudioapi       0.11    2020-02-07 [1] CRAN (R 4.0.0)
-##  rvest            0.3.5   2019-11-08 [1] CRAN (R 4.0.0)
+##  rvest            0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales           1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
 ##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi          1.4.6   2020-02-17 [1] CRAN (R 4.0.0)
+##  stringi          1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
 ##  testthat         2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble         * 3.0.3   2020-07-10 [1] CRAN (R 4.0.1)
-##  tidyr          * 1.1.0   2020-05-20 [1] CRAN (R 4.0.0)
+##  tibble         * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  tidyr          * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  tidyselect       1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse      * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis          1.6.1   2020-04-29 [1] CRAN (R 4.0.0)
-##  vctrs            0.3.1   2020-06-05 [1] CRAN (R 4.0.1)
-##  withr            2.2.0   2020-04-20 [1] CRAN (R 4.0.0)
-##  xfun             0.15    2020-06-21 [1] CRAN (R 4.0.1)
+##  usethis          1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  utf8             1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
+##  vctrs            0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  withr            2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
+##  xfun             0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  xml2             1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml             2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
