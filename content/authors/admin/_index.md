@@ -19,7 +19,7 @@ email: "soltoffbc@uchicago.edu"
 # - Artificial Intelligence
 # - Computational Linguistics
 # - Information Retrieval
-name: Benjamin Soltoff
+title: Benjamin Soltoff
 organizations:
 - name: University of Chicago
   url: "https://macss.uchicago.edu"

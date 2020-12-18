@@ -133,11 +133,11 @@ A highly selective sampling of feedback from past course evaluations:
     
 ### Resources for under-represented groups in programming
 
-{{% alert note %}}
+{{% callout note %}}
 
 Thanks to [Angela Li](https://angela-li.github.io/) for compiling these recommendations.
 
-{{% /alert %}}
+{{% /callout %}}
 
 * [R LGBTQ Twitter](https://twitter.com/r_lgbtq): Affinity group for queer people in the R community -- Twitter often promotes events, panels and talks by and for queer R users. 
 * [Gayta Science Twitter](https://twitter.com/gaytascience): Alliance that uses data science techniques to give LGBTQ+ experiences a voice -- Twitter will often share data-driven work concerning the LGBTQ+ community. 

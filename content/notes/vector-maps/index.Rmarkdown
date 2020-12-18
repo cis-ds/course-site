@@ -1,0 +1,276 @@
+---
+title: "Drawing vector maps with simple features and ggplot2"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/geoviz_plot.html"]
+categories: ["dataviz", "geospatial"]
+
+menu:
+  notes:
+    parent: Geospatial visualization
+    weight: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(sf)
+library(here)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+Unlike [raster image maps](/notes/raster-maps-with-ggmap/), vector maps require you to obtain [spatial data files](/notes/simple-features/) which contain detailed information necessary to draw all the components of a map (e.g. points, lines, polygons). Once you successfully import that data into R, `ggplot2` works with simple features data frames to easily generate geospatial visualizations using all the core elements and approaches of `ggplot()`.
+
+## Import USA state boundaries
+
+First we will import a spatial data file containing the boundaries of all 50 states in the United States^[Plus the District of Columbia and Puerto Rico] using `sf::st_read()`:
+
+```{r import-usa}
+usa <- here("static", "data", "census_bureau",
+            "cb_2013_us_state_20m", "cb_2013_us_state_20m.shp") %>%
+  st_read()
+```
+
+## Draw the boundaries
+
+`ggplot2` contains a geometric object specifically for simple feature objects called `geom_sf()`. This works reasonably well when you need to draw **polygons**, like our state boundaries. Support for simple features in `ggplot2` is under active development, so you may not find adequate support for plotting line or point features. To draw the map, we pass the simple features data frame as the `data` argument.
+
+```{r geom-sf}
+ggplot(data = usa) +
+  geom_sf()
+```
+
+Because simple features data frames are standardized with the `geometry` column always containing information on the geographic coordinates of the features, we do not need to specify additional parameters for `aes()`. Notice a problem with the map above: it wastes a lot of space. This is caused by the presence of Alaska and Hawaii in the dataset. The Aleutian Islands cross the the 180th meridian, requiring the map to show the Eastern hemisphere. Likewise, Hawaii is substantially distant from the continental United States.
+
+## Plot a subset of a map
+
+One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.^[Issues of political sovereignty aside, these entities are frequently excluded from maps depending on the data to be incorporated. You can always choose to leave them in the map.] Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use `filter()` from `dplyr` to exclude these four states/territories.
+
+```{r usa-subset}
+(usa_48 <- usa %>%
+  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico"))))
+
+ggplot(data = usa_48) +
+  geom_sf()
+```
+
+Since the map is a `ggplot()` object, it can easily be modified like any other `ggplot()` graph. We could change the color of the map and the borders:
+
+```{r usa-fill}
+ggplot(data = usa_48) +
+  geom_sf(fill = "palegreen", color = "black")
+```
+
+## `albersusa`
+
+Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`albersusa`](https://github.com/hrbrmstr/albersusa) includes the `usa_sf()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `devtools::install_github("hrbrmstr/albersusa")`.
+
+```{r albersusa}
+library(albersusa)
+usa_sf()
+
+ggplot(data = usa_sf()) +
+  geom_sf()
+```
+
+## Add data to the map
+
+Region boundaries serve as the background in geospatial data visualization - so now we need to add data. Some types of geographic data (points and symbols) are overlaid on top of the boundaries, whereas other data (fill) are incorporated into the region layer itself.
+
+## Points
+
+Let's use our `usa_48` map data to add some points. The `airports` data frame in the `nycflights13` package includes geographic info on airports in the United States.
+
+```{r nycflights}
+library(nycflights13)
+airports
+```
+
+Each airport has it's geographic location encoded through `lat` and `lon`. To draw these points on the map, basically we draw a scatterplot with `x = lon` and `y = lat`. In fact we could simply do that:
+
+```{r scatter}
+ggplot(airports, aes(lon, lat)) +
+  geom_point()
+```
+
+Let's overlay it with the mapped state borders:
+
+```{r flights-usa}
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```
+
+Slight problem. We have airports listed outside of the continental United States. There are a couple ways to rectify this. Unfortunately `airports` does not include a variable identifying state so the `filter()` operation is not that simple. The easiest solution is to crop the limits of the graph using `coord_sf()` to only show the mainland:
+
+```{r crop}
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports, aes(x = lon, y = lat), shape = 1) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50))
+```
+
+Alternatively, we can use `st_as_sf()` to convert `airports` to a simple features data frame.
+
+```{r flights-sf}
+airports_sf <- st_as_sf(airports, coords = c("lon", "lat"))
+st_crs(airports_sf) <- 4326   # set the coordinate reference system
+airports_sf
+```
+
+`coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`:
+
+```{r flights-sf-plot}
+ggplot() + 
+  geom_sf(data = usa_48) + 
+  geom_sf(data = airports_sf, shape = 1) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50))
+```
+
+## Symbols
+
+We can change the size or type of symbols on the map. For instance, we can draw a **bubble plot** (also known as a **proportional symbol map**) and encode the altitude of the airport through the size channel:
+
+```{r airport-alt}
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports, aes(x = lon, y = lat, size = alt),
+             fill = "grey", color = "black", alpha = .2) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50)) +
+  scale_size_area(guide = FALSE)
+```
+
+Circle area is proportional to the airport's altitude (in feet). Or we could scale it based on the number of arriving flights in `flights`:
+
+```{r airport-dest}
+airports_n <- flights %>%
+  count(dest) %>%
+  left_join(airports, by = c("dest" = "faa"))
+
+ggplot(data = usa_48) + 
+  geom_sf() + 
+  geom_point(data = airports_n, aes(x = lon, y = lat, size = n),
+             fill = "grey", color = "black", alpha = .2) +
+  coord_sf(xlim = c(-130, -60),
+           ylim = c(20, 50)) +
+  scale_size_area(guide = FALSE)
+```
+
+{{% callout note %}}
+
+`airports` contains a list of virtually all commercial airports in the United States. However `flights` only contains data on flights departing from New York City airports (JFK, LaGuardia, or Newark) and only services a few airports around the country.
+
+{{% /callout %}}
+
+## Fill (choropleths)
+
+**Choropleth maps** encode information by assigning shades of colors to defined areas on a map (e.g. countries, states, counties, zip codes). There are lots of ways to tweak and customize these graphs, which is generally a good idea because remember that color is one of the harder-to-decode channels.
+
+We will continue to use the `usa_48` simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the `census_bureau` folder. Let's also normalize our measure by the total population to get the rate of foreign-born individuals in the population:
+
+```{r import-foreign}
+(fb_state <- here("static", "data", "census_bureau",
+                  "ACS_13_5YR_B05012_state", "ACS_13_5YR_B05012.csv") %>%
+   read_csv() %>%
+  mutate(rate = HD01_VD03 / HD01_VD01))
+```
+
+### Join the data
+
+Now that we have our data, we want to draw it on the map. `fb_state` contains one row per state, as does `usa_48`. Since there is a one-to-one match between the data frames, we join the data frames together first, then use that single data frame to draw the map. This differs from the approach above for drawing points because a point feature is not the same thing as a polygon feature. That is, there were more airports then there were states. Because the spatial data is stored in a data frame with one row per state, all we need to do is merge the data frames together on a column that uniquely identifies each row in each data frame.
+
+```{r usa-foreign-join}
+(usa_fb <- usa_48 %>%
+  left_join(fb_state, by = c("STATEFP" = "GEO.id2")))
+```
+
+### Draw the map
+
+With the newly combined data frame, use `geom_sf()` and define the `fill` aesthetic based on the column in `usa_fb` you want to visualize.
+
+```{r geom-map-state}
+ggplot(data = usa_fb) +
+  geom_sf(aes(fill = rate))
+```
+
+### Bin data to discrete intervals
+
+When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keep the variable continuous is technically more precise, [the human eye cannot usually distinguish between two colors which are very similar to one another.](https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf) By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While `cut()` is a base R function for converting continuous variables into discrete values, `ggplot2` offers two functions that explicitly define how we want to bin the numeric vector (column).
+
+`cut_interval()` makes `n` groups with equal range:
+
+```{r cut-interval}
+usa_fb %>%
+  mutate(rate_cut = cut_interval(rate, n = 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+```
+
+Whereas `cut_number()` makes `n` groups with (approximately) equal numbers of observations:
+
+```{r cut-number}
+usa_fb %>%
+  mutate(rate_cut = cut_number(rate, n = 6)) %>%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut))
+```
+
+{{% callout note %}}
+
+See [this StackOverflow thread](https://gis.stackexchange.com/questions/86668/should-i-use-a-discrete-or-continuous-scale-for-coloring-a-chloropleth) for a more in-depth discussion on the merits of bucketizing a continuous variable and whether to use `cut_interval()` or `cut_number()`.
+
+{{% /callout %}}
+
+## Changing map projection
+
+{{< youtube vVX-PrBRtTY >}}
+
+![[Mercator Projection](https://xkcd.com/2082/)](https://imgs.xkcd.com/comics/mercator_projection.png)
+
+Representing portions of the globe on a flat surface can be challenging. Depending on how you project the map, you can distort or emphasize certain features of the map. Fortunately, `ggplot()` includes the `coord_sf()` function which allows us to easily implement different projection methods. In order to implement coordinate transformations, you need to know the **coordinate reference system** that defines the projection method. The "easiest" approach is to provide what is known as the `proj4string` that defines the projection method. [PROJ4](https://proj4.org/) is a generic coordinate transformation software that allows you to convert between projection methods. If you get really into geospatial analysis and visualization, it is helpful to learn this system.
+
+For our purposes here, `proj4string` is a character string in R that defines the coordinate system and includes parameters specific to a given coordinate transformation. PROJ4 includes [some documentation on common projection methods](https://proj4.org/operations/projections/index.html) that can get you started. Some projection methods are relatively simple and require just the name of the projection, like for a [Mercator projection](https://proj4.org/operations/projections/merc.html) (`"+proj=merc"`):
+
+```{r projections}
+map_proj_base <- ggplot(data = usa_48) +
+  geom_sf()
+```
+
+```{r mercator}
+map_proj_base +
+  coord_sf(crs = "+proj=merc") +
+  ggtitle("Mercator projection")
+```
+
+Other coordinate systems require specification of the **standard lines**, or lines that define areas of the surface of the map that are tangent to the globe. These include [Gall-Peters](http://spatialreference.org/ref/sr-org/gall-peters-orthographic-projection/proj4/), [Albers equal-area](https://proj4.org/operations/projections/aea.html), and [Lambert azimuthal](https://proj4.org/operations/projections/laea.html).
+
+```{r projection-rest}
+map_proj_base +
+  coord_sf(crs = "+proj=cea +lon_0=0 +lat_ts=45") +
+  ggtitle("Gall-Peters projection")
+
+map_proj_base +
+  coord_sf(crs = "+proj=aea +lat_1=25 +lat_2=50 +lon_0=-100") +
+  ggtitle("Albers equal-area projection")
+
+map_proj_base +
+  coord_sf(crs = "+proj=laea +lat_0=35 +lon_0=-100") +
+  ggtitle("Lambert azimuthal projection")
+```
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
