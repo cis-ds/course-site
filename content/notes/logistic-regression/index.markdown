@@ -199,9 +199,7 @@ Or even:
 
 Rather than modeling the response $Y$ directly, logistic regression instead models the **probability** that $Y$ belongs to a particular category. In our first Titanic example, the probability of survival can be written as:
 
-$$
-\Pr(\text{survival} = \text{Yes} | \text{age})
-$$
+$$\Pr(\text{survival} = \text{Yes} | \text{age})$$
 
 The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $\Pr(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
 
@@ -348,23 +346,13 @@ This graph illustrates a key fact about surviving the sinking of the Titanic - a
 
 ## Interactive terms
 
-Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like:
+Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like $\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex})}}$]
 
-    $$
-    \Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex})}}
-    $$
-    
-    ]
-
-$$
-f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex}
-$$
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex}$$
 
 However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? This possibility would take the functional form:
 
-$$
-f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex} + \beta_{3}(\text{age} \times \text{sex})
-$$
+$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex} + \beta_{3}(\text{age} \times \text{sex})$$
 
 This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula in `fit()`:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
 
@@ -428,7 +416,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2020-12-17                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
@@ -456,7 +444,6 @@ devtools::session_info()
 ##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
-##  farver        2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
@@ -471,7 +458,6 @@ devtools::session_info()
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
-##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
@@ -480,7 +466,6 @@ devtools::session_info()
 ##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
-##  labeling      0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
@@ -533,12 +518,9 @@ devtools::session_info()
 ##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0      2019-11-21 [1] CRAN (R 4.0.0)
 ##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
-##  titanic     * 0.1.0      2015-08-31 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
-##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
-##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun          0.18       2020-09-29 [1] CRAN (R 4.0.2)

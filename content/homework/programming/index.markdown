@@ -38,9 +38,7 @@ Go [here](https://github.com/cfss-fa20/hw04) to fork the repo.
     1. Write code that uses one of the `map` functions to do this task.
 1. [Pythagorean theorem](https://en.wikipedia.org/wiki/Pythagorean_theorem)
 
-    $$
-    a^2 + b^2 = c^2
-    $$
+    $$a^2 + b^2 = c^2$$
     
     * Write a function that, given the lengths of two sides of the triangle, calculates the length of the third side
     * This function should be flexible - that is, the function works if I give it values for $a$ and $b$, or $b$ and $c$, or $a$ and $c$

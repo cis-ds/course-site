@@ -34,9 +34,7 @@ By plotting the variables against one another using a scatterplot, we can see th
 
 But there seems to be a lot of noise in the data. How can we summarize this? We can do so by estimating a mathematical equation following the general form:
 
-$$
-Y = f(X) + \epsilon
-$$
+$$Y = f(X) + \epsilon$$
 
 where $f$ is some fixed, unknown function of the relationship between the independent variable(s) $X$ and the dependent variable $Y$, with some random error $\epsilon$.
 
@@ -73,9 +71,7 @@ Parametric methods involve a two-stage process:
 
 This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as **parametric**, because it simplifies the problem of estimating $f$ to estimating a set of parameters in the function:
 
-$$
-Y = \beta_0 + \beta_{1}X_1
-$$
+$$Y = \beta_0 + \beta_{1}X_1$$
 
 where $Y$ is the sales, $X_1$ is the advertising spending in a given medium (internet, newspaper, or TV), and $\beta_0$ and $\beta_1$ are parameters defining the intercept and slope of the line.
 
@@ -123,7 +119,7 @@ That said, whether **predictors** are qualitative or quantitative is not importa
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2020-12-17                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
