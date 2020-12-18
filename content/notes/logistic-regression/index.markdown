@@ -346,13 +346,13 @@ This graph illustrates a key fact about surviving the sinking of the Titanic - a
 
 ## Interactive terms
 
-Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like $\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex})}}$]
+Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like $\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex})}}$]
 
-$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex}$$
+$$f = \beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex}$$
 
 However once again, that is an assumption. What if the relationship between age and the probability of survival is actually dependent on whether or not the individual is a female? This possibility would take the functional form:
 
-$$f = \beta_{0} + \beta_{1}\text{age} + \beta_{2}\text{sex} + \beta_{3}(\text{age} \times \text{sex})$$
+$$f = \beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex} + \beta\_{3}(\text{age} \times \text{sex})$$
 
 This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula in `fit()`:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www-jstor-org.proxy.uchicago.edu/stable/25791835)]
 
@@ -416,14 +416,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-17                  
+##  date     2020-12-18                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21       2020-12-11 [1] local         
+##  blogdown      0.21       2020-12-18 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
