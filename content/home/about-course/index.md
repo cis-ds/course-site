@@ -22,17 +22,9 @@ All class meetings and office hours will be held on Zoom. Links to these meeting
 {{% /callout %}}
 
 * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-* Teaching Assistants
-    * Dominique Janvier
-    * Donghyun Kang
-    * Deblina Mukherjee
-* Meeting day/time: TuTh 1-2:20pm
-* Online course discussion: [GitHub discussion repo](https://github.com/uc-cfss/Discussion)
-* Office hours
-    * Benjamin: Tuesday 9-11am
-    * Dominique: Thursday 4-6pm
-    * Donghyun: Friday 1:30pm-3:30pm
-    * Deb: Monday 6-8pm, Sunday 9:30-10:30am
+* Teaching Assistants - TBD
+* Meeting day/time: TuTh 9:40-11am
+* Office hours - TBD
 * Prerequisites: None
 * Requirements: Bring your own laptop
 
