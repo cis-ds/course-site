@@ -57,21 +57,21 @@ Okay, then analyze one of the datasets we've used before.
 
 ## How can I automatically download the data
 
-There are functions in R and programs for the [shell](/setup/shell/) that allow you to do this. For example, if I wanted to download `gapminder` from the [original GitHub repo](https://github.com/jennybc/gapminder):
+There are functions in R and programs for the [shell](/setup/shell/) that allow you to do this. For example, if I wanted to download `gun_deaths` from the [original GitHub repo](https://github.com/jennybc/gapminder):
 
 + Option 1: via an R script using [downloader::download](https://cran.r-project.org/web/packages/downloader/downloader.pdf) or [RCurl::getURL](http://www.omegahat.net/RCurl/installed/RCurl/html/getURL.html).
 
     ```r
-    downloader::download("https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv")
-    cat(file = "gapminder.tsv",
-      RCurl::getURL("https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv"))
+    downloader::download("https://raw.githubusercontent.com/fivethirtyeight/guns-data/master/full_data.csv", "gun_deaths.csv")
+cat(file = "gun_deaths.csv",
+    RCurl::getURL("https://raw.githubusercontent.com/fivethirtyeight/guns-data/master/full_data.csv"))
     ```
 
 + Option 2: in a [shell](/setup/shell/) script using `curl` or `wget`.
 
     ```bash
-    curl -O https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv
-    wget https://raw.githubusercontent.com/jennybc/gapminder/master/inst/gapminder.tsv
+    curl -O https://raw.githubusercontent.com/fivethirtyeight/guns-data/master/full_data.csv
+    wget https://raw.githubusercontent.com/fivethirtyeight/guns-data/master/full_data.csv
     ```
 
 + Option 3: manually download and save a copy of the data file(s) in your repo. **Make sure to commit and push them to GitHub**.
