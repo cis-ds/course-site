@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-fa20/hw08"
 
 # Overview
 
-Due by 1:00 pm CT (Chicago) on November 24th.
+Due by 1:00 pm CT (Chicago) on ~~November 24th~~ December 1st.
 
 We learned three ways of collecting data from the internet:
 
@@ -36,7 +36,7 @@ Go [here](https://github.com/cfss-fa20/hw08) to fork the repo.
 
 We've examined the `gapminder` data quite a bit. One relationship we've looked at (or are about to) is the relationship between population and life expectancy.
 
-<img src="/homework/webdata/index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 For the assignment, I want you to replace **population** with **population density** and evaluate its relationship with average life expectancy. To do this:
 
@@ -66,7 +66,7 @@ If you go either of the last two routes, you need to write your own code or func
 
 The end result must be a tidy data frame stored in the repository with some analytical component. This can be exploratory description and visualization or some method of statistical learning. I should be able to run your code and reproduce your data and analysis.^[Obviously if you are scraping from a web page that frequently updates its content, I may not perfectly reproduce your results. That's fine - just make sure you've saved a copy of the data frame in the repo.] ^[Also if you [write your own API function for a site that requires authentication](https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html#authentication), make sure to include instructions about where to store my API key so I can run your code **without sharing your private key**.]
 
-{{% alert note %}}
+{{% callout note %}}
 
 Some suggested APIs you could write your own code for in R:
 
@@ -80,7 +80,7 @@ Some suggested APIs you could write your own code for in R:
 * [USGS Earthquake Catalog](https://earthquake.usgs.gov/fdsnws/event/1/)
 * [xkcd](https://xkcd.com/json.html)
 
-{{% /alert %}}
+{{% /callout %}}
 
 # Submit the assignment
 

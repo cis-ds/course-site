@@ -1,0 +1,202 @@
+---
+title: "Writing API queries"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/webdata003_api_by_hand.html"]
+categories: ["webdata"]
+
+menu:
+  notes:
+    parent: Getting data from the web
+    weight: 3
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(stringr)
+library(jsonlite)
+library(httr)
+
+theme_set(theme_minimal())
+```
+
+What happens if someone has not already written a package for the API from which we want to obtain data? We have to write our own function!
+
+First we're going to examine the structure of API requests via the [Open Movie Database](http://www.omdbapi.com/). OMDb is very similar to IMDB, except it has a nice, simple API. We can go to the website, input some search parameters, and obtain both the JSON query and the response from it. 
+
+## Constructing the API GET Request
+
+Likely the most challenging part of using web APIs is learning how to format your GET request URLs. While there are common architectures for such URLs, each API has its own unique quirks. For this reason, carefully reviewing the API documentation is critical.
+
+Most GET request URLs for API querying have three or four components:
+
+1. **Authentication Key/Token**: A user-specific character string appended to a base URL telling the server who is making the query; allows servers to efficiently manage database access.
+1. **Base URL**: A link stub that will be at the beginning of all calls to a given API; points the server to the location of an entire database.
+1. **Search Parameters**: A character string appended to a base URL that tells the server what to extract from the database; basically a series of filters used to point to specific parts of a database.
+1. **Response Format**: A character string indicating how the response should be formatted; usually one of `.csv`, `.json`, or `.xml`.
+
+## Determining the shape of the API request
+
+You can play around with the parameters on the [OMDB website](http://www.omdbapi.com/), and look at the resulting API call and the query you get back:
+
+![](/img/ombd.png)
+
+Let's experiment with different values of the `title` and `year` fields. Notice the pattern in the request. For example let's consider the 2013 television disaster thriller *Sharknado*:
+
+{{< youtube 9LmAEVdPhl4 >}}
+
+Given the Title "Sharknado" and the release year "2013", we get:
+
+``` http
+http://www.omdbapi.com/?apikey=[apikey]&t=Sharknado&y=2013
+```
+
+{{% callout note %}}
+
+The OMDB API used to be free, however in the past year shifted to a private API key due to overwhelming traffic. See in class for a demo API key you can use.
+
+{{% /callout %}}
+
+```{r omdb-key}
+omdb_key <- getOption("omdb_key")
+```
+
+How can we create this request in R?
+
+## `httr::GET()`
+
+`httr` is yet another star in the `tidyverse`, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, most importantly GET. HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there.^[An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/).]
+
+`httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`). They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output.
+
+To construct our query, we provide the **base URL** for the API. This is typically determined by reading the API's documentation. Additional search parameters are passed as a list object to the `query` argument. The name of each parameter is defined by the API. Here, we call these arguments `t`, `y`, and `apikey`.
+
+```{r sharknado, dependson = "omdb-key"}
+sharknado <- GET(url = "http://www.omdbapi.com/?",
+    query = list(t = "Sharknado",
+                 y = 2013,
+                 apikey = omdb_key)
+)
+```
+
+## Parsing the result
+
+We can read the content of the server's response using the `content()` function:
+
+```{r httr-json, dependson = "sharknado"}
+content(sharknado, type = "text") %>%
+  # print the contents in a clear structure
+  prettify()
+```
+
+What you can see here is **J**ava**S**cript **O**bject **N**otation and e**X**tensible **M**arkup **L**anguage (JSON) text encoded as plain text. JSON is a format for storing data like a nested array (list) built on key/value pairs.
+
+We want to convert the results from JSON format to something easier to work with - notably a data frame. For relatively simple API queries, one can use `as_tibble()` to convert the output to a data frame:
+
+```{r sharknado-content, dependson = "sharknado"}
+sharknado_df <- content(sharknado) %>%
+  as_tibble()
+sharknado_df
+```
+
+{{% callout note %}}
+
+Note there are two rows of observations when we would have expected a single row (only one movie). [We'll get to this shortly.](/notes/simplify-nested-lists)
+
+{{% /callout %}}
+
+## Additional information from `GET()`
+
+In addition, `GET()` gives us access to lots of useful information about the quality of our response. For example, the URL that was constructed to generate the query:
+
+```{r sharknado-url, dependson = "sharknado", eval = FALSE}
+sharknado$url
+```
+
+```{r sharknado-url-hidden, dependson = "sharknado", echo = FALSE}
+str_replace(string = sharknado$url, pattern = getOption("omdb_key"), replacement = "[apikey]")
+```
+
+We can also extract the HTTP status code from the query:
+
+```{r sharknado-status, dependson = "sharknado"}
+status_code(sharknado)
+```
+
+Status codes are useful indications of how the query was handled by the server and are important for troubleshooting issues when you do not receive the intended response.
+
+Code^[[HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html)] | Status
+-------|--------|
+1xx    | Informational
+2xx    | Success
+3xx    | Redirection
+4xx    | Client error (you did something wrong)
+5xx    | Server error (server did something wrong)
+
+{{% callout note %}}
+
+[(Perhaps a more intuitive, cat-based explanation of error codes)](https://www.flickr.com/photos/girliemac/sets/72157628409467125).
+
+{{% /callout %}}
+
+## Iteration through a set of movies
+
+What if we want to obtain results for multiple movies? Consider the entire Sharknado franchise which contains five films. How can we search iteratively over all of these films?
+
+First let's write a function that passes a search term and returns a data frame of the OMDB results:
+
+```{r omdb-function}
+omdb_api <- function(title, api_key){
+  # send GET request
+  response <- GET(url = "http://www.omdbapi.com/?",
+    query = list(t = title,
+                 apikey = api_key)
+  )
+  
+  # parse response to JSON
+  response_df <- content(response) %>%
+    as_tibble()
+  
+  # print a message to track progress
+  message(glue::glue("Scraping {title}..."))
+  
+  return(response_df)
+}
+```
+
+Now we need to construct the list of movies to search over.
+
+```{r sharknados}
+sharknados <- c("Sharknado", "Sharknado 2", "Sharknado 3",
+                "Sharknado 4", "Sharknado 5")
+```
+
+Finally we can apply the function to each film. To avoid overwhelming the server with too many queries, we can slow down the iteration using `slowly()`.
+
+```{r iterate-movies, dependson = c("omdb-function", "sharknados")}
+# modify function to delay by one second
+omdb_api_slow <- slowly(f = omdb_api, rate = rate_delay(1))
+
+# iterate over all the films
+sharknados_df <- map_dfr(.x = sharknados, .f = omdb_api_slow, api_key = getOption("omdb_key"))
+sharknados_df
+```
+
+## Acknowledgments
+
+```{r child = here::here("R", "_ack_stat545.Rmd")}
+```
+
+- Iterative operation drawn from Rochelle Terman's [Collecting Data from the Web](https://plsc-31101.github.io/course/collecting-data-from-the-web.html)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

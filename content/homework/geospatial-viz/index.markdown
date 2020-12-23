@@ -39,7 +39,7 @@ Think of data you've seen in the past that you think would make for a good geosp
 
 As for drawing the geographic boundaries, that depends on what you want to map. Find a relevant shapefile or GeoJSON which contains the boundaries for the region you wish to visualize. [Google is a great starting point](https://www.google.com/search?q=where+to+get+shapefiles). If you need help finding a relevant shapefile, feel free to post on the issues page to get help from the instructional staff/peers.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Some suggested sources compiled by Deblina Mukherjee, a previous TA for the course:
 
@@ -49,7 +49,7 @@ Some suggested sources compiled by Deblina Mukherjee, a previous TA for the cour
 * [The Center for Spatial Data Science](https://geodacenter.github.io/data-and-lab/). Also very UChicago -- but **fair warning, all of these files are clean**. Since they are relatively easy to implement, I would expect more effort applied on customizing their appearance and telling a story with them.
 * [The UChicago Library](https://www.lib.uchicago.edu/e/collections/maps/chigis.html)
 
-{{% /alert %}}
+{{% /callout %}}
 
 Once you have your geographic boundaries data (either from an R package or imported from an external file), combine this with your substantive data you wish to visualize. Be sure to make the graph presentable - that is, make it look like a nice map. Things to consider include (but are not limited to):
 
@@ -59,11 +59,11 @@ Once you have your geographic boundaries data (either from an R package or impor
 
 **Along with the map itself, write a brief description (250-500 words) of the map.** Summarize the information being depicted and explain any major visual design choices (e.g. why this color palette, why split the continuous variable into XYZ intervals rather than ABC intervals).
 
-{{% alert note %}}
+{{% callout note %}}
 
 Remember to make your assignment reproducible. If you get a shapefile from the internet, either include it in your repo or make sure your R Markdown document/R script includes a function to download it from the internet.
 
-{{% /alert %}}
+{{% /callout %}}
 
 # Submit the assignment
 

@@ -54,11 +54,11 @@ Answer the following questions. Generate appropriate figures/tables to support y
 
 1. Are mass shootings with shooters suffering from mental illness different from mass shootings with no signs of mental illness in the shooter? Assess the relationship between mental illness and total victims, mental illness and race, and the intersection of all three variables.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Make sure to provide 1-2 brief paragraphs of written interpretation of your tables/figures. Graphs and tables alone will not be sufficient to answer this question.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ### Formatting graphs
 
@@ -110,7 +110,7 @@ Your assignment should be submitted as an R Markdown document using the `github_
 
 Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Make sure to stage and commit:
 
@@ -118,7 +118,7 @@ Make sure to stage and commit:
 * `mass-shootings.md`
 * `mass-shootings_files/` - this folder contains all the graphs you generated in your R Markdown document
 
-{{% /alert %}}
+{{% /callout %}}
 
 # Rubric
 

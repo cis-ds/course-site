@@ -19,11 +19,11 @@ In this course, we will learn how to use [R](https://www.r-project.org/) for com
 
 Before we can do any of this, we need to install all the necessary software and get it setup and working.
 
-{{% alert note %}}
+{{% callout note %}}
 
 Given the remote learning format, I strongly encourage students to utilize the RStudio Server option. This will ensure all students use a consistent software environment, and I have tested all the course notes, exercises, and homework assignments to ensure they will run on the RStudio Server. If you choose to install your own software locally, I cannot guarantee the instructional staff will be able to help you troubleshoot issues caused by software configuration.
 
-{{% /alert %}}
+{{% /callout %}}
 
 ## Option 1 - use RStudio Server
 
