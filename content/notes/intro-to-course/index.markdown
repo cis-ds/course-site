@@ -143,9 +143,7 @@ Each class will have assigned readings. **You need to complete these before comi
 
 You will fail in this class. You will stumble, you will get lost, confused, not understand how to perform a task, not understand why your code is generating an error. But as Alfred so helpfully points out to Bruce Wayne, do not fall to pieces when you fail. Instead, learn to pick yourself up, recover, and learn from the experience. Consider this a lesson not only for this class, but graduate school in general.
 
-{{< tweet 764931533383749632 >}}
-
-We will follow the **15 minute rule** in this class. If you encounter a problem in your assignments, spend 15 minutes troubleshooting the problem on your own. Make use of [Google](https://www.google.com) and [StackOverflow](http://stackoverflow.com/) to resolve the error. However, if after 15 minutes you still cannot solve the problem, **ask for help**. We will use [GitHub to ask and answer class-related questions](https://github.com/uc-cfss/Discussion).
+We will follow the **15 minute rule** in this class.^[Hat tip to [Rachel Thomas](https://twitter.com/math_rachel/status/764931533383749632).] If you encounter a problem in your assignments, spend 15 minutes troubleshooting the problem on your own. Make use of [Google](https://www.google.com) and [StackOverflow](http://stackoverflow.com/) to resolve the error. However, if after 15 minutes you still cannot solve the problem, **ask for help**. We will use [GitHub to ask and answer class-related questions](https://github.com/uc-cfss/Discussion).
 
 {{% callout note %}}
 
@@ -399,7 +397,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2020-12-29                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -407,7 +405,7 @@ devtools::session_info()
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
+##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -435,23 +433,18 @@ devtools::session_info()
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
-##  highr         0.8     2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
 ##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
 ##  labeling      0.3     2014-08-23 [1] CRAN (R 4.0.0)
-##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
-##  Matrix        1.2-18  2019-11-27 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  mgcv          1.8-33  2020-08-27 [1] CRAN (R 4.0.2)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  nlme          3.1-149 2020-08-23 [1] CRAN (R 4.0.2)
 ##  openssl       1.4.3   2020-09-18 [1] CRAN (R 4.0.2)
 ##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
 ##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
