@@ -32,6 +32,8 @@ From the same author of `ggplot2`, I give you `dplyr`! This package contains use
 1. Subsequent arguments describe what to do with the data frame
 1. The result is a new data frame
 
+![Artwork by @allison_horst](/img/allison_horst_art/dplyr_wrangling.png) 
+
 ## Key functions in `dplyr`
 
 `function()`    | Action performed
@@ -43,6 +45,8 @@ From the same author of `ggplot2`, I give you `dplyr`! This package contains use
 `mutate()`      | Creates new columns (or variables)
 `group_by()`    | Changes the unit of analysis from the complete dataset to individual groups
 `summarize()`   | Collapses the data frame to a smaller number of rows which summarize the larger data
+
+![Artwork by @allison_horst](/img/allison_horst_art/dplyr_mutate.png)
 
 These are the basic verbs you will use to transform your data. By combining them together, you can perform powerful data manipulation tasks.
 
@@ -110,6 +114,8 @@ diamonds_ideal <- filter(.data = diamonds, cut == "Ideal")  # saved, but not pri
 ## 10  0.3  Ideal I     SI2      61      59   405  4.3   4.33  2.63
 ## # … with 21,541 more rows
 ```
+
+![Artwork by @allison_horst](/img/allison_horst_art/dplyr_filter.jpg)
 
 {{% callout note %}}
 
@@ -438,14 +444,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2020-12-29                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob           1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown       0.21    2020-12-11 [1] local         
+##  blogdown       0.21    2020-12-18 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
