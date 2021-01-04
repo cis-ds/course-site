@@ -516,7 +516,7 @@ Rscript -e "rmarkdown::render('gun-deaths.Rmd')"
 
 This creates a temporary R script which contains the single command `rmarkdown::render('gun-deaths.Rmd')` and executes it via `Rscript`.
 
-![Artwork by @allison_horst](static/img/allison_horst_art/rmarkdown_wizards.png)
+![Artwork by @allison_horst](/img/allison_horst_art/rmarkdown_wizards.png)
 
 ## Acknowledgments
 
