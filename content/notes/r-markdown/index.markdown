@@ -36,7 +36,11 @@ usethis::use_course("uc-cfss/a-deep-dive-into-r-markdown")
 
 Reproducibility is also key for communicating findings with other researchers and decision makers; it allows them to verify your results, assess your assumptions, and understand how your answers were formed rather than solely relying on your claims. In the data science framework employed in [R for Data Science](http://r4ds.had.co.nz), reproducibility is infused throughout the entire workflow.
 
+![Artwork by @allison_horst](/img/allison_horst_art/reproducibility_court.png)
+
 [R Markdown](http://rmarkdown.rstudio.com/) is one approach to ensuring reproducibility by providing a single cohesive authoring framework. It allows you to combine code, output, and analysis into a single document, are easily reproducible, and can be output to many different file formats. R Markdown is just one tool for enabling reproducibility. Another tool is [Git](https://git-scm.com/) for **version control**, which is crucial for collaboration and tracking changes to code and analysis.
+
+![Artwork by @allison_horst](/img/allison_horst_art/rmarkdown_rockstar.png)
 
 ### Jupyter Notebooks
 
@@ -512,6 +516,12 @@ Rscript -e "rmarkdown::render('gun-deaths.Rmd')"
 
 This creates a temporary R script which contains the single command `rmarkdown::render('gun-deaths.Rmd')` and executes it via `Rscript`.
 
+![Artwork by @allison_horst](/img/allison_horst_art/rmarkdown_wizards.png)
+
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
 ## Session Info
 
 
@@ -527,20 +537,19 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
+##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -602,7 +611,6 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
-##  whoami        1.3.0   2019-03-19 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)

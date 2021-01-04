@@ -38,6 +38,8 @@ EDA relies heavily on visualizations and graphical interpretations of data. Whil
 
 ## Characteristics of exploratory graphs
 
+![Artwork by @allison_horst](/img/allison_horst_art/ggplot2_exploratory.png)
+
 Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to explore how the flipper length of a penguin varies with it's body mass size. An appropriate technique would be a scatterplot:
 
 
@@ -68,6 +70,8 @@ ggplot(data = penguins,
 <img src="index_files/figure-html/penguins-final-1.png" width="672" />
 
 These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
+
+![Artwork by @allison_horst](/img/allison_horst_art/presenting_monster.png)
 
 ## Scorecard
 
@@ -322,6 +326,10 @@ ggplot(data = scorecard,
 
 Note that some channels are not always appropriate, even if they can technically be implemented. For example, the graph above has become quite challenging to read due to so many overlapping data points. Just because one **can** construct a graph does not mean one **should** construct a graph.
 
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
 ## Session Info
 
 
@@ -341,14 +349,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package        * version date       lib source        
 ##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports        1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob             1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown         0.21    2020-12-11 [1] local         
+##  blogdown         0.21    2020-12-18 [1] local         
 ##  bookdown         0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom            0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr            3.5.1   2020-10-13 [1] CRAN (R 4.0.2)

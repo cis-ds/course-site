@@ -117,10 +117,14 @@ To ensure your example is a reproducible example, you need to make sure to load 
 * Ensure portability of the code
     * Don't use [`rm(list = ls())`](/notes/saving-source/#what-s-wrong-with-rm-list-ls) or [`setwd()`](/notes/project-oriented-workflow/#we-need-to-talk-about-setwd-path-that-only-works-on-my-machine).
 
+
+![Artwork by @allison_horst](/img/allison_horst_art/reprex.png)
+
 ## Acknowledgments
 
 * ["How do I ask a good question?" StackOverflow.com](http://stackoverflow.com/help/how-to-ask)
 * [`reprex`](https://reprex.tidyverse.org/index.html)
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -141,18 +145,16 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-11 [1] local         
+##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  clipr         0.7.1   2020-10-08 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
 ##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
@@ -165,19 +167,15 @@ devtools::session_info()
 ##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
 ##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
 ##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
 ##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
 ##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
 ##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
-##  reprex      * 0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
 ##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
 ##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
 ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
@@ -185,10 +183,7 @@ devtools::session_info()
 ##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr       1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
 ##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble        3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
-##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
-##  whisker       0.4     2019-08-28 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)

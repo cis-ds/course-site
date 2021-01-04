@@ -383,6 +383,8 @@ try({
 
 `try()` is part of base R and like its cousins `tryCatch()` and `withCallingHandlers()` has existed for years now. If you begin to write and develop your own functions on a regular basis you should familiarize yourself with and practice these condition handling methods. However I presume the vast majority of you, at least for the immediate future, will more likely rely on existing functions. When you encounter errors in these situations, you are not going to rewrite functions from packages like `dplyr` or `ggplot2`. Instead, you want a method of dealing with failure that doesn't bring your code to a crashing halt.
 
+![Artwork by @allison_horst](/img/allison_horst_art/purrr_cat.png)
+
 Enter the `safely()` function. This function is an **adverb** in that it takes a function (a verb in `tidyverse` speak) and returns a modified version. The modified version never throws an error, but instead returns a list with two elements:
 
 1. `result` is the original result. If there was an error, then this will be `NULL`.
@@ -810,6 +812,7 @@ y$result[is_ok] %>%
 ## Acknowledgments
 
 * Logit example drawn from [How to create error messages in R](http://www.dummies.com/programming/r/how-to-generate-your-own-error-messages-in-r/)
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -830,14 +833,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
+##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
