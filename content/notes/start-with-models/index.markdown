@@ -154,6 +154,8 @@ linear_reg() %>%
 
 The [documentation page for `linear_reg()`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) lists the possible engines. We'll save this model object as `lm_mod`.
 
+![Artwork by @allison_horst](/img/allison_horst_art/parsnip.png)
+
 
 ```r
 lm_mod <- linear_reg() %>% 
@@ -409,7 +411,8 @@ Also, using the `tidymodels` framework, we can do some interesting things by inc
 
 ## Acknowledgments
 
-Example drawn from [Get Started - Build a model](https://www.tidymodels.org/start/models/) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+* Example drawn from [Get Started - Build a model](https://www.tidymodels.org/start/models/) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -430,7 +433,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        
@@ -439,7 +442,7 @@ devtools::session_info()
 ##  base64enc      0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
 ##  bayesplot      1.7.2      2020-05-28 [1] CRAN (R 4.0.0)
 ##  blob           1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown       0.21       2020-12-11 [1] local         
+##  blogdown       0.21       2020-12-18 [1] local         
 ##  bookdown       0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  boot           1.3-25     2020-04-26 [1] CRAN (R 4.0.2)
 ##  broom        * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
@@ -468,7 +471,6 @@ devtools::session_info()
 ##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi          0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
-##  farver         2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  fastmap        1.0.1      2019-10-08 [1] CRAN (R 4.0.0)
 ##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach        1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
@@ -499,7 +501,6 @@ devtools::session_info()
 ##  iterators      1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite       1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr          1.30       2020-09-22 [1] CRAN (R 4.0.2)
-##  labeling       0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  later          1.1.0.1    2020-06-05 [1] CRAN (R 4.0.1)
 ##  lattice        0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava           1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
@@ -515,7 +516,6 @@ devtools::session_info()
 ##  Matrix         1.2-18     2019-11-27 [1] CRAN (R 4.0.2)
 ##  matrixStats    0.57.0     2020-09-25 [1] CRAN (R 4.0.2)
 ##  memoise        1.1.0      2017-04-21 [1] CRAN (R 4.0.0)
-##  mgcv           1.8-33     2020-08-27 [1] CRAN (R 4.0.2)
 ##  mime           0.9        2020-02-04 [1] CRAN (R 4.0.0)
 ##  miniUI         0.1.1.1    2018-05-18 [1] CRAN (R 4.0.0)
 ##  minqa          1.2.4      2014-10-09 [1] CRAN (R 4.0.0)
@@ -581,10 +581,8 @@ devtools::session_info()
 ##  TMB            1.7.18     2020-07-27 [1] CRAN (R 4.0.2)
 ##  tune         * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis        1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
-##  utf8           1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  V8             3.2.0      2020-06-19 [1] CRAN (R 4.0.2)
 ##  vctrs          0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
-##  viridisLite    0.3.0      2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr          2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows    * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
 ##  xfun           0.18       2020-09-29 [1] CRAN (R 4.0.2)

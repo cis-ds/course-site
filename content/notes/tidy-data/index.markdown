@@ -40,6 +40,8 @@ Most data you encounter in the wild is stored in an untidy format. To tidy the d
     1. One variable might be spread across multiple columns.
     1. One observation may be scattered across multiple rows.
     
+![Artwork by @allison_horst](/img/allison_horst_art/tidydata_1.jpg)
+    
 Let's review the different tasks for tidying data using the R for Data Science `gapminder` subset. This is the data in a tidy format:
 
 
@@ -64,6 +66,8 @@ Note that in this data frame, each variable is in its own column (`country`, `ye
 ## Longer
 
 `tidyr` contains two major functions that can be used to tidy datasets. `pivot_longer()` makes datasets **longer** by increasing the number of rows and decreasing the number of columns. Many datasets you obtain are optimized for ease of data entry or ease of comparison rather than ease of analysis. This means data is typically stored messy with more columns than necessary.
+
+![Artwork by @allison_horst](/img/allison_horst_art/tidydata_2.jpg)
 
 For example, this version of `table1` is not tidy because the `year` variable is spread across multiple columns:
 
@@ -162,6 +166,8 @@ table2 %>%
 ```
 
 Since `type` and `count` are already columns that exist in `table2`, we don't have to write them as character strings inside quotation marks.
+
+![Artwork by @allison_horst](/img/allison_horst_art/tidydata_4.jpg)
 
 ## Separating
 
@@ -263,6 +269,12 @@ table5 %>%
 ## 6 China       2000  213766/1280428583
 ```
 
+![Artwork by @allsion_horst](/img/allison_horst_art/tidydata_7.jpg)
+
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
 ## Session Info
 
 
@@ -282,20 +294,19 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
+##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -355,7 +366,6 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
 ##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
-##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)

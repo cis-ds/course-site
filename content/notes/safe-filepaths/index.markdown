@@ -29,6 +29,8 @@ How can you avoid `setwd()` at the top of every script?
 * Make sure the top-level folder advertises itself as such. This can be as simple as having an empty file named `.here`. Or, if you use RStudio and/or Git, those both leave characteristic files behind that will get the job done.
 * Use the `here()` function from the [`here` package](https://CRAN.R-project.org/package=here) to build the path when you read or write a file. Create paths relative to the top-level directory.
 * Whenever you work on this project, launch the R process from the project's top-level directory.
+
+![Artwork by @allison_horst](/img/allison_horst_art/here.png)
   
 ## How to use the `here` package
 
@@ -115,6 +117,8 @@ Here are the criteria. The order doesn't really matter because all of them are c
 * Is this an RStudio Project? Literally, can I find a file named something like `foo.Rproj`?
 * Is this a checkout from a version control system? Does it have a directory named `.git` or `.svn`? Currently, only Git and Subversion are supported.
 
+![Artwork by @allsion_horst](/img/allison_horst_art/cracked_setwd.png)
+
 ## Filepaths and R Markdown documents
 
 `here::here()` is particularly useful within R Markdown documents. Unlike `.R` scripts, R Markdown documents always knit assuming the location of the `.Rmd` file is the working directory. In an R Project, this is fine as long as the `.Rmd` is in the top-level directory. But if an R Markdown file is saved in a sub-directory, a user can quickly become confused when writing code. Say the structure is something like this:
@@ -135,6 +139,7 @@ However, `read_csv(here("data", "scotus.csv"))` will work correctly from either 
 ## Acknowledgments
 
 * Substantial material drawn from [What They Forgot To Teach You About R](https://whattheyforgot.org/) by Jenny Bryan and Jim Hester. Licensed under the licensed under the [CC BY-SA 4.0 Creative Commons License](https://creativecommons.org/licenses/by-sa/4.0/).
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -155,20 +160,19 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21    2020-12-11 [1] local         
+##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools     0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -187,7 +191,7 @@ devtools::session_info()
 ##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
-##  here        * 0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)

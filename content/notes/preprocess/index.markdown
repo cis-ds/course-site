@@ -43,6 +43,8 @@ So far we have learned to build [linear](/notes/start-with-models/) and [logisti
  
 and so on. If you are familiar with R's formula interface, a lot of this might sound familiar and like what a formula already does. Recipes can be used to do many of the same things, but they have a much wider range of possibilities. This document shows how to use recipes for modeling. 
 
+![Artwork by @allison_horst](/img/allison_horst_art/recipes.png)
+
 ## General Social Survey {#gss}
 
 The [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.^[Conducted by NORC at the University of Chicago.]
@@ -511,7 +513,8 @@ Not too bad! With additional variables, further preprocessing, or an alternative
 
 ## Acknowledgments
 
-Example drawn from [Get Started - Preprocess your data with `recipes`](https://www.tidymodels.org/start/recipes/) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+* Example drawn from [Get Started - Preprocess your data with `recipes`](https://www.tidymodels.org/start/recipes/) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -532,7 +535,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
@@ -540,7 +543,7 @@ devtools::session_info()
 ##  backports     1.1.10     2020-09-15 [1] CRAN (R 4.0.2)
 ##  base64enc     0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
 ##  blob          1.2.1      2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown      0.21       2020-12-11 [1] local         
+##  blogdown      0.21       2020-12-18 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.1      2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -561,7 +564,6 @@ devtools::session_info()
 ##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)
-##  farver        2.0.3      2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0      2020-03-01 [1] CRAN (R 4.0.0)
 ##  foreach       1.5.0      2020-03-30 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
@@ -574,10 +576,8 @@ devtools::session_info()
 ##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)
 ##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
-##  hardhat       0.1.4      2020-07-02 [1] CRAN (R 4.0.2)
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          0.1        2017-05-28 [1] CRAN (R 4.0.0)
-##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0      2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
@@ -586,7 +586,6 @@ devtools::session_info()
 ##  iterators     1.0.12     2019-07-26 [1] CRAN (R 4.0.0)
 ##  jsonlite      1.7.1      2020-09-07 [1] CRAN (R 4.0.2)
 ##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)
-##  labeling      0.3        2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.2)
 ##  lava          1.6.8      2020-09-26 [1] CRAN (R 4.0.2)
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
@@ -645,7 +644,6 @@ devtools::session_info()
 ##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)
 ##  tune        * 0.1.1      2020-07-08 [1] CRAN (R 4.0.2)
 ##  usethis       1.6.3      2020-09-17 [1] CRAN (R 4.0.2)
-##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.4      2020-08-29 [1] CRAN (R 4.0.2)
 ##  visdat        0.5.3      2019-02-15 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
