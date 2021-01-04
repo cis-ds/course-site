@@ -374,7 +374,7 @@ You will frequently need to iterate over vectors or data frames, perform an oper
 * Do something to each element
 * Save the results
 
-![Artwork by @allison_horst](static/img/allison_horst_art/map2_cupcakes.png)
+![Artwork by @allison_horst](/img/allison_horst_art/map2_cupcakes.png)
 
 There is one function for each type of output:
 
@@ -887,6 +887,7 @@ worldbank %>%
 ## Acknowledgments
 
 * `across()` based on [Column-wise operation vignette](https://dplyr.tidyverse.org/dev/articles/colwise.html)
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -907,7 +908,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-29                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

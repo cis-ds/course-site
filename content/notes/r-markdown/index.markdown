@@ -518,6 +518,10 @@ This creates a temporary R script which contains the single command `rmarkdown::
 
 ![Artwork by @allison_horst](static/img/allison_horst_art/rmarkdown_wizards.png)
 
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
 ## Session Info
 
 
@@ -533,7 +537,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-29                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

@@ -124,6 +124,7 @@ To ensure your example is a reproducible example, you need to make sure to load 
 
 * ["How do I ask a good question?" StackOverflow.com](http://stackoverflow.com/help/how-to-ask)
 * [`reprex`](https://reprex.tidyverse.org/index.html)
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -144,7 +145,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-29                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        

@@ -59,6 +59,8 @@ What makes this such an effective visualization?^[Source: [Dataviz History: Char
 
 Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).
 
+![Artwork by @allison_horst](static/img/allison_horst_art/sf.png)
+
 ## Scale
 
 **Scale** defines the proportion between distances and sizes on a map and their actual distances and sizes on Earth. Depending on the total geographic area for which you have data to visualize, you could create a **small-scale map** or a **large-scale map**. So for instance, a map of the United States would be considered large-scale:
@@ -130,7 +132,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-15                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package       * version date       lib source        
@@ -138,7 +140,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  backports       1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  bitops          1.0-6   2013-08-17 [1] CRAN (R 4.0.0)
 ##  blob            1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
-##  blogdown        0.21    2020-12-11 [1] local         
+##  blogdown        0.21    2020-12-18 [1] local         
 ##  bookdown        0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom           0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
 ##  callr           3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -146,10 +148,8 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  class           7.3-17  2020-04-26 [1] CRAN (R 4.0.2)
 ##  classInt        0.4-3   2020-04-07 [1] CRAN (R 4.0.0)
 ##  cli             2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  codetools       0.2-16  2018-12-24 [1] CRAN (R 4.0.2)
 ##  colorspace      1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
 ##  crayon          1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
-##  curl            4.3     2019-12-02 [1] CRAN (R 4.0.0)
 ##  DBI             1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
 ##  dbplyr          1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
 ##  desc            1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
@@ -160,7 +160,6 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  ellipsis        0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate        0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi           0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
-##  farver          2.0.3   2020-01-16 [1] CRAN (R 4.0.0)
 ##  forcats       * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs              1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  generics        0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
@@ -177,7 +176,6 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  jsonlite        1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
 ##  KernSmooth      2.23-17 2020-04-26 [1] CRAN (R 4.0.2)
 ##  knitr           1.30    2020-09-22 [1] CRAN (R 4.0.2)
-##  labeling        0.3     2014-08-23 [1] CRAN (R 4.0.0)
 ##  lattice         0.20-41 2020-04-02 [1] CRAN (R 4.0.2)
 ##  lifecycle       0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
 ##  lubridate       1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
@@ -201,7 +199,6 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  readxl          1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
 ##  remotes         2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex          0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rgeos           0.5-5   2020-09-07 [1] CRAN (R 4.0.2)
 ##  RgoogleMaps     1.4.5.3 2020-02-12 [1] CRAN (R 4.0.0)
 ##  rjson           0.2.20  2018-06-08 [1] CRAN (R 4.0.0)
 ##  rlang           0.4.8   2020-10-08 [1] CRAN (R 4.0.2)

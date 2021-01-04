@@ -812,6 +812,7 @@ y$result[is_ok] %>%
 ## Acknowledgments
 
 * Logit example drawn from [How to create error messages in R](http://www.dummies.com/programming/r/how-to-generate-your-own-error-messages-in-r/)
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
 
 ## Session Info
 
@@ -832,7 +833,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2020-12-29                  
+##  date     2021-01-04                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
