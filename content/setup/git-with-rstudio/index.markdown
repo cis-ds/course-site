@@ -44,7 +44,7 @@ From RStudio, go to *Tools > Global Options > Git/SVN* and make sure that the bo
 
 On my computer, it looks like this:
 
-![](/img/git_exec.png)
+![](/img/git_exec.png)<!-- -->
 
 If you make any changes, **restart RStudio and try the steps at the top of the page again**.
 

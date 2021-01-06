@@ -30,17 +30,25 @@ usethis::use_course("uc-cfss/a-deep-dive-into-r-markdown")
 
 ## Reproducibility in scientific research
 
-![](/img/data-science/base.png)
+![](/img/data-science/base.png)<!-- -->
 
 **Reproducibility** is "the idea that data analyses, and more generally, scientific claims, are published with their data and software code so that others may verify the findings and build upon them."^[[Coursera: Reproducible Research](https://www.coursera.org/learn/reproducible-research)] Scholars who implement reproducibility in their projects can quickly and easily reproduce the original results and trace back to determine how they were derived. This easily enables verification and replication, and allows the researcher to precisely replicate his or her analysis. This is extremely important when writing a paper, submitting it to a journal, then coming back months later for a revise and resubmit because you won't remember how all the code/analysis works together when completing your revisions.
 
 Reproducibility is also key for communicating findings with other researchers and decision makers; it allows them to verify your results, assess your assumptions, and understand how your answers were formed rather than solely relying on your claims. In the data science framework employed in [R for Data Science](http://r4ds.had.co.nz), reproducibility is infused throughout the entire workflow.
 
+<<<<<<< HEAD
+![](/img/allison_horst_art/reproducibility_court.png)<!-- -->
+
+[R Markdown](http://rmarkdown.rstudio.com/) is one approach to ensuring reproducibility by providing a single cohesive authoring framework. It allows you to combine code, output, and analysis into a single document, are easily reproducible, and can be output to many different file formats. R Markdown is just one tool for enabling reproducibility. Another tool is [Git](https://git-scm.com/) for **version control**, which is crucial for collaboration and tracking changes to code and analysis.
+
+![](/img/allison_horst_art/rmarkdown_rockstar.png)<!-- -->
+=======
 ![Artwork by @allison_horst](/img/allison_horst_art/reproducibility_court.png)
 
 [R Markdown](http://rmarkdown.rstudio.com/) is one approach to ensuring reproducibility by providing a single cohesive authoring framework. It allows you to combine code, output, and analysis into a single document, are easily reproducible, and can be output to many different file formats. R Markdown is just one tool for enabling reproducibility. Another tool is [Git](https://git-scm.com/) for **version control**, which is crucial for collaboration and tracking changes to code and analysis.
 
 ![Artwork by @allison_horst](/img/allison_horst_art/rmarkdown_rockstar.png)
+>>>>>>> master
 
 ### Jupyter Notebooks
 
@@ -99,7 +107,7 @@ Code chunks are interspersed with text throughout the document. To complete the 
 
 When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, $\LaTeX$, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
 
-![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)
+![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)<!-- -->
 
 ## Text formatting with Markdown
 
@@ -136,7 +144,7 @@ For example, if I wanted a code chunk to not print the code itself or any warnin
 
 Remember the R Markdown workflow?
 
-![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)
+![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)<!-- -->
 
 By default, every time you knit a document R starts completely fresh. None of the previous results are saved. If you have code chunks that run computationally intensive tasks, you might want to store these results to be more efficient and save time. If you use `cache = TRUE`, R will do exactly this. The output of the chunk will be saved to a specially named file on disk. If your [`.gitignore` file is setup correctly](/notes/common-git-problems/#how-to-use-gitignore), this cached file will not be tracked by Git. This is in fact preferable since the cached file could be hundreds of megabytes in size. Now, every time you knit the document the cached results will be used instead of running the code fresh.
 
@@ -472,7 +480,7 @@ youth %>%
 
 You edit scripts in the editor panel in R Studio.
 
-![](https://r4ds.had.co.nz/diagrams/rstudio-editor.png)
+![](https://r4ds.had.co.nz/diagrams/rstudio-editor.png)<!-- -->
 
 ## When to use a script?
 
@@ -516,7 +524,7 @@ Rscript -e "rmarkdown::render('gun-deaths.Rmd')"
 
 This creates a temporary R script which contains the single command `rmarkdown::render('gun-deaths.Rmd')` and executes it via `Rscript`.
 
-![Artwork by @allison_horst](/img/allison_horst_art/rmarkdown_wizards.png)
+![](/img/allison_horst_art/rmarkdown_wizards.png)<!-- -->
 
 ## Acknowledgments
 
@@ -529,7 +537,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.2 (2020-06-22)
+##  version  R version 4.0.3 (2020-10-10)
 ##  os       macOS Catalina 10.15.7      
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
@@ -537,82 +545,82 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-04                  
+##  date     2021-01-06                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
-##  blob          1.2.1   2020-01-20 [1] CRAN (R 4.0.0)
+##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
 ##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
-##  broom         0.7.1   2020-10-02 [1] CRAN (R 4.0.2)
+##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
-##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
-##  colorspace    1.4-1   2019-03-18 [1] CRAN (R 4.0.0)
+##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
+##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.2)
+##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
-##  dbplyr        1.4.4   2020-05-27 [1] CRAN (R 4.0.0)
+##  dbplyr        2.0.0   2020-11-03 [1] CRAN (R 4.0.2)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
 ##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
-##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)
 ##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
 ##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
-##  generics      0.0.2   2018-11-29 [1] CRAN (R 4.0.0)
-##  ggplot2     * 3.3.2   2020-06-19 [1] CRAN (R 4.0.2)
+##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.0.2)
+##  ggplot2     * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)
 ##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
-##  here        * 0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  here        * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
-##  jsonlite      1.7.1   2020-09-07 [1] CRAN (R 4.0.2)
+##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
 ##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
-##  lubridate     1.7.9   2020-06-08 [1] CRAN (R 4.0.2)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  lubridate     1.7.9.2 2020-11-13 [1] CRAN (R 4.0.2)
+##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
-##  pillar        1.4.6   2020-07-10 [1] CRAN (R 4.0.1)
-##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
+##  pillar        1.4.7   2020-11-20 [1] CRAN (R 4.0.2)
+##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
-##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
+##  processx      3.4.5   2020-11-30 [1] CRAN (R 4.0.2)
+##  ps            1.5.0   2020-12-05 [1] CRAN (R 4.0.2)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)
 ##  rcfss       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.5   2020-07-06 [1] CRAN (R 4.0.2)
 ##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
 ##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
 ##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
-##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
-##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
-##  rstudioapi    0.11    2020-02-07 [1] CRAN (R 4.0.0)
+##  rlang         0.4.10  2020-12-30 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.6     2020-12-14 [1] CRAN (R 4.0.2)
+##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)
+##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.0.2)
 ##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
 ##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  tibble      * 3.0.3   2020-07-10 [1] CRAN (R 4.0.2)
+##  testthat      3.0.1   2020-12-17 [1] CRAN (R 4.0.2)
+##  tibble      * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)
 ##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)
-##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
-##  vctrs         0.3.4   2020-08-29 [1] CRAN (R 4.0.2)
+##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
+##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
+##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ##  ymlthis     * 0.1.2   2020-02-03 [1] CRAN (R 4.0.0)

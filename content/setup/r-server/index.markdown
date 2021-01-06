@@ -44,7 +44,7 @@ Only students in this course who have been approved by SSCS can access this serv
 
 You should see something that looks like this:
 
-![](/img/rstudio-server.png)
+![](/img/rstudio-server.png)<!-- -->
 
 We'll discuss this in more detail later, but the RStudio IDE is divided into 4 separate panes (one of which is hidden for now) which all serve specific functions. For now, to make sure R and RStudio are setup correctly, type `x <- 5 + 2` into the *console* pane (the one on the left side of your screen - this is equivalent to the main window you saw when you opened the base R program, where you can type and run live R code) and execute it by pressing Enter/Return. You just created an object in R called `x`. What does this object contain? Type `print(x)` into the console and press enter again. Your console should now contain the following output:
 

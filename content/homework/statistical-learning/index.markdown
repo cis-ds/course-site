@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw06-stat-learn.html"]
 
 summary: "Implement statistical learning methods for regression and classification."
-url_code: "https://github.com/cfss-fa20/hw07"
+url_code: "https://github.com/cfss-win21/hw07"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 1:00 pm CT (Chicago) on November 17th.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-fa20/hw07) to fork the repo.
+Go [here](https://github.com/cfss-win21/hw07) to fork the repo.
 
 # Part 1: Student debt
 

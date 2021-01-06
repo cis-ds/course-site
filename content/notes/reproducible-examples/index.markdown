@@ -117,8 +117,7 @@ To ensure your example is a reproducible example, you need to make sure to load 
 * Ensure portability of the code
     * Don't use [`rm(list = ls())`](/notes/saving-source/#what-s-wrong-with-rm-list-ls) or [`setwd()`](/notes/project-oriented-workflow/#we-need-to-talk-about-setwd-path-that-only-works-on-my-machine).
 
-
-![Artwork by @allison_horst](/img/allison_horst_art/reprex.png)
+![](/img/allison_horst_art/reprex.png)<!-- -->
 
 ## Acknowledgments
 
@@ -137,7 +136,7 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.2 (2020-06-22)
+##  version  R version 4.0.3 (2020-10-10)
 ##  os       macOS Catalina 10.15.7      
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
@@ -145,47 +144,50 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-04                  
+##  date     2021-01-06                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-##  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
 ##  blogdown      0.21    2020-12-18 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
-##  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
+##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.2)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
 ##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
-##  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)
 ##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
 ##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 ##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
-##  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
+##  here          1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
-##  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)
 ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-##  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
+##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)
 ##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-##  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
-##  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
-##  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+##  processx      3.4.5   2020-11-30 [1] CRAN (R 4.0.2)
+##  ps            1.5.0   2020-12-05 [1] CRAN (R 4.0.2)
+##  purrr         0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)
 ##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
-##  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
-##  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
-##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+##  reprex      * 0.3.0   2019-05-16 [1] CRAN (R 4.0.0)
+##  rlang         0.4.10  2020-12-30 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.6     2020-12-14 [1] CRAN (R 4.0.2)
+##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)
 ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
 ##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 ##  stringr       1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-##  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-##  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+##  testthat      3.0.1   2020-12-17 [1] CRAN (R 4.0.2)
+##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
+##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library

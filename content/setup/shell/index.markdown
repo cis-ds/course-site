@@ -20,7 +20,7 @@ Here we use the `shell` for a more modest goal: To navigate the file system, con
 
 In RStudio, go to *Tools > Shell*. This should take you to the shell (on Mac: Terminal, on Windows: GitBash or equivalent). It should be a simple blinking cursor, waiting for input and looks similar to this (white text on black background, or black text on white background):
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Bash_screenshot.png/440px-Bash_screenshot.png)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Bash_screenshot.png/440px-Bash_screenshot.png)<!-- -->
 
 ## Using the shell
 
@@ -45,7 +45,7 @@ The most basic commands are listed below:
 
 On Windows, the program that runs the shell is called *Command Prompt* or `cmd.exe`. It looks like this:
 
-![](https://upload.wikimedia.org/wikipedia/commons/b/b3/Command_Prompt_on_Windows_10_RTM.png)
+![](https://upload.wikimedia.org/wikipedia/commons/b/b3/Command_Prompt_on_Windows_10_RTM.png)<!-- -->
 
 Unfortunately, the default Windows shell does not support all the commands that other operating systems do. This is where GitBash comes in handy: it installs a light version of a shell that does support all the above commands. When you access the shell through RStudio, RStudio actually tries to open GitBash if it can find it, but it will open the default Windows Command Prompt if GitBash is not found.
 

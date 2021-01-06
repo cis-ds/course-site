@@ -23,7 +23,7 @@ aliases: "/setup03.html"
 1. Run the installation from the file you just downloaded (`.exe` or `.pkg`).
 1. Open R. You should see a screen similar to this:
 
-![](/img/r_console.png)
+![](/img/r_console.png)<!-- -->
 
 This is the default R console. You can use this as your development environment where you write and execute code. However the default R console is very minimalistic and not much more useful than a text editor. This is why we will use RStudio for programming in R. However to demonstrate that your R installation works, type `5 + 2` in the console and press enter. You should see the following:
 
@@ -51,7 +51,7 @@ As previously mentioned, the base R distribution is not the best for developing 
 
 To make sure you've done everything correctly, open up RStudio on your computer. You should see something that looks like this:
 
-![](/img/rstudio_startup.png)
+![](/img/rstudio_startup.png)<!-- -->
 
 We'll discuss this in more detail later, but the RStudio IDE is divided into 4 separate panes (one of which is hidden for now) which all serve specific functions. For now, to make sure R and RStudio are setup correctly, type `x <- 5 + 2` into the *console* pane (the one on the left side of your screen - this is equivalent to the main window you saw when you opened the base R program, where you can type and run live R code) and execute it by pressing Enter/Return. You just created an object in R called `x`. What does this object contain? Type `print(x)` into the console and press enter again. Your console should now contain the following output:
 

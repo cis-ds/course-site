@@ -1,7 +1,7 @@
 ---
 title: "Data wrangling: tidy data"
-date: 2020-10-13T13:00:00-06:00
-publishDate: 2019-04-15T13:00:00-06:00
+date: 2021-01-26T09:40:00-06:00
+publishDate: 2019-04-15T09:40:00-06:00
 draft: false
 type: "talk"
 
@@ -9,7 +9,7 @@ aliases: ["/cm005.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2020-10-13T14:20:00-06:00
+time_end: 2021-01-26T11:00:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

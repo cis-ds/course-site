@@ -43,7 +43,7 @@ library(tidyverse)
     ggplot(data = mpg)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-1-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-1-1.png" width="70%" style="display: block; margin: auto;" />
 
 1.  How many rows are in `mtcars`? How many columns?
 
@@ -73,7 +73,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = hwy, y = cyl))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-3-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-3-1.png" width="70%" style="display: block; margin: auto;" />
     
 1.  What happens if you make a scatterplot of `class` vs `drv`. Why is
     the plot not useful?
@@ -84,7 +84,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = class, y = drv))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-4-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-4-1.png" width="70%" style="display: block; margin: auto;" />
     
     The variables are both categorical, so the points on the plot overlap with one another.
 
@@ -98,7 +98,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, color = "blue"))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-5-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-5-1.png" width="70%" style="display: block; margin: auto;" />
     
     Because the `color` argument was set within `aes()`, not `geom_point()`.
     
@@ -108,7 +108,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy), color = "blue")
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-6-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-6-1.png" width="70%" style="display: block; margin: auto;" />
     
 1.  Which variables in `mpg` are categorical? Which variables are continuous? 
     (Hint: type `?mpg` to read the documentation for the dataset). How
@@ -148,7 +148,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, color = cty))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-8-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -157,7 +157,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, size = cty))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-8-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-8-2.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -167,7 +167,7 @@ library(tidyverse)
     #> Error: A continuous variable can not be mapped to shape
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-8-3.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-8-3.png" width="70%" style="display: block; margin: auto;" />
     
     For these aesthetics, continuous variables are visualized on a spectrum (see the color plot with the continuous color palette), whereas categorical variables are binned into discrete categories, like this:
     
@@ -177,7 +177,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, color = class))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-9-1.png" width="70%" style="display: block; margin: auto;" />
     
 1.  What happens if you map the same variable to multiple aesthetics? 
 
@@ -187,7 +187,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, color = cty, size = cty))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-10-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-10-1.png" width="70%" style="display: block; margin: auto;" />
     
     Both aesthetics are implemented, and multiple legends are generated.
 
@@ -200,11 +200,11 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy), stroke = 3, shape = 21)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-11-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-11-1.png" width="70%" style="display: block; margin: auto;" />
     
     `stroke` adjusts the thickness of the border for shapes that can take on different colors both inside and outside. [It only works for shapes 21-24.](http://docs.ggplot2.org/current/vignettes/ggplot2-specs.html)
     
-    <img src="/r4ds/_index_files/figure-html/shapes-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/shapes-1.png" width="70%" style="display: block; margin: auto;" />
     
 1.  What happens if you map an aesthetic to something other than a variable 
     name, like `aes(colour = displ < 5)`?
@@ -215,7 +215,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, color = displ < 5))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-12-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-12-1.png" width="70%" style="display: block; margin: auto;" />
     
     R executes the code and creates a temporary variable containing the results of the operation. Here, the new variable takes on a value of `TRUE` if the engine displacement is less than 5 or `FALSE` if the engine displacement is more than or equal to 5.
 
@@ -230,7 +230,7 @@ library(tidyverse)
       facet_wrap(~ displ)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-13-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-13-1.png" width="70%" style="display: block; margin: auto;" />
     
     Your graph will not make much sense. R will try to draw a separate facet for each unique value of the continuous variable. If you have too many unique values, you may crash R.
 
@@ -243,7 +243,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = drv, y = cyl))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-14-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-14-1.png" width="70%" style="display: block; margin: auto;" />
 
     
     ```r
@@ -252,7 +252,7 @@ library(tidyverse)
       facet_grid(drv ~ cyl)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-15-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-15-1.png" width="70%" style="display: block; margin: auto;" />
     
     Empty cells mean there are no observations in the data that have that unique combination of values. For instance, in this plot we can determine that there are no vehicles with 5 cylinders that are also 4 wheel drive vehicles. The plot is similar to the original one, just that each facet only appears to have a single data point.
     
@@ -265,7 +265,7 @@ library(tidyverse)
       facet_grid(drv ~ .)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-16-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-16-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -274,7 +274,7 @@ library(tidyverse)
       facet_grid(. ~ cyl)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-16-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-16-2.png" width="70%" style="display: block; margin: auto;" />
     
     `.` acts a placeholder for no variable. In `facet_grid()`, this results in a plot faceted on a single dimension (1 by $N$ or $N$ by 1) rather than an $N$ by $N$ grid.
 
@@ -287,7 +287,7 @@ library(tidyverse)
       facet_wrap(~ class, nrow = 2)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-17-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-17-1.png" width="70%" style="display: block; margin: auto;" />
     
     What are the advantages to using faceting instead of the colour aesthetic?
     What are the disadvantages? How might the balance change if you had a 
@@ -299,7 +299,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy, color = class))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-18-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-18-1.png" width="70%" style="display: block; margin: auto;" />
     
     Faceting splits the data into separate grids and better visualizes trends within each individual facet. The disadvantage is that by doing so, it is harder to visualize the overall relationship across facets. The color aesthetic is fine when your dataset is small, but with larger datasets points may begin to overlap with one another. In this situation with a colored plot, jittering may not be sufficient because of the additional color aesthetic.
     
@@ -323,7 +323,7 @@ library(tidyverse)
       facet_grid(trans ~ drv)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-19-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-19-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -332,7 +332,7 @@ library(tidyverse)
       facet_grid(drv ~ trans)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-19-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-19-2.png" width="70%" style="display: block; margin: auto;" />
 
 ## 3.6.1 Exercises
 
@@ -355,7 +355,7 @@ library(tidyverse)
     #> `geom_smooth()` using method = 'loess' and formula 'y ~ x'
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-20-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-20-1.png" width="70%" style="display: block; margin: auto;" />
 
 1.  What does `show.legend = FALSE` do?  What happens if you remove it?  
     Why do you think I used it earlier in the chapter?
@@ -376,7 +376,7 @@ library(tidyverse)
     #> `geom_smooth()` using method = 'loess' and formula 'y ~ x'
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-21-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-21-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -386,7 +386,7 @@ library(tidyverse)
     #> `geom_smooth()` using method = 'loess' and formula 'y ~ x'
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-21-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-21-2.png" width="70%" style="display: block; margin: auto;" />
     
     No because they use the same data and mapping settings. The only difference is that by storing it in the `ggplot()` function, it is automatically reused for each layer.
 
@@ -399,7 +399,7 @@ library(tidyverse)
       geom_smooth(se = FALSE)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-22-1.png" width="70%" />
+    <img src="_index_files/figure-html/unnamed-chunk-22-1.png" width="70%" />
     
     ```r
     ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
@@ -407,7 +407,7 @@ library(tidyverse)
       geom_point()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-22-2.png" width="70%" />
+    <img src="_index_files/figure-html/unnamed-chunk-22-2.png" width="70%" />
     
     ```r
     ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = drv)) + 
@@ -415,7 +415,7 @@ library(tidyverse)
       geom_smooth(se = FALSE)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-22-3.png" width="70%" />
+    <img src="_index_files/figure-html/unnamed-chunk-22-3.png" width="70%" />
     
     ```r
     ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
@@ -423,7 +423,7 @@ library(tidyverse)
       geom_smooth(se = FALSE)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-22-4.png" width="70%" />
+    <img src="_index_files/figure-html/unnamed-chunk-22-4.png" width="70%" />
     
     ```r
     ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
@@ -431,7 +431,7 @@ library(tidyverse)
       geom_smooth(aes(linetype = drv), se = FALSE)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-22-5.png" width="70%" />
+    <img src="_index_files/figure-html/unnamed-chunk-22-5.png" width="70%" />
     
     ```r
     ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) + 
@@ -439,7 +439,7 @@ library(tidyverse)
       geom_point(aes(colour = drv))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-22-6.png" width="70%" />
+    <img src="_index_files/figure-html/unnamed-chunk-22-6.png" width="70%" />
     
 ## 3.8.1 Exercises
 
@@ -459,7 +459,7 @@ library(tidyverse)
                       fun.y = median)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-23-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-23-1.png" width="70%" style="display: block; margin: auto;" />
 
 1.  What does `geom_col()` do? How is it different to `geom_bar()`?
 
@@ -490,14 +490,14 @@ library(tidyverse)
       geom_bar(mapping = aes(x = cut, y = stat(prop)))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-24-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-24-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     ggplot(data = diamonds) + 
       geom_bar(mapping = aes(x = cut, fill = color, y = stat(prop)))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-24-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-24-2.png" width="70%" style="display: block; margin: auto;" />
     
     If we fail to set `group = 1`, the proportions for each cut are calculated using the complete dataset, rather than each subset of `cut`. Instead, we want the graphs to look like this:
 
@@ -507,14 +507,14 @@ library(tidyverse)
       geom_bar(mapping = aes(x = cut, y = stat(prop), group = 1))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-25-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-25-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     ggplot(data = diamonds) + 
       geom_bar(mapping = aes(x = cut, fill = color, y = stat(prop), group = 1))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-25-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-25-2.png" width="70%" style="display: block; margin: auto;" />
 
 ## 3.8.1 Exercises
 
@@ -526,7 +526,7 @@ library(tidyverse)
       geom_point()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-26-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-26-1.png" width="70%" style="display: block; margin: auto;" />
     
     Many of the data points overlap. We can jitter the points by adding some slight random noise, which will improve the overall visualization.
 
@@ -536,7 +536,7 @@ library(tidyverse)
       geom_jitter()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-27-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-27-1.png" width="70%" style="display: block; margin: auto;" />
 
 1.  What parameters to `geom_jitter()` control the amount of jittering?
 
@@ -550,7 +550,7 @@ library(tidyverse)
       geom_jitter()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-28-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-28-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -558,7 +558,7 @@ library(tidyverse)
       geom_count()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-28-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-28-2.png" width="70%" style="display: block; margin: auto;" />
     
     Rather than adding random noise, `geom_count()` counts the number of observations at each location, then maps the count to point area. It makes larger points the more observations are located at that area, so the number of visible points is equal to `geom_point()`.
 
@@ -573,7 +573,7 @@ library(tidyverse)
       geom_boxplot(position = "dodge")
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-29-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-29-1.png" width="70%" style="display: block; margin: auto;" />
 
 ## 3.9.1 Exercises
 
@@ -586,7 +586,7 @@ library(tidyverse)
       coord_polar(theta = "y")
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-30-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-30-1.png" width="70%" style="display: block; margin: auto;" />
 
 1.  What does `labs()` do? Read the documentation.
 
@@ -608,7 +608,7 @@ library(tidyverse)
       coord_fixed()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-31-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-31-1.png" width="70%" style="display: block; margin: auto;" />
     
     The relationships is approximately linear, though overall cars have slightly better highway mileage than city mileage. But using `coord_fixed()`, the plot draws equal intervals on the $x$ and $y$ axes so they are directly comparable. `geom_abline()` draws a line that, by default, has an intercept of 0 and slope of 1. This aids us in our discovery that automobile gas efficiency is on average slightly higher for highways than city driving, though the slope of the relationship is still roughly 1-to-1.
     
@@ -643,7 +643,7 @@ library(tidyverse)
       geom_point(mapping = aes(x = displ, y = hwy))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-33-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-33-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1696,7 +1696,7 @@ library(tidyverse)
       geom_col()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-63-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-63-1.png" width="70%" style="display: block; margin: auto;" />
     
     Avoid flying in the evening to minimize your arrival delay.
     
@@ -1722,7 +1722,7 @@ library(tidyverse)
     #> Warning: Removed 14383 rows containing missing values (geom_point).
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-64-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-64-1.png" width="70%" style="display: block; margin: auto;" />
     
 1.  Look at each destination. Can you find flights that are suspiciously
     fast? (i.e. flights that represent a potential data entry error). Compute
@@ -1747,7 +1747,7 @@ library(tidyverse)
     #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-65-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-65-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1756,7 +1756,7 @@ library(tidyverse)
     #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-65-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-65-2.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1765,7 +1765,7 @@ library(tidyverse)
     #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-65-3.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-65-3.png" width="70%" style="display: block; margin: auto;" />
 
 1.  Explore the distribution of `price`. Do you discover anything unusual
     or surprising? (Hint: Carefully think about the `binwidth` and make sure
@@ -1779,7 +1779,7 @@ library(tidyverse)
     #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-66-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-66-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1789,7 +1789,7 @@ library(tidyverse)
       scale_x_continuous(breaks = seq(0, 20000, by = 1000))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-66-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-66-2.png" width="70%" style="display: block; margin: auto;" />
 
     There are far fewer diamonds priced at \$1500 compared to other price points. This is not apparent using the default number of bins.
     
@@ -1803,7 +1803,7 @@ library(tidyverse)
       coord_cartesian(xlim = c(.97, 1.03))
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-67-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-67-1.png" width="70%" style="display: block; margin: auto;" />
     
     Around 1500 diamonds are $1.00$ carat, compared to around 30 or so diamonds at $.99$ carat. This could occur because prospective buyers of diamonds, if they are already willing to buy a $.99$ carat diamond will decide it is more aesthetically pleasing to say they bought a $1$ carat diamond so there is less demand for $.99$ carat diamonds.
     
@@ -1820,7 +1820,7 @@ library(tidyverse)
     #> `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-68-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-68-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1834,7 +1834,7 @@ library(tidyverse)
     #> Warning: Removed 34912 rows containing missing values (geom_point).
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-68-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-68-2.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1846,7 +1846,7 @@ library(tidyverse)
     #> `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-68-3.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-68-3.png" width="70%" style="display: block; margin: auto;" />
     
     By using `xlim()` or `ylim()`, you remove all observations which exceed these values so they are not used to generate the plot. By using `coord_cartesian()`, those values are used to generate the plot and are merely cut off when zooming in. Note the change in the smoothing line in the `xlim()` example because it doesn't have all the data points to calculate the line.
 
@@ -1863,7 +1863,7 @@ library(tidyverse)
     #> Warning: Removed 8255 rows containing non-finite values (stat_bin).
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-69-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-69-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1874,7 +1874,7 @@ library(tidyverse)
       geom_bar()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-69-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-69-2.png" width="70%" style="display: block; margin: auto;" />
     
     Histograms omit missing values, whereas bar charts draw them as a separate category. For continuous variables, like in a histogram, there is no meaningful location to draw missing values. On the far left? Far right? Middle? But for bar charts, which are used for categorical variables, you could draw them as a distinct bar; by default it can be located anywhere on the chart (conventionally it is drawn on the right side). You can override this default to completely remove missing values from the chart if you prefer.
 
@@ -1901,7 +1901,7 @@ library(tidyverse)
       geom_freqpoly(mapping = aes(colour = cancelled), binwidth = 1/4)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-70-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-70-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -1917,7 +1917,7 @@ library(tidyverse)
       geom_freqpoly(binwidth = 1/4)
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-70-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-70-2.png" width="70%" style="display: block; margin: auto;" />
 
 1.  What variable in the diamonds dataset is most important for predicting
     the price of a diamond? How is that variable correlated with cut?
@@ -1932,7 +1932,7 @@ library(tidyverse)
     #> `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-71-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-71-1.png" width="70%" style="display: block; margin: auto;" />
 
     Carat size is the most important predictor of price.
 
@@ -1942,7 +1942,7 @@ library(tidyverse)
       geom_boxplot()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-72-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-72-1.png" width="70%" style="display: block; margin: auto;" />
     
     This boxplot visualizes the relationship between cut and carat. On average, fair and good cut diamonds are larger than premium and ideal cuts. If carat size is the more dominant predictor of price, then some larger good cut diamonds will be more expensive than smaller ideal cut diamonds.
 
@@ -1963,7 +1963,7 @@ library(tidyverse)
       coord_flip()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-74-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-74-1.png" width="70%" style="display: block; margin: auto;" />
     
     In `ggstance`, you supply aesthetics in their natural order:
     
@@ -1979,7 +1979,7 @@ library(tidyverse)
       geom_boxploth()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-75-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-75-1.png" width="70%" style="display: block; margin: auto;" />
 
 1.  One problem with boxplots is that they were developed in an era of 
     much smaller datasets and tend to display a prohibitively large
@@ -2002,7 +2002,7 @@ library(tidyverse)
       geom_boxplot()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-77-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-77-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -2011,7 +2011,7 @@ library(tidyverse)
       geom_lv()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-77-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-77-2.png" width="70%" style="display: block; margin: auto;" />
     
 1.  Compare and contrast `geom_violin()` with a facetted `geom_histogram()`,
     or a coloured `geom_freqpoly()`. What are the pros and cons of each 
@@ -2024,7 +2024,7 @@ library(tidyverse)
       geom_violin()
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-78-1.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-78-1.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -2035,7 +2035,7 @@ library(tidyverse)
     #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-78-2.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-78-2.png" width="70%" style="display: block; margin: auto;" />
     
     ```r
     
@@ -2045,7 +2045,7 @@ library(tidyverse)
     #> `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
     ```
     
-    <img src="/r4ds/_index_files/figure-html/unnamed-chunk-78-3.png" width="70%" style="display: block; margin: auto;" />
+    <img src="_index_files/figure-html/unnamed-chunk-78-3.png" width="70%" style="display: block; margin: auto;" />
 
 1.  If you have a small dataset, it's sometimes useful to use `geom_jitter()`
     to see the relationship between a continuous and categorical variable.
@@ -2203,7 +2203,7 @@ library(tidyverse)
           geom_point()
         ```
         
-        <img src="/r4ds/_index_files/figure-html/unnamed-chunk-84-1.png" width="70%" style="display: block; margin: auto;" />
+        <img src="_index_files/figure-html/unnamed-chunk-84-1.png" width="70%" style="display: block; margin: auto;" />
 
     1.  Creating a new column called `3` which is `2` divided by `1`.
         
@@ -2275,7 +2275,7 @@ library(tidyverse)
 devtools::session_info()
 #> ─ Session info ───────────────────────────────────────────────────────────────
 #>  setting  value                       
-#>  version  R version 4.0.2 (2020-06-22)
+#>  version  R version 4.0.3 (2020-10-10)
 #>  os       macOS Catalina 10.15.7      
 #>  system   x86_64, darwin17.0          
 #>  ui       X11                         
@@ -2283,47 +2283,48 @@ devtools::session_info()
 #>  collate  en_US.UTF-8                 
 #>  ctype    en_US.UTF-8                 
 #>  tz       America/Chicago             
-#>  date     2020-12-15                  
+#>  date     2021-01-06                  
 #> 
 #> ─ Packages ───────────────────────────────────────────────────────────────────
 #>  package     * version date       lib source        
 #>  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-#>  backports     1.1.10  2020-09-15 [1] CRAN (R 4.0.2)
-#>  blogdown      0.21    2020-12-11 [1] local         
+#>  blogdown      0.21    2020-12-18 [1] local         
 #>  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 #>  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
-#>  cli           2.1.0   2020-10-12 [1] CRAN (R 4.0.2)
+#>  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
 #>  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 #>  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)
 #>  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)
-#>  digest        0.6.25  2020-02-23 [1] CRAN (R 4.0.0)
+#>  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)
 #>  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)
 #>  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
 #>  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)
 #>  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
 #>  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
-#>  here          0.1     2017-05-28 [1] CRAN (R 4.0.0)
+#>  here          1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
 #>  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 #>  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)
-#>  magrittr      1.5     2014-11-22 [1] CRAN (R 4.0.0)
+#>  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)
+#>  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)
 #>  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)
-#>  pkgbuild      1.1.0   2020-07-13 [1] CRAN (R 4.0.2)
+#>  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)
 #>  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)
 #>  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
-#>  processx      3.4.4   2020-09-03 [1] CRAN (R 4.0.2)
-#>  ps            1.4.0   2020-10-07 [1] CRAN (R 4.0.2)
-#>  R6            2.4.1   2019-11-12 [1] CRAN (R 4.0.0)
+#>  processx      3.4.5   2020-11-30 [1] CRAN (R 4.0.2)
+#>  ps            1.5.0   2020-12-05 [1] CRAN (R 4.0.2)
+#>  purrr         0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+#>  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)
 #>  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)
-#>  rlang         0.4.8   2020-10-08 [1] CRAN (R 4.0.2)
-#>  rmarkdown     2.4     2020-09-30 [1] CRAN (R 4.0.2)
-#>  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 4.0.0)
+#>  rlang         0.4.10  2020-12-30 [1] CRAN (R 4.0.2)
+#>  rmarkdown     2.6     2020-12-14 [1] CRAN (R 4.0.2)
+#>  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)
 #>  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
 #>  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)
 #>  stringr       1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
-#>  testthat      2.3.2   2020-03-02 [1] CRAN (R 4.0.0)
-#>  usethis       1.6.3   2020-09-17 [1] CRAN (R 4.0.2)
+#>  testthat      3.0.1   2020-12-17 [1] CRAN (R 4.0.2)
+#>  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 #>  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-#>  xfun          0.18    2020-09-29 [1] CRAN (R 4.0.2)
+#>  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
 #>  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 #> 
 #> [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library

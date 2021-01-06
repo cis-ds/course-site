@@ -203,7 +203,7 @@ Fortunately Git will tell you of these problems when a merge conflict occurs. Fo
 
 ## Burn it all down
 
-![[Git (via xkcd)](https://xkcd.com/1597/)](https://imgs.xkcd.com/comics/git.png)
+![](https://imgs.xkcd.com/comics/git.png)<!-- -->
 
 While Git can be simple to work with at times, it can also be extremely frustrating. Once errors are introduced into a repository, sometimes it proves exceedingly difficult to fix the repository. The most drastic solution is to start over. If you are [committing early and often](https://sethrobertson.github.io/GitBestPractices/#commit), this is not necessarily a terrible solution.
 

@@ -13,7 +13,7 @@ aliases: "/git02.html"
 
 
 
-![["Git" by xkcd](https://xkcd.com/1597/)](https://imgs.xkcd.com/comics/git.png)
+![](https://xkcd.com/1597/)](https://imgs.xkcd.com/comics/git.png)<!-- -->
 
 Learning how and why to use version control can be rough. Just as those of you transitioning from a graphical user interface (GUI) statistical software like Stata or SPSS will discover, adapting to a command line interface is difficult. Using a GUI interface, rather than the command line, will be extremely helpful when getting started. Essentially, this is a helper client because it helps you interface with Git and GitHub but still uses the same underlying Git commands.
 
