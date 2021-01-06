@@ -14,7 +14,7 @@ content:
     tag: ""
   offset: 0
   order: asc
-  page_type: talk
+  page_type: event
 design:
   background: {}
   view: 2
