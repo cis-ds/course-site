@@ -17,10 +17,6 @@ menu:
 
 
 
-```r
-library(tidyverse)
-library(shiny)
-```
 
 **Shiny** is a package from RStudio that can be used to build interactive web pages with R. While that may sound scary because of the words "web pages", it's geared to R users who have **no** experience with web development, and you do not need to know any HTML/CSS/JavaScript.
 
@@ -74,7 +70,10 @@ This template is by itself a working minimal Shiny app that doesn't do much. It 
 
 After saving the file, RStudio should recognize that this is a Shiny app, and you should see the usual *Run* button at the top change to *Run App*.
 
-[![Shiny Run App](/img/shiny-runapp.png)](/img/shiny-runapp.png)
+<div class="figure">
+<img src="/img/shiny-runapp.png" alt="Run a Shiny app"  />
+<p class="caption">Figure 1: Run a Shiny app</p>
+</div>
 
 If you don't see the *Run App* button, it means you either have a very old version of RStudio, don't have Shiny installed, or didn't follow the file naming conventions.
 
@@ -82,7 +81,10 @@ Click the *Run App* button, and now your app should run. You won't see much beca
 
 Click the stop button to stop the app, or press the *Escape* key.
 
-[![Shiny Stop App](/img/shiny-stopapp.png)](/img/shiny-stopapp.png)
+<div class="figure">
+<img src="/img/shiny-stopapp.png" alt="Stop a Shiny app"  />
+<p class="caption">Figure 2: Stop a Shiny app</p>
+</div>
 
 You may have noticed that when you click the *Run App* button, all it's doing is just running the function `shiny::runApp()` in the console. You can run that command instead of clicking the button if you prefer.
 
@@ -219,7 +221,10 @@ server <- function(input, output) {}
 shinyApp(ui = ui, server = server)
 ```
 
-[![Shiny layout](/img/shiny-layout.png)](/img/shiny-layout.png)
+<div class="figure">
+<img src="/img/shiny-layout.png" alt="Example of a Shiny layout"  />
+<p class="caption">Figure 3: Example of a Shiny layout</p>
+</div>
 
 {{% callout note %}}
 
@@ -255,7 +260,10 @@ This should make you appreciate Shiny for not making you write horrendous HTML b
 
 Inputs are what gives users a way to interact with a Shiny app. Shiny provides many input functions to support many kinds of interactions that the user could have with an app. For example, `textInput()` is used to let the user enter text, `numericInput()` lets the user select a number, `dateInput()` is for selecting a date, `selectInput()` is for creating a select box (aka a dropdown menu).
 
-[![Shiny inputs](/img/shiny-inputs.png)](/img/shiny-inputs.png)
+<div class="figure">
+<img src="/img/shiny-inputs.png" alt="Types of inputs for Shiny apps"  />
+<p class="caption">Figure 4: Types of inputs for Shiny apps</p>
+</div>
 
 All input functions have the same first two arguments: `inputId` and `label`. The `inputId` will be the name that Shiny will use to refer to this input when you want to retrieve its current value. It is important to note that every input must have a unique `inputId`. If you give more than one input the same id, Shiny will unfortunately not give you an explicit error, but your app won't work correctly. The `label` argument specifies the text in the display label that goes along with the input widget. Every input can also have multiple other arguments specific to that input type. The only way to find out what arguments you can use with a specific input function is to look at its help file.
 
@@ -267,10 +275,6 @@ The first input we want to have is for specifying a wage range (minimum and maxi
 
 To create a slider input, a maximum value needs to be provided. We could manually determine the highest hourly wage rate in the dataset and hardcode this into the app. But we're already using R, so let's calculate it dynamically. That is, write a short piece of R code to determine the largest value in the `wage` column. `max()` does exactly that.
 
-
-```r
-max(employ$wage, na.rm = TRUE)
-```
 
 ```
 ## [1] 109
@@ -392,7 +396,10 @@ server <- function(input, output) {}
 shinyApp(ui = ui, server = server)
 ```
 
-[![Shiny add inputs](/img/shiny-addinputs.png)](/img/shiny-addinputs.png)
+<div class="figure">
+<img src="/img/shiny-addinputs.png" alt="Shiny app with inputs"  />
+<p class="caption">Figure 5: Shiny app with inputs</p>
+</div>
 
 ## Add placeholders for outputs
 
@@ -589,7 +596,10 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
-[![Shiny add plot](/img/shiny-addplot.png)](/img/shiny-addplot.png)
+<div class="figure">
+<img src="/img/shiny-addplot.png" alt="Shiny app with a plot"  />
+<p class="caption">Figure 6: Shiny app with a plot</p>
+</div>
 
 **Exercise:** The current plot doesn't look very nice, you could enhance the plot and make it much more pleasant to look at.
 
@@ -742,7 +752,10 @@ employ_filter <- reactive({
 
 But notice what happens if you run the app. You get a blank plot:
 
-[![Shiny App with Blank Plot](/img/shiny-nullinput.png)](/img/shiny-nullinput.png)
+<div class="figure">
+<img src="/img/shiny-nullinput.png" alt="Shiny app with a blank plot"  />
+<p class="caption">Figure 7: Shiny app with a blank plot</p>
+</div>
 
 However once you select a department (e.g. City Council), the histrogram is correctly drawn. What gives? The problem is that if you do not select any values for `selectInput(inputId = "department")`, then the value of `input$department` is not all the possible values for `employ$department` -- it's value is `NULL`. So the `employ` data frame is being filtered to 0 rows because every observation has a value for `department` (even if that value is `NA`).
 
@@ -971,7 +984,10 @@ RStudio provides a service called [shinyapps.io](http://www.shinyapps.io/) which
 
 Hosting your app on shinyapps.io is the easy and recommended way of getting your app online. Go to [www.shinyapps.io](http://www.shinyapps.io/) and sign up for an account. When you're ready to publish your app, click on the "Publish Application" button in RStudio and follow their instructions. You might be asked to install a couple packages if it's your first time.
 
-[![Shiny publish](/img/shiny-publish.png)](/img/shiny-publish.png)
+<div class="figure">
+<img src="/img/shiny-publish.png" alt="Publish a Shiny app"  />
+<p class="caption">Figure 8: Publish a Shiny app</p>
+</div>
 
 After a successful deployment to shinyapps.io, you will be redirected to your app in the browser. You can use that URL to show off to your family what a cool app you wrote.
 
@@ -1132,10 +1148,6 @@ Shiny is a very popular package and has lots of resources on the web. Here's a c
 
 
 
-```r
-devtools::session_info()
-```
-
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
@@ -1159,6 +1171,7 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
+##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.2)
 ##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
@@ -1179,6 +1192,7 @@ devtools::session_info()
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here          1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
+##  highr         0.8     2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  httpuv        1.5.4   2020-06-06 [1] CRAN (R 4.0.1)
