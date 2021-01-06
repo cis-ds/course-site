@@ -36,19 +36,11 @@ usethis::use_course("uc-cfss/a-deep-dive-into-r-markdown")
 
 Reproducibility is also key for communicating findings with other researchers and decision makers; it allows them to verify your results, assess your assumptions, and understand how your answers were formed rather than solely relying on your claims. In the data science framework employed in [R for Data Science](http://r4ds.had.co.nz), reproducibility is infused throughout the entire workflow.
 
-<<<<<<< HEAD
 ![](/img/allison_horst_art/reproducibility_court.png)<!-- -->
 
 [R Markdown](http://rmarkdown.rstudio.com/) is one approach to ensuring reproducibility by providing a single cohesive authoring framework. It allows you to combine code, output, and analysis into a single document, are easily reproducible, and can be output to many different file formats. R Markdown is just one tool for enabling reproducibility. Another tool is [Git](https://git-scm.com/) for **version control**, which is crucial for collaboration and tracking changes to code and analysis.
 
 ![](/img/allison_horst_art/rmarkdown_rockstar.png)<!-- -->
-=======
-![Artwork by @allison_horst](/img/allison_horst_art/reproducibility_court.png)
-
-[R Markdown](http://rmarkdown.rstudio.com/) is one approach to ensuring reproducibility by providing a single cohesive authoring framework. It allows you to combine code, output, and analysis into a single document, are easily reproducible, and can be output to many different file formats. R Markdown is just one tool for enabling reproducibility. Another tool is [Git](https://git-scm.com/) for **version control**, which is crucial for collaboration and tracking changes to code and analysis.
-
-![Artwork by @allison_horst](/img/allison_horst_art/rmarkdown_rockstar.png)
->>>>>>> master
 
 ### Jupyter Notebooks
 
@@ -557,7 +549,6 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.2)
 ##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)

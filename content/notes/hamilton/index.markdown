@@ -387,11 +387,6 @@ Given his generally neutral sentiment, Aaron Burr clearly follows his own guidan
 
 Also, can we please note Peggy's general pessimism?
 
-
-```r
-knitr::include_graphics(path = "https://media.giphy.com/media/20EwQf08wjYrbq9Pfn/giphy.gif")
-```
-
 ![](https://media.giphy.com/media/20EwQf08wjYrbq9Pfn/giphy.gif)<!-- -->
 
 Tracking the cumulative sentiment across the entire musical, it's easy to identify the high and low points.

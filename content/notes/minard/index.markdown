@@ -23,7 +23,10 @@ library(knitr)
 library(here)
 ```
 
-![](https://en.wikipedia.org/wiki/Charles_Joseph_Minard)](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)<!-- -->
+<div class="figure">
+<img src="https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png" alt="&lt;em&gt;Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813&lt;/em&gt; by Charles Joseph Minard"  />
+<p class="caption">Figure 1: <em>Carte figurative des pertes successives en hommes de l'Armee Français dans la campagne de Russe 1812–1813</em> by Charles Joseph Minard</p>
+</div>
 
 **Charles Minard's map of Napoleon's disastrous Russian campaign of 1812** is notable for its representation in two dimensions of six types of data: the number of Napoleon's troops; distance; temperature; the latitude and longitude; direction of travel; and location relative to specific dates.^[This exercise is drawn from [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)]
 
@@ -282,6 +285,7 @@ devtools::session_info()
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
 ##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)
 ##  here        * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
+##  highr         0.8     2019-03-20 [1] CRAN (R 4.0.0)
 ##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)
 ##  htmltools     0.5.0   2020-06-16 [1] CRAN (R 4.0.2)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)

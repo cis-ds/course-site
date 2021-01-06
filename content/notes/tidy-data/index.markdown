@@ -67,11 +67,7 @@ Note that in this data frame, each variable is in its own column (`country`, `ye
 
 `tidyr` contains two major functions that can be used to tidy datasets. `pivot_longer()` makes datasets **longer** by increasing the number of rows and decreasing the number of columns. Many datasets you obtain are optimized for ease of data entry or ease of comparison rather than ease of analysis. This means data is typically stored messy with more columns than necessary.
 
-<<<<<<< HEAD
 ![](/img/allison_horst_art/tidydata_2.jpg)<!-- -->
-=======
-![Artwork by @allison_horst](/img/allison_horst_art/tidydata_2.jpg)
->>>>>>> master
 
 For example, this version of `table1` is not tidy because the `year` variable is spread across multiple columns:
 
@@ -310,7 +306,6 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
 ##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.2)
 ##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)
