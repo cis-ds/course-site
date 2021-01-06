@@ -1,0 +1,60 @@
+---
+title: "Building Shiny apps: server"
+date: 2020-07-23T09:40:00-06:00
+publishDate: 2019-05-22T09:40:00-06:00
+draft: true
+
+aliases: ["/cm020.html"]
+
+# Talk start and end times.
+#   End time can optionally be hidden by prefixing the line with `#`.
+time_end: 2020-07-23T11:00:00-06:00
+all_day: false
+
+# Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
+authors: []
+
+# Abstract and optional shortened version.
+abstract: ""
+summary: "Explain reactivity and construct the server function for a Shiny application."
+
+# Location of event.
+location: "Online"
+
+# Is this a selected talk? (true/false)
+selected: false
+
+# Tags (optional).
+#   Set `tags: []` for no tags, or use the form `tags: ["A Tag", "Another Tag"]` for one or more tags.
+tags: []
+
+# Links (optional).
+url_pdf: ""
+url_slides: "/slides/shiny/"
+url_video: ""
+url_code: ""
+
+# Does the content use math formatting?
+math: false
+---
+
+
+
+## Overview
+
+* Review Shiny apps
+* Define reactivity
+* Build the server component of a Shiny app
+
+## Before class
+
+## Class materials
+
+* [Tutorial from class](/notes/shiny/)
+
+* [Git repo for dating age rule app](https://github.com/bensoltoff/age-rule)
+* [Chicago wage employees sample app](https://bensoltoff.shinyapps.io/chicago-employees/)
+
+## What you need to do after class
+
+* Finish [Homework 09](/homework/shiny/)
