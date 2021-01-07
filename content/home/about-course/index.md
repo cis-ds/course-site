@@ -16,7 +16,7 @@ design:
 
 {{% callout note %}}
 
-All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/30975) (UChicago authentication required).
+All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/32998) (UChicago authentication required).
 
 {{% /callout %}}
 
