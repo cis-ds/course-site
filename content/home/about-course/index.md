@@ -14,15 +14,17 @@ design:
 
 # MACS 30500^[aka ENST 20550/MACS 20500/CHDV 30511/MAPS 30500/PLSC 30235/SOCI 20278/SOCI 40176] - Computing for the Social Sciences
 
-
 {{% callout note %}}
 
-All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/30975) (UChicago authentication required).
+All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/32998) (UChicago authentication required).
 
 {{% /callout %}}
 
 * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-* Teaching Assistants - TBD
+* Teaching Assistants
+    - Francesca Di Cera
+    - Deblina Mukherjee
+    - Neeraj Sharma
 * Meeting day/time: TuTh 9:40-11am
 * Office hours - TBD
 * Prerequisites: None
