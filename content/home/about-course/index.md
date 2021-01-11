@@ -26,7 +26,11 @@ All class meetings and office hours will be held on Zoom. Links to these meeting
     - Deblina Mukherjee
     - Neeraj Sharma
 * Meeting day/time: TuTh 9:40-11am
-* Office hours - TBD
+* Office hours
+    - Benjamin: M 1-3pm
+    - Neeraj: Th 2-4pm
+    - Francesca: F 11-1pm
+    - Deblina: F 2-4pm
 * Prerequisites: None
 * Requirements: Bring your own laptop
 
