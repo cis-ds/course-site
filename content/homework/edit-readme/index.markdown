@@ -15,13 +15,19 @@ url_code: "https://github.com/cfss-win21/hw01"
 
 # Overview
 
-Due by 1:00 pm CT (Chicago) on October 6th.
+Due by 9:40am CT (Chicago) on January 19th.
 
 The goal is to test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown.
 
 # Fork the `hw01` repository
 
 Go [here](https://github.com/cfss-win21/hw01) to fork the repo.
+
+{{% callout note %}}
+
+You need to register your GitHub username with me in order to access the repository, otherwise you will just get an error that says the web page does not exist. Submit your username using [this form](https://forms.gle/XZ8XRBecWNKKwBme6). Expect to get an email from GitHub in the next 24 hours inviting you to join the `cfss-win21` course organization. Once you accept the invitation, you will be able to fork the repo.
+
+{{% /callout %}}
 
 # Edit `README.md`
 
