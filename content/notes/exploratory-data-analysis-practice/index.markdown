@@ -72,10 +72,8 @@ Type `?scorecard` in the console to open up the help file for this data set. Thi
 
 **NOTE: This time, use a graph to visualize your answer, [not a table](/notes/transform-college/#generate-a-data-frame-with-the-average-sat-score-for-each-type-of-college).**
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 We could use a **boxplot** to visualize the distribution of SAT scores.
 
 
@@ -89,7 +87,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 475 rows containing non-finite values (stat_boxplot).
 ```
 
-<img src="index_files/figure-html/sat-boxplot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sat-boxplot-1.png" width="672" />
 
 According to this graph, private, nonprofit schools have the highest average SAT score, followed by public and then private, for-profit schools. But this doesn't reveal the entire picture. What happens if we plot a **histogram** or **frequency polygon**?
 
@@ -109,7 +107,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 475 rows containing non-finite values (stat_bin).
 ```
 
-<img src="index_files/figure-html/sat-histo-freq-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sat-histo-freq-1.png" width="672" />
 
 ```r
 ggplot(data = scorecard,
@@ -125,7 +123,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 475 rows containing non-finite values (stat_bin).
 ```
 
-<img src="index_files/figure-html/sat-histo-freq-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sat-histo-freq-2.png" width="672" />
 
 Now we can see the averages for each college type are based on widely varying sample sizes.
 
@@ -136,18 +134,16 @@ ggplot(data = scorecard,
   geom_bar()
 ```
 
-<img src="index_files/figure-html/sat-bar-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sat-bar-1.png" width="672" />
 
 There are far fewer private, for-profit colleges than the other categories. A boxplot alone would not reveal this detail, which could be important in future analysis.
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## What is the relationship between net cost of attendance and faculty salaries? How does this relationship differ across types of colleges?
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 # geom_point
@@ -169,7 +165,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/cost-avgfacsal-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cost-avgfacsal-1.png" width="672" />
 
 ```r
 # geom_point with alpha transparency to reveal dense clusters
@@ -189,7 +185,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/cost-avgfacsal-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cost-avgfacsal-2.png" width="672" />
 
 ```r
 # geom_hex
@@ -211,7 +207,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing non-finite values (stat_smooth).
 ```
 
-<img src="index_files/figure-html/cost-avgfacsal-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cost-avgfacsal-3.png" width="672" />
 
 ```r
 # geom_point with smoothing lines for each type
@@ -233,7 +229,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/cost-avgfacsal-4.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cost-avgfacsal-4.png" width="672" />
 
 ```r
 # geom_point with facets for each type
@@ -256,16 +252,13 @@ ggplot(data = scorecard,
 ## Warning: Removed 46 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/cost-avgfacsal-5.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cost-avgfacsal-5.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## How are a college's Pell Grant recipients related to the average student's education debt?
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 Two continuous variables suggest a **scatterplot** would be appropriate.
 
@@ -280,7 +273,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/pell-scatter-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pell-scatter-1.png" width="672" />
 
 Hmm. There seem to be a lot of data points. It isn't really clear if there is a trend. What if we **jitter** the data points?
 
@@ -295,7 +288,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/pell-jitter-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pell-jitter-1.png" width="672" />
 
 Meh, didn't really do much. What if we make our data points semi-transparent using the `alpha` aesthetic?
 
@@ -310,7 +303,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/pell-alpha-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pell-alpha-1.png" width="672" />
 
 Now we're getting somewhere. I'm beginning to see some dense clusters in the middle. Maybe a **hexagon binning** plot would help
 
@@ -325,7 +318,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing non-finite values (stat_binhex).
 ```
 
-<img src="index_files/figure-html/pell-bin-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pell-bin-1.png" width="672" />
 
 This is getting better. It looks like there might be a downward trend; that is, as the percentage of Pell grant recipients increases, average student debt decreases. Let's confirm this by going back to the scatterplot and overlaying a **smoothing line**.
 
@@ -349,12 +342,11 @@ ggplot(data = scorecard,
 ## Warning: Removed 108 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/pell-smooth-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pell-smooth-1.png" width="672" />
 
 This confirms our initial evidence - there is an apparent negative relationship. Notice how I iterated through several different plots before I created one that provided the most informative visualization. **You will not create the perfect graph on your first attempt.** Trial and error is necessary in this exploratory stage. Be prepared to revise your code again and again.
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Session Info
 
@@ -375,13 +367,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -448,7 +440,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

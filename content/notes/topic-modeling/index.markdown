@@ -340,7 +340,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/top-terms-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/top-terms-plot-1.png" width="672" />
 
 * Some of these topics are pretty clearly associated with some of the policy topics:
     * "educ", "school", "secondari", "forc", "elementari" seem to be **Education**
@@ -405,7 +405,7 @@ congress_tokens_lite %>%
 ## `summarise()` regrouping output by 'topic', 'major' (override with `.groups` argument)
 ```
 
-<img src="index_files/figure-html/congress-model-compare-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/congress-model-compare-1.png" width="672" />
 
 The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for $\gamma$. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
 
@@ -584,7 +584,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/jokes-4-topn-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/jokes-4-topn-1.png" width="672" />
 
 ### $k=12$
 
@@ -620,7 +620,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/jokes-12-topn-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/jokes-12-topn-1.png" width="672" />
 
 Alas, this is the problem with LDA. Several different values for $k$ may be plausible, but by increasing $k$ we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
 
@@ -674,7 +674,7 @@ tibble(k = n_topics,
        y = "Perplexity")
 ```
 
-<img src="index_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
 
 It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let's look just at the first 12 topics produced by the model (`ggplot2` has difficulty rendering a graph for 100 separate facets):
 
@@ -699,7 +699,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/jokes-100-topn-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/jokes-100-topn-1.png" width="672" />
 
 We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at $k=100$ - would $k=200$ generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
 
@@ -834,13 +834,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -920,7 +920,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

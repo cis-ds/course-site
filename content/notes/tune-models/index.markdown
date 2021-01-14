@@ -458,7 +458,7 @@ tree_res %>%
   scale_color_viridis_d(option = "plasma", begin = .9, end = 0)
 ```
 
-<img src="index_files/figure-html/best-tree-1.png" width="768" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/best-tree-1.png" width="768" />
 
 We can see that our "stubbiest" tree, with a depth of 1, is the worst model according to `roc_auc` (though surprisingly the most accurate) and across all candidate values of `cost_complexity`. Deeper trees tend to do better for this problem. However, the best tree seems to be between these values with a tree depth of 8. The [`show_best()`](https://tidymodels.github.io/tune/reference/show_best.html) function shows us the top 5 candidate models by default:
 
@@ -621,7 +621,7 @@ final_tree %>%
   vip()
 ```
 
-<img src="index_files/figure-html/vip-1.png" width="576" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/vip-1.png" width="576" />
 
 These are the survey variables that are the most important in driving predictions on the Muslim clergymen question.
 
@@ -654,7 +654,7 @@ final_fit %>%
   autoplot()
 ```
 
-<img src="index_files/figure-html/last-fit-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/last-fit-1.png" width="672" />
 
 The performance metrics from the test set indicate that we did not overfit during our tuning procedure.
 
@@ -696,13 +696,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21       2020-12-18 [1] local         
+##  blogdown      1.0.2      2021-01-14 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.3      2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -797,7 +797,7 @@ devtools::session_info()
 ##  webshot       0.5.2      2019-11-22 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
-##  xfun          0.19       2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20       2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
 ##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)

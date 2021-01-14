@@ -307,7 +307,7 @@ ggplot(data = female_labor, mapping = aes(x = date, y = fem_lab_part)) +
   )
 ```
 
-<img src="index_files/figure-html/female-labor-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/female-labor-plot-1.png" width="672" />
 
 By default, `wb_data()` returns queries as data frames in a wide format. So if we request multiple indicators, each indicator will be stored in its own column.
 
@@ -333,7 +333,7 @@ ggplot(data = female_vars, mapping = aes(x = fem_educ_sec, y = fem_lab_part)) +
   )
 ```
 
-<img src="index_files/figure-html/female-educ-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/female-educ-1.png" width="672" />
 
 ## Searching geographic info: `geonames`
 
@@ -524,7 +524,7 @@ mpds %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/manifesto-dist-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/manifesto-dist-1.png" width="672" />
 
 Or we can use **scaling functions** to identify each party manifesto on an ideological dimension. For example, how have the Democratic and Republican Party manifestos in the United States changed over time?
 
@@ -544,7 +544,7 @@ mpds %>%
   theme(legend.position = "bottom")
 ```
 
-<img src="index_files/figure-html/manifestor-usa-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/manifestor-usa-1.png" width="672" />
 
 ### Download manifestos
 
@@ -583,7 +583,7 @@ docs %>%
   comparison.cloud(max.words = 200)
 ```
 
-<img src="index_files/figure-html/manifestor-corpus-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/manifestor-corpus-1.png" width="672" />
 
 ## Census data with `tidycensus`
 
@@ -651,7 +651,7 @@ ggplot(asia10, aes(x = reorder(NAME, value), y = value)) +
   coord_flip()
 ```
 
-<img src="index_files/figure-html/plot-asia-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-asia-1.png" width="672" />
 
 Of course this graph is not entirely useful since it is based on the raw frequency of Asian individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:
 
@@ -698,7 +698,7 @@ ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
   coord_flip()
 ```
 
-<img src="index_files/figure-html/asia-total-pop-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/asia-total-pop-1.png" width="672" />
 
 `get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2012-2016 ACS for counties in Illinois.
 
@@ -751,7 +751,7 @@ usa_inc %>%
        y = "ACS estimate (bars represent margin of error)")
 ```
 
-<img src="index_files/figure-html/income-usa-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/income-usa-plot-1.png" width="672" />
 
 ### Search for variables
 
@@ -818,7 +818,7 @@ ggplot(data = loudoun) +
   scale_color_viridis(option = "magma")
 ```
 
-<img src="index_files/figure-html/loudoun-sf-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/loudoun-sf-plot-1.png" width="672" />
 
 ## Acknowledgments
 
@@ -846,14 +846,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
 ##  base64enc      0.1-3   2015-07-28 [1] CRAN (R 4.0.0)
-##  blogdown       0.21    2020-12-18 [1] local         
+##  blogdown       1.0.2   2021-01-14 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom        * 0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -943,7 +943,7 @@ devtools::session_info()
 ##  wbstats      * 1.0.4   2020-12-05 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
 ##  wordcloud    * 2.6     2018-08-24 [1] CRAN (R 4.0.0)
-##  xfun           0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ##  zoo            1.8-8   2020-05-02 [1] CRAN (R 4.0.0)

@@ -64,7 +64,7 @@ Layers are typically related to one another and share many common features. For 
 ## `geom_smooth()` using formula 'y ~ x'
 ```
 
-<img src="index_files/figure-html/layers-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/layers-1.png" width="672" />
 
 ## Data and mapping
 
@@ -188,7 +188,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
   ggtitle("A point geom with position and color aesthetics")
 ```
 
-<img src="index_files/figure-html/geom_point-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/geom_point-1.png" width="672" />
 
 * Position defines where each point is drawn on the plot
 * Color defines the color of each point. Here the color is determined by the class of the car (observation)
@@ -202,7 +202,7 @@ ggplot(data = mpg, aes(x = cyl)) +
   ggtitle("A bar geom with position and height aesthetics")
 ```
 
-<img src="index_files/figure-html/geom_bar-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/geom_bar-1.png" width="672" />
 
 * Position determines the starting location (origin) of each bar
 * Height determines how tall to draw the bar. Here the height is based on the number of observations in the dataset for each possible number of cylinders.
@@ -219,7 +219,7 @@ count(x = mpg, class, cyl) %>%
   ggtitle(label = "A stacked bar chart")
 ```
 
-<img src="index_files/figure-html/position_dodge-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/position_dodge-1.png" width="672" />
 
 ```r
 count(x = mpg, class, cyl) %>%
@@ -228,7 +228,7 @@ count(x = mpg, class, cyl) %>%
   ggtitle(label = "A dodged bar chart")
 ```
 
-<img src="index_files/figure-html/position_dodge-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/position_dodge-2.png" width="672" />
 
 Sometimes scatterplots with few unique $x$ and $y$ values are **jittered** (random noise is added) to reduce overplotting.
 
@@ -239,7 +239,7 @@ ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
   ggtitle("A point geom with obscured data points")
 ```
 
-<img src="index_files/figure-html/position-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/position-1.png" width="672" />
 
 ```r
 ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
@@ -247,7 +247,7 @@ ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
   ggtitle("A point geom with jittered data points")
 ```
 
-<img src="index_files/figure-html/position-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/position-2.png" width="672" />
 
 ## Scale
 
@@ -260,7 +260,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
   guides(color = guide_legend(override.aes = list(size = 4)))
 ```
 
-<img src="index_files/figure-html/scale_color-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scale_color-1.png" width="672" />
 
 Note that the scale is consistent - every point for a compact car is drawn in tan, whereas SUVs are drawn in pink. The scale can be changed to use a different color palette:
 
@@ -272,7 +272,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
   scale_color_brewer(palette = "Dark2")
 ```
 
-<img src="index_files/figure-html/scale_color_palette-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scale_color_palette-1.png" width="672" />
 
 Now we are using a different palette, but the scale is still consistent: all compact cars utilize the same color, whereas SUVs use a new color **but each SUV still uses the same, consistent color**.
 
@@ -290,7 +290,7 @@ p +
   ggtitle(label = "Cartesian coordinate system")
 ```
 
-<img src="index_files/figure-html/coord_cart-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/coord_cart-1.png" width="672" />
 
 This system requires a fixed and equal spacing between values on the axes. That is, the graph draws the same distance between 1 and 2 as it does between 5 and 6. The graph could be drawn using a [**semi-log coordinate system**](https://en.wikipedia.org/wiki/Semi-log_plot) which logarithmically compresses the distance on an axis:
 
@@ -301,7 +301,7 @@ p +
   ggtitle(label = "Semi-log coordinate system")
 ```
 
-<img src="index_files/figure-html/coord_semi_log-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/coord_semi_log-1.png" width="672" />
 
 Or could even be drawn using [**polar coordinates**](https://en.wikipedia.org/wiki/Polar_coordinate_system):
 
@@ -312,7 +312,7 @@ p +
   ggtitle(label = "Polar coordinate system")
 ```
 
-<img src="index_files/figure-html/coord_polar-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/coord_polar-1.png" width="672" />
 
 ## Faceting
 
@@ -325,7 +325,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
   facet_wrap(~ class)
 ```
 
-<img src="index_files/figure-html/facet-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/facet-1.png" width="672" />
 
 ## Defaults
 
@@ -345,7 +345,7 @@ ggplot() +
   coord_cartesian()
 ```
 
-<img src="index_files/figure-html/default-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/default-1.png" width="672" />
 
 The above code:
 
@@ -375,7 +375,7 @@ ggplot() +
   geom_point(data = mpg, mapping = aes(x = displ, y = hwy))
 ```
 
-<img src="index_files/figure-html/default2-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/default2-1.png" width="672" />
 
 This generates the exact same plot, but uses fewer lines of code. Because multiple layers can use the same components (data, mapping, etc.), we can also specify that information in the `ggplot()` function rather than in the `layer()` function:
 
@@ -385,7 +385,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
   geom_point()
 ```
 
-<img src="index_files/figure-html/default3-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/default3-1.png" width="672" />
 
 And as we will learn, function arguments in R use specific ordering, so we can omit the explicit call to `data` and `mapping`:
 
@@ -395,7 +395,7 @@ ggplot(mpg, aes(displ, hwy)) +
   geom_point()
 ```
 
-<img src="index_files/figure-html/default4-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/default4-1.png" width="672" />
 
 With this specification, it is easy to build the graphic up with additional layers, without modifying the original code:
 
@@ -410,7 +410,7 @@ ggplot(mpg, aes(displ, hwy)) +
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="index_files/figure-html/default5-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/default5-1.png" width="672" />
 
 Because we called `aes(displ, hwy)` within the `ggplot()` function, it is automatically passed along to both `geom_point()` and `geom_smooth()`. If we fail to do this, we get an error:
 
@@ -429,7 +429,7 @@ ggplot(mpg) +
 ## Error: stat_smooth requires the following missing aesthetics: x and y
 ```
 
-<img src="index_files/figure-html/default6-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/default6-1.png" width="672" />
 
 ## Session Info
 
@@ -450,13 +450,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -523,7 +523,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

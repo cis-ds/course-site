@@ -279,112 +279,100 @@ Create the sequence above in your R session. Write commands to subset the vector
 
 1. Keep the first through fourth elements, plus the seventh element.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    
-    ```r
-    x[c(1, 2, 3, 4, 7)]
-    ```
-    
-    ```
-    ## [1] 1 2 3 4 7
-    ```
-    
-    ```r
-    # use a sequence shortcut
-    x[c(seq(1, 4), 7)]
-    ```
-    
-    ```
-    ## [1] 1 2 3 4 7
-    ```
-    
-      </p>
-    </details>
+
+```r
+x[c(1, 2, 3, 4, 7)]
+```
+
+```
+## [1] 1 2 3 4 7
+```
+
+```r
+# use a sequence shortcut
+x[c(seq(1, 4), 7)]
+```
+
+```
+## [1] 1 2 3 4 7
+```
+
+    {{< /spoiler >}}
 
 1. Keep the first through eighth elements, plus the tenth element.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
+    
 
-    
-    ```r
-    # long way
-    x[c(1, 2, 3, 4, 5, 6, 7, 8, 10)]
-    ```
-    
-    ```
-    ## [1]  1  2  3  4  5  6  7  8 10
-    ```
-    
-    ```r
-    # sequence shortcut
-    x[c(seq(1, 8), 10)]
-    ```
-    
-    ```
-    ## [1]  1  2  3  4  5  6  7  8 10
-    ```
-    
-    ```r
-    # negative indexing
-    x[c(-9)]
-    ```
-    
-    ```
-    ## [1]  1  2  3  4  5  6  7  8 10
-    ```
-    
-      </p>
-    </details>
+```r
+# long way
+x[c(1, 2, 3, 4, 5, 6, 7, 8, 10)]
+```
+
+```
+## [1]  1  2  3  4  5  6  7  8 10
+```
+
+```r
+# sequence shortcut
+x[c(seq(1, 8), 10)]
+```
+
+```
+## [1]  1  2  3  4  5  6  7  8 10
+```
+
+```r
+# negative indexing
+x[c(-9)]
+```
+
+```
+## [1]  1  2  3  4  5  6  7  8 10
+```
+
+    {{< /spoiler >}}
 
 1. Keep all elements with values greater than five.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    
-    ```r
-    # get the index for which values in x are greater than 5
-    x > 5
-    ```
-    
-    ```
-    ##  [1] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE
-    ```
-    
-    ```r
-    x[x > 5]
-    ```
-    
-    ```
-    ## [1]  6  7  8  9 10
-    ```
-    
-      </p>
-    </details>
+
+```r
+# get the index for which values in x are greater than 5
+x > 5
+```
+
+```
+##  [1] FALSE FALSE FALSE FALSE FALSE  TRUE  TRUE  TRUE  TRUE  TRUE
+```
+
+```r
+x[x > 5]
+```
+
+```
+## [1]  6  7  8  9 10
+```
+
+    {{< /spoiler >}}
 
 1. Keep all elements evenly divisible by three.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    
-    ```r
-    x[x %% 3 == 0]
-    ```
-    
-    ```
-    ## [1] 3 6 9
-    ```
-    
-      </p>
-    </details>
+
+```r
+x[x %% 3 == 0]
+```
+
+```
+## [1] 3 6 9
+```
+
+    {{< /spoiler >}}
 
 ## Lists
 
@@ -620,103 +608,94 @@ Create the list above in your R session. Write commands to subset the list in th
 
 1. Subset `a`. The result should be an atomic vector.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
+    
 
+```r
+# use the index value
+x[[1]]
+```
+
+```
+## [1] 1 2 3
+```
+
+```r
+# use the element name
+x$a
+```
+
+```
+## [1] 1 2 3
+```
+
+```r
+x[["a"]]
+```
+
+```
+## [1] 1 2 3
+```
     
-    ```r
-    # use the index value
-    x[[1]]
-    ```
-    
-    ```
-    ## [1] 1 2 3
-    ```
-    
-    ```r
-    # use the element name
-    x$a
-    ```
-    
-    ```
-    ## [1] 1 2 3
-    ```
-    
-    ```r
-    x[["a"]]
-    ```
-    
-    ```
-    ## [1] 1 2 3
-    ```
-    
-      </p>
-    </details>
+    {{< /spoiler >}}
 
 1. Subset `pi`. The results should be a new list.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    
-    ```r
-    # correct method
-    str(x["c"])
-    ```
-    
-    ```
-    ## List of 1
-    ##  $ c: num 3.14
-    ```
-    
-    ```r
-    # incorrect method to produce another list
-    # the result is a scalar
-    str(x$c)
-    ```
-    
-    ```
-    ##  num 3.14
-    ```
-    
-      </p>
-    </details>
+
+```r
+# correct method
+str(x["c"])
+```
+
+```
+## List of 1
+##  $ c: num 3.14
+```
+
+```r
+# incorrect method to produce another list
+# the result is a scalar
+str(x$c)
+```
+
+```
+##  num 3.14
+```
+
+    {{< /spoiler >}}
 
 1. Subset the first and third elements from `x`.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    
-    ```r
-    x[c(1, 3)]
-    ```
-    
-    ```
-    ## $a
-    ## [1] 1 2 3
-    ## 
-    ## $c
-    ## [1] 3.141593
-    ```
-    
-    ```r
-    x[c("a", "c")]
-    ```
-    
-    ```
-    ## $a
-    ## [1] 1 2 3
-    ## 
-    ## $c
-    ## [1] 3.141593
-    ```
-    
-      </p>
-    </details>
+
+```r
+x[c(1, 3)]
+```
+
+```
+## $a
+## [1] 1 2 3
+## 
+## $c
+## [1] 3.141593
+```
+
+```r
+x[c("a", "c")]
+```
+
+```
+## $a
+## [1] 1 2 3
+## 
+## $c
+## [1] 3.141593
+```
+
+    {{< /spoiler >}}
 
 ## Session Info
 
@@ -737,13 +716,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -811,7 +790,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

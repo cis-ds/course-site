@@ -45,10 +45,8 @@ For each exercise, use your knowledge of relational data and joining operations 
 
 Hint: all the data is from 2013.
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 The first step is to calculate the age of each plane. To do that, use `planes` and the `age` variable:
 
 
@@ -98,7 +96,7 @@ flights %>%
 ## Warning: Removed 9374 rows containing non-finite values (stat_smooth).
 ```
 
-<img src="index_files/figure-html/age-delay-solution-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/age-delay-solution-1.png" width="672" />
 
 ```r
 # line graph of average delay by age
@@ -127,7 +125,7 @@ flights %>%
 ## Warning: Removed 1 row(s) containing missing values (geom_path).
 ```
 
-<img src="index_files/figure-html/age-delay-solution-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/age-delay-solution-2.png" width="672" />
 
 In this situation, `left_join()` could also be used because `ggplot()` and `mean(na.rm = TRUE)` drop missing values (remember that `left_join()` keeps all rows from `flights`, even if we don't have information on the plane).
 
@@ -151,7 +149,7 @@ flights %>%
 ## Warning: Removed 61980 rows containing non-finite values (stat_smooth).
 ```
 
-<img src="index_files/figure-html/age-delay-leftjoin-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/age-delay-leftjoin-1.png" width="672" />
 
 ```r
 flights %>%
@@ -179,19 +177,16 @@ flights %>%
 ## Warning: Removed 1 row(s) containing missing values (geom_path).
 ```
 
-<img src="index_files/figure-html/age-delay-leftjoin-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/age-delay-leftjoin-2.png" width="672" />
 
 The important takeaway is that departure delays do not appear to increase with plane age -- in fact they seem to decrease slightly (though with an expanding confidence interval). Care to think of a reason why this may be so?
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Add the location of the origin and destination (i.e. the `lat` and `lon`) to `flights`.
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 This is a mutating join, and the basic function you need to use here is `left_join()`. We have to perform the joining operation twice since we want to create new variables based on both the destination airport and the origin airport. And because the name of the key variable differs between the data frames, we need to explicitly define how to join the data frames using the `by` argument:
 
 
@@ -287,8 +282,7 @@ flights %>%
 ## #   lat.dest <dbl>, lon.dest <dbl>, lat.origin <dbl>, lon.origin <dbl>
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ### Acknowledgements
 
@@ -313,13 +307,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown       0.21    2020-12-18 [1] local         
+##  blogdown       1.0.2   2021-01-14 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -387,7 +381,7 @@ devtools::session_info()
 ##  usethis        2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun           0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

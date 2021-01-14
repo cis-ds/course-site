@@ -59,10 +59,8 @@ gun_deaths
 
 ## Convert `month` into a factor column
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 # create a character vector with all month values
@@ -103,15 +101,12 @@ month.abb
 ## # … with 100,788 more rows
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Visualize the total gun deaths per month, in chronological order
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gun_deaths,
@@ -122,17 +117,14 @@ ggplot(data = gun_deaths,
        y = "Number of gun deaths")
 ```
 
-<img src="index_files/figure-html/month-deaths-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/month-deaths-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Visualize the total gun deaths per month, sorted from lowest to highest
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 # with geom_col() and fct_reorder()
@@ -145,7 +137,7 @@ gun_deaths %>%
        y = "Number of gun deaths")
 ```
 
-<img src="index_files/figure-html/month-deaths-sort-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/month-deaths-sort-1.png" width="672" />
 
 ```r
 # with geom_bar() and fct_infreq()
@@ -159,17 +151,14 @@ ggplot(data = gun_deaths,
        y = "Number of gun deaths")
 ```
 
-<img src="index_files/figure-html/month-deaths-sort-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/month-deaths-sort-2.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Visualize the frequency of intent of gun deaths using a bar chart, sorted from most to least frequent
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 # identify all possible types of intent
@@ -187,19 +176,16 @@ gun_deaths %>%
        y = "Number of gun deaths")
 ```
 
-<img src="index_files/figure-html/intent-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/intent-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Visualize total gun deaths by season of the year using a bar chart.
 
 Hint: do not use `cut()` to create the `season` column.
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 gun_deaths %>%
@@ -216,10 +202,9 @@ gun_deaths %>%
        y = "Number of gun deaths")
 ```
 
-<img src="index_files/figure-html/season-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/season-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Session Info
 
@@ -240,13 +225,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -314,7 +299,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

@@ -80,10 +80,8 @@ Using the grammar of graphics and your knowledge of the `ggplot2` library, gener
 
 ## Generate a histogram of life expectancy
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
@@ -94,19 +92,16 @@ ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-<img src="index_files/figure-html/histo-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/histo-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ### Generate separate histograms of life expectancy for each continent
 
 **Hint: think about how to [split your plots to show different subsets of data.](http://r4ds.had.co.nz/data-visualisation.html#facets)**
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
@@ -118,68 +113,56 @@ ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
 ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 ```
 
-<img src="index_files/figure-html/histo-facet-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/histo-facet-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Compare the distribution of life expectancy, by continent by generating a boxplot
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
   geom_boxplot()
 ```
 
-<img src="index_files/figure-html/boxplot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/boxplot-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ### Redraw the plot, but this time use a violin plot
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
   geom_violin()
 ```
 
-<img src="index_files/figure-html/violin-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/violin-plot-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Generate a scatterplot of the relationship between per capita GDP and life expectancy
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
   geom_point()
 ```
 
-<img src="index_files/figure-html/scatter-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scatter-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ### Add a smoothing line to the scatterplot
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
@@ -191,19 +174,16 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
 ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 ```
 
-<img src="index_files/figure-html/scatter-smooth-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scatter-smooth-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Identify whether this relationship differs by continent
 
 ### Use the color aesthetic to identify differences
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder,
@@ -216,16 +196,13 @@ ggplot(data = gapminder,
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="index_files/figure-html/scatter-color-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scatter-color-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ### Use faceting to identify differences
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -241,7 +218,7 @@ ggplot(data = gapminder,
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="index_files/figure-html/scatter-facet-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scatter-facet-1.png" width="672" />
 
 ```r
 # using facet_grid()
@@ -255,7 +232,7 @@ ggplot(data = gapminder,mapping = aes(x = gdpPercap, y = lifeExp, color = contin
 ## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
-<img src="index_files/figure-html/scatter-facet-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scatter-facet-2.png" width="672" />
 
 Why use `facet_grid()` here instead of `facet_wrap()`? Good question! Let's reframe it and instead ask, what is the difference between `facet_grid()` and `facet_wrap()`?^[Example drawn from [this StackOverflow thread](https://stackoverflow.com/questions/20457905/whats-the-difference-between-facet-wrap-and-facet-grid-in-ggplot2).]
 
@@ -268,7 +245,7 @@ ggplot(mpg, aes(displ, hwy)) +
   facet_grid(cyl ~ class)
 ```
 
-<img src="index_files/figure-html/facet-grid-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/facet-grid-1.png" width="672" />
 
 There are 4 distinct `cyl` and 7 distinct `class` values. This plot  displays $4 \times 7 = 28$ plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
 
@@ -281,18 +258,16 @@ ggplot(mpg, aes(displ, hwy)) +
   facet_wrap(~ cyl + class)
 ```
 
-<img src="index_files/figure-html/facet-wrap-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/facet-wrap-1.png" width="672" />
 
 There are 19 plots displayed now, one for every combination of `cyl` and `class`. So for this exercise, I would use `facet_wrap()` because we are faceting on a single variable. If we faceted on multiple variables, `facet_grid()` may be more appropriate.
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## Bonus: Identify the outlying countries on the right-side of the graph by labeling each observation with the country name
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 ggplot(data = gapminder,
@@ -305,10 +280,9 @@ ggplot(data = gapminder,
 ## `geom_smooth()` using method = 'gam' and formula 'y ~ s(x, bs = "cs")'
 ```
 
-<img src="index_files/figure-html/text-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/text-1.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Session Info
 
@@ -329,13 +303,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -402,7 +376,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

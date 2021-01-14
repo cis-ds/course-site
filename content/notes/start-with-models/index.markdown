@@ -111,7 +111,7 @@ ggplot(data = scorecard,
 ## Warning: Removed 52 rows containing missing values (geom_point).
 ```
 
-<img src="index_files/figure-html/scorecard-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scorecard-plot-1.png" width="672" />
 
 We can see that public and private non-profit schools have the strongest correlation between total cost of attendance and average faculty salaries -- private for-profit schools tend to be pretty flat in terms of average salaries regardless of cost of attendance. 
 
@@ -291,7 +291,7 @@ ggplot(data = plot_data, mapping = aes(x = type)) +
   labs(y = "Expected average faculty salary")
 ```
 
-<img src="index_files/figure-html/lm-all-pred-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/lm-all-pred-1.png" width="672" />
 
 ## Model with a different engine {#new-engine}
 
@@ -393,7 +393,7 @@ ggplot(data = bayes_plot_data, mapping = aes(x = type)) +
   labs(y = "Expected average faculty salary")
 ```
 
-<img src="index_files/figure-html/stan-pred-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/stan-pred-1.png" width="672" />
 
 This isn't very different from the non-Bayesian results (except in interpretation). 
 
@@ -433,7 +433,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        
@@ -441,7 +441,7 @@ devtools::session_info()
 ##  backports      1.2.1      2020-12-09 [1] CRAN (R 4.0.2)
 ##  base64enc      0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
 ##  bayesplot      1.7.2      2020-05-28 [1] CRAN (R 4.0.0)
-##  blogdown       0.21       2020-12-18 [1] local         
+##  blogdown       1.0.2      2021-01-14 [1] local         
 ##  bookdown       0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  boot           1.3-25     2020-04-26 [1] CRAN (R 4.0.3)
 ##  broom        * 0.7.3      2020-12-16 [1] CRAN (R 4.0.2)
@@ -585,7 +585,7 @@ devtools::session_info()
 ##  vctrs          0.3.6      2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows    * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
-##  xfun           0.19       2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20       2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
 ##  xtable         1.8-4      2019-04-21 [1] CRAN (R 4.0.0)
 ##  xts            0.12.1     2020-09-09 [1] CRAN (R 4.0.2)

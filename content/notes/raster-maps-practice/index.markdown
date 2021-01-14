@@ -61,131 +61,116 @@ glimpse(chi_311)
 
 1. Obtain map tiles using `ggmap` for the city of Chicago.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    # store bounding box coordinates
-    chi_bb <- c(left = -87.936287,
-                bottom = 41.679835,
-                right = -87.447052,
-                top = 42.000835)
-    
-    # retrieve bounding box
-    chicago <- get_stamenmap(bbox = chi_bb,
-                             zoom = 11)
-    
-    # plot the raster map
-    ggmap(chicago)
-    ```
-    
-    <img src="index_files/figure-html/bb-chicago-1.png" width="672" />
-        
-      </p>
-    </details>
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+# store bounding box coordinates
+chi_bb <- c(left = -87.936287,
+            bottom = 41.679835,
+            right = -87.447052,
+            top = 42.000835)
+
+# retrieve bounding box
+chicago <- get_stamenmap(bbox = chi_bb,
+                         zoom = 11)
+
+# plot the raster map
+ggmap(chicago)
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 1. Generate a scatterplot of complaints about potholes in streets.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    # initialize map
-    ggmap(chicago) +
-      # add layer with scatterplot
-      # use alpha to show density of points
-      geom_point(data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
-                 mapping = aes(x = longitude,
-                               y = latitude),
-                 size = .25,
-                 alpha = .05)
-    ```
-    
-    <img src="index_files/figure-html/potholes-point-1.png" width="672" />
-        
-      </p>
-    </details>
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+# initialize map
+ggmap(chicago) +
+  # add layer with scatterplot
+  # use alpha to show density of points
+  geom_point(data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
+             mapping = aes(x = longitude,
+                           y = latitude),
+             size = .25,
+             alpha = .05)
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/potholes-point-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 1. Generate a heatmap of complaints about potholes in streets. Do you see any unusual patterns or clusterings?
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    # initialize the map
-    ggmap(chicago) +
-      # add the heatmap
-      stat_density_2d(data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
-                      mapping = aes(x = longitude,
-                                    y = latitude,
-                                    fill = stat(level)),
-                      alpha = .1,
-                      bins = 50,
-                      geom = "polygon") +
-      # customize the color gradient
-      scale_fill_gradientn(colors = brewer.pal(9, "YlOrRd"))
-    ```
-    
-    <img src="index_files/figure-html/potholes-heatmap-1.png" width="672" />
-        
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+# initialize the map
+ggmap(chicago) +
+  # add the heatmap
+  stat_density_2d(data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
+                  mapping = aes(x = longitude,
+                                y = latitude,
+                                fill = stat(level)),
+                  alpha = .1,
+                  bins = 50,
+                  geom = "polygon") +
+  # customize the color gradient
+  scale_fill_gradientn(colors = brewer.pal(9, "YlOrRd"))
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/potholes-heatmap-1.png" width="672" />
+
     Seems to be clustered on the north side. Also looks to occur along major arterial routes for commuting traffic. Makes sense because they receive the most wear and tear.
-        
-      </p>
-    </details>
+
+    {{< /spoiler >}}
 
 1. Obtain map tiles for Hyde Park.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    # store bounding box coordinates
-    hp_bb <- c(left = -87.608221,
-               bottom = 41.783249,
-               right = -87.577643,
-               top = 41.803038)
-    
-    # retrieve bounding box
-    hyde_park <- get_stamenmap(bbox = hp_bb,
-                               zoom = 15)
-    
-    # plot the raster map
-    ggmap(hyde_park)
-    ```
-    
-    <img src="index_files/figure-html/bb-hyde-park-1.png" width="672" />
-        
-      </p>
-    </details>
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+# store bounding box coordinates
+hp_bb <- c(left = -87.608221,
+           bottom = 41.783249,
+           right = -87.577643,
+           top = 41.803038)
+
+# retrieve bounding box
+hyde_park <- get_stamenmap(bbox = hp_bb,
+                           zoom = 15)
+
+# plot the raster map
+ggmap(hyde_park)
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-hyde-park-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 1. Generate a scatterplot of requests to pick up dead animals in Hyde Park.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    # initialize the map
-    ggmap(hyde_park) +
-      # add a scatterplot layer
-      geom_point(data = filter(chi_311, sr_type == "Dead Animal Pick-Up Request"),
-                 mapping = aes(x = longitude,
-                               y = latitude))
-    ```
-    
-    <img src="index_files/figure-html/dead-animals-point-1.png" width="672" />
-        
-      </p>
-    </details>
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+# initialize the map
+ggmap(hyde_park) +
+  # add a scatterplot layer
+  geom_point(data = filter(chi_311, sr_type == "Dead Animal Pick-Up Request"),
+             mapping = aes(x = longitude,
+                           y = latitude))
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/dead-animals-point-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 ### Session Info
 
@@ -206,14 +191,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
 ##  bitops         1.0-6   2013-08-17 [1] CRAN (R 4.0.0)
-##  blogdown       0.21    2020-12-18 [1] local         
+##  blogdown       1.0.2   2021-01-14 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -289,7 +274,7 @@ devtools::session_info()
 ##  usethis        2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun           0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

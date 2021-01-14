@@ -36,7 +36,7 @@ Go [here](https://github.com/cfss-win21/hw08) to fork the repo.
 
 We've examined the `gapminder` data quite a bit. One relationship we've looked at (or are about to) is the relationship between population and life expectancy.
 
-<img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 For the assignment, I want you to replace **population** with **population density** and evaluate its relationship with average life expectancy. To do this:
 

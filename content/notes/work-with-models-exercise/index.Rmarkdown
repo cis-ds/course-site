@@ -51,50 +51,41 @@ Answer the following questions using the statistical modeling tools you have lea
 
 1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    ```{r scorecard-point}
-    ggplot(scorecard, aes(admrate, cost)) +
-      geom_point() +
-      geom_smooth(method = "lm")
-    ```    
-    
-      </p>
-    </details>
+```{r scorecard-point}
+ggplot(scorecard, aes(admrate, cost)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```    
+
+    {{< /spoiler >}}
 
 1. Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-mod}
-    scorecard_fit <- linear_reg() %>%
-      set_engine("lm") %>%
-      fit(cost ~ admrate, data = scorecard)
-    tidy(scorecard_fit)
-    ```
+    {{< spoiler text="Click for the solution" >}}
     
-      </p>
-    </details>
+```{r scorecard-mod}
+scorecard_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cost ~ admrate, data = scorecard)
+tidy(scorecard_fit)
+```
+   
+    {{< /spoiler >}}
 
 1. Estimate a linear regression of the relationship between admission rate and cost, while also accounting for type of college and percent of Pell Grant recipients, and report your results in a tidy table.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-
-    ```{r scorecard-mult-var}
-     scorecard_fit <- linear_reg() %>%
-      set_engine("lm") %>%
-      fit(cost ~ admrate + type + pctpell, data = scorecard)
-    tidy(scorecard_fit)
-    ```
+    {{< spoiler text="Click for the solution" >}}
     
-      </p>
-    </details>
+```{r scorecard-mult-var}
+ scorecard_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cost ~ admrate + type + pctpell, data = scorecard)
+tidy(scorecard_fit)
+```    
+    
+    {{< /spoiler >}}
 
 ## Exercise: logistic regression with `mental_health`
 
@@ -108,98 +99,92 @@ mental_health
 
 1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and a 95% confidence interval, and plot the logistic regression predictions using `ggplot`.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r mh-factor}
+# convert vote96 to a factor column
+mental_health <- rcfss::mental_health %>%
+  mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
+```
 
-    ```{r mh-factor}
-    # convert vote96 to a factor column
-    mental_health <- rcfss::mental_health %>%
-      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
-    ```
+```{r mh-model, dependson = "mh-factor"}
+# estimate model
+mh_mod <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(vote96 ~ mhealth, data = mental_health)
+
+# generate predicted probabilities + confidence intervals
+new_points <- tibble(
+  mhealth = seq(
+    from = min(mental_health$mhealth),
+    to = max(mental_health$mhealth)
+  )
+)
+
+bind_cols(
+  new_points,
+  # predicted probabilities
+  predict(mh_mod, new_data = new_points, type = "prob"),
+  # confidence intervals
+  predict(mh_mod, new_data = new_points, type = "conf_int")
+) %>%
+  # graph the predictions
+  ggplot(mapping = aes(x = mhealth, y = .pred_Voted)) +
+  geom_pointrange(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted)) +
+  labs(title = "Relationship Between Mental Health and Voter Turnout",
+       x = "Mental health status",
+       y = "Predicted Probability of Voting")
+```
     
-    ```{r mh-model, dependson = "mh-factor"}
-    # estimate model
-    mh_mod <- logistic_reg() %>%
-      set_engine("glm") %>%
-      fit(vote96 ~ mhealth, data = mental_health)
-    
-    # generate predicted probabilities + confidence intervals
-    new_points <- tibble(
-      mhealth = seq(
-        from = min(mental_health$mhealth),
-        to = max(mental_health$mhealth)
-      )
-    )
-    
-    bind_cols(
-      new_points,
-      # predicted probabilities
-      predict(mh_mod, new_data = new_points, type = "prob"),
-      # confidence intervals
-      predict(mh_mod, new_data = new_points, type = "conf_int")
-    ) %>%
-      # graph the predictions
-      ggplot(mapping = aes(x = mhealth, y = .pred_Voted)) +
-      geom_pointrange(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted)) +
-      labs(title = "Relationship Between Mental Health and Voter Turnout",
-           x = "Mental health status",
-           y = "Predicted Probability of Voting")
-    ```    
-    
-      </p>
-    </details>
+    {{< /spoiler >}}
 
 1. Estimate a second logistic regression model of voter turnout using using age and gender (i.e. the `female` column). Extract predicted probabilities and confidence intervals for all possible values of age, and visualize using `ggplot()`.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
 
-    ```{r mh-model-all, dependson="mental-health"}
-    # recode female
-    mental_health <- rcfss::mental_health %>%
-      mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")),
-             female = factor(female, labels = c("Male", "Female")))
-    
-    # estimate model
-    mh_int_mod <- logistic_reg() %>%
-      set_engine("glm") %>%
-      fit(vote96 ~ age * female, data = mental_health)
-    
-    # generate predicted probabilities + confidence intervals
-    new_points <- expand.grid(
-      age = seq(
-        from = min(mental_health$age),
-        to = max(mental_health$age)
-      ),
-      female = unique(mental_health$female)
-    )
-    
-    bind_cols(
-      new_points,
-      # predicted probabilities
-      predict(mh_int_mod, new_data = new_points, type = "prob"),
-      # confidence intervals
-      predict(mh_int_mod, new_data = new_points, type = "conf_int")
-    ) %>%
-      # graph the predictions
-      ggplot(mapping = aes(x = age, y = .pred_Voted, color = female)) +
-      # predicted probability
-      geom_line(linetype = 2) +
-      # confidence interval
-      geom_ribbon(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted,
-                                fill = female), alpha = .2) +
-      scale_color_viridis_d(end = 0.7, aesthetics = c("color", "fill"),
-                            name = NULL) +
-      labs(title = "Relationship Between Age and Voter Turnout",
-           x = "Age",
-           y = "Predicted Probability of Voting")
-    ```
-    
-      </p>
-    </details>
-    
+```{r mh-model-all, dependson="mental-health"}
+# recode female
+mental_health <- rcfss::mental_health %>%
+  mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")),
+         female = factor(female, labels = c("Male", "Female")))
+
+# estimate model
+mh_int_mod <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(vote96 ~ age * female, data = mental_health)
+
+# generate predicted probabilities + confidence intervals
+new_points <- expand.grid(
+  age = seq(
+    from = min(mental_health$age),
+    to = max(mental_health$age)
+  ),
+  female = unique(mental_health$female)
+)
+
+bind_cols(
+  new_points,
+  # predicted probabilities
+  predict(mh_int_mod, new_data = new_points, type = "prob"),
+  # confidence intervals
+  predict(mh_int_mod, new_data = new_points, type = "conf_int")
+) %>%
+  # graph the predictions
+  ggplot(mapping = aes(x = age, y = .pred_Voted, color = female)) +
+  # predicted probability
+  geom_line(linetype = 2) +
+  # confidence interval
+  geom_ribbon(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted,
+                            fill = female), alpha = .2) +
+  scale_color_viridis_d(end = 0.7, aesthetics = c("color", "fill"),
+                        name = NULL) +
+  labs(title = "Relationship Between Age and Voter Turnout",
+       x = "Age",
+       y = "Predicted Probability of Voting")
+```
+
+    {{< /spoiler >}}
+
 ## Session Info
 
 ```{r child = here::here("R", "_session-info.Rmd")}

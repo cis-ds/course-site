@@ -149,16 +149,13 @@ Navigate to [the IMDB page for *Frozen*](http://www.imdb.com/title/tt2294629/) a
 
 ![IMDB page for *Frozen*](/img/frozen_bell.png)
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 ![HTML tag for "Kristen Bell"](/img/frozen_span.png)
 
 "Kristen Bell" is enclosed in the `span` tag. But look through the some of the other source code. `span` is used many times throughout the page. How can we select just the element containing "Kristen Bell", or all the cast member names but nothing else?
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## CSS selectors
 
@@ -246,17 +243,14 @@ Which CSS identifiers are associated with Kristen Bell's name in the *Frozen* pa
 
 ![](/img/frozen_css.png)
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 * `span` - the element
 * `itemprop` - the class
 
 Therefore the CSS selector would be `span.itemprop`.
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## `rvest`
 
@@ -367,9 +361,7 @@ Now it's your turn to practice.
 1. Select the nodes that are both `id = "titleCast"` and `a`s
 1. Extract the text from the nodes
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -430,9 +422,8 @@ html_text(cast)
 ## [48] "See full cast"                                     
 ## [49] " \nView production, box office, & company info\n\n"
 ```
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 Do you collect the cast names and only the cast names? We've scraped too much. The problem is that our CSS selector is not specific enough for our needs. We need an easy way to identify CSS selector combinations to extract only the content we want, and nothing more.
 
@@ -466,9 +457,7 @@ When using SelectorGadget, always make sure to scroll up and down the web page t
 1. Install SelectorGadget in your browser
 1. Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -496,17 +485,14 @@ html_text(cast2) %>% str_trim(side = "both")
 ## [10] "Maia Wilson"         "Edie McClurg"        "Robert Pine"        
 ## [13] "Maurice LaMarche"    "Livvy Stubenrauch"   "Eva Bella"
 ```
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## Practice scraping data
 
 Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_nodes()` and `html_text()`.
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 For me, this means I need to obtain information on [Sterling, Virginia](http://www.bestplaces.net/cost_of_living/city/virginia/sterling).
 
@@ -532,9 +518,8 @@ sterling %>%
 ```
 ## [1] "134.4"
 ```
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## Tables
 
@@ -567,9 +552,7 @@ tables %>%
 
 Visit the climate tab for your home town. Extract the climate statistics of your hometown as a data frame with useful column names.
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 For me, this means I need to obtain information on [Sterling, Virginia](http://www.bestplaces.net/cost_of_living/city/virginia/sterling).
 
@@ -613,9 +596,8 @@ sterling_climate %>%
 ## 8                      UV Index                  4           4.3
 ## 9                     Elevation            292 ft.      2443 ft.
 ```
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ## Acknowledgments
 
@@ -642,13 +624,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -715,7 +697,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2        * 1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

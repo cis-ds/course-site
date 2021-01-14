@@ -200,7 +200,7 @@ mpg_preall <- bind_rows(mpg_preall)
 
 Let's compare the time it takes to complete each of these loops by replicating each example 100 times and measuring how long it takes for the expression to evaluate.
 
-<img src="index_files/figure-html/preallocate-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/preallocate-1.png" width="672" />
 
 Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 30.
 
@@ -238,9 +238,7 @@ Before you write the `for` loop, identify the three components you need:
 * Sequence
 * Body
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 * Output - a numeric vector of length 11
 * Sequence - `i in seq_along(mtcars)`
@@ -264,9 +262,8 @@ output
 ##  [1]  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250
 ##  [7]  17.848750   0.437500   0.406250   3.687500   2.812500
 ```
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ### Maximum value in each column of `diamonds`
 
@@ -300,9 +297,7 @@ Before you write the `for` loop, identify the three components you need:
 * Sequence
 * Body
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 * Output - a vector of length 10
 * Sequence - `i in seq_along(diamonds)`
@@ -359,8 +354,7 @@ Notice that all the columns have a maximum value, even the apparently text-based
 
 {{% /callout %}}
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Map functions
 
@@ -465,9 +459,7 @@ as_tibble(mtcars)
 ## # … with 22 more rows
 ```
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -480,9 +472,8 @@ map_dbl(mtcars, mean)
 ##         vs         am       gear       carb 
 ##   0.437500   0.406250   3.687500   2.812500
 ```
-    
-  </p>
-</details>
+
+{{< /spoiler >}}
 
 ### Maximum value in each column of `diamonds`
 
@@ -510,9 +501,7 @@ diamonds
 ## # … with 53,930 more rows
 ```
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -526,8 +515,7 @@ map_dbl(diamonds, max)
 ##    58.90    31.80
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## `across()`
 
@@ -908,13 +896,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -982,7 +970,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

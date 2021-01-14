@@ -531,11 +531,9 @@ geom_line(aes(y = y_high), linetype = 2)+
 labs(title = "Cubic spline of out-of-state tuition",subtitle = "Knots = 2",x = "Percent of faculty with PhDs",y=expression(f[1](PhD)))
 ```
 
-<img src="index_files/figure-html/exercise_bad-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/exercise_bad-1.png" width="672" />
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -582,8 +580,7 @@ tibble(x = college_phd_terms$`bs(PhD, df = 5)`$x,
        y = expression(f[1](PhD)))
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Session Info
 
@@ -604,13 +601,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -677,7 +674,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

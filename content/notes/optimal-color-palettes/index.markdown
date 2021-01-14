@@ -36,7 +36,7 @@ theme_set(theme_minimal())
 
 Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth. By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):^[Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process]
 
-<img src="index_files/figure-html/color-wheel-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/color-wheel-1.png" width="672" />
 
 `ggplot2` gives you many different ways of defining and customizing your `scale_color_` and `scale_fill_` palettes, but will not tell you if they are optimal for your specific usage in the graph.
 
@@ -55,9 +55,9 @@ Sequential palettes work best with ordered data that progresses from a low to hi
 display.brewer.all(type = "seq")
 ```
 
-<img src="index_files/figure-html/cb-seq-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cb-seq-1.png" width="672" />
 
-<img src="index_files/figure-html/cb-seq-map-1.png" width="672" /><img src="index_files/figure-html/cb-seq-map-2.png" width="672" /><img src="index_files/figure-html/cb-seq-map-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cb-seq-map-1.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/cb-seq-map-2.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/cb-seq-map-3.png" width="672" />
 
 ## Diverging
 
@@ -68,9 +68,9 @@ Diverging palettes work for variables with meaningful mid-range values, as well 
 display.brewer.all(type = "div")
 ```
 
-<img src="index_files/figure-html/cb-div-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cb-div-1.png" width="672" />
 
-<img src="index_files/figure-html/cb-div-map-1.png" width="672" /><img src="index_files/figure-html/cb-div-map-2.png" width="672" /><img src="index_files/figure-html/cb-div-map-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cb-div-map-1.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/cb-div-map-2.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/cb-div-map-3.png" width="672" />
 
 ## Qualitative
 
@@ -81,9 +81,9 @@ Qualitative palettes are best used for nominal data where there is no inherent o
 display.brewer.all(type = "qual")
 ```
 
-<img src="index_files/figure-html/cb-qual-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cb-qual-1.png" width="672" />
 
-<img src="index_files/figure-html/cb-qual-map-1.png" width="672" /><img src="index_files/figure-html/cb-qual-map-2.png" width="672" /><img src="index_files/figure-html/cb-qual-map-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cb-qual-map-1.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/cb-qual-map-2.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/cb-qual-map-3.png" width="672" />
 
 ## Viridis
 
@@ -104,7 +104,7 @@ viridis_base <- ggplot(state_inc) +
 viridis_base
 ```
 
-<img src="index_files/figure-html/viridis-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/viridis-1.png" width="672" />
 
 ```r
 viridis_base +
@@ -112,7 +112,7 @@ viridis_base +
   labs(subtitle = "Palette: cividis")
 ```
 
-<img src="index_files/figure-html/viridis-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/viridis-2.png" width="672" />
 
 ```r
 viridis_base +
@@ -120,7 +120,7 @@ viridis_base +
   labs(subtitle = "Palette: inferno")
 ```
 
-<img src="index_files/figure-html/viridis-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/viridis-3.png" width="672" />
 
 ```r
 viridis_base +
@@ -128,7 +128,7 @@ viridis_base +
   labs(subtitle = "Palette: magma")
 ```
 
-<img src="index_files/figure-html/viridis-4.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/viridis-4.png" width="672" />
 
 ```r
 viridis_base +
@@ -136,7 +136,7 @@ viridis_base +
   labs(subtitle = "Palette: plasma")
 ```
 
-<img src="index_files/figure-html/viridis-5.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/viridis-5.png" width="672" />
 
 ### Session Info
 
@@ -157,13 +157,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown       0.21    2020-12-18 [1] local         
+##  blogdown       1.0.2   2021-01-14 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -247,7 +247,7 @@ devtools::session_info()
 ##  uuid           0.1-4   2020-02-26 [1] CRAN (R 4.0.0)
 ##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun           0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

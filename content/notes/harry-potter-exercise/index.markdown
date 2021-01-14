@@ -142,16 +142,14 @@ hp_words %>%
 ## Selecting by n
 ```
 
-<img src="index_files/figure-html/word-freq-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/word-freq-1.png" width="672" />
 
 ## Estimate sentiment
 
 ## Generate data frame with sentiment derived from the Bing dictionary
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 (hp_bing <- hp_words %>% 
@@ -179,8 +177,7 @@ hp_words %>%
 ## # … with 65,084 more rows
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Visualize the most frequent positive/negative words in the entire series using the Bing dictionary, and then separately for each book
 
@@ -190,10 +187,8 @@ Check out [this blog post](https://juliasilge.com/blog/reorder-within/) which in
 
 {{% /callout %}}
 
-<details> 
-  <summary>Click for a solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 # all series
@@ -223,7 +218,7 @@ hp_bing %>%
 ## Selecting by n
 ```
 
-<img src="index_files/figure-html/pos-neg-all-series-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pos-neg-all-series-1.png" width="672" />
 
 ```r
 # per book
@@ -256,7 +251,7 @@ hp_pos_neg_book %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/pos-neg-all-series-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pos-neg-all-series-2.png" width="672" />
 
 ```r
 ## negative words
@@ -273,17 +268,14 @@ hp_pos_neg_book %>%
   coord_flip()
 ```
 
-<img src="index_files/figure-html/pos-neg-all-series-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/pos-neg-all-series-3.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Generate data frame with sentiment derived from the AFINN dictionary
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 (hp_afinn <- hp_words %>% 
@@ -313,8 +305,7 @@ hp_pos_neg_book %>%
 ## # … with 56,301 more rows
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Visualize which words in the AFINN sentiment dictionary appear most frequently
 
@@ -342,7 +333,7 @@ hp_afinn %>%
   theme_minimal()
 ```
 
-<img src="index_files/figure-html/sentiment-outliers-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sentiment-outliers-1.png" width="672" />
 
 As we can see, "moody" appears quite frequently in the books. In the vast majority of appearances, "moody" is used to refer to the character Alastor "Mad-Eye" Moody and is not meant to convey a specific sentiment.
 
@@ -397,14 +388,12 @@ hp_afinn %>%
   theme_minimal()
 ```
 
-<img src="index_files/figure-html/sentiment-outlier-remove-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sentiment-outlier-remove-1.png" width="672" />
 
 ## Visualize the positive/negative sentiment for each book over time using the AFINN dictionary
 
-<details> 
-  <summary>Click for a solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 hp_words %>% 
@@ -429,7 +418,7 @@ hp_words %>%
 ## `summarise()` regrouping output by 'book' (override with `.groups` argument)
 ```
 
-<img src="index_files/figure-html/affin-over-time-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/affin-over-time-1.png" width="672" />
 
 ```r
 # cumulative value
@@ -450,10 +439,9 @@ hp_words %>%
 ## Joining, by = "word"
 ```
 
-<img src="index_files/figure-html/affin-over-time-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/affin-over-time-2.png" width="672" />
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Acknowledgments
 
@@ -478,13 +466,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib
 ##  assertthat    0.2.1   2019-03-21 [1]
 ##  backports     1.2.1   2020-12-09 [1]
-##  blogdown      0.21    2020-12-18 [1]
+##  blogdown      1.0.2   2021-01-14 [1]
 ##  bookdown      0.21    2020-10-13 [1]
 ##  broom         0.7.3   2020-12-16 [1]
 ##  callr         3.5.1   2020-10-13 [1]
@@ -558,7 +546,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1]
 ##  vctrs         0.3.6   2020-12-17 [1]
 ##  withr         2.3.0   2020-09-22 [1]
-##  xfun          0.19    2020-10-30 [1]
+##  xfun          0.20    2021-01-06 [1]
 ##  xml2          1.3.2   2020-04-23 [1]
 ##  yaml          2.2.1   2020-02-01 [1]
 ##  source                                     

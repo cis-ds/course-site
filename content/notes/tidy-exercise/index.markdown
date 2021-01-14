@@ -57,10 +57,8 @@ Important info:
 * `50`:`350` - column names define different lengths of time
 * Cell values are scores associated with each name and length of time
 
-<details> 
-  <summary>Click for a hint</summary>
-  <p>
-  
+{{< spoiler text="Click for a hint" >}}
+
 **Tidy data structure**
 
 
@@ -81,12 +79,9 @@ Important info:
 ## # … with 18 more rows
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -125,8 +120,7 @@ Because the column names are actually numeric values, we use `names_transform = 
 
 {{% /callout %}}
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Clinical trials
 
@@ -167,10 +161,8 @@ Important info:
 * `Treatment` - trial type (`Treat` or `Cont`)
 * `value` - result of experiment
 
-<details> 
-  <summary>Click for a hint</summary>
-  <p>
-  
+{{< spoiler text="Click for a hint" >}}
+
 **Tidy data structure**
 
 
@@ -190,12 +182,9 @@ Important info:
 ## 10 Ind10    10    20
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -220,8 +209,7 @@ pivot_wider(data = results, names_from = Treatment, values_from = value)
 
 This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Grades
 
@@ -253,9 +241,7 @@ This one is a bit tougher. Important info:
 * **The unit of analysis is ID-Year-Quarter.** That is, in the tidy formulation each observation represents one individual during one quarter in a given year.
 * **Each test is unique.** As in they should be treated as two separate variables.
 
-<details> 
-  <summary>Click for a hint</summary>
-  <p>
+{{< spoiler text="Click for a hint" >}}
 
 **Tidy data structure**
 
@@ -284,12 +270,9 @@ This one is a bit tougher. Important info:
 ## 18     3  2009 Winter     27      31
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
@@ -400,8 +383,7 @@ pivot_longer(
 ## 18     3  2009 Winter     27      31
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Activities
 
@@ -428,10 +410,8 @@ activities
 
 This one is also pretty difficult, but if you think it through conceptually it is doable. The unit of analysis is a single individual (identified by `id`) observed at two different times (`T1` and `T2`) performing different actions (`work`, `play`, `talk`, and `total` - note that `total` is not merely the sum of the first three values). Individuals in this experiment were assigned to either treatment or control (`trt`) and this information should be preserved in the final data frame.
 
-<details> 
-  <summary>Click for a hint</summary>
-  <p>
-  
+{{< spoiler text="Click for a hint" >}}
+
 **Tidy data structure**
 
 
@@ -461,12 +441,9 @@ This one is also pretty difficult, but if you think it through conceptually it i
 ## 20 x10   cnt   T2    0.802  0.505 0.219
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
+{{< spoiler text="Click for the solution" >}}
 
 This is a more complex operation. The basic problem is that we have variables stored in multiple columns (location, with possible values of `work`, `play`, and `talk`). We need to combine these columns into a single column for each variable. But what happens if we just make the data frame longer in this way?
 
@@ -569,8 +546,7 @@ pivot_longer(
 ## 20 x10   cnt   T2    0.802  0.505 0.219
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Session Info
 
@@ -591,13 +567,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -667,7 +643,7 @@ devtools::session_info()
 ##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

@@ -166,7 +166,7 @@ Third, there is a substantial amount of missingness to many of the variables in 
 vis_miss(x = gss)
 ```
 
-<img src="index_files/figure-html/gss-missing-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/gss-missing-1.png" width="672" />
 
 This can make it challenging to estimate a logistic regression model because we can only include observations with complete records (i.e. no missing values on any of the variables). We'll discuss later in this document specific steps that we can add to our recipe to address this issue before modeling. 
 
@@ -492,7 +492,7 @@ gss_pred %>%
   autoplot()
 ```
 
-<img src="index_files/figure-html/roc-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/roc-plot-1.png" width="672" />
 
 Similarly, `roc_auc()` estimates the area under the curve: 
 
@@ -535,14 +535,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)
 ##  base64enc     0.1-3      2015-07-28 [1] CRAN (R 4.0.0)
-##  blogdown      0.21       2020-12-18 [1] local         
+##  blogdown      1.0.2      2021-01-14 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.3      2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -648,7 +648,7 @@ devtools::session_info()
 ##  visdat        0.5.3      2019-02-15 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
-##  xfun          0.19       2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20       2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
 ##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)

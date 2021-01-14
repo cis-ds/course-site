@@ -49,7 +49,7 @@ autoplot(object = results_small) +
   labs(y = "Time [milliseconds], logged")
 ```
 
-<img src="index_files/figure-html/compare-speed-small-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/compare-speed-small-plot-1.png" width="672" />
 
 `read_csv()` is over 5 times faster than `read.csv()`. Of course with relatively small data files, this isn't a large difference in absolute terms (a difference of 100 milliseconds is only .1 second). However, as the data file increases in size the performance savings will be much larger. Consider the same test with a CSV file with 500,000 rows:
 
@@ -70,7 +70,7 @@ autoplot(object = results_large) +
   labs(y = "Time [milliseconds], logged")
 ```
 
-<img src="index_files/figure-html/compare-speed-large-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/compare-speed-large-plot-1.png" width="672" />
 
 Here `read_csv()` is far superior to `read.csv()`.
 
@@ -94,7 +94,7 @@ autoplot(object = results_vroom) +
   labs(y = "Time [milliseconds], logged")
 ```
 
-<img src="index_files/figure-html/vroom-compare-speed-large-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/vroom-compare-speed-large-plot-1.png" width="672" />
 
 ## Alternative file formats
 
@@ -196,7 +196,7 @@ microbenchmark(
   labs(y = "Time [microseconds], logged")
 ```
 
-<img src="index_files/figure-html/rds-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/rds-1.png" width="672" />
 
 By default, `write_rds()` does not compress the `.rds` file; use the `compress` argument to implement one of several different compression algorithms. `read_rds()` is noticably faster than `read_csv()`, and also has the benefit of [preserving column types](http://r4ds.had.co.nz/data-import.html#writing-to-a-file). The downside is that RDS is only implemented by R; it is not used by any other program so if you need to import/export data files into other languages like Python (or open in Excel), RDS is not a good storage format.
 
@@ -247,7 +247,7 @@ microbenchmark(
   labs(y = "Time [microseconds], logged")
 ```
 
-<img src="index_files/figure-html/feather-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/feather-1.png" width="672" />
 
 `read_feather()` is generally faster than RDS and `read_csv()`.^[Notice that the x-axis is logarithmically scaled.] Furthermore, [it has native support for Python, R, and Julia.](http://arrow.apache.org/blog/2019/08/08/r-package-on-cran/), so if you develop an analytics pipeline that switches between R and Python, you can import/export data files in `.feather` without any loss of information.
 
@@ -444,13 +444,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -517,7 +517,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

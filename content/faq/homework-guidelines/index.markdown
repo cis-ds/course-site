@@ -100,12 +100,12 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ##  collate  en_US.UTF-8                 
     ##  ctype    en_US.UTF-8                 
     ##  tz       America/Chicago             
-    ##  date     2021-01-05                  
+    ##  date     2021-01-14                  
     ## 
     ## ─ Packages ───────────────────────────────────────────────────────────────────
     ##  package     * version date       lib source        
     ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
-    ##  blogdown      0.21    2020-12-18 [1] local         
+    ##  blogdown      1.0.2   2021-01-14 [1] local         
     ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
     ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
     ##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)
@@ -140,7 +140,7 @@ Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You n
     ##  testthat      3.0.1   2020-12-17 [1] CRAN (R 4.0.2)
     ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
     ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-    ##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+    ##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
     ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
     ## 
     ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library

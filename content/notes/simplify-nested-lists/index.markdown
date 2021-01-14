@@ -617,137 +617,132 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
 
 1. Generate a visualization of the distribution of average height for each species in the Star Wars universe.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
+    {{< spoiler text="Click for the solution" >}}
+
     `sw_species` contains one element for each species in the database, so we should use `unnest_wider()` or `hoist()` to extract the required elements.
     
+
+```r
+# clean up sw_species so it is one-row-per-species
+sw_height <- tibble(sw_species) %>%
+  hoist(sw_species,
+        height = "average_height") %>%
+  # fix height to be a numeric column
+  mutate(height = parse_number(height))
+```
+
+```
+## Warning: Problem with `mutate()` input `height`.
+## ℹ 3 parsing failures.
+## row col expected  actual
+##  19  -- a number unknown
+##  29  -- a number unknown
+##  35  -- a number n/a    
+## 
+## ℹ Input `height` is `parse_number(height)`.
+```
+
+```
+## Warning: 3 parsing failures.
+## row col expected  actual
+##  19  -- a number unknown
+##  29  -- a number unknown
+##  35  -- a number n/a
+```
+
+```r
+sw_height
+```
+
+```
+## # A tibble: 37 x 2
+##    height sw_species       
+##     <dbl> <list>           
+##  1    300 <named list [14]>
+##  2     66 <named list [14]>
+##  3    200 <named list [14]>
+##  4    160 <named list [14]>
+##  5    100 <named list [14]>
+##  6    180 <named list [14]>
+##  7    180 <named list [14]>
+##  8    190 <named list [14]>
+##  9    120 <named list [14]>
+## 10    100 <named list [14]>
+## # … with 27 more rows
+```
+
+```r
+# generate a histogram
+ggplot(data = sw_height, mapping = aes(x = height)) +
+  geom_histogram() +
+  labs(x = "Height (in centimeters)",
+       y = "Number of species")
+```
+
+```
+## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+```
+
+```
+## Warning: Removed 3 rows containing non-finite values (stat_bin).
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/sw-avg-height-1.png" width="672" />
     
-    ```r
-    # clean up sw_species so it is one-row-per-species
-    sw_height <- tibble(sw_species) %>%
-      hoist(sw_species,
-            height = "average_height") %>%
-      # fix height to be a numeric column
-      mutate(height = parse_number(height))
-    ```
-    
-    ```
-    ## Warning: Problem with `mutate()` input `height`.
-    ## ℹ 3 parsing failures.
-    ## row col expected  actual
-    ##  19  -- a number unknown
-    ##  29  -- a number unknown
-    ##  35  -- a number n/a    
-    ## 
-    ## ℹ Input `height` is `parse_number(height)`.
-    ```
-    
-    ```
-    ## Warning: 3 parsing failures.
-    ## row col expected  actual
-    ##  19  -- a number unknown
-    ##  29  -- a number unknown
-    ##  35  -- a number n/a
-    ```
-    
-    ```r
-    sw_height
-    ```
-    
-    ```
-    ## # A tibble: 37 x 2
-    ##    height sw_species       
-    ##     <dbl> <list>           
-    ##  1    300 <named list [14]>
-    ##  2     66 <named list [14]>
-    ##  3    200 <named list [14]>
-    ##  4    160 <named list [14]>
-    ##  5    100 <named list [14]>
-    ##  6    180 <named list [14]>
-    ##  7    180 <named list [14]>
-    ##  8    190 <named list [14]>
-    ##  9    120 <named list [14]>
-    ## 10    100 <named list [14]>
-    ## # … with 27 more rows
-    ```
-    
-    ```r
-    # generate a histogram
-    ggplot(data = sw_height, mapping = aes(x = height)) +
-      geom_histogram() +
-      labs(x = "Height (in centimeters)",
-           y = "Number of species")
-    ```
-    
-    ```
-    ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-    ```
-    
-    ```
-    ## Warning: Removed 3 rows containing non-finite values (stat_bin).
-    ```
-    
-    <img src="index_files/figure-html/sw-avg-height-1.png" width="672" />
-    
-      </p>
-    </details>
+
+    {{< /spoiler >}}
 
 1. Generate a bar chart showing the number of film appearances made by each character in `sw_people` who made at least three film appearances.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
+    {{< spoiler text="Click for the solution" >}}
+
     Each element of `sw_people` contains one character. The `films` element within each character is a character vector containing one value for each film in which the character appeared. This required two separate `unnest_*()` operations to get the data in the proper form.
     
-    
-    ```r
-    # unnest the data
-    sw_people_df <- tibble(sw_people) %>%
-      unnest_wider(sw_people) %>%
-      unnest_longer(films)
-    sw_people_df
-    ```
-    
-    ```
-    ## # A tibble: 173 x 16
-    ##    name  height mass  hair_color skin_color eye_color birth_year gender
-    ##    <chr> <chr>  <chr> <chr>      <chr>      <chr>     <chr>      <chr> 
-    ##  1 Luke… 172    77    blond      fair       blue      19BBY      male  
-    ##  2 Luke… 172    77    blond      fair       blue      19BBY      male  
-    ##  3 Luke… 172    77    blond      fair       blue      19BBY      male  
-    ##  4 Luke… 172    77    blond      fair       blue      19BBY      male  
-    ##  5 Luke… 172    77    blond      fair       blue      19BBY      male  
-    ##  6 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
-    ##  7 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
-    ##  8 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
-    ##  9 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
-    ## 10 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
-    ## # … with 163 more rows, and 8 more variables: homeworld <chr>, films <chr>,
-    ## #   species <chr>, vehicles <list>, starships <list>, created <chr>,
-    ## #   edited <chr>, url <chr>
-    ```
-    
-    ```r
-    # summarize the data frame and graph the bar chart
-    sw_people_df %>%
-      count(name) %>%
-      filter(n >= 3) %>%
-      ggplot(mapping = aes(x = fct_reorder(.f = name, .x = n), y = n)) +
-      geom_col() +
-      coord_flip() +
-      labs(title = "Number of appearances in the Star Wars cinematic universe",
-           subtitle = "As of December 31, 2015",
-           x = NULL,
-           y = "Number of film appearances")
-    ```
-    
-    <img src="index_files/figure-html/sw-film-appearances-1.png" width="672" />
-    
-      </p>
-    </details>
+
+```r
+# unnest the data
+sw_people_df <- tibble(sw_people) %>%
+  unnest_wider(sw_people) %>%
+  unnest_longer(films)
+sw_people_df
+```
+
+```
+## # A tibble: 173 x 16
+##    name  height mass  hair_color skin_color eye_color birth_year gender
+##    <chr> <chr>  <chr> <chr>      <chr>      <chr>     <chr>      <chr> 
+##  1 Luke… 172    77    blond      fair       blue      19BBY      male  
+##  2 Luke… 172    77    blond      fair       blue      19BBY      male  
+##  3 Luke… 172    77    blond      fair       blue      19BBY      male  
+##  4 Luke… 172    77    blond      fair       blue      19BBY      male  
+##  5 Luke… 172    77    blond      fair       blue      19BBY      male  
+##  6 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
+##  7 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
+##  8 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
+##  9 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
+## 10 C-3PO 167    75    n/a        gold       yellow    112BBY     n/a   
+## # … with 163 more rows, and 8 more variables: homeworld <chr>, films <chr>,
+## #   species <chr>, vehicles <list>, starships <list>, created <chr>,
+## #   edited <chr>, url <chr>
+```
+
+```r
+# summarize the data frame and graph the bar chart
+sw_people_df %>%
+  count(name) %>%
+  filter(n >= 3) %>%
+  ggplot(mapping = aes(x = fct_reorder(.f = name, .x = n), y = n)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Number of appearances in the Star Wars cinematic universe",
+       subtitle = "As of December 31, 2015",
+       x = NULL,
+       y = "Number of film appearances")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/sw-film-appearances-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 ## Acknowledgments
 
@@ -773,13 +768,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -847,7 +842,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

@@ -296,7 +296,7 @@ plot_congress %>%
 ## Selecting by tf_idf
 ```
 
-<img src="index_files/figure-html/plot-tf-idf-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-tf-idf-1.png" width="672" />
 
 Do these make sense? I think they do (well, some of them). This suggests a statistical learning model may find these tokens useful in predicting major topic codes.
 
@@ -410,7 +410,7 @@ congress_rf_10$finalModel %>%
        y = "Variable importance (higher is more important)")
 ```
 
-<img src="index_files/figure-html/rf-varimp-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/rf-varimp-1.png" width="672" />
 
 And if we had a test set of observations (or a set of congressional bills never previously hand-coded), we could use this model to predict their major topic codes.
 
@@ -433,13 +433,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source        
 ##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1      2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown       0.21       2020-12-18 [1] local         
+##  blogdown       1.0.2      2021-01-14 [1] local         
 ##  bookdown       0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.3      2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -536,7 +536,7 @@ devtools::session_info()
 ##  usethis        2.0.0      2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs          0.3.6      2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun           0.19       2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20       2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
 ## 

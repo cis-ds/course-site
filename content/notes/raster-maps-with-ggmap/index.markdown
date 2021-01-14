@@ -75,7 +75,7 @@ To view the map, use `ggmap()`:
 ggmap(chicago_stamen)
 ```
 
-<img src="index_files/figure-html/bb-chicago-stamen-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-stamen-plot-1.png" width="672" />
 
 The `zoom` argument in `get_stamenmap()` controls the level of detail in the map. The larger the number, the greater the detail.
 
@@ -86,7 +86,7 @@ get_stamenmap(bbox = chi_bb,
   ggmap()
 ```
 
-<img src="index_files/figure-html/bb-chicago-stamen-zoom-in-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-stamen-zoom-in-1.png" width="672" />
 
 The smaller the number, the lesser the detail.
 
@@ -97,7 +97,7 @@ get_stamenmap(bbox = chi_bb,
   ggmap()
 ```
 
-<img src="index_files/figure-html/bb-chicago-stamen-zoom-out-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-stamen-zoom-out-1.png" width="672" />
 
 
 Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.
@@ -139,7 +139,7 @@ Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to 
 
 Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
 
-<img src="index_files/figure-html/stamen-maptype-1.png" width="576" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/stamen-maptype-1.png" width="576" />
 
 Google Maps is a bit more limited, but still offers a few major types:
 
@@ -209,7 +209,7 @@ chicago <- chicago_stamen
 ggmap(chicago)
 ```
 
-<img src="index_files/figure-html/import-chicago-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/import-chicago-1.png" width="672" />
 
 ## Using `geom_point()`
 
@@ -223,7 +223,7 @@ ggmap(chicago) +
                            y = Latitude))
 ```
 
-<img src="index_files/figure-html/plot-crime-point-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-point-1.png" width="672" />
 
 What went wrong? All we get is a sea of black.
 
@@ -248,7 +248,7 @@ ggmap(chicago) +
              alpha = .01)
 ```
 
-<img src="index_files/figure-html/plot-crime-point-alpha-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-point-alpha-1.png" width="672" />
 
 Better, but still not quite as useful as it could be.
 
@@ -264,7 +264,7 @@ ggmap(chicago) +
                       y = Latitude))
 ```
 
-<img src="index_files/figure-html/kde-contour-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/kde-contour-1.png" width="672" />
 
 By default, `geom_density_2d()` draws a [**contour plot**](https://en.wikipedia.org/wiki/Contour_line) with lines of constant value. That is, each line represents approximately the same frequency of crime all along that specific line. Contour plots are frequently used in maps (known as **topographic maps**) to denote elevation.
 
@@ -282,7 +282,7 @@ ggmap(chicago) +
                   geom = "polygon")
 ```
 
-<img src="index_files/figure-html/kde-fill-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/kde-fill-1.png" width="672" />
 
 Note the two new arguments:
 
@@ -308,7 +308,7 @@ ggmap(chicago) +
   scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd"))
 ```
 
-<img src="index_files/figure-html/plot-crime-density-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-density-1.png" width="672" />
 
 From this map, a couple trends are noticeable:
 
@@ -335,7 +335,7 @@ ggmap(chicago) +
   facet_wrap(~ `Primary Type`)
 ```
 
-<img src="index_files/figure-html/plot-crime-wday-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-wday-1.png" width="672" />
 
 There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.
 
@@ -381,7 +381,7 @@ ggmap(chicago) +
              size = 1)
 ```
 
-<img src="index_files/figure-html/homicide-city-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/homicide-city-1.png" width="672" />
 
 Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we'll examine North Lawndale and Kenwood.
 
@@ -412,13 +412,13 @@ kenwood <- get_stamenmap(bbox = kenwood_bb,
 ggmap(north_lawndale)
 ```
 
-<img src="index_files/figure-html/get-high-low-murder-maps-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/get-high-low-murder-maps-1.png" width="672" />
 
 ```r
 ggmap(kenwood)
 ```
 
-<img src="index_files/figure-html/get-high-low-murder-maps-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/get-high-low-murder-maps-2.png" width="672" />
 
 To plot homicides specifically in these neighborhoods, change `ggmap(chicago)` to the appropriate map tile:
 
@@ -429,7 +429,7 @@ ggmap(north_lawndale) +
              aes(x = Longitude, y = Latitude))
 ```
 
-<img src="index_files/figure-html/plot-murder-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-murder-1.png" width="672" />
 
 ```r
 ggmap(kenwood) +
@@ -437,7 +437,7 @@ ggmap(kenwood) +
              aes(x = Longitude, y = Latitude))
 ```
 
-<img src="index_files/figure-html/plot-murder-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-murder-2.png" width="672" />
 
 North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though `homicides` contained data for homicides across the entire city, `ggmap()` automatically cropped the graph to keep just the homicides that occurred within the bounding box.
 
@@ -481,7 +481,7 @@ ggmap(north_lawndale) +
   scale_color_brewer(type = "qual", palette = "Dark2")
 ```
 
-<img src="index_files/figure-html/plot-violent-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-violent-1.png" width="672" />
 
 ```r
 ggmap(kenwood) +
@@ -491,7 +491,7 @@ ggmap(kenwood) +
   scale_color_brewer(type = "qual", palette = "Dark2")
 ```
 
-<img src="index_files/figure-html/plot-violent-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/plot-violent-2.png" width="672" />
 
 ### Additional resources
 
@@ -516,14 +516,14 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
 ##  bitops         1.0-6   2013-08-17 [1] CRAN (R 4.0.0)
-##  blogdown       0.21    2020-12-18 [1] local         
+##  blogdown       1.0.2   2021-01-14 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -600,7 +600,7 @@ devtools::session_info()
 ##  usethis        2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun           0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

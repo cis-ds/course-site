@@ -144,7 +144,7 @@ bind_cols(age_vals,
   ylim(0, 1)
 ```
 
-<img src="index_files/figure-html/titanic-ols-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/titanic-ols-1.png" width="672" />
 
 Hmm. Not terrible, but you can immediately notice a couple of things. First, the only possible values for `Survival` are $0$ and $1$. Yet the linear regression model gives us predicted values such as $.4$ and $.25$. How should we interpret those?
 
@@ -165,7 +165,7 @@ bind_cols(age_vals,
   ylim(NA, 1)
 ```
 
-<img src="index_files/figure-html/titanic-ols-old-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/titanic-ols-old-1.png" width="672" />
 
 What happens if a 200 year old person is on the Titanic? They would have a $-.1$ probability of surviving. **But you cannot have a probability outside of the $[0,1]$ interval!** Admittedly this is a trivial example, but in other circumstances this can become a more realistic scenario.
 
@@ -272,7 +272,7 @@ new_ages %>%
   ylab("Probability of survival")
 ```
 
-<img src="index_files/figure-html/titanic-age-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/titanic-age-plot-1.png" width="672" />
 
 It's hard to tell, but the line is not perfectly linear. Let's expand the range of the x-axis to prove this:
 
@@ -291,7 +291,7 @@ new_ages %>%
   ylab("Probability of survival")
 ```
 
-<img src="index_files/figure-html/titanic-age-plot-long-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/titanic-age-plot-long-1.png" width="672" />
 
 No more predictions that a 200 year old has a $-.1$ probability of surviving!
 
@@ -340,7 +340,7 @@ age_sex_vals %>%
   scale_color_viridis_d(end = 0.7)
 ```
 
-<img src="index_files/figure-html/survive-age-woman-pred-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/survive-age-woman-pred-1.png" width="672" />
 
 This graph illustrates a key fact about surviving the sinking of the Titanic - age was not really a dominant factor. Instead, one's sex was much more important. Females survived at much higher rates than males, regardless of age.
 
@@ -391,7 +391,7 @@ age_sex_vals %>%
   scale_color_viridis_d(end = 0.7)
 ```
 
-<img src="index_files/figure-html/age-woman-cross-pred-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/age-woman-cross-pred-1.png" width="672" />
 
 And now our minds are blown once again! For women, as age increases the probability of survival also increases. However for men, we see the opposite relationship: as age increases the probability of survival **decreases**. Again, the basic principle of saving women and children first can be seen empirically in the estimated probability of survival. Male children are treated similarly to female children, and their survival is prioritized. Even still, the odds of survival are always worse for men than women, but the regression function clearly shows a difference from our previous results.
 
@@ -416,13 +416,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source        
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21       2020-12-18 [1] local         
+##  blogdown      1.0.2      2021-01-14 [1] local         
 ##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom       * 0.7.3      2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)
@@ -523,7 +523,7 @@ devtools::session_info()
 ##  vctrs         0.3.6      2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)
-##  xfun          0.19       2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20       2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
 ##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)

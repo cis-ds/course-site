@@ -76,10 +76,8 @@ Type `?scorecard` in the console to open up the help file for this data set. Thi
 
 ## Generate a data frame of schools with a greater than 40% share of first-generation students
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 filter(.data = scorecard, firstgen > .40)
@@ -103,21 +101,18 @@ filter(.data = scorecard, firstgen > .40)
 ## #   debt <dbl>, locale <fct>, openadmp <fct>
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Generate a data frame with the 10 most expensive colleges in 2018-19 based on net cost of attendance
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
-  We could use a combination of `arrange()` and `slice()` to sort the data frame from most to least expensive, then keep the first 10 rows:
-  
+{{< spoiler text="Click for the solution" >}}
+
+We could use a combination of `arrange()` and `slice()` to sort the data frame from most to least expensive, then keep the first 10 rows:
+
 
 ```r
 arrange(.data = scorecard, desc(netcost)) %>%
-  slice(1:10)
+slice(1:10)
 ```
 
 ```
@@ -138,7 +133,7 @@ arrange(.data = scorecard, desc(netcost)) %>%
 ## #   locale <fct>, openadmp <fct>
 ```
 
-  We can also use the `slice_max()` function in `dplyr` to accomplish the same thing in one line of code.
+We can also use the `slice_max()` function in `dplyr` to accomplish the same thing in one line of code.
 
 
 ```r
@@ -163,15 +158,12 @@ slice_max(.data = scorecard, n = 10, netcost)
 ## #   locale <fct>, openadmp <fct>
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Generate a data frame with the average SAT score for each type of college
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 scorecard %>%
@@ -192,17 +184,14 @@ scorecard %>%
 ## 3 Private, for-profit    1068.
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Calculate for each school how many students it takes to pay the average faculty member's salary and generate a data frame with the school's name and the calculated value
 
 Note: use the net cost of attendance.
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 scorecard %>%
@@ -227,8 +216,7 @@ scorecard %>%
 ## # … with 1,743 more rows
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Calculate how many private, nonprofit schools have a smaller net cost than the University of Chicago
 
@@ -236,10 +224,8 @@ Hint: the result should be a data frame with one row for the University of Chica
 
 ### Report the number as the total number of schools
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 scorecard %>%
@@ -272,15 +258,12 @@ scorecard %>%
 ## $ school_cheaper <dbl> 777
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ### Report the number as the percentage of schools
 
-<details> 
-  <summary>Click for the solution</summary>
-  <p>
-  
+{{< spoiler text="Click for the solution" >}}
+
 
 ```r
 scorecard %>%
@@ -311,8 +294,7 @@ scorecard %>%
 ## $ netcost_rank <dbl> 0.7141544
 ```
 
-  </p>
-</details>
+{{< /spoiler >}}
 
 ## Session Info
 
@@ -333,13 +315,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -406,7 +388,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

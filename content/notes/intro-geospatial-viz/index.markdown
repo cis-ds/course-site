@@ -65,11 +65,11 @@ Geometric visualizations are used to depict spatial features, and with the incor
 
 **Scale** defines the proportion between distances and sizes on a map and their actual distances and sizes on Earth. Depending on the total geographic area for which you have data to visualize, you could create a **small-scale map** or a **large-scale map**. So for instance, a map of the United States would be considered large-scale:
 
-<img src="index_files/figure-html/large-scale-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/large-scale-1.png" width="672" />
 
 Whereas a map of Hyde Park would be small-scale:
 
-<img src="index_files/figure-html/small-scale-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/small-scale-1.png" width="672" />
 
 The smaller the scale, the easier it is to include additional details in the map.
 
@@ -87,23 +87,23 @@ Projection methods typically maximize the accuracy of one or two of these proper
 
 
 
-<img src="index_files/figure-html/mercator-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/mercator-1.png" width="672" />
 
 The farther away from the equator one travels, the more distorted the size of the region.
 
 Another family of projections called **equal-area projections** preserves area ratios, so that the relative size of areas on a map are proportional to their areas on the Earth.
 
-<img src="index_files/figure-html/equal-area-1.png" width="672" /><img src="index_files/figure-html/equal-area-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/equal-area-1.png" width="672" /><img src="{{< blogdown/postref >}}index_files/figure-html/equal-area-2.png" width="672" />
 
 The downside is that equal-area projections tend to distory shapes heavily, so shapes of areas can become distorted. No method can be both conformal and equal-area simultaneously, but some methods such as the **Mollweide** projection achieve a trade-off between these sets of characteristics.
 
-<img src="index_files/figure-html/mollweide-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/mollweide-1.png" width="672" />
 
 ## Symbols
 
 Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Hyde Park:
 
-<img src="index_files/figure-html/bb-hydepark-stamen-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-hydepark-stamen-1.png" width="672" />
 
 * Line are used to indicate roadways
 * Fill is used to indicate type of land (grassland, water, urban, etc.)
@@ -132,14 +132,14 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package       * version date       lib source        
 ##  assertthat      0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports       1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
 ##  bitops          1.0-6   2013-08-17 [1] CRAN (R 4.0.0)
-##  blogdown        0.21    2020-12-18 [1] local         
+##  blogdown        1.0.2   2021-01-14 [1] local         
 ##  bookdown        0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom           0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr           3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -221,7 +221,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  usethis         2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs           0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr           2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun            0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun            0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2            1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml            2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

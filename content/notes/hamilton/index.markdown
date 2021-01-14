@@ -120,7 +120,7 @@ ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_name))) +
   )
 ```
 
-<img src="index_files/figure-html/song-length-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/song-length-1.png" width="672" />
 
 As a function of number of words, Non-Stop is the longest song in the musical.
 
@@ -180,7 +180,7 @@ hamilton_tidy %>%
   )
 ```
 
-<img src="index_files/figure-html/stop-remove-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/stop-remove-1.png" width="672" />
 
 Now the words seem more relevant to the specific story being told in the musical.
 
@@ -226,7 +226,7 @@ hamilton_tf_idf %>%
   theme(plot.title = element_markdown())
 ```
 
-<img src="index_files/figure-html/tf-idf-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/tf-idf-1.png" width="672" />
 
 Again, some expected results stick out. Hamilton is always singing about not throwing away his shot, Eliza is helplessly in love with Alexander, while Burr regrets not being "in the room where it happens". And don't forget King George's love songs to his wayward children.
 
@@ -323,7 +323,7 @@ hamilton_afinn %>%
 ## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
-<img src="index_files/figure-html/sentiment-song-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sentiment-song-1.png" width="672" />
 
 Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective children.
 
@@ -377,7 +377,7 @@ hamilton_afinn %>%
 ## `summarise()` ungrouping output (override with `.groups` argument)
 ```
 
-<img src="index_files/figure-html/sentiment-by-speaker-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sentiment-by-speaker-1.png" width="672" />
 
 Given his generally neutral sentiment, Aaron Burr clearly follows his own guidance.
 
@@ -416,7 +416,7 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
         plot.title = element_markdown())
 ```
 
-<img src="index_files/figure-html/sentiment-cum-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/sentiment-cum-1.png" width="672" />
 
 After the initial drop from "Alexander Hamilton", the next peaks in the graph show several positive events in Hamilton's life: meeting his friends, becoming Washington's secretary, and meeting and marrying Eliza. The musical experiences a drop in tone during the rough years of the revolution and Hamilton's dismissal back to New York, then rebounds as the revolutionaries close in on victory at Yorktown. Hamilton's challenges as a member of Washington's cabinet and rivalry with Jefferson are captured in the up-and-down swings in the graph, rises up with "One Last Time" and Hamilton writing Washington's Farewell Address, dropping once again with "Hurricane" and the revelation of Hamilton's affair, rising as Alexander and Eliza reconcile before finally descending once more upon Hamilton's death in his duel with Burr.
 
@@ -452,7 +452,7 @@ ggraph(bigram_graph, layout = "fr") +
   theme(plot.title = element_markdown())
 ```
 
-<img src="index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 Finally we can examine the colocation of pairs of words to look for common usage. It's apparent there are several major themes detected through this approach, including the Hamilton/Jefferson relationship, "Aaron Burr, sir", Philip's song with his mother (un, deux, trois, quatre, ...), the rising up of the colonies, and those young, scrappy, and hungry men.
 
@@ -546,13 +546,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source        
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown       0.21    2020-12-18 [1] local         
+##  blogdown       1.0.2   2021-01-14 [1] local         
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom          0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -648,7 +648,7 @@ devtools::session_info()
 ##  viridisLite    0.3.0   2018-02-01 [1] CRAN (R 4.0.0)
 ##  widyr        * 0.1.3   2020-04-12 [1] CRAN (R 4.0.0)
 ##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun           0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

@@ -46,216 +46,204 @@ If you have not already, [obtain an API key](https://api.census.gov/data/key_sig
 
 1. Obtain information on median household income in 2017 for Cook County, IL at the tract-level using the ACS. To retrieve the geographic features for each tract, set `geometry = TRUE` in your function.
 
-    > You can use `load_variables(year = 2017, dataset = "acs5")` to retrieve the list of variables available and search to find the correct variable name.
+    {{% callout note %}}
+    
+    You can use `load_variables(year = 2017, dataset = "acs5")` to retrieve the list of variables available and search to find the correct variable name.
+    
+    {{% /callout %}}
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
+    {{< spoiler text="Click for the solution" >}}
     
+
+```r
+cook_inc <- get_acs(state = "IL",
+                    county = "Cook",
+                    geography = "tract", 
+                    variables = c(medincome = "B19013_001"), 
+                    year = 2017,
+                    geometry = TRUE)
+```
+
+
+```r
+cook_inc
+```
+
+```
+## Simple feature collection with 1319 features and 5 fields (with 1 geometry empty)
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -88.3 ymin: 41.5 xmax: -87.5 ymax: 42.2
+## geographic CRS: NAD83
+## First 10 features:
+##          GEOID                                       NAME  variable estimate
+## 1  17031010201 Census Tract 102.01, Cook County, Illinois medincome    40841
+## 2  17031030200    Census Tract 302, Cook County, Illinois medincome    64089
+## 3  17031031700    Census Tract 317, Cook County, Illinois medincome    44555
+## 4  17031031900    Census Tract 319, Cook County, Illinois medincome    61211
+## 5  17031050200    Census Tract 502, Cook County, Illinois medincome    74375
+## 6  17031051300    Census Tract 513, Cook County, Illinois medincome   149271
+## 7  17031061500    Census Tract 615, Cook County, Illinois medincome   117656
+## 8  17031062600    Census Tract 626, Cook County, Illinois medincome   144211
+## 9  17031063400    Census Tract 634, Cook County, Illinois medincome    95488
+## 10 17031070600    Census Tract 706, Cook County, Illinois medincome   151250
+##      moe                       geometry
+## 1   7069 MULTIPOLYGON (((-87.7 42, -...
+## 2  12931 MULTIPOLYGON (((-87.7 42, -...
+## 3  12220 MULTIPOLYGON (((-87.7 42, -...
+## 4   6343 MULTIPOLYGON (((-87.7 42, -...
+## 5  18773 MULTIPOLYGON (((-87.7 42, -...
+## 6  26389 MULTIPOLYGON (((-87.7 41.9,...
+## 7  11416 MULTIPOLYGON (((-87.7 41.9,...
+## 8  22537 MULTIPOLYGON (((-87.7 41.9,...
+## 9   4904 MULTIPOLYGON (((-87.6 41.9,...
+## 10 47800 MULTIPOLYGON (((-87.7 41.9,...
+```
     
-    ```r
-    cook_inc <- get_acs(state = "IL",
-                        county = "Cook",
-                        geography = "tract", 
-                        variables = c(medincome = "B19013_001"), 
-                        year = 2017,
-                        geometry = TRUE)
-    ```
-    
-    
-    ```r
-    cook_inc
-    ```
-    
-    ```
-    ## Simple feature collection with 1319 features and 5 fields (with 1 geometry empty)
-    ## geometry type:  MULTIPOLYGON
-    ## dimension:      XY
-    ## bbox:           xmin: -88.3 ymin: 41.5 xmax: -87.5 ymax: 42.2
-    ## geographic CRS: NAD83
-    ## First 10 features:
-    ##          GEOID                                       NAME  variable estimate
-    ## 1  17031010201 Census Tract 102.01, Cook County, Illinois medincome    40841
-    ## 2  17031030200    Census Tract 302, Cook County, Illinois medincome    64089
-    ## 3  17031031700    Census Tract 317, Cook County, Illinois medincome    44555
-    ## 4  17031031900    Census Tract 319, Cook County, Illinois medincome    61211
-    ## 5  17031050200    Census Tract 502, Cook County, Illinois medincome    74375
-    ## 6  17031051300    Census Tract 513, Cook County, Illinois medincome   149271
-    ## 7  17031061500    Census Tract 615, Cook County, Illinois medincome   117656
-    ## 8  17031062600    Census Tract 626, Cook County, Illinois medincome   144211
-    ## 9  17031063400    Census Tract 634, Cook County, Illinois medincome    95488
-    ## 10 17031070600    Census Tract 706, Cook County, Illinois medincome   151250
-    ##      moe                       geometry
-    ## 1   7069 MULTIPOLYGON (((-87.7 42, -...
-    ## 2  12931 MULTIPOLYGON (((-87.7 42, -...
-    ## 3  12220 MULTIPOLYGON (((-87.7 42, -...
-    ## 4   6343 MULTIPOLYGON (((-87.7 42, -...
-    ## 5  18773 MULTIPOLYGON (((-87.7 42, -...
-    ## 6  26389 MULTIPOLYGON (((-87.7 41.9,...
-    ## 7  11416 MULTIPOLYGON (((-87.7 41.9,...
-    ## 8  22537 MULTIPOLYGON (((-87.7 41.9,...
-    ## 9   4904 MULTIPOLYGON (((-87.6 41.9,...
-    ## 10 47800 MULTIPOLYGON (((-87.7 41.9,...
-    ```
-        
-      </p>
-    </details>
+    {{< /spoiler >}}
 
 1. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    ggplot(data = cook_inc) +
-      # use fill and color to avoid gray boundary lines
-      geom_sf(aes(fill = estimate, color = estimate)) +
-      # increase interpretability of graph
-      scale_color_continuous(labels = scales::dollar) +
-      scale_fill_continuous(labels = scales::dollar) +
-      labs(title = "Median household income in Cook County, IL",
-           subtitle = "In 2017",
-           color = NULL,
-           fill = NULL,
-           caption = "Source: American Community Survey")
-    ```
-    
-    <img src="index_files/figure-html/income-cook-map-1.png" width="672" />
-        
-      </p>
-    </details>
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+ggplot(data = cook_inc) +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = estimate, color = estimate)) +
+  # increase interpretability of graph
+  scale_color_continuous(labels = scales::dollar) +
+  scale_fill_continuous(labels = scales::dollar) +
+  labs(title = "Median household income in Cook County, IL",
+       subtitle = "In 2017",
+       color = NULL,
+       fill = NULL,
+       caption = "Source: American Community Survey")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/income-cook-map-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 ## Exercise: Customize your maps
 
 1. Draw the same choropleth for Cook County, but convert median household income into a discrete variable with 6 levels.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
+    {{< spoiler text="Click for the solution" >}}
+
     * Using `cut_interval()`:
-    
+
+
+```r
+cook_inc %>%
+  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
+  ggplot() +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
+  # increase interpretability of graph
+  labs(title = "Median household income in Cook County, IL",
+       subtitle = "In 2017",
+       color = NULL,
+       fill = NULL,
+       caption = "Source: American Community Survey")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/cut-interval-1.png" width="672" />
         
-        ```r
-        cook_inc %>%
-          mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
-          ggplot() +
-          # use fill and color to avoid gray boundary lines
-          geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-          # increase interpretability of graph
-          labs(title = "Median household income in Cook County, IL",
-               subtitle = "In 2017",
-               color = NULL,
-               fill = NULL,
-               caption = "Source: American Community Survey")
-        ```
-        
-        <img src="index_files/figure-html/cut-interval-1.png" width="672" />
-            
     * Using `cut_number()`:
-    
-        
-        ```r
-        cook_inc %>%
-          mutate(inc_cut = cut_number(estimate, n = 6)) %>%
-          ggplot() +
-          # use fill and color to avoid gray boundary lines
-          geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-          # increase interpretability of graph
-          labs(title = "Median household income in Cook County, IL",
-               subtitle = "In 2017",
-               color = NULL,
-               fill = NULL,
-               caption = "Source: American Community Survey")
-        ```
-        
-        <img src="index_files/figure-html/cut-number-1.png" width="672" />
-            
-      </p>
-    </details>
+
+
+```r
+cook_inc %>%
+  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
+  ggplot() +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
+  # increase interpretability of graph
+  labs(title = "Median household income in Cook County, IL",
+       subtitle = "In 2017",
+       color = NULL,
+       fill = NULL,
+       caption = "Source: American Community Survey")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-1.png" width="672" />
+
+    {{< /spoiler >}}
 
 1. Draw the same choropleth for Cook County using the discrete variable, but select an appropriate color palette using [Color Brewer](/notes/optimal-color-palettes/#color-brewer).
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
+    {{< spoiler text="Click for the solution" >}}
+
     * Using `cut_interval()` and the Blue-Green palette:
     
-        
-        ```r
-        cook_inc %>%
-          mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
-          ggplot() +
-          # use fill and color to avoid gray boundary lines
-          geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-          scale_fill_brewer(type = "seq", palette = "BuGn") +
-          scale_color_brewer(type = "seq", palette = "BuGn") +
-          # increase interpretability of graph
-          labs(title = "Median household income in Cook County, IL",
-               subtitle = "In 2017",
-               color = NULL,
-               fill = NULL,
-               caption = "Source: American Community Survey")
-        ```
-        
-        <img src="index_files/figure-html/cut-interval-optimal-1.png" width="672" />
+
+```r
+cook_inc %>%
+  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
+  ggplot() +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
+  scale_fill_brewer(type = "seq", palette = "BuGn") +
+  scale_color_brewer(type = "seq", palette = "BuGn") +
+  # increase interpretability of graph
+  labs(title = "Median household income in Cook County, IL",
+       subtitle = "In 2017",
+       color = NULL,
+       fill = NULL,
+       caption = "Source: American Community Survey")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/cut-interval-optimal-1.png" width="672" />
         
     * Using `cut_number()` and the Blue-Green palette:
-    
-        
-        ```r
-        cook_inc %>%
-          mutate(inc_cut = cut_number(estimate, n = 6)) %>%
-          ggplot() +
-          # use fill and color to avoid gray boundary lines
-          geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-          scale_fill_brewer(type = "seq", palette = "BuGn") +
-          scale_color_brewer(type = "seq", palette = "BuGn") +
-         # increase interpretability of graph
-          labs(title = "Median household income in Cook County, IL",
-               subtitle = "In 2017",
-               color = NULL,
-               fill = NULL,
-               caption = "Source: American Community Survey")
-        ```
-        
-        <img src="index_files/figure-html/cut-number-optimal-1.png" width="672" />
-        
+
+
+```r
+cook_inc %>%
+  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
+  ggplot() +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
+  scale_fill_brewer(type = "seq", palette = "BuGn") +
+  scale_color_brewer(type = "seq", palette = "BuGn") +
+ # increase interpretability of graph
+  labs(title = "Median household income in Cook County, IL",
+       subtitle = "In 2017",
+       color = NULL,
+       fill = NULL,
+       caption = "Source: American Community Survey")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-optimal-1.png" width="672" />
         
     You can choose any palette that is for sequential data.
     
-      </p>
-    </details>
+    {{< /spoiler >}}
 
 1. Use the [`viridis` color palette](/notes/optimal-color-palettes/#viridis) for the Cook County map drawn using the continuous measure.
 
-    <details> 
-      <summary>Click for the solution</summary>
-      <p>
-    
-    
-    ```r
-    ggplot(data = cook_inc) +
-      # use fill and color to avoid gray boundary lines
-      geom_sf(aes(fill = estimate, color = estimate)) +
-      # increase interpretability of graph
-      scale_color_viridis(labels = scales::dollar) +
-      scale_fill_viridis(labels = scales::dollar) +
-      labs(title = "Median household income in Cook County, IL",
-           subtitle = "In 2017",
-           color = NULL,
-           fill = NULL,
-           caption = "Source: American Community Survey")
-    ```
-    
-    <img src="index_files/figure-html/income-cook-map-viridis-1.png" width="672" />
-        
-      </p>
-    </details>
-    
+    {{< spoiler text="Click for the solution" >}}
+
+
+```r
+ggplot(data = cook_inc) +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = estimate, color = estimate)) +
+  # increase interpretability of graph
+  scale_color_viridis(labels = scales::dollar) +
+  scale_fill_viridis(labels = scales::dollar) +
+  labs(title = "Median household income in Cook County, IL",
+       subtitle = "In 2017",
+       color = NULL,
+       fill = NULL,
+       caption = "Source: American Community Survey")
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/income-cook-map-viridis-1.png" width="672" />
+
+    {{< /spoiler >}}
+
 ### Session Info
 
 
@@ -275,13 +263,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -366,7 +354,7 @@ devtools::session_info()
 ##  viridis     * 0.5.1   2018-03-29 [1] CRAN (R 4.0.0)
 ##  viridisLite * 0.3.0   2018-02-01 [1] CRAN (R 4.0.0)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 

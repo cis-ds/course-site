@@ -59,7 +59,7 @@ ggplot(data = usa) +
   geom_sf()
 ```
 
-<img src="index_files/figure-html/geom-sf-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/geom-sf-1.png" width="672" />
 
 Because simple features data frames are standardized with the `geometry` column always containing information on the geographic coordinates of the features, we do not need to specify additional parameters for `aes()`. Notice a problem with the map above: it wastes a lot of space. This is caused by the presence of Alaska and Hawaii in the dataset. The Aleutian Islands cross the the 180th meridian, requiring the map to show the Eastern hemisphere. Likewise, Hawaii is substantially distant from the continental United States.
 
@@ -109,7 +109,7 @@ ggplot(data = usa_48) +
   geom_sf()
 ```
 
-<img src="index_files/figure-html/usa-subset-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/usa-subset-1.png" width="672" />
 
 Since the map is a `ggplot()` object, it can easily be modified like any other `ggplot()` graph. We could change the color of the map and the borders:
 
@@ -119,7 +119,7 @@ ggplot(data = usa_48) +
   geom_sf(fill = "palegreen", color = "black")
 ```
 
-<img src="index_files/figure-html/usa-fill-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/usa-fill-1.png" width="672" />
 
 ## `albersusa`
 
@@ -178,7 +178,7 @@ ggplot(data = usa_sf()) +
   geom_sf()
 ```
 
-<img src="index_files/figure-html/albersusa-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/albersusa-1.png" width="672" />
 
 ## Add data to the map
 
@@ -219,7 +219,7 @@ ggplot(airports, aes(lon, lat)) +
   geom_point()
 ```
 
-<img src="index_files/figure-html/scatter-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/scatter-1.png" width="672" />
 
 Let's overlay it with the mapped state borders:
 
@@ -230,7 +230,7 @@ ggplot(data = usa_48) +
   geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
 ```
 
-<img src="index_files/figure-html/flights-usa-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/flights-usa-1.png" width="672" />
 
 Slight problem. We have airports listed outside of the continental United States. There are a couple ways to rectify this. Unfortunately `airports` does not include a variable identifying state so the `filter()` operation is not that simple. The easiest solution is to crop the limits of the graph using `coord_sf()` to only show the mainland:
 
@@ -243,7 +243,7 @@ ggplot(data = usa_48) +
            ylim = c(20, 50))
 ```
 
-<img src="index_files/figure-html/crop-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/crop-1.png" width="672" />
 
 Alternatively, we can use `st_as_sf()` to convert `airports` to a simple features data frame.
 
@@ -287,7 +287,7 @@ ggplot() +
            ylim = c(20, 50))
 ```
 
-<img src="index_files/figure-html/flights-sf-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/flights-sf-plot-1.png" width="672" />
 
 ## Symbols
 
@@ -304,7 +304,7 @@ ggplot(data = usa_48) +
   scale_size_area(guide = FALSE)
 ```
 
-<img src="index_files/figure-html/airport-alt-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/airport-alt-1.png" width="672" />
 
 Circle area is proportional to the airport's altitude (in feet). Or we could scale it based on the number of arriving flights in `flights`:
 
@@ -323,7 +323,7 @@ ggplot(data = usa_48) +
   scale_size_area(guide = FALSE)
 ```
 
-<img src="index_files/figure-html/airport-dest-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/airport-dest-1.png" width="672" />
 
 {{% callout note %}}
 
@@ -425,7 +425,7 @@ ggplot(data = usa_fb) +
   geom_sf(aes(fill = rate))
 ```
 
-<img src="index_files/figure-html/geom-map-state-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/geom-map-state-1.png" width="672" />
 
 ### Bin data to discrete intervals
 
@@ -441,7 +441,7 @@ usa_fb %>%
   geom_sf(aes(fill = rate_cut))
 ```
 
-<img src="index_files/figure-html/cut-interval-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cut-interval-1.png" width="672" />
 
 Whereas `cut_number()` makes `n` groups with (approximately) equal numbers of observations:
 
@@ -453,7 +453,7 @@ usa_fb %>%
   geom_sf(aes(fill = rate_cut))
 ```
 
-<img src="index_files/figure-html/cut-number-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-1.png" width="672" />
 
 {{% callout note %}}
 
@@ -484,7 +484,7 @@ map_proj_base +
   ggtitle("Mercator projection")
 ```
 
-<img src="index_files/figure-html/mercator-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/mercator-1.png" width="672" />
 
 Other coordinate systems require specification of the **standard lines**, or lines that define areas of the surface of the map that are tangent to the globe. These include [Gall-Peters](http://spatialreference.org/ref/sr-org/gall-peters-orthographic-projection/proj4/), [Albers equal-area](https://proj4.org/operations/projections/aea.html), and [Lambert azimuthal](https://proj4.org/operations/projections/laea.html).
 
@@ -495,7 +495,7 @@ map_proj_base +
   ggtitle("Gall-Peters projection")
 ```
 
-<img src="index_files/figure-html/projection-rest-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/projection-rest-1.png" width="672" />
 
 ```r
 map_proj_base +
@@ -503,7 +503,7 @@ map_proj_base +
   ggtitle("Albers equal-area projection")
 ```
 
-<img src="index_files/figure-html/projection-rest-2.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/projection-rest-2.png" width="672" />
 
 ```r
 map_proj_base +
@@ -511,7 +511,7 @@ map_proj_base +
   ggtitle("Lambert azimuthal projection")
 ```
 
-<img src="index_files/figure-html/projection-rest-3.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/projection-rest-3.png" width="672" />
 
 ## Session Info
 
@@ -532,13 +532,13 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-05                  
+##  date     2021-01-14                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
 ##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown      0.21    2020-12-18 [1] local         
+##  blogdown      1.0.2   2021-01-14 [1] local         
 ##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)
 ##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)
@@ -611,7 +611,7 @@ devtools::session_info()
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)
-##  xfun          0.19    2020-10-30 [1] CRAN (R 4.0.2)
+##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)
 ##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
 ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
