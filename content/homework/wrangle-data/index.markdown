@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-win21/hw03"
 
 # Overview
 
-Due by 1:00 pm CT (Chicago) on October 20th.
+Due by 9:40am (Chicago) on February 2nd.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 

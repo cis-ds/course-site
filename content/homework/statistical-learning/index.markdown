@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-win21/hw07"
 
 # Overview
 
-Due by 1:00 pm CT (Chicago) on November 17th.
+Due by 9:40am (Chicago) on March 2nd.
 
 # Fork the `hw07` repository
 
