@@ -194,18 +194,22 @@ table3
 
 
 ```r
-table3 %>% 
-  separate(col = rate, into = c("cases", "population"))
+table3 %>%
+  separate(
+    col = rate,
+    into = c("cases", "population"),
+    convert = TRUE
+  )
 ```
 
 ```
 ## # A tibble: 6 x 4
-##   country      year cases  population
-##   <chr>       <int> <chr>  <chr>     
-## 1 Afghanistan  1999 745    19987071  
-## 2 Afghanistan  2000 2666   20595360  
-## 3 Brazil       1999 37737  172006362 
-## 4 Brazil       2000 80488  174504898 
+##   country      year  cases population
+##   <chr>       <int>  <int>      <int>
+## 1 Afghanistan  1999    745   19987071
+## 2 Afghanistan  2000   2666   20595360
+## 3 Brazil       1999  37737  172006362
+## 4 Brazil       2000  80488  174504898
 ## 5 China        1999 212258 1272915272
 ## 6 China        2000 213766 1280428583
 ```
@@ -294,7 +298,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-01-25                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source                              
@@ -306,6 +310,7 @@ devtools::session_info()
 ##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                      
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                      
 ##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)                      
+##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.2)                      
 ##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                      
 ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)                      
 ##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                      
@@ -365,6 +370,7 @@ devtools::session_info()
 ##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                      
 ##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                      
 ##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)                      
+##  utf8          1.1.4   2018-05-24 [1] CRAN (R 4.0.0)                      
 ##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                      
 ##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)                      
 ##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)                      
