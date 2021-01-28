@@ -202,7 +202,7 @@ By default, `write_rds()` does not compress the `.rds` file; use the `compress` 
 
 ## `arrow`
 
-The `arrow` package implements a binary file format called `featehr` that is cross-compatible with many different programming languages:
+The `arrow` package implements a binary file format called `feather` that is cross-compatible with many different programming languages:
 
 
 ```r
@@ -444,7 +444,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-01-28                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source                              
