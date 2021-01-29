@@ -30,7 +30,7 @@ All class meetings and office hours will be held on Zoom. Links to these meeting
     - Benjamin: M 1-3pm
     - Neeraj: Th 4-6pm
     - Francesca: F 11-1pm
-    - Deblina: F 2-4pm
+    - Deblina: Sa 3:30-5:30pm
 * Prerequisites: None
 * Requirements: Bring your own laptop
 
