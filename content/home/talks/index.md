@@ -4,7 +4,7 @@ advanced:
   css_class: ""
   css_style: ""
 content:
-  count: 3
+  count: 4
   filters:
     category: ""
     exclude_featured: false
