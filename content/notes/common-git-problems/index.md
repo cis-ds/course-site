@@ -114,9 +114,9 @@ You need to remove this file from your repo, setup Git LFS, and then re-stage an
 * [If your large file is in the most recent unpushed commit](https://help.github.com/articles/removing-files-from-a-repository-s-history/) - this is relatively easy to perform
 * [If your large file is in an older unpushed commit](https://help.github.com/articles/removing-sensitive-data-from-a-repository/) - this is much harder to perform, but can be done
 
-## Accidentally cloned from the master, not the fork
+## Accidentally cloned from the main, not the fork
 
-Make sure whenever you clone a homework repository, use the url for the forked version, not the master repository. So for the first homework, I would use `https://github.com/bensoltoff/hw01` when I clone the repo, not `https://github.com/uc-cfss/hw01`. If you use the master repo url, you will get an error when you try to push your changes to GitHub.
+Make sure whenever you clone a homework repository, use the url for the forked version, not the main repository. So for the first homework, I would use `https://github.com/bensoltoff/hw01` when I clone the repo, not `https://github.com/uc-cfss/hw01`. If you use the main repo url, you will get an error when you try to push your changes to GitHub.
 
 For an example, let's say I wanted to make a contribution to [`ggplot2`](https://github.com/hadley/ggplot2). I should fork the repo and clone the fork. Instead I goofed and cloned the original repo. When I try to push my change, I get an error message:
 
@@ -125,7 +125,7 @@ remote: Permission to hadley/ggplot2.git denied to bensoltoff.
 fatal: unable to access 'https://github.com/hadley/ggplot2.git/': The requested URL returned error: 403
 ```
 
-I don't have permission to edit the master repo on Hadley Wickham's account.
+I don't have permission to edit the main repo on Hadley Wickham's account.
 
 How do I fix this? I could go back and clone the correct fork, but if I've already made several commits then I'll lose all my work. Instead, I can change the `upstream` url: this changes the location Git tries to push my changes. To do this:
 
