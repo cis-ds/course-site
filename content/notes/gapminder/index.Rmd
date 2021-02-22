@@ -1,0 +1,214 @@
+---
+title: "Practice generating layered graphics using ggplot2"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/dataviz_gapminder.html"]
+categories: ["dataviz"]
+
+menu:
+  notes:
+    parent: Data visualization
+    weight: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+options(digits = 3)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/grammar-of-graphics")
+```
+
+{{% /callout %}}
+
+Given your preparation for today's class, now let's practice generating layered graphics in R using data from [Gapminder World](https://www.gapminder.org/data/), which compiles country-level data on quality-of-life measures.
+
+## Load the `gapminder` dataset
+
+If you have not already installed the `gapminder` package and you try to load it using the following code, you will get an error:
+
+```{r gapminder-install, eval = FALSE}
+library(gapminder)
+```
+
+```
+Error in library(gapminder) : there is no package called ‘gapminder’
+```
+
+If this happens, install the gapminder package by running `install.packages("gapminder")` in your console.
+
+Once you've done this, run the following code to load the gapminder dataset, the `ggplot2` library, and a helper library for printing the contents of `gapminder`:
+
+```{r gapminder}
+library(gapminder)
+library(ggplot2)
+library(tibble)
+
+glimpse(gapminder)
+```
+
+{{% callout note %}}
+
+Run `?gapminder` in the console to open the help file for the data and definitions for each of the columns.
+
+{{% /callout %}}
+
+Using the grammar of graphics and your knowledge of the `ggplot2` library, generate a series of graphs that explore the relationships between specific variables.
+
+## Generate a histogram of life expectancy
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r histo}
+ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
+  geom_histogram()
+```
+
+{{< /spoiler >}}
+
+### Generate separate histograms of life expectancy for each continent
+
+**Hint: think about how to [split your plots to show different subsets of data.](http://r4ds.had.co.nz/data-visualisation.html#facets)**
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r histo-facet}
+ggplot(data = gapminder, mapping = aes(x = lifeExp)) +
+  geom_histogram() +
+  facet_wrap(~ continent)
+```
+
+{{< /spoiler >}}
+
+## Compare the distribution of life expectancy, by continent by generating a boxplot
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r boxplot}
+ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
+  geom_boxplot()
+```
+
+{{< /spoiler >}}
+
+### Redraw the plot, but this time use a violin plot
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r violin-plot}
+ggplot(data = gapminder, mapping = aes(x = continent, y = lifeExp)) +
+  geom_violin()
+```
+
+{{< /spoiler >}}
+
+## Generate a scatterplot of the relationship between per capita GDP and life expectancy
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r scatter}
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
+  geom_point()
+```
+
+{{< /spoiler >}}
+
+### Add a smoothing line to the scatterplot
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r scatter-smooth}
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp)) +
+  geom_point() +
+  geom_smooth()
+```
+
+{{< /spoiler >}}
+
+## Identify whether this relationship differs by continent
+
+### Use the color aesthetic to identify differences
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r scatter-color}
+ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point() +
+  geom_smooth()
+```
+
+{{< /spoiler >}}
+
+### Use faceting to identify differences
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r scatter-facet}
+# using facet_wrap()
+ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~ continent)
+
+# using facet_grid()
+ggplot(data = gapminder,mapping = aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point() +
+  geom_smooth() +
+  facet_grid(. ~ continent)
+```
+
+Why use `facet_grid()` here instead of `facet_wrap()`? Good question! Let's reframe it and instead ask, what is the difference between `facet_grid()` and `facet_wrap()`?^[Example drawn from [this StackOverflow thread](https://stackoverflow.com/questions/20457905/whats-the-difference-between-facet-wrap-and-facet-grid-in-ggplot2).]
+
+The answer below refers to the case when you have 2 arguments in `facet_grid()` or `facet_wrap()`. `facet_grid(x ~ y)` will display $x \times y$ plots even if some plots are empty. For example:
+
+```{r facet-grid}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_grid(cyl ~ class)
+```
+
+There are 4 distinct `cyl` and 7 distinct `class` values. This plot  displays $4 \times 7 = 28$ plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
+
+`facet_wrap(x ~ y)` displays only the plots having actual values.
+
+```{r facet-wrap}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() +
+  facet_wrap(~ cyl + class)
+```
+
+There are 19 plots displayed now, one for every combination of `cyl` and `class`. So for this exercise, I would use `facet_wrap()` because we are faceting on a single variable. If we faceted on multiple variables, `facet_grid()` may be more appropriate.
+
+{{< /spoiler >}}
+
+## Bonus: Identify the outlying countries on the right-side of the graph by labeling each observation with the country name
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r text}
+ggplot(data = gapminder,
+       mapping = aes(x = gdpPercap, y = lifeExp, label = country)) +
+  geom_smooth() +
+  geom_text()
+```
+
+{{< /spoiler >}}
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

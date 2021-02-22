@@ -1,0 +1,473 @@
+---
+title: "Iteration"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/program_iteration.html"]
+categories: ["programming"]
+
+menu:
+  notes:
+    parent: Programming elements
+    weight: 5
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(rcfss)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/vectors-and-iteration")
+```
+
+{{% /callout %}}
+
+## Writing `for` loops
+
+Functions are one method of reducing duplication in your code. Another tool for reducing duplication is **iteration**, which lets you do the same thing to multiple inputs.
+
+## Example `for` loop
+
+```{r df-rnorm}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+```
+
+Let's say we want to compute the median for each column.
+
+```{r median-per-column}
+median(df$a)
+median(df$b)
+median(df$c)
+median(df$d)
+```
+
+Boo! We've copied-and-pasted `median()` three times. We don't want to do that. Instead, we can use a `for` loop:
+
+```{r for-loop}
+output <- vector(mode = "double", length = ncol(df))
+for (i in seq_along(df)) {
+  output[[i]] <- median(df[[i]])
+}
+output
+```
+
+Let's review the three components of every `for` loop.
+
+## Output
+
+`output <- vector("double", length = ncol(df))`
+    
+Before you start a loop, you need to create an empty vector to store the output of the loop. Preallocating space for your output is much more efficient than creating space as you move through the loop. The `vector()` function allows you to create an empty vector of any type. The first argument `mode` defines the type of vector ("logical", "integer", "double", "character", etc.) and the second argument `length` defines the length of the vector.
+    
+Numeric vectors are initialized to `0`, logical vectors are initialized to `FALSE`, character vectors are initialized to `""`, and list elements to `NULL`.
+    
+```{r vector}
+vector(mode = "double", length = ncol(df))
+vector(mode = "logical", length = ncol(df))
+vector(mode = "character", length = ncol(df))
+vector(mode = "list", length = ncol(df))
+```
+
+## Sequence
+
+`i in seq_along(df)`
+    
+This component determines what to loop over. During each iteration through the `for` loop, a new value will be assigned to `i` based on the the defined sequence. Here, the sequence is `seq_along(df)` which creates a numeric vector for a sequence of numbers beginning at 1 and continuing until it reaches the length of `df` (the length here is the number of columns in `df`).
+    
+```{r seq-along}
+seq_along(df)
+```
+    
+## Body
+
+`output[[i]] <- median(df[[i]])`
+    
+This is the code that actually performs the desired calculations. It runs multiple times for every value of `i`. We use `[[` notation to reference each column of `df` and store it in the appropriate element in `output`.
+
+## Why we preallocate space for the output
+
+If you don't preallocate space for the output, each time the `for` loop iterates, it makes a copy of the output and appends the new value at the end. Copying data takes time and memory. If the output is preallocated space, the loop simply fills in the slots with the correct values.
+
+Consider the following task: duplicate the data frame `mpg` 100 times and bind them together into a single data frame. We can accomplish the latter task using `bind_rows()`, and use a `for` loop to create 100 copies of `mpg`. What is the difference if we preallocate space for the output as opposed to just copying and extending the data frame each time?
+
+```r
+# no preallocation
+mpg_no_preall <- tibble()
+
+for(i in 1:100){
+  mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+}
+
+# with preallocation using a list
+mpg_preall <- vector(mode = "list", length = 100)
+
+for(i in 1:100){
+  mpg_preall[[i]] <- mpg
+}
+
+mpg_preall <- bind_rows(mpg_preall)
+```
+
+Let's compare the time it takes to complete each of these loops by replicating each example 100 times and measuring how long it takes for the expression to evaluate.
+
+```{r preallocate, echo = FALSE, message = FALSE}
+library(microbenchmark)
+
+# bind together 100 copies of mpg
+times <- microbenchmark(
+  `No preallocation` = {
+    mpg_no_preall <- tibble()
+    
+    for(i in 1:100){
+      mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+    }
+  },
+  `Preallocation` = {
+    mpg_preall <- vector(mode = "list", length = 100)
+    
+    for(i in 1:100){
+      mpg_preall[[i]] <- mpg
+    }
+    
+    mpg_preall <- bind_rows(mpg_preall)
+  }
+)
+
+autoplot(times)
+```
+
+Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 30.
+
+## Exercise: write a `for` loop
+
+### Mean of columns in `mtcars`
+
+Write a `for` loop that calculates the arithmetic mean for every column in `mtcars`.
+
+```{r mtcars}
+as_tibble(mtcars)
+```
+
+Before you write the `for` loop, identify the three components you need:
+
+* Output
+* Sequence
+* Body
+
+{{< spoiler text="Click for the solution" >}}
+
+* Output - a numeric vector of length `r ncol(mtcars)`
+* Sequence - `i in seq_along(mtcars)`
+* Body - calculate the `mean()` of the $i$th column, store the new value as the $i$th element of the vector `output`
+
+```{r mtcars-for}
+# preallocate space for the output
+output <- vector("numeric", ncol(mtcars))
+
+# initialize the loop along all the columns of mtcars
+for(i in seq_along(mtcars)){
+  # calculate the mean value for the i-th column
+  output[[i]] <- mean(mtcars[[i]], na.rm = TRUE)
+}
+
+output
+```
+
+{{< /spoiler >}}
+
+### Maximum value in each column of `diamonds`
+
+Write a `for` loop that calculates the maximum value in each column of `diamonds`.
+
+```{r diamonds}
+diamonds
+```
+
+Before you write the `for` loop, identify the three components you need:
+
+* Output
+* Sequence
+* Body
+
+{{< spoiler text="Click for the solution" >}}
+
+* Output - a vector of length `r ncol(ggplot2::diamonds)`
+* Sequence - `i in seq_along(diamonds)`
+* Body - get the maximum value of the $i$th column of the data frame `diamonds`, store the new value as the $i$th element of the list `output`
+
+```{r diamonds-for}
+# preallocate space for the output
+output <- vector("numeric", ncol(diamonds))
+
+# initialize the loop along all the columns of diamonds
+for(i in seq_along(diamonds)){
+  # calculate the max value for the i-th column
+  output[i] <- max(diamonds[[i]])
+}
+
+output
+```
+
+To preserve the name attributes from `diamonds`, use the `names()` function to extract the names of each column in `diamonds` and apply them as the names to the `output` vector:
+
+```{r diamonds-for-name}
+# get the names of the columns in diamonds
+names(diamonds)
+
+# assign the names of the diamonds columns to output
+names(output) <- names(diamonds)
+output
+```
+
+{{% callout note %}}
+
+Notice that all the columns have a maximum value, even the apparently text-based columns. This is because `cut`, `color`, and `clarity` are all stored as factor columns. Remember that [factor vectors are built on top of integers](http://r4ds.had.co.nz/vectors.html#factors-1), so the underlying values are numeric. As a result we can apply `max()` to a factor vector and still retrieve a (partially) meaningful result.
+
+{{% /callout %}}
+
+{{< /spoiler >}}
+
+## Map functions
+
+You will frequently need to iterate over vectors or data frames, perform an operation on each element, and save the results somewhere. `for` loops are not the devil. At first, they may seem more intuitive to use because you are explicitly identifying each component of the process. However the downside is that they focus on a lot of non-essential stuff. You have to track the value on which you are iterating, you need to explicitly create a vector to store the output, you have to assign the output of each iteration to the appropriate element in the output vector, etc.
+
+![Artwork by @allison_horst](/img/allison_horst_art/forloops.png)
+
+`tidyverse` is all about focusing on **verbs**, not **nouns**. That is, focus on the operation being performed (e.g. `mean()`, `median()`, `max()`), not all the extra code needed to make the operation work. The `purrr` library provides a family of functions that mirrors `for` loops. They:
+
+* Loop over a vector
+* Do something to each element
+* Save the results
+
+![Artwork by @allison_horst](/img/allison_horst_art/map2_cupcakes.png)
+
+There is one function for each type of output:
+
+* `map()` makes a list.
+* `map_lgl()` makes a logical vector.
+* `map_int()` makes an integer vector.
+* `map_dbl()` makes a double vector.
+* `map_chr()` makes a character vector.
+
+```{r map}
+map_dbl(df, mean)
+map_dbl(df, median)
+map_dbl(df, sd)
+```
+
+Just like all of our functions in the `tidyverse`, the first argument is always the data object, and the second argument is the function to be applied. Additional arguments for the function to be applied can be specified like this:
+
+```{r map-args}
+map_dbl(df, mean, na.rm = TRUE)
+```
+
+Or data can be piped:
+
+```{r map-pipe}
+df %>%
+  map_dbl(mean, na.rm = TRUE)
+```
+
+## Exercise: rewrite our `for` loops using a `map()` function
+
+### Mean of columns in `mtcars`
+
+Write a `map()` function that calculates the arithmetic mean for every column in `mtcars`.
+
+```{r mtcars-again}
+as_tibble(mtcars)
+```
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r mtcars-map}
+map_dbl(mtcars, mean)
+```
+
+{{< /spoiler >}}
+
+### Maximum value in each column of `diamonds`
+
+Write a `map()` function that calculates the maximum value in each column of `diamonds`.
+
+```{r diamonds-again}
+diamonds
+```
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r diamonds-map}
+map_dbl(diamonds, max)
+```
+
+{{< /spoiler >}}
+
+## `across()`
+
+When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `mtcars`. If we want to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
+
+```{r mtcars-mean-single-column}
+mtcars %>%
+  summarize(mpg = mean(mpg))
+```
+
+If we want to calculate the mean for all of the columns, we would have to duplicate this code many times over:
+
+```{r mtcars-mean-all-columns}
+mtcars %>%
+  summarize(mpg = mean(mpg),
+            cyl = mean(cyl),
+            disp = mean(disp),
+            hp = mean(hp),
+            drat = mean(drat),
+            wt = mean(wt),
+            qsec = mean(qsec),
+            vs = mean(vs),
+            am = mean(am),
+            gear = mean(gear),
+            carb = mean(carb))
+```
+
+But this process is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it.
+
+We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **the `across()` function**.
+
+`across()` makes it easy to apply the same transformation to multiple columns, allowing you to use `select()` semantics inside `summarize()` and `mutate()`, and other `dplyr` verbs (or functions).
+
+`across()` has two primary arguments:  
+
+* The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like `select()`) so you can pick variables by position, name, and type. 
+* The second argument, `.fns`, is a function or list of functions to apply to each column. This can also be a purrr style formula (or list of formulas) like `~ .x / 2`.
+
+{{% callout note %}}
+
+`across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dplyr` to access this function.
+
+{{% /callout %}}
+
+Here are a couple of examples of `across()` in conjunction with its favorite verb, `summarize()`:
+
+## Summarize
+
+### `summarize()`, `across()`, and `everything()`
+
+To apply a function to each column in a tibble, use `across()` in conjunction with `everything()`. `everything()` is a selection helper that selects all the variables in a data frame. It should be the first argument in `across()`.
+
+```{r summarize-across-everything}
+mtcars %>% 
+  summarize(across(.cols = everything(), .fns = mean))
+```
+
+If you want to apply multiple summaries, you store the functions in a `list()`:
+
+```{r summarize-across-everything-fns}
+mtcars %>% 
+  summarize(across(everything(), .fns = list(min, max)))
+```
+
+To clearly distinguish each summarized variable, we can name them in the list:
+
+```{r summarize-across-everything-fns-named}
+mtcars %>% 
+  summarize(across(everything(), .fns = list(min = min, max = max)))
+```
+
+Because `across()` is usually used in combination with `summarise()` and `mutate()`, it does not select grouping variables in order to avoid accidentally modifying them:
+
+```{r summarize-across-everything-group-by}
+mtcars %>%
+  group_by(gear) %>%
+  summarize(across(everything(), .fns = mean))
+```
+
+### `summarize()` and `across()`
+
+As mentioned earlier, `across()` allows you to pick variables by position and name: 
+
+```{r summarize-across-by}
+# pick by name
+worldbank %>% 
+  summarize(across(.cols = life_exp, .fns = mean))
+
+# by postion
+worldbank %>% 
+  summarize(across(.cols = 12, .fns = mean))
+```
+
+By default, the newly created columns have the shortest names needed to uniquely identify the output.
+
+```{r summarize-across-unique}
+worldbank %>% 
+  summarize(across(.cols = life_exp, .fns = list(min, max)))
+
+worldbank %>% 
+  summarize(across(.cols = c(life_exp, pop_growth), .fns = min))
+
+worldbank%>% 
+  summarize(across(.cols = -life_exp, .fns = list(min, max)))
+```
+
+### `summarize()`, `across()`, and `where()`
+
+To pick variables to summarize based on type, use `across()` in conjunction with `where()`.
+`where()` is another selection helper that allows you to pick variables based on a predicate function like `is.numeric()` or `is.character()`. For example, if you want to apply a numeric summary function only to numeric columns:
+
+```{r summarize-across-where}
+worldbank %>%
+  group_by(country) %>%
+  summarize(across(where(is.numeric), .fns = mean, na.rm = TRUE))
+```
+
+(Note that `na.rm = TRUE` is passed on to `mean()` in the same way as in `purrr::map()`.)
+
+`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with "x":
+
+```r
+across(where(is.numeric) & starts_with("x"))
+```
+
+## Mutate
+
+Combinations of `mutate()` and `across()` work in a similar way to their summarize equivalents.
+
+```{r mutate-across-everything}
+mtcars %>% 
+  mutate(across(everything(), .fns = log10))
+```
+
+## Filter
+
+`across()` can also be useful when used in conjunction with `filter()`. For example, we can find all rows where no variable has missing values:
+
+```{r filter-across-everything}
+worldbank %>% 
+  filter(across(everything(), ~ !is.na(.x)))
+```
+
+## Acknowledgments
+
+* `across()` based on [Column-wise operation vignette](https://dplyr.tidyverse.org/dev/articles/colwise.html)
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

@@ -1,0 +1,253 @@
+---
+title: "dplyr in brief"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/datawrangle_dplyr.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 2
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(nycflights13)
+```
+
+![Data science workflow](/img/data-science.png)
+
+Rarely will your data arrive in exactly the form you require in order to analyze it appropriately. As part of the data science workflow you will need to **transform** your data in order to analyze it. Just as we established a syntax for generating graphics (the **layered grammar of graphics**), so too will we have a syntax for data transformation.
+
+From the same author of `ggplot2`, I give you `dplyr`! This package contains useful functions for transforming and manipulating data frames, the bread-and-butter format for data in R. These functions can be thought of as **verbs**. The noun is the data, and the verb is acting on the noun. All of the `dplyr` verbs (and in fact all the verbs in the wider `tidyverse`) work similarly:
+
+1. The first argument is a data frame
+1. Subsequent arguments describe what to do with the data frame
+1. The result is a new data frame
+
+![Artwork by @allison_horst](/img/allison_horst_art/dplyr_wrangling.png) 
+
+## Key functions in `dplyr`
+
+`function()`    | Action performed
+----------------|--------------------------------------------------------
+`filter()`      | Subsets observations based on their values
+`arrange()`     | Changes the order of observations based on their values
+`select()`      | Selects a subset of columns from the data frame
+`rename()`      | Changes the name of columns in the data frame
+`mutate()`      | Creates new columns (or variables)
+`group_by()`    | Changes the unit of analysis from the complete dataset to individual groups
+`summarize()`   | Collapses the data frame to a smaller number of rows which summarize the larger data
+
+![Artwork by @allison_horst](/img/allison_horst_art/dplyr_mutate.png)
+
+These are the basic verbs you will use to transform your data. By combining them together, you can perform powerful data manipulation tasks.
+
+## American vs. British English
+
+Hadley Wickham is from New Zealand. As such he (and base R) favours British spellings:
+
+{{< tweet 405707093770244097 >}}
+
+While British spelling is perhaps the norm, this is America!
+
+```{r swanson, echo = FALSE}
+knitr::include_graphics("https://media.giphy.com/media/8KnfG3knLExpu/giphy.gif")
+```
+
+Fortunately many R functions can be written using American or British variants:
+
+* `summarize()` = `summarise()`
+* `color()` = `colour()`
+
+Therefore in this class I will generally stick to American spelling.
+
+## Saving transformed data
+
+`dplyr` never overwrites existing data. If you want a copy of the transformed data for later use in the program, you need to explicitly save it. You can do this by using the assignment operator `<-`:
+
+```{r save}
+filter(.data = diamonds, cut == "Ideal")  # printed, but not saved
+diamonds_ideal <- filter(.data = diamonds, cut == "Ideal")  # saved, but not printed
+(diamonds_ideal <- filter(.data = diamonds, cut == "Ideal"))  # saved and printed
+```
+
+![Artwork by @allison_horst](/img/allison_horst_art/dplyr_filter.jpg)
+
+{{% callout note %}}
+
+Do not use `=` to assign objects. [Read this for more information on the difference between `<-` and `=`.](http://stackoverflow.com/a/1742550)
+
+{{% /callout %}}
+
+## Using backticks to refer to column names
+
+Normally within `tidyverse` functions you can refer to column names directly. For example,
+
+```{r colname-normal}
+count(x = diamonds, color)
+```
+
+`color` is a column in `diamonds` so I can refer to it directly within `count()`. However this becomes a problem for any column name that is **non-syntactic**.^[See [*Advanced R*](https://adv-r.hadley.nz/names-values.html#non-syntactic) for a more detailed discussion - but note that the book is called * **Advanced** R* for a reason.] A **syntactic** name consists only of letters, digits, and `.` and `_`. Examples of non-syntactic column names include:
+
+* `Social conservative`
+* `7-point ideology`
+* `_id`
+
+Any time you encounter a column that contains non-syntactic characters, you should refer to the column name using backticks ``` `` ```.
+
+```{r colname-backtick}
+count(x = diamonds, `color`)
+```
+
+**Do not use quotation marks (`''` or `""`) to refer to the column name.** This appears to work, but is not consistent and will fail when you do not expect it. Consider the same operation as above but using quotation marks instead of backticks.
+
+```{r colname-quote}
+count(x = diamonds, "color")
+```
+
+The word "color" has been duplicated `r nrow(diamonds)` times and tabulated using the `count()` function. Not what we intended. Always use the backticks for non-syntactic column names.
+
+## Missing values
+
+`NA` represents an unknown value. Missing values are contagious, in that their properties will transfer to any operation performed on it.
+
+```{r na}
+NA > 5
+10 == NA
+NA + 10
+```
+
+To determine if a value is missing, use the `is.na()` function.
+
+When filtering, you must explicitly call for missing values to be returned.
+
+```{r na-filter}
+df <- tibble(x = c(1, NA, 3))
+df
+
+filter(df, x > 1)
+filter(df, is.na(x) | x > 1)
+```
+
+Or when calculating summary statistics, you need to explicitly ignore missing values.
+
+```{r na-summary}
+df <- tibble(
+  x = c(1, 2, 3, 5, NA)
+)
+df
+
+summarize(df, meanx = mean(x))
+summarize(df, meanx = mean(x, na.rm = TRUE))
+```
+
+## Piping
+
+As we discussed, frequently you need to perform a series of intermediate steps to transform data for analysis. If we write each step as a discrete command and store their contents as new objects, your code can become convoluted.
+
+Drawing on [this example from *R for Data Science*](http://r4ds.had.co.nz/transform.html#combining-multiple-operations-with-the-pipe), let's explore the relationship between the distance and average delay for each location. At this point, we would write it something like this:
+
+```{r intermediate}
+by_dest <- group_by(.data = flights, dest)
+delay <- summarise(
+  .data = by_dest,
+  count = n(),
+  dist = mean(distance, na.rm = TRUE),
+  delay = mean(arr_delay, na.rm = TRUE)
+)
+delay <- filter(.data = delay, count > 20, dest != "HNL")
+
+ggplot(data = delay, mapping = aes(x = dist, y = delay)) +
+  geom_point(aes(size = count), alpha = 1/3) +
+  geom_smooth(se = FALSE)
+```
+
+Decomposing the problem, there are three basic steps:
+
+1. Group `flights` by destination.
+1. Summarize to compute distance, average delay, and number of flights.
+1. Filter to remove noisy points and the Honolulu airport, which is almost twice as far away as the next closest airport.
+
+The code as written is inefficient because we have to name and store each intermediate data frame, even though we don't care about them. It also provides more opportunities for typos and errors.
+
+Because all `dplyr` verbs follow the same syntax (data first, then options for the function), we can use the pipe operator `%>%` to **chain** a series of functions together in one command:
+
+```{r pipe}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+```
+
+Now, we don't have to name each intermediate step and store them as data frames. We only store a single data frame (`delays`) which contains the final version of the transformed data frame. We could read this code as use the `flights` data, then group by destination, then summarize for each destination the number of flights, the average disance, and the average delay, then subset only the destinations with at least 20 flights and exclude Honolulu.
+
+## Things to not do with piping
+
+Remember that with pipes, we don't have to save all of our intermediate steps. We only use one assignment, like this:
+
+```{r pipe-good}
+delays <- flights %>% 
+  group_by(dest) %>% 
+  summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(count > 20, dest != "HNL")
+```
+
+Do not do this:
+
+```{r pipe-bad-assignment, eval = FALSE}
+delays <- flights %>% 
+  by_dest <- group_by(dest) %>% 
+  delay <- summarize(
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  delay <- filter(count > 20, dest != "HNL")
+```
+
+```
+Error: bad assignment: 
+     summarize(count = n(), dist = mean(distance, na.rm = TRUE), delay = mean(arr_delay, 
+         na.rm = TRUE)) %>% delay <- filter(count > 20, dest != "HNL")
+```
+
+Or this:
+
+```{r pipe-df, error = TRUE}
+delays <- flights %>% 
+  group_by(.data = flights, dest) %>% 
+  summarize(.data = flights,
+    count = n(),
+    dist = mean(distance, na.rm = TRUE),
+    delay = mean(arr_delay, na.rm = TRUE)
+  ) %>% 
+  filter(.data = flights, count > 20, dest != "HNL")
+```
+
+If you use pipes, you don't have to reference the data frame with each function - just the first time at the beginning of the pipe sequence.
+
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

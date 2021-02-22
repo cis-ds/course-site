@@ -1,0 +1,247 @@
+---
+title: "Practice tidying data"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/datawrangle_tidy_exercise.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 8
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/data-wrangling-tidy-data")
+```
+
+{{% /callout %}}
+
+For each exercise, tidy the data frame. Before you write any code examine the structure of the data frame and mentally (or with pen-and-paper) sketch out what you think the tidy data structure should be.
+
+## Race data
+
+```{r race}
+library(rcfss)
+race
+```
+
+Important info:
+
+* `Name` - pretty obvious
+* `50`:`350` - column names define different lengths of time
+* Cell values are scores associated with each name and length of time
+
+{{< spoiler text="Click for a hint" >}}
+
+**Tidy data structure**
+
+```{r race-hint, echo = FALSE}
+pivot_longer(
+  data = race,
+  cols = -Name,
+  names_to = "Time",
+  values_to = "Score",
+  # ensure the Time column is stored as a numeric column
+  names_transform = list(Time = readr::parse_number)
+)
+```
+
+{{< /spoiler >}}
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r race-hint, echo = TRUE}
+```
+
+Except for the `Name` column, the remaining columns are actually one variable spread across multiple columns. The column names are a distinct variable, and the columns' values are another variable. `pivot_longer()` is the appropriate function.
+
+{{% callout note %}}
+
+Because the column names are actually numeric values, we use `names_transform = list(Time = readr::parse_number)` to coerce the new `Time` column into a numeric column. `names_transform` allows us to manually specify the column type for the name column. Because (rarely) you may have more than one name column, we store each type separately inside of `list()`. `readr::parse_number()` is a function for converting a character vector to a numeric vector, so `names_transform = list(Time = readr::parse_number)` ensures the `Time` column is stored as a numeric column.
+
+{{% /callout %}}
+
+{{< /spoiler >}}
+
+## Clinical trials
+
+```{r results}
+results
+```
+
+Important info:
+
+* `Ind` - individual participating in the experiment
+* `Treatment` - trial type (`Treat` or `Cont`)
+* `value` - result of experiment
+
+{{< spoiler text="Click for a hint" >}}
+
+**Tidy data structure**
+
+```{r results-hint, echo = FALSE}
+pivot_wider(data = results, names_from = Treatment, values_from = value)
+```
+
+{{< /spoiler >}}
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r results-hint, echo = TRUE}
+```
+
+This dataset is not tidy because observations are spread across multiple rows. There only needs to be one row for each individual. Then `Treat` and `Cont` can be stored in separate columns.
+
+{{< /spoiler >}}
+
+## Grades
+
+```{r grades}
+grades
+```
+
+This one is a bit tougher. Important info:
+
+* **The unit of analysis is ID-Year-Quarter.** That is, in the tidy formulation each observation represents one individual during one quarter in a given year.
+* **Each test is unique.** As in they should be treated as two separate variables.
+
+{{< spoiler text="Click for a hint" >}}
+
+**Tidy data structure**
+
+```{r grades-hint, echo = FALSE}
+pivot_longer(
+  data = grades,
+  cols = c(Fall:Winter),
+  names_to = "Quarter",
+  values_to = "Score"
+) %>%
+  pivot_wider(
+    names_from = Test,
+    values_from = Score
+  )
+```
+
+{{< /spoiler >}}
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r grades-hint, echo = TRUE}
+```
+
+In this example, the basic unit of observation is the test. Each individual takes two separate tests (`Math` or `Writing`) at multiple points in time: during each quarter (`Fall`, `Winter`, `Spring`) as well as in multiple years (`2008` and `2009`). So our final data frame should contain five columns: `ID` (identifying the student), `Year` (year the test was taken), `Quarter` (quarter in which the test was taken), `Math` (score on the math test), and `Writing` (score on the writing test).
+
+Where can we begin? Initially we can make the data frame longer by making `Fall`, `Winter`, and `Spring` into a single column (we can use the inclusive select function `:` to gather these three columns):
+
+```{r grades-longer}
+pivot_longer(
+  data = grades,
+  cols = c(Fall:Winter),
+  names_to = "Quarter",
+  values_to = "Score"
+)
+```
+
+Good, but now we have observations spread across multiple rows. Remember that we want each test to be a separate variable. To do that, we can `pivot_wider()` those values across two columns.
+
+```{r grades-wider}
+pivot_longer(
+  data = grades,
+  cols = c(Fall:Winter),
+  names_to = "Quarter",
+  values_to = "Score"
+) %>%
+  pivot_wider(
+    names_from = Test,
+    values_from = Score
+  )
+```
+
+{{< /spoiler >}}
+
+## Activities
+
+```{r activities}
+activities
+```
+
+This one is also pretty difficult, but if you think it through conceptually it is doable. The unit of analysis is a single individual (identified by `id`) observed at two different times (`T1` and `T2`) performing different actions (`work`, `play`, `talk`, and `total` - note that `total` is not merely the sum of the first three values). Individuals in this experiment were assigned to either treatment or control (`trt`) and this information should be preserved in the final data frame.
+
+{{< spoiler text="Click for a hint" >}}
+
+**Tidy data structure**
+
+```{r activities-hint, echo = FALSE}
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+) %>%
+  separate(variable, into = c("location", "time")) %>%
+  pivot_wider(names_from = location, values_from = value)
+```
+
+{{< /spoiler >}}
+
+{{< spoiler text="Click for the solution" >}}
+
+This is a more complex operation. The basic problem is that we have variables stored in multiple columns (location, with possible values of `work`, `play`, and `talk`). We need to combine these columns into a single column for each variable. But what happens if we just make the data frame longer in this way?
+
+```{r activities-longer}
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+)
+```
+
+We've created a new problem! Actually, two problems:
+
+1. We have a single observation stored across multiple rows: we want a single row for each `id` x `trt` pairing
+2. We have two variables stored in a single column: `variable` contains the information on both location (`work`, `play`, and `talk`) as well as when the measurement was taken (`T1` or `T2`)
+
+The best approach is to fix the second problem by separating the columns, then spreading the different types of measurements back into their own columns.
+
+```{r activities-separate-longer}
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+) %>%
+  separate(variable, into = c("location", "time"))
+
+pivot_longer(
+  data = activities,
+  cols = c(work.T1:talk.T2),
+  names_to = "variable",
+  values_to = "value"
+) %>%
+  separate(variable, into = c("location", "time")) %>%
+  pivot_wider(names_from = location, values_from = value)
+```
+
+{{< /spoiler >}}
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

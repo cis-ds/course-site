@@ -1,0 +1,142 @@
+---
+title: "Practice using relational data"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/datawrangle_relational_data_exercise.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 5
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(nycflights13)
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/data-wrangling-relational-data-and-factors")
+```
+
+{{% /callout %}}
+
+For each exercise, use your knowledge of relational data and joining operations to compute a table or graph that answers the question. All questions use data frames from the `nycflights13` package (if you have not previously installed it, do so using `install.packages("nycflights13")`).
+
+{{% callout note %}}
+
+[Review the database structure before you begin the exercises.](http://r4ds.had.co.nz/relational-data.html#nycflights13-relational)
+
+{{% /callout %}}
+
+## Is there a relationship between the age of a plane and its departure delays?
+
+Hint: all the data is from 2013.
+
+{{< spoiler text="Click for the solution" >}}
+
+The first step is to calculate the age of each plane. To do that, use `planes` and the `age` variable:
+
+```{r planes-age}
+(plane_ages <- planes %>%
+  mutate(age = 2013 - year) %>%
+  select(tailnum, age))
+```
+
+The best approach to answering this question is a visualization. There are several different types of visualizations you could implement (e.g. scatterplot with smoothing line, line graph of average delay by age). The important thing is that we need to combine `flights` with `plane_ages` to determine for each flight the age of the plane. This is another mutating join. The best choice is `inner_join()` as this will automatically remove any rows in `flights` where we don't have age data on the plane.
+
+```{r age-delay-solution}
+# smoothing line
+flights %>%
+  inner_join(y = plane_ages) %>%
+  ggplot(mapping = aes(x = age, y = dep_delay)) +
+  geom_smooth()
+
+# line graph of average delay by age
+flights %>%
+  inner_join(y = plane_ages) %>%
+  group_by(age) %>%
+  summarise(delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(mapping = aes(x = age, y = delay)) +
+  geom_point() +
+  geom_line()
+```
+
+In this situation, `left_join()` could also be used because `ggplot()` and `mean(na.rm = TRUE)` drop missing values (remember that `left_join()` keeps all rows from `flights`, even if we don't have information on the plane).
+
+```{r age-delay-leftjoin}
+flights %>%
+  left_join(y = plane_ages) %>%
+  ggplot(mapping = aes(x = age, y = dep_delay)) +
+  geom_smooth()
+
+flights %>%
+  left_join(y = plane_ages) %>%
+  group_by(age) %>%
+  summarise(delay = mean(dep_delay, na.rm = TRUE)) %>%
+  ggplot(mapping = aes(x = age, y = delay)) +
+  geom_point() +
+  geom_line()
+```
+
+The important takeaway is that departure delays do not appear to increase with plane age -- in fact they seem to decrease slightly (though with an expanding confidence interval). Care to think of a reason why this may be so?
+
+{{< /spoiler >}}
+
+## Add the location of the origin and destination (i.e. the `lat` and `lon`) to `flights`.
+
+{{< spoiler text="Click for the solution" >}}
+
+This is a mutating join, and the basic function you need to use here is `left_join()`. We have to perform the joining operation twice since we want to create new variables based on both the destination airport and the origin airport. And because the name of the key variable differs between the data frames, we need to explicitly define how to join the data frames using the `by` argument:
+
+```{r lat-lon-simple}
+flights %>%
+  left_join(y = airports, by = c(dest = "faa")) %>%
+  left_join(y = airports, by = c(origin = "faa"))
+```
+
+Notice that with this approach, we are joining **all** of the columns in `airports`. The instructions just asked for latitude and longitude, so we can create a copy of `airports` that only includes the necessary variables (`lat` and `lon`, plus the primary key variable `faa`) and join `flights` to that data frame:
+
+```{r lat-lon-better}
+airports_lite <- airports %>%
+  select(faa, lat, lon)
+
+flights %>%
+  left_join(y = airports_lite, by = c(dest = "faa")) %>%
+  left_join(y = airports_lite, by = c(origin = "faa"))
+```
+
+This is better, but now we have two sets of latitude and longitude variables in the data frame: one for the destination airport, and one for the origin airport. When we perform the second `left_join()` operation, to avoid duplicate variable names the function automatically adds generic `.x` and `.y` suffixes to the output to disambiguate them. This is nice, but we might want something more intuitive to explicitly identify which variables are associated with the destination vs. the origin. To do that, we override the default `suffix` argument with custom suffixes:
+
+```{r lat-lon-solution}
+airports_lite <- airports %>%
+  select(faa, lat, lon)
+
+flights %>%
+  left_join(y = airports_lite, by = c(dest = "faa")) %>%
+  left_join(y = airports_lite, by = c(origin = "faa"), suffix = c(".dest", ".origin"))
+```
+
+{{< /spoiler >}}
+
+### Acknowledgements
+
+* Exercises drawn from [**Relational Data** in *R for Data Science*](http://r4ds.had.co.nz/relational-data.html)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

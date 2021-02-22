@@ -1,0 +1,215 @@
+---
+title: "What is exploratory data analysis?"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/eda_defined.html"]
+categories: ["eda"]
+
+menu:
+  notes:
+    parent: Exploratory data analysis
+    weight: 1
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+**Exploratory data analysis** (EDA) is often the first step to visualizing and transforming your data.^[After any necessary data importation and wrangling.] Hadley Wickham [defines EDA as an iterative cycle](http://r4ds.had.co.nz/exploratory-data-analysis.html):
+
+1. Generate questions about your data
+1. Search for answers by visualising, transforming, and modeling your data
+1. Use what you learn to refine your questions and or generate new questions
+* Rinse and repeat until you publish a paper
+
+EDA is fundamentally a creative process - it is not an exact science. It requires knowledge of your data and a lot of time. At the most basic level, it involves answering two questions
+
+1. What type of **variation** occurs **within** my variables?
+2. What type of **covariation** occurs **between** my variables?
+
+EDA relies heavily on visualizations and graphical interpretations of data. While statistical modeling provides a "simple" low-dimensional representation of relationships between variables, they generally require advanced knowledge of statistical techniques and mathematical principles. Visualizations and graphs are typically much more interpretable and easy to generate, so you can rapidly explore many different aspects of a dataset. The ultimate goal is to generate simple summaries of the data that inform your question(s). It is not the final stop in the data science pipeline, but still an important one.
+
+## Characteristics of exploratory graphs
+
+![Artwork by @allison_horst](/img/allison_horst_art/ggplot2_exploratory.png)
+
+Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to explore how the flipper length of a penguin varies with it's body mass size. An appropriate technique would be a scatterplot:
+
+```{r penguins-eda, warning = FALSE, message = FALSE}
+ggplot(data = penguins,
+       mapping = aes(x = body_mass_g, y = flipper_length_mm)) +
+  geom_point() +
+  geom_smooth()
+```
+
+This is a great exploratory graph: it took just three lines of code and clearly establishes a positive relationship between the flipper length and body mass of a penguin. But what if I were publishing this graph in a research note? I would probably submit something to the editor that looks like this:
+
+```{r penguins-final, warning = FALSE, message = FALSE}
+ggplot(data = penguins,
+       mapping = aes(x = body_mass_g, y = flipper_length_mm)) +
+  geom_point(alpha = .1) +
+  geom_smooth(se = FALSE) +
+  labs(title = "Relationship between body mass and flipper length of a penguin",
+       subtitle = "Sample of 344 penguins",
+       x = "Body mass(g)",
+       y = "Flipper length(mm)") +
+  theme_minimal()
+```
+
+These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
+
+![Artwork by @allison_horst](/img/allison_horst_art/presenting_monster.png)
+
+## Scorecard
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub.  Here let's examine the data to answer the following question: **how does cost of attendance vary across universities?**
+
+## Import the data
+
+The `scorecard` dataset is included as part of the `rcfss` library:
+
+```{r scorecard-data}
+library(rcfss)
+data("scorecard")
+
+scorecard
+glimpse(x = scorecard)
+```
+
+Each row represents a different four-year college or university in the United States. `cost` identifies the average annual total cost of attendance.
+
+## Assessing variation
+
+Assessing **variation** requires examining the values of a variable as they change from measurement to measurement. Here, let's examine variation in cost of attendance and related variables using a few different graphical techniques.
+
+### Histogram
+
+```{r histogram}
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
+  geom_histogram()
+```
+
+It appears there are three sets of peak values for cost of attendance, around 20,000, 40,000, and 65,000 dollars in declining overall frequency. This could suggest some underlying factor or set of differences between the universities that clusters them into separate groups based on cost of attendance.
+
+By default, `geom_histogram()` bins the observations into 30 intervals of equal width. You can adjust this using the `bins` parameter:
+
+```{r histogram-bins-50}
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
+  geom_histogram(bins = 50)
+```
+
+```{r histogram-bins-10}
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
+  geom_histogram(bins = 10)
+```
+
+Different `bins` can lead to different inferences about the data. Here if we set a larger number of bins, the overall picture seems to be the same - the distribution is trimodal. But if we collapse the number of bins to 10, we lose the clarity of each of these peaks.
+
+### Bar chart
+
+```{r barplot}
+ggplot(data = scorecard,
+       mapping = aes(x = type)) +
+  geom_bar()
+```
+
+To examine the distribution of a categorical variable, we can use a **bar chart**. Here we see the most common type of four-year college is a private, nonprofit institution.
+
+## Covariation
+
+**Covariation** is the tendency for the values of two or more variables to vary together in a related way. Visualizing data in two or more dimensions allows us to assess covariation and differences in variation across groups. There are a few major approaches to visualizing two dimensions:
+
+1. Two-dimensional graphs
+1. Multiple window plots
+1. Utilizing additional channels
+
+## Two-dimensional graphs
+
+**Two-dimensional graphs** are visualizations that are naturally designed to visualize two variables. For instance, if you have a discrete variable and a continuous variable, you could use a **box plot** to visualize the distribution of the values of the continuous variable for each category in the discrete variable:
+
+```{r boxplot}
+ggplot(data = scorecard,
+       mapping = aes(x = type, y = cost)) +
+  geom_boxplot()
+```
+
+Here we see that on average, public universities are least expensive, followed by private for-profit institutions. I was somewhat surprised by this since for-profit institutions by definition seek to generate a profit, so wouldn't they be the most expensive? But perhaps this makes sense, because they have to attract students so need to offer a better financial value than competing nonprofit or public institutions. Is there a better explanation for these differences? Another question you could explore after viewing this visualization.
+
+If you have two continuous variables, you may use a **scatterplot** which maps each variable to an $x$ or $y$-axis coordinate. Here we visualize the relationship between annual cost of attendance (sticker price) and net cost of attendance (average amount actually paid by a student):
+
+```{r scatterplot}
+ggplot(data = scorecard,
+       mapping = aes(x = cost, y = netcost)) +
+  geom_point()
+```
+
+As the sticker price increases, the net cost also increases though with significant variation. Some schools have a much lower net cost than their advertised price.
+
+## Multiple window plots
+
+Sometimes you want to compare the conditional distribution of a variable across specific groups or subsets of the data. To do that, we implement a **multiple window plot** (also known as a **trellis** or **facet** graph). This involves drawing the same plot repeatedly, using a separate window for each category defined by a variable. For instance, if we want to examine variation in cost of attendance separately for college type, we could draw a graph like this:
+
+```{r histogram-facet}
+ggplot(data = scorecard,
+       mapping = aes(x = cost)) +
+  geom_histogram() +
+  facet_wrap(~ type)
+```
+
+This helps answer one of our earlier questions. Colleges in the 20,000 dollar range tend to be public universities, while the heaps around 40,000 and 65,000 dollars are from private nonprofits.
+
+You may also want to use a multiple windows plot with a two-dimensional graph. For example, the relationship between annual cost and net cost of attendance by college type:
+
+```{r scatterplot-facet}
+ggplot(data = scorecard,
+       mapping = aes(x = cost, y = netcost)) +
+  geom_point() +
+  facet_wrap(~ type)
+```
+
+## Utilizing additional channels
+
+If you want to visualize three or more dimensions of data without resorting to 3D animations^[Though with the growth of virtual reality technology and 3D printing, perhaps this isn't a bad idea.] or window plots, the best approach is to incorporate additional **channels** into the visualization. Channels are used to encode variables inside of a graphic. For instance, a scatterplot uses vertical and horizontal spatial position channels to encode the values for two variables in a visually intuitive manner.
+
+Depending on the type of graph and variables you wish to encode, there are several different channels you can use to encode additional information. For instance, **color** can be used to distinguish between classes in a categorical variable.
+
+```{r scatterplot-color}
+ggplot(data = scorecard,
+       mapping = aes(x = cost,
+                     y = netcost,
+                     color = type)) +
+  geom_point()
+```
+
+We can even use a fourth channel to communicate another variable (median debt load after leaving school) by making use of the size channel:
+
+```{r scatterplot-color-size}
+ggplot(data = scorecard,
+       mapping = aes(x = cost,
+                     y = netcost,
+                     color = type,
+                     size = debt)) +
+  geom_point()
+```
+
+Note that some channels are not always appropriate, even if they can technically be implemented. For example, the graph above has become quite challenging to read due to so many overlapping data points. Just because one **can** construct a graph does not mean one **should** construct a graph.
+
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

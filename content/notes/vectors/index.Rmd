@@ -1,0 +1,365 @@
+---
+title: "Vectors"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/program_vectors.html"]
+categories: ["programming"]
+
+menu:
+  notes:
+    parent: Programming elements
+    weight: 4
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(rcfss)
+set.seed(1234)
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/vectors-and-iteration")
+```
+
+{{% /callout %}}
+
+So far the only type of data object in R you have encountered is a `data.frame` (or the `tidyverse` variant `tibble`). At its core though, the primary method of data storage in R is the **vector**. So far we have only encountered vectors as components of a **data frame**; data frames are built from vectors. There are a few different types of vectors: logical, numeric, and character. But now we want to understand more precisely how these data objects are structured and related to one another.
+
+## Types of vectors
+
+![Figure 20.1 from [*R for Data Science*](http://r4ds.had.co.nz/vectors.html)](https://r4ds.had.co.nz/diagrams/data-structures-overview.png)
+
+There are two categories of vectors:
+
+1. **Atomic vectors** - these are the types previously covered, including logical, integer, double, and character.
+1. **Lists** - there are new and we will cover them later in this module. Lists are distinct from atomic vectors because lists can contain other lists.
+
+Atomic vectors are **homogenous** - that is, all elements of the vector must be the same type. Lists can be **hetergenous** and contain multiple types of elements. `NULL` is the counterpart to `NA`. While `NA` represents the absence of a value, `NULL` represents the absence of a vector.
+
+## Atomic vectors
+
+## Logical vectors
+
+**Logical vectors** take on one of three possible values:
+
+* `TRUE`
+* `FALSE`
+* `NA` (missing value)
+
+```{r parse-logical}
+parse_logical(c("TRUE", "TRUE", "FALSE", "TRUE", "NA"))
+```
+
+{{% callout note %}}
+
+Whenever you filter a data frame, R is (in the background) creating a vector of `TRUE` and `FALSE` - whenever the condition is `TRUE`, keep the row, otherwise exclude it.
+
+{{% /callout %}}
+
+## Numeric vectors
+
+**Numeric vectors** contain numbers (duh!). They can be stored as **integers** (whole numbers) or **doubles** (numbers with decimal points). In practice, you rarely need to concern yourself with this difference, but just know that they are different but related things.
+
+```{r parse-numeric}
+parse_integer(c("1", "5", "3", "4", "12423"))
+parse_double(c("4.2", "4", "6", "53.2"))
+```
+
+{{% callout note %}}
+
+Doubles can store both whole numbers and numbers with decimal points.
+
+{{% /callout %}}
+
+## Character vectors
+
+**Character vectors** contain **strings**, which are typically text but could also be dates or any other combination of characters.
+
+```{r parse-character}
+parse_character(c("Goodnight Moon", "Runaway Bunny", "Big Red Barn"))
+```
+
+## Using atomic vectors
+
+Be sure to read ["Using atomic vectors"](http://r4ds.had.co.nz/vectors.html#using-atomic-vectors) for more detail on how to use and interact with atomic vectors. I have no desire to rehash everything Hadley already wrote, but here are a couple things about atomic vectors I want to reemphasize.
+
+## Scalars
+
+**Scalars** are a single number; **vectors** are a set of multiple values. In R, scalars are merely a vector of length 1. So when you try to perform arithmetic or other types of functions on a vector, it will **recycle** the scalar value.
+
+```{r recycle}
+(x <- sample(10))
+x + c(100, 100, 100, 100, 100, 100, 100, 100, 100, 100)
+x + 100
+```
+
+This is why [you don't need to write an iterative operation when performing these basic operations](/notes/functions#exercise:-calculate-the-sum-of-squares-of-two-variables) - R automatically converts it for you.
+
+Sometimes this isn't so great, because R will also recycle vectors if the lengths are not equal:
+
+```{r recycle-bad}
+# create a sequence of numbers between 1 and 10
+(x1 <- seq(from = 1, to = 2))
+(x2 <- seq(from = 1, to = 10))
+
+# add together two sequences of numbers
+x1 + x2
+```
+
+Did you really mean to recycle `1:2` five times, or was this actually an error? `tidyverse` functions will only allow you to implicitly recycle scalars, otherwise it will throw an error and you'll have to manually recycle shorter vectors.
+
+## Subsetting
+
+To filter a vector, we cannot use `filter()` because that only works for filtering rows in a `tibble`. `[` is the subsetting function for vectors. It is used like `x[a]`.
+
+### Subset with a numeric vector containing integers
+
+```{r subset-vec}
+(x <- c("one", "two", "three", "four", "five"))
+```
+
+Subset with positive integers keeps the corresponding elements:
+
+```{r subset-pos}
+x[c(3, 2, 5)]
+```
+
+Negative values drop the corresponding elements:
+
+```{r subset-neg}
+x[c(-1, -3, -5)]
+```
+
+You cannot mix positive and negative values:
+
+```{r subset-both, error = TRUE}
+x[c(-1, 1)]
+```
+
+### Subset with a logical vector
+
+Subsetting with a logical vector keeps all values corresponding to a `TRUE` value.
+
+```{r subset-logic}
+(x <- c(10, 3, NA, 5, 8, 1, NA))
+
+# All non-missing values of x
+!is.na(x)
+x[!is.na(x)]
+
+# All even (or missing!) values of x
+x[x %% 2 == 0]
+```
+
+## Exercise: subset the vector
+
+```{r subset-prac}
+(x <- seq(from = 1, to = 10))
+```
+
+Create the sequence above in your R session. Write commands to subset the vector in the following ways:
+
+1. Keep the first through fourth elements, plus the seventh element.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r subset-first-fourth}
+x[c(1, 2, 3, 4, 7)]
+
+# use a sequence shortcut
+x[c(seq(1, 4), 7)]
+```
+
+    {{< /spoiler >}}
+
+1. Keep the first through eighth elements, plus the tenth element.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r subset-first-eighth-tenth}
+# long way
+x[c(1, 2, 3, 4, 5, 6, 7, 8, 10)]
+
+# sequence shortcut
+x[c(seq(1, 8), 10)]
+
+# negative indexing
+x[c(-9)]
+```
+
+    {{< /spoiler >}}
+
+1. Keep all elements with values greater than five.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r subset-greater-five}
+# get the index for which values in x are greater than 5
+x > 5
+x[x > 5]
+```
+
+    {{< /spoiler >}}
+
+1. Keep all elements evenly divisible by three.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r subset-divide-three}
+x[x %% 3 == 0]
+```
+
+    {{< /spoiler >}}
+
+## Lists
+
+**Lists** are an entirely different type of vector.
+
+```{r list}
+x <- list(1, 2, 3)
+x
+```
+
+Use `str()` to view the **structure** of the list.
+
+```{r str}
+str(x)
+
+x_named <- list(a = 1, b = 2, c = 3)
+str(x_named)
+```
+
+{{% callout note %}}
+
+If you are running RStudio 1.1 or above, you can also use the [**object explorer**](https://blog.rstudio.com/2017/08/22/rstudio-v1-1-preview-object-explorer/) to interactively examine the structure of objects.
+
+{{% /callout %}}
+
+Unlike the other atomic vectors, lists are **recursive**. This means they can:
+
+1. Store a mix of objects.
+
+    ```{r list-mix}
+    y <- list("a", 1L, 1.5, TRUE)
+    str(y)
+    ```
+    
+1. Contain other lists.
+
+    ```{r list-list}
+    z <- list(list(1, 2), list(3, 4))
+    str(z)
+    ```
+    
+    It isn't immediately apparent why you would want to do this, but in later units we will discover the value of lists as many packages for R store non-tidy data as lists.
+
+You've already worked with lists without even knowing it. **Data frames and `tibble`s are a type of a list.** Notice that you can store a data frame with a mix of column types.
+
+```{r list-df}
+str(gun_deaths)
+```
+
+## How to subset lists
+
+Sometimes lists (especially deeply-nested lists) can be confusing to view and manipulate. Take the example from [R for Data Science](http://r4ds.had.co.nz/vectors.html#subsetting-1):
+
+```{r list-subset}
+x <- list(a = c(1, 2, 3), b = "a string", c = pi, d = list(-1, -5))
+str(x)
+```
+
+* `[` extracts a sub-list. The result will always be a list.
+
+    ```{r list-subset-list}
+    str(x[c(1, 2)])
+    str(x[4])
+    ```
+    
+* `[[` extracts a single component from a list and removes a level of hierarchy.
+
+    ```{r list-subset-component}
+    str(x[[1]])
+    str(x[[4]])
+    ```
+
+* `$` can be used to extract named elements of a list.
+
+    ```{r list-subset-name}
+    x$a
+    x[['a']]
+    x[["a"]]
+    ```
+
+![Figure 20.2 from [R for Data Science](http://r4ds.had.co.nz/vectors.html#fig:lists-subsetting)](https://r4ds.had.co.nz/diagrams/lists-subsetting.png)
+
+{{% callout note %}}
+
+Still confused about list subsetting? [Review the pepper shaker.](http://r4ds.had.co.nz/vectors.html#lists-of-condiments)
+
+{{% /callout %}}
+
+## Exercise: subset a list
+
+```{r subset-list-prac}
+x <- list(a = c(1, 2, 3), b = "a string", c = pi, d = list(-1, -5))
+str(x)
+```
+
+Create the list above in your R session. Write commands to subset the list in the following ways:
+
+1. Subset `a`. The result should be an atomic vector.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r subset-a}
+# use the index value
+x[[1]]
+
+# use the element name
+x$a
+x[["a"]]
+```  
+    
+    {{< /spoiler >}}
+
+1. Subset `pi`. The results should be a new list.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r subset-pi}
+# correct method
+str(x["c"])
+
+# incorrect method to produce another list
+# the result is a scalar
+str(x$c)
+```
+
+    {{< /spoiler >}}
+
+1. Subset the first and third elements from `x`.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r subset-a-1-3}
+x[c(1, 3)]
+x[c("a", "c")]
+```
+
+    {{< /spoiler >}}
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

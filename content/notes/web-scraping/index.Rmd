@@ -1,0 +1,429 @@
+---
+title: "Scraping web pages"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/webdata005_scraping.html"]
+categories: ["webdata"]
+
+menu:
+  notes:
+    parent: Getting data from the web
+    weight: 5
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(rvest)
+
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/getting-data-from-the-web-scraping")
+```
+
+{{% /callout %}}
+
+What if data is present on a website, but isn't provided in an API at all? It is possible to grab that information too. How easy that is to do depends a lot on the quality of the website that we are using.
+
+## HTML
+
+HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, [which is also valid XML](http://www.w3.org/TR/html5/the-xhtml-syntax.html))
+
+![[tags](https://xkcd.com/1144/)](https://imgs.xkcd.com/comics/tags.png)
+
+## Process
+
+**HyperText Markup Language** (HTML) is the basic building block of the World Wide Web. It defines the structure and format of content on web pages. The HTML code is stored on a server and retrieved by your computer when you visit a web page.
+
+1. The web browser sends a request to the server that hosts the website.
+1. The server sends the browser an HTML document.
+1. The browser uses instructions in the HTML to render the website.
+
+## Components of HTML code
+
+HTML code looks something like this:
+
+```html
+<html>
+  <head>
+    <title>Title</title>
+    <link rel="icon" type="icon" href="http://a" />
+    <link rel="icon" type="icon" href="http://b" />
+    <script src="https://c.js"></script>
+  </head>
+  <body>
+    <div>
+      <p>Click <b>here</b> now.</p>
+      <span>Frozen</span>
+    </div>
+    <table style="width:100%">
+      <tr>
+        <td>Kristen</td>
+        <td>Bell</td>
+      </tr>
+      <tr>
+        <td>Idina</td>
+        <td>Menzel</td>
+      </tr>
+    </table>
+  <img src="http://ia.media-imdb.com/images.png"/>
+  </body>
+</html>
+```
+
+HTML code consists of **markup** code used to annotate text, images, and other content for display in a web browswer. As you can see, the code above consists of HTML **elements** which are created by a tag `<>`. Elements can also have **attributes** that configure the elements or adjust their behavior.
+
+{{% callout note %}}
+
+You can think of elements as R functions, and attributes are the arguments to functions. Not all functions require arguments, or they use default arguments.
+
+{{% /callout %}}
+
+```html
+<a href="http://github.com">GitHub</a>
+```
+
+* `<a></a>` - tag name
+* `href` - attribute (name)
+* `"http://github.com"` - attribute (value)
+* `GitHub` - content
+
+HTML code utilizes a nested structure. The above tags can be represented as:
+
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * `b`
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
+
+Let's say we want to find the content "here". Which tag in our sample HTML code contains that content?
+
+* `html`
+    * `head`
+        * `title`
+        * `link`
+        * `link`
+        * `script`
+    * `body`
+        * `div`
+            * `p`
+                * <span style="color:red">**`b`**</span>
+            * `span`
+        * `table`
+            * `tr`
+                * `td`
+                * `td`
+            * `tr`
+                * `td`
+                * `td`
+        * `img`
+
+## Find the source code
+
+Navigate to [the IMDB page for *Frozen*](http://www.imdb.com/title/tt2294629/) and open the source code. Locate the piece of HTML that inserts "Kristen Bell" into the cast section. Which HTML tag surrounds her name?
+
+![IMDB page for *Frozen*](/img/frozen_bell.png)
+
+{{< spoiler text="Click for the solution" >}}
+
+![HTML tag for "Kristen Bell"](/img/frozen_span.png)
+
+"Kristen Bell" is enclosed in the `span` tag. But look through the some of the other source code. `span` is used many times throughout the page. How can we select just the element containing "Kristen Bell", or all the cast member names but nothing else?
+
+{{< /spoiler >}}
+
+## CSS selectors
+
+**Cascading Style Sheets** (CSS) are a flexible framework for customizing the appearance of elements in a web page. They work in conjunction with HTML to format the appearance of content on the web.
+
+##### HTML
+
+![HTML only](/img/shiny-css-none.png)
+
+##### HTML + CSS
+
+![HTML + CSS](/img/shiny-css.png)
+
+## CSS code
+
+```css
+span {
+  color: #ffffff;
+}
+
+.num {
+  color: #a8660d;
+}
+
+table.data {
+  width: auto;
+}
+
+#firstname {
+  background-color: yellow;
+}
+```
+
+CSS uses **selectors**  and **styles**. Selectors define to which elements of the HTML code the styles apply. A CSS script describes an element by its **tag**, **class**, and/or **ID**. Class and ID are defined in the HTML code as attributes of the element.
+
+```html
+<span class="bigname" id="shiny">Shiny</span>
+```
+
+* `<span></span>` - tag name
+* `bigname` - class (optional)
+* `shiny` - id (optional)
+
+So a CSS selector of
+
+```css
+span
+```
+
+would select all elements with the `span` tag. Likewise, a CSS selector of
+
+```css
+.bigname
+```
+
+selects all elements with the `bigname` class (note the use of a `.` to select based on class). A CSS selector of
+
+```css
+span.bigname
+```
+
+selects all elements with the `span` tag **and** the `bigname` class. Finally,
+
+```css
+#shiny
+```
+
+selects all elements with the `shiny` id.
+
+Prefix | Matches
+-------|--------
+none   | tag
+.      | class
+#      | id
+
+{{% callout note %}}
+
+[CSS diner](http://flukeout.github.io) is a JavaScript-based interactive game for learning and practicing CSS selectors. Take some time to play and learn more about CSS selector combinations.
+
+{{% /callout %}}
+
+## Find the CSS selector
+
+Which CSS identifiers are associated with Kristen Bell's name in the *Frozen* page? Write a CSS selector that targets them.
+
+![](/img/frozen_css.png)
+
+{{< spoiler text="Click for the solution" >}}
+
+* `span` - the element
+* `itemprop` - the class
+
+Therefore the CSS selector would be `span.itemprop`.
+
+{{< /spoiler >}}
+
+## `rvest`
+
+`rvest` is a package that contains functions to easily extract information from a webpage. The basic workflow is:
+
+1. Download the HTML and turn it into an XML file with `read_html()`
+1. Extract specific nodes with `html_nodes()`
+1. Extract content from nodes with various functions
+
+## Download the HTML
+
+```{r frozen-dl}
+library(rvest)
+frozen <- read_html("http://www.imdb.com/title/tt2294629/")
+frozen
+```
+
+{{% callout note %}}
+
+It is always a good practice when web scraping to store the output of `read_html()` in an object immediately, then apply further functions to the stored HTML file. Otherwise you send a request to the server every time you extract information from the HTML. For longer-term projects, you can store `read_html()` objects locally on your computer using `readr::write_rds()` and retrieve them using `readr::read_rds()`. This caches a local copy of the file so you always have a copy preserved, in case the webpage's underlying HTML code is modified (or the website is taken offline).
+
+{{% /callout %}}
+
+## Extract nodes
+
+```{r frozen-nodes, dependson = "frozen-dl"}
+itals <- html_nodes(frozen, "em")
+itals
+```
+
+* The first argument to `html_nodes()` is the HTML document or a node previously extracted from the document
+* The second argument is a CSS selector to identify which nodes to select
+
+## Extract content from nodes
+
+```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes")}
+itals
+html_text(itals)
+html_name(itals)
+html_children(itals)
+html_attr(itals, "class")
+html_attrs(itals)
+```
+
+## Extract content
+
+Now it's your turn to practice.
+
+1. Read in the *Frozen* HTML
+1. Select the nodes that are both `id = "titleCast"` and `a`s
+1. Extract the text from the nodes
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r frozen-extract}
+library(rvest)
+frozen <- read_html("http://www.imdb.com/title/tt2294629/")
+cast <- html_nodes(frozen, "#titleCast a")
+html_text(cast)
+```
+
+{{< /spoiler >}}
+
+Do you collect the cast names and only the cast names? We've scraped too much. The problem is that our CSS selector is not specific enough for our needs. We need an easy way to identify CSS selector combinations to extract only the content we want, and nothing more.
+
+## SelectorGadget
+
+**SelectorGadget** is a GUI tool used to identify CSS selector combinations from a webpage.
+
+## Install SelectorGadget
+
+1. Run `vignette("selectorgadget")`
+1. Drag **SelectorGadget** link into your browser's bookmark bar
+
+## Using SelectorGadget
+
+1. Navigate to a webpage
+1. Open the SelectorGadget bookmark
+1. Click on the item to scrape
+1. Click on yellow items you do not want to scrape
+1. Click on additional items that you do want to scrape
+1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
+1. Copy the selector to use with `html_nodes()`
+
+{{% callout note %}}
+
+When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.
+
+{{% /callout %}}
+
+## Practice using SelectorGadget
+
+1. Install SelectorGadget in your browser
+1. Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r frozen-selectorgadget, dependson = "frozen-extract"}
+cast2 <- html_nodes(frozen, "#titleCast td:nth-child(2) a")
+html_text(cast2)
+
+# remove whitespace
+html_text(cast2) %>% str_trim(side = "both")
+```
+
+{{< /spoiler >}}
+
+## Practice scraping data
+
+Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_nodes()` and `html_text()`.
+
+{{< spoiler text="Click for the solution" >}}
+
+For me, this means I need to obtain information on [Sterling, Virginia](http://www.bestplaces.net/cost_of_living/city/virginia/sterling).
+
+```{r sterling}
+sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
+
+col <- html_nodes(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+html_text(col)
+
+# or use a piped operation
+sterling %>%
+  html_nodes(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
+  html_text()
+```
+
+{{< /spoiler >}}
+
+## Tables
+
+Use `html_table()` to scrape whole tables of data as a data frame.
+
+```{r sterling-table, dependson = "sterling"}
+tables <- html_nodes(sterling, css = "table")
+
+tables %>%
+  # get the first table
+  nth(1) %>%
+  # convert to data frame
+  html_table(header = TRUE)
+```
+
+## Extract climate statistics
+
+Visit the climate tab for your home town. Extract the climate statistics of your hometown as a data frame with useful column names.
+
+{{< spoiler text="Click for the solution" >}}
+
+For me, this means I need to obtain information on [Sterling, Virginia](http://www.bestplaces.net/cost_of_living/city/virginia/sterling).
+
+```{r sterling-climate}
+sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
+
+climate <- html_nodes(sterling_climate, css = "table")
+html_table(climate, header = TRUE, fill = TRUE)[[1]]
+
+sterling_climate %>%
+  html_nodes(css = "table") %>%
+  nth(1) %>%
+  html_table(header = TRUE)
+```
+
+{{< /spoiler >}}
+
+## Acknowledgments
+
+* Web scraping lesson drawn from [Extracting data from the web APIs and beyond](https://github.com/ropensci/user2016-tutorial)
+* [HTML| Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/HTML)
+* [CSS | Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/CSS)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

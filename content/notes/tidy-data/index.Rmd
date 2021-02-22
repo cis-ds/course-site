@@ -1,0 +1,152 @@
+---
+title: "Tidy data"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/datawrangle_tidy_data.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 7
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+Most data analysts and statisticians analyze data in a spreadsheet or tabular format. This is not the only way to store information,^[Computer scientists and web developers frequently make use of a range of other data types to store information.] however in the social sciences it has been the paradigm for many decades. **Tidy data** is a specific way of organizing data into a consistent format which plugs into the `tidyverse` set of packages for R. It is not the only way to store data and there are reasons why you might not store data in this format, but eventually you will probably need to convert your data to a tidy format in order to efficiently analyze it.
+
+There are three rules which make a dataset **tidy**:
+
+1. Each variable must have its own column.
+2. Each observation must have its own row.
+3. Each value must have its own cell.
+
+![Figure 12.1 from [*R for Data Science*](http://r4ds.had.co.nz)](https://r4ds.had.co.nz/images/tidy-1.png)
+
+## Pivoting in `tidyr`
+
+Most data you encounter in the wild is stored in an untidy format. To tidy the data, the basic approach is:
+
+1. Identify what the observations and variables are
+1. Fix the dataset so the observations are in rows and variables are in columns. Typically there is one of two problems in the data.
+    1. One variable might be spread across multiple columns.
+    1. One observation may be scattered across multiple rows.
+    
+![Artwork by @allison_horst](/img/allison_horst_art/tidydata_1.jpg)
+    
+Let's review the different tasks for tidying data using the R for Data Science `gapminder` subset. This is the data in a tidy format:
+
+```{r tidy}
+table1
+```
+
+Note that in this data frame, each variable is in its own column (`country`, `year`, `cases`, and `population`), each observation is in its own row (i.e. each row is a different country-year pairing), and each value has its own cell.
+
+## Longer
+
+`tidyr` contains two major functions that can be used to tidy datasets. `pivot_longer()` makes datasets **longer** by increasing the number of rows and decreasing the number of columns. Many datasets you obtain are optimized for ease of data entry or ease of comparison rather than ease of analysis. This means data is typically stored messy with more columns than necessary.
+
+![Artwork by @allison_horst](/img/allison_horst_art/tidydata_2.jpg)
+
+For example, this version of `table1` is not tidy because the `year` variable is spread across multiple columns:
+
+```{r spread-columns}
+table4a
+```
+
+To fix the data frame, we need to identify:
+
+1. The set of columns whose names are values, not variables. Here, those are `1999` and `2000`.
+1. The name of the variable to move the column names to. Here it is `year`.
+1. The name of the variable to move the column values to. Here it is `cases`.
+
+We can use `pivot_longer()` to perform this operation:
+
+```{r pivot-longer}
+table4a %>%
+  pivot_longer(cols = c(`1999`, `2000`), names_to = "year", values_to = "cases")
+```
+
+Since `1999` and `2000` are non-standard names for columns (i.e. they start with a number), we have to wrap the column names in backticks.^[Not quotation marks.] Because `year` and `cases` don't exist in `table4a`, we write them as character strings inside of quotation marks.
+
+## Wider
+
+`pivot_wider()` is the opposite of `pivot_longer()`: it makes a dataset **wider** by increasing the number of columns and decreasing the number of rows. For instance, take `table2`:
+
+```{r spread-rows}
+table2
+```
+
+It violates the tidy data principle because each observation (unit of analysis is a country-year pairing) is split across multiple rows. To tidy the data frame, we need to know:
+
+1. The column that contains variable names. Here, it is `type`.
+1. The column that contains values for multiple variables. Here it is `count`.
+
+We can then use `pivot_wider()`:
+
+```{r pivot-wider}
+table2 %>%
+  pivot_wider(names_from = type, values_from = count)
+```
+
+Since `type` and `count` are already columns that exist in `table2`, we don't have to write them as character strings inside quotation marks.
+
+![Artwork by @allison_horst](/img/allison_horst_art/tidydata_4.jpg)
+
+## Separating
+
+**Separating** splits multiple variables stored in a single column into multiple columns. For example in `table3`, the `rate` column contains both `cases` and `population`:
+
+```{r merged-columns}
+table3
+```
+
+**This is a no-no**. Tidy data principles require each column to contain a single variable. We can use the `separate()` function to split the column into two new columns:
+
+```{r separate}
+table3 %>%
+  separate(
+    col = rate,
+    into = c("cases", "population"),
+    convert = TRUE
+  )
+```
+
+## Uniting
+
+**Uniting** is the inverse of separating - when a variable is stored in multiple columns, uniting brings the variable back into a single column. `table5` splits the year variable into two columns:
+
+```{r split-columns}
+table5
+```
+
+To bring them back together, use the `unite()` function:
+
+```{r unite}
+table5 %>% 
+  unite(col = "new", century, year)
+
+# remove underscore
+table5 %>% 
+  unite(col = "new", century, year, sep = "")
+```
+
+![Artwork by @allsion_horst](/img/allison_horst_art/tidydata_7.jpg)
+
+## Acknowledgments
+
+* Artwork by [@allison_horst](https://github.com/allisonhorst/stats-illustrations)
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

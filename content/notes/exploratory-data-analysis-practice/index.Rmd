@@ -1,0 +1,185 @@
+---
+title: "Practice exploring college education (data)"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/eda_college.html"]
+categories: ["eda"]
+
+menu:
+  notes:
+    parent: Exploratory data analysis
+    weight: 2
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/exploratory-data-analysis")
+```
+
+{{% /callout %}}
+
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+
+{{% callout warning %}}
+
+If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+
+{{% /callout %}}
+
+```{r scorecard}
+library(rcfss)
+data("scorecard")
+glimpse(scorecard)
+```
+
+Type `?scorecard` in the console to open up the help file for this data set. This includes the documentation for all the variables. Use your knowledge of `dplyr` and `ggplot2` functions to answer the following questions.
+
+## Which type of college has the highest average SAT score?
+
+**NOTE: This time, use a graph to visualize your answer, [not a table](/notes/transform-college/#generate-a-data-frame-with-the-average-sat-score-for-each-type-of-college).**
+
+{{< spoiler text="Click for the solution" >}}
+
+We could use a **boxplot** to visualize the distribution of SAT scores.
+
+```{r sat-boxplot}
+ggplot(data = scorecard,
+       mapping = aes(x = type, y = satavg)) +
+  geom_boxplot()
+```
+
+According to this graph, private, nonprofit schools have the highest average SAT score, followed by public and then private, for-profit schools. But this doesn't reveal the entire picture. What happens if we plot a **histogram** or **frequency polygon**?
+
+```{r sat-histo-freq}
+ggplot(data = scorecard,
+       mapping = aes(x = satavg)) +
+  geom_histogram() +
+  facet_wrap(~ type)
+
+ggplot(data = scorecard,
+       mapping = aes(x = satavg, color = type)) +
+  geom_freqpoly()
+```
+
+Now we can see the averages for each college type are based on widely varying sample sizes.
+
+```{r sat-bar}
+ggplot(data = scorecard,
+       mapping = aes(x = type)) +
+  geom_bar()
+```
+
+There are far fewer private, for-profit colleges than the other categories. A boxplot alone would not reveal this detail, which could be important in future analysis.
+
+{{< /spoiler >}}
+
+## What is the relationship between net cost of attendance and faculty salaries? How does this relationship differ across types of colleges?
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r cost-avgfacsal}
+# geom_point
+ggplot(data = scorecard,
+       mapping = aes(x = netcost, y = avgfacsal)) +
+  geom_point() +
+  geom_smooth()
+
+# geom_point with alpha transparency to reveal dense clusters
+ggplot(data = scorecard,
+       mapping = aes(x = netcost, y = avgfacsal)) +
+  geom_point(alpha = .2) +
+  geom_smooth()
+
+# geom_hex
+ggplot(data = scorecard,
+       mapping = aes(x = netcost, y = avgfacsal)) +
+  geom_hex() +
+  geom_smooth()
+
+# geom_point with smoothing lines for each type
+ggplot(data = scorecard,
+       mapping = aes(x = netcost,
+                     y = avgfacsal,
+                     color = type)) +
+  geom_point(alpha = .2) +
+  geom_smooth()
+
+# geom_point with facets for each type
+ggplot(data = scorecard,
+       mapping = aes(x = netcost,
+                     y = avgfacsal,
+                     color = type)) +
+  geom_point(alpha = .2) +
+  geom_smooth() +
+  facet_grid(. ~ type)
+```
+
+{{< /spoiler >}}
+
+## How are a college's Pell Grant recipients related to the average student's education debt?
+
+{{< spoiler text="Click for the solution" >}}
+
+Two continuous variables suggest a **scatterplot** would be appropriate.
+
+```{r pell-scatter}
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
+  geom_point()
+```
+
+Hmm. There seem to be a lot of data points. It isn't really clear if there is a trend. What if we **jitter** the data points?
+
+```{r pell-jitter}
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
+  geom_jitter()
+```
+
+Meh, didn't really do much. What if we make our data points semi-transparent using the `alpha` aesthetic?
+
+```{r pell-alpha}
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
+  geom_point(alpha = .2)
+```
+
+Now we're getting somewhere. I'm beginning to see some dense clusters in the middle. Maybe a **hexagon binning** plot would help
+
+```{r pell-bin}
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
+  geom_hex()
+```
+
+This is getting better. It looks like there might be a downward trend; that is, as the percentage of Pell grant recipients increases, average student debt decreases. Let's confirm this by going back to the scatterplot and overlaying a **smoothing line**.
+
+```{r pell-smooth}
+ggplot(data = scorecard,
+       mapping = aes(x = pctpell, y = debt)) +
+  geom_point(alpha = .2) +
+  geom_smooth()
+```
+
+This confirms our initial evidence - there is an apparent negative relationship. Notice how I iterated through several different plots before I created one that provided the most informative visualization. **You will not create the perfect graph on your first attempt.** Trial and error is necessary in this exploratory stage. Be prepared to revise your code again and again.
+
+{{< /spoiler >}}
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

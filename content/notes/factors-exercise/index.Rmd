@@ -1,0 +1,155 @@
+---
+title: "Practice transforming and visualizing factors"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/datawrangle_factors_exercise.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 6
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(rcfss)
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/data-wrangling-relational-data-and-factors")
+```
+
+{{% /callout %}}
+
+```{r load-data}
+# load the data
+data("gun_deaths")
+gun_deaths
+```
+
+## Convert `month` into a factor column
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r month-factor}
+# create a character vector with all month values
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+)
+
+# or use the built-in constant
+month.abb
+
+# use mutate() and factor() to convert the column and store the result
+(gun_deaths <- gun_deaths %>%
+  mutate(month = factor(month,
+                        levels = month_levels)))
+```
+
+{{< /spoiler >}}
+
+## Visualize the total gun deaths per month, in chronological order
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r month-deaths}
+ggplot(data = gun_deaths,
+       mapping = aes(x = month)) +
+  geom_bar() +
+  labs(title = "Gun Deaths in the United States (2012-2014)",
+       x = "Month",
+       y = "Number of gun deaths")
+```
+
+{{< /spoiler >}}
+
+## Visualize the total gun deaths per month, sorted from lowest to highest
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r month-deaths-sort}
+# with geom_col() and fct_reorder()
+gun_deaths %>%
+  count(month) %>%
+  ggplot(mapping = aes(x = fct_reorder(.f = month, .x = n), y = n)) +
+  geom_col() +
+  labs(title = "Gun Deaths in the United States (2012-2014)",
+       x = "Month",
+       y = "Number of gun deaths")
+
+# with geom_bar() and fct_infreq()
+ggplot(data = gun_deaths,
+       mapping = aes(x = month %>%
+                       fct_infreq() %>%
+                       fct_rev())) +
+  geom_bar() +
+  labs(title = "Gun Deaths in the United States (2012-2014)",
+       x = "Month",
+       y = "Number of gun deaths")
+```
+
+{{< /spoiler >}}
+
+## Visualize the frequency of intent of gun deaths using a bar chart, sorted from most to least frequent
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r intent}
+# identify all possible types of intent
+intent_levels <- c("Accidental", "Homicide", "Suicide", "Undetermined")
+
+gun_deaths %>%
+  # remove rows with missing intent values
+  drop_na(intent) %>%
+  # parse_factor() is a tidyverse friendly form of factor()
+  mutate(intent = parse_factor(intent, levels = intent_levels)) %>%
+  ggplot(mapping = aes(x = fct_infreq(intent))) +
+  geom_bar() +
+  labs(title = "Gun Deaths in the United States (2012-2014)",
+       x = "Intent of death",
+       y = "Number of gun deaths")
+```
+
+{{< /spoiler >}}
+
+## Visualize total gun deaths by season of the year using a bar chart.
+
+Hint: do not use `cut()` to create the `season` column.
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r season}
+gun_deaths %>%
+  # use fct_collapse() to condense into 4 categories
+  mutate(season = fct_collapse(month,
+                               "Winter" = c("Jan", "Feb", "Mar"),
+                               "Spring" = c("Apr", "May", "Jun"),
+                               "Summer" = c("Jul", "Aug", "Sep"),
+                               "Fall" = c("Oct", "Nov", "Dec"))) %>%
+  ggplot(mapping = aes(x = season)) +
+  geom_bar() +
+  labs(title = "Gun Deaths in the United States (2012-2014)",
+       x = "Season",
+       y = "Number of gun deaths")
+```
+
+{{< /spoiler >}}
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

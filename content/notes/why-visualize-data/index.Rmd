@@ -1,0 +1,98 @@
+---
+title: "Why visualize data?"
+date: 2019-03-01
+
+type: docs
+toc: false
+draft: false
+aliases: ["/dataviz_why.html"]
+categories: ["dataviz"]
+
+menu:
+  notes:
+    parent: Data visualization
+    weight: 1
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE)
+options(digits = 3)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(stringr)
+library(broom)
+library(datasauRus)
+library(gganimate)
+```
+
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.^[Example drawn from [*The Datasaurus Dozen* by Justin Matejka and George Fitzmaurice](https://www.autodeskresearch.com/publications/samestats).]
+
+Consider the following 13 data sets. What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
+
+```{r datasaurus-sum-stats, echo = FALSE, message = FALSE}
+datasaurus_dozen %>%
+  group_by(dataset) %>%
+  summarize(n = n(),
+            x_mean = mean(x),
+            y_mean = mean(y),
+            x_sd = sd(x),
+            y_sd = sd(y),
+            r2 = cor(x, y)) %>%
+  mutate(id = row_number()) %>%
+  select(id, everything()) %>%
+  select(-dataset) %>%
+  kable(col.names = c("ID", "$N$", "$\\bar{X}$", "$\\bar{Y}$",
+                      "$\\sigma_{X}$", "$\\sigma_{Y}$", "$R$"))
+```
+
+$X$ and $Y$ have the same mean and standard deviation in each dataset, and the correlation coefficient (Pearson's $r$) is virtually identical. If we estimated linear regression models for each dataset, we would obtain virtually identical coefficients (again suggesting the relationships are identical):
+
+```{r datasaurus-lm, echo = FALSE, results = "asis"}
+# estimate linear model
+datasaurus_model <- datasaurus_dozen %>%
+  nest(data = c(x, y)) %>%
+  mutate(model = map(data, ~ lm(y ~ x, data = .x)),
+         results = map(model, tidy)) %>%
+  unnest(results)
+
+# plot model estimates
+datasaurus_model %>%
+  ggplot(aes(fct_rev(term), estimate, color = dataset)) +
+  geom_pointrange(aes(ymin = estimate - 1.96 * std.error,
+                      ymax = estimate + 1.96 * std.error),
+                  position = position_dodge(width = 1)) +
+  labs(title = "Linear regression models",
+       subtitle = "With 95% confidence intervals",
+       x = NULL,
+       y = "Estimated parameter") +
+  coord_flip() +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+But what happens if we draw a picture?^[Source code from [Recreating the Datasaurus Dozen Using `tweenr` and `ggplot2`](https://www.wjakethompson.com/post/datasaurus-dozen/) and [Reanimating the Datasaurus](https://r-mageddon.netlify.com/post/reanimating-the-datasaurus/).]
+
+```{r datasaurus-graph, echo = FALSE}
+ggplot(datasaurus_dozen, aes(x = x, y = y)) +
+  geom_point() +
+  theme_minimal() +
+  transition_states(dataset, 3, 1) + 
+  ease_aes('cubic-in-out')
+```
+
+```{r datasaurus-graph-static, echo = FALSE, fig.height = 8, fig.width = 8}
+ggplot(datasaurus_dozen, aes(x = x, y = y)) +
+  facet_wrap(~ dataset) +
+  geom_point() +
+  theme_minimal()
+```
+
+Remarkably each of the datasets have the same summary statistics and linear relationships, yet they are drastically different in appearance! A good picture tells the reader much more than any table or text can provide.
+
+# Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

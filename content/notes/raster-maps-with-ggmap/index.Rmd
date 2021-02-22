@@ -1,0 +1,400 @@
+---
+title: "Drawing raster maps with ggmap"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/geoviz_ggmap.html"]
+categories: ["dataviz", "geospatial"]
+
+menu:
+  notes:
+    parent: Geospatial visualization
+    weight: 2
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(ggmap)
+library(RColorBrewer)
+library(patchwork)
+library(here)
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
+
+{{% callout note %}}
+
+Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
+
+{{% /callout %}}
+
+## Obtain map images
+
+`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782), as well as the proprietary Google Maps. Obtaining map tiles requires use of the `get_map()` function. There are two formats for specifying the mapping region you wish to obtain:
+
+1. Bounding box
+1. Center/zoom
+
+## Specifying map regions
+
+### Bounding box
+
+**Bounding box** requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
+
+```{r bb-chicago-stamen}
+# store bounding box coordinates
+chi_bb <- c(left = -87.936287,
+            bottom = 41.679835,
+            right = -87.447052,
+            top = 42.000835)
+
+chicago_stamen <- get_stamenmap(bbox = chi_bb,
+                                zoom = 11)
+chicago_stamen
+```
+
+To view the map, use `ggmap()`:
+
+```{r bb-chicago-stamen-plot}
+ggmap(chicago_stamen)
+```
+
+The `zoom` argument in `get_stamenmap()` controls the level of detail in the map. The larger the number, the greater the detail.
+
+```{r bb-chicago-stamen-zoom-in}
+get_stamenmap(bbox = chi_bb,
+              zoom = 12) %>%
+  ggmap()
+```
+
+The smaller the number, the lesser the detail.
+
+```{r bb-chicago-stamen-zoom-out}
+get_stamenmap(bbox = chi_bb,
+              zoom = 10) %>%
+  ggmap()
+```
+
+
+Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.
+
+{{% callout note %}}
+
+Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000) to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.
+
+{{% /callout %}}
+
+### Center/zoom
+
+While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the **center** coordinate of the map (a single longitude/latitude location) and the level of **zoom** or detail. `zoom` is an integer value from `3` (continent) to `21` (building). This means the level of detail is hardcoded to the size of the mapping region. The default `zoom` level is `10`.
+
+```{r center-zoom-chicago, eval = FALSE}
+# store center coordinate
+chi_center <- c(lon = -87.65, lat = 41.855)
+
+chicago_google <- get_googlemap(center = chi_center)
+ggmap(chicago_google)
+
+get_googlemap(center = chi_center,
+              zoom = 12) %>%
+  ggmap()
+
+get_googlemap(center = chi_center,
+              zoom = 8) %>%
+  ggmap()
+```
+
+{{% callout note %}}
+
+Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
+
+{{% /callout %}}
+
+## Types of map tiles
+
+Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
+
+```{r stamen-maptype, fig.height = 8, fig.width = 6, echo = FALSE}
+stamen_maptype <- tibble(maptype = c("terrain", "terrain-background",
+                                         "terrain-labels", "terrain-lines",
+                                         "toner", "toner-2010", "toner-2011",
+                                         "toner-background", "toner-hybrid",
+                                         "toner-labels", "toner-lines",
+                                         "toner-lite", "watercolor")) %>%
+  mutate(bb = map(maptype, ~ get_stamenmap(bbox = chi_bb, zoom = 10, maptype = .x)),
+         ggmap = map2(bb, maptype, ~ ggmap(.x) +
+                        ggtitle(.y)))
+
+wrap_plots(stamen_maptype$ggmap)
+```
+
+Google Maps is a bit more limited, but still offers a few major types:
+
+```{r google-maptype, echo = FALSE, eval = FALSE}
+google_maptype <- tibble(maptype = c("terrain", "satellite",
+                                         "roadmap", "hybrid")) %>%
+  mutate(bb = map(maptype, ~ get_googlemap(center = chi_center, maptype = .x)),
+         ggmap = map2(bb, maptype, ~ ggmap(.x) +
+                        ggtitle(.y)))
+
+wrap_plots(google_maptype$ggmap)
+```
+
+See the documentation for the `get_*map()` function for the exact code necessary to get each type of map.
+
+{{% callout note %}}
+
+`get_map()` is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_googlemap()`, `get_stamenmap()`, and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
+
+{{% /callout %}}
+
+## Import crime data
+
+Now that we can obtain map tiles and draw them using `ggmap()`, let's explore how to add data to the map. The city of Chicago has [an excellent data portal](https://data.cityofchicago.org/) publishing a large volume of public records. Here we'll look at [crime data from 2017](https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr).^[[Full documentation of the data from the larger 2001-present crime dataset.](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2).] I previously downloaded a `.csv` file containing all the records, which I import using `read_csv()`:
+
+{{% callout note %}}
+
+If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://cfss.uchicago.edu/data/Crimes_-_2017.csv")` to download the file from the course website.
+
+{{% /callout %}}
+
+```{r import-crimes}
+crimes <- here("static", "data", "Crimes_-_2017.csv") %>%
+  read_csv()
+glimpse(crimes)
+```
+
+Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the `Longitude` and `Latitude` columns respectively.
+
+## Plot high-level map of crime
+
+Let's start with a simple high-level overview of reported crime in Chicago. First we need a map for the entire city.
+
+```{r import-chicago}
+chicago <- chicago_stamen
+ggmap(chicago)
+```
+
+## Using `geom_point()`
+
+Since each row is a single reported incident of crime, we could use `geom_point()` to map the location of every crime in the dataset. Because `ggmap()` uses the map tiles (here, defined by `chicago`) as the basic input, we specify `data` and `mapping` inside of `geom_point()`, rather than inside `ggplot()`:
+
+```{r plot-crime-point, dependson = "import-crimes"}
+ggmap(chicago) +
+  geom_point(data = crimes,
+             mapping = aes(x = Longitude,
+                           y = Latitude))
+```
+
+What went wrong? All we get is a sea of black.
+
+```{r num-crimes, dependson = "import-crimes"}
+nrow(crimes)
+```
+
+Oh yeah. There were `r nrow(crimes)` reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:
+
+```{r plot-crime-point-alpha, dependson = "import-crimes"}
+ggmap(chicago) +
+  geom_point(data = crimes,
+             aes(x = Longitude,
+                 y = Latitude),
+             size = .25,
+             alpha = .01)
+```
+
+Better, but still not quite as useful as it could be.
+
+## Using `stat_density_2d()`
+
+Instead of relying on `geom_point()` and plotting the raw data, a better approach is to create a **heatmap**. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in `ggplot2` to generate this kind of plot is `geom_density_2d()`:
+
+```{r kde-contour, dependson = "import-crimes"}
+ggmap(chicago) +
+  geom_density_2d(data = crimes,
+                  aes(x = Longitude,
+                      y = Latitude))
+```
+
+By default, `geom_density_2d()` draws a [**contour plot**](https://en.wikipedia.org/wiki/Contour_line) with lines of constant value. That is, each line represents approximately the same frequency of crime all along that specific line. Contour plots are frequently used in maps (known as **topographic maps**) to denote elevation.
+
+![The Cadillac Mountains. Source: [US Geological Survey](https://www.usgs.gov/media/images/cadillacmountainss)](/img/contour-map.jpg)
+
+Rather than drawing lines, instead we can fill in the graph so that we use the `fill` aesthetic to draw bands of crime density. To do that, we use the related function `stat_density_2d()`:
+
+```{r kde-fill, dependson = "import-crimes"}
+ggmap(chicago) +
+  stat_density_2d(data = crimes,
+                  aes(x = Longitude,
+                      y = Latitude,
+                      fill = stat(level)),
+                  geom = "polygon")
+```
+
+Note the two new arguments:
+
+* `geom = "polygon"` - change the [geometric object](/notes/grammar-of-graphics/#geometric-objects) to be drawn from a `density_2d` geom to a `polygon` geom
+* `fill = stat(level)` - the value for the `fill` aesthetic is the `level` calculated within `stat_density_2d()`, which we access using the `stat()` notation.
+
+This is an improvement, but we can adjust some additional settings to make the graph visually more useful. Specifically,
+
+* Increase the number of `bins`, or unique bands of color allowed on the graph
+* Make the heatmap semi-transparent using `alpha` so we can still view the underlying map
+* Change the color palette to better distinguish between high and low crime areas. Here I use `brewer.pal()` from the `RColorBrewer` package to create a custom color palette using reds and yellows.
+
+```{r plot-crime-density, dependson = "import-crimes"}
+ggmap(chicago) +
+  stat_density_2d(data = crimes,
+                  aes(x = Longitude,
+                      y = Latitude,
+                      fill = stat(level)),
+                  alpha = .2,
+                  bins = 25,
+                  geom = "polygon") +
+  scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd"))
+```
+
+From this map, a couple trends are noticeable:
+
+* The downtown region has the highest crime incidence rate. Not surprising given its population density during the workday.
+* There are clusters of crime on the south and west sides. Also not surprising if you know anything about the city of Chicago.
+
+## Looking for variation
+
+Because `ggmap` is built on `ggplot2`, we can use the core features of `ggplot2` to modify the graph. One major feature is faceting. Let's focus our analysis on four types of crimes with similar frequency of reported incidents^[Specifically burglary, motor vehicle theft, narcotics, and robbery.] and facet by type of crime:
+
+```{r plot-crime-wday, dependson = "import-crimes"}
+ggmap(chicago) +
+  stat_density_2d(data = crimes %>%
+                    filter(`Primary Type` %in% c("BURGLARY", "MOTOR VEHICLE THEFT",
+                                                 "NARCOTICS", "ROBBERY")),
+                  aes(x = Longitude,
+                      y = Latitude,
+                      fill = stat(level)),
+                  alpha = .4,
+                  bins = 10,
+                  geom = "polygon") +
+  scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd")) +
+  facet_wrap(~ `Primary Type`)
+```
+
+There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.
+
+## Locations of murders
+
+While `geom_point()` was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let's limit our analysis strictly to reported incidents of homicide in 2017.
+
+```{r homicide, dependson = "import-crimes"}
+(homicides <- crimes %>%
+  filter(`Primary Type` == "HOMICIDE"))
+```
+
+We can draw a map of the city with all homicides indicated on the map using `geom_point()`:
+
+```{r homicide-city, dependson = "homicide"}
+ggmap(chicago) +
+  geom_point(data = homicides,
+             mapping = aes(x = Longitude,
+                           y = Latitude),
+             size = 1)
+```
+
+Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we'll examine North Lawndale and Kenwood.
+
+```{r get-community-areas, include = FALSE}
+library(sf)
+
+# import shapefile with area names and numbers
+areas <- here("static", "data", "Boundaries - Community Areas (current)",
+              "geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp") %>%
+  st_read()
+
+crimes %>%
+  filter(`Primary Type` == "HOMICIDE") %>%
+  count(`Community Area`, sort = TRUE) %>%
+  left_join(areas %>%
+              select(community, area_numbe) %>%
+              mutate(area_numbe = as.numeric(as.character(area_numbe))),
+            by = c("Community Area" = "area_numbe"))
+```
+
+```{r get-high-low-murder-maps}
+# North Lawndale is the highest homicides in 2017
+# Compare to Kenwood
+north_lawndale_bb <- c(
+  left = -87.749047,
+  bottom = 41.840185,
+  right = -87.687893,
+  top = 41.879850
+)
+north_lawndale <- get_stamenmap(bbox = north_lawndale_bb,
+                                zoom = 14)
+
+kenwood_bb <- c(
+  left = -87.613113,
+  bottom = 41.799215,
+  right = -87.582536,
+  top = 41.819064
+)
+kenwood <- get_stamenmap(bbox = kenwood_bb,
+                                zoom = 15)
+
+ggmap(north_lawndale)
+ggmap(kenwood)
+```
+
+To plot homicides specifically in these neighborhoods, change `ggmap(chicago)` to the appropriate map tile:
+
+```{r plot-murder, dependson = "homicide"}
+ggmap(north_lawndale) +
+  geom_point(data = homicides,
+             aes(x = Longitude, y = Latitude))
+
+ggmap(kenwood) +
+  geom_point(data = homicides,
+             aes(x = Longitude, y = Latitude))
+```
+
+North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though `homicides` contained data for homicides across the entire city, `ggmap()` automatically cropped the graph to keep just the homicides that occurred within the bounding box.
+
+All the other aesthetic customizations of `geom_point()` work with `ggmap`. So we could expand these neighborhood maps to include all violent crime categories^[Specifcally homicides, criminal sexual assault, and robbery. [Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant](http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html), but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.] and distinguish each type by `color`:
+
+```{r violent, dependson = "import-crimes"}
+(violent <- crimes %>%
+  filter(`Primary Type` %in% c("HOMICIDE",
+                               "CRIM SEXUAL ASSAULT",
+                               "ROBBERY")))
+```
+
+```{r plot-violent, dependson = "violent"}
+ggmap(north_lawndale) +
+  geom_point(data = violent,
+             aes(x = Longitude, y = Latitude,
+                 color = `Primary Type`)) +
+  scale_color_brewer(type = "qual", palette = "Dark2")
+
+ggmap(kenwood) +
+  geom_point(data = violent,
+             aes(x = Longitude, y = Latitude,
+                 color = `Primary Type`)) +
+  scale_color_brewer(type = "qual", palette = "Dark2")
+```
+
+### Additional resources
+
+* [Kahle, D., & Wickham, H. (2013). `ggmap`: Spatial Visualization with ggplot2. *R Journal*, 5(1).](https://journal.r-project.org/archive/2013/RJ-2013-014/RJ-2013-014.pdf)
+
+### Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
