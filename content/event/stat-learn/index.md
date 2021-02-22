@@ -52,7 +52,7 @@ math: false
 
 * Read [Statistical learning: the basics](/notes/statistical-learning/)
 * Read [Build a model](/notes/start-with-models/)
-* Read [Logistic regression](/notes/logistic-regression/)
+* Read [Evaluate your model with resampling](/notes/resampling/)
 
 This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
@@ -67,9 +67,21 @@ This is not a math/stats class. In class we will **briefly** summarize how these
 
 ## Class materials
 
-* [Build a model](/notes/start-with-models/)
-* [Logistic regression](/notes/logistic-regression/)
-* [Working with statistical models](/notes/work-with-models-exercise/)
+{{% callout note %}}
+
+Run the code below in your console to download the exercises for today.
+
+```r
+usethis::use_course("uc-cfss/machine-learning")
+```
+
+{{% /callout %}}
+
+{{% callout note %}}
+
+Materials derived from [Tidymodels, Virtually: An Introduction to Machine Learning with Tidymodels](https://tmv.netlify.app/site/) by [Allison Hill](https://alison.rbind.io/).
+
+{{% /callout %}}
 
 ### Additional readings
 

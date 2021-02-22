@@ -1,13 +1,13 @@
 ---
-title: "HW07: Statistical learning"
+title: "HW07: Machine learning"
 date: 2019-05-06T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
 type: post
-aliases: ["/hw06-stat-learn.html"]
+aliases: ["/hw06-stat-learn.html", "/homework/statistical-learning"]
 
-summary: "Implement statistical learning methods for regression and classification."
+summary: "Implement machine learning methods for regression and classification."
 url_code: "https://github.com/cfss-win21/hw07"
 ---
 
