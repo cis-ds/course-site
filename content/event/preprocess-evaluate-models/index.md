@@ -43,8 +43,6 @@ math: false
 * Identify the importance of preprocessing data sets
 * Introduce the `recipes` package for preprocessing data
 * Practice preprocessing data for statistical modeling
-* Define resampling methods for evaluating model performance
-* Demonstrate how to conduct cross-validation using `rsample`
 
 ## Before class
 

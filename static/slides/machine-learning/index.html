@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>An introduction to machine learning</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+    <link href="libs/countdown/countdown.css" rel="stylesheet" />
+    <script src="libs/countdown/countdown.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# An introduction to machine learning
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+# What is machine learning?
+
+---
+
+&lt;img src="https://rejoiner.com/resources/wp-content/uploads/2016/06/recommended-thomas.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="https://miro.medium.com/max/1400/1*j5aWfH9t1_EZPJC92CJ7oQ.png" style="display: block; margin: auto;" /&gt;
+
+.footnote[https://medium.com/tmobile-tech/small-data-big-value-f783ceca4fdb]
+
+---
+
+&lt;img src="https://techcrunch.com/wp-content/uploads/2017/12/facebook-facial-recognition-photo-review.png?w=730&amp;crop=1" style="display: block; margin: auto;" /&gt;
+
+---
+
+# What is machine learning?
+
+&lt;img src="https://imgs.xkcd.com/comics/machine_learning.png " style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/intro.002.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/intro.003.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Types of Machine Learning
+
+- Supervised
+- Unsupervised
+- Reinforcement
+
+---
+
+&lt;img src="images/all-of-ml.jpg" width="867" style="display: block; margin: auto;" /&gt;
+
+.footnote[Credit: &lt;https://vas3k.com/blog/machine_learning/&gt;]
+
+---
+
+# Examples of Supervised Learning
+
+- Spam detection
+- Medical diagnosis
+- Ad click prediction
+
+---
+
+# Two modes
+
+--
+
+.pull-left[
+
+## Classification
+
+Are you under a stay-at-home order?
+
+]
+
+--
+
+.pull-left[
+
+## Regression
+
+How long has your state had stay-at-home orders in place?
+]
+
+---
+
+# Two cultures
+
+.pull-left[
+
+### Statistics
+
+model first
+
+inference emphasis
+
+]
+
+.pull-right[
+
+
+### Machine Learning
+
+data first
+
+prediction emphasis
+
+]
+
+
+
+---
+name: train-love
+background-image: url(images/train.jpg)
+background-size: contain
+background-color: #f6f6f6
+
+---
+template: train-love
+class: center, top
+
+# Statistics
+
+---
+
+template: train-love
+class: bottom
+
+
+&gt; *"Statisticians, like artists, have the bad habit of falling in love with their models."*
+&gt;
+&gt; &amp;mdash; George Box
+
+---
+
+# Predictive modeling
+
+
+```r
+library(tidymodels)
+```
+
+```
+## ── Attaching packages ────────────────────────────────────── tidymodels 0.1.2 ──
+```
+
+```
+## ✓ broom     0.7.3      ✓ recipes   0.1.15
+## ✓ dials     0.0.9      ✓ rsample   0.0.8 
+## ✓ dplyr     1.0.2      ✓ tibble    3.0.4 
+## ✓ ggplot2   3.3.3      ✓ tidyr     1.1.2 
+## ✓ infer     0.5.3      ✓ tune      0.1.2 
+## ✓ modeldata 0.1.0      ✓ workflows 0.2.1 
+## ✓ parsnip   0.1.4      ✓ yardstick 0.0.7 
+## ✓ purrr     0.3.4
+```
+
+```
+## ── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+## x purrr::discard() masks scales::discard()
+## x dplyr::filter()  masks stats::filter()
+## x dplyr::lag()     masks stats::lag()
+## x recipes::step()  masks stats::step()
+```
+
+
+
+
+
+---
+
+# Alzheimer's disease data
+
+Data from a clinical trial of individuals with well-characterized cognitive impairment, and age-matched control participants.
+
+
+```r
+# install.packages("modeldata")
+library(modeldata)
+data("ad_data")
+alz &lt;- ad_data
+```
+
+---
+class: middle
+
+
+```r
+glimpse(alz)
+## Rows: 333
+## Columns: 131
+## $ ACE_CD143_Angiotensin_Converti   &lt;dbl&gt; 2.0031003, 1.561…
+## $ ACTH_Adrenocorticotropic_Hormon  &lt;dbl&gt; -1.3862944, -1.3…
+## $ AXL                              &lt;dbl&gt; 1.09838668, 0.68…
+## $ Adiponectin                      &lt;dbl&gt; -5.360193, -5.02…
+## $ Alpha_1_Antichymotrypsin         &lt;dbl&gt; 1.7404662, 1.458…
+## $ Alpha_1_Antitrypsin              &lt;dbl&gt; -12.631361, -11.…
+## $ Alpha_1_Microglobulin            &lt;dbl&gt; -2.577022, -3.24…
+## $ Alpha_2_Macroglobulin            &lt;dbl&gt; -72.65029, -154.…
+## $ Angiopoietin_2_ANG_2             &lt;dbl&gt; 1.06471074, 0.74…
+## $ Angiotensinogen                  &lt;dbl&gt; 2.510547, 2.4572…
+## $ Apolipoprotein_A_IV              &lt;dbl&gt; -1.427116, -1.66…
+## $ Apolipoprotein_A1                &lt;dbl&gt; -7.402052, -7.04…
+## $ Apolipoprotein_A2                &lt;dbl&gt; -0.26136476, -0.…
+## $ Apolipoprotein_B                 &lt;dbl&gt; -4.624044, -6.74…
+## $ Apolipoprotein_CI                &lt;dbl&gt; -1.2729657, -1.2…
+## $ Apolipoprotein_CIII              &lt;dbl&gt; -2.312635, -2.34…
+## $ Apolipoprotein_D                 &lt;dbl&gt; 2.0794415, 1.335…
+## $ Apolipoprotein_E                 &lt;dbl&gt; 3.7545215, 3.097…
+## $ Apolipoprotein_H                 &lt;dbl&gt; -0.15734908, -0.…
+## $ B_Lymphocyte_Chemoattractant_BL  &lt;dbl&gt; 2.296982, 1.6731…
+## $ BMP_6                            &lt;dbl&gt; -2.200744, -1.72…
+## $ Beta_2_Microglobulin             &lt;dbl&gt; 0.69314718, 0.47…
+## $ Betacellulin                     &lt;int&gt; 34, 53, 49, 52, …
+## $ C_Reactive_Protein               &lt;dbl&gt; -4.074542, -6.64…
+## $ CD40                             &lt;dbl&gt; -0.7964147, -1.2…
+## $ CD5L                             &lt;dbl&gt; 0.09531018, -0.6…
+## $ Calbindin                        &lt;dbl&gt; 33.21363, 25.276…
+## $ Calcitonin                       &lt;dbl&gt; 1.3862944, 3.610…
+## $ CgA                              &lt;dbl&gt; 397.6536, 465.67…
+## $ Clusterin_Apo_J                  &lt;dbl&gt; 3.555348, 3.0445…
+## $ Complement_3                     &lt;dbl&gt; -10.36305, -16.1…
+## $ Complement_Factor_H              &lt;dbl&gt; 3.573725, 3.6000…
+## $ Connective_Tissue_Growth_Factor  &lt;dbl&gt; 0.5306283, 0.587…
+## $ Cortisol                         &lt;dbl&gt; 10.0, 12.0, 10.0…
+## $ Creatine_Kinase_MB               &lt;dbl&gt; -1.710172, -1.75…
+## $ Cystatin_C                       &lt;dbl&gt; 9.041922, 9.0676…
+## $ EGF_R                            &lt;dbl&gt; -0.1354543, -0.3…
+## $ EN_RAGE                          &lt;dbl&gt; -3.688879, -3.81…
+## $ ENA_78                           &lt;dbl&gt; -1.349543, -1.35…
+## $ Eotaxin_3                        &lt;int&gt; 53, 62, 62, 44, …
+## $ FAS                              &lt;dbl&gt; -0.08338161, -0.…
+## $ FSH_Follicle_Stimulation_Hormon  &lt;dbl&gt; -0.6516715, -1.6…
+## $ Fas_Ligand                       &lt;dbl&gt; 3.1014922, 2.978…
+## $ Fatty_Acid_Binding_Protein       &lt;dbl&gt; 2.5208712, 2.247…
+## $ Ferritin                         &lt;dbl&gt; 3.329165, 3.9329…
+## $ Fetuin_A                         &lt;dbl&gt; 1.2809338, 1.193…
+## $ Fibrinogen                       &lt;dbl&gt; -7.035589, -8.04…
+## $ GRO_alpha                        &lt;dbl&gt; 1.381830, 1.3724…
+## $ Gamma_Interferon_induced_Monokin &lt;dbl&gt; 2.949822, 2.7217…
+## $ Glutathione_S_Transferase_alpha  &lt;dbl&gt; 1.0641271, 0.867…
+## $ HB_EGF                           &lt;dbl&gt; 6.559746, 8.7545…
+## $ HCC_4                            &lt;dbl&gt; -3.036554, -4.07…
+## $ Hepatocyte_Growth_Factor_HGF     &lt;dbl&gt; 0.58778666, 0.53…
+## $ I_309                            &lt;dbl&gt; 3.433987, 3.1354…
+## $ ICAM_1                           &lt;dbl&gt; -0.1907787, -0.4…
+## $ IGF_BP_2                         &lt;dbl&gt; 5.609472, 5.3471…
+## $ IL_11                            &lt;dbl&gt; 5.121987, 4.9367…
+## $ IL_13                            &lt;dbl&gt; 1.282549, 1.2694…
+## $ IL_16                            &lt;dbl&gt; 4.192081, 2.8763…
+## $ IL_17E                           &lt;dbl&gt; 5.731246, 6.7058…
+## $ IL_1alpha                        &lt;dbl&gt; -6.571283, -8.04…
+## $ IL_3                             &lt;dbl&gt; -3.244194, -3.91…
+## $ IL_4                             &lt;dbl&gt; 2.484907, 2.3978…
+## $ IL_5                             &lt;dbl&gt; 1.09861229, 0.69…
+## $ IL_6                             &lt;dbl&gt; 0.26936976, 0.09…
+## $ IL_6_Receptor                    &lt;dbl&gt; 0.64279595, 0.43…
+## $ IL_7                             &lt;dbl&gt; 4.8050453, 3.705…
+## $ IL_8                             &lt;dbl&gt; 1.711325, 1.6755…
+## $ IP_10_Inducible_Protein_10       &lt;dbl&gt; 6.242223, 5.6869…
+## $ IgA                              &lt;dbl&gt; -6.812445, -6.37…
+## $ Insulin                          &lt;dbl&gt; -0.6258253, -0.9…
+## $ Kidney_Injury_Molecule_1_KIM_1   &lt;dbl&gt; -1.204295, -1.19…
+## $ LOX_1                            &lt;dbl&gt; 1.7047481, 1.526…
+## $ Leptin                           &lt;dbl&gt; -1.5290628, -1.4…
+## $ Lipoprotein_a                    &lt;dbl&gt; -4.268698, -4.93…
+## $ MCP_1                            &lt;dbl&gt; 6.740519, 6.8490…
+## $ MCP_2                            &lt;dbl&gt; 1.9805094, 1.808…
+## $ MIF                              &lt;dbl&gt; -1.237874, -1.89…
+## $ MIP_1alpha                       &lt;dbl&gt; 4.968453, 3.6901…
+## $ MIP_1beta                        &lt;dbl&gt; 3.258097, 3.1354…
+## $ MMP_2                            &lt;dbl&gt; 4.478566, 3.7814…
+## $ MMP_3                            &lt;dbl&gt; -2.207275, -2.46…
+## $ MMP10                            &lt;dbl&gt; -3.270169, -3.64…
+## $ MMP7                             &lt;dbl&gt; -3.7735027, -5.9…
+## $ Myoglobin                        &lt;dbl&gt; -1.89711998, -0.…
+## $ NT_proBNP                        &lt;dbl&gt; 4.553877, 4.2195…
+## $ NrCAM                            &lt;dbl&gt; 5.003946, 5.2094…
+## $ Osteopontin                      &lt;dbl&gt; 5.356586, 6.0038…
+## $ PAI_1                            &lt;dbl&gt; 1.00350156, -0.0…
+## $ PAPP_A                           &lt;dbl&gt; -2.902226, -2.81…
+## $ PLGF                             &lt;dbl&gt; 4.442651, 4.0253…
+## $ PYY                              &lt;dbl&gt; 3.218876, 3.1354…
+## $ Pancreatic_polypeptide           &lt;dbl&gt; 0.5787808, 0.336…
+## $ Prolactin                        &lt;dbl&gt; 0.00000000, -0.5…
+## $ Prostatic_Acid_Phosphatase       &lt;dbl&gt; -1.620527, -1.73…
+## $ Protein_S                        &lt;dbl&gt; -1.784998, -2.46…
+## $ Pulmonary_and_Activation_Regulat &lt;dbl&gt; -0.8439701, -2.3…
+## $ RANTES                           &lt;dbl&gt; -6.214608, -6.93…
+## $ Resistin                         &lt;dbl&gt; -16.475315, -16.…
+## $ S100b                            &lt;dbl&gt; 1.5618560, 1.756…
+## $ SGOT                             &lt;dbl&gt; -0.94160854, -0.…
+## $ SHBG                             &lt;dbl&gt; -1.897120, -1.56…
+## $ SOD                              &lt;dbl&gt; 5.609472, 5.8141…
+## $ Serum_Amyloid_P                  &lt;dbl&gt; -5.599422, -6.11…
+## $ Sortilin                         &lt;dbl&gt; 4.908629, 5.4787…
+## $ Stem_Cell_Factor                 &lt;dbl&gt; 4.174387, 3.7135…
+## $ TGF_alpha                        &lt;dbl&gt; 8.649098, 11.331…
+## $ TIMP_1                           &lt;dbl&gt; 15.20465, 11.266…
+## $ TNF_RII                          &lt;dbl&gt; -0.0618754, -0.3…
+## $ TRAIL_R3                         &lt;dbl&gt; -0.1829004, -0.5…
+## $ TTR_prealbumin                   &lt;dbl&gt; 2.944439, 2.8332…
+## $ Tamm_Horsfall_Protein_THP        &lt;dbl&gt; -3.095810, -3.11…
+## $ Thrombomodulin                   &lt;dbl&gt; -1.340566, -1.67…
+## $ Thrombopoietin                   &lt;dbl&gt; -0.1026334, -0.6…
+## $ Thymus_Expressed_Chemokine_TECK  &lt;dbl&gt; 4.149327, 3.8101…
+## $ Thyroid_Stimulating_Hormone      &lt;dbl&gt; -3.863233, -4.82…
+## $ Thyroxine_Binding_Globulin       &lt;dbl&gt; -1.4271164, -1.6…
+## $ Tissue_Factor                    &lt;dbl&gt; 2.04122033, 2.02…
+## $ Transferrin                      &lt;dbl&gt; 3.332205, 2.8903…
+## $ Trefoil_Factor_3_TFF3            &lt;dbl&gt; -3.381395, -3.91…
+## $ VCAM_1                           &lt;dbl&gt; 3.258097, 2.7080…
+## $ VEGF                             &lt;dbl&gt; 22.03456, 18.601…
+## $ Vitronectin                      &lt;dbl&gt; -0.04082199, -0.…
+## $ von_Willebrand_Factor            &lt;dbl&gt; -3.146555, -3.86…
+## $ age                              &lt;dbl&gt; 0.9876238, 0.986…
+## $ tau                              &lt;dbl&gt; 6.297754, 6.6592…
+## $ p_tau                            &lt;dbl&gt; 4.348108, 4.8599…
+## $ Ab_42                            &lt;dbl&gt; 12.019678, 11.01…
+## $ male                             &lt;dbl&gt; 0, 0, 1, 0, 0, 1…
+## $ Genotype                         &lt;fct&gt; E3E3, E3E4, E3E4…
+## $ Class                            &lt;fct&gt; Control, Control…
+```
+
+---
+background-image: url(images/hands.jpg)
+background-size: contain
+background-position: left
+class: middle
+
+.pull-right[
+
+## Alzheimer's disease data
+
++ N = 333
+
++ 1 categorical outcome: `Class`
+
++ 130 predictors
+
++ 126 protein measurements
+
++ also: `age`, `male`, `Genotype`
+
+]
+
+---
+background-image: url(images/hands.jpg)
+background-size: contain
+background-position: left
+class: middle
+
+.pull-right[
+
+&lt;img src="index_files/figure-html/unnamed-chunk-11-1.png" width="864" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# What is the goal of machine learning?
+
+--
+
+## Build .display[models] that
+
+--
+
+
+## generate .display[accurate predictions]
+
+--
+
+
+## for .display[future, yet-to-be-seen data].
+
+
+
+--
+
+.footnote[Max Kuhn &amp; Kjell Johnston, http://www.feat.engineering/]
+
+
+---
+
+# Machine learning
+
+We'll use this goal to drive learning of 3 core `tidymodels` packages:
+
+- parsnip
+- yardstick
+- and rsample
+
+---
+
+class: inverse, middle, center
+
+# 🔨 Build models with parsnip
+
+---
+
+class: middle, center, frame
+
+# parsnip
+
+&lt;iframe src="https://parsnip.tidymodels.org" width="100%" height="400px"&gt;&lt;/iframe&gt;
+
+---
+
+# `glm()`
+
+
+
+```r
+glm(Class ~ tau, family = binomial, data = alz)
+## 
+## Call:  glm(formula = Class ~ tau, family = binomial, data = alz)
+## 
+## Coefficients:
+## (Intercept)          tau  
+##      13.664       -2.148  
+## 
+## Degrees of Freedom: 332 Total (i.e. Null);  331 Residual
+## Null Deviance:	    390.6 
+## Residual Deviance: 318.8 	AIC: 322.8
+```
+
+---
+
+&lt;img src="images/predicting/predicting.001.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+# To specify a model with `parsnip`
+
+1. Pick a model
+1. Set the engine
+1. Set the mode (if needed)
+
+---
+
+# To specify a model with `parsnip`
+
+
+```r
+logistic_reg() %&gt;%
+  set_engine("glm") %&gt;%
+  set_mode("classification")
+## Logistic Regression Model Specification (classification)
+## 
+## Computational engine: glm
+```
+
+---
+
+# To specify a model with `parsnip`
+
+
+```r
+decision_tree() %&gt;%
+  set_engine("C5.0") %&gt;%
+  set_mode("classification")
+## Decision Tree Model Specification (classification)
+## 
+## Computational engine: C5.0
+```
+
+---
+
+# To specify a model with `parsnip`
+
+
+```r
+nearest_neighbor() %&gt;%              
+  set_engine("kknn") %&gt;%             
+  set_mode("classification")        
+## K-Nearest Neighbor Model Specification (classification)
+## 
+## Computational engine: kknn
+```
+
+---
+
+# 1\. Pick a model
+
+All available models are listed at
+
+&lt;https://www.tidymodels.org/find/parsnip/&gt;
+
+&lt;iframe src="https://www.tidymodels.org/find/parsnip/" width="100%" height="400px"&gt;&lt;/iframe&gt;
+
+---
+
+# `logistic_reg()`
+
+Specifies a model that uses logistic regression
+
+
+```r
+logistic_reg(penalty = NULL, mixture = NULL)
+```
+
+---
+
+# `logistic_reg()`
+
+Specifies a model that uses logistic regression
+
+
+```r
+logistic_reg(
+  mode = "classification", # "default" mode, if exists
+  penalty = NULL,          # model hyper-parameter
+  mixture = NULL           # model hyper-parameter
+  )
+```
+
+---
+
+# `set_engine()`
+
+Adds an engine to power or implement the model.
+
+
+```r
+logistic_reg() %&gt;% set_engine(engine = "glm")
+```
+
+---
+
+# `set_mode()`
+
+Sets the class of problem the model will solve, which influences which output is collected. Not necessary if mode is set in Step 1.
+
+
+```r
+logistic_reg() %&gt;% set_mode(mode = "classification")
+```
+
+---
+class: your-turn
+
+# Your turn 1
+
+Run the chunk in your .Rmd and look at the output. Then, copy/paste the code and edit to create:
+
++ a decision tree model for classification 
+
++ that uses the `C5.0` engine. 
+
+Save it as `tree_mod` and look at the object. What is different about the output?
+
+*Hint: you'll need https://www.tidymodels.org/find/parsnip/*
+
+
+```{=html}
+&lt;div class="countdown" id="timer_6033d1f1" style="right:0;bottom:0;" data-warnwhen="0"&gt;
+&lt;code class="countdown-time"&gt;&lt;span class="countdown-digits minutes"&gt;03&lt;/span&gt;&lt;span class="countdown-digits colon"&gt;:&lt;/span&gt;&lt;span class="countdown-digits seconds"&gt;00&lt;/span&gt;&lt;/code&gt;
+&lt;/div&gt;
+```
+
+---
+
+
+
+
+```r
+lr_mod 
+## Logistic Regression Model Specification (classification)
+## 
+## Computational engine: glm
+
+tree_mod &lt;- decision_tree() %&gt;% 
+  set_engine(engine = "C5.0") %&gt;% 
+  set_mode("classification")
+tree_mod 
+## Decision Tree Model Specification (classification)
+## 
+## Computational engine: C5.0
+```
+
+---
+class: inverse, middle, center
+
+## Now we've built a model.
+
+--
+
+## But, how do we *use* a model?
+
+--
+
+## First - what does it mean to use a model?
+
+---
+class: inverse, middle, center
+
+![](https://media.giphy.com/media/fhAwk4DnqNgw8/giphy.gif)
+
+Statistical models learn from the data. 
+
+Many learn model parameters, which *can* be useful as values for inference and interpretation.
+
+---
+
+# A fitted model
+
+.pull-left[
+
+
+```r
+lr_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz) %&gt;% 
+  broom::tidy()
+## # A tibble: 3 x 5
+##   term        estimate std.error statistic  p.value
+##   &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;    &lt;dbl&gt;
+## 1 (Intercept)    8.97      1.98       4.54 5.61e- 6
+## 2 tau           -4.01      0.456     -8.79 1.55e-18
+## 3 VEGF           0.934     0.130      7.19 6.38e-13
+```
+]
+
+.pull-right[
+
+&lt;img src="index_files/figure-html/unnamed-chunk-27-1.png" width="864" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+# "All models are wrong, but some are useful"
+
+
+
+&lt;img src="index_files/figure-html/unnamed-chunk-29-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+# "All models are wrong, but some are useful"
+
+
+
+&lt;img src="index_files/figure-html/unnamed-chunk-31-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Predict new data
+
+
+```r
+alz_new &lt;- tibble(tau = c(5, 6, 7), 
+         VEGF = c(15, 15, 15),
+         Class = c("Control", "Control", "Impaired")) %&gt;% 
+  mutate(Class = factor(Class, levels = c("Impaired", "Control")))
+alz_new
+## # A tibble: 3 x 3
+##     tau  VEGF Class   
+##   &lt;dbl&gt; &lt;dbl&gt; &lt;fct&gt;   
+## 1     5    15 Control 
+## 2     6    15 Control 
+## 3     7    15 Impaired
+```
+
+---
+
+# Predict old data
+
+
+```r
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz) %&gt;% 
+  predict(new_data = alz) %&gt;% 
+  mutate(true_class = alz$Class) %&gt;% 
+  accuracy(truth = true_class, 
+           estimate = .pred_class)
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.856
+```
+
+---
+
+# Predict new data
+
+.pull-left[
+## out with the old...
+
+```r
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz) %&gt;% 
+  predict(new_data = alz) %&gt;% 
+  mutate(true_class = alz$Class) %&gt;% 
+  accuracy(truth = true_class, 
+           estimate = .pred_class)
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.856
+```
+
+]
+
+.pull-right[
+
+## in with the 🆕
+
+
+```r
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz) %&gt;% 
+* predict(new_data = alz_new) %&gt;%
+* mutate(true_class = alz_new$Class) %&gt;%
+  accuracy(truth = true_class, 
+           estimate = .pred_class)
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.667
+```
+
+]
+
+---
+
+# `fit()`
+
+Train a model by fitting a model. Returns a parsnip model fit.
+
+
+```r
+fit(tree_mod, Class ~ tau + VEGF, data = alz)
+```
+
+---
+
+# `fit()`
+
+Train a model by fitting a model. Returns a parsnip model fit.
+
+
+```r
+tree_mod %&gt;%                     # parsnip model
+  fit(Class ~ tau + VEGF,        # a formula
+      data = alz                 # dataframe
+  )
+```
+
+---
+
+# `fit()`
+
+Train a model by fitting a model. Returns a parsnip model fit.
+
+
+```r
+tree_fit &lt;- tree_mod %&gt;%         # parsnip model
+  fit(Class ~ tau + VEGF,        # a formula
+      data = alz                 # dataframe
+  )
+```
+
+---
+
+&lt;img src="images/predicting/predicting.001.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.003.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+# `predict()`
+
+Use a fitted model to predict new `y` values from data. Returns a tibble.
+
+
+```r
+predict(tree_fit, new_data = alz_new) 
+```
+
+---
+
+
+```r
+tree_fit %&gt;% 
+  predict(new_data = alz_new)
+## # A tibble: 3 x 1
+##   .pred_class
+##   &lt;fct&gt;      
+## 1 Control    
+## 2 Impaired   
+## 3 Impaired
+```
+
+---
+
+# Axiom
+
+The best way to measure a model's performance at predicting new data is to .display[predict new data].
+
+---
+
+# Data splitting
+
+--
+
+&lt;img src="index_files/figure-html/all-split-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: inverse, middle, center
+
+# ♻️ Resample models with `rsample`
+
+---
+
+# `rsample`
+
+&lt;iframe src="https://tidymodels.github.io/rsample/" width="100%" height="400px"&gt;&lt;/iframe&gt;
+
+---
+
+# `initial_split()*`
+
+"Splits" data randomly into a single testing and a single training set.
+
+
+```r
+initial_split(data, prop = 3/4)
+```
+
+.footnote[`*` from `rsample`]
+
+---
+
+
+```r
+alz_split &lt;- initial_split(alz, strata = Class, prop = .9)
+alz_split
+## &lt;Analysis/Assess/Total&gt;
+## &lt;300/33/333&gt;
+```
+
+---
+
+# `training()` and `testing()*`
+
+Extract training and testing sets from an `rsplit`
+
+
+```r
+training(alz_split)
+testing(alz_split)
+```
+
+.footnote[`*` from `rsample`]
+
+---
+
+
+```r
+alz_train &lt;- training(alz_split) 
+alz_train
+## # A tibble: 300 x 131
+##    ACE_CD143_Angio… ACTH_Adrenocort…    AXL Adiponectin
+##               &lt;dbl&gt;            &lt;dbl&gt;  &lt;dbl&gt;       &lt;dbl&gt;
+##  1            2.00            -1.39   1.10        -5.36
+##  2            1.56            -1.39   0.683       -5.02
+##  3            1.52            -1.71  -0.145       -5.81
+##  4            1.68            -1.61   0.683       -5.12
+##  5            2.40            -0.968  0.191       -4.78
+##  6            0.431           -1.27  -0.222       -5.22
+##  7            0.946           -1.90   0.530       -6.12
+##  8            0.708           -1.83  -0.327       -4.88
+##  9            1.11            -1.97   0.191       -5.17
+## 10            1.60            -1.51   0.449       -5.57
+## # … with 290 more rows, and 127 more variables:
+## #   Alpha_1_Antichymotrypsin &lt;dbl&gt;,
+## #   Alpha_1_Antitrypsin &lt;dbl&gt;, Alpha_1_Microglobulin &lt;dbl&gt;,
+## #   Alpha_2_Macroglobulin &lt;dbl&gt;,
+## #   Angiopoietin_2_ANG_2 &lt;dbl&gt;, …
+```
+
+---
+
+&lt;img src="images/predicting/predicting.001.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.003.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.004.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.006.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.007.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.008.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.009.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+
+---
+class: your-turn
+
+# Your turn 2
+
+Fill in the blanks. 
+
+Use `initial_split()`, `training()`, and `testing()` to:
+
+1. Split **alz** into training and test sets. Save the rsplit!
+
+2. Extract the training data and fit your classification tree model.
+
+3. Predict the testing data, and save the true `Class` values.
+
+4. Measure the accuracy of your model with your test set.  
+
+Keep `set.seed(100)` at the start of your code.
+
+
+```{=html}
+&lt;div class="countdown" id="timer_6033d20d" style="right:0;bottom:0;" data-warnwhen="0"&gt;
+&lt;code class="countdown-time"&gt;&lt;span class="countdown-digits minutes"&gt;04&lt;/span&gt;&lt;span class="countdown-digits colon"&gt;:&lt;/span&gt;&lt;span class="countdown-digits seconds"&gt;00&lt;/span&gt;&lt;/code&gt;
+&lt;/div&gt;
+```
+
+---
+
+
+```r
+set.seed(100) # Important!
+
+alz_split  &lt;- initial_split(alz, strata = Class, prop = .9)
+alz_train  &lt;- training(alz_split)
+alz_test   &lt;- testing(alz_split)
+
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz_train) %&gt;% 
+  predict(new_data = alz_test) %&gt;% 
+  mutate(true_class = alz_test$Class) %&gt;% 
+  accuracy(truth = true_class, estimate = .pred_class)
+```
+
+---
+
+# Goal of Machine Learning
+
+## 🎯 generate accurate predictions
+
+---
+
+# Axiom
+
+Better Model = Better Predictions (Lower error rate)
+
+---
+
+# `accuracy()*`
+
+Calculates the accuracy based on two columns in a dataframe: 
+
+The .display[truth]: `\({y}_i\)` 
+
+The predicted .display[estimate]: `\(\hat{y}_i\)` 
+
+
+```r
+accuracy(data, truth, estimate)
+```
+
+.footnote[`*` from `yardstick`]
+
+---
+
+
+```r
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz_train) %&gt;% 
+  predict(new_data = alz_test) %&gt;% 
+  mutate(true_class = alz_test$Class) %&gt;% 
+* accuracy(truth = true_class, estimate = .pred_class)
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.848
+```
+
+---
+
+&lt;img src="images/predicting/predicting.001.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.003.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/predicting/predicting.004.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Your Turn 3
+
+What would happen if you repeated this process? Would you get the same answers?
+
+Note your accuracy from above. Then change your seed number and rerun just the last code chunk above. Do you get the same answer? 
+
+Try it a few times with a few different seeds.
+
+
+```{=html}
+&lt;div class="countdown" id="timer_6033d16f" style="right:0;bottom:0;" data-warnwhen="0"&gt;
+&lt;code class="countdown-time"&gt;&lt;span class="countdown-digits minutes"&gt;02&lt;/span&gt;&lt;span class="countdown-digits colon"&gt;:&lt;/span&gt;&lt;span class="countdown-digits seconds"&gt;00&lt;/span&gt;&lt;/code&gt;
+&lt;/div&gt;
+```
+
+---
+
+.pull-left[
+
+
+```
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.788
+```
+
+
+
+
+
+```
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.879
+```
+
+
+
+
+```
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.818
+```
+
+]
+
+--
+
+.pull-right[
+
+
+
+
+```
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.879
+```
+
+
+
+
+```
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.758
+```
+
+
+
+
+```
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.818
+```
+
+]
+
+---
+
+# Quiz
+
+Why is the new estimate different?
+
+
+
+---
+
+# Data Splitting
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-73-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-74-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-75-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-76-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-77-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-78-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-79-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-80-1.png" width="720" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="index_files/figure-html/unnamed-chunk-81-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-82-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-83-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-84-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-85-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-86-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-87-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+&lt;img src="index_files/figure-html/unnamed-chunk-88-1.png" width="1080" style="display: block; margin: auto;" /&gt;
+
+--
+
+.right[Mean RMSE]
+
+---
+
+# Resampling
+
+Let's resample 10 times 
+
+then compute the mean of the results...
+
+---
+
+
+
+
+
+
+
+```r
+acc %&gt;% tibble::enframe(name = "accuracy")
+## # A tibble: 10 x 2
+##    accuracy value
+##       &lt;int&gt; &lt;dbl&gt;
+##  1        1 0.855
+##  2        2 0.807
+##  3        3 0.831
+##  4        4 0.855
+##  5        5 0.880
+##  6        6 0.880
+##  7        7 0.831
+##  8        8 0.843
+##  9        9 0.880
+## 10       10 0.892
+mean(acc)
+## [1] 0.8554217
+```
+
+---
+
+# Guess
+
+Which do you think is a better estimate?
+
+The best result or the mean of the results? Why? 
+
+---
+
+# But also...
+
+Fit with .display[training set]
+
+Predict with .display[testing set]
+
+--
+
+Rinse and repeat?
+
+---
+
+# There has to be a better way...
+
+
+```r
+acc &lt;- vector(length = 10, mode = "double")
+for (i in 1:10) {
+  new_split &lt;- initial_split(alz)
+  new_train &lt;- training(new_split)
+  new_test  &lt;- testing(new_split)
+  acc[i] &lt;-
+    lr_mod %&gt;% 
+      fit(Class ~ tau + VEGF, data = new_train) %&gt;% 
+      predict(new_test) %&gt;% 
+      mutate(truth = new_test$Class) %&gt;% 
+      accuracy(truth, .pred_class) %&gt;% 
+      pull(.estimate)
+}
+```
+
+---
+background-image: url(images/diamonds.jpg)
+background-size: contain
+background-position: left
+class: middle, center
+background-color: #f5f5f5
+
+.pull-right[
+## The .display[testing set] is precious...
+
+## we can only use it once!
+
+]
+
+---
+background-image: url(images/diamonds.jpg)
+background-size: contain
+background-position: left
+class: middle, center
+background-color: #f5f5f5
+
+.pull-right[
+## How can we use the training set to compare, evaluate, and tune models?
+
+]
+
+---
+
+&lt;img src="https://www.tidymodels.org/start/resampling/img/resampling.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide2.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide3.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide4.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide5.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide6.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide7.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide8.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide9.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide10.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Cross-validation
+
+&lt;img src="images/cross-validation/Slide11.png" width="1999" style="display: block; margin: auto;" /&gt;
+
+---
+
+# V-fold cross-validation
+
+
+```r
+vfold_cv(data, v = 10, ...)
+```
+
+---
+exclude: true
+
+
+
+---
+
+# Guess
+
+How many times does in observation/row appear in the assessment set?
+
+&lt;img src="index_files/figure-html/vfold-tiles-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="index_files/figure-html/unnamed-chunk-104-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Quiz
+
+If we use 10 folds, which percent of our data will end up in the training set and which percent in the testing set for each fold?
+
+--
+
+90% - training
+
+10% - test
+
+---
+
+# Your Turn 4
+
+Run the code below. What does it return?
+
+
+```r
+set.seed(100)
+alz_folds &lt;- vfold_cv(alz_train, v = 10, strata = Class)
+alz_folds
+```
+
+
+```{=html}
+&lt;div class="countdown" id="timer_6033d072" style="right:0;bottom:0;" data-warnwhen="0"&gt;
+&lt;code class="countdown-time"&gt;&lt;span class="countdown-digits minutes"&gt;01&lt;/span&gt;&lt;span class="countdown-digits colon"&gt;:&lt;/span&gt;&lt;span class="countdown-digits seconds"&gt;00&lt;/span&gt;&lt;/code&gt;
+&lt;/div&gt;
+```
+
+---
+
+```r
+set.seed(100)
+alz_folds &lt;- vfold_cv(alz_train, v = 10, strata = Class)
+alz_folds
+## #  10-fold cross-validation using stratification 
+## # A tibble: 10 x 2
+##    splits           id    
+##    &lt;list&gt;           &lt;chr&gt; 
+##  1 &lt;split [269/31]&gt; Fold01
+##  2 &lt;split [269/31]&gt; Fold02
+##  3 &lt;split [270/30]&gt; Fold03
+##  4 &lt;split [270/30]&gt; Fold04
+##  5 &lt;split [270/30]&gt; Fold05
+##  6 &lt;split [270/30]&gt; Fold06
+##  7 &lt;split [270/30]&gt; Fold07
+##  8 &lt;split [270/30]&gt; Fold08
+##  9 &lt;split [271/29]&gt; Fold09
+## 10 &lt;split [271/29]&gt; Fold10
+```
+
+---
+
+# We need a new way to fit
+
+
+```r
+split1       &lt;- alz_folds %&gt;% pluck("splits", 1)
+split1_train &lt;- training(split1)
+split1_test  &lt;- testing(split1)
+
+tree_mod %&gt;% 
+  fit(Class ~ ., data = split1_train) %&gt;% 
+  predict(split1_test) %&gt;% 
+  mutate(truth = split1_test$Class) %&gt;% 
+  rmse(truth, .pred_class)
+
+# rinse and repeat
+split2 &lt;- ...
+```
+
+---
+
+# `fit_resamples()`
+
+Trains and tests a resampled model.
+
+
+```r
+tree_mod %&gt;% 
+  fit_resamples(
+    Class ~ tau + VEGF, 
+    resamples = alz_folds
+    )
+```
+
+---
+
+
+```r
+tree_mod %&gt;% 
+  fit_resamples(
+    Class ~ tau + VEGF, 
+    resamples = alz_folds
+    )
+## # Resampling results
+## # 10-fold cross-validation using stratification 
+## # A tibble: 10 x 4
+##    splits           id     .metrics         .notes          
+##    &lt;list&gt;           &lt;chr&gt;  &lt;list&gt;           &lt;list&gt;          
+##  1 &lt;split [269/31]&gt; Fold01 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  2 &lt;split [269/31]&gt; Fold02 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  3 &lt;split [270/30]&gt; Fold03 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  4 &lt;split [270/30]&gt; Fold04 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  5 &lt;split [270/30]&gt; Fold05 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  6 &lt;split [270/30]&gt; Fold06 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  7 &lt;split [270/30]&gt; Fold07 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  8 &lt;split [270/30]&gt; Fold08 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+##  9 &lt;split [271/29]&gt; Fold09 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+## 10 &lt;split [271/29]&gt; Fold10 &lt;tibble [2 × 4]&gt; &lt;tibble [0 × 1]&gt;
+```
+
+---
+
+# `collect_metrics()`
+
+Unnest the metrics column from a tidymodels `fit_resamples()`
+
+
+```r
+_results %&gt;% collect_metrics(summarize = TRUE)
+```
+
+--
+
+.footnote[`TRUE` is actually the default; averages across folds]
+
+---
+
+
+```r
+tree_mod %&gt;% 
+  fit_resamples(
+    Class ~ tau + VEGF, 
+    resamples = alz_folds
+    ) %&gt;% 
+  collect_metrics(summarize = FALSE)
+## # A tibble: 20 x 5
+##    id     .metric  .estimator .estimate .config             
+##    &lt;chr&gt;  &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               
+##  1 Fold01 accuracy binary         0.774 Preprocessor1_Model1
+##  2 Fold01 roc_auc  binary         0.689 Preprocessor1_Model1
+##  3 Fold02 accuracy binary         0.806 Preprocessor1_Model1
+##  4 Fold02 roc_auc  binary         0.758 Preprocessor1_Model1
+##  5 Fold03 accuracy binary         0.767 Preprocessor1_Model1
+##  6 Fold03 roc_auc  binary         0.807 Preprocessor1_Model1
+##  7 Fold04 accuracy binary         0.867 Preprocessor1_Model1
+##  8 Fold04 roc_auc  binary         0.830 Preprocessor1_Model1
+##  9 Fold05 accuracy binary         0.8   Preprocessor1_Model1
+## 10 Fold05 roc_auc  binary         0.75  Preprocessor1_Model1
+## # … with 10 more rows
+```
+
+---
+
+# 10-fold CV
+
+### 10 different analysis/assessment sets
+
+### 10 different models (trained on .display[analysis] sets)
+
+### 10 different sets of performance statistics (on .display[assessment] sets)
+
+---
+
+# Your Turn 5
+
+Modify the code below to use `fit_resamples` and `alz_folds` to cross-validate the classification tree model. What is the ROC AUC that you collect at the end?
+
+
+```r
+set.seed(100)
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, 
+      data = alz_train) %&gt;% 
+  predict(new_data = alz_test) %&gt;% 
+  mutate(true_class = alz_test$Class) %&gt;% 
+  accuracy(truth = true_class, estimate = .pred_class)
+```
+
+
+```{=html}
+&lt;div class="countdown" id="timer_6033d264" style="right:0;bottom:0;" data-warnwhen="0"&gt;
+&lt;code class="countdown-time"&gt;&lt;span class="countdown-digits minutes"&gt;03&lt;/span&gt;&lt;span class="countdown-digits colon"&gt;:&lt;/span&gt;&lt;span class="countdown-digits seconds"&gt;00&lt;/span&gt;&lt;/code&gt;
+&lt;/div&gt;
+```
+
+---
+
+
+```r
+set.seed(100)
+lr_mod %&gt;% 
+  fit_resamples(Class ~ tau + VEGF, 
+                resamples = alz_folds) %&gt;% 
+  collect_metrics()
+## # A tibble: 2 x 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.858    10  0.0200 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.907    10  0.0194 Preprocessor1_Mod…
+```
+
+---
+
+# How did we do?
+
+
+```r
+tree_mod %&gt;% 
+  fit(Class ~ tau + VEGF, data = alz_train) %&gt;% 
+  predict(alz_test) %&gt;% 
+  mutate(truth = alz_test$Class) %&gt;% 
+  accuracy(truth, .pred_class)
+## # A tibble: 1 x 3
+##   .metric  .estimator .estimate
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt;
+## 1 accuracy binary         0.818
+```
+
+
+```
+## # A tibble: 2 x 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.858    10  0.0200 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.907    10  0.0194 Preprocessor1_Mod…
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
