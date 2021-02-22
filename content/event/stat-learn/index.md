@@ -50,8 +50,9 @@ math: false
 
 ## Before class
 
+* Read [Statistical learning: the basics](/notes/statistical-learning/)
 * Read [Build a model](/notes/start-with-models/)
-* Read [Logistic regress](/notes/logistic-regression/)
+* Read [Logistic regression](/notes/logistic-regression/)
 
 This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
@@ -66,7 +67,6 @@ This is not a math/stats class. In class we will **briefly** summarize how these
 
 ## Class materials
 
-* [Statistical learning: the basics](/notes/statistical-learning/)
 * [Build a model](/notes/start-with-models/)
 * [Logistic regression](/notes/logistic-regression/)
 * [Working with statistical models](/notes/work-with-models-exercise/)
