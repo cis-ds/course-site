@@ -1,10 +1,11 @@
 ---
-title: "Statistical learning"
+title: "Machine learning"
 date: 2021-02-23T09:40:00-06:00
 publishDate: 2019-05-06T09:40:00-06:00
 draft: false
 
-aliases: ["/cm011.html", "/syllabus/statistical-learning-regression"]
+aliases: ["/cm011.html", "/syllabus/statistical-learning-regression",
+          "/syllabus/statistical-learning"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -16,7 +17,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Review the goals of statistical learning, introduce methods for linear/logistic regression, and practice estimating models in R using the `tidymodels` framework."
+summary: "Review the goals of machine learning, introduce methods for estimating models in R using the `tidymodels` framework, and define a resampling framework for model validation."
 
 # Location of event.
 location: "Online"
@@ -30,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/statistical-learning/"
+url_slides: "/slides/machine-learning/"
 url_video: ""
 url_code: ""
 
@@ -42,16 +43,16 @@ math: false
 
 ## Overview
 
-* Review the major goals of statistical learning
-* Explain the difference between parametric and non-parametric methods
-* Demonstrate how to estimate a linear model in R using `lm()`
+* Review the major goals of machine learning
 * Introduce the `tidymodels` and `parsnip` packages for estimating regression models
-* Practice estimating linear and logistic regression models
+* Define resampling methods for evaluating model performance
+* Demonstrate how to conduct cross-validation using `rsample`
 
 ## Before class
 
+* Read [Statistical learning: the basics](/notes/statistical-learning/)
 * Read [Build a model](/notes/start-with-models/)
-* Read [Logistic regress](/notes/logistic-regression/)
+* Read [Evaluate your model with resampling](/notes/resampling/)
 
 This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
@@ -66,10 +67,21 @@ This is not a math/stats class. In class we will **briefly** summarize how these
 
 ## Class materials
 
-* [Statistical learning: the basics](/notes/statistical-learning/)
-* [Build a model](/notes/start-with-models/)
-* [Logistic regression](/notes/logistic-regression/)
-* [Working with statistical models](/notes/work-with-models-exercise/)
+{{% callout note %}}
+
+Run the code below in your console to download the exercises for today.
+
+```r
+usethis::use_course("uc-cfss/machine-learning")
+```
+
+{{% /callout %}}
+
+{{% callout note %}}
+
+Materials derived from [Tidymodels, Virtually: An Introduction to Machine Learning with Tidymodels](https://tmv.netlify.app/site/) by [Allison Hill](https://alison.rbind.io/).
+
+{{% /callout %}}
 
 ### Additional readings
 
