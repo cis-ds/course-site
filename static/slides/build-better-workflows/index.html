@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Build better workflows</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="MACS 30500   University of Chicago" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+    <link href="libs/countdown/countdown.css" rel="stylesheet" />
+    <script src="libs/countdown/countdown.js"></script>
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Build better workflows
+### <a href="https://cfss.uchicago.edu">MACS 30500</a> <br /> University of Chicago
+
+---
+
+
+
+
+
+
+class: inverse, middle, center
+
+# Build a better training set with `recipes`
+
+---
+class: middle, center, frame
+
+# Recipes
+
+&lt;iframe src="https://recipes.tidymodels.org" width="100%" height="400px"&gt;&lt;/iframe&gt;
+
+---
+
+# Preprocessing options
+
+- Encode categorical predictors
+- Center and scale variables
+- Handle class imbalance
+- Impute missing data
+- Perform dimensionality reduction 
+- *A lot more!*
+
+---
+
+&lt;img src="images/workflows/workflows.013.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+
+# To build a recipe
+
+1. Start the `recipe()`
+1. Define the .display[variables] involved
+1. Describe **prep**rocessing .display[step-by-step]
+
+---
+
+# `recipe()`
+
+Creates a recipe for a set of variables
+
+
+```r
+recipe(Class ~ ., data = alz)
+```
+
+---
+
+# `recipe()`
+
+Creates a recipe for a set of variables
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz)
+```
+
+---
+
+# `step_*()`
+
+Adds a single transformation to a recipe. Transformations are replayed in order when the recipe is run on data.
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz) %&gt;%
+  step_other(Genotype, threshold = .03)
+```
+
+---
+
+&lt;img src="index_files/figure-html/unnamed-chunk-6-1.png" width="864" style="display: block; margin: auto;" /&gt;
+
+---
+
+.pull-left[
+
+## Before recipe
+
+
+```
+## # A tibble: 6 x 2
+##   Genotype     n
+##   &lt;fct&gt;    &lt;int&gt;
+## 1 E3E3       153
+## 2 E3E4        93
+## 3 E2E3        31
+## 4 E4E4        13
+## 5 E2E4         8
+## 6 E2E2         2
+```
+
+]
+
+
+.pull-right[
+
+## After recipe
+
+
+```
+## # A tibble: 5 x 2
+##   Genotype     n
+##   &lt;fct&gt;    &lt;int&gt;
+## 1 E3E3       153
+## 2 E3E4        93
+## 3 E2E3        31
+## 4 E4E4        13
+## 5 other       10
+```
+
+]
+
+---
+
+# `step_*()`
+
+Complete list at:
+&lt;https://recipes.tidymodels.org/reference/index.html&gt;
+
+&lt;iframe src="https://recipes.tidymodels.org/reference/index.html" width="100%" height="400px"&gt;&lt;/iframe&gt;
+
+---
+
+# K Nearest Neighbors (KNN)
+
+To predict the outcome of a new data point:
+
+- Find the K most similar old data points
+- Take the average/mode/etc. outcome
+
+---
+
+# To specify a model with `parsnip`
+
+
+1. Pick a .display[model]
+1. Set the .display[engine]
+1. Set the .display[mode] (if needed)
+
+---
+
+# To specify a KNN model with `parsnip`
+
+
+```r
+knn_mod &lt;- nearest_neighbor() %&gt;%              
+  set_engine("kknn") %&gt;%             
+  set_mode("classification")        
+```
+
+---
+
+# Fact
+
+KNN requires all numeric predictors, and all need to be **centered** and **scaled**. 
+
+What does that mean?
+
+---
+
+# Quiz
+
+Why do you need to "train" a recipe?
+
+--
+
+Imagine "scaling" a new data point. What do you subtract from it? 
+What do you divide it by?
+
+---
+
+&lt;img src="images/pca.002.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/pca.003.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/pca.004.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+# Guess
+
+.left-column[
+
+
+```
+# A tibble: 6 x 1
+  Genotype
+  &lt;fct&gt;   
+1 E3E3    
+2 E3E4    
+3 E4E4    
+4 E2E3    
+5 E2E4    
+6 E2E2    
+```
+
+]
+
+.right-column[
+
+
+```
+# A tibble: 333 x 6
+    E3E3  E3E4  E4E4  E2E3  E2E4  E2E2
+   &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+ 1     1     0     0     0     0     0
+ 2     0     1     0     0     0     0
+ 3     0     1     0     0     0     0
+ 4     0     1     0     0     0     0
+ 5     1     0     0     0     0     0
+ 6     0     0     1     0     0     0
+ 7     0     0     0     1     0     0
+ 8     0     0     0     1     0     0
+ 9     1     0     0     0     0     0
+10     0     0     0     1     0     0
+# … with 323 more rows
+```
+
+]
+
+---
+
+# Dummy Variables
+
+
+```r
+glm(Class ~ Genotype, family = "binomial", data = alz)
+```
+
+
+```
+## # A tibble: 6 x 5
+##   term         estimate std.error statistic p.value
+##   &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+## 1 (Intercept)      14.6      624.    0.0233   0.981
+## 2 GenotypeE2E3    -13.1      624.   -0.0210   0.983
+## 3 GenotypeE2E4    -12.6      624.   -0.0202   0.984
+## 4 GenotypeE3E3    -13.2      624.   -0.0212   0.983
+## 5 GenotypeE3E4    -14.1      624.   -0.0226   0.982
+## 6 GenotypeE4E4    -15.0      624.   -0.0241   0.981
+```
+
+---
+
+# `step_dummy()`
+
+Converts nominal data into numeric dummy variables, needed as predictors for models like KNN.
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz) %&gt;%
+  step_other(Genotype, threshold = .03) %&gt;% 
+* step_dummy(all_nominal(), -all_outcomes())
+```
+
+.footnote[You *don't* need this for decision trees or ensembles of trees]
+
+---
+
+# Combining selectors
+
+Use commas to separate
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz) %&gt;%
+  step_other(Genotype, threshold = .03) %&gt;% 
+* step_dummy(all_nominal(), -all_outcomes())
+```
+
+---
+
+# Quiz
+
+How does `recipes` know which variables are **numeric** and what is **nominal**?
+
+--
+
+
+```r
+rec &lt;- recipe(
+  Class ~ ., 
+* data = alz
+  )
+```
+
+---
+
+# Quiz
+
+How does `recipes` know what is a **predictor** and what is an **outcome**?
+
+--
+
+
+```r
+rec &lt;- recipe(
+* Class ~ .,
+  data = alz
+  )
+```
+
+--
+
+.center[The .display[formula] &amp;rarr; *indicates outcomes vs predictors*]
+
+
+--
+
+.center[The .display[data] &amp;rarr;  *is only used to catalog the names and types of each variable*]
+
+---
+
+# Selectors
+
+Helper functions for selecting sets of variables
+
+
+```r
+rec %&gt;% 
+  step_novel(all_nominal()) %&gt;%
+  step_zv(all_predictors())
+```
+
+---
+
+class: middle
+
+
+
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#mespryzeab .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 200px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: 10%;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#mespryzeab .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mespryzeab .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#mespryzeab .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 4px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#mespryzeab .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mespryzeab .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mespryzeab .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#mespryzeab .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#mespryzeab .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#mespryzeab .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#mespryzeab .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#mespryzeab .gt_group_heading {
+  padding: 8px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mespryzeab .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mespryzeab .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#mespryzeab .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#mespryzeab .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#mespryzeab .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 12px;
+}
+
+#mespryzeab .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mespryzeab .gt_first_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+}
+
+#mespryzeab .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mespryzeab .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#mespryzeab .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#mespryzeab .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mespryzeab .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mespryzeab .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding: 4px;
+}
+
+#mespryzeab .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mespryzeab .gt_sourcenote {
+  font-size: 90%;
+  padding: 4px;
+}
+
+#mespryzeab .gt_left {
+  text-align: left;
+}
+
+#mespryzeab .gt_center {
+  text-align: center;
+}
+
+#mespryzeab .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#mespryzeab .gt_font_normal {
+  font-weight: normal;
+}
+
+#mespryzeab .gt_font_bold {
+  font-weight: bold;
+}
+
+#mespryzeab .gt_font_italic {
+  font-style: italic;
+}
+
+#mespryzeab .gt_super {
+  font-size: 65%;
+}
+
+#mespryzeab .gt_footnote_marks {
+  font-style: italic;
+  font-size: 65%;
+}
+</style>
+<div id="mespryzeab" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;"><table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">selector</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1">description</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p><code>all_predictors()</code></p>
+</div></td>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p>Each x variable  (right side of ~)</p>
+</div></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p><code>all_outcomes()</code></p>
+</div></td>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p>Each y variable  (left side of ~)</p>
+</div></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p><code>all_numeric()</code></p>
+</div></td>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p>Each numeric variable</p>
+</div></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p><code>all_nominal()</code></p>
+</div></td>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p>Each categorical variable (e.g. factor, string)</p>
+</div></td>
+    </tr>
+    <tr>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p><code>dplyr::select()</code> helpers</p>
+</div></td>
+      <td class="gt_row gt_left"><div class='gt_from_md'><p><code>starts_with('IL_')</code>, etc.</p>
+</div></td>
+    </tr>
+  </tbody>
+  
+  
+</table></div>
+
+---
+
+# Let's think about the modeling. 
+
+What if there were no individuals with `Genotype` E2E2 in the training data?
+
+--
+
+Will the model have a coefficient for `Genotype` E2E2?
+
+--
+
+.display[No]
+
+--
+
+What will happen if the test data includes a person with `Genotype` E2E2?
+
+--
+
+.display[Error!]
+
+---
+
+# `step_novel()`
+
+Adds a catch-all level to a factor for any new values not encountered in model training, which lets R intelligently predict new levels in the test set.
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz) %&gt;%
+  step_other(Genotype, threshold = .03) %&gt;% 
+* step_novel(all_nominal(), -all_outcomes()) %&gt;%
+  step_dummy(all_nominal(), -all_outcomes()) 
+```
+
+.footnote[Use *before* `step_dummy()` so new level is dummified]
+
+---
+
+# Guess
+
+What would happen if you try to normalize a variable that doesn't vary?
+
+--
+
+Error! You'd be dividing by zero!
+
+---
+
+# `step_zv()`
+
+Intelligently handles zero variance variables (variables that contain only a single value)
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz) %&gt;%
+  step_other(Genotype, threshold = .03) %&gt;% 
+  step_novel(all_nominal(), -all_outcomes()) %&gt;% 
+  step_dummy(all_nominal(), -all_outcomes()) %&gt;% 
+* step_zv(all_predictors())
+```
+
+---
+
+# `step_normalize()`
+
+Centers then scales numeric variable (mean = 0, sd = 1)
+
+
+```r
+rec &lt;- recipe(Class ~ ., data = alz) %&gt;%
+  step_other(Genotype, threshold = .03) %&gt;% 
+  step_novel(all_nominal(), -all_outcomes()) %&gt;% 
+  step_dummy(all_nominal(), -all_outcomes()) %&gt;% 
+  step_zv(all_predictors()) %&gt;% 
+* step_normalize(all_numeric())
+```
+
+---
+
+# Your Turn 1
+
+Unscramble! You have all the steps from our `knn_rec`- your challenge is to *unscramble* them into the right order! 
+
+Save the result as `knn_rec`
+
+<div class="countdown" id="timer_60366b6a" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+
+```r
+knn_rec &lt;- recipe(formula = Class ~ ., data = alz) %&gt;% 
+  step_novel(all_nominal(), -all_outcomes()) %&gt;% 
+  step_dummy(all_nominal(), -all_outcomes()) %&gt;% 
+  step_zv(all_predictors()) %&gt;% 
+  step_normalize(all_predictors(), -all_nominal()) 
+knn_rec
+## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##    outcome          1
+##  predictor        130
+## 
+## Operations:
+## 
+## Novel factor level assignment for all_nominal(), -all_outcomes()
+## Dummy variables from all_nominal(), -all_outcomes()
+## Zero variance filter on all_predictors()
+## Centering and scaling for all_predictors(), -all_nominal()
+```
+
+---
+
+# `usemodels`
+
+&lt;https://tidymodels.github.io/usemodels/&gt;
+
+&lt;iframe src="https://tidymodels.github.io/usemodels/" width="100%" height="400px"&gt;&lt;/iframe&gt;
+
+---
+
+
+```r
+library(usemodels)
+use_kknn(Class ~ ., data = alz, verbose = TRUE, tune = FALSE)
+## kknn_recipe &lt;- 
+##   recipe(formula = Class ~ ., data = alz) %&gt;% 
+##   step_novel(all_nominal(), -all_outcomes()) %&gt;% 
+##   ## This model requires the predictors to be numeric. The most common 
+##   ## method to convert qualitative predictors to numeric is to create 
+##   ## binary indicator variables (aka dummy variables) from these 
+##   ## predictors. 
+##   step_dummy(all_nominal(), -all_outcomes()) %&gt;% 
+##   ## Since distance calculations are used, the predictor variables should 
+##   ## be on the same scale. Before centering and scaling the numeric 
+##   ## predictors, any predictors with a single unique value are filtered 
+##   ## out. 
+##   step_zv(all_predictors()) %&gt;% 
+##   step_normalize(all_predictors(), -all_nominal()) 
+## 
+## kknn_spec &lt;- 
+##   nearest_neighbor() %&gt;% 
+##   set_mode("classification") %&gt;% 
+##   set_engine("kknn") 
+## 
+## kknn_workflow &lt;- 
+##   workflow() %&gt;% 
+##   add_recipe(kknn_recipe) %&gt;% 
+##   add_model(kknn_spec)
+```
+
+---
+
+
+```r
+use_glmnet(Class ~ ., data = alz, verbose = TRUE, tune = FALSE)
+## glmnet_recipe &lt;- 
+##   recipe(formula = Class ~ ., data = alz) %&gt;% 
+##   step_novel(all_nominal(), -all_outcomes()) %&gt;% 
+##   ## This model requires the predictors to be numeric. The most common 
+##   ## method to convert qualitative predictors to numeric is to create 
+##   ## binary indicator variables (aka dummy variables) from these 
+##   ## predictors. 
+##   step_dummy(all_nominal(), -all_outcomes()) %&gt;% 
+##   ## Regularization methods sum up functions of the model slope 
+##   ## coefficients. Because of this, the predictor variables should be on 
+##   ## the same scale. Before centering and scaling the numeric predictors, 
+##   ## any predictors with a single unique value are filtered out. 
+##   step_zv(all_predictors()) %&gt;% 
+##   step_normalize(all_predictors(), -all_nominal()) 
+## 
+## glmnet_spec &lt;- 
+##   logistic_reg() %&gt;% 
+##   set_mode("classification") %&gt;% 
+##   set_engine("glmnet") 
+## 
+## glmnet_workflow &lt;- 
+##   workflow() %&gt;% 
+##   add_recipe(glmnet_recipe) %&gt;% 
+##   add_model(glmnet_spec)
+```
+
+---
+class: inverse, middle, center
+
+## Now we've built a recipe.
+
+--
+
+## But, how do we *use* a recipe?
+
+---
+
+# Axiom
+
+Feature engineering and modeling are two halves of a single predictive workflow.
+
+---
+
+&lt;img src="images/workflows/workflows.001.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.002.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.003.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.004.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.005.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.006.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.007.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.008.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.009.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.010.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.011.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.012.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="images/workflows/workflows.013.jpeg" width="1280" style="display: block; margin: auto;" /&gt;
+
+---
+class: center, middle, inverse
+
+# Workflows
+
+---
+
+# `workflow()`
+
+Creates a workflow to add a model and more to
+
+
+```r
+workflow()
+```
+
+---
+
+# `add_formula()`
+
+Adds a formula to a workflow `*`
+
+
+```r
+workflow() %&gt;% add_formula(Class ~ tau)
+```
+
+.footnote[`*` If you do not plan to do your own preprocessing]
+
+---
+
+# `add_model()`
+
+Adds a parsnip model spec to a workflow
+
+
+```r
+workflow() %&gt;% add_model(knn_mod)
+```
+
+---
+
+# Guess
+
+If we use `add_model()` to add a model to a workflow, what would we use to add a recipe?
+
+--
+
+Let's see!
+
+---
+
+# Your Turn 2
+
+Fill in the blanks to make a workflow that combines `knn_rec` and with `knn_mod`.
+
+<div class="countdown" id="timer_60366990" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">01</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+
+```r
+knn_wf &lt;- workflow() %&gt;% 
+  add_recipe(knn_rec) %&gt;% 
+  add_model(knn_mod)
+knn_wf
+## ══ Workflow ════════════════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: nearest_neighbor()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 4 Recipe Steps
+## 
+## ● step_novel()
+## ● step_dummy()
+## ● step_zv()
+## ● step_normalize()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## K-Nearest Neighbor Model Specification (classification)
+## 
+## Computational engine: kknn
+```
+
+---
+
+# `add_recipe()`
+
+Adds a recipe to a workflow.
+
+
+```r
+knn_wf &lt;- workflow() %&gt;%
+* add_recipe(knn_rec) %&gt;%
+  add_model(knn_mod)
+```
+
+---
+
+# Guess
+
+Do you need to add a formula if you have a recipe?
+
+--
+
+Nope!
+
+
+```r
+rec &lt;- recipe(
+* Class ~ .,
+  data = alz
+)
+```
+
+---
+
+# `fit()`
+
+Fit a workflow that bundles a recipe`*` and a model.
+
+
+```r
+_wf %&gt;% 
+  fit(data = alz_train) %&gt;% 
+  predict(alz_test)...
+```
+
+.footnote[`*` or a formula, if you do not plan to do your own preprocessing]
+
+---
+
+# Preprocess k-fold resamples?
+
+
+```r
+set.seed(100)
+alz_folds &lt;- vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+---
+
+# `fit_resamples()`
+
+Fit a workflow that bundles a recipe`*` and a model with resampling.
+
+
+```r
+_wf %&gt;% 
+  fit_resamples(resamples = alz_folds)
+```
+
+
+.footnote[`*` or a formula, if you do not plan to do your own preprocessing]
+
+---
+
+# Your Turn 3
+
+Run the first chunk. Then try our KNN workflow on `alz_folds`. What is the ROC AUC?
+
+<div class="countdown" id="timer_60366ba0" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">03</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+
+```r
+set.seed(100)
+alz_folds &lt;- vfold_cv(alz_train, v = 10, strata = Class)
+
+knn_wf %&gt;% 
+  fit_resamples(resamples = alz_folds) %&gt;% 
+  collect_metrics()
+## # A tibble: 2 x 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.713    10  0.0177 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.761    10  0.0285 Preprocessor1_Mod…
+```
+
+---
+
+# Feature Engineering
+
+.pull-left[
+Before
+
+![](https://media.giphy.com/media/Wn74RUT0vjnoU98Hnt/giphy.gif)
+]
+
+--
+
+.pull-right[
+After
+
+![](https://media.giphy.com/media/108GZES8iG0myc/giphy.gif)
+]
+
+---
+
+# `update_recipe()`
+
+Replace the recipe in a workflow.
+
+
+```r
+_wf %&gt;%
+* update_recipe(glmnet_rec)
+```
+
+---
+
+# `update_model()`
+
+Replace the model in a workflow.
+
+
+```r
+_wf %&gt;%
+* update_model(tree_mod)
+```
+
+---
+
+# Your Turn 4
+
+Turns out, the same `knn_rec` recipe can also be used to fit a penalized logistic regression model. Let's try it out!
+
+
+```r
+plr_mod &lt;- logistic_reg(penalty = .01, mixture = 1) %&gt;% 
+  set_engine("glmnet") %&gt;% 
+  set_mode("classification")
+
+plr_mod %&gt;% 
+  translate()
+## Logistic Regression Model Specification (classification)
+## 
+## Main Arguments:
+##   penalty = 0.01
+##   mixture = 1
+## 
+## Computational engine: glmnet 
+## 
+## Model fit template:
+## glmnet::glmnet(x = missing_arg(), y = missing_arg(), weights = missing_arg(), 
+##     alpha = 1, family = "binomial")
+```
+
+<div class="countdown" id="timer_603667f5" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">03</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+
+```r
+glmnet_wf &lt;- knn_wf %&gt;% 
+  update_model(plr_mod)
+
+glmnet_wf %&gt;% 
+  fit_resamples(resamples = alz_folds) %&gt;% 
+  collect_metrics() 
+## # A tibble: 2 x 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.897    10  0.0128 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.926    10  0.0160 Preprocessor1_Mod…
+```
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="https://cfss.uchicago.edu/slides/macros.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"highlightLanguage": "r",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
