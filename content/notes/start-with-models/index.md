@@ -9,7 +9,7 @@ categories: ["stat-learn"]
 
 menu:
   notes:
-    parent: Statistical learning
+    parent: Machine learning
     weight: 2
 ---
 
@@ -433,7 +433,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-02-24                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version    date       lib source                              
@@ -489,7 +489,7 @@ devtools::session_info()
 ##  haven          2.3.1      2020-06-01 [1] CRAN (R 4.0.0)                      
 ##  here           1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                      
 ##  hms            0.5.3      2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools      0.5.1      2021-01-12 [1] CRAN (R 4.0.2)                      
+##  htmltools      0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                      
 ##  htmlwidgets    1.5.3      2020-12-10 [1] CRAN (R 4.0.2)                      
 ##  httpuv         1.5.5      2021-01-13 [1] CRAN (R 4.0.2)                      
 ##  httr           1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                      
@@ -499,7 +499,7 @@ devtools::session_info()
 ##  ipred          0.9-9      2019-04-28 [1] CRAN (R 4.0.0)                      
 ##  iterators      1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                      
 ##  jsonlite       1.7.2      2020-12-09 [1] CRAN (R 4.0.2)                      
-##  knitr          1.30       2020-09-22 [1] CRAN (R 4.0.2)                      
+##  knitr          1.31       2021-01-27 [1] CRAN (R 4.0.2)                      
 ##  later          1.1.0.1    2020-06-05 [1] CRAN (R 4.0.1)                      
 ##  lattice        0.20-41    2020-04-02 [1] CRAN (R 4.0.3)                      
 ##  lava           1.6.8.1    2020-11-04 [1] CRAN (R 4.0.2)                      
@@ -515,7 +515,7 @@ devtools::session_info()
 ##  Matrix         1.3-0      2020-12-22 [1] CRAN (R 4.0.2)                      
 ##  matrixStats    0.57.0     2020-09-25 [1] CRAN (R 4.0.2)                      
 ##  memoise        1.1.0      2017-04-21 [1] CRAN (R 4.0.0)                      
-##  mime           0.9        2020-02-04 [1] CRAN (R 4.0.0)                      
+##  mime           0.10       2021-02-13 [1] CRAN (R 4.0.2)                      
 ##  miniUI         0.1.1.1    2018-05-18 [1] CRAN (R 4.0.0)                      
 ##  minqa          1.2.4      2014-10-09 [1] CRAN (R 4.0.0)                      
 ##  modeldata    * 0.1.0      2020-10-22 [1] CRAN (R 4.0.2)                      
@@ -535,7 +535,7 @@ devtools::session_info()
 ##  pROC           1.16.2     2020-03-19 [1] CRAN (R 4.0.0)                      
 ##  processx       3.4.5      2020-11-30 [1] CRAN (R 4.0.2)                      
 ##  prodlim        2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)                      
-##  promises       1.1.1      2020-06-09 [1] CRAN (R 4.0.2)                      
+##  promises       1.2.0.1    2021-02-11 [1] CRAN (R 4.0.2)                      
 ##  ps             1.5.0      2020-12-05 [1] CRAN (R 4.0.2)                      
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)                      
 ##  R6             2.5.0      2020-10-28 [1] CRAN (R 4.0.2)                      
@@ -546,7 +546,7 @@ devtools::session_info()
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.0.0)                      
 ##  recipes      * 0.1.15     2020-11-11 [1] CRAN (R 4.0.2)                      
 ##  remotes        2.2.0      2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex         0.3.0      2019-05-16 [1] CRAN (R 4.0.0)                      
+##  reprex         1.0.0      2021-01-27 [1] CRAN (R 4.0.2)                      
 ##  reshape2       1.4.4      2020-04-09 [1] CRAN (R 4.0.0)                      
 ##  rlang          0.4.10     2020-12-30 [1] CRAN (R 4.0.2)                      
 ##  rmarkdown      2.6        2020-12-14 [1] CRAN (R 4.0.2)                      
@@ -585,7 +585,7 @@ devtools::session_info()
 ##  vctrs          0.3.6      2020-12-17 [1] CRAN (R 4.0.2)                      
 ##  withr          2.3.0      2020-09-22 [1] CRAN (R 4.0.2)                      
 ##  workflows    * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)                      
-##  xfun           0.20       2021-01-06 [1] CRAN (R 4.0.2)                      
+##  xfun           0.21       2021-02-10 [1] CRAN (R 4.0.2)                      
 ##  xml2           1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                      
 ##  xtable         1.8-4      2019-04-21 [1] CRAN (R 4.0.0)                      
 ##  xts            0.12.1     2020-09-09 [1] CRAN (R 4.0.2)                      

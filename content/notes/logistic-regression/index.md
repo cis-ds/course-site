@@ -10,7 +10,7 @@ categories: ["stat-learn"]
 
 menu:
   notes:
-    parent: Statistical learning
+    parent: Machine learning
     weight: 3
 ---
 
@@ -416,7 +416,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-02-24                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source                              
@@ -458,13 +458,13 @@ devtools::session_info()
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)                      
 ##  here          1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                      
 ##  hms           0.5.3      2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools     0.5.1      2021-01-12 [1] CRAN (R 4.0.2)                      
+##  htmltools     0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                      
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                      
 ##  infer       * 0.5.3      2020-07-14 [1] CRAN (R 4.0.2)                      
 ##  ipred         0.9-9      2019-04-28 [1] CRAN (R 4.0.0)                      
 ##  iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                      
 ##  jsonlite      1.7.2      2020-12-09 [1] CRAN (R 4.0.2)                      
-##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)                      
+##  knitr         1.31       2021-01-27 [1] CRAN (R 4.0.2)                      
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.3)                      
 ##  lava          1.6.8.1    2020-11-04 [1] CRAN (R 4.0.2)                      
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)                      
@@ -498,7 +498,7 @@ devtools::session_info()
 ##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)                      
 ##  recipes     * 0.1.15     2020-11-11 [1] CRAN (R 4.0.2)                      
 ##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex        0.3.0      2019-05-16 [1] CRAN (R 4.0.0)                      
+##  reprex        1.0.0      2021-01-27 [1] CRAN (R 4.0.2)                      
 ##  rlang         0.4.10     2020-12-30 [1] CRAN (R 4.0.2)                      
 ##  rmarkdown     2.6        2020-12-14 [1] CRAN (R 4.0.2)                      
 ##  rpart         4.1-15     2019-04-12 [1] CRAN (R 4.0.3)                      
@@ -523,7 +523,7 @@ devtools::session_info()
 ##  vctrs         0.3.6      2020-12-17 [1] CRAN (R 4.0.2)                      
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)                      
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)                      
-##  xfun          0.20       2021-01-06 [1] CRAN (R 4.0.2)                      
+##  xfun          0.21       2021-02-10 [1] CRAN (R 4.0.2)                      
 ##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                      
 ##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)                      
 ##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)                      
