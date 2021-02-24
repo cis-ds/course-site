@@ -1,5 +1,5 @@
 ---
-title: "Preprocessing data and tuning models"
+title: "Build a better workflow"
 date: 2021-02-25T09:40:00-06:00
 publishDate: 2019-05-06T09:40:00-06:00
 draft: false
@@ -14,7 +14,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Introduce and practice techniques for preprocessing data sets and tuning models using the `tidymodels` framework."
+summary: "Introduce and practice techniques for preprocessing data sets and developing model workflows using the `tidymodels` framework."
 
 # Location of event.
 location: "Online"
@@ -28,7 +28,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/preprocessing-data-and-tuning-models/"
+url_slides: "/slides/build-better-workflow/"
 url_video: ""
 url_code: ""
 
@@ -42,7 +42,8 @@ math: false
 
 * Identify the importance of preprocessing data sets
 * Introduce the `recipes` package for preprocessing data
-* Practice preprocessing data for statistical modeling
+* Utilize `usemodels` to automatically construct code templates for common model types
+* Construct workflows for machine learning
 
 ## Before class
 
