@@ -28,7 +28,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/build-better-workflow/"
+url_slides: "/slides/build-a-better-workflow/"
 url_video: ""
 url_code: ""
 
