@@ -9,7 +9,7 @@ categories: ["stat-learn"]
 
 menu:
   notes:
-    parent: Statistical learning
+    parent: Machine learning
     weight: 7
 ---
 
@@ -696,7 +696,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-02-24                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source                              
@@ -734,13 +734,13 @@ devtools::session_info()
 ##  gridExtra     2.3        2017-09-09 [1] CRAN (R 4.0.0)                      
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)                      
 ##  here          1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                      
-##  htmltools     0.5.1      2021-01-12 [1] CRAN (R 4.0.2)                      
+##  htmltools     0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                      
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                      
 ##  infer       * 0.5.3      2020-07-14 [1] CRAN (R 4.0.2)                      
 ##  ipred         0.9-9      2019-04-28 [1] CRAN (R 4.0.0)                      
 ##  iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                      
 ##  kableExtra  * 1.3.1      2020-10-22 [1] CRAN (R 4.0.2)                      
-##  knitr         1.30       2020-09-22 [1] CRAN (R 4.0.2)                      
+##  knitr         1.31       2021-01-27 [1] CRAN (R 4.0.2)                      
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.3)                      
 ##  lava          1.6.8.1    2020-11-04 [1] CRAN (R 4.0.2)                      
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)                      
@@ -797,7 +797,7 @@ devtools::session_info()
 ##  webshot       0.5.2      2019-11-22 [1] CRAN (R 4.0.0)                      
 ##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)                      
 ##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)                      
-##  xfun          0.20       2021-01-06 [1] CRAN (R 4.0.2)                      
+##  xfun          0.21       2021-02-10 [1] CRAN (R 4.0.2)                      
 ##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                      
 ##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)                      
 ##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)                      

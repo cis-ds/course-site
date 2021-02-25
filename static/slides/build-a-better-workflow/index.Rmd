@@ -1,0 +1,831 @@
+---
+title: "Build better workflows"
+author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
+output: rcfss::xaringan
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE, htmltools.preserve.raw = FALSE)
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE,
+                      fig.align = 'center',
+                      fig.retina = 2,
+                      fig.width = 12,
+                      collapse = TRUE,
+                      R.options = list(tibble.max_extra_cols = 5, 
+                                       tibble.print_max = 5, 
+                                       tibble.width = 60))
+options("scipen" = 16)
+library(tidymodels)
+yt_counter <- 0
+```
+
+```{r packages, include=FALSE}
+library(countdown)
+library(tidyverse)
+library(tidymodels)
+library(workflows)
+library(scico)
+library(gganimate)
+library(AmesHousing)
+library(tune)
+library(viridis)
+ames <- make_ames()
+theme_set(theme_minimal(base_size = rcfss::base_size))
+
+set.seed(100) # Important!
+ames_split  <- initial_split(ames)
+ames_train  <- training(ames_split)
+ames_test   <- testing(ames_split)
+
+rt_spec <- decision_tree() %>% 
+  set_engine("rpart") %>% 
+  set_mode("regression")
+
+# for figures
+not_col <- scico(1, palette = "acton", begin = .6)
+uni_col <- scico(1, palette = "acton", begin = 0)
+train_color <- viridis(1, option="magma", begin = .4)
+test_color  <- viridis(1, option="magma", begin = .7)
+data_color  <- viridis(1, option="magma", begin = .1)
+assess_color <- viridis(1, option="magma", begin = 1)
+splits_pal <- c(data_color, train_color, test_color)
+
+data("ad_data")
+alz <- ad_data
+
+# data splitting
+set.seed(100) # Important!
+alz_split  <- initial_split(alz, strata = Class, prop = .9)
+alz_train  <- training(alz_split)
+alz_test   <- testing(alz_split)
+
+# data resampling
+set.seed(100)
+alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+class: inverse, middle, center
+
+# Build a better training set with `recipes`
+
+---
+class: middle, center, frame
+
+# Recipes
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_url("https://recipes.tidymodels.org")
+```
+
+---
+
+# Preprocessing options
+
+- Encode categorical predictors
+- Center and scale variables
+- Handle class imbalance
+- Impute missing data
+- Perform dimensionality reduction 
+- *A lot more!*
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.013.jpeg")
+```
+
+---
+
+
+# To build a recipe
+
+1. Start the `recipe()`
+1. Define the .display[variables] involved
+1. Describe **prep**rocessing .display[step-by-step]
+
+---
+
+# `recipe()`
+
+Creates a recipe for a set of variables
+
+```{r eval=FALSE}
+recipe(Class ~ ., data = alz)
+```
+
+---
+
+# `recipe()`
+
+Creates a recipe for a set of variables
+
+```{r eval=FALSE}
+rec <- recipe(Class ~ ., data = alz)
+```
+
+---
+
+# `step_*()`
+
+Adds a single transformation to a recipe. Transformations are replayed in order when the recipe is run on data.
+
+```{r}
+rec <- recipe(Class ~ ., data = alz) %>%
+  step_other(Genotype, threshold = .03)
+```
+
+---
+
+```{r echo=FALSE}
+alz %>% 
+  count(Genotype) %>% 
+  ggplot(aes(x = fct_reorder(Genotype, n, .desc = TRUE), 
+             y = n)) +
+  geom_col(fill = "#CA225E", alpha = .7) +
+  coord_flip() +
+  theme(text = element_text(family = "Lato")) +
+  labs(x = "") +
+  geom_hline(yintercept = (nrow(alz_train)*.03), lty = 3)
+```
+
+---
+
+.pull-left[
+
+## Before recipe
+
+```{r echo=FALSE}
+alz_train %>% 
+  count(Genotype, sort = TRUE)
+```
+
+]
+
+
+.pull-right[
+
+## After recipe
+
+```{r echo=FALSE}
+rec %>% 
+  prep() %>% 
+  bake(new_data = alz_train) %>% 
+  count(Genotype, sort = TRUE)
+```
+
+]
+
+---
+
+# `step_*()`
+
+Complete list at:
+<https://recipes.tidymodels.org/reference/index.html>
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_url("https://recipes.tidymodels.org/reference/index.html")
+```
+
+---
+
+# K Nearest Neighbors (KNN)
+
+To predict the outcome of a new data point:
+
+- Find the K most similar old data points
+- Take the average/mode/etc. outcome
+
+---
+
+# To specify a model with `parsnip`
+
+
+1. Pick a .display[model]
+1. Set the .display[engine]
+1. Set the .display[mode] (if needed)
+
+---
+
+# To specify a KNN model with `parsnip`
+
+```{r}
+knn_mod <- nearest_neighbor() %>%              
+  set_engine("kknn") %>%             
+  set_mode("classification")        
+```
+
+---
+
+# Fact
+
+KNN requires all numeric predictors, and all need to be **centered** and **scaled**. 
+
+What does that mean?
+
+---
+
+# Quiz
+
+Why do you need to "train" a recipe?
+
+--
+
+Imagine "scaling" a new data point. What do you subtract from it? 
+What do you divide it by?
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/pca.002.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/pca.003.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/pca.004.jpeg")
+```
+
+---
+
+# Guess
+
+.left-column[
+
+```{r echo=FALSE, comment = NA}
+alz %>%
+  distinct(Genotype)
+```
+
+]
+
+.right-column[
+
+```{r echo=FALSE, comment = NA}
+alz %>% 
+  select(Genotype) %>% 
+  mutate(val = 1, id = dplyr::row_number()) %>% 
+  pivot_wider(id = id, 
+              names_from = Genotype, 
+              values_from = val, 
+              values_fill = list(val = 0)) %>% 
+  select(-id)
+```
+
+]
+
+---
+
+# Dummy Variables
+
+```{r results='hide'}
+glm(Class ~ Genotype, family = "binomial", data = alz)
+```
+
+```{r echo=FALSE}
+glm(Class ~ Genotype, family = "binomial", data = alz) %>% 
+  broom::tidy()
+```
+
+---
+
+# `step_dummy()`
+
+Converts nominal data into numeric dummy variables, needed as predictors for models like KNN.
+
+```{r dummy, results='hide'}
+rec <- recipe(Class ~ ., data = alz) %>%
+  step_other(Genotype, threshold = .03) %>% 
+  step_dummy(all_nominal(), -all_outcomes()) #<<
+```
+
+.footnote[You *don't* need this for decision trees or ensembles of trees]
+
+---
+
+# Combining selectors
+
+Use commas to separate
+
+```{r ref.label='dummy', eval=FALSE}
+```
+
+---
+
+# Quiz
+
+How does `recipes` know which variables are **numeric** and what is **nominal**?
+
+--
+
+```{r eval=FALSE}
+rec <- recipe(
+  Class ~ ., 
+  data = alz  #<<
+  )
+```
+
+---
+
+# Quiz
+
+How does `recipes` know what is a **predictor** and what is an **outcome**?
+
+--
+
+```{r eval=FALSE}
+rec <- recipe(
+  Class ~ .,   #<<
+  data = alz
+  )
+```
+
+--
+
+.center[The .display[formula] &rarr; *indicates outcomes vs predictors*]
+
+
+--
+
+.center[The .display[data] &rarr;  *is only used to catalog the names and types of each variable*]
+
+---
+
+# Selectors
+
+Helper functions for selecting sets of variables
+
+```{r eval=FALSE}
+rec %>% 
+  step_novel(all_nominal()) %>%
+  step_zv(all_predictors())
+```
+
+---
+
+class: middle
+
+```{r include=FALSE}
+all <- tribble(
+  ~ selector, ~ description,
+  "`all_predictors()`", "Each x variable  (right side of ~)",
+  "`all_outcomes()`", "Each y variable  (left side of ~)",
+  "`all_numeric()`", "Each numeric variable",
+  "`all_nominal()`", "Each categorical variable (e.g. factor, string)",
+  "`dplyr::select()` helpers", "`starts_with('IL_')`, etc."
+)
+```
+
+```{r echo=FALSE, out.width='80%'}
+library(gt)
+gt(all)  %>%
+  fmt_markdown(columns = TRUE) %>%
+  tab_options(
+    table.width = pct(10),
+    table.font.size = "200px"
+  )
+```
+
+---
+
+# Let's think about the modeling. 
+
+What if there were no individuals with `Genotype` E2E2 in the training data?
+
+--
+
+Will the model have a coefficient for `Genotype` E2E2?
+
+--
+
+.display[No]
+
+--
+
+What will happen if the test data includes a person with `Genotype` E2E2?
+
+--
+
+.display[Error!]
+
+---
+
+# `step_novel()`
+
+Adds a catch-all level to a factor for any new values not encountered in model training, which lets R intelligently predict new levels in the test set.
+
+```{r results='hide'}
+rec <- recipe(Class ~ ., data = alz) %>%
+  step_other(Genotype, threshold = .03) %>% 
+  step_novel(all_nominal(), -all_outcomes()) %>% #<<
+  step_dummy(all_nominal(), -all_outcomes()) 
+```
+
+.footnote[Use *before* `step_dummy()` so new level is dummified]
+
+---
+
+# Guess
+
+What would happen if you try to normalize a variable that doesn't vary?
+
+--
+
+Error! You'd be dividing by zero!
+
+---
+
+# `step_zv()`
+
+Intelligently handles zero variance variables (variables that contain only a single value)
+
+```{r results='hide'}
+rec <- recipe(Class ~ ., data = alz) %>%
+  step_other(Genotype, threshold = .03) %>% 
+  step_novel(all_nominal(), -all_outcomes()) %>% 
+  step_dummy(all_nominal(), -all_outcomes()) %>% 
+  step_zv(all_predictors()) #<<
+```
+
+---
+
+# `step_normalize()`
+
+Centers then scales numeric variable (mean = 0, sd = 1)
+
+```{r results='hide'}
+rec <- recipe(Class ~ ., data = alz) %>%
+  step_other(Genotype, threshold = .03) %>% 
+  step_novel(all_nominal(), -all_outcomes()) %>% 
+  step_dummy(all_nominal(), -all_outcomes()) %>% 
+  step_zv(all_predictors()) %>% 
+  step_normalize(all_numeric()) #<<
+```
+
+---
+
+# Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Unscramble! You have all the steps from our `knn_rec`- your challenge is to *unscramble* them into the right order! 
+
+Save the result as `knn_rec`
+
+```{r echo=FALSE}
+countdown(minutes = 5)
+```
+
+---
+
+```{r}
+knn_rec <- recipe(formula = Class ~ ., data = alz) %>% 
+  step_novel(all_nominal(), -all_outcomes()) %>% 
+  step_dummy(all_nominal(), -all_outcomes()) %>% 
+  step_zv(all_predictors()) %>% 
+  step_normalize(all_predictors(), -all_nominal()) 
+knn_rec
+```
+
+---
+
+# `usemodels`
+
+<https://tidymodels.github.io/usemodels/>
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_url("https://tidymodels.github.io/usemodels/")
+```
+
+---
+
+```{r}
+library(usemodels)
+use_kknn(Class ~ ., data = alz, verbose = TRUE, tune = FALSE)
+```
+
+---
+
+```{r}
+use_glmnet(Class ~ ., data = alz, verbose = TRUE, tune = FALSE)
+```
+
+---
+class: inverse, middle, center
+
+## Now we've built a recipe.
+
+--
+
+## But, how do we *use* a recipe?
+
+---
+
+# Axiom
+
+Feature engineering and modeling are two halves of a single predictive workflow.
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.001.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.002.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.003.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.004.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.005.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.006.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.007.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.008.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.009.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.010.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.011.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.012.jpeg")
+```
+
+---
+
+```{r echo = FALSE}
+knitr::include_graphics("images/workflows/workflows.013.jpeg")
+```
+
+---
+class: center, middle, inverse
+
+# Workflows
+
+---
+
+# `workflow()`
+
+Creates a workflow to add a model and more to
+
+```{r results='hide'}
+workflow()
+```
+
+---
+
+# `add_formula()`
+
+Adds a formula to a workflow `*`
+
+```{r results='hide'}
+workflow() %>% add_formula(Class ~ tau)
+```
+
+.footnote[`*` If you do not plan to do your own preprocessing]
+
+---
+
+# `add_model()`
+
+Adds a parsnip model spec to a workflow
+
+```{r results='hide'}
+workflow() %>% add_model(knn_mod)
+```
+
+---
+
+# Guess
+
+If we use `add_model()` to add a model to a workflow, what would we use to add a recipe?
+
+--
+
+Let's see!
+
+---
+
+# Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Fill in the blanks to make a workflow that combines `knn_rec` and with `knn_mod`.
+
+```{r echo=FALSE}
+countdown(minutes = 1)
+```
+
+---
+
+```{r}
+knn_wf <- workflow() %>% 
+  add_recipe(knn_rec) %>% 
+  add_model(knn_mod)
+knn_wf
+```
+
+---
+
+# `add_recipe()`
+
+Adds a recipe to a workflow.
+
+```{r}
+knn_wf <- workflow() %>%
+  add_recipe(knn_rec) %>% #<<
+  add_model(knn_mod)
+```
+
+---
+
+# Guess
+
+Do you need to add a formula if you have a recipe?
+
+--
+
+Nope!
+
+```{r}
+rec <- recipe(
+  Class ~ ., #<<
+  data = alz
+)
+```
+
+---
+
+# `fit()`
+
+Fit a workflow that bundles a recipe`*` and a model.
+
+```{r eval=FALSE}
+_wf %>% 
+  fit(data = alz_train) %>% 
+  predict(alz_test)...
+```
+
+.footnote[`*` or a formula, if you do not plan to do your own preprocessing]
+
+---
+
+# Preprocess k-fold resamples?
+
+```{r}
+set.seed(100)
+alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+---
+
+# `fit_resamples()`
+
+Fit a workflow that bundles a recipe`*` and a model with resampling.
+
+```{r eval=FALSE}
+_wf %>% 
+  fit_resamples(resamples = alz_folds)
+```
+
+
+.footnote[`*` or a formula, if you do not plan to do your own preprocessing]
+
+---
+
+# Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Run the first chunk. Then try our KNN workflow on `alz_folds`. What is the ROC AUC?
+
+```{r echo=FALSE}
+countdown(minutes=3)
+```
+
+---
+
+```{r}
+set.seed(100)
+alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+
+knn_wf %>% 
+  fit_resamples(resamples = alz_folds) %>% 
+  collect_metrics()
+```
+
+---
+
+# Feature Engineering
+
+.pull-left[
+Before
+
+![](https://media.giphy.com/media/Wn74RUT0vjnoU98Hnt/giphy.gif)
+]
+
+--
+
+.pull-right[
+After
+
+![](https://media.giphy.com/media/108GZES8iG0myc/giphy.gif)
+]
+
+---
+
+# `update_recipe()`
+
+Replace the recipe in a workflow.
+
+```{r eval=FALSE}
+_wf %>%
+  update_recipe(glmnet_rec) #<<
+```
+
+---
+
+# `update_model()`
+
+Replace the model in a workflow.
+
+```{r eval=FALSE}
+_wf %>%
+  update_model(tree_mod) #<<
+```
+
+---
+
+# Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Turns out, the same `knn_rec` recipe can also be used to fit a penalized logistic regression model. Let's try it out!
+
+```{r}
+plr_mod <- logistic_reg(penalty = .01, mixture = 1) %>% 
+  set_engine("glmnet") %>% 
+  set_mode("classification")
+
+plr_mod %>% 
+  translate()
+```
+
+```{r echo=FALSE}
+countdown(minutes=3)
+```
+
+---
+
+```{r}
+glmnet_wf <- knn_wf %>% 
+  update_model(plr_mod)
+
+glmnet_wf %>% 
+  fit_resamples(resamples = alz_folds) %>% 
+  collect_metrics() 
+```

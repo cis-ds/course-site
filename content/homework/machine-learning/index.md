@@ -30,17 +30,21 @@ Median student debt in the United States has increased substantially over the pa
 <p class="caption">Figure 1: Median federal debt for students has increased since 2006. Source: <a href="https://www.stlouisfed.org/on-the-economy/2020/january/rising-student-debt-great-recession">Federal Reserve Bank of St. Louis</a></p>
 </div>
 
-`rcfss::scorecard` includes `debt`, which reports the median debt of students after leaving school in 2016.
+`rcfss::scorecard` includes `debt`, which reports the median debt of students after leaving school in 2019.
 
-1. Estimate a basic (single variable) linear regression model of the relationship between the average annual total cost of attendance, including tuition and fees, books and supplies, and living expenses (`cost`) and median debt of students post-graduation. That is, predict the median student's debt load as a function of the schools average annual cost of attendance. Visualize the model using `ggplot()` and determine whether there appears to be a significant relationship.
+{{% callout alert %}}
 
-    {{% callout note %}}
-    
-For the visualization, you can either generate it manually using the predicted values from the linear regression model, or you can generate it within `geom_smooth()` automatically.
-    
-    {{% /callout %}}
-    
-1. Estimate a linear regression model of student debt given the variables you have available. You can specify the model in whatever form you choose (e.g. use all variables, add higher-order polynomial terms, convert variables to factors). Present the results of the model as a regression results table (i.e. a tidy, clean looking table presenting the coefficients/standard errors with human-readable labels) and through some set of visualizations. Provide written analysis interpreting the results.
+For all models, exclude `unitid` and `name` as predictors. These serve as id variables in the data set and uniquely identify each observation. They are not useful in predicting an outcome of interest.
+
+{{% /callout %}}
+
+1. Using the `tidymodels` framework, estimate a basic linear regression model to predict `debt` as a function of all the other variables in the dataset except for `state` and `openadmp`. Report the RMSE for the model.^[View the [documentation for `yardstick`](https://yardstick.tidymodels.org/reference/index.html#section-regression-metrics) to find the appropriate function for RMSE.]
+1. Estimate the same linear regression model, but this time implement 10-fold cross-validation. Report the RMSE for the model.
+1. Estimate a decision tree model to predict `debt` using 10-fold cross-validation. Use the `rpart` engine. Report the RMSE for the model.
+
+## For those looking to stretch themselves
+
+Estimate one or more models which utilize some aspect of feature engineering or [model tuning](/notes/tune-models/). Discuss the process you used to estimate the model and report on its performance.
 
 # Part 2: Predicting attitudes towards racist college professors
 
@@ -58,11 +62,33 @@ The outcome of interest `colrac` is a factor variable coded as either `"ALLOWED"
 
 {{% callout note %}}
 
-Make sure you are using the most recent version of `rcfss` (currently version 0.2.1). If you cannot find `gss` in the package, please reinstall `rcfss` so you are running the most up-to-date version.
+Use the `gss` data frame, **not `gss_colrac`**. To ensure you have the correct data frame loaded, you can run:
+
+```r
+data("gss", package = "rcfss")
+```
 
 {{% /callout %}}
 
-You will estimate a logistic regression model predicting whether or not an individual believes the person should be allowed to teach. As before, the specification of that model is entirely up to you. Present your results using some combination of techniques learned this week [in class](/syllabus/working-with-statistical-models/). Your submission should be written in the style of a short report focusing on the substantive question on attitudes towards racist college professors. I expect around 500-750 words of written analysis, supplemented by the results of your statistical model.
+{{% callout alert %}}
+
+For all models, exclude `id` and `wtss` as predictors. These serve as id variables in the data set and uniquely identify each observation. They are not useful in predicting an outcome of interest.
+
+{{% /callout %}}
+
+1. Estimate a logistic regression model to predict `colrac` as a function of `age`, `black`, `degree`, `partyid_3`, `sex,` and `south`. Implement 10-fold cross-validation. Report the accuracy of the model.
+1. Estimate a random forest model to predict `colrac` as a function of all the other variables in the dataset (except `id` and `wtss`). In order to do this, you need to **impute** missing values for all the predictor columns. This means replacing missing values (`NA`) with plausible values given what we know about the other observations.
+    - Remove rows with an `NA` for `colrac` - we want to omit observations with missing values for outcomes, not impute them
+    - Use median imputation for numeric predictors
+    - Use modal imputation for nominal predictors
+    
+    Implement 10-fold cross-validation. Report the accuracy of the model.
+1. Estimate a $5$-nearest neighbors model to predict `colrac`. Use `recipes` to prepare the data set for training this model (e.g. scaling and normalizing variables, ensuring all predictors are numeric). Be sure to also perform the same preprocessing as for the random forest model. **Make sure your step order is correct for the recipe.** Report the accuracy of the model.
+1. Estimate a ridge logistic regression model to predict `colrac`.^[`logistic_reg(penalty = .01, mixture = 0)`] Use the same recipe as for the $5$-nearest neighbors model. Implement 10-fold cross-validation, and utilize the same recipe as for the $k$-nearest neighbors model.
+
+## For those looking to stretch themselves
+
+Estimate some set of additional models which utilize some aspect of feature engineering or [model tuning](/notes/tune-models/). Discuss the process you used to estimate the model and report on its performance.
 
 {{% callout note %}}
 
