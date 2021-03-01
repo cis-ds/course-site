@@ -399,12 +399,12 @@ ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
   coord_flip()
 ```
 
-`get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2012-2016 ACS for counties in Illinois.
+`get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2014-2019 ACS for each state.
 
 ```{r income-usa}
 usa_inc <- get_acs(geography = "state", 
                    variables = c(medincome = "B19013_001"), 
-                   year = 2016)
+                   year = 2019)
 usa_inc
 ```
 
@@ -419,7 +419,7 @@ usa_inc %>%
   scale_y_continuous(labels = scales::dollar) +
   coord_flip() +
   labs(title = "Household income by state",
-       subtitle = "2012-2016 American Community Survey",
+    subtitle = "2019 American Community Survey (five-year estimates)",
        x = "",
        y = "ACS estimate (bars represent margin of error)")
 ```
@@ -430,14 +430,14 @@ usa_inc %>%
 
 ### Drawing maps
 
-`tidycensus` also can return [simple feature geometry](/notes/simple-features/) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](/notes/vector-maps/) Let's look at median household income by Census tracts from the 2012-2016 ACS in Loudoun County, Virginia:
+`tidycensus` also can return [simple feature geometry](/notes/simple-features/) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](/notes/vector-maps/) Let's look at median household income by Census tracts from the 2014-2019 ACS in Loudoun County, Virginia:
 
 ```{r loudoun-sf, message = FALSE, results = "hide"}
 loudoun <- get_acs(state = "VA",
                    county = "Loudoun",
                    geography = "tract", 
                    variables = c(medincome = "B19013_001"), 
-                   year = 2016,
+                   year = 2019,
                    geometry = TRUE)
 ```
 
@@ -449,10 +449,13 @@ This looks similar to the previous output but because we set `geometry = TRUE` i
 
 ```{r loudoun-sf-plot, dependson = "loudoun-sf"}
 ggplot(data = loudoun) +
-  geom_sf(aes(fill = estimate, color = estimate)) + 
-  coord_sf(crs = 26911) + 
-  scale_fill_viridis(option = "magma") + 
-  scale_color_viridis(option = "magma")
+  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  coord_sf(crs = 26911) +
+  scale_fill_viridis(
+    option = "magma",
+    labels = scales::dollar,
+    aesthetics = c("fill", "color")
+  )
 ```
 
 ## Acknowledgments

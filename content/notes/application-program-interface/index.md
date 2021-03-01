@@ -700,17 +700,17 @@ ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/asia-total-pop-1.png" width="672" />
 
-`get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2012-2016 ACS for counties in Illinois.
+`get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2014-2019 ACS for each state.
 
 
 ```r
 usa_inc <- get_acs(geography = "state", 
                    variables = c(medincome = "B19013_001"), 
-                   year = 2016)
+                   year = 2019)
 ```
 
 ```
-## Getting data from the 2012-2016 5-year ACS
+## Getting data from the 2015-2019 5-year ACS
 ```
 
 ```r
@@ -721,16 +721,16 @@ usa_inc
 ## # A tibble: 52 x 5
 ##    GEOID NAME                 variable  estimate   moe
 ##    <chr> <chr>                <chr>        <dbl> <dbl>
-##  1 01    Alabama              medincome    44758   314
-##  2 02    Alaska               medincome    74444   809
-##  3 04    Arizona              medincome    51340   231
-##  4 05    Arkansas             medincome    42336   234
-##  5 06    California           medincome    63783   188
-##  6 08    Colorado             medincome    62520   287
-##  7 09    Connecticut          medincome    71755   473
-##  8 10    Delaware             medincome    61017   723
-##  9 11    District of Columbia medincome    72935  1164
-## 10 12    Florida              medincome    48900   200
+##  1 01    Alabama              medincome    50536   304
+##  2 02    Alaska               medincome    77640  1015
+##  3 04    Arizona              medincome    58945   266
+##  4 05    Arkansas             medincome    47597   328
+##  5 06    California           medincome    75235   232
+##  6 08    Colorado             medincome    72331   370
+##  7 09    Connecticut          medincome    78444   553
+##  8 10    Delaware             medincome    68287   696
+##  9 11    District of Columbia medincome    86420  1008
+## 10 12    Florida              medincome    55660   220
 ## # … with 42 more rows
 ```
 
@@ -746,7 +746,7 @@ usa_inc %>%
   scale_y_continuous(labels = scales::dollar) +
   coord_flip() +
   labs(title = "Household income by state",
-       subtitle = "2012-2016 American Community Survey",
+    subtitle = "2019 American Community Survey (five-year estimates)",
        x = "",
        y = "ACS estimate (bars represent margin of error)")
 ```
@@ -759,7 +759,7 @@ usa_inc %>%
 
 ### Drawing maps
 
-`tidycensus` also can return [simple feature geometry](/notes/simple-features/) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](/notes/vector-maps/) Let's look at median household income by Census tracts from the 2012-2016 ACS in Loudoun County, Virginia:
+`tidycensus` also can return [simple feature geometry](/notes/simple-features/) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](/notes/vector-maps/) Let's look at median household income by Census tracts from the 2014-2019 ACS in Loudoun County, Virginia:
 
 
 ```r
@@ -767,7 +767,7 @@ loudoun <- get_acs(state = "VA",
                    county = "Loudoun",
                    geography = "tract", 
                    variables = c(medincome = "B19013_001"), 
-                   year = 2016,
+                   year = 2019,
                    geometry = TRUE)
 ```
 
@@ -780,31 +780,31 @@ loudoun
 ## Simple feature collection with 65 features and 5 fields
 ## geometry type:  MULTIPOLYGON
 ## dimension:      XY
-## bbox:           xmin: -77.96196 ymin: 38.84645 xmax: -77.32828 ymax: 39.32419
+## bbox:           xmin: -77.9622 ymin: 38.84621 xmax: -77.32828 ymax: 39.32419
 ## geographic CRS: NAD83
 ## First 10 features:
 ##          GEOID                                           NAME  variable
-## 1  51107610503 Census Tract 6105.03, Loudoun County, Virginia medincome
-## 2  51107610504 Census Tract 6105.04, Loudoun County, Virginia medincome
-## 3  51107611006 Census Tract 6110.06, Loudoun County, Virginia medincome
-## 4  51107611013 Census Tract 6110.13, Loudoun County, Virginia medincome
-## 5  51107611205 Census Tract 6112.05, Loudoun County, Virginia medincome
-## 6  51107610505 Census Tract 6105.05, Loudoun County, Virginia medincome
-## 7  51107610603 Census Tract 6106.03, Loudoun County, Virginia medincome
-## 8  51107611011 Census Tract 6110.11, Loudoun County, Virginia medincome
-## 9  51107611014 Census Tract 6110.14, Loudoun County, Virginia medincome
-## 10 51107611501 Census Tract 6115.01, Loudoun County, Virginia medincome
+## 1  51107611005 Census Tract 6110.05, Loudoun County, Virginia medincome
+## 2  51107611013 Census Tract 6110.13, Loudoun County, Virginia medincome
+## 3  51107611010 Census Tract 6110.10, Loudoun County, Virginia medincome
+## 4  51107611802 Census Tract 6118.02, Loudoun County, Virginia medincome
+## 5  51107610504 Census Tract 6105.04, Loudoun County, Virginia medincome
+## 6  51107611300    Census Tract 6113, Loudoun County, Virginia medincome
+## 7  51107610702 Census Tract 6107.02, Loudoun County, Virginia medincome
+## 8  51107611602 Census Tract 6116.02, Loudoun County, Virginia medincome
+## 9  51107611601 Census Tract 6116.01, Loudoun County, Virginia medincome
+## 10 51107611014 Census Tract 6110.14, Loudoun County, Virginia medincome
 ##    estimate   moe                       geometry
-## 1    150982  6323 MULTIPOLYGON (((-77.54714 3...
-## 2    108042  4652 MULTIPOLYGON (((-77.56114 3...
-## 3    140365 16252 MULTIPOLYGON (((-77.48743 3...
-## 4    144638 22972 MULTIPOLYGON (((-77.50032 3...
-## 5    101910  9251 MULTIPOLYGON (((-77.39145 3...
-## 6     45226  7533 MULTIPOLYGON (((-77.56454 3...
-## 7     50818  6995 MULTIPOLYGON (((-77.5735 39...
-## 8     96875 14504 MULTIPOLYGON (((-77.51117 3...
-## 9    118077 17241 MULTIPOLYGON (((-77.48567 3...
-## 10    71356 17165 MULTIPOLYGON (((-77.43106 3...
+## 1    140464 12264 MULTIPOLYGON (((-77.50754 3...
+## 2    162390 14937 MULTIPOLYGON (((-77.50032 3...
+## 3     68162 21264 MULTIPOLYGON (((-77.48152 3...
+## 4    161125 16451 MULTIPOLYGON (((-77.54472 3...
+## 5    112351 11625 MULTIPOLYGON (((-77.56114 3...
+## 6    115145 15114 MULTIPOLYGON (((-77.39662 3...
+## 7    132958  9530 MULTIPOLYGON (((-77.72496 3...
+## 8     83356 19510 MULTIPOLYGON (((-77.42181 3...
+## 9    102125 16320 MULTIPOLYGON (((-77.43496 3...
+## 10   119877 12721 MULTIPOLYGON (((-77.48567 3...
 ```
 
 This looks similar to the previous output but because we set `geometry = TRUE` it is now a simple features data frame with a `geometry` column defining the geographic feature. We can visualize it using `geom_sf()` and `viridis::scale_*_viridis()` to adjust the color palette.
@@ -812,10 +812,13 @@ This looks similar to the previous output but because we set `geometry = TRUE` i
 
 ```r
 ggplot(data = loudoun) +
-  geom_sf(aes(fill = estimate, color = estimate)) + 
-  coord_sf(crs = 26911) + 
-  scale_fill_viridis(option = "magma") + 
-  scale_color_viridis(option = "magma")
+  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  coord_sf(crs = 26911) +
+  scale_fill_viridis(
+    option = "magma",
+    labels = scales::dollar,
+    aesthetics = c("fill", "color")
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/loudoun-sf-plot-1.png" width="672" />
@@ -846,53 +849,65 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-03-01                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package      * version date       lib source                              
 ##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                      
 ##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                      
 ##  base64enc      0.1-3   2015-07-28 [1] CRAN (R 4.0.0)                      
-##  blogdown       1.0.5   2021-01-18 [1] Github (rstudio/blogdown@dcf9ddc)   
+##  blogdown       1.1     2021-01-19 [1] CRAN (R 4.0.3)                      
 ##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)                      
 ##  broom        * 0.7.3   2020-12-16 [1] CRAN (R 4.0.2)                      
 ##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                      
 ##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                      
-##  cli            2.2.0   2020-11-20 [1] CRAN (R 4.0.2)                      
+##  class          7.3-17  2020-04-26 [1] CRAN (R 4.0.3)                      
+##  classInt       0.4-3   2020-04-07 [1] CRAN (R 4.0.0)                      
+##  cli            2.3.1   2021-02-23 [1] CRAN (R 4.0.3)                      
+##  codetools      0.2-18  2020-11-04 [1] CRAN (R 4.0.2)                      
 ##  colorspace     2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                      
-##  crayon         1.3.4   2017-09-16 [1] CRAN (R 4.0.0)                      
+##  crayon         1.4.1   2021-02-08 [1] CRAN (R 4.0.2)                      
 ##  DBI            1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                      
 ##  dbplyr         2.0.0   2020-11-03 [1] CRAN (R 4.0.2)                      
+##  debugme        1.1.0   2017-10-22 [1] CRAN (R 4.0.0)                      
 ##  desc           1.2.0   2018-05-01 [1] CRAN (R 4.0.0)                      
 ##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                      
 ##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                      
-##  dplyr        * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)                      
+##  dplyr        * 1.0.4   2021-02-02 [1] CRAN (R 4.0.2)                      
 ##  DT             0.16    2020-10-13 [1] CRAN (R 4.0.2)                      
+##  e1071          1.7-4   2020-10-14 [1] CRAN (R 4.0.2)                      
 ##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                      
 ##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)                      
-##  fansi          0.4.1   2020-01-08 [1] CRAN (R 4.0.0)                      
+##  fansi          0.4.2   2021-01-15 [1] CRAN (R 4.0.2)                      
+##  farver         2.0.3   2020-01-16 [1] CRAN (R 4.0.0)                      
 ##  forcats      * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)                      
+##  foreign        0.8-81  2020-12-22 [1] CRAN (R 4.0.2)                      
 ##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                      
 ##  functional     0.6     2014-07-16 [1] CRAN (R 4.0.0)                      
 ##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                      
+##  geonames     * 0.999   2019-02-19 [1] CRAN (R 4.0.0)                      
 ##  ggplot2      * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                      
 ##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                      
 ##  gridExtra      2.3     2017-09-09 [1] CRAN (R 4.0.0)                      
 ##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                      
 ##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                      
 ##  here           1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                      
+##  highr          0.8     2019-03-20 [1] CRAN (R 4.0.0)                      
 ##  hms            0.5.3   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools      0.5.1   2021-01-12 [1] CRAN (R 4.0.2)                      
+##  htmltools      0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)                      
 ##  htmlwidgets    1.5.3   2020-12-10 [1] CRAN (R 4.0.2)                      
 ##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                      
 ##  janeaustenr    0.1.5   2017-06-10 [1] CRAN (R 4.0.0)                      
 ##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  knitr          1.30    2020-09-22 [1] CRAN (R 4.0.2)                      
+##  KernSmooth     2.23-18 2020-10-29 [1] CRAN (R 4.0.2)                      
+##  knitr          1.31    2021-01-27 [1] CRAN (R 4.0.2)                      
+##  labeling       0.4.2   2020-10-20 [1] CRAN (R 4.0.2)                      
 ##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.3)                      
-##  lifecycle      0.2.0   2020-03-06 [1] CRAN (R 4.0.0)                      
+##  lifecycle      1.0.0   2021-02-15 [1] CRAN (R 4.0.2)                      
 ##  lubridate      1.7.9.2 2021-01-18 [1] Github (tidyverse/lubridate@aab2e30)
 ##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                      
 ##  manifestoR   * 1.5.0   2020-11-29 [1] CRAN (R 4.0.2)                      
+##  maptools       1.0-2   2020-08-24 [1] CRAN (R 4.0.2)                      
 ##  Matrix         1.3-0   2020-12-22 [1] CRAN (R 4.0.2)                      
 ##  memoise        1.1.0   2017-04-21 [1] CRAN (R 4.0.0)                      
 ##  mnormt         2.0.2   2020-09-01 [1] CRAN (R 4.0.2)                      
@@ -900,22 +915,24 @@ devtools::session_info()
 ##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                      
 ##  nlme           3.1-151 2020-12-10 [1] CRAN (R 4.0.2)                      
 ##  NLP          * 0.2-1   2020-10-14 [1] CRAN (R 4.0.2)                      
-##  pillar         1.4.7   2020-11-20 [1] CRAN (R 4.0.2)                      
+##  pillar         1.5.0   2021-02-22 [1] CRAN (R 4.0.3)                      
 ##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                      
 ##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                      
-##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.0)                      
+##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.2)                      
 ##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                      
 ##  processx       3.4.5   2020-11-30 [1] CRAN (R 4.0.2)                      
 ##  ps             1.5.0   2020-12-05 [1] CRAN (R 4.0.2)                      
 ##  psych          2.0.12  2020-12-16 [1] CRAN (R 4.0.2)                      
 ##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                      
 ##  R6             2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                      
+##  rappdirs       0.3.1   2016-03-28 [1] CRAN (R 4.0.0)                      
 ##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.0.0)                      
 ##  Rcpp           1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                      
 ##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                      
 ##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                      
 ##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex         0.3.0   2019-05-16 [1] CRAN (R 4.0.0)                      
+##  reprex         1.0.0   2021-01-27 [1] CRAN (R 4.0.2)                      
+##  rgdal          1.5-18  2020-10-13 [1] CRAN (R 4.0.2)                      
 ##  rlang          0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                      
 ##  rmarkdown      2.6     2020-12-14 [1] CRAN (R 4.0.2)                      
 ##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                      
@@ -923,27 +940,34 @@ devtools::session_info()
 ##  rvest          0.3.6   2020-07-25 [1] CRAN (R 4.0.2)                      
 ##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                      
 ##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                      
+##  sf             0.9-6   2020-09-13 [1] CRAN (R 4.0.2)                      
 ##  slam           0.1-48  2020-12-03 [1] CRAN (R 4.0.2)                      
 ##  SnowballC      0.7.0   2020-04-01 [1] CRAN (R 4.0.0)                      
+##  sp             1.4-4   2020-10-07 [1] CRAN (R 4.0.2)                      
 ##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                      
 ##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                      
-##  testthat       3.0.1   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  tibble       * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)                      
+##  testthat       3.0.2   2021-02-14 [1] CRAN (R 4.0.2)                      
+##  tibble       * 3.0.6   2021-01-29 [1] CRAN (R 4.0.2)                      
+##  tidycensus   * 0.11    2020-12-14 [1] CRAN (R 4.0.2)                      
 ##  tidyr        * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)                      
 ##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                      
 ##  tidytext     * 0.2.6   2020-09-20 [1] CRAN (R 4.0.2)                      
 ##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                      
+##  tigris         1.0     2020-07-13 [1] CRAN (R 4.0.2)                      
 ##  tm           * 0.7-8   2020-11-18 [1] CRAN (R 4.0.2)                      
 ##  tmvnsim        1.0-2   2016-12-15 [1] CRAN (R 4.0.0)                      
 ##  tokenizers     0.2.1   2018-03-29 [1] CRAN (R 4.0.0)                      
+##  units          0.6-7   2020-06-13 [1] CRAN (R 4.0.2)                      
 ##  usethis        2.0.0   2020-12-10 [1] CRAN (R 4.0.2)                      
+##  utf8           1.1.4   2018-05-24 [1] CRAN (R 4.0.0)                      
+##  uuid           0.1-4   2020-02-26 [1] CRAN (R 4.0.0)                      
 ##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                      
 ##  viridis      * 0.5.1   2018-03-29 [1] CRAN (R 4.0.0)                      
 ##  viridisLite  * 0.3.0   2018-02-01 [1] CRAN (R 4.0.0)                      
 ##  wbstats      * 1.0.4   2020-12-05 [1] CRAN (R 4.0.2)                      
-##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)                      
+##  withr          2.4.1   2021-01-26 [1] CRAN (R 4.0.2)                      
 ##  wordcloud    * 2.6     2018-08-24 [1] CRAN (R 4.0.0)                      
-##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)                      
+##  xfun           0.21    2021-02-10 [1] CRAN (R 4.0.2)                      
 ##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                      
 ##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                      
 ##  zoo            1.8-8   2020-05-02 [1] CRAN (R 4.0.0)                      
