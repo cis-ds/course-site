@@ -20,10 +20,8 @@ knitr::opts_chunk$set(cache = TRUE)
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
+library(tidymodels)
 library(tidytext)
-library(stringr)
-library(caret)
-library(tm)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -31,11 +29,11 @@ theme_set(theme_minimal())
 
 A common task in social science involves hand-labeling sets of documents for specific variables (e.g. manual coding). In previous years, this required hiring a set of research assistants and training them to read and evaluate text by hand. It was expensive, prone to error, required extensive data quality checks, and was infeasible if you had an extremely large corpus of text that required classification.
 
-Alternatively, we can now use statistical learning models to classify text into specific sets of categories. This is known as **supervised learning**. The basic process is:
+Alternatively, we can now use machine learning models to classify text into specific sets of categories. This is known as **supervised learning**. The basic process is:
 
 1. Hand-code a small set of documents (say $1000$) for whatever variable(s) you care about
-1. Train a statistical learning model on the hand-coded data, using the variable as the outcome of interest and the text features of the documents as the predictors
-1. Evaluate the effectiveness of the statistical learning model via [cross-validation](/notes/cross-validation/)
+1. Train a machine learning model on the hand-coded data, using the variable as the outcome of interest and the text features of the documents as the predictors
+1. Evaluate the effectiveness of the machine learning model via [cross-validation](/notes/resampling/)
 1. Once you have trained a model with sufficient predictive accuracy, apply the model to the remaining set of documents that have never been hand-coded (say $1000000$)
 
 ## Sample set of documents: `USCongress`
@@ -64,188 +62,231 @@ major_topics <- tibble(
 
 `USCongress` contains a sample of hand-labeled bills from the United States Congress. For each bill we have a text description of the bill's purpose (e.g. "To amend the Immigration and Nationality Act in regard to Caribbean-born immigrants.") as well as the bill's [major policy topic code corresponding to the subject of the bill](http://www.comparativeagendas.net/pages/master-codebook). There are 20 major policy topics according to this coding scheme (e.g. Macroeconomics, Civil Rights, Health). These topic codes have been labeled by hand. The current dataset only contains a sample of bills from the 107th Congress (2001-03). If we wanted to obtain policy topic codes for all bills introduced over a longer period, we would have to manually code tens of thousands if not millions of bill descriptions. Clearly a task outside of our capabilities.
 
-Instead, we can build a statistical learning model which predicts the major topic code of a bill given its text description. These notes outline a potential `tidytext` workflow for such an approach.
+Instead, we can build a machine learning model which predicts the major topic code of a bill given its text description. These notes outline a potential `tidymodels`/`tidytext` workflow for such an approach.
 
-## Create tidy text data frame
+## Split the data set
 
-First we convert `USCongress` into a tidy text data frame.
+First we need to convert `major` to a factor variable based on the levels defined in `label`. Then we can split the data into [training and testing datasets](/notes/resampling/) using `initial_split()` from `rsample`.
 
-```{r convert-tidytext, dependson = "get-docs"}
-(congress_tokens <- congress %>%
-   unnest_tokens(output = word, input = text) %>%
-   # remove numbers
-   filter(!str_detect(word, "^[0-9]*$")) %>%
-   # remove stop words
-   anti_join(stop_words) %>%
-   # stem the words
-   mutate(word = SnowballC::wordStem(word)))
+```{r split, dependson = "get-docs"}
+set.seed(123)
+
+congress <- congress %>%
+  mutate(major = factor(x = major, levels = major, labels = label))
+
+congress_split <- initial_split(data = congress, strata = major, prop = .8)
+congress_split
+
+congress_train <- training(congress_split)
+congress_test <- testing(congress_split)
 ```
 
-Notice there are a few key steps involved here:
+## Preprocessing the data frame
 
-* `unnest_tokens(output = word, input = text)` - converts the data frame to a tidy text data frame and automatically converts all tokens to lowercase
-* `filter(!str_detect(word, "^[0-9]*$"))` - removes all tokens which are strictly numbers. Numbers are generally not useful features in classifying documents (though sometimes they may be useful - you can compare results with and without numbers)
-* `anti_join(stop_words)` - remove common stop words that are uninformative and will likely not be useful in predicting major topic codes
-* `mutate(word = SnowballC::wordStem(word)))` - uses the [Porter stemming algorithm](https://tartarus.org/martin/PorterStemmer/) to stem all the tokens to their root word
+Next we need to preprocess the data in preparation for modeling. Currently we have text data, and we need to construct numeric, quantitative features for machine learning based on that text. As before, we can use `recipes` to construct the set of preprocessing steps we want to perform. This time, we only use the `text` column for the model.
 
-Most of these steps are to reduce the number of text features in the set of documents. This is necessary because as you increase the number of observations (i.e. documents) and variables/features (i.e. tokens/words), the resulting statistical learning model will become more complex and harder to compute. Given a large enough corpus or set of variables, you may not be able to estimate many statistical learning models with your local computer - you would need to offload the work to a remote computing cluster.
-
-## Create document-term matrix
-
-Tidy text data frames are one-row-per-token, but for statistical learning algorithms we need our data in a one-row-per-document format. That is, a document-term matrix. We can use `cast_dtm()` to create a document-term matrix.
-
-```{r dtm, dependson = "convert-tidytext"}
-(congress_dtm <- congress_tokens %>%
-   # get count of each token in each document
-   count(ID, word) %>%
-   # create a document-term matrix with all features and tf weighting
-   cast_dtm(document = ID, term = word, value = n))
+```{r recipe, dependson = "split"}
+congress_rec <- recipe(major ~ text, data = congress_train)
 ```
 
-## Weighting
+Now we add steps to process the text of the legislation summaries. We use `textrecipes` to handle the `text` variable. First we **tokenize** the text to words with `step_tokenize()`. By default this uses `tokenizers::tokenize_words()`. Next we remove stop words with `step_stopwords()`; the default choice is the Snowball stop word list, but custom lists can be provided too. Before we calculate tf-idf we use `step_tokenfilter()` to only keep the 500 most frequent tokens, to avoid creating too many variables in our first model. To finish, we use `step_tfidf()` to compute tf-idf.
 
-The default approach is to use [**term frequency** (tf) weighting](http://tidytextmining.com/tfidf.html), or a simple count of how frequently a word occurs in a document. An alternative approach is **term frequency inverse document frequency** (tf-idf), which is the frequency of a term adjusted for how rarely it is used. To generate tf-idf and use this for the document-term matrix, we can change the weighting function in `cast_dtm()`:^[We use `weightTfIdf()` from the `tm` package to calculate the new weights. [`tm`](http://tm.r-forge.r-project.org/) is a robust package in R for text mining and has many useful features for text analysis (though is not part of the `tidyverse`, so it may take some familiarization).]
+```{r recipe-steps, dependson = "recipe"}
+library(textrecipes)
 
-```{r dtm-tf-idf, dependson = "convert-tidytext"}
-congress_tokens %>%
-  # get count of each token in each document
-  count(ID, word) %>%
-  # create a document-term matrix with all features and tf-idf weighting
-  cast_dtm(document = ID, term = word, value = n,
-           weighting = tm::weightTfIdf)
+congress_rec <- congress_rec %>%
+  step_tokenize(text) %>%
+  step_stopwords(text) %>%
+  step_tokenfilter(text, max_tokens = 500) %>%
+  step_tfidf(text)
 ```
 
-For now, let's just continue to use the term frequency approach. But it is a good idea to compare the results of tf vs. tf-idf to see if one method improves model performance over the other method.
+## Train a model
 
-## Sparsity
+Using our existing `workflow()` approach to fitting a model, we can establish a workflow using a relatively straightforward type of classification model: naive Bayes. Naive Bayes is particularly useful as it can handle a large number of features.
 
-Another approach to reducing model complexity is to remove sparse terms from the model. That is, remove tokens which do not appear across many documents. It is similar to using tf-idf weighting, but directly deletes sparse variables from the document-term matrix. This results in a statistical learning model with a much smaller set of variables.
+```{r nb-model}
+library(discrim)
+nb_spec <- naive_Bayes() %>%
+  set_mode("classification") %>%
+  set_engine("naivebayes")
 
-The `tm` package contains the `removeSparseTerms()` function, which does this task. The first argument is a document-term matrix, and the second argument defines the maximal allowed sparsity in the range from 0 to 1. So for instance, `sparse = .99` would remove any tokens which are missing from more than $99\%$ of the documents in the corpus (i.e. the token must appear in at least $1\%$ of the documents to be retained). Notice the effect changing this value has on the number of variables (tokens) retained in the document-term matrix:
-
-```{r removesparseterms, dependson = "convert-tidytext"}
-removeSparseTerms(congress_dtm, sparse = .99)
-removeSparseTerms(congress_dtm, sparse = .95)
-removeSparseTerms(congress_dtm, sparse = .90)
+nb_spec
 ```
 
-It will be tough to build an effective model with just 16 tokens. Normal values for `sparse` are generally around $.99$. Let’s use that to create and store our final document-term matrix.
+```{r nb-fit, dependson = c("recipe-steps", "nb-model")}
+nb_wf <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(nb_spec)
+nb_wf
 
-```{r remove-sparse-terms-final, dependson = "dtm"}
-(congress_dtm <- removeSparseTerms(congress_dtm, sparse = .99))
+nb_wf %>%
+  fit(data = congress_train)
 ```
 
-## Exploratory analysis
+## Evaluation
 
-Before building a fancy schmancy statistical model, we can first investigate if there are certain terms or tokens associated with each major topic category. We can do this purely with `tidytext` tools: we directly calculate the tf-idf for each term **treating each major topic code as the document**, rather than the individual bill. Then we can visualize the tokens with the highest tf-idf associated with each topic.^[See [here](http://tidytextmining.com/tfidf.html) for a more in-depth explanation of this approach.]
+As we have already seen, we should not use the test set to compare models or different parameters. Instead, we can use **cross-validation** to evaluate our model.
 
-To calculate tf-idf directly in the data frame, first we `count()` the frequency each token appears in bills from each major topic code, then use `bind_tf_idf()` to calculate the tf-idf for each token in each topic:^[Notice our effort to remove numbers was not exactly perfect, but it probably removed a good portion of them.]
+Here, let's reformulate this to use naive Bayes classification with 10-fold cross-validation sets.
 
-```{r bind-tf-idf, dependson = "convert-tidytext"}
-(congress_tfidf <- congress_tokens %>%
-   count(label, word) %>%
-   bind_tf_idf(term = word, document = label, n = n))
+```{r congress-cv, dependson = "split"}
+set.seed(123)
+
+congress_folds <- vfold_cv(data = congress_train, strata = major)
+congress_folds
 ```
 
-Now all we need to do is plot the words with the highest tf-idf scores for each category. Since there are 20 major topics and a 20 panel facet graph is very dense, let's just look at four of the categories:
-
-```{r plot-tf-idf, dependson = "bind-tf-idf"}
-# sort the data frame and convert word to a factor column
-plot_congress <- congress_tfidf %>%
-  arrange(desc(tf_idf)) %>%
-  mutate(word = factor(word, levels = rev(unique(word))))
-
-# graph the top 10 tokens for 4 categories
-plot_congress %>%
-  filter(label %in% c("Macroeconomics",
-                      "Civil rights, minority issues, civil liberties",
-                      "Health", "Education")) %>%
-  group_by(label) %>%
-  top_n(10) %>%
-  ungroup() %>%
-  mutate(word = reorder_within(word, tf_idf, label)) %>%
-  ggplot(aes(word, tf_idf)) +
-  geom_col() +
-  scale_x_reordered() +
-  labs(x = NULL, y = "tf-idf") +
-  facet_wrap(~ label, scales = "free") +
-  coord_flip()
+```{r nb-cv, dependson = c("congress-cv", "nb-fit")}
+nb_cv <- nb_wf %>%
+  fit_resamples(
+    congress_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
 ```
 
-Do these make sense? I think they do (well, some of them). This suggests a statistical learning model may find these tokens useful in predicting major topic codes.
+We can extract relevant information using `collect_metrics()` and `collect_predictions()`.
 
-## Estimate model
+```{r nb-cv-info, dependson = "nb-cv"}
+nb_cv_metrics <- collect_metrics(nb_cv)
+nb_cv_predictions <- collect_predictions(nb_cv)
 
-Now to estimate the model, we return to the `caret` package. Let's try a random forest model first. Here is the syntax for estimating the model:
-
-```r
-congress_rf <- train(x = as.matrix(congress_dtm),
-                     y = factor(congress$major),
-                     method = "ranger",
-                     num.trees = 200,
-                     trControl = trainControl(method = "oob"))
+nb_cv_metrics
 ```
 
-Note the differences from [how we specified them before with a standard data frame](/notes/decision-trees/#estimating-a-random-forest).
+The default performance parameters for multiclass classification are accuracy and ROC AUC (area under the receiver operator curve). The accuracy is the percentage of accurate predictions. For both metrics, values closer to 1 are better. These results suggest the naive Bayes model is performing quite poorly.
 
-* `x = as.matrix(congress_dtm)` - instead of using a formula, we pass the independent and dependent variables separately into `train()`. `x` needs to be a simple matrix, data frame, or sparse matrix. These are specific types of objects in R. `congress_dtm` is a `DocumentTermMatrix`, so we use `as.matrix()` to convert it to a simple matrix.
-* `y = factor(congress$major)` - we return to the original `congress` data frame to obtain the vector of outcome values for each document. Here, this is the major topic code associated with each bill. The important thing is that the order of documents in `x` remains the same as the order of documents in `y`, so that each document is associated with the correct outcome. Because `congress$major` is a numeric vector, we need to convert it to a factor vector so that we perform classification (and not regression).
-* We use `method = "ranger"` to implement the random forest model. It is much faster and more efficient than the standard `rf` model, necessary due to the number of variables (tokens) in the model. The argument for setting the number of trees is now `num.trees`.
+The [receiver operator curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) is a plot that shows the sensitivity at different thresholds. It demonstrates how well a classification model can distinguish between classes.
 
-Otherwise everything else is the same as before. Notice how long it takes to build a random forest model with 10 trees, compared to a more typical random forest model with 200 trees:
-
-```{r rf-train-10, dependson = "remove-sparse-terms-final"}
-# some documents are lost due to not having any relevant tokens after tokenization
-# make sure to remove their associated labels so we have the same number of observations
-congress_slice <- slice(congress, as.numeric(congress_dtm$dimnames$Docs))
-
-library(tictoc)
-
-tic()
-congress_rf_10 <- train(x = as.matrix(congress_dtm),
-                        y = factor(congress_slice$major),
-                        method = "ranger",
-                        num.trees = 10,
-                        importance = "impurity",
-                        trControl = trainControl(method = "oob"))
-toc()
+```{r nb-roc-curve, dependson = "nb-cv-info"}
+nb_cv_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = major, c(starts_with(".pred"), -.pred_class)) %>%
+  autoplot() +
+  labs(
+    color = NULL,
+    title = "Receiver operator curve for Congressional bills",
+    subtitle = "Each resample fold is shown in a different color"
+  )
 ```
 
-```{r rf-train-200, dependson = "remove-sparse-terms-final"}
-tic()
-congress_rf_200 <- train(x = as.matrix(congress_dtm),
-                         y = factor(congress_slice$major),
-                         method = "ranger",
-                         num.trees = 200,
-                         importance = "impurity",
-                         trControl = trainControl(method = "oob"))
-toc()
+Another way to evaluate our model is to evaluate the [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix). A confusion matrix visualizes a model's false positives and false negatives for each class. There is not a trivial way to visualize multiple confusion matrices, so we can look at them individually for a single fold.
+
+```{r nb-confusion, dependson = "nb-cv-info"}
+nb_cv_predictions %>%
+  filter(id == "Fold01") %>%
+  conf_mat(major, .pred_class) %>%
+  autoplot(type = "heatmap")
 ```
 
-This is why it is important to remove sparse features and simplify the document-term matrix as much as possible - the more text features and observations in the document-term matrix, the longer it takes to train the model.
+Ideally all observations would fall on the diagonal. However here we can see that all predictions all under "Health" no matter what the true category.
 
-Otherwise, the result is no different from a model trained on categorical or continuous variables. We can generate the same diagnostics information:
+## Compare to the null model
 
-```{r rf-error, dependson = "rf-train-200"}
-congress_rf_200$finalModel
+We can assess this model by comparing its performance to a "null model", or a baseline model. This baseline is a simple, non-informative model that always predicts the largest class for classification. In the absence of any information about the individual observations, this is the best strategy we can follow to generate predictions.
+
+```{r null-mod, dependson = c("recipe-steps", "congress-cv")}
+null_classification <- null_model() %>%
+  set_engine("parsnip") %>%
+  set_mode("classification")
+
+null_cv <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(null_classification) %>%
+  fit_resamples(
+    congress_folds
+  )
+
+null_cv %>%
+  collect_metrics()
 ```
 
-```{r rf-varimp, dependson = "rf-train-200"}
-congress_rf_10$finalModel %>%
-  # extract variable importance metrics
-  ranger::importance() %>%
-  # convert to a data frame
-  enframe(name = "variable", value = "varimp") %>%
-  top_n(n = 20, wt = varimp) %>%
-  # plot the metrics
-  ggplot(aes(x = fct_reorder(variable, varimp), y = varimp)) +
-  geom_col() +
+Notice the accuracy is the same as for the naive Bayes model. This is because naive Bayes still leads to every observation predicted as "Health", **which is the exact same result as the null model**. Clearly we need a better modeling strategy.
+
+## Concerns regarding multiclass classification
+
+Remember that each bill could fall under one of 20 major policy topics. Compared to binary classification, this is a much harder challenge. For one, the classes are **imbalanced**. That is, there are far more healthcare related bills than other areas.
+
+```{r major-topic-dist, dependson = "get-docs"}
+ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
+  geom_bar() +
   coord_flip() +
-  labs(x = "Token",
-       y = "Variable importance (higher is more important)")
+  labs(
+    title = "Distribution of legislation",
+    subtitle = "By major policy topic",
+    x = NULL,
+    y = "Number of bills"
+  )
 ```
 
-And if we had a test set of observations (or a set of congressional bills never previously hand-coded), we could use this model to predict their major topic codes.
+Many machine learning algorithms (such as naive Bayes) do not handle imbalanced data well, while other algorithms may not even be capable of performing multiclass classification.
+
+There are many different ways to deal with imbalanced data. Here we will take a simple approach, **downsampling**, where observations from the majority classes are removed during training to achieve a balanced class distribution. We rely on the `themis` package for recipes which includes the `step_downsample()` function to perform downsampling.
+
+```{r recipe-downsample, dependson = "recipe-steps"}
+library(themis)
+
+# build on existing recipe
+congress_rec <- congress_rec %>%
+  step_downsample(major)
+congress_rec
+```
+
+Let's also switch to an alternative modeling approach which handles multiclass problems better, support vector machine (SVM).
+
+```{r svm-spec}
+svm_spec <- svm_rbf() %>%
+  set_mode("classification") %>%
+  set_engine("liquidSVM")
+
+svm_spec
+```
+
+```{r svm-wf, dependson = c("recipe-steps", "svm-spec")}
+svm_wf <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(svm_spec)
+
+svm_wf
+```
+
+The `liquidSVM` engine doesn't support class probabilities as output so we need to replace the default metric set with a metric set that doesn't use class probabilities. Here we use accuracy, sensitivity, and specificity.
+
+```{r svm-fit, dependson = "svm-wf"}
+set.seed(123)
+
+svm_cv <- fit_resamples(
+  svm_wf,
+  congress_folds,
+  metrics = metric_set(accuracy),
+  control = control_resamples(save_pred = TRUE)
+)
+svm_cv
+```
+
+```{r svm-metrics, dependson = "svm-fit"}
+svm_cv_metrics <- collect_metrics(svm_cv)
+svm_cv_predictions <- collect_predictions(svm_cv)
+
+svm_cv_metrics
+```
+
+While still low, the accuracy has risen substantially compared to the naive Bayes model. This is typical for multiclass models since the classification task is harder than for binary classification - rather than having one right answer and one wrong answer, there is one right answer and nineteen wrong answers.
+
+```{r svm-confusion, dependson = "svm-metrics"}
+svm_cv_predictions %>%
+  filter(id == "Fold01") %>%
+  conf_mat(major, .pred_class) %>%
+  autoplot(type = "heatmap") +
+  scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 20))
+```
+
+It seems the model is still substantially over-predicting the "other" category, but there are more observations on the diagonal now.
+
+## Acknowledgments
+
+- For more detail on machine learning for text classification, see [*Supervised Machine Learning for Text Analysis in R*](https://smltar.com/mlclassification.html) by Emil Hvitfeldt and Julia Silge
 
 ## Session Info
 
