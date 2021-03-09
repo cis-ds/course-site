@@ -82,9 +82,9 @@ hp_words <- list(
   # create a chapter id column
   group_by(book) %>%
   mutate(chapter = row_number(book)) %>%
+  ungroup() %>%
   # tokenize the data frame
-  unnest_tokens(word, value) %>%
-  ungroup()
+  unnest_tokens(word, value)
 
 hp_words
 ```
@@ -116,11 +116,10 @@ hp_words %>%
   # delete stopwords
   anti_join(stop_words) %>%
   # summarize count per word per book
-  count(book, word, sort = TRUE) %>%
+  count(book, word) %>%
   # get top 15 words per book
   group_by(book) %>%
-  top_n(15) %>%
-  ungroup() %>%
+  slice_max(order_by = n, n = 15) %>%
   mutate(word = reorder_within(word, n, book)) %>%
   # create barplot
   ggplot(aes(x = word, y = n, fill = book)) + 
@@ -136,10 +135,6 @@ hp_words %>%
 
 ```
 ## Joining, by = "word"
-```
-
-```
-## Selecting by n
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/word-freq-1.png" width="672" />
@@ -195,11 +190,10 @@ Check out [this blog post](https://juliasilge.com/blog/reorder-within/) which in
 hp_bing %>%
   # generate frequency count for each word and sentiment
   group_by(sentiment) %>%
-  count(word, sort = TRUE) %>%
+  count(word) %>%
   # extract 10 most frequent pos/neg words
   group_by(sentiment) %>%
-  top_n(10) %>%
-  ungroup() %>%
+  slice_max(order_by = n, n = 10) %>%
   # prep data for sorting each word independently by facet
   mutate(word = reorder_within(word, n, sentiment)) %>%
   # generate the bar plot
@@ -214,10 +208,6 @@ hp_bing %>%
   coord_flip()
 ```
 
-```
-## Selecting by n
-```
-
 <img src="{{< blogdown/postref >}}index_files/figure-html/pos-neg-all-series-1.png" width="672" />
 
 ```r
@@ -225,18 +215,11 @@ hp_bing %>%
 hp_pos_neg_book <- hp_bing %>%
   # generate frequency count for each book, word, and sentiment
   group_by(book, sentiment) %>%
-  count(word, sort = TRUE) %>%
+  count(word) %>%
   # extract 10 most frequent pos/neg words per book
   group_by(book, sentiment) %>%
-  top_n(10) %>%
-  ungroup()
-```
+  slice_max(order_by = n, n = 10)
 
-```
-## Selecting by n
-```
-
-```r
 ## positive words
 hp_pos_neg_book %>%
   filter(sentiment == "positive") %>%
@@ -320,15 +303,14 @@ library(ggwordcloud)
 set.seed(123)   # ensure reproducibility of the wordcloud
 hp_afinn %>%
   # count word frequency across books
-  group_by(word) %>%
-  count(sort = TRUE) %>%
-  # keep only top 150 words for wordcloud
   ungroup() %>%
-  top_n(n = 150, wt = n) %>%
+  count(word) %>%
+  # keep only top 100 words for wordcloud
+  slice_max(order_by = n, n = 100) %>%
   mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
   ggplot(aes(label = word, size = n, angle = angle)) +
-  geom_text_wordcloud_area(rm_outside = TRUE) +
-  scale_size(range = c(2, 15)) +
+  geom_text_wordcloud(rm_outside = TRUE) +
+  scale_size_area(max_size = 15) +
   ggtitle("Most frequent tokens in Harry Potter") +
   theme_minimal()
 ```
@@ -374,17 +356,15 @@ hp_afinn <- hp_afinn %>%
 set.seed(123)   # ensure reproducibility of the wordcloud
 hp_afinn %>%
   # count word frequency across books
-  group_by(word) %>%
-  count(sort = TRUE) %>%
-  # keep only top 150 words for wordcloud
   ungroup() %>%
-  top_n(n = 150, wt = n) %>%
+  count(word) %>%
+  # keep only top 100 words for wordcloud
+  slice_max(order_by = n, n = 100) %>%
   mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
   ggplot(aes(label = word, size = n, angle = angle)) +
-  geom_text_wordcloud_area(rm_outside = TRUE) +
-  scale_size(range = c(1, 15)) +
-  labs(title = "Most frequent tokens in Harry Potter",
-       subtitle = "Except for 'Harry'") +
+  geom_text_wordcloud(rm_outside = TRUE) +
+  scale_size_area(max_size = 15) +
+  ggtitle("Most frequent tokens in Harry Potter") +
   theme_minimal()
 ```
 
@@ -400,7 +380,7 @@ hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book, chapter) %>%
   summarize(value = sum(value)) %>%
-  ggplot(aes(chapter, value, fill = book)) +
+  ggplot(mapping = aes(x = chapter, y = value, fill = book)) +
   geom_col() +
   facet_wrap(~ book, scales = "free_x") +
   labs(title = "Emotional arc of Harry Potter books",
@@ -415,7 +395,7 @@ hp_words %>%
 ```
 
 ```
-## `summarise()` regrouping output by 'book' (override with `.groups` argument)
+## `summarise()` has grouped output by 'book'. You can override using the `.groups` argument.
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/affin-over-time-1.png" width="672" />
@@ -426,7 +406,7 @@ hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book) %>%
   mutate(cumvalue = cumsum(value)) %>%
-  ggplot(aes(chapter, cumvalue, fill = book)) +
+  ggplot(mapping = aes(x = chapter, y = cumvalue, fill = book)) +
   geom_step() +
   facet_wrap(~ book, scales = "free_x") +
   labs(title = "Emotional arc of Harry Potter books",
@@ -458,95 +438,110 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.3 (2020-10-10)
-##  os       macOS Catalina 10.15.7      
+##  version  R version 4.0.4 (2021-02-15)
+##  os       macOS Big Sur 10.16         
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-03-09                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib
 ##  assertthat    0.2.1   2019-03-21 [1]
 ##  backports     1.2.1   2020-12-09 [1]
-##  blogdown      1.1     2021-01-19 [1]
+##  blogdown      1.2     2021-03-04 [1]
 ##  bookdown      0.21    2020-10-13 [1]
-##  broom         0.7.3   2020-12-16 [1]
+##  broom         0.7.5   2021-02-19 [1]
+##  bslib         0.2.4   2021-01-25 [1]
+##  cachem        1.0.4   2021-02-13 [1]
 ##  callr         3.5.1   2020-10-13 [1]
 ##  cellranger    1.1.0   2016-07-27 [1]
-##  cli           2.2.0   2020-11-20 [1]
+##  cli           2.3.1   2021-02-23 [1]
+##  codetools     0.2-18  2020-11-04 [1]
 ##  colorspace    2.0-0   2020-11-11 [1]
-##  crayon        1.3.4   2017-09-16 [1]
-##  DBI           1.1.0   2019-12-15 [1]
-##  dbplyr        2.0.0   2020-11-03 [1]
+##  crayon        1.4.1   2021-02-08 [1]
+##  DBI           1.1.1   2021-01-15 [1]
+##  dbplyr        2.1.0   2021-02-03 [1]
+##  debugme       1.1.0   2017-10-22 [1]
 ##  desc          1.2.0   2018-05-01 [1]
 ##  devtools      2.3.2   2020-09-18 [1]
 ##  digest        0.6.27  2020-10-24 [1]
-##  dplyr       * 1.0.2   2020-08-18 [1]
+##  dplyr       * 1.0.5   2021-03-05 [1]
 ##  ellipsis      0.3.1   2020-05-15 [1]
 ##  evaluate      0.14    2019-05-28 [1]
-##  fansi         0.4.1   2020-01-08 [1]
-##  forcats     * 0.5.0   2020-03-01 [1]
+##  fansi         0.4.2   2021-01-15 [1]
+##  farver        2.1.0   2021-02-28 [1]
+##  fastmap       1.1.0   2021-01-25 [1]
+##  forcats     * 0.5.1   2021-01-27 [1]
 ##  fs            1.5.0   2020-07-31 [1]
 ##  generics      0.1.0   2020-10-31 [1]
 ##  ggplot2     * 3.3.3   2020-12-30 [1]
+##  ggwordcloud * 0.5.0   2019-06-02 [1]
 ##  glue          1.4.2   2020-08-27 [1]
 ##  gtable        0.3.0   2019-03-25 [1]
 ##  harrypotter * 0.1.0   2020-07-21 [1]
 ##  haven         2.3.1   2020-06-01 [1]
 ##  here          1.0.1   2020-12-13 [1]
-##  hms           0.5.3   2020-01-08 [1]
-##  htmltools     0.5.1   2021-01-12 [1]
+##  highr         0.8     2019-03-20 [1]
+##  hms           1.0.0   2021-01-13 [1]
+##  htmltools     0.5.1.1 2021-01-22 [1]
 ##  httr          1.4.2   2020-07-20 [1]
 ##  janeaustenr   0.1.5   2017-06-10 [1]
+##  jquerylib     0.1.3   2020-12-17 [1]
 ##  jsonlite      1.7.2   2020-12-09 [1]
-##  knitr         1.30    2020-09-22 [1]
+##  knitr         1.31    2021-01-27 [1]
+##  labeling      0.4.2   2020-10-20 [1]
 ##  lattice       0.20-41 2020-04-02 [1]
-##  lifecycle     0.2.0   2020-03-06 [1]
-##  lubridate     1.7.9.2 2021-01-18 [1]
+##  lifecycle     1.0.0   2021-02-15 [1]
+##  lubridate     1.7.10  2021-02-26 [1]
 ##  magrittr      2.0.1   2020-11-17 [1]
-##  Matrix        1.3-0   2020-12-22 [1]
-##  memoise       1.1.0   2017-04-21 [1]
+##  Matrix        1.3-2   2021-01-06 [1]
+##  memoise       2.0.0   2021-01-26 [1]
 ##  modelr        0.1.8   2020-05-19 [1]
 ##  munsell       0.5.0   2018-06-12 [1]
-##  pillar        1.4.7   2020-11-20 [1]
+##  pillar        1.5.1   2021-03-05 [1]
 ##  pkgbuild      1.2.0   2020-12-15 [1]
 ##  pkgconfig     2.0.3   2019-09-22 [1]
-##  pkgload       1.1.0   2020-05-29 [1]
+##  pkgload       1.2.0   2021-02-23 [1]
+##  png           0.1-7   2013-12-03 [1]
 ##  prettyunits   1.1.1   2020-01-24 [1]
 ##  processx      3.4.5   2020-11-30 [1]
-##  ps            1.5.0   2020-12-05 [1]
+##  ps            1.6.0   2021-02-28 [1]
 ##  purrr       * 0.3.4   2020-04-17 [1]
 ##  R6            2.5.0   2020-10-28 [1]
+##  rappdirs      0.3.3   2021-01-31 [1]
 ##  Rcpp          1.0.6   2021-01-15 [1]
 ##  readr       * 1.4.0   2020-10-05 [1]
 ##  readxl        1.3.1   2019-03-13 [1]
 ##  remotes       2.2.0   2020-07-21 [1]
-##  reprex        0.3.0   2019-05-16 [1]
+##  reprex        1.0.0   2021-01-27 [1]
 ##  rlang         0.4.10  2020-12-30 [1]
-##  rmarkdown     2.6     2020-12-14 [1]
+##  rmarkdown     2.7     2021-02-19 [1]
 ##  rprojroot     2.0.2   2020-11-15 [1]
 ##  rstudioapi    0.13    2020-11-12 [1]
 ##  rvest         0.3.6   2020-07-25 [1]
+##  sass          0.3.1   2021-01-24 [1]
 ##  scales        1.1.1   2020-05-11 [1]
 ##  sessioninfo   1.1.1   2018-11-05 [1]
 ##  SnowballC     0.7.0   2020-04-01 [1]
 ##  stringi       1.5.3   2020-09-09 [1]
 ##  stringr     * 1.4.0   2019-02-10 [1]
-##  testthat      3.0.1   2020-12-17 [1]
-##  tibble      * 3.0.4   2020-10-12 [1]
-##  tidyr       * 1.1.2   2020-08-27 [1]
+##  testthat      3.0.2   2021-02-14 [1]
+##  textdata      0.4.1   2020-05-04 [1]
+##  tibble      * 3.1.0   2021-02-25 [1]
+##  tidyr       * 1.1.3   2021-03-03 [1]
 ##  tidyselect    1.1.0   2020-05-11 [1]
-##  tidytext    * 0.2.6   2020-09-20 [1]
+##  tidytext    * 0.3.0   2021-01-06 [1]
 ##  tidyverse   * 1.3.0   2019-11-21 [1]
 ##  tokenizers    0.2.1   2018-03-29 [1]
-##  usethis       2.0.0   2020-12-10 [1]
+##  usethis       2.0.1   2021-02-10 [1]
+##  utf8          1.1.4   2018-05-24 [1]
 ##  vctrs         0.3.6   2020-12-17 [1]
-##  withr         2.3.0   2020-09-22 [1]
-##  xfun          0.20    2021-01-06 [1]
+##  withr         2.4.1   2021-01-26 [1]
+##  xfun          0.21    2021-02-10 [1]
 ##  xml2          1.3.2   2020-04-23 [1]
 ##  yaml          2.2.1   2020-02-01 [1]
 ##  source                                     
@@ -556,23 +551,30 @@ devtools::session_info()
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.3)                             
+##  CRAN (R 4.0.4)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.3)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
 ##  Github (bradleyboehmke/harrypotter@51f7146)
@@ -581,20 +583,24 @@ devtools::session_info()
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.4)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.4)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.3)                             
-##  CRAN (R 4.0.0)                             
-##  Github (tidyverse/lubridate@aab2e30)       
-##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
@@ -603,9 +609,11 @@ devtools::session_info()
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
@@ -617,6 +625,7 @@ devtools::session_info()
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
@@ -624,6 +633,7 @@ devtools::session_info()
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
+##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
