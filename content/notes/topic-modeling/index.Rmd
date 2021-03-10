@@ -20,7 +20,9 @@ knitr::opts_chunk$set(cache = TRUE)
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
+library(tidymodels)
 library(tidytext)
+library(textrecipes)
 library(topicmodels)
 library(here)
 library(rjson)
@@ -93,239 +95,80 @@ How could we have generated the sentences in the previous example? When generati
 
 So the document generated under the LDA model will be "broccoli panda adorable cherries eating" (remember that LDA uses a bag-of-words model).
 
-## LDA with a known topic structure
-
-LDA can be useful if the topic structure of a set of documents is known **a priori**. For instance, consider the `USCongress` dataset of legislation introduced in the U.S. Congress from the `RTextTools` package.
-
-```{r get-docs}
-# get USCongress data
-data(USCongress, package = "rcfss")
-
-# topic labels
-major_topics <- tibble(
-  major = c(1:10, 12:21, 99),
-  label = c("Macroeconomics", "Civil rights, minority issues, civil liberties",
-            "Health", "Agriculture", "Labor and employment", "Education", "Environment",
-            "Energy", "Immigration", "Transportation", "Law, crime, family issues",
-            "Social welfare", "Community development and housing issues",
-            "Banking, finance, and domestic commerce", "Defense",
-            "Space, technology, and communications", "Foreign trade",
-            "International affairs and foreign aid", "Government operations",
-            "Public lands and water management", "Other, miscellaneous")
-) %>%
-  mutate(label = factor(major, levels = major, labels = label))
-
-congress <- as_tibble(USCongress) %>%
-  mutate(text = as.character(text)) %>%
-  left_join(major_topics)
-glimpse(congress)
-```
-
-[Previously](/notes/supervised-text-classification/), we assumed the documents were structured based on their policy content under [the structure](https://www.comparativeagendas.net/pages/master-codebook):
-
-```{r major-topics, dependson = "get-docs"}
-major_topics %>%
-  knitr::kable(col.names = c("Topic code", "Policy topic"))
-```
-
-We can use LDA and topic modeling to discover whether the documents map onto this topic structure without any assumptions about the structure. That is, using just the text **what is the revealed topic structure**?
-
-As pre-processing, we use `unnest_tokens()` from `tidytext` to separate each bill title into words, filter out tokens which are purely numbers, remove stop words, and stem each token to its root form.
-
-```{r convert-tidytext, dependson = "get-docs"}
-congress_tokens <- congress %>%
-  unnest_tokens(output = word, input = text) %>%
-  # remove numbers
-  filter(!str_detect(word, "^[0-9]*$")) %>%
-  # remove stop words
-  anti_join(stop_words) %>%
-  # stem the words
-  mutate(word = SnowballC::wordStem(word))
-congress_tokens
-```
-
-## Latent Dirichlet allocation with the `topicmodels` package
-
-Right now this data frame is in a tidy form, with one-term-per-document-per-row. However, the `topicmodels` package requires a `DocumentTermMatrix` (from the `tm` package). We can cast a one-token-per-row table into a `DocumentTermMatrix` with `cast_dtm()`:^[In the process, we also remove tokens which are relatively uninformative based on their [tf-idf scores](https://www.tidytextmining.com/tfidf.html). Otherwise our LDA model will take forever to estimate due to the vast number of unique tokens.]
-
-```{r dtm, dependson = "convert-tidytext"}
-# remove terms with low tf-idf for future LDA model
-congress_tokens_lite <- congress_tokens %>%
-  count(major, word) %>%
-  bind_tf_idf(term = word, document = major, n = n) %>%
-  group_by(major) %>%
-  top_n(40, wt = tf_idf) %>%
-  ungroup %>%
-  count(word) %>%
-  select(-n) %>%
-  left_join(congress_tokens)
-
-congress_dtm <- congress_tokens_lite %>%
-  # get count of each token in each document
-  count(ID, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(document = ID, term = word, value = n)
-congress_dtm
-```
-
-Now we are ready to use the [`topicmodels`](https://cran.r-project.org/package=topicmodels) package to create a twenty topic LDA model.
-
-```{r congress-lda, dependson = "dtm"}
-library(topicmodels)
-congress_lda <- LDA(congress_dtm, k = 20, control = list(seed = 123))
-congress_lda
-```
-
-* In this case we know there are approximately twenty topics because there are twenty major policy codes; this is the value of knowing (or assuming) the latent topic structure.
-* `seed = 123` sets the starting point for the random iteration process. If we don't set a consistent seed, each time we run the script we may estimate slightly different models.
-
-Now `tidytext` gives us the option of **returning** to a tidy analysis, using the `tidy()` and `augment()` verbs borrowed from the [`broom` package](https://github.com/dgrtwo/broom). In particular, we start with the `tidy()` verb.
-
-```{r congress-lda-td, dependson = "congress-lda"}
-congress_lda_td <- tidy(congress_lda)
-congress_lda_td
-```
-
-Notice that this has turned the model into a one-topic-per-term-per-row format. For each combination the model has **beta** ($\beta$), the probability of that term being generated from that topic.
-
-We could use `top_n()` from `dplyr` to find the top 5 terms within each topic:
-
-```{r top-terms, dependson = "congress-lda-td"}
-top_terms <- congress_lda_td %>%
-  group_by(topic) %>%
-  top_n(5, beta) %>%
-  ungroup() %>%
-  arrange(topic, -beta)
-top_terms
-```
-
-This model lends itself to a visualization:
-
-```{r top-terms-plot, dependson = "top-terms", fig.height = 8}
-top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
-  ggplot(aes(term, beta, fill = topic)) +
-  geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-  scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 4) +
-  coord_flip()
-```
-
-* Some of these topics are pretty clearly associated with some of the policy topics:
-    * "educ", "school", "secondari", "forc", "elementari" seem to be **Education**
-    * "health", "care", "insur", "medic", "coverag" seem to be **Health**
-    * "water", "park", "indian", "river", "tribe", seem to be **Public lands and water management**
-* Note that `LDA()` does not assign any label to each topic. They are simply topics 1, 2, 3, 4, etc. We can infer these are associated with each book, **but it is merely our inference.**
-* Other topics are less clear. For instance, topic 16 could also be a health care topic. And some of the policy topics are not visible at all. I don't see a clear **Space, technology, and communications** anywhere in the results.
-
-## Per-document classification
-
-Each bill was a "document" in this analysis. Thus, we may want to know which topics are associated with each bill. Using the topic distributions, can we classify each bill into its hand-coded policy topic?
-
-```{r congress-gamma, dependson = "congress-lda"}
-congress_gamma <- tidy(congress_lda, matrix = "gamma")
-congress_gamma
-```
-
-Setting `matrix = "gamma"` returns a tidied version with one-document-per-topic-per-row. Now that we have these document classifiations, we can see how well our unsupervised learning did at distinguishing the policy topics.
-
-```{r congress-model-compare, dependson = "congress-gamma"}
-congress_tokens_lite %>%
-  mutate(document = as.character(row_number())) %>%
-  # join with the gamma values
-  left_join(congress_gamma) %>%
-  # remove missing values
-  drop_na() %>%
-  group_by(topic, major, label) %>%
-  summarize(gamma = median(gamma)) %>%
-  # plot the topic distributions for each policy topic
-  ggplot(aes(factor(topic), gamma)) +
-  geom_segment(aes(x = factor(topic), xend = factor(topic), y = 0, yend = gamma), color = "grey50") +
-  geom_point() +
-  facet_wrap(~ label) +
-  labs(x = "LDA topic",
-       y = expression(gamma))
-```
-
-The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for $\gamma$. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
-
 ## LDA with an unknown topic structure
 
-Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is still useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
+Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
 
 ## `r/jokes`
 
 <blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
 <script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
 
-[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix:
+[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix.
 
 ```{r jokes}
 # obtain r/jokes and extract values from the JSON file
 jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
 
-jokes <- jokes_json %>%
-  {
-    tibble(
-      id = map_chr(., "id"),
-      title = map_chr(., "title"),
-      body = map_chr(., "body"),
-      score = map_dbl(., "score")
-    )
-  }
+jokes <- tibble(jokes = jokes_json) %>%
+  unnest_wider(col = jokes)
 glimpse(jokes)
 ```
 
-```{r jokes-dtm, dependson = "jokes"}
-# convert into a document-term matrix
-set.seed(123)
-n_grams <- 1:5                          # extract n-grams for n=1,2,3,4,5
-jokes_lite <- sample_n(jokes, 50000)    # randomly sample only 50,000 jokes
+Once we import the data, we can prepare it for the estimating the model. Unlike for [supervised text classification](/notes/supervised-text-classification/), we will use `recipes` to prepare the data, then convert it into a `DocumentTermMatrix` to fit the LDA model.
 
-jokes_tokens <- map_df(n_grams, ~ jokes_lite %>%
-                         # combine title and body
-                         unite(col = joke, title, body, sep = " ") %>%
-                         # tokenize
-                         unnest_tokens(output = word,
-                                       input = joke,
-                                       token = "ngrams",
-                                       n = .x) %>%
-                         mutate(ngram = .x,
-                                token_id = row_number()) %>%
-                         # remove tokens that are missing values
-                         drop_na(word))
-jokes_tokens
+{{% callout alert %}}
 
-# remove stop words or n-grams beginning or ending with stop word
-jokes_stop_words <- jokes_tokens %>%
-  # separate ngrams into separate columns
-  separate(col = word,
-           into = c("word1", "word2", "word3", "word4", "word5"),
-           sep = " ") %>%
-  # find last word
-  mutate(last = if_else(ngram == 5, word5,
-                        if_else(ngram == 4, word4,
-                                if_else(ngram == 3, word3,
-                                        if_else(ngram == 2, word2, word1))))) %>%
-  # remove tokens where the first or last word is a stop word
-  filter(word1 %in% stop_words$word |
-           last %in% stop_words$word) %>%
-  select(ngram, token_id)
+Within the `tidymodels` framework, unsupervised learning is typically implemented as a `recipe` step as opposed to a model (remember that unlike supervised learning, unsupervised learning approaches have no outcome of interest to predict). `textrecipes` includes [`step_lda()`](https://textrecipes.tidymodels.org/reference/step_lda.html) which can be used to directly fit an LDA model as part of the recipe. Unfortunately it does not support deeper methods for exploring and interpreting the results of the model like we use below.
 
-# convert to dtm
-jokes_dtm <- jokes_tokens %>%
-  # remove stop word tokens
-  anti_join(jokes_stop_words) %>%
-  # get count of each token in each document
-  count(id, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(document = id, term = word, value = n) %>%
-  removeSparseTerms(sparse = .999)
+{{% /callout %}}
 
-# remove documents with no terms remaining
-jokes_dtm <- jokes_dtm[unique(jokes_dtm$i),]
-jokes_dtm
+```{r jokes-recipe, dependson = "jokes"}
+set.seed(123) # set seed for random sampling
+
+jokes_rec <- recipe(~., data = jokes) %>%
+  step_sample(size = 5e03) %>%
+  step_tokenize(title, body) %>%
+  step_tokenmerge(title, body, prefix = "joke") %>%
+  step_stopwords(joke) %>%
+  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %>%
+  step_tokenfilter(joke, max_tokens = 2500) %>%
+  step_tf(joke)
+```
+
+- `recipe()` - initialize the recipe using the `jokes` data frame
+- `step_sample()` - reduce the size of the dataset to a more manageable number of observations
+- `step_tokenize()` - perform the tokenization of the text data. Note that here the text is stored in two separate columns. By default it tokenizes individual words.
+- `step_tokenmerge()` - combine the two text columns into a single column which allows us to estimate a single LDA model for the entire joke.
+- `step_stopwords()` - remove common stopwords (equivalent to `anti_join(stop_words)`)
+- `step_ngram()` - calculates the $n$-grams based on the remaining tokens. `num_tokens` and `min_num_tokens` allows us to calculate all possible 1-grams, 2-grams, 3-grams, 4-grams, and 5-grams.
+- `step_tokenfilter()` - dedensify the data set and keep only the most commonly used tokens. Here we will retain the top 2500 tokens. If we retained all unique tokens in the dataset, the LDA model could take an extremely long time to estimate even for a relatively small number of topics.
+- `step_tf()` - calculate the term-frequency for each unique token in each document
+
+Now that we created the recipe, we have to prepare it using the `jokes` data set and then convert it into a `DocumentTermMatrix`. `prep()` allows us to prepare the recipe, while `bake()` lets us extract the resulting data frame.
+
+```{r jokes-bake, dependson = "jokes-recipe"}
+jokes_prep <- prep(jokes_rec)
+
+jokes_df <- bake(jokes_prep, new_data = NULL)
+jokes_df %>%
+  slice(1:5)
+```
+
+The resulting data frame is one row per joke and one column per token. To convert it to a `DocumentTermMatrix`, we need to first convert it into a tidytext format (one-row-per-token), remove all rows with a frequency of 0 (that is, the token did not appear in the joke), then convert it to a DTM using `cast_dtm()`.
+
+```{r jokes-dtm, dependson = "jokes-bake"}
+jokes_dtm <- jokes_df %>%
+  pivot_longer(cols = -c(id, score),
+               names_to = "token",
+               values_to = "n") %>%
+  filter(n != 0) %>%
+  # clean the token column so it just includes the token
+  # drop empty levels from id - this includes jokes which did not
+  # have any tokens retained after step_tokenfilter()
+  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
+         id = fct_drop(f = id)) %>%
+  cast_dtm(document = id, term = token, value = n)
 ```
 
 ## Selecting $k$
@@ -342,7 +185,7 @@ Warning: many jokes on `r/jokes` are NSFW and contain potentially offensive lang
 
 {{% /callout %}}
 
-```{r jokes-topic-4, dependson = "jokes-dtm"}
+```{r jokes-topic-4, dependson = "jokes-prep"}
 jokes_lda4 <- LDA(jokes_dtm, k = 4, control = list(seed = 123))
 jokes_lda4
 ```
@@ -419,11 +262,12 @@ n_topics <- c(2, 4, 10, 20, 50, 100)
 if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
   load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
 } else {
+  library(furrr)
   plan(multiprocess)
 
   tic()
   jokes_lda_compare <- n_topics %>%
-    future_map(LDA, x = jokes_dtm, control = list(seed = 1234))
+    future_map(LDA, x = jokes_dtm, control = list(seed = 123))
   toc()
   save(jokes_dtm, jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
 }
@@ -535,7 +379,7 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
 }
 ```
 
-Let's test it using the $k = 10$ LDA topic model for the `AP`r/jokes` dataset.
+Let's test it using the $k = 10$ LDA topic model for the `r/jokes` dataset.
 
 ```{r jokes-10-ldavis, dependson = "jokes-lda-compare"}
 jokes_10_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[3]],
