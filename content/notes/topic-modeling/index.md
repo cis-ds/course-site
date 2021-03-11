@@ -19,7 +19,9 @@ menu:
 
 ```r
 library(tidyverse)
+library(tidymodels)
 library(tidytext)
+library(textrecipes)
 library(topicmodels)
 library(here)
 library(rjson)
@@ -92,450 +94,145 @@ How could we have generated the sentences in the previous example? When generati
 
 So the document generated under the LDA model will be "broccoli panda adorable cherries eating" (remember that LDA uses a bag-of-words model).
 
-## LDA with a known topic structure
-
-LDA can be useful if the topic structure of a set of documents is known **a priori**. For instance, consider the `USCongress` dataset of legislation introduced in the U.S. Congress from the `RTextTools` package.
-
-
-```r
-# get USCongress data
-data(USCongress, package = "rcfss")
-
-# topic labels
-major_topics <- tibble(
-  major = c(1:10, 12:21, 99),
-  label = c("Macroeconomics", "Civil rights, minority issues, civil liberties",
-            "Health", "Agriculture", "Labor and employment", "Education", "Environment",
-            "Energy", "Immigration", "Transportation", "Law, crime, family issues",
-            "Social welfare", "Community development and housing issues",
-            "Banking, finance, and domestic commerce", "Defense",
-            "Space, technology, and communications", "Foreign trade",
-            "International affairs and foreign aid", "Government operations",
-            "Public lands and water management", "Other, miscellaneous")
-) %>%
-  mutate(label = factor(major, levels = major, labels = label))
-
-congress <- as_tibble(USCongress) %>%
-  mutate(text = as.character(text)) %>%
-  left_join(major_topics)
-```
-
-```
-## Joining, by = "major"
-```
-
-```r
-glimpse(congress)
-```
-
-```
-## Rows: 4,449
-## Columns: 7
-## $ ID       <dbl> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
-## $ cong     <dbl> 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
-## $ billnum  <dbl> 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, …
-## $ h_or_sen <chr> "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", …
-## $ major    <dbl> 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, 2, 3,…
-## $ text     <chr> "To suspend temporarily the duty on Fast Magenta 2 Stage.", …
-## $ label    <fct> "Foreign trade", "Foreign trade", "Foreign trade", "Foreign …
-```
-
-[Previously](/notes/supervised-text-classification/), we assumed the documents were structured based on their policy content under [the structure](https://www.comparativeagendas.net/pages/master-codebook):
-
-
-```r
-major_topics %>%
-  knitr::kable(col.names = c("Topic code", "Policy topic"))
-```
-
-
-
-| Topic code|Policy topic                                   |
-|----------:|:----------------------------------------------|
-|          1|Macroeconomics                                 |
-|          2|Civil rights, minority issues, civil liberties |
-|          3|Health                                         |
-|          4|Agriculture                                    |
-|          5|Labor and employment                           |
-|          6|Education                                      |
-|          7|Environment                                    |
-|          8|Energy                                         |
-|          9|Immigration                                    |
-|         10|Transportation                                 |
-|         12|Law, crime, family issues                      |
-|         13|Social welfare                                 |
-|         14|Community development and housing issues       |
-|         15|Banking, finance, and domestic commerce        |
-|         16|Defense                                        |
-|         17|Space, technology, and communications          |
-|         18|Foreign trade                                  |
-|         19|International affairs and foreign aid          |
-|         20|Government operations                          |
-|         21|Public lands and water management              |
-|         99|Other, miscellaneous                           |
-
-We can use LDA and topic modeling to discover whether the documents map onto this topic structure without any assumptions about the structure. That is, using just the text **what is the revealed topic structure**?
-
-As pre-processing, we use `unnest_tokens()` from `tidytext` to separate each bill title into words, filter out tokens which are purely numbers, remove stop words, and stem each token to its root form.
-
-
-```r
-congress_tokens <- congress %>%
-  unnest_tokens(output = word, input = text) %>%
-  # remove numbers
-  filter(!str_detect(word, "^[0-9]*$")) %>%
-  # remove stop words
-  anti_join(stop_words) %>%
-  # stem the words
-  mutate(word = SnowballC::wordStem(word))
-```
-
-```
-## Joining, by = "word"
-```
-
-```r
-congress_tokens
-```
-
-```
-## # A tibble: 58,820 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    <dbl> <dbl>   <dbl> <chr>    <dbl> <fct>         <chr>      
-##  1     1   107    4499 HR          18 Foreign trade suspend    
-##  2     1   107    4499 HR          18 Foreign trade temporarili
-##  3     1   107    4499 HR          18 Foreign trade duti       
-##  4     1   107    4499 HR          18 Foreign trade fast       
-##  5     1   107    4499 HR          18 Foreign trade magenta    
-##  6     1   107    4499 HR          18 Foreign trade stage      
-##  7     2   107    4500 HR          18 Foreign trade suspend    
-##  8     2   107    4500 HR          18 Foreign trade temporarili
-##  9     2   107    4500 HR          18 Foreign trade duti       
-## 10     2   107    4500 HR          18 Foreign trade fast       
-## # … with 58,810 more rows
-```
-
-## Latent Dirichlet allocation with the `topicmodels` package
-
-Right now this data frame is in a tidy form, with one-term-per-document-per-row. However, the `topicmodels` package requires a `DocumentTermMatrix` (from the `tm` package). We can cast a one-token-per-row table into a `DocumentTermMatrix` with `cast_dtm()`:^[In the process, we also remove tokens which are relatively uninformative based on their [tf-idf scores](https://www.tidytextmining.com/tfidf.html). Otherwise our LDA model will take forever to estimate due to the vast number of unique tokens.]
-
-
-```r
-# remove terms with low tf-idf for future LDA model
-congress_tokens_lite <- congress_tokens %>%
-  count(major, word) %>%
-  bind_tf_idf(term = word, document = major, n = n) %>%
-  group_by(major) %>%
-  top_n(40, wt = tf_idf) %>%
-  ungroup %>%
-  count(word) %>%
-  select(-n) %>%
-  left_join(congress_tokens)
-```
-
-```
-## Joining, by = "word"
-```
-
-```r
-congress_dtm <- congress_tokens_lite %>%
-  # get count of each token in each document
-  count(ID, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(document = ID, term = word, value = n)
-congress_dtm
-```
-
-```
-## <<DocumentTermMatrix (documents: 4319, terms: 787)>>
-## Non-/sparse entries: 18149/3380904
-## Sparsity           : 99%
-## Maximal term length: 22
-## Weighting          : term frequency (tf)
-```
-
-Now we are ready to use the [`topicmodels`](https://cran.r-project.org/package=topicmodels) package to create a twenty topic LDA model.
-
-
-```r
-library(topicmodels)
-congress_lda <- LDA(congress_dtm, k = 20, control = list(seed = 123))
-congress_lda
-```
-
-```
-## A LDA_VEM topic model with 20 topics.
-```
-
-* In this case we know there are approximately twenty topics because there are twenty major policy codes; this is the value of knowing (or assuming) the latent topic structure.
-* `seed = 123` sets the starting point for the random iteration process. If we don't set a consistent seed, each time we run the script we may estimate slightly different models.
-
-Now `tidytext` gives us the option of **returning** to a tidy analysis, using the `tidy()` and `augment()` verbs borrowed from the [`broom` package](https://github.com/dgrtwo/broom). In particular, we start with the `tidy()` verb.
-
-
-```r
-congress_lda_td <- tidy(congress_lda)
-congress_lda_td
-```
-
-```
-## # A tibble: 15,740 x 3
-##    topic term       beta
-##    <int> <chr>     <dbl>
-##  1     1 duti  3.11e-122
-##  2     2 duti  9.22e- 92
-##  3     3 duti  4.90e-114
-##  4     4 duti  3.09e- 95
-##  5     5 duti  5.42e-123
-##  6     6 duti  1.27e-148
-##  7     7 duti  3.74e- 78
-##  8     8 duti  6.64e-105
-##  9     9 duti  2.86e-  1
-## 10    10 duti  1.08e- 83
-## # … with 15,730 more rows
-```
-
-Notice that this has turned the model into a one-topic-per-term-per-row format. For each combination the model has **beta** ($\beta$), the probability of that term being generated from that topic.
-
-We could use `top_n()` from `dplyr` to find the top 5 terms within each topic:
-
-
-```r
-top_terms <- congress_lda_td %>%
-  group_by(topic) %>%
-  top_n(5, beta) %>%
-  ungroup() %>%
-  arrange(topic, -beta)
-top_terms
-```
-
-```
-## # A tibble: 102 x 3
-##    topic term         beta
-##    <int> <chr>       <dbl>
-##  1     1 secretari  0.337 
-##  2     1 interior   0.116 
-##  3     1 transport  0.0961
-##  4     1 heritag    0.0432
-##  5     1 armi       0.0389
-##  6     2 educ       0.276 
-##  7     2 school     0.113 
-##  8     2 secondari  0.0712
-##  9     2 forc       0.0658
-## 10     2 elementari 0.0647
-## # … with 92 more rows
-```
-
-This model lends itself to a visualization:
-
-
-```r
-top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
-  ggplot(aes(term, beta, fill = topic)) +
-  geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-  scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 4) +
-  coord_flip()
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/top-terms-plot-1.png" width="672" />
-
-* Some of these topics are pretty clearly associated with some of the policy topics:
-    * "educ", "school", "secondari", "forc", "elementari" seem to be **Education**
-    * "health", "care", "insur", "medic", "coverag" seem to be **Health**
-    * "water", "park", "indian", "river", "tribe", seem to be **Public lands and water management**
-* Note that `LDA()` does not assign any label to each topic. They are simply topics 1, 2, 3, 4, etc. We can infer these are associated with each book, **but it is merely our inference.**
-* Other topics are less clear. For instance, topic 16 could also be a health care topic. And some of the policy topics are not visible at all. I don't see a clear **Space, technology, and communications** anywhere in the results.
-
-## Per-document classification
-
-Each bill was a "document" in this analysis. Thus, we may want to know which topics are associated with each bill. Using the topic distributions, can we classify each bill into its hand-coded policy topic?
-
-
-```r
-congress_gamma <- tidy(congress_lda, matrix = "gamma")
-congress_gamma
-```
-
-```
-## # A tibble: 86,380 x 3
-##    document topic  gamma
-##    <chr>    <int>  <dbl>
-##  1 1            1 0.0172
-##  2 2            1 0.0152
-##  3 3            1 0.0233
-##  4 4            1 0.0284
-##  5 5            1 0.0198
-##  6 6            1 0.0773
-##  7 7            1 0.0198
-##  8 8            1 0.0233
-##  9 9            1 0.0233
-## 10 10           1 0.0198
-## # … with 86,370 more rows
-```
-
-Setting `matrix = "gamma"` returns a tidied version with one-document-per-topic-per-row. Now that we have these document classifiations, we can see how well our unsupervised learning did at distinguishing the policy topics.
-
-
-```r
-congress_tokens_lite %>%
-  mutate(document = as.character(row_number())) %>%
-  # join with the gamma values
-  left_join(congress_gamma) %>%
-  # remove missing values
-  drop_na() %>%
-  group_by(topic, major, label) %>%
-  summarize(gamma = median(gamma)) %>%
-  # plot the topic distributions for each policy topic
-  ggplot(aes(factor(topic), gamma)) +
-  geom_segment(aes(x = factor(topic), xend = factor(topic), y = 0, yend = gamma), color = "grey50") +
-  geom_point() +
-  facet_wrap(~ label) +
-  labs(x = "LDA topic",
-       y = expression(gamma))
-```
-
-```
-## Joining, by = "document"
-```
-
-```
-## `summarise()` regrouping output by 'topic', 'major' (override with `.groups` argument)
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/congress-model-compare-1.png" width="672" />
-
-The LDA model does not perform well in predicting the policy topic of each bill. If it performed well, we would see one of the LDA topics with a high median value for $\gamma$. That is, for bills actually in the policy topic one of the LDA topics assigns a high probability value. Most all of these distributions are flat, indicating there are few LDA topics predominantly associated with policy topic.
-
 ## LDA with an unknown topic structure
 
-Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is still useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
+Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
 
 ## `r/jokes`
 
 <blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
 <script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
 
-[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix:
+[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix.
 
 
 ```r
 # obtain r/jokes and extract values from the JSON file
 jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
 
-jokes <- jokes_json %>%
-  {
-    tibble(
-      id = map_chr(., "id"),
-      title = map_chr(., "title"),
-      body = map_chr(., "body"),
-      score = map_dbl(., "score")
-    )
-  }
+jokes <- tibble(jokes = jokes_json) %>%
+  unnest_wider(col = jokes)
+```
+
+```
+## Warning in deparse(x, backtick = TRUE): NAs introduced by coercion to integer
+## range
+```
+
+```r
 glimpse(jokes)
 ```
 
 ```
 ## Rows: 194,553
 ## Columns: 4
-## $ id    <chr> "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5t…
-## $ title <chr> "I hate how you cant even say black paint anymore", "What's the…
-## $ body  <chr> "Now I have to say \"Leroy can you please paint the fence?\"", …
-## $ score <dbl> 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0,…
+## $ body  <chr> "Now I have to say \"Leroy can you please paint the fence?\"", "…
+## $ id    <chr> "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5tz…
+## $ score <dbl> 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0, …
+## $ title <chr> "I hate how you cant even say black paint anymore", "What's the …
 ```
+
+Once we import the data, we can prepare it for the estimating the model. Unlike for [supervised text classification](/notes/supervised-text-classification/), we will use `recipes` to prepare the data, then convert it into a `DocumentTermMatrix` to fit the LDA model.
+
+{{% callout alert %}}
+
+Within the `tidymodels` framework, unsupervised learning is typically implemented as a `recipe` step as opposed to a model (remember that unlike supervised learning, unsupervised learning approaches have no outcome of interest to predict). `textrecipes` includes [`step_lda()`](https://textrecipes.tidymodels.org/reference/step_lda.html) which can be used to directly fit an LDA model as part of the recipe. Unfortunately it does not support deeper methods for exploring and interpreting the results of the model like we use below.
+
+{{% /callout %}}
 
 
 ```r
-# convert into a document-term matrix
-set.seed(123)
-n_grams <- 1:5                          # extract n-grams for n=1,2,3,4,5
-jokes_lite <- sample_n(jokes, 50000)    # randomly sample only 50,000 jokes
+set.seed(123) # set seed for random sampling
 
-jokes_tokens <- map_df(n_grams, ~ jokes_lite %>%
-                         # combine title and body
-                         unite(col = joke, title, body, sep = " ") %>%
-                         # tokenize
-                         unnest_tokens(output = word,
-                                       input = joke,
-                                       token = "ngrams",
-                                       n = .x) %>%
-                         mutate(ngram = .x,
-                                token_id = row_number()) %>%
-                         # remove tokens that are missing values
-                         drop_na(word))
-jokes_tokens
+jokes_rec <- recipe(~., data = jokes) %>%
+  step_sample(size = 1e04) %>%
+  step_tokenize(title, body) %>%
+  step_tokenmerge(title, body, prefix = "joke") %>%
+  step_stopwords(joke) %>%
+  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %>%
+  step_tokenfilter(joke, max_tokens = 2500) %>%
+  step_tf(joke)
 ```
 
-```
-## # A tibble: 11,238,469 x 5
-##    id     score word  ngram token_id
-##    <chr>  <dbl> <chr> <int>    <int>
-##  1 1a801u     0 i         1        1
-##  2 1a801u     0 went      1        2
-##  3 1a801u     0 to        1        3
-##  4 1a801u     0 a         1        4
-##  5 1a801u     0 zoo       1        5
-##  6 1a801u     0 and       1        6
-##  7 1a801u     0 there     1        7
-##  8 1a801u     0 was       1        8
-##  9 1a801u     0 only      1        9
-## 10 1a801u     0 one       1       10
-## # … with 11,238,459 more rows
-```
+- `recipe()` - initialize the recipe using the `jokes` data frame
+- `step_sample()` - reduce the size of the dataset to a more manageable number of observations
+- `step_tokenize()` - perform the tokenization of the text data. Note that here the text is stored in two separate columns. By default it tokenizes individual words.
+- `step_tokenmerge()` - combine the two text columns into a single column which allows us to estimate a single LDA model for the entire joke.
+- `step_stopwords()` - remove common stopwords (equivalent to `anti_join(stop_words)`)
+- `step_ngram()` - calculates the $n$-grams based on the remaining tokens. `num_tokens` and `min_num_tokens` allows us to calculate all possible 1-grams, 2-grams, 3-grams, 4-grams, and 5-grams.
+- `step_tokenfilter()` - dedensify the data set and keep only the most commonly used tokens. Here we will retain the top 2500 tokens. If we retained all unique tokens in the dataset, the LDA model could take an extremely long time to estimate even for a relatively small number of topics.
+- `step_tf()` - calculate the term-frequency for each unique token in each document
+
+Now that we created the recipe, we have to prepare it using the `jokes` data set and then convert it into a `DocumentTermMatrix`. `prep()` allows us to prepare the recipe, while `bake()` lets us extract the resulting data frame.
+
 
 ```r
-# remove stop words or n-grams beginning or ending with stop word
-jokes_stop_words <- jokes_tokens %>%
-  # separate ngrams into separate columns
-  separate(col = word,
-           into = c("word1", "word2", "word3", "word4", "word5"),
-           sep = " ") %>%
-  # find last word
-  mutate(last = if_else(ngram == 5, word5,
-                        if_else(ngram == 4, word4,
-                                if_else(ngram == 3, word3,
-                                        if_else(ngram == 2, word2, word1))))) %>%
-  # remove tokens where the first or last word is a stop word
-  filter(word1 %in% stop_words$word |
-           last %in% stop_words$word) %>%
-  select(ngram, token_id)
+jokes_prep <- prep(jokes_rec)
+
+jokes_df <- bake(jokes_prep, new_data = NULL)
+jokes_df %>%
+  slice(1:5)
 ```
 
 ```
-## Warning: Expected 5 pieces. Missing pieces filled with `NA` in 9090547 rows [1,
-## 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, ...].
+## # A tibble: 5 x 2,502
+##   id    score tf_joke_0 tf_joke_1 tf_joke_10 tf_joke_100 tf_joke_1000 tf_joke_11
+##   <fct> <dbl>     <dbl>     <dbl>      <dbl>       <dbl>        <dbl>      <dbl>
+## 1 2tzi…    12         0         0          0           0            0          0
+## 2 4zqp…     0         0         0          0           0            0          0
+## 3 2lgw…    58         0         0          0           0            0          0
+## 4 3qx3…     9         0         0          0           0            0          0
+## 5 2x2z…     0         0         0          0           0            0          0
+## # … with 2,494 more variables: tf_joke_12 <dbl>, tf_joke_13 <dbl>,
+## #   tf_joke_14 <dbl>, tf_joke_15 <dbl>, tf_joke_16 <dbl>, tf_joke_18 <dbl>,
+## #   tf_joke_1st <dbl>, tf_joke_2 <dbl>, tf_joke_20 <dbl>,
+## #   tf_joke_20_years <dbl>, tf_joke_200 <dbl>, tf_joke_2015 <dbl>,
+## #   tf_joke_25 <dbl>, tf_joke_3 <dbl>, tf_joke_30 <dbl>, tf_joke_3rd <dbl>,
+## #   tf_joke_4 <dbl>, tf_joke_40 <dbl>, tf_joke_4th <dbl>, tf_joke_5 <dbl>,
+## #   tf_joke_50 <dbl>, tf_joke_500 <dbl>, tf_joke_5th <dbl>, tf_joke_6 <dbl>,
+## #   tf_joke_69 <dbl>, tf_joke_7 <dbl>, tf_joke_76561198082478987 <dbl>,
+## #   tf_joke_76561198082478987_inventory <dbl>, tf_joke_7c <dbl>,
+## #   tf_joke_8 <dbl>, tf_joke_9 <dbl>, tf_joke_9_11 <dbl>, tf_joke_90 <dbl>,
+## #   tf_joke_99 <dbl>, tf_joke_able <dbl>, tf_joke_absolutely <dbl>,
+## #   tf_joke_accent <dbl>, tf_joke_accept <dbl>, tf_joke_accident <dbl>,
+## #   tf_joke_accidentally <dbl>, tf_joke_across <dbl>,
+## #   tf_joke_across_street <dbl>, tf_joke_act <dbl>, tf_joke_action <dbl>,
+## #   tf_joke_actually <dbl>, tf_joke_adam <dbl>, tf_joke_add <dbl>,
+## #   tf_joke_added <dbl>, tf_joke_advice <dbl>, tf_joke_afford <dbl>,
+## #   tf_joke_afraid <dbl>, tf_joke_africa <dbl>, tf_joke_african <dbl>,
+## #   tf_joke_afternoon <dbl>, tf_joke_age <dbl>, tf_joke_agent <dbl>,
+## #   tf_joke_ago <dbl>, tf_joke_agree <dbl>, tf_joke_agreed <dbl>,
+## #   tf_joke_agreement <dbl>, tf_joke_agrees <dbl>, tf_joke_ah <dbl>,
+## #   tf_joke_ahead <dbl>, tf_joke_ain't <dbl>, tf_joke_air <dbl>,
+## #   tf_joke_airplane <dbl>, tf_joke_airport <dbl>, tf_joke_alcohol <dbl>,
+## #   tf_joke_alien <dbl>, tf_joke_alive <dbl>, tf_joke_alley <dbl>,
+## #   tf_joke_allow <dbl>, tf_joke_allowed <dbl>, tf_joke_almost <dbl>,
+## #   tf_joke_alone <dbl>, tf_joke_along <dbl>, tf_joke_alphabet <dbl>,
+## #   tf_joke_already <dbl>, tf_joke_alright <dbl>, tf_joke_also <dbl>,
+## #   tf_joke_although <dbl>, tf_joke_always <dbl>, tf_joke_amazed <dbl>,
+## #   tf_joke_amazing <dbl>, tf_joke_america <dbl>, tf_joke_american <dbl>,
+## #   tf_joke_americans <dbl>, tf_joke_among <dbl>, tf_joke_amount <dbl>,
+## #   tf_joke_anal <dbl>, tf_joke_angel <dbl>, tf_joke_angry <dbl>,
+## #   tf_joke_animal <dbl>, tf_joke_animals <dbl>, tf_joke_anniversary <dbl>,
+## #   tf_joke_annoyed <dbl>, tf_joke_another <dbl>, tf_joke_another_one <dbl>,
+## #   tf_joke_answer <dbl>, tf_joke_answered <dbl>, …
 ```
+
+The resulting data frame is one row per joke and one column per token. To convert it to a `DocumentTermMatrix`, we need to first convert it into a tidytext format (one-row-per-token), remove all rows with a frequency of 0 (that is, the token did not appear in the joke), then convert it to a DTM using `cast_dtm()`.
+
 
 ```r
-# convert to dtm
-jokes_dtm <- jokes_tokens %>%
-  # remove stop word tokens
-  anti_join(jokes_stop_words) %>%
-  # get count of each token in each document
-  count(id, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(document = id, term = word, value = n) %>%
-  removeSparseTerms(sparse = .999)
-```
-
-```
-## Joining, by = c("ngram", "token_id")
-```
-
-```r
-# remove documents with no terms remaining
-jokes_dtm <- jokes_dtm[unique(jokes_dtm$i),]
-jokes_dtm
-```
-
-```
-## <<DocumentTermMatrix (documents: 49220, terms: 2489)>>
-## Non-/sparse entries: 445215/122063365
-## Sparsity           : 100%
-## Maximal term length: 23
-## Weighting          : term frequency (tf)
+jokes_dtm <- jokes_df %>%
+  pivot_longer(cols = -c(id, score),
+               names_to = "token",
+               values_to = "n") %>%
+  filter(n != 0) %>%
+  # clean the token column so it just includes the token
+  # drop empty levels from id - this includes jokes which did not
+  # have any tokens retained after step_tokenfilter()
+  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
+         id = fct_drop(f = id)) %>%
+  cast_dtm(document = id, term = token, value = n)
 ```
 
 ## Selecting $k$
@@ -636,7 +333,7 @@ perplexity(jokes_lda12)
 ```
 
 ```
-## [1] 1206.553
+## [1] 994.9667
 ```
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
@@ -651,11 +348,12 @@ n_topics <- c(2, 4, 10, 20, 50, 100)
 if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
   load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
 } else {
+  library(furrr)
   plan(multiprocess)
 
   tic()
   jokes_lda_compare <- n_topics %>%
-    future_map(LDA, x = jokes_dtm, control = list(seed = 1234))
+    future_map(LDA, x = jokes_dtm, control = list(seed = 123))
   toc()
   save(jokes_dtm, jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
 }
@@ -793,16 +491,12 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
 }
 ```
 
-Let's test it using the $k = 10$ LDA topic model for the `AP`r/jokes` dataset.
+Let's test it using the $k = 10$ LDA topic model for the `r/jokes` dataset.
 
 
 ```r
 jokes_10_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[3]],
                                        doc_term = jokes_dtm)
-```
-
-```
-## Loading required package: slam
 ```
 
 
@@ -826,103 +520,153 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.3 (2020-10-10)
-##  os       macOS Catalina 10.15.7      
+##  version  R version 4.0.4 (2021-02-15)
+##  os       macOS Big Sur 10.16         
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-03-10                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source                              
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                      
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  blogdown      1.1     2021-01-19 [1] CRAN (R 4.0.3)                      
-##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)                      
-##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)                      
-##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                      
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                      
-##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)                      
-##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                      
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)                      
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                      
-##  dbplyr        2.0.0   2020-11-03 [1] CRAN (R 4.0.2)                      
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)                      
-##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                      
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                      
-##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)                      
-##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                      
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)                      
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)                      
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                      
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                      
-##  ggplot2     * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                      
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                      
-##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                      
-##  here        * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                      
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools     0.5.1   2021-01-12 [1] CRAN (R 4.0.2)                      
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                      
-##  janeaustenr   0.1.5   2017-06-10 [1] CRAN (R 4.0.0)                      
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)                      
-##  lattice       0.20-41 2020-04-02 [1] CRAN (R 4.0.3)                      
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)                      
-##  lubridate     1.7.9.2 2021-01-18 [1] Github (tidyverse/lubridate@aab2e30)
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                      
-##  Matrix        1.3-0   2020-12-22 [1] CRAN (R 4.0.2)                      
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)                      
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                      
-##  modeltools    0.2-23  2020-03-05 [1] CRAN (R 4.0.0)                      
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                      
-##  NLP         * 0.2-1   2020-10-14 [1] CRAN (R 4.0.2)                      
-##  pillar        1.4.7   2020-11-20 [1] CRAN (R 4.0.2)                      
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                      
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                      
-##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)                      
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                      
-##  processx      3.4.5   2020-11-30 [1] CRAN (R 4.0.2)                      
-##  ps            1.5.0   2020-12-05 [1] CRAN (R 4.0.2)                      
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                      
-##  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                      
-##  Rcpp          1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                      
-##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                      
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                      
-##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)                      
-##  rjson       * 0.2.20  2018-06-08 [1] CRAN (R 4.0.0)                      
-##  rlang         0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                      
-##  rmarkdown     2.6     2020-12-14 [1] CRAN (R 4.0.2)                      
-##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                      
-##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.0.2)                      
-##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)                      
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                      
-##  slam          0.1-48  2020-12-03 [1] CRAN (R 4.0.2)                      
-##  SnowballC     0.7.0   2020-04-01 [1] CRAN (R 4.0.0)                      
-##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                      
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                      
-##  testthat      3.0.1   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  tibble      * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)                      
-##  tictoc      * 1.0     2014-06-17 [1] CRAN (R 4.0.0)                      
-##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  tidytext    * 0.2.6   2020-09-20 [1] CRAN (R 4.0.2)                      
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                      
-##  tm          * 0.7-8   2020-11-18 [1] CRAN (R 4.0.2)                      
-##  tokenizers    0.2.1   2018-03-29 [1] CRAN (R 4.0.0)                      
-##  topicmodels * 0.2-11  2020-04-19 [1] CRAN (R 4.0.0)                      
-##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)                      
-##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)                      
-##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)                      
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                      
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                      
+##  package     * version    date       lib source                               
+##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)                       
+##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)                       
+##  blogdown      1.2        2021-03-04 [1] CRAN (R 4.0.3)                       
+##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)                       
+##  broom       * 0.7.5      2021-02-19 [1] CRAN (R 4.0.2)                       
+##  bslib         0.2.4      2021-01-25 [1] CRAN (R 4.0.2)                       
+##  cachem        1.0.4      2021-02-13 [1] CRAN (R 4.0.2)                       
+##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)                       
+##  cellranger    1.1.0      2016-07-27 [1] CRAN (R 4.0.0)                       
+##  class         7.3-18     2021-01-24 [1] CRAN (R 4.0.4)                       
+##  cli           2.3.1      2021-02-23 [1] CRAN (R 4.0.3)                       
+##  codetools     0.2-18     2020-11-04 [1] CRAN (R 4.0.4)                       
+##  colorspace    2.0-0      2020-11-11 [1] CRAN (R 4.0.2)                       
+##  crayon        1.4.1      2021-02-08 [1] CRAN (R 4.0.2)                       
+##  DBI           1.1.1      2021-01-15 [1] CRAN (R 4.0.2)                       
+##  dbplyr        2.1.0      2021-02-03 [1] CRAN (R 4.0.2)                       
+##  debugme       1.1.0      2017-10-22 [1] CRAN (R 4.0.0)                       
+##  desc          1.2.0      2018-05-01 [1] CRAN (R 4.0.0)                       
+##  devtools      2.3.2      2020-09-18 [1] CRAN (R 4.0.2)                       
+##  dials       * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)                       
+##  DiceDesign    1.9        2021-02-13 [1] CRAN (R 4.0.2)                       
+##  digest        0.6.27     2020-10-24 [1] CRAN (R 4.0.2)                       
+##  dplyr       * 1.0.5      2021-03-05 [1] CRAN (R 4.0.3)                       
+##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)                       
+##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)                       
+##  fansi         0.4.2      2021-01-15 [1] CRAN (R 4.0.2)                       
+##  farver        2.1.0      2021-02-28 [1] CRAN (R 4.0.2)                       
+##  fastmap       1.1.0      2021-01-25 [1] CRAN (R 4.0.2)                       
+##  forcats     * 0.5.1      2021-01-27 [1] CRAN (R 4.0.2)                       
+##  foreach       1.5.1      2020-10-15 [1] CRAN (R 4.0.2)                       
+##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)                       
+##  furrr       * 0.2.2      2021-01-29 [1] CRAN (R 4.0.2)                       
+##  future      * 1.21.0     2020-12-10 [1] CRAN (R 4.0.2)                       
+##  generics      0.1.0      2020-10-31 [1] CRAN (R 4.0.2)                       
+##  ggplot2     * 3.3.3      2020-12-30 [1] CRAN (R 4.0.2)                       
+##  globals       0.14.0     2020-11-22 [1] CRAN (R 4.0.2)                       
+##  glue          1.4.2      2020-08-27 [1] CRAN (R 4.0.2)                       
+##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)                       
+##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)                       
+##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)                       
+##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)                       
+##  here        * 1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                       
+##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)                       
+##  hms           1.0.0      2021-01-13 [1] CRAN (R 4.0.2)                       
+##  htmltools     0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                       
+##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                       
+##  infer       * 0.5.4      2021-01-13 [1] CRAN (R 4.0.2)                       
+##  ipred         0.9-10     2021-03-04 [1] CRAN (R 4.0.2)                       
+##  iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                       
+##  janeaustenr   0.1.5      2017-06-10 [1] CRAN (R 4.0.0)                       
+##  jquerylib     0.1.3      2020-12-17 [1] CRAN (R 4.0.2)                       
+##  jsonlite      1.7.2      2020-12-09 [1] CRAN (R 4.0.2)                       
+##  knitr         1.31       2021-01-27 [1] CRAN (R 4.0.2)                       
+##  labeling      0.4.2      2020-10-20 [1] CRAN (R 4.0.2)                       
+##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.4)                       
+##  lava          1.6.8.1    2020-11-04 [1] CRAN (R 4.0.2)                       
+##  LDAvis      * 0.3.2      2015-10-24 [1] CRAN (R 4.0.0)                       
+##  LDAvisData  * 0.1        2020-06-08 [1] Github (cpsievert/LDAvisData@43dd263)
+##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)                       
+##  lifecycle     1.0.0      2021-02-15 [1] CRAN (R 4.0.2)                       
+##  listenv       0.8.0      2019-12-05 [1] CRAN (R 4.0.0)                       
+##  lubridate     1.7.10     2021-02-26 [1] CRAN (R 4.0.2)                       
+##  magrittr      2.0.1      2020-11-17 [1] CRAN (R 4.0.2)                       
+##  MASS          7.3-53     2020-09-09 [1] CRAN (R 4.0.4)                       
+##  Matrix        1.3-2      2021-01-06 [1] CRAN (R 4.0.4)                       
+##  memoise       2.0.0      2021-01-26 [1] CRAN (R 4.0.2)                       
+##  modeldata   * 0.1.0      2020-10-22 [1] CRAN (R 4.0.2)                       
+##  modelr        0.1.8      2020-05-19 [1] CRAN (R 4.0.0)                       
+##  modeltools    0.2-23     2020-03-05 [1] CRAN (R 4.0.0)                       
+##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)                       
+##  NLP         * 0.2-1      2020-10-14 [1] CRAN (R 4.0.2)                       
+##  nnet          7.3-15     2021-01-24 [1] CRAN (R 4.0.4)                       
+##  parallelly    1.23.0     2021-01-04 [1] CRAN (R 4.0.2)                       
+##  parsnip     * 0.1.5      2021-01-19 [1] CRAN (R 4.0.2)                       
+##  pillar        1.5.1      2021-03-05 [1] CRAN (R 4.0.3)                       
+##  pkgbuild      1.2.0      2020-12-15 [1] CRAN (R 4.0.2)                       
+##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.0.0)                       
+##  pkgload       1.2.0      2021-02-23 [1] CRAN (R 4.0.2)                       
+##  plyr          1.8.6      2020-03-03 [1] CRAN (R 4.0.0)                       
+##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.0)                       
+##  pROC          1.17.0.1   2021-01-13 [1] CRAN (R 4.0.2)                       
+##  processx      3.4.5      2020-11-30 [1] CRAN (R 4.0.2)                       
+##  prodlim       2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)                       
+##  proxy         0.4-24     2020-04-25 [1] CRAN (R 4.0.0)                       
+##  ps            1.6.0      2021-02-28 [1] CRAN (R 4.0.2)                       
+##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)                       
+##  R6            2.5.0      2020-10-28 [1] CRAN (R 4.0.2)                       
+##  Rcpp          1.0.6      2021-01-15 [1] CRAN (R 4.0.2)                       
+##  readr       * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)                       
+##  readxl        1.3.1      2019-03-13 [1] CRAN (R 4.0.0)                       
+##  recipes     * 0.1.15     2020-11-11 [1] CRAN (R 4.0.2)                       
+##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)                       
+##  reprex        1.0.0      2021-01-27 [1] CRAN (R 4.0.2)                       
+##  reshape2      1.4.4      2020-04-09 [1] CRAN (R 4.0.0)                       
+##  rjson       * 0.2.20     2018-06-08 [1] CRAN (R 4.0.0)                       
+##  RJSONIO       1.3-1.4    2020-01-15 [1] CRAN (R 4.0.0)                       
+##  rlang         0.4.10     2020-12-30 [1] CRAN (R 4.0.2)                       
+##  rmarkdown     2.7        2021-02-19 [1] CRAN (R 4.0.2)                       
+##  rpart         4.1-15     2019-04-12 [1] CRAN (R 4.0.4)                       
+##  rprojroot     2.0.2      2020-11-15 [1] CRAN (R 4.0.2)                       
+##  rsample     * 0.0.9      2021-02-17 [1] CRAN (R 4.0.2)                       
+##  rstudioapi    0.13       2020-11-12 [1] CRAN (R 4.0.2)                       
+##  rvest         0.3.6      2020-07-25 [1] CRAN (R 4.0.2)                       
+##  sass          0.3.1      2021-01-24 [1] CRAN (R 4.0.2)                       
+##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)                       
+##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)                       
+##  slam        * 0.1-48     2020-12-03 [1] CRAN (R 4.0.2)                       
+##  SnowballC     0.7.0      2020-04-01 [1] CRAN (R 4.0.0)                       
+##  stopwords     2.2        2021-02-10 [1] CRAN (R 4.0.2)                       
+##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)                       
+##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)                       
+##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.4)                       
+##  testthat      3.0.2      2021-02-14 [1] CRAN (R 4.0.2)                       
+##  textrecipes * 0.4.0      2020-11-12 [1] CRAN (R 4.0.2)                       
+##  tibble      * 3.1.0      2021-02-25 [1] CRAN (R 4.0.2)                       
+##  tictoc      * 1.0        2014-06-17 [1] CRAN (R 4.0.0)                       
+##  tidymodels  * 0.1.2      2020-11-22 [1] CRAN (R 4.0.2)                       
+##  tidyr       * 1.1.3      2021-03-03 [1] CRAN (R 4.0.2)                       
+##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)                       
+##  tidytext    * 0.3.0      2021-01-06 [1] CRAN (R 4.0.2)                       
+##  tidyverse   * 1.3.0      2019-11-21 [1] CRAN (R 4.0.0)                       
+##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)                       
+##  tm          * 0.7-8      2020-11-18 [1] CRAN (R 4.0.2)                       
+##  tokenizers    0.2.1      2018-03-29 [1] CRAN (R 4.0.0)                       
+##  topicmodels * 0.2-12     2021-01-29 [1] CRAN (R 4.0.2)                       
+##  tune        * 0.1.3      2021-02-28 [1] CRAN (R 4.0.2)                       
+##  usethis       2.0.1      2021-02-10 [1] CRAN (R 4.0.2)                       
+##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)                       
+##  vctrs         0.3.6      2020-12-17 [1] CRAN (R 4.0.2)                       
+##  withr         2.4.1      2021-01-26 [1] CRAN (R 4.0.2)                       
+##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)                       
+##  xfun          0.21       2021-02-10 [1] CRAN (R 4.0.2)                       
+##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                       
+##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)                       
+##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)                       
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
