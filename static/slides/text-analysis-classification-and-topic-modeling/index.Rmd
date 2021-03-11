@@ -10,19 +10,18 @@ knitr::opts_chunk$set(
   cache = TRUE,
   message = FALSE,
   warning = FALSE,
-  echo = FALSE,
+  collapse = TRUE,
   fig.retina = 2, fig.width = 12
 )
 
 library(tidyverse)
+library(tidymodels)
 library(tidytext)
 library(rjson)
 library(topicmodels)
-library(tm)
 library(here)
 library(patchwork)
 library(tictoc)
-library(flipbookr)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcfss::base_size))
@@ -39,7 +38,7 @@ theme_set(theme_minimal(base_size = rcfss::base_size))
 
 # `USCongress`
 
-```{r get-docs}
+```{r get-docs, echo = FALSE}
 # get USCongress data
 data(USCongress, package = "rcfss")
 
@@ -65,201 +64,227 @@ congress <- as_tibble(USCongress) %>%
 glimpse(congress)
 ```
 
-```{r docs-example, dependson = "get-docs"}
+```{r docs-example, dependson = "get-docs", echo = FALSE}
 head(congress$text)
 ```
 
 ---
 
-# Create tidy text data frame
+# Split the data set
 
-```{r convert-tidytext, dependson = "get-docs", include = FALSE}
-congress_tokens <- congress %>%
-  unnest_tokens(
-    output = word,
-    input = text
-  ) %>%
-  # remove numbers
-  filter(!str_detect(word, "^[0-9]*$")) %>%
-  # remove stop words
-  anti_join(stop_words) %>%
-  # stem the words
-  mutate(word = SnowballC::wordStem(word))
+```{r split, dependson = "get-docs"}
+set.seed(123)
+
+congress <- congress %>%
+  mutate(major = factor(x = major, levels = major, labels = label))
+
+congress_split <- initial_split(data = congress, strata = major, prop = .8)
+congress_split
+
+congress_train <- training(congress_split)
+congress_test <- testing(congress_split)
 ```
 
 ---
 
-`r chunk_reveal(chunk_name = "convert-tidytext", left_assign = TRUE)`
+# Preprocessing the data frame
+
+```{r recipe, dependson = "split"}
+congress_rec <- recipe(major ~ text, data = congress_train)
+```
+
+```{r recipe-steps, dependson = "recipe"}
+library(textrecipes)
+
+congress_rec <- congress_rec %>%
+  step_tokenize(text) %>%
+  step_stopwords(text) %>%
+  step_tokenfilter(text, max_tokens = 500) %>%
+  step_tfidf(text)
+```
 
 ---
 
-# Create document-term matrix
+# Train a model
 
-```{r dtm, dependson = "convert-tidytext", include = FALSE}
-congress_dtm <- congress_tokens %>%
-  # get count of each token in each document
-  count(ID, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(
-    document = ID,
-    term = word,
-    value = n
+```{r nb-model}
+library(discrim)
+nb_spec <- naive_Bayes() %>%
+  set_mode("classification") %>%
+  set_engine("naivebayes")
+
+nb_spec
+```
+
+---
+
+# Train a model
+
+```{r nb-fit, dependson = c("recipe-steps", "nb-model")}
+nb_wf <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(nb_spec)
+
+nb_wf %>%
+  fit(data = congress_train)
+```
+
+---
+
+# Evaluation
+
+```{r congress-cv, dependson = "split"}
+set.seed(123)
+
+congress_folds <- vfold_cv(data = congress_train, strata = major)
+```
+
+```{r nb-cv, dependson = c("congress-cv", "nb-fit")}
+nb_cv <- nb_wf %>%
+  fit_resamples(
+    congress_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+```{r nb-cv-info, dependson = "nb-cv"}
+nb_cv_metrics <- collect_metrics(nb_cv)
+nb_cv_predictions <- collect_predictions(nb_cv)
+
+nb_cv_metrics
+```
+
+---
+
+# Receiver operator curve
+
+```{r nb-roc-curve, dependson = "nb-cv-info", echo = FALSE}
+nb_cv_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = major, c(starts_with(".pred"), -.pred_class)) %>%
+  autoplot() +
+  labs(
+    color = NULL,
+    title = "Receiver operator curve for Congressional bills",
+    subtitle = "Each resample fold is shown in a different color"
   )
 ```
 
 ---
 
-`r chunk_reveal(chunk_name = "dtm", left_assign = TRUE)`
+# Confusion matrix
 
+```{r nb-confusion, dependson = "nb-cv-info", echo = FALSE}
+nb_cv_predictions %>%
+  filter(id == "Fold01") %>%
+  conf_mat(major, .pred_class) %>%
+  autoplot(type = "heatmap") +
+  scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 20))
+```
 
 ---
 
-# Weighting
+# Compare to the null model
 
-* Term frequency (tf)
-* Term frequency-inverse document frequency (tf-idf)
+```{r null-mod, dependson = c("recipe-steps", "congress-cv")}
+null_classification <- null_model() %>%
+  set_engine("parsnip") %>%
+  set_mode("classification")
 
----
-
-# Weighting
-
-```{r dtm-tf-idf, dependson = "convert-tidytext"}
-congress_tokens %>%
-  count(ID, word) %>%
-  cast_dtm(
-    document = ID, term = word, value = n,
-    weighting = tm::weightTfIdf
+null_cv <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(null_classification) %>%
+  fit_resamples(
+    congress_folds
   )
+
+null_cv %>%
+  collect_metrics()
 ```
 
 ---
 
-`r chunk_reveal(chunk_name = "dtm-tf-idf")`
+# Class imbalance
 
----
-
-# Sparsity
-
-```{r removesparseterms, dependson = "convert-tidytext", echo = TRUE, collapse = TRUE}
-removeSparseTerms(congress_dtm, sparse = .95)
-removeSparseTerms(congress_dtm, sparse = .90)
-```
-
-```{r remove-sparse-terms-final, dependson = "convert-tidytext", echo = TRUE}
-(congress_dtm <- removeSparseTerms(congress_dtm, sparse = .99))
-```
-
----
-
-# Exploratory analysis
-
-```{r bind-tf-idf, dependson = "convert-tidytext"}
-congress_tfidf <- congress_tokens %>%
-  count(label, word) %>%
-  bind_tf_idf(term = word, document = label, n = n)
-```
-
-```{r plot-tf-idf, dependson = "bind-tf-idf"}
-# sort the data frame and convert word to a factor column
-plot_congress <- congress_tfidf %>%
-  arrange(desc(tf_idf)) %>%
-  mutate(word = factor(word, levels = rev(unique(word))))
-
-# graph the top 10 tokens for 4 categories
-plot_congress %>%
-  filter(label %in% c(
-    "Macroeconomics",
-    "Civil rights, minority issues, civil liberties",
-    "Health", "Education"
-  )) %>%
-  group_by(label) %>%
-  top_n(10) %>%
-  ungroup() %>%
-  mutate(word = reorder_within(word, tf_idf, label)) %>%
-  ggplot(aes(word, tf_idf)) +
-  geom_col() +
-  scale_x_reordered() +
-  labs(x = NULL, y = "tf-idf") +
-  facet_wrap(~label, scales = "free") +
-  coord_flip()
-```
-
----
-
-# Decision trees
-
-.center[
-
-![](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
-
-]
-
----
-
-# Decision trees
-
-![CDC: School reopening flow chart](/img/cdc-flowchart.png)
-
----
-
-# Random forests
-
-![](https://c402277.ssl.cf1.rackcdn.com/photos/946/images/story_full_width/forests-why-matter_63516847.jpg?1345534028)
-
----
-
-# Evaluate model
-
-```{r rf-train-10, dependson = "remove-sparse-terms-final"}
-# some documents are lost due to not having any relevant tokens after tokenization
-# make sure to remove their associated labels so we have the same number of observations
-congress_slice <- slice(congress, as.numeric(congress_dtm$dimnames$Docs))
-
-congress_rf_10 <- caret::train(
-  x = as.matrix(congress_dtm),
-  y = factor(congress_slice$major),
-  method = "ranger",
-  num.trees = 10,
-  importance = "impurity",
-  trControl = caret::trainControl(method = "oob")
-)
-```
-
-```{r rf-train-200, dependson = "remove-sparse-terms-final", results = "hide"}
-congress_rf_200 <- caret::train(
-  x = as.matrix(congress_dtm),
-  y = factor(congress_slice$major),
-  method = "ranger",
-  num.trees = 200,
-  importance = "impurity",
-  trControl = caret::trainControl(method = "oob")
-)
-```
-
-```{r rf-error, dependson = "rf-train-200"}
-congress_rf_200$finalModel
-```
-
----
-
-# Evaluate model
-
-```{r rf-varimp, dependson = "rf-train-200"}
-congress_rf_10$finalModel %>%
-  # extract variable importance metrics
-  ranger::importance() %>%
-  # convert to a data frame
-  enframe(name = "variable", value = "varimp") %>%
-  top_n(n = 20, wt = varimp) %>%
-  # plot the metrics
-  ggplot(aes(x = fct_reorder(variable, varimp), y = varimp)) +
-  geom_col() +
+```{r major-topic-dist, dependson = "get-docs", echo = FALSE}
+ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
+  geom_bar() +
   coord_flip() +
   labs(
-    x = "Token",
-    y = "Variable importance (higher is more important)"
+    title = "Distribution of legislation",
+    subtitle = "By major policy topic",
+    x = NULL,
+    y = "Number of bills"
   )
 ```
+
+---
+
+# Downsampling
+
+```{r recipe-downsample, dependson = "recipe-steps"}
+library(themis)
+
+# build on existing recipe
+congress_rec <- congress_rec %>%
+  step_downsample(major)
+congress_rec
+```
+
+---
+
+# Support vector machine
+
+```{r svm-spec}
+svm_spec <- svm_rbf() %>%
+  set_mode("classification") %>%
+  set_engine("liquidSVM")
+
+svm_spec
+```
+
+---
+
+# Downsampling
+
+```{r svm-wf, dependson = c("recipe-steps", "svm-spec")}
+svm_wf <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(svm_spec)
+```
+
+```{r svm-fit, dependson = "svm-wf"}
+set.seed(123)
+
+svm_cv <- fit_resamples(
+  svm_wf,
+  congress_folds,
+  metrics = metric_set(accuracy),
+  control = control_resamples(save_pred = TRUE)
+)
+```
+
+```{r svm-metrics, dependson = "svm-fit"}
+svm_cv_metrics <- collect_metrics(svm_cv)
+svm_cv_predictions <- collect_predictions(svm_cv)
+
+svm_cv_metrics
+```
+
+---
+
+# Confusion matrix
+
+```{r svm-confusion, dependson = "svm-metrics", echo = FALSE}
+svm_cv_predictions %>%
+  filter(id == "Fold01") %>%
+  conf_mat(major, .pred_class) %>%
+  autoplot(type = "heatmap") +
+  scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 20))
+```
+
 
 ---
 
@@ -293,90 +318,6 @@ congress_rf_10$finalModel %>%
 
 ---
 
-```{r dtm-lda, dependson = "convert-tidytext"}
-# remove terms with low tf-idf for future LDA model
-congress_tokens_lite <- congress_tokens %>%
-  count(major, word) %>%
-  bind_tf_idf(term = word, document = major, n = n) %>%
-  group_by(major) %>%
-  top_n(40, wt = tf_idf) %>%
-  ungroup() %>%
-  count(word) %>%
-  select(-n) %>%
-  left_join(congress_tokens)
-
-congress_dtm <- congress_tokens_lite %>%
-  # get count of each token in each document
-  count(ID, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(document = ID, term = word, value = n)
-```
-
-# 20 topic LDA model
-
-```{r congress-lda, dependson = "dtm", echo = TRUE}
-library(topicmodels)
-congress_lda <- LDA(congress_dtm, k = 20, control = list(seed = 123))
-congress_lda
-```
-
----
-
-# Top terms per topic
-
-```{r congress-20-topn, dependson = "congress-20-topic", fig.height = 8}
-congress_lda_td <- tidy(congress_lda)
-
-top_terms <- congress_lda_td %>%
-  group_by(topic) %>%
-  top_n(5, beta) %>%
-  ungroup() %>%
-  arrange(topic, -beta)
-
-top_terms %>%
-  mutate(
-    topic = factor(topic),
-    term = reorder_within(term, beta, topic)
-  ) %>%
-  ggplot(aes(term, beta, fill = topic)) +
-  geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
-  scale_x_reordered() +
-  facet_wrap(~topic, scales = "free", ncol = 4) +
-  coord_flip() +
-  theme_minimal(base_size = rcfss::base_size * .7)
-```
-
----
-
-# Document classification
-
-```{r congress-gamma, dependson = "congress-lda"}
-congress_gamma <- tidy(congress_lda, matrix = "gamma")
-```
-
-```{r congress-model-compare, dependson = "congress-gamma"}
-congress_tokens_lite %>%
-  mutate(document = as.character(row_number())) %>%
-  # join with the gamma values
-  left_join(congress_gamma) %>%
-  # remove missing values
-  drop_na() %>%
-  group_by(topic, major, label) %>%
-  summarize(gamma = median(gamma)) %>%
-  # plot the topic distributions for each policy topic
-  ggplot(aes(factor(topic), gamma)) +
-  geom_segment(aes(x = factor(topic), xend = factor(topic), y = 0, yend = gamma), color = "grey50") +
-  geom_point() +
-  facet_wrap(~label) +
-  labs(
-    x = "LDA topic",
-    y = expression(gamma)
-  ) +
-  theme_minimal(base_size = rcfss::base_size * .6)
-```
-
----
-
 # `r/jokes`
 
 <blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
@@ -386,77 +327,60 @@ congress_tokens_lite %>%
 
 # `r/jokes` dataset
 
-```{r jokes}
+```{r jokes, echo = FALSE}
 # obtain r/jokes and extract values from the JSON file
 jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
 
-jokes <- jokes_json %>% {
-  tibble(
-    id = map_chr(., "id"),
-    title = map_chr(., "title"),
-    body = map_chr(., "body"),
-    score = map_dbl(., "score")
-  )
-}
+jokes <- tibble(jokes = jokes_json) %>%
+  unnest_wider(col = jokes)
 glimpse(jokes)
 ```
 
-```{r jokes-dtm, dependson = "jokes"}
-# convert into a document-term matrix
-set.seed(123)
-n_grams <- 1:5 # extract n-grams for n=1,2,3,4,5
-jokes_lite <- sample_n(jokes, 50000) # randomly sample only 50,000 jokes
+---
 
-jokes_tokens <- map_df(n_grams, ~ jokes_lite %>%
-  # combine title and body
-  unite(col = joke, title, body, sep = " ") %>%
-  # tokenize
-  unnest_tokens(
-    output = word,
-    input = joke,
-    token = "ngrams",
-    n = .x
-  ) %>%
-  mutate(
-    ngram = .x,
-    token_id = row_number()
-  ) %>%
-  # remove tokens that are missing values
-  drop_na(word))
+# Create the recipe
 
-# remove stop words or n-grams beginning or ending with stop word
-jokes_stop_words <- jokes_tokens %>%
-  # separate ngrams into separate columns
-  separate(
-    col = word,
-    into = c("word1", "word2", "word3", "word4", "word5"),
-    sep = " "
-  ) %>%
-  # find last word
-  mutate(last = if_else(ngram == 5, word5,
-    if_else(ngram == 4, word4,
-      if_else(ngram == 3, word3,
-        if_else(ngram == 2, word2, word1)
-      )
-    )
-  )) %>%
-  # remove tokens where the first or last word is a stop word
-  filter(word1 %in% stop_words$word |
-    last %in% stop_words$word) %>%
-  select(ngram, token_id)
+```{r jokes-recipe, dependson = "jokes"}
+set.seed(123) # set seed for random sampling
 
-# convert to dtm
-jokes_dtm <- jokes_tokens %>%
-  # remove stop word tokens
-  anti_join(jokes_stop_words) %>%
-  # get count of each token in each document
-  count(id, word) %>%
-  # create a document-term matrix with all features and tf weighting
-  cast_dtm(document = id, term = word, value = n) %>%
-  removeSparseTerms(sparse = .999)
+jokes_rec <- recipe(~., data = jokes) %>%
+  step_sample(size = 1e04) %>%
+  step_tokenize(title, body) %>%
+  step_tokenmerge(title, body, prefix = "joke") %>%
+  step_stopwords(joke) %>%
+  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %>%
+  step_tokenfilter(joke, max_tokens = 2500) %>%
+  step_tf(joke)
+```
 
-# remove documents with no terms remaining
-jokes_dtm <- jokes_dtm[unique(jokes_dtm$i), ]
+---
+
+# Bake the recipe
+
+```{r jokes-bake, dependson = "jokes-recipe"}
+jokes_prep <- prep(jokes_rec)
+
+jokes_df <- bake(jokes_prep, new_data = NULL)
+jokes_df %>%
+  slice(1:5)
+```
+
+---
+
+# Convert to document-term matrix
+
+```{r jokes-dtm, dependson = "jokes-bake"}
+jokes_dtm <- jokes_df %>%
+  pivot_longer(cols = -c(id, score),
+               names_to = "token",
+               values_to = "n") %>%
+  filter(n != 0) %>%
+  # clean the token column so it just includes the token
+  # drop empty levels from id - this includes jokes which did not
+  # have any tokens retained after step_tokenfilter()
+  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
+         id = fct_drop(f = id)) %>%
+  cast_dtm(document = id, term = token, value = n)
 jokes_dtm
 ```
 
@@ -468,7 +392,7 @@ jokes_dtm
 jokes_lda4 <- LDA(jokes_dtm, k = 4, control = list(seed = 123))
 ```
 
-```{r jokes-4-topn, dependson = "jokes-topic-4"}
+```{r jokes-4-topn, dependson = "jokes-topic-4", echo = FALSE}
 jokes_lda4_td <- tidy(jokes_lda4)
 
 top_terms <- jokes_lda4_td %>%
@@ -493,11 +417,11 @@ top_terms %>%
 
 # $k=12$
 
-```{r jokes-topic-12, dependson = "jokes-dtm"}
+```{r jokes-topic-12, dependson = "jokes-dtm", echo = FALSE}
 jokes_lda12 <- LDA(jokes_dtm, k = 12, control = list(seed = 123))
 ```
 
-```{r jokes-12-topn, dependson = "jokes-topic-12"}
+```{r jokes-12-topn, dependson = "jokes-topic-12", echo = FALSE}
 jokes_lda12_td <- tidy(jokes_lda12)
 
 top_terms <- jokes_lda12_td %>%
@@ -532,7 +456,7 @@ top_terms %>%
 
 # Perplexity
 
-```{r jokes-lda-compare, dependson = "jokes-dtm"}
+```{r jokes-lda-compare, dependson = "jokes-dtm", echo = FALSE}
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
 # cache the models and only estimate if they don't already exist
@@ -543,13 +467,13 @@ if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
 
   tic()
   jokes_lda_compare <- n_topics %>%
-    future_map(LDA, x = jokes_dtm, control = list(seed = 1234))
+    future_map(LDA, x = jokes_dtm, control = list(seed = 123))
   toc()
   save(jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
 }
 ```
 
-```{r jokes_lda_compare_viz, dependson="jokes_lda_compare"} 
+```{r jokes_lda_compare_viz, dependson="jokes_lda_compare", echo = FALSE} 
 tibble(
   k = n_topics,
   perplex = map_dbl(jokes_lda_compare, perplexity)
@@ -569,7 +493,7 @@ tibble(
 
 # $k=100$
 
-```{r jokes-100-topn, dependson = "jokes-lda-compare"}
+```{r jokes-100-topn, dependson = "jokes-lda-compare", echo = FALSE}
 jokes_lda_td <- tidy(jokes_lda_compare[[6]])
 
 top_terms <- jokes_lda_td %>%

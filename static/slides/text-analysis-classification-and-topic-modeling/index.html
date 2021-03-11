@@ -4,6 +4,7 @@
     <title>Text analysis: classification and topic modeling</title>
     <meta charset="utf-8" />
     <meta name="author" content="MACS 30500   University of Chicago" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
@@ -35,13 +36,13 @@ class: center, middle, inverse, title-slide
 ```
 ## Rows: 4,449
 ## Columns: 7
-## $ ID       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 1…
-## $ cong     &lt;dbl&gt; 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, …
-## $ billnum  &lt;dbl&gt; 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, …
-## $ h_or_sen &lt;chr&gt; "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", …
-## $ major    &lt;dbl&gt; 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, 2, 3,…
-## $ text     &lt;chr&gt; "To suspend temporarily the duty on Fast Magenta 2 Stage.", …
-## $ label    &lt;fct&gt; "Foreign trade", "Foreign trade", "Foreign trade", "Foreign …
+## $ ID       &lt;dbl&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18…
+## $ cong     &lt;dbl&gt; 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 107, 1…
+## $ billnum  &lt;dbl&gt; 4499, 4500, 4501, 4502, 4503, 4504, 4505, 4506, 4507, 4508, 4…
+## $ h_or_sen &lt;chr&gt; "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "HR", "…
+## $ major    &lt;dbl&gt; 18, 18, 18, 18, 5, 21, 15, 18, 18, 18, 18, 16, 18, 12, 2, 3, …
+## $ text     &lt;chr&gt; "To suspend temporarily the duty on Fast Magenta 2 Stage.", "…
+## $ label    &lt;fct&gt; "Foreign trade", "Foreign trade", "Foreign trade", "Foreign t…
 ```
 
 
@@ -56,590 +57,304 @@ class: center, middle, inverse, title-slide
 
 ---
 
-# Create tidy text data frame
-
-
-
----
-
-count: false
- 
-
-.left-panel-convert-tidytext-auto[
-
-```r
-*congress_tokens &lt;- congress
- 
-congress_tokens
-```
-]
- 
-.right-panel-convert-tidytext-auto[
-
-```
-## # A tibble: 4,449 x 7
-##       ID  cong billnum h_or_sen major text                        label         
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;chr&gt;                       &lt;fct&gt;         
-##  1     1   107    4499 HR          18 To suspend temporarily the… Foreign trade 
-##  2     2   107    4500 HR          18 To suspend temporarily the… Foreign trade 
-##  3     3   107    4501 HR          18 To suspend temporarily the… Foreign trade 
-##  4     4   107    4502 HR          18 To reduce temporarily the … Foreign trade 
-##  5     5   107    4503 HR           5 To amend the Immigration a… Labor and emp…
-##  6     6   107    4504 HR          21 To amend title 38, United … Public lands …
-##  7     7   107    4505 HR          15 To repeal subtitle B of ti… Banking, fina…
-##  8     8   107    4506 HR          18 To suspend temporarily the… Foreign trade 
-##  9     9   107    4507 HR          18 To suspend temporarily the… Foreign trade 
-## 10    10   107    4508 HR          18 To suspend temporarily the… Foreign trade 
-## # … with 4,439 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-convert-tidytext-auto[
-
-```r
-congress_tokens &lt;- congress %&gt;%  
-* unnest_tokens(
-*   output = word,
-*   input = text
-* )
- 
-congress_tokens
-```
-]
- 
-.right-panel-convert-tidytext-auto[
-
-```
-## # A tibble: 109,476 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
-##  1     1   107    4499 HR          18 Foreign trade to         
-##  2     1   107    4499 HR          18 Foreign trade suspend    
-##  3     1   107    4499 HR          18 Foreign trade temporarily
-##  4     1   107    4499 HR          18 Foreign trade the        
-##  5     1   107    4499 HR          18 Foreign trade duty       
-##  6     1   107    4499 HR          18 Foreign trade on         
-##  7     1   107    4499 HR          18 Foreign trade fast       
-##  8     1   107    4499 HR          18 Foreign trade magenta    
-##  9     1   107    4499 HR          18 Foreign trade 2          
-## 10     1   107    4499 HR          18 Foreign trade stage      
-## # … with 109,466 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-convert-tidytext-auto[
-
-```r
-congress_tokens &lt;- congress %&gt;%  
-  unnest_tokens(  
-    output = word,  
-    input = text  
-  ) %&gt;%  
-# remove numbers
-* filter(!str_detect(word, "^[0-9]*$"))
- 
-congress_tokens
-```
-]
- 
-.right-panel-convert-tidytext-auto[
-
-```
-## # A tibble: 107,243 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
-##  1     1   107    4499 HR          18 Foreign trade to         
-##  2     1   107    4499 HR          18 Foreign trade suspend    
-##  3     1   107    4499 HR          18 Foreign trade temporarily
-##  4     1   107    4499 HR          18 Foreign trade the        
-##  5     1   107    4499 HR          18 Foreign trade duty       
-##  6     1   107    4499 HR          18 Foreign trade on         
-##  7     1   107    4499 HR          18 Foreign trade fast       
-##  8     1   107    4499 HR          18 Foreign trade magenta    
-##  9     1   107    4499 HR          18 Foreign trade stage      
-## 10     2   107    4500 HR          18 Foreign trade to         
-## # … with 107,233 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-convert-tidytext-auto[
-
-```r
-congress_tokens &lt;- congress %&gt;%  
-  unnest_tokens(  
-    output = word,  
-    input = text  
-  ) %&gt;%  
-# remove numbers
-  filter(!str_detect(word, "^[0-9]*$")) %&gt;%  
-# remove stop words
-* anti_join(stop_words)
- 
-congress_tokens
-```
-]
- 
-.right-panel-convert-tidytext-auto[
-
-```
-## # A tibble: 58,820 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
-##  1     1   107    4499 HR          18 Foreign trade suspend    
-##  2     1   107    4499 HR          18 Foreign trade temporarily
-##  3     1   107    4499 HR          18 Foreign trade duty       
-##  4     1   107    4499 HR          18 Foreign trade fast       
-##  5     1   107    4499 HR          18 Foreign trade magenta    
-##  6     1   107    4499 HR          18 Foreign trade stage      
-##  7     2   107    4500 HR          18 Foreign trade suspend    
-##  8     2   107    4500 HR          18 Foreign trade temporarily
-##  9     2   107    4500 HR          18 Foreign trade duty       
-## 10     2   107    4500 HR          18 Foreign trade fast       
-## # … with 58,810 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-convert-tidytext-auto[
-
-```r
-congress_tokens &lt;- congress %&gt;%  
-  unnest_tokens(  
-    output = word,  
-    input = text  
-  ) %&gt;%  
-# remove numbers
-  filter(!str_detect(word, "^[0-9]*$")) %&gt;%  
-# remove stop words
-  anti_join(stop_words) %&gt;%  
-# stem the words
-* mutate(word = SnowballC::wordStem(word))
- 
-congress_tokens
-```
-]
- 
-.right-panel-convert-tidytext-auto[
-
-```
-## # A tibble: 58,820 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
-##  1     1   107    4499 HR          18 Foreign trade suspend    
-##  2     1   107    4499 HR          18 Foreign trade temporarili
-##  3     1   107    4499 HR          18 Foreign trade duti       
-##  4     1   107    4499 HR          18 Foreign trade fast       
-##  5     1   107    4499 HR          18 Foreign trade magenta    
-##  6     1   107    4499 HR          18 Foreign trade stage      
-##  7     2   107    4500 HR          18 Foreign trade suspend    
-##  8     2   107    4500 HR          18 Foreign trade temporarili
-##  9     2   107    4500 HR          18 Foreign trade duti       
-## 10     2   107    4500 HR          18 Foreign trade fast       
-## # … with 58,810 more rows
-```
-]
-
-&lt;style&gt;
-.left-panel-convert-tidytext-auto {
-  color: #777;
-  width: 38.6138613861386%;
-  height: 92%;
-  float: left;
-  font-size: 80%
-}
-.right-panel-convert-tidytext-auto {
-  width: 59.4059405940594%;
-  float: right;
-  padding-left: 1%;
-  font-size: 80%
-}
-.middle-panel-convert-tidytext-auto {
-  width: 0%;
-  float: left;
-  padding-left: 1%;
-  font-size: 80%
-}
-&lt;/style&gt;
-
-
-
----
-
-# Create document-term matrix
-
-
-
----
-
-count: false
- 
-
-.left-panel-dtm-auto[
-
-```r
-*congress_dtm &lt;- congress_tokens
- 
-congress_dtm
-```
-]
- 
-.right-panel-dtm-auto[
-
-```
-## # A tibble: 58,820 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
-##  1     1   107    4499 HR          18 Foreign trade suspend    
-##  2     1   107    4499 HR          18 Foreign trade temporarili
-##  3     1   107    4499 HR          18 Foreign trade duti       
-##  4     1   107    4499 HR          18 Foreign trade fast       
-##  5     1   107    4499 HR          18 Foreign trade magenta    
-##  6     1   107    4499 HR          18 Foreign trade stage      
-##  7     2   107    4500 HR          18 Foreign trade suspend    
-##  8     2   107    4500 HR          18 Foreign trade temporarili
-##  9     2   107    4500 HR          18 Foreign trade duti       
-## 10     2   107    4500 HR          18 Foreign trade fast       
-## # … with 58,810 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-dtm-auto[
-
-```r
-congress_dtm &lt;- congress_tokens %&gt;%  
-# get count of each token in each document
-* count(ID, word)
- 
-congress_dtm
-```
-]
- 
-.right-panel-dtm-auto[
-
-```
-## # A tibble: 55,033 x 3
-##       ID word            n
-##    &lt;dbl&gt; &lt;chr&gt;       &lt;int&gt;
-##  1     1 duti            1
-##  2     1 fast            1
-##  3     1 magenta         1
-##  4     1 stage           1
-##  5     1 suspend         1
-##  6     1 temporarili     1
-##  7     2 black           1
-##  8     2 duti            1
-##  9     2 fast            1
-## 10     2 stage           1
-## # … with 55,023 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-dtm-auto[
-
-```r
-congress_dtm &lt;- congress_tokens %&gt;%  
-# get count of each token in each document
-  count(ID, word) %&gt;%  
-# create a document-term matrix with all features and tf weighting
-* cast_dtm(
-*   document = ID,
-*   term = word,
-*   value = n
-* )
- 
-congress_dtm
-```
-]
- 
-.right-panel-dtm-auto[
-
-```
-## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 4902)&gt;&gt;
-## Non-/sparse entries: 55033/21753965
-## Sparsity           : 100%
-## Maximal term length: 24
-## Weighting          : term frequency (tf)
-```
-]
-
-&lt;style&gt;
-.left-panel-dtm-auto {
-  color: #777;
-  width: 38.6138613861386%;
-  height: 92%;
-  float: left;
-  font-size: 80%
-}
-.right-panel-dtm-auto {
-  width: 59.4059405940594%;
-  float: right;
-  padding-left: 1%;
-  font-size: 80%
-}
-.middle-panel-dtm-auto {
-  width: 0%;
-  float: left;
-  padding-left: 1%;
-  font-size: 80%
-}
-&lt;/style&gt;
-
-
-
-
----
-
-# Weighting
-
-* Term frequency (tf)
-* Term frequency-inverse document frequency (tf-idf)
-
----
-
-# Weighting
-
-
-```
-## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 4902)&gt;&gt;
-## Non-/sparse entries: 55033/21753965
-## Sparsity           : 100%
-## Maximal term length: 24
-## Weighting          : term frequency - inverse document frequency (normalized) (tf-idf)
-```
-
----
-
-count: false
- 
-
-.left-panel-dtm-tf-idf-auto[
-
-```r
-*congress_tokens
-```
-]
- 
-.right-panel-dtm-tf-idf-auto[
-
-```
-## # A tibble: 58,820 x 7
-##       ID  cong billnum h_or_sen major label         word       
-##    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;    &lt;dbl&gt; &lt;fct&gt;         &lt;chr&gt;      
-##  1     1   107    4499 HR          18 Foreign trade suspend    
-##  2     1   107    4499 HR          18 Foreign trade temporarili
-##  3     1   107    4499 HR          18 Foreign trade duti       
-##  4     1   107    4499 HR          18 Foreign trade fast       
-##  5     1   107    4499 HR          18 Foreign trade magenta    
-##  6     1   107    4499 HR          18 Foreign trade stage      
-##  7     2   107    4500 HR          18 Foreign trade suspend    
-##  8     2   107    4500 HR          18 Foreign trade temporarili
-##  9     2   107    4500 HR          18 Foreign trade duti       
-## 10     2   107    4500 HR          18 Foreign trade fast       
-## # … with 58,810 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-dtm-tf-idf-auto[
-
-```r
-congress_tokens %&gt;%  
-* count(ID, word)
-```
-]
- 
-.right-panel-dtm-tf-idf-auto[
-
-```
-## # A tibble: 55,033 x 3
-##       ID word            n
-##    &lt;dbl&gt; &lt;chr&gt;       &lt;int&gt;
-##  1     1 duti            1
-##  2     1 fast            1
-##  3     1 magenta         1
-##  4     1 stage           1
-##  5     1 suspend         1
-##  6     1 temporarili     1
-##  7     2 black           1
-##  8     2 duti            1
-##  9     2 fast            1
-## 10     2 stage           1
-## # … with 55,023 more rows
-```
-]
-
----
-count: false
- 
-
-.left-panel-dtm-tf-idf-auto[
-
-```r
-congress_tokens %&gt;%  
-  count(ID, word) %&gt;%  
-* cast_dtm(
-*   document = ID, term = word, value = n,
-*   weighting = tm::weightTfIdf
-* )
-```
-]
- 
-.right-panel-dtm-tf-idf-auto[
-
-```
-## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 4902)&gt;&gt;
-## Non-/sparse entries: 55033/21753965
-## Sparsity           : 100%
-## Maximal term length: 24
-## Weighting          : term frequency - inverse document frequency (normalized) (tf-idf)
-```
-]
-
-&lt;style&gt;
-.left-panel-dtm-tf-idf-auto {
-  color: #777;
-  width: 38.6138613861386%;
-  height: 92%;
-  float: left;
-  font-size: 80%
-}
-.right-panel-dtm-tf-idf-auto {
-  width: 59.4059405940594%;
-  float: right;
-  padding-left: 1%;
-  font-size: 80%
-}
-.middle-panel-dtm-tf-idf-auto {
-  width: 0%;
-  float: left;
-  padding-left: 1%;
-  font-size: 80%
-}
-&lt;/style&gt;
-
-
-
----
-
-# Sparsity
+# Split the data set
 
 
 ```r
-removeSparseTerms(congress_dtm, sparse = .95)
-## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 28)&gt;&gt;
-## Non-/sparse entries: 18447/106125
-## Sparsity           : 85%
-## Maximal term length: 11
-## Weighting          : term frequency (tf)
-removeSparseTerms(congress_dtm, sparse = .90)
-## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 16)&gt;&gt;
-## Non-/sparse entries: 14917/56267
-## Sparsity           : 79%
-## Maximal term length: 9
-## Weighting          : term frequency (tf)
+set.seed(123)
+
+congress &lt;- congress %&gt;%
+  mutate(major = factor(x = major, levels = major, labels = label))
+
+congress_split &lt;- initial_split(data = congress, strata = major, prop = .8)
+congress_split
+## &lt;Analysis/Assess/Total&gt;
+## &lt;3560/889/4449&gt;
+
+congress_train &lt;- training(congress_split)
+congress_test &lt;- testing(congress_split)
+```
+
+---
+
+# Preprocessing the data frame
+
+
+```r
+congress_rec &lt;- recipe(major ~ text, data = congress_train)
 ```
 
 
 ```r
-(congress_dtm &lt;- removeSparseTerms(congress_dtm, sparse = .99))
+library(textrecipes)
+
+congress_rec &lt;- congress_rec %&gt;%
+  step_tokenize(text) %&gt;%
+  step_stopwords(text) %&gt;%
+  step_tokenfilter(text, max_tokens = 500) %&gt;%
+  step_tfidf(text)
 ```
 
-```
-## &lt;&lt;DocumentTermMatrix (documents: 4449, terms: 209)&gt;&gt;
-## Non-/sparse entries: 33794/896047
-## Sparsity           : 96%
-## Maximal term length: 11
-## Weighting          : term frequency (tf)
-```
-
 ---
 
-# Exploratory analysis
+# Train a model
 
 
+```r
+library(discrim)
+nb_spec &lt;- naive_Bayes() %&gt;%
+  set_mode("classification") %&gt;%
+  set_engine("naivebayes")
 
-&lt;img src="index_files/figure-html/plot-tf-idf-1.png" width="864" /&gt;
-
----
-
-# Decision trees
-
-.center[
-
-![](https://eight2late.files.wordpress.com/2016/02/7214525854_733237dd83_z1.jpg?w=700)
-
-]
-
----
-
-# Decision trees
-
-![CDC: School reopening flow chart](/img/cdc-flowchart.png)
-
----
-
-# Random forests
-
-![](https://c402277.ssl.cf1.rackcdn.com/photos/946/images/story_full_width/forests-why-matter_63516847.jpg?1345534028)
-
----
-
-# Evaluate model
-
-
-
-
-
-
-```
-## Ranger result
+nb_spec
+## Naive Bayes Model Specification (classification)
 ## 
-## Call:
-##  ranger::ranger(dependent.variable.name = ".outcome", data = x,      mtry = min(param$mtry, ncol(x)), min.node.size = param$min.node.size,      splitrule = as.character(param$splitrule), write.forest = TRUE,      probability = classProbs, ...) 
-## 
-## Type:                             Classification 
-## Number of trees:                  200 
-## Sample size:                      4449 
-## Number of independent variables:  209 
-## Mtry:                             105 
-## Target node size:                 1 
-## Variable importance mode:         impurity 
-## Splitrule:                        extratrees 
-## Number of random splits:          1 
-## OOB prediction error:             32.37 %
+## Computational engine: naivebayes
 ```
 
 ---
 
-# Evaluate model
+# Train a model
 
-&lt;img src="index_files/figure-html/rf-varimp-1.png" width="864" /&gt;
+
+```r
+nb_wf &lt;- workflow() %&gt;%
+  add_recipe(congress_rec) %&gt;%
+  add_model(nb_spec)
+
+nb_wf %&gt;%
+  fit(data = congress_train)
+## ══ Workflow [trained] ══════════════════════════════════════════════════════════
+## Preprocessor: Recipe
+## Model: naive_Bayes()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## 4 Recipe Steps
+## 
+## ● step_tokenize()
+## ● step_stopwords()
+## ● step_tokenfilter()
+## ● step_tfidf()
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## 
+## ================================== Naive Bayes ================================== 
+##  
+##  Call: 
+## naive_bayes.default(x = maybe_data_frame(x), y = y, usekernel = TRUE)
+## 
+## --------------------------------------------------------------------------------- 
+##  
+## Laplace smoothing: 0
+## 
+## --------------------------------------------------------------------------------- 
+##  
+##  A priori probabilities: 
+## 
+##                                  Foreign trade 
+##                                    0.088202247 
+##                           Labor and employment 
+##                                    0.058988764 
+##              Public lands and water management 
+##                                    0.110674157 
+##        Banking, finance, and domestic commerce 
+##                                    0.061516854 
+##                                        Defense 
+##                                    0.049719101 
+##                      Law, crime, family issues 
+##                                    0.064606742 
+## Civil rights, minority issues, civil liberties 
+##                                    0.017696629 
+##                                         Health 
+##                                    0.137359551 
+##          International affairs and foreign aid 
+##                                    0.028370787 
+##                          Government operations 
+##                                    0.085393258 
+##                           Other, miscellaneous 
+##                                    0.006460674 
+##                                 Transportation 
+##                                    0.039044944 
+##                                      Education 
+##                                    0.048595506 
+##          Space, technology, and communications 
+##                                    0.019101124 
+##                                    Environment 
+##                                    0.046348315 
+##                                 Macroeconomics 
+##                                    0.035393258 
+##                                 Social welfare 
+##                                    0.020786517 
+##                                         Energy 
+##                                    0.030617978 
+## 
+## ...
+## and 1715 more lines.
+```
+
+---
+
+# Evaluation
+
+
+```r
+set.seed(123)
+
+congress_folds &lt;- vfold_cv(data = congress_train, strata = major)
+```
+
+
+```r
+nb_cv &lt;- nb_wf %&gt;%
+  fit_resamples(
+    congress_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+
+```r
+nb_cv_metrics &lt;- collect_metrics(nb_cv)
+nb_cv_predictions &lt;- collect_predictions(nb_cv)
+
+nb_cv_metrics
+## # A tibble: 2 x 6
+##   .metric  .estimator  mean     n std_err .config             
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+## 1 accuracy multiclass 0.137    10 0.00532 Preprocessor1_Model1
+## 2 roc_auc  hand_till  0.536    10 0.00488 Preprocessor1_Model1
+```
+
+---
+
+# Receiver operator curve
+
+&lt;img src="index_files/figure-html/nb-roc-curve-1.png" width="864" /&gt;
+
+---
+
+# Confusion matrix
+
+&lt;img src="index_files/figure-html/nb-confusion-1.png" width="864" /&gt;
+
+---
+
+# Compare to the null model
+
+
+```r
+null_classification &lt;- null_model() %&gt;%
+  set_engine("parsnip") %&gt;%
+  set_mode("classification")
+
+null_cv &lt;- workflow() %&gt;%
+  add_recipe(congress_rec) %&gt;%
+  add_model(null_classification) %&gt;%
+  fit_resamples(
+    congress_folds
+  )
+
+null_cv %&gt;%
+  collect_metrics()
+## # A tibble: 2 x 6
+##   .metric  .estimator  mean     n std_err .config             
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+## 1 accuracy multiclass 0.137    10 0.00532 Preprocessor1_Model1
+## 2 roc_auc  hand_till  0.5      10 0       Preprocessor1_Model1
+```
+
+---
+
+# Class imbalance
+
+&lt;img src="index_files/figure-html/major-topic-dist-1.png" width="864" /&gt;
+
+---
+
+# Downsampling
+
+
+```r
+library(themis)
+
+# build on existing recipe
+congress_rec &lt;- congress_rec %&gt;%
+  step_downsample(major)
+congress_rec
+## Data Recipe
+## 
+## Inputs:
+## 
+##       role #variables
+##    outcome          1
+##  predictor          1
+## 
+## Operations:
+## 
+## Tokenization for text
+## Stop word removal for text
+## Text filtering for text
+## Term frequency-inverse document frequency with text
+## Down-sampling based on major
+```
+
+---
+
+# Support vector machine
+
+
+```r
+svm_spec &lt;- svm_rbf() %&gt;%
+  set_mode("classification") %&gt;%
+  set_engine("liquidSVM")
+
+svm_spec
+## Radial Basis Function Support Vector Machine Specification (classification)
+## 
+## Computational engine: liquidSVM
+```
+
+---
+
+# Downsampling
+
+
+```r
+svm_wf &lt;- workflow() %&gt;%
+  add_recipe(congress_rec) %&gt;%
+  add_model(svm_spec)
+```
+
+
+```r
+set.seed(123)
+
+svm_cv &lt;- fit_resamples(
+  svm_wf,
+  congress_folds,
+  metrics = metric_set(accuracy),
+  control = control_resamples(save_pred = TRUE)
+)
+```
+
+
+```r
+svm_cv_metrics &lt;- collect_metrics(svm_cv)
+svm_cv_predictions &lt;- collect_predictions(svm_cv)
+
+svm_cv_metrics
+## # A tibble: 1 x 6
+##   .metric  .estimator  mean     n std_err .config             
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
+## 1 accuracy multiclass 0.347    10  0.0125 Preprocessor1_Model1
+```
+
+---
+
+# Confusion matrix
+
+&lt;img src="index_files/figure-html/svm-confusion-1.png" width="864" /&gt;
+
 
 ---
 
@@ -673,37 +388,6 @@ removeSparseTerms(congress_dtm, sparse = .90)
 
 ---
 
-
-
-# 20 topic LDA model
-
-
-```r
-library(topicmodels)
-congress_lda &lt;- LDA(congress_dtm, k = 20, control = list(seed = 123))
-congress_lda
-```
-
-```
-## A LDA_VEM topic model with 20 topics.
-```
-
----
-
-# Top terms per topic
-
-&lt;img src="index_files/figure-html/congress-20-topn-1.png" width="864" /&gt;
-
----
-
-# Document classification
-
-
-
-&lt;img src="index_files/figure-html/congress-model-compare-1.png" width="864" /&gt;
-
----
-
 # `r/jokes`
 
 &lt;blockquote class="reddit-card" data-card-created="1552319072"&gt;&lt;a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/"&gt;Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.&lt;/a&gt; from &lt;a href="http://www.reddit.com/r/Jokes"&gt;r/Jokes&lt;/a&gt;&lt;/blockquote&gt;
@@ -717,18 +401,106 @@ congress_lda
 ```
 ## Rows: 194,553
 ## Columns: 4
-## $ id    &lt;chr&gt; "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5t…
-## $ title &lt;chr&gt; "I hate how you cant even say black paint anymore", "What's the…
-## $ body  &lt;chr&gt; "Now I have to say \"Leroy can you please paint the fence?\"", …
-## $ score &lt;dbl&gt; 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0,…
+## $ body  &lt;chr&gt; "Now I have to say \"Leroy can you please paint the fence?\"", "…
+## $ id    &lt;chr&gt; "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5tz…
+## $ score &lt;dbl&gt; 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0, …
+## $ title &lt;chr&gt; "I hate how you cant even say black paint anymore", "What's the …
 ```
 
+---
 
+# Create the recipe
+
+
+```r
+set.seed(123) # set seed for random sampling
+
+jokes_rec &lt;- recipe(~., data = jokes) %&gt;%
+  step_sample(size = 1e04) %&gt;%
+  step_tokenize(title, body) %&gt;%
+  step_tokenmerge(title, body, prefix = "joke") %&gt;%
+  step_stopwords(joke) %&gt;%
+  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %&gt;%
+  step_tokenfilter(joke, max_tokens = 2500) %&gt;%
+  step_tf(joke)
 ```
-## &lt;&lt;DocumentTermMatrix (documents: 49220, terms: 2489)&gt;&gt;
-## Non-/sparse entries: 445215/122063365
-## Sparsity           : 100%
-## Maximal term length: 23
+
+---
+
+# Bake the recipe
+
+
+```r
+jokes_prep &lt;- prep(jokes_rec)
+
+jokes_df &lt;- bake(jokes_prep, new_data = NULL)
+jokes_df %&gt;%
+  slice(1:5)
+## # A tibble: 5 x 2,502
+##   id     score tf_joke_0 tf_joke_1 tf_joke_1_2 tf_joke_10 tf_joke_100
+##   &lt;fct&gt;  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
+## 1 36bbmw     1         0         0           0          0           0
+## 2 4mvekf     5         0         0           0          0           0
+## 3 2tj7sk     0         0         0           0          0           0
+## 4 2qhtww     0         0         0           0          0           0
+## 5 21n2rz    11         0         0           0          0           0
+## # … with 2,495 more variables: tf_joke_1000 &lt;dbl&gt;, tf_joke_11 &lt;dbl&gt;,
+## #   tf_joke_12 &lt;dbl&gt;, tf_joke_14 &lt;dbl&gt;, tf_joke_15 &lt;dbl&gt;, tf_joke_16 &lt;dbl&gt;,
+## #   tf_joke_18 &lt;dbl&gt;, tf_joke_2 &lt;dbl&gt;, tf_joke_20 &lt;dbl&gt;,
+## #   tf_joke_20_years &lt;dbl&gt;, tf_joke_200 &lt;dbl&gt;, tf_joke_24 &lt;dbl&gt;,
+## #   tf_joke_25 &lt;dbl&gt;, tf_joke_2nd &lt;dbl&gt;, tf_joke_3 &lt;dbl&gt;, tf_joke_30 &lt;dbl&gt;,
+## #   tf_joke_3rd &lt;dbl&gt;, tf_joke_4 &lt;dbl&gt;, tf_joke_40 &lt;dbl&gt;, tf_joke_45 &lt;dbl&gt;,
+## #   tf_joke_5 &lt;dbl&gt;, tf_joke_50 &lt;dbl&gt;, tf_joke_500 &lt;dbl&gt;, tf_joke_6 &lt;dbl&gt;,
+## #   tf_joke_60 &lt;dbl&gt;, tf_joke_69 &lt;dbl&gt;, tf_joke_7 &lt;dbl&gt;, tf_joke_8 &lt;dbl&gt;,
+## #   tf_joke_80 &lt;dbl&gt;, tf_joke_9 &lt;dbl&gt;, tf_joke_9_11 &lt;dbl&gt;, tf_joke_90 &lt;dbl&gt;,
+## #   tf_joke_able &lt;dbl&gt;, tf_joke_absolutely &lt;dbl&gt;, tf_joke_accept &lt;dbl&gt;,
+## #   tf_joke_accident &lt;dbl&gt;, tf_joke_accidentally &lt;dbl&gt;,
+## #   tf_joke_according &lt;dbl&gt;, tf_joke_account &lt;dbl&gt;, tf_joke_across &lt;dbl&gt;,
+## #   tf_joke_across_street &lt;dbl&gt;, tf_joke_act &lt;dbl&gt;, tf_joke_action &lt;dbl&gt;,
+## #   tf_joke_actually &lt;dbl&gt;, tf_joke_adam &lt;dbl&gt;, tf_joke_add &lt;dbl&gt;,
+## #   tf_joke_added &lt;dbl&gt;, tf_joke_admit &lt;dbl&gt;, tf_joke_advice &lt;dbl&gt;,
+## #   tf_joke_afraid &lt;dbl&gt;, tf_joke_africa &lt;dbl&gt;, tf_joke_african &lt;dbl&gt;,
+## #   tf_joke_afternoon &lt;dbl&gt;, tf_joke_age &lt;dbl&gt;, tf_joke_aged &lt;dbl&gt;,
+## #   tf_joke_agent &lt;dbl&gt;, tf_joke_ago &lt;dbl&gt;, tf_joke_agree &lt;dbl&gt;,
+## #   tf_joke_agreed &lt;dbl&gt;, tf_joke_agrees &lt;dbl&gt;, tf_joke_ah &lt;dbl&gt;,
+## #   tf_joke_ahead &lt;dbl&gt;, tf_joke_aids &lt;dbl&gt;, tf_joke_ain't &lt;dbl&gt;,
+## #   tf_joke_air &lt;dbl&gt;, tf_joke_airplane &lt;dbl&gt;, tf_joke_airport &lt;dbl&gt;,
+## #   tf_joke_alcohol &lt;dbl&gt;, tf_joke_alien &lt;dbl&gt;, tf_joke_alive &lt;dbl&gt;,
+## #   tf_joke_alley &lt;dbl&gt;, tf_joke_allowed &lt;dbl&gt;, tf_joke_almost &lt;dbl&gt;,
+## #   tf_joke_alone &lt;dbl&gt;, tf_joke_along &lt;dbl&gt;, tf_joke_alphabet &lt;dbl&gt;,
+## #   tf_joke_already &lt;dbl&gt;, tf_joke_alright &lt;dbl&gt;, tf_joke_also &lt;dbl&gt;,
+## #   tf_joke_alternative &lt;dbl&gt;, tf_joke_always &lt;dbl&gt;, tf_joke_amazed &lt;dbl&gt;,
+## #   tf_joke_amazing &lt;dbl&gt;, tf_joke_america &lt;dbl&gt;, tf_joke_american &lt;dbl&gt;,
+## #   tf_joke_americans &lt;dbl&gt;, tf_joke_amount &lt;dbl&gt;, tf_joke_anal &lt;dbl&gt;,
+## #   tf_joke_andy &lt;dbl&gt;, tf_joke_angel &lt;dbl&gt;, tf_joke_angrily &lt;dbl&gt;,
+## #   tf_joke_angry &lt;dbl&gt;, tf_joke_animal &lt;dbl&gt;, tf_joke_animals &lt;dbl&gt;,
+## #   tf_joke_anniversary &lt;dbl&gt;, tf_joke_announced &lt;dbl&gt;, tf_joke_annoyed &lt;dbl&gt;,
+## #   tf_joke_another &lt;dbl&gt;, tf_joke_another_man &lt;dbl&gt;,
+## #   tf_joke_another_one &lt;dbl&gt;, …
+```
+
+---
+
+# Convert to document-term matrix
+
+
+```r
+jokes_dtm &lt;- jokes_df %&gt;%
+  pivot_longer(cols = -c(id, score),
+               names_to = "token",
+               values_to = "n") %&gt;%
+  filter(n != 0) %&gt;%
+  # clean the token column so it just includes the token
+  # drop empty levels from id - this includes jokes which did not
+  # have any tokens retained after step_tokenfilter()
+  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
+         id = fct_drop(f = id)) %&gt;%
+  cast_dtm(document = id, term = token, value = n)
+jokes_dtm
+## &lt;&lt;DocumentTermMatrix (documents: 9956, terms: 2500)&gt;&gt;
+## Non-/sparse entries: 138201/24751799
+## Sparsity           : 99%
+## Maximal term length: 34
 ## Weighting          : term frequency (tf)
 ```
 
@@ -737,6 +509,9 @@ congress_lda
 # `\(k=4\)`
 
 
+```r
+jokes_lda4 &lt;- LDA(jokes_dtm, k = 4, control = list(seed = 123))
+```
 
 &lt;img src="index_files/figure-html/jokes-4-topn-1.png" width="864" /&gt;
 
@@ -755,7 +530,7 @@ congress_lda
 * A statistical measure of how well a probability model predicts a sample
 * Given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents
 * Perplexity for LDA model with 12 topics
-    * 1206.5530649
+    * 1003.3647235
 
 ---
 
