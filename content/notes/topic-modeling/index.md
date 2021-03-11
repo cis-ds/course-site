@@ -103,16 +103,23 @@ Frequently when using LDA, you don't actually know the underlying topic structur
 <blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
 <script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
 
-[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix:
+[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix.
 
 
 ```r
 # obtain r/jokes and extract values from the JSON file
 jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
 
-set.seed(123)
 jokes <- tibble(jokes = jokes_json) %>%
   unnest_wider(col = jokes)
+```
+
+```
+## Warning in deparse(x, backtick = TRUE): NAs introduced by coercion to integer
+## range
+```
+
+```r
 glimpse(jokes)
 ```
 
@@ -135,8 +142,10 @@ Within the `tidymodels` framework, unsupervised learning is typically implemente
 
 
 ```r
+set.seed(123) # set seed for random sampling
+
 jokes_rec <- recipe(~., data = jokes) %>%
-  step_sample(size = 5e03) %>%
+  step_sample(size = 1e04) %>%
   step_tokenize(title, body) %>%
   step_tokenmerge(title, body, prefix = "joke") %>%
   step_stopwords(joke) %>%
@@ -167,48 +176,46 @@ jokes_df %>%
 
 ```
 ## # A tibble: 5 x 2,502
-##   id     score tf_joke_0 tf_joke_1 tf_joke_1_1 tf_joke_10 tf_joke_10_inch
-##   <fct>  <dbl>     <dbl>     <dbl>       <dbl>      <dbl>           <dbl>
-## 1 2tzins    12         0         0           0          0               0
-## 2 4zqp10     0         0         0           0          0               0
-## 3 2lgwkn    58         0         0           0          0               0
-## 4 3qx36q     9         0         0           0          0               0
-## 5 2x2z3q     0         0         0           0          0               0
-## # … with 2,495 more variables: tf_joke_10_minutes <dbl>, tf_joke_100 <dbl>,
-## #   tf_joke_11 <dbl>, tf_joke_12 <dbl>, tf_joke_13 <dbl>, tf_joke_15 <dbl>,
-## #   tf_joke_18 <dbl>, tf_joke_18_18 <dbl>, tf_joke_18_18_18 <dbl>,
+##   id    score tf_joke_0 tf_joke_1 tf_joke_10 tf_joke_100 tf_joke_1000 tf_joke_11
+##   <fct> <dbl>     <dbl>     <dbl>      <dbl>       <dbl>        <dbl>      <dbl>
+## 1 2tzi…    12         0         0          0           0            0          0
+## 2 4zqp…     0         0         0          0           0            0          0
+## 3 2lgw…    58         0         0          0           0            0          0
+## 4 3qx3…     9         0         0          0           0            0          0
+## 5 2x2z…     0         0         0          0           0            0          0
+## # … with 2,494 more variables: tf_joke_12 <dbl>, tf_joke_13 <dbl>,
+## #   tf_joke_14 <dbl>, tf_joke_15 <dbl>, tf_joke_16 <dbl>, tf_joke_18 <dbl>,
 ## #   tf_joke_1st <dbl>, tf_joke_2 <dbl>, tf_joke_20 <dbl>,
 ## #   tf_joke_20_years <dbl>, tf_joke_200 <dbl>, tf_joke_2015 <dbl>,
-## #   tf_joke_2015_http <dbl>, tf_joke_2015_http_steamcommunity.com <dbl>,
-## #   tf_joke_2015_http_steamcommunity.com_market <dbl>,
-## #   tf_joke_2015_http_steamcommunity.com_market_listings <dbl>,
-## #   tf_joke_23 <dbl>, tf_joke_2nd <dbl>, tf_joke_3 <dbl>, tf_joke_30 <dbl>,
-## #   tf_joke_300 <dbl>, tf_joke_3rd <dbl>, tf_joke_4 <dbl>, tf_joke_40 <dbl>,
-## #   tf_joke_4th <dbl>, tf_joke_5 <dbl>, tf_joke_5_minutes <dbl>,
+## #   tf_joke_25 <dbl>, tf_joke_3 <dbl>, tf_joke_30 <dbl>, tf_joke_3rd <dbl>,
+## #   tf_joke_4 <dbl>, tf_joke_40 <dbl>, tf_joke_4th <dbl>, tf_joke_5 <dbl>,
 ## #   tf_joke_50 <dbl>, tf_joke_500 <dbl>, tf_joke_5th <dbl>, tf_joke_6 <dbl>,
-## #   tf_joke_7 <dbl>, tf_joke_730 <dbl>, tf_joke_730_sticker <dbl>,
-## #   tf_joke_730_sticker_7c <dbl>, tf_joke_76561198082478987 <dbl>,
+## #   tf_joke_69 <dbl>, tf_joke_7 <dbl>, tf_joke_76561198082478987 <dbl>,
 ## #   tf_joke_76561198082478987_inventory <dbl>, tf_joke_7c <dbl>,
-## #   tf_joke_7c_cologne <dbl>, tf_joke_7c_cologne_2015 <dbl>, tf_joke_8 <dbl>,
-## #   tf_joke_80 <dbl>, tf_joke_9 <dbl>, tf_joke_9_11 <dbl>, tf_joke_90 <dbl>,
-## #   tf_joke_99 <dbl>, tf_joke_able <dbl>, tf_joke_abraham <dbl>,
-## #   tf_joke_absolutely <dbl>, tf_joke_accent <dbl>, tf_joke_accept <dbl>,
-## #   tf_joke_accepted <dbl>, tf_joke_accident <dbl>, tf_joke_accidentally <dbl>,
-## #   tf_joke_across <dbl>, tf_joke_across_street <dbl>, tf_joke_act <dbl>,
-## #   tf_joke_action <dbl>, tf_joke_actually <dbl>, tf_joke_adam <dbl>,
-## #   tf_joke_add <dbl>, tf_joke_added <dbl>, tf_joke_advice <dbl>,
+## #   tf_joke_8 <dbl>, tf_joke_9 <dbl>, tf_joke_9_11 <dbl>, tf_joke_90 <dbl>,
+## #   tf_joke_99 <dbl>, tf_joke_able <dbl>, tf_joke_absolutely <dbl>,
+## #   tf_joke_accent <dbl>, tf_joke_accept <dbl>, tf_joke_accident <dbl>,
+## #   tf_joke_accidentally <dbl>, tf_joke_across <dbl>,
+## #   tf_joke_across_street <dbl>, tf_joke_act <dbl>, tf_joke_action <dbl>,
+## #   tf_joke_actually <dbl>, tf_joke_adam <dbl>, tf_joke_add <dbl>,
+## #   tf_joke_added <dbl>, tf_joke_advice <dbl>, tf_joke_afford <dbl>,
 ## #   tf_joke_afraid <dbl>, tf_joke_africa <dbl>, tf_joke_african <dbl>,
-## #   tf_joke_afternoon <dbl>, tf_joke_afterwards <dbl>, tf_joke_age <dbl>,
-## #   tf_joke_agent <dbl>, tf_joke_ago <dbl>, tf_joke_agree <dbl>,
-## #   tf_joke_agreed <dbl>, tf_joke_agrees <dbl>, tf_joke_ah <dbl>,
+## #   tf_joke_afternoon <dbl>, tf_joke_age <dbl>, tf_joke_agent <dbl>,
+## #   tf_joke_ago <dbl>, tf_joke_agree <dbl>, tf_joke_agreed <dbl>,
+## #   tf_joke_agreement <dbl>, tf_joke_agrees <dbl>, tf_joke_ah <dbl>,
 ## #   tf_joke_ahead <dbl>, tf_joke_ain't <dbl>, tf_joke_air <dbl>,
 ## #   tf_joke_airplane <dbl>, tf_joke_airport <dbl>, tf_joke_alcohol <dbl>,
-## #   tf_joke_alcoholic <dbl>, tf_joke_alien <dbl>, tf_joke_aliens <dbl>,
-## #   tf_joke_alive <dbl>, tf_joke_alligator <dbl>, tf_joke_allow <dbl>,
-## #   tf_joke_allowed <dbl>, tf_joke_almost <dbl>, tf_joke_alone <dbl>,
-## #   tf_joke_along <dbl>, tf_joke_already <dbl>, tf_joke_alright <dbl>,
-## #   tf_joke_also <dbl>, tf_joke_although <dbl>, tf_joke_always <dbl>,
-## #   tf_joke_amazed <dbl>, …
+## #   tf_joke_alien <dbl>, tf_joke_alive <dbl>, tf_joke_alley <dbl>,
+## #   tf_joke_allow <dbl>, tf_joke_allowed <dbl>, tf_joke_almost <dbl>,
+## #   tf_joke_alone <dbl>, tf_joke_along <dbl>, tf_joke_alphabet <dbl>,
+## #   tf_joke_already <dbl>, tf_joke_alright <dbl>, tf_joke_also <dbl>,
+## #   tf_joke_although <dbl>, tf_joke_always <dbl>, tf_joke_amazed <dbl>,
+## #   tf_joke_amazing <dbl>, tf_joke_america <dbl>, tf_joke_american <dbl>,
+## #   tf_joke_americans <dbl>, tf_joke_among <dbl>, tf_joke_amount <dbl>,
+## #   tf_joke_anal <dbl>, tf_joke_angel <dbl>, tf_joke_angry <dbl>,
+## #   tf_joke_animal <dbl>, tf_joke_animals <dbl>, tf_joke_anniversary <dbl>,
+## #   tf_joke_annoyed <dbl>, tf_joke_another <dbl>, tf_joke_another_one <dbl>,
+## #   tf_joke_answer <dbl>, tf_joke_answered <dbl>, …
 ```
 
 The resulting data frame is one row per joke and one column per token. To convert it to a `DocumentTermMatrix`, we need to first convert it into a tidytext format (one-row-per-token), remove all rows with a frequency of 0 (that is, the token did not appear in the joke), then convert it to a DTM using `cast_dtm()`.
@@ -326,7 +333,7 @@ perplexity(jokes_lda12)
 ```
 
 ```
-## [1] 930.0559
+## [1] 994.9667
 ```
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
@@ -350,28 +357,6 @@ if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
   toc()
   save(jokes_dtm, jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
 }
-```
-
-```
-## Loading required package: future
-```
-
-```
-## Warning: Strategy 'multiprocess' is deprecated in future (>= 1.20.0). Instead,
-## explicitly specify either 'multisession' or 'multicore'. In the current R
-## session, 'multiprocess' equals 'multisession'.
-```
-
-```
-## Warning in supportsMulticoreAndRStudio(...): [ONE-TIME WARNING] Forked
-## processing ('multicore') is not supported when running R from RStudio
-## because it is considered unstable. For more details, how to control forked
-## processing or not, and how to silence this warning in future R sessions, see ?
-## parallelly::supportsMulticore
-```
-
-```
-## 3360.092 sec elapsed
 ```
 
 
@@ -655,6 +640,7 @@ devtools::session_info()
 ##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)                       
 ##  slam        * 0.1-48     2020-12-03 [1] CRAN (R 4.0.2)                       
 ##  SnowballC     0.7.0      2020-04-01 [1] CRAN (R 4.0.0)                       
+##  stopwords     2.2        2021-02-10 [1] CRAN (R 4.0.2)                       
 ##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)                       
 ##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)                       
 ##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.4)                       
