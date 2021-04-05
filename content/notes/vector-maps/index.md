@@ -35,18 +35,20 @@ First we will import a spatial data file containing the boundaries of all 50 sta
 
 
 ```r
-usa <- here("static", "data", "census_bureau",
-            "cb_2013_us_state_20m", "cb_2013_us_state_20m.shp") %>%
+usa <- here(
+  "static", "data", "census_bureau",
+  "cb_2013_us_state_20m", "cb_2013_us_state_20m.shp"
+) %>%
   st_read()
 ```
 
 ```
 ## Reading layer `cb_2013_us_state_20m' from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/census_bureau/cb_2013_us_state_20m/cb_2013_us_state_20m.shp' using driver `ESRI Shapefile'
 ## Simple feature collection with 52 features and 9 fields
-## geometry type:  MULTIPOLYGON
-## dimension:      XY
-## bbox:           xmin: -179 ymin: 17.9 xmax: 180 ymax: 71.4
-## geographic CRS: NAD83
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -179 ymin: 17.9 xmax: 180 ymax: 71.4
+## Geodetic CRS:  NAD83
 ```
 
 ## Draw the boundaries
@@ -225,8 +227,8 @@ Let's overlay it with the mapped state borders:
 
 
 ```r
-ggplot(data = usa_48) + 
-  geom_sf() + 
+ggplot(data = usa_48) +
+  geom_sf() +
   geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
 ```
 
@@ -236,11 +238,13 @@ Slight problem. We have airports listed outside of the continental United States
 
 
 ```r
-ggplot(data = usa_48) + 
-  geom_sf() + 
+ggplot(data = usa_48) +
+  geom_sf() +
   geom_point(data = airports, aes(x = lon, y = lat), shape = 1) +
-  coord_sf(xlim = c(-130, -60),
-           ylim = c(20, 50))
+  coord_sf(
+    xlim = c(-130, -60),
+    ylim = c(20, 50)
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/crop-1.png" width="672" />
@@ -250,16 +254,16 @@ Alternatively, we can use `st_as_sf()` to convert `airports` to a simple feature
 
 ```r
 airports_sf <- st_as_sf(airports, coords = c("lon", "lat"))
-st_crs(airports_sf) <- 4326   # set the coordinate reference system
+st_crs(airports_sf) <- 4326 # set the coordinate reference system
 airports_sf
 ```
 
 ```
 ## Simple feature collection with 1458 features and 6 fields
-## geometry type:  POINT
-## dimension:      XY
-## bbox:           xmin: -177 ymin: 19.7 xmax: 174 ymax: 72.3
-## geographic CRS: WGS 84
+## Geometry type: POINT
+## Dimension:     XY
+## Bounding box:  xmin: -177 ymin: 19.7 xmax: 174 ymax: 72.3
+## Geodetic CRS:  WGS 84
 ## # A tibble: 1,458 x 7
 ##    faa   name                    alt    tz dst   tzone                  geometry
 ##  * <chr> <chr>                 <dbl> <dbl> <chr> <chr>               <POINT [°]>
@@ -280,11 +284,13 @@ airports_sf
 
 
 ```r
-ggplot() + 
-  geom_sf(data = usa_48) + 
+ggplot() +
+  geom_sf(data = usa_48) +
   geom_sf(data = airports_sf, shape = 1) +
-  coord_sf(xlim = c(-130, -60),
-           ylim = c(20, 50))
+  coord_sf(
+    xlim = c(-130, -60),
+    ylim = c(20, 50)
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/flights-sf-plot-1.png" width="672" />
@@ -295,12 +301,16 @@ We can change the size or type of symbols on the map. For instance, we can draw 
 
 
 ```r
-ggplot(data = usa_48) + 
-  geom_sf() + 
-  geom_point(data = airports, aes(x = lon, y = lat, size = alt),
-             fill = "grey", color = "black", alpha = .2) +
-  coord_sf(xlim = c(-130, -60),
-           ylim = c(20, 50)) +
+ggplot(data = usa_48) +
+  geom_sf() +
+  geom_point(
+    data = airports, aes(x = lon, y = lat, size = alt),
+    fill = "grey", color = "black", alpha = .2
+  ) +
+  coord_sf(
+    xlim = c(-130, -60),
+    ylim = c(20, 50)
+  ) +
   scale_size_area(guide = FALSE)
 ```
 
@@ -314,12 +324,16 @@ airports_n <- flights %>%
   count(dest) %>%
   left_join(airports, by = c("dest" = "faa"))
 
-ggplot(data = usa_48) + 
-  geom_sf() + 
-  geom_point(data = airports_n, aes(x = lon, y = lat, size = n),
-             fill = "grey", color = "black", alpha = .2) +
-  coord_sf(xlim = c(-130, -60),
-           ylim = c(20, 50)) +
+ggplot(data = usa_48) +
+  geom_sf() +
+  geom_point(
+    data = airports_n, aes(x = lon, y = lat, size = n),
+    fill = "grey", color = "black", alpha = .2
+  ) +
+  coord_sf(
+    xlim = c(-130, -60),
+    ylim = c(20, 50)
+  ) +
   scale_size_area(guide = FALSE)
 ```
 
@@ -339,26 +353,28 @@ We will continue to use the `usa_48` simple features data frame and draw a choro
 
 
 ```r
-(fb_state <- here("static", "data", "census_bureau",
-                  "ACS_13_5YR_B05012_state", "ACS_13_5YR_B05012.csv") %>%
-   read_csv() %>%
+(fb_state <- here(
+  "static", "data", "census_bureau",
+  "ACS_13_5YR_B05012_state", "ACS_13_5YR_B05012.csv"
+) %>%
+  read_csv() %>%
   mutate(rate = HD01_VD03 / HD01_VD01))
 ```
 
 ```
 ## # A tibble: 51 x 10
-##    GEO.id GEO.id2 `GEO.display-la… HD01_VD01 HD02_VD01 HD01_VD02 HD02_VD02
-##    <chr>  <chr>   <chr>                <dbl> <lgl>         <dbl>     <dbl>
-##  1 04000… 01      Alabama            4799277 NA          4631045      2881
-##  2 04000… 02      Alaska              720316 NA           669941      1262
-##  3 04000… 04      Arizona            6479703 NA          5609835      7725
-##  4 04000… 05      Arkansas           2933369 NA          2799972      2568
-##  5 04000… 06      California        37659181 NA         27483342     30666
-##  6 04000… 08      Colorado           5119329 NA          4623809      5778
-##  7 04000… 09      Connecticut        3583561 NA          3096374      5553
-##  8 04000… 10      Delaware            908446 NA           831683      2039
-##  9 04000… 11      District of Col…    619371 NA           534142      2017
-## 10 04000… 12      Florida           19091156 NA         15392410     16848
+##    GEO.id     GEO.id2 `GEO.display-labe… HD01_VD01 HD02_VD01 HD01_VD02 HD02_VD02
+##    <chr>      <chr>   <chr>                  <dbl> <lgl>         <dbl>     <dbl>
+##  1 0400000US… 01      Alabama              4799277 NA          4631045      2881
+##  2 0400000US… 02      Alaska                720316 NA           669941      1262
+##  3 0400000US… 04      Arizona              6479703 NA          5609835      7725
+##  4 0400000US… 05      Arkansas             2933369 NA          2799972      2568
+##  5 0400000US… 06      California          37659181 NA         27483342     30666
+##  6 0400000US… 08      Colorado             5119329 NA          4623809      5778
+##  7 0400000US… 09      Connecticut          3583561 NA          3096374      5553
+##  8 0400000US… 10      Delaware              908446 NA           831683      2039
+##  9 0400000US… 11      District of Colum…    619371 NA           534142      2017
+## 10 0400000US… 12      Florida             19091156 NA         15392410     16848
 ## # … with 41 more rows, and 3 more variables: HD01_VD03 <dbl>, HD02_VD03 <dbl>,
 ## #   rate <dbl>
 ```
@@ -524,96 +540,115 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.3 (2020-10-10)
-##  os       macOS Catalina 10.15.7      
+##  version  R version 4.0.4 (2021-02-15)
+##  os       macOS Big Sur 10.16         
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-04-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source                              
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                      
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  blogdown      1.1     2021-01-19 [1] CRAN (R 4.0.3)                      
-##  bookdown      0.21    2020-10-13 [1] CRAN (R 4.0.2)                      
-##  broom         0.7.3   2020-12-16 [1] CRAN (R 4.0.2)                      
-##  callr         3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                      
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                      
-##  class         7.3-17  2020-04-26 [1] CRAN (R 4.0.3)                      
-##  classInt      0.4-3   2020-04-07 [1] CRAN (R 4.0.0)                      
-##  cli           2.2.0   2020-11-20 [1] CRAN (R 4.0.2)                      
-##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                      
-##  crayon        1.3.4   2017-09-16 [1] CRAN (R 4.0.0)                      
-##  DBI           1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                      
-##  dbplyr        2.0.0   2020-11-03 [1] CRAN (R 4.0.2)                      
-##  desc          1.2.0   2018-05-01 [1] CRAN (R 4.0.0)                      
-##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                      
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                      
-##  dplyr       * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)                      
-##  e1071         1.7-4   2020-10-14 [1] CRAN (R 4.0.2)                      
-##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                      
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)                      
-##  fansi         0.4.1   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  forcats     * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)                      
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                      
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                      
-##  ggplot2     * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                      
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                      
-##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                      
-##  here        * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                      
-##  hms           0.5.3   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools     0.5.1   2021-01-12 [1] CRAN (R 4.0.2)                      
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                      
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  KernSmooth    2.23-18 2020-10-29 [1] CRAN (R 4.0.2)                      
-##  knitr         1.30    2020-09-22 [1] CRAN (R 4.0.2)                      
-##  lifecycle     0.2.0   2020-03-06 [1] CRAN (R 4.0.0)                      
-##  lubridate     1.7.9.2 2021-01-18 [1] Github (tidyverse/lubridate@aab2e30)
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                      
-##  memoise       1.1.0   2017-04-21 [1] CRAN (R 4.0.0)                      
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                      
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                      
-##  pillar        1.4.7   2020-11-20 [1] CRAN (R 4.0.2)                      
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                      
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                      
-##  pkgload       1.1.0   2020-05-29 [1] CRAN (R 4.0.0)                      
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                      
-##  processx      3.4.5   2020-11-30 [1] CRAN (R 4.0.2)                      
-##  ps            1.5.0   2020-12-05 [1] CRAN (R 4.0.2)                      
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                      
-##  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                      
-##  Rcpp          1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                      
-##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                      
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                      
-##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex        0.3.0   2019-05-16 [1] CRAN (R 4.0.0)                      
-##  rlang         0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                      
-##  rmarkdown     2.6     2020-12-14 [1] CRAN (R 4.0.2)                      
-##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                      
-##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.0.2)                      
-##  rvest         0.3.6   2020-07-25 [1] CRAN (R 4.0.2)                      
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                      
-##  sf          * 0.9-6   2020-09-13 [1] CRAN (R 4.0.2)                      
-##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                      
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                      
-##  testthat      3.0.1   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  tibble      * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)                      
-##  tidyr       * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                      
-##  units         0.6-7   2020-06-13 [1] CRAN (R 4.0.2)                      
-##  usethis       2.0.0   2020-12-10 [1] CRAN (R 4.0.2)                      
-##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  withr         2.3.0   2020-09-22 [1] CRAN (R 4.0.2)                      
-##  xfun          0.20    2021-01-06 [1] CRAN (R 4.0.2)                      
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                      
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                      
+##  package      * version date       lib source                             
+##  albersusa    * 0.4.1   2020-06-08 [1] Github (hrbrmstr/albersusa@07aa87f)
+##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                     
+##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                     
+##  blogdown       1.2     2021-03-04 [1] CRAN (R 4.0.3)                     
+##  bookdown       0.21.7  2021-03-31 [1] Github (rstudio/bookdown@71bc601)  
+##  broom          0.7.5   2021-02-19 [1] CRAN (R 4.0.2)                     
+##  bslib          0.2.4   2021-01-25 [1] CRAN (R 4.0.2)                     
+##  cachem         1.0.4   2021-02-13 [1] CRAN (R 4.0.2)                     
+##  callr          3.6.0   2021-03-28 [1] CRAN (R 4.0.2)                     
+##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                     
+##  class          7.3-18  2021-01-24 [1] CRAN (R 4.0.4)                     
+##  classInt       0.4-3   2020-04-07 [1] CRAN (R 4.0.0)                     
+##  cli            2.3.1   2021-02-23 [1] CRAN (R 4.0.3)                     
+##  codetools      0.2-18  2020-11-04 [1] CRAN (R 4.0.4)                     
+##  colorspace     2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                     
+##  crayon         1.4.1   2021-02-08 [1] CRAN (R 4.0.2)                     
+##  DBI            1.1.1   2021-01-15 [1] CRAN (R 4.0.2)                     
+##  dbplyr         2.1.0   2021-02-03 [1] CRAN (R 4.0.2)                     
+##  debugme        1.1.0   2017-10-22 [1] CRAN (R 4.0.0)                     
+##  desc           1.3.0   2021-03-05 [1] CRAN (R 4.0.2)                     
+##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                     
+##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                     
+##  dplyr        * 1.0.5   2021-03-05 [1] CRAN (R 4.0.3)                     
+##  e1071          1.7-6   2021-03-18 [1] CRAN (R 4.0.2)                     
+##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                     
+##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)                     
+##  fansi          0.4.2   2021-01-15 [1] CRAN (R 4.0.2)                     
+##  farver         2.1.0   2021-02-28 [1] CRAN (R 4.0.2)                     
+##  fastmap        1.1.0   2021-01-25 [1] CRAN (R 4.0.2)                     
+##  forcats      * 0.5.1   2021-01-27 [1] CRAN (R 4.0.2)                     
+##  foreign        0.8-81  2020-12-22 [1] CRAN (R 4.0.4)                     
+##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                     
+##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                     
+##  ggplot2      * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                     
+##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                     
+##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                     
+##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                     
+##  here         * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                     
+##  highr          0.8     2019-03-20 [1] CRAN (R 4.0.0)                     
+##  hms            1.0.0   2021-01-13 [1] CRAN (R 4.0.2)                     
+##  htmltools      0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)                     
+##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                     
+##  jquerylib      0.1.3   2020-12-17 [1] CRAN (R 4.0.2)                     
+##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                     
+##  KernSmooth     2.23-18 2020-10-29 [1] CRAN (R 4.0.4)                     
+##  knitr          1.31    2021-01-27 [1] CRAN (R 4.0.2)                     
+##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.4)                     
+##  lifecycle      1.0.0   2021-02-15 [1] CRAN (R 4.0.2)                     
+##  lubridate      1.7.10  2021-02-26 [1] CRAN (R 4.0.2)                     
+##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                     
+##  maptools       1.1-1   2021-03-15 [1] CRAN (R 4.0.2)                     
+##  memoise        2.0.0   2021-01-26 [1] CRAN (R 4.0.2)                     
+##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                     
+##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                     
+##  nycflights13 * 1.0.1   2019-09-16 [1] CRAN (R 4.0.0)                     
+##  pillar         1.5.1   2021-03-05 [1] CRAN (R 4.0.3)                     
+##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                     
+##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                     
+##  pkgload        1.2.0   2021-02-23 [1] CRAN (R 4.0.2)                     
+##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                     
+##  processx       3.5.0   2021-03-23 [1] CRAN (R 4.0.2)                     
+##  proxy          0.4-25  2021-03-05 [1] CRAN (R 4.0.2)                     
+##  ps             1.6.0   2021-02-28 [1] CRAN (R 4.0.2)                     
+##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                     
+##  R6             2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                     
+##  Rcpp           1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                     
+##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                     
+##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                     
+##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                     
+##  reprex         1.0.0   2021-01-27 [1] CRAN (R 4.0.2)                     
+##  rgdal          1.5-23  2021-02-03 [1] CRAN (R 4.0.2)                     
+##  rgeos          0.5-5   2020-09-07 [1] CRAN (R 4.0.2)                     
+##  rlang          0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                     
+##  rmarkdown      2.7     2021-02-19 [1] CRAN (R 4.0.2)                     
+##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                     
+##  rstudioapi     0.13    2020-11-12 [1] CRAN (R 4.0.2)                     
+##  rvest          1.0.0   2021-03-09 [1] CRAN (R 4.0.2)                     
+##  sass           0.3.1   2021-01-24 [1] CRAN (R 4.0.2)                     
+##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                     
+##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                     
+##  sf           * 0.9-8   2021-03-17 [1] CRAN (R 4.0.2)                     
+##  sp             1.4-5   2021-01-10 [1] CRAN (R 4.0.2)                     
+##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                     
+##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                     
+##  testthat       3.0.2   2021-02-14 [1] CRAN (R 4.0.2)                     
+##  tibble       * 3.1.0   2021-02-25 [1] CRAN (R 4.0.2)                     
+##  tidyr        * 1.1.3   2021-03-03 [1] CRAN (R 4.0.2)                     
+##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                     
+##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                     
+##  units          0.7-1   2021-03-16 [1] CRAN (R 4.0.2)                     
+##  usethis        2.0.1   2021-02-10 [1] CRAN (R 4.0.2)                     
+##  utf8           1.2.1   2021-03-12 [1] CRAN (R 4.0.2)                     
+##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                     
+##  withr          2.4.1   2021-01-26 [1] CRAN (R 4.0.2)                     
+##  xfun           0.22    2021-03-11 [1] CRAN (R 4.0.2)                     
+##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                     
+##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                     
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

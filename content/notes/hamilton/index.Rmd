@@ -60,8 +60,10 @@ hamilton <- hamilton_lyrics %>%
   mutate(line_num = row_number()) %>%
   # reorder columns and convert speaker to title case
   select(song_number, song_name, line_num, line, speaker = section_name) %>%
-  mutate(speaker = str_to_title(speaker),
-         line = str_replace_all(line, "’", "'")) %>%
+  mutate(
+    speaker = str_to_title(speaker),
+    line = str_replace_all(line, "’", "'")
+  ) %>%
   # write to disk
   write_csv(path = here("static", "data", "hamilton.csv"))
 glimpse(hamilton)
@@ -127,7 +129,7 @@ hamilton_tidy %>%
   slice_max(n = 20, order_by = n) %>%
   ggplot(aes(fct_reorder(word, n), n)) +
   geom_col() +
-  coord_flip() + 
+  coord_flip() +
   theme_minimal() +
   labs(
     title = "Frequency of Hamilton lyrics",
@@ -144,9 +146,11 @@ Since we know which singer performs each line, we can examine the relative signi
 
 ```{r tf-idf, dependson = "stop-remove", fig.asp = 1.1}
 # principal cast via Wikipedia
-principal_cast <- c("Hamilton", "Eliza", "Burr", "Angelica", "Washington",
-                    "Lafayette", "Jefferson", "Mulligan", "Madison",
-                    "Laurens", "Philip", "Peggy", "Maria", "King George")
+principal_cast <- c(
+  "Hamilton", "Eliza", "Burr", "Angelica", "Washington",
+  "Lafayette", "Jefferson", "Mulligan", "Madison",
+  "Laurens", "Philip", "Peggy", "Maria", "King George"
+)
 
 # calculate tf-idf scores for words sung by the principal cast
 hamilton_tf_idf <- hamilton_tidy %>%
@@ -197,8 +201,10 @@ hamilton_afinn <- hamilton_tidy %>%
   # join with sentiment dictionary
   inner_join(get_sentiments(lexicon = "afinn")) %>%
   # create row id and cumulative sentiment over the entire corpus
-  mutate(cum_sent = cumsum(value),
-         id = row_number())
+  mutate(
+    cum_sent = cumsum(value),
+    id = row_number()
+  )
 hamilton_afinn
 ```
 
@@ -221,8 +227,10 @@ hamilton_afinn %>%
     fill = "Average\nsentiment",
     caption = "Source: Genius API"
   ) +
-  theme(plot.title = element_markdown(),
-        legend.position = "none")
+  theme(
+    plot.title = element_markdown(),
+    legend.position = "none"
+  )
 ```
 
 Again, the general themes of the songs come across in this analysis. "Alexander Hamilton" introduces Hamilton's tragic backstory and difficult circumstances before emigrating to New York. "Dear Theodosia" is a love letter from Burr and Hamilton, promising to make the world a better place for their respective children.
@@ -243,8 +251,10 @@ hamilton_afinn %>%
   filter(speaker %in% principal_cast) %>%
   # calculate average sentiment by character with standard error
   group_by(speaker) %>%
-  summarize(sent = mean(value),
-            se = sd(value) / n()) %>%
+  summarize(
+    sent = mean(value),
+    se = sd(value) / n()
+  ) %>%
   # generate plot sorted from positive to negative
   ggplot(mapping = aes(x = fct_reorder(speaker, sent), y = sent, fill = sent)) +
   geom_pointrange(mapping = aes(
@@ -259,8 +269,10 @@ hamilton_afinn %>%
     y = "Average sentiment",
     caption = "Source: Genius API"
   ) +
-  theme(plot.title = element_markdown(),
-        legend.position = "none")
+  theme(
+    plot.title = element_markdown(),
+    legend.position = "none"
+  )
 ```
 
 Given his generally neutral sentiment, Aaron Burr clearly follows his own guidance.
@@ -279,14 +291,16 @@ Tracking the cumulative sentiment across the entire musical, it's easy to identi
 ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
   geom_line() +
   # label the start of each song
-  scale_x_reverse(breaks = hamilton_afinn %>%
-                             group_by(song_number) %>%
-                             filter(id == min(id)) %>%
-                       pull(id),
-                     labels = hamilton_afinn %>%
-                             group_by(song_number) %>%
-                             filter(id == min(id)) %>%
-                       pull(song_name)) +
+  scale_x_reverse(
+    breaks = hamilton_afinn %>%
+      group_by(song_number) %>%
+      filter(id == min(id)) %>%
+      pull(id),
+    labels = hamilton_afinn %>%
+      group_by(song_number) %>%
+      filter(id == min(id)) %>%
+      pull(song_name)
+  ) +
   labs(
     title = "Positive/negative sentiment in *Hamilton*",
     x = NULL,
@@ -295,8 +309,10 @@ ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
   ) +
   # transpose to be able to fit song titles on the graph
   coord_flip() +
-  theme(panel.grid.minor.y = element_blank(),
-        plot.title = element_markdown())
+  theme(
+    panel.grid.minor.y = element_blank(),
+    plot.title = element_markdown()
+  )
 ```
 
 After the initial drop from "Alexander Hamilton", the next peaks in the graph show several positive events in Hamilton's life: meeting his friends, becoming Washington's secretary, and meeting and marrying Eliza. The musical experiences a drop in tone during the rough years of the revolution and Hamilton's dismissal back to New York, then rebounds as the revolutionaries close in on victory at Yorktown. Hamilton's challenges as a member of Washington's cabinet and rivalry with Jefferson are captured in the up-and-down swings in the graph, rises up with "One Last Time" and Hamilton writing Washington's Farewell Address, dropping once again with "Hurricane" and the revelation of Hamilton's affair, rising as Alexander and Eliza reconcile before finally descending once more upon Hamilton's death in his duel with Burr.
@@ -311,8 +327,10 @@ library(ggraph)
 hamilton_pair <- hamilton %>%
   unnest_tokens(output = word, input = line, token = "ngrams", n = 2) %>%
   separate(col = word, into = c("word1", "word2"), sep = " ") %>%
-  filter(!word1 %in% get_stopwords(source = "smart")$word,
-         !word2 %in% get_stopwords(source = "smart")$word) %>%
+  filter(
+    !word1 %in% get_stopwords(source = "smart")$word,
+    !word2 %in% get_stopwords(source = "smart")$word
+  ) %>%
   drop_na(word1, word2) %>%
   count(word1, word2, sort = TRUE)
 
@@ -337,10 +355,13 @@ Finally we can examine the colocation of pairs of words to look for common usage
 ```{r spotify, dependson = "tidy", eval = FALSE, include = FALSE}
 hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
   # fix missing song from spotify info
-  mutate(track_number = ifelse(name == "Non-Stop", 24, track_number),
-         song_number = ifelse(disc_number == 2,
-                              track_number + max(track_number[disc_number == 1]),
-                              track_number))
+  mutate(
+    track_number = ifelse(name == "Non-Stop", 24, track_number),
+    song_number = ifelse(disc_number == 2,
+      track_number + max(track_number[disc_number == 1]),
+      track_number
+    )
+  )
 hamilton_audio_features <- spotifyr::get_track_audio_features(ids = hamilton_spotify$id)
 
 # join together

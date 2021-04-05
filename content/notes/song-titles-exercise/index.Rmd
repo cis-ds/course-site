@@ -59,8 +59,10 @@ The code below shows how the file was originally constructed.
 ```{r acs-pop}
 # retrieve state populations in 2016 from Census Bureau ACS
 library(tidycensus)
-pop_df <- get_acs(geography = "state", year = 2016,
-                  variables = c(population = "B01003_001")) %>%
+pop_df <- get_acs(
+  geography = "state", year = 2016,
+  variables = c(population = "B01003_001")
+) %>%
   # remove moe and tidy the data frame
   select(-moe) %>%
   spread(variable, estimate) %>%
@@ -71,7 +73,7 @@ pop_df <- get_acs(geography = "state", year = 2016,
   write_csv(here("static", "data", "pop2016.csv"))
 
 # do these results make sense?
-pop_df %>% 
+pop_df %>%
   arrange(desc(population)) %>%
   top_n(10)
 ```
@@ -93,7 +95,8 @@ song_lyrics <- read_csv("http://cfss.uchicago.edu/data/billboard_lyrics_1964-201
 # download file from GitHub repo
 library(downloader)
 download("https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_1964-2015.csv",
-         destfile = here("static", "data", "billboard_lyrics_1964-2015.csv"))
+  destfile = here("static", "data", "billboard_lyrics_1964-2015.csv")
+)
 ```
 
 ```{r lyrics-import, echo = FALSE}
@@ -127,11 +130,12 @@ Hint: To search for matching state names, this data frame should include both **
 lyrics_unigrams <- unnest_tokens(
   tbl = song_lyrics,
   output = word,
-  input = Lyrics)
+  input = Lyrics
+)
 lyrics_bigrams <- unnest_tokens(
   tbl = song_lyrics,
   output = word,
-  input = Lyrics, 
+  input = Lyrics,
   token = "ngrams", n = 2
 )
 
@@ -170,14 +174,14 @@ tidy_lyrics
 {{< spoiler text="Click for the solution" >}}
 
 ```{r state-counts}
-(state_counts <- tidy_lyrics %>% 
-    count(word) %>% 
-    arrange(desc(n)))
+(state_counts <- tidy_lyrics %>%
+  count(word) %>%
+  arrange(desc(n)))
 ```
 
 ```{r state-counts-poprel}
-pop_df <- pop_df %>% 
-  left_join(state_counts, by = c("state_name" = "word")) %>% 
+pop_df <- pop_df %>%
+  left_join(state_counts, by = c("state_name" = "word")) %>%
   mutate(rate = n / population * 1e6)
 
 ## which are the top ten states by rate?

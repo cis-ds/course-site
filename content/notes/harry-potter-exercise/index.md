@@ -56,10 +56,12 @@ Note that there is a different package available on CRAN also called [`harrypott
 library(harrypotter)
 
 # names of each book
-hp_books <- c("philosophers_stone", "chamber_of_secrets",
-              "prisoner_of_azkaban", "goblet_of_fire",
-              "order_of_the_phoenix", "half_blood_prince",
-              "deathly_hallows")
+hp_books <- c(
+  "philosophers_stone", "chamber_of_secrets",
+  "prisoner_of_azkaban", "goblet_of_fire",
+  "order_of_the_phoenix", "half_blood_prince",
+  "deathly_hallows"
+)
 
 # combine books into a list
 hp_words <- list(
@@ -122,13 +124,15 @@ hp_words %>%
   slice_max(order_by = n, n = 15) %>%
   mutate(word = reorder_within(word, n, book)) %>%
   # create barplot
-  ggplot(aes(x = word, y = n, fill = book)) + 
+  ggplot(aes(x = word, y = n, fill = book)) +
   geom_col(color = "black") +
   scale_x_reordered() +
-  labs(title = "Most frequent words in Harry Potter",
-       x = NULL,
-       y = "Word count") +
-  facet_wrap(~ book, scales = "free") +
+  labs(
+    title = "Most frequent words in Harry Potter",
+    x = NULL,
+    y = "Word count"
+  ) +
+  facet_wrap(~book, scales = "free") +
   coord_flip() +
   theme(legend.position = "none")
 ```
@@ -147,7 +151,7 @@ hp_words %>%
 
 
 ```r
-(hp_bing <- hp_words %>% 
+(hp_bing <- hp_words %>%
   inner_join(get_sentiments("bing")))
 ```
 
@@ -201,10 +205,12 @@ hp_bing %>%
   geom_col(show.legend = FALSE) +
   # used with reorder_within() to label the axis tick marks
   scale_x_reordered() +
-  facet_wrap(~ sentiment, scales = "free_y") +
-  labs(title = "Sentimental words used in the Harry Potter series",
-       x = NULL,
-       y = "Number of occurences in all seven books") +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(
+    title = "Sentimental words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences in all seven books"
+  ) +
   coord_flip()
 ```
 
@@ -227,10 +233,12 @@ hp_pos_neg_book %>%
   ggplot(aes(word, n)) +
   geom_col(show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ book, scales = "free_y") +
-  labs(title = "Positive words used in the Harry Potter series",
-       x = NULL,
-       y = "Number of occurences") +
+  facet_wrap(~book, scales = "free_y") +
+  labs(
+    title = "Positive words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences"
+  ) +
   coord_flip()
 ```
 
@@ -244,10 +252,12 @@ hp_pos_neg_book %>%
   ggplot(aes(word, n)) +
   geom_col(show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ book, scales = "free_y") +
-  labs(title = "Negative words used in the Harry Potter series",
-       x = NULL,
-       y = "Number of occurences") +
+  facet_wrap(~book, scales = "free_y") +
+  labs(
+    title = "Negative words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences"
+  ) +
   coord_flip()
 ```
 
@@ -261,7 +271,7 @@ hp_pos_neg_book %>%
 
 
 ```r
-(hp_afinn <- hp_words %>% 
+(hp_afinn <- hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book, chapter))
 ```
@@ -300,7 +310,7 @@ We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds
 ```r
 library(ggwordcloud)
 
-set.seed(123)   # ensure reproducibility of the wordcloud
+set.seed(123) # ensure reproducibility of the wordcloud
 hp_afinn %>%
   # count word frequency across books
   ungroup() %>%
@@ -353,7 +363,7 @@ hp_afinn <- hp_afinn %>%
   filter(word != "moody")
 
 # wordcloud without harry
-set.seed(123)   # ensure reproducibility of the wordcloud
+set.seed(123) # ensure reproducibility of the wordcloud
 hp_afinn %>%
   # count word frequency across books
   ungroup() %>%
@@ -376,17 +386,19 @@ hp_afinn %>%
 
 
 ```r
-hp_words %>% 
+hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book, chapter) %>%
   summarize(value = sum(value)) %>%
   ggplot(mapping = aes(x = chapter, y = value, fill = book)) +
   geom_col() +
-  facet_wrap(~ book, scales = "free_x") +
-  labs(title = "Emotional arc of Harry Potter books",
-       subtitle = "AFINN sentiment dictionary",
-       x = "Chapter",
-       y = "Emotional score") +
+  facet_wrap(~book, scales = "free_x") +
+  labs(
+    title = "Emotional arc of Harry Potter books",
+    subtitle = "AFINN sentiment dictionary",
+    x = "Chapter",
+    y = "Emotional score"
+  ) +
   theme(legend.position = "none")
 ```
 
@@ -402,17 +414,19 @@ hp_words %>%
 
 ```r
 # cumulative value
-hp_words %>% 
+hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book) %>%
   mutate(cumvalue = cumsum(value)) %>%
   ggplot(mapping = aes(x = chapter, y = cumvalue, fill = book)) +
   geom_step() +
-  facet_wrap(~ book, scales = "free_x") +
-  labs(title = "Emotional arc of Harry Potter books",
-       subtitle = "AFINN sentiment dictionary",
-       x = "Chapter",
-       y = "Cumulative emotional value")
+  facet_wrap(~book, scales = "free_x") +
+  labs(
+    title = "Emotional arc of Harry Potter books",
+    subtitle = "AFINN sentiment dictionary",
+    x = "Chapter",
+    y = "Cumulative emotional value"
+  )
 ```
 
 ```
@@ -446,18 +460,18 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-03-09                  
+##  date     2021-04-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib
 ##  assertthat    0.2.1   2019-03-21 [1]
 ##  backports     1.2.1   2020-12-09 [1]
 ##  blogdown      1.2     2021-03-04 [1]
-##  bookdown      0.21    2020-10-13 [1]
+##  bookdown      0.21.7  2021-03-31 [1]
 ##  broom         0.7.5   2021-02-19 [1]
 ##  bslib         0.2.4   2021-01-25 [1]
 ##  cachem        1.0.4   2021-02-13 [1]
-##  callr         3.5.1   2020-10-13 [1]
+##  callr         3.6.0   2021-03-28 [1]
 ##  cellranger    1.1.0   2016-07-27 [1]
 ##  cli           2.3.1   2021-02-23 [1]
 ##  codetools     0.2-18  2020-11-04 [1]
@@ -466,7 +480,7 @@ devtools::session_info()
 ##  DBI           1.1.1   2021-01-15 [1]
 ##  dbplyr        2.1.0   2021-02-03 [1]
 ##  debugme       1.1.0   2017-10-22 [1]
-##  desc          1.2.0   2018-05-01 [1]
+##  desc          1.3.0   2021-03-05 [1]
 ##  devtools      2.3.2   2020-09-18 [1]
 ##  digest        0.6.27  2020-10-24 [1]
 ##  dplyr       * 1.0.5   2021-03-05 [1]
@@ -508,7 +522,7 @@ devtools::session_info()
 ##  pkgload       1.2.0   2021-02-23 [1]
 ##  png           0.1-7   2013-12-03 [1]
 ##  prettyunits   1.1.1   2020-01-24 [1]
-##  processx      3.4.5   2020-11-30 [1]
+##  processx      3.5.0   2021-03-23 [1]
 ##  ps            1.6.0   2021-02-28 [1]
 ##  purrr       * 0.3.4   2020-04-17 [1]
 ##  R6            2.5.0   2020-10-28 [1]
@@ -522,7 +536,7 @@ devtools::session_info()
 ##  rmarkdown     2.7     2021-02-19 [1]
 ##  rprojroot     2.0.2   2020-11-15 [1]
 ##  rstudioapi    0.13    2020-11-12 [1]
-##  rvest         0.3.6   2020-07-25 [1]
+##  rvest         1.0.0   2021-03-09 [1]
 ##  sass          0.3.1   2021-01-24 [1]
 ##  scales        1.1.1   2020-05-11 [1]
 ##  sessioninfo   1.1.1   2018-11-05 [1]
@@ -538,17 +552,17 @@ devtools::session_info()
 ##  tidyverse   * 1.3.0   2019-11-21 [1]
 ##  tokenizers    0.2.1   2018-03-29 [1]
 ##  usethis       2.0.1   2021-02-10 [1]
-##  utf8          1.1.4   2018-05-24 [1]
+##  utf8          1.2.1   2021-03-12 [1]
 ##  vctrs         0.3.6   2020-12-17 [1]
 ##  withr         2.4.1   2021-01-26 [1]
-##  xfun          0.21    2021-02-10 [1]
+##  xfun          0.22    2021-03-11 [1]
 ##  xml2          1.3.2   2020-04-23 [1]
 ##  yaml          2.2.1   2020-02-01 [1]
 ##  source                                     
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.3)                             
-##  CRAN (R 4.0.2)                             
+##  Github (rstudio/bookdown@71bc601)          
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
@@ -561,7 +575,7 @@ devtools::session_info()
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.0)                             
-##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.3)                             
@@ -633,7 +647,7 @@ devtools::session_info()
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.0)                             
 ##  CRAN (R 4.0.2)                             
-##  CRAN (R 4.0.0)                             
+##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             
 ##  CRAN (R 4.0.2)                             

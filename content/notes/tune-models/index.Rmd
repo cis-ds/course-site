@@ -14,9 +14,11 @@ menu:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 ```
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
@@ -44,8 +46,10 @@ data("gss", package = "rcfss")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%
-  select(id, wtss, colmslm, age, black, degree,
-         hispanic_2, polviews, pray, sex, south, tolerance) %>%
+  select(
+    id, wtss, colmslm, age, black, degree,
+    hispanic_2, polviews, pray, sex, south, tolerance
+  ) %>%
   # drop observations with missing values - could always use imputation instead
   drop_na()
 
@@ -70,7 +74,7 @@ set.seed(123)
 gss_split <- initial_split(gss, strata = colmslm)
 
 gss_train <- training(gss_split)
-gss_test  <- testing(gss_split)
+gss_test <- testing(gss_split)
 ```
 
 We use the training data for tuning the model.
@@ -80,12 +84,12 @@ We use the training data for tuning the model.
 Let’s start with the `parsnip` package, using a [`decision_tree()`](https://tidymodels.github.io/parsnip/reference/decision_tree.html) model with the [rpart](https://cran.r-project.org/web/packages/rpart/index.html) engine. To tune the decision tree hyperparameters `cost_complexity` and `tree_depth`, we create a model specification that identifies which hyperparameters we plan to tune. 
 
 ```{r tune-spec}
-tune_spec <- 
+tune_spec <-
   decision_tree(
     cost_complexity = tune(),
     tree_depth = tune()
-  ) %>% 
-  set_engine("rpart") %>% 
+  ) %>%
+  set_engine("rpart") %>%
   set_mode("classification")
 
 tune_spec
@@ -97,8 +101,9 @@ We can't train this specification on a single data set (such as the entire train
 
 ```{r tree-grid}
 tree_grid <- grid_regular(cost_complexity(),
-                          tree_depth(),
-                          levels = 5)
+  tree_depth(),
+  levels = 5
+)
 ```
 
 The function [`grid_regular()`](https://tidymodels.github.io/dials/reference/grid_regular.html) is from the [dials](https://tidymodels.github.io/dials/) package. It chooses sensible values to try for each hyperparameter; here, we asked for 5 of each. Since we have two to tune, `grid_regular()` returns 5 $\times$ 5 = 25 different possible tuning combinations to try in a tidy tibble format.
@@ -110,7 +115,7 @@ tree_grid
 Here, you can see all 5 values of `cost_complexity` ranging up to `r max(tree_grid$cost_complexity)`. These values get repeated for each of the 5 values of `tree_depth`:
 
 ```{r}
-tree_grid %>% 
+tree_grid %>%
   count(tree_depth)
 ```
 
@@ -140,12 +145,12 @@ tree_wf <- workflow() %>%
   add_model(tune_spec) %>%
   add_formula(colmslm ~ .)
 
-tree_res <- 
-  tree_wf %>% 
+tree_res <-
+  tree_wf %>%
   tune_grid(
     resamples = gss_folds,
     grid = tree_grid
-    )
+  )
 
 tree_res
 ```
@@ -153,7 +158,7 @@ tree_res
 Once we have our tuning results, we can both explore them through visualization and then select the best result. The function `collect_metrics()` gives us a tidy tibble with all the results. We had 25 candidate models and two metrics, `accuracy` and `roc_auc`, and we get a row for each `.metric` and model. 
 
 ```{r collect-trees, dependson="tree-res"}
-tree_res %>% 
+tree_res %>%
   collect_metrics()
 ```
 
@@ -166,7 +171,7 @@ tree_res %>%
   ggplot(aes(cost_complexity, mean, color = tree_depth)) +
   geom_line(size = 1.5, alpha = 0.6) +
   geom_point(size = 2) +
-  facet_wrap(~ .metric, scales = "free", nrow = 2) +
+  facet_wrap(~.metric, scales = "free", nrow = 2) +
   scale_x_log10(labels = scales::label_number()) +
   scale_color_viridis_d(option = "plasma", begin = .9, end = 0)
 ```
@@ -194,8 +199,8 @@ These are the values for `tree_depth` and `cost_complexity` that maximize AUC in
 We can update (or "finalize") our workflow object `tree_wf` with the values from `select_best()`. 
 
 ```{r final-wf, dependson="best-tree"}
-final_wf <- 
-  tree_wf %>% 
+final_wf <-
+  tree_wf %>%
   finalize_workflow(best_tree)
 
 final_wf
@@ -208,9 +213,9 @@ Our tuning is done!
 Let's fit this final model to the training data. What does the decision tree look like?
 
 ```{r final-tree, dependson="final-mod"}
-final_tree <- 
+final_tree <-
   final_wf %>%
-  fit(data = gss_train) 
+  fit(data = gss_train)
 
 final_tree
 ```
@@ -222,8 +227,8 @@ For example, perhaps we would also like to understand what variables are importa
 ```{r vip, dependson="final-tree", fig.width=6, fig.height=5}
 library(vip)
 
-final_tree %>% 
-  pull_workflow_fit() %>% 
+final_tree %>%
+  pull_workflow_fit() %>%
   vip()
 ```
 
@@ -234,16 +239,16 @@ These are the survey variables that are the most important in driving prediction
 Finally, let's return to our test data and estimate the model performance we expect to see with new data. We can use the function [`last_fit()`](https://tidymodels.github.io/tune/reference/last_fit.html) with our finalized model; this function _fits_ the finalized model on the full training data set and _evaluates_ the finalized model on the testing data.
 
 ```{r last-fit, dependson=c("final_mod", "gss-split")}
-final_fit <- 
+final_fit <-
   final_wf %>%
-  last_fit(gss_split) 
+  last_fit(gss_split)
 
 final_fit %>%
   collect_metrics()
 
 final_fit %>%
-  collect_predictions() %>% 
-  roc_curve(colmslm, `.pred_Yes, allowed`) %>% 
+  collect_predictions() %>%
+  roc_curve(colmslm, `.pred_Yes, allowed`) %>%
   autoplot()
 ```
 

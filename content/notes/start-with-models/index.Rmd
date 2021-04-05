@@ -48,11 +48,15 @@ glimpse(scorecard)
 As a first step in modeling, it's always a good idea to plot the data: 
 
 ```{r scorecard-plot}
-ggplot(data = scorecard,
-       mapping = aes(x = cost, 
-           y = avgfacsal, 
-           col = type)) + 
-  geom_point(alpha = .3) + 
+ggplot(
+  data = scorecard,
+  mapping = aes(
+    x = cost,
+    y = avgfacsal,
+    col = type
+  )
+) +
+  geom_point(alpha = .3) +
   geom_smooth(method = lm, se = FALSE) +
   scale_color_viridis_d(option = "plasma", end = .7)
 ```
@@ -79,7 +83,7 @@ linear_reg()
 That is pretty underwhelming since, on its own, it doesn't really do much. However, now that the type of model has been specified, a method for _fitting_ or training the model can be stated using the **engine**. The engine value is often a mash-up of the software that can be used to fit or train the model as well as the estimation method. For example, to use ordinary least squares, we can set the engine to be `lm`:
 
 ```{r lm-spec}
-linear_reg() %>% 
+linear_reg() %>%
   set_engine("lm")
 ```
 
@@ -88,14 +92,14 @@ The [documentation page for `linear_reg()`](https://tidymodels.github.io/parsnip
 ![Artwork by @allison_horst](/img/allison_horst_art/parsnip.png)
 
 ```{r lm-mod}
-lm_mod <- linear_reg() %>% 
+lm_mod <- linear_reg() %>%
   set_engine("lm")
 ```
 
 From here, the model can be estimated or trained using the [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) function:
 
 ```{r lm-fit, dependson = "lm-mod"}
-lm_fit <- lm_mod %>% 
+lm_fit <- lm_mod %>%
   fit(avgfacsal ~ cost * type, data = scorecard)
 lm_fit
 ```
@@ -114,7 +118,7 @@ Suppose that, for a publication, it would be particularly interesting to make a 
 
 ```{r new-points}
 new_points <- expand.grid(
-  cost = 20000, 
+  cost = 20000,
   type = c("Public", "Private, nonprofit", "Private, for-profit")
 )
 new_points
@@ -173,15 +177,16 @@ prior_dist <- rstanarm::student_t(df = 1)
 set.seed(123)
 
 # make the parsnip model
-bayes_mod <- linear_reg() %>% 
-  set_engine("stan", 
-             prior_intercept = prior_dist, 
-             prior = prior_dist,
-             # increase number of iterations to converge to stable solution
-             iter = 4000) 
+bayes_mod <- linear_reg() %>%
+  set_engine("stan",
+    prior_intercept = prior_dist,
+    prior = prior_dist,
+    # increase number of iterations to converge to stable solution
+    iter = 4000
+  )
 
 # train the model
-bayes_fit <- bayes_mod %>% 
+bayes_fit <- bayes_mod %>%
   fit(avgfacsal ~ cost * type, data = scorecard)
 
 print(bayes_fit, digits = 5)
@@ -202,8 +207,8 @@ tidy(bayes_fit, conf.int = TRUE)
 A goal of the `tidymodels` packages is that the **interfaces to common tasks are standardized** (as seen in the `tidy()` results above). The same is true for getting predictions; we can use the same code even though the underlying packages use very different syntax:
 
 ```{r stan-pred, dependson = "go-stan", warning = FALSE, message = FALSE}
-bayes_plot_data <- new_points %>% 
-  bind_cols(predict(bayes_fit, new_data = new_points)) %>% 
+bayes_plot_data <- new_points %>%
+  bind_cols(predict(bayes_fit, new_data = new_points)) %>%
   bind_cols(predict(bayes_fit, new_data = new_points, type = "conf_int"))
 
 ggplot(data = bayes_plot_data, mapping = aes(x = type)) +

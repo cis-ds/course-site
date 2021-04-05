@@ -135,18 +135,18 @@ library(microbenchmark)
 times <- microbenchmark(
   `No preallocation` = {
     mpg_no_preall <- tibble()
-    
-    for(i in 1:100){
+
+    for (i in 1:100) {
       mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
     }
   },
   `Preallocation` = {
     mpg_preall <- vector(mode = "list", length = 100)
-    
-    for(i in 1:100){
+
+    for (i in 1:100) {
       mpg_preall[[i]] <- mpg
     }
-    
+
     mpg_preall <- bind_rows(mpg_preall)
   }
 )
@@ -183,7 +183,7 @@ Before you write the `for` loop, identify the three components you need:
 output <- vector("numeric", ncol(mtcars))
 
 # initialize the loop along all the columns of mtcars
-for(i in seq_along(mtcars)){
+for (i in seq_along(mtcars)) {
   # calculate the mean value for the i-th column
   output[[i]] <- mean(mtcars[[i]], na.rm = TRUE)
 }
@@ -218,7 +218,7 @@ Before you write the `for` loop, identify the three components you need:
 output <- vector("numeric", ncol(diamonds))
 
 # initialize the loop along all the columns of diamonds
-for(i in seq_along(diamonds)){
+for (i in seq_along(diamonds)) {
   # calculate the max value for the i-th column
   output[i] <- max(diamonds[[i]])
 }
@@ -333,17 +333,19 @@ If we want to calculate the mean for all of the columns, we would have to duplic
 
 ```{r mtcars-mean-all-columns}
 mtcars %>%
-  summarize(mpg = mean(mpg),
-            cyl = mean(cyl),
-            disp = mean(disp),
-            hp = mean(hp),
-            drat = mean(drat),
-            wt = mean(wt),
-            qsec = mean(qsec),
-            vs = mean(vs),
-            am = mean(am),
-            gear = mean(gear),
-            carb = mean(carb))
+  summarize(
+    mpg = mean(mpg),
+    cyl = mean(cyl),
+    disp = mean(disp),
+    hp = mean(hp),
+    drat = mean(drat),
+    wt = mean(wt),
+    qsec = mean(qsec),
+    vs = mean(vs),
+    am = mean(am),
+    gear = mean(gear),
+    carb = mean(carb)
+  )
 ```
 
 But this process is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it.
@@ -372,21 +374,21 @@ Here are a couple of examples of `across()` in conjunction with its favorite ver
 To apply a function to each column in a tibble, use `across()` in conjunction with `everything()`. `everything()` is a selection helper that selects all the variables in a data frame. It should be the first argument in `across()`.
 
 ```{r summarize-across-everything}
-mtcars %>% 
+mtcars %>%
   summarize(across(.cols = everything(), .fns = mean))
 ```
 
 If you want to apply multiple summaries, you store the functions in a `list()`:
 
 ```{r summarize-across-everything-fns}
-mtcars %>% 
+mtcars %>%
   summarize(across(everything(), .fns = list(min, max)))
 ```
 
 To clearly distinguish each summarized variable, we can name them in the list:
 
 ```{r summarize-across-everything-fns-named}
-mtcars %>% 
+mtcars %>%
   summarize(across(everything(), .fns = list(min = min, max = max)))
 ```
 
@@ -404,24 +406,24 @@ As mentioned earlier, `across()` allows you to pick variables by position and na
 
 ```{r summarize-across-by}
 # pick by name
-worldbank %>% 
+worldbank %>%
   summarize(across(.cols = life_exp, .fns = mean))
 
 # by postion
-worldbank %>% 
+worldbank %>%
   summarize(across(.cols = 12, .fns = mean))
 ```
 
 By default, the newly created columns have the shortest names needed to uniquely identify the output.
 
 ```{r summarize-across-unique}
-worldbank %>% 
+worldbank %>%
   summarize(across(.cols = life_exp, .fns = list(min, max)))
 
-worldbank %>% 
+worldbank %>%
   summarize(across(.cols = c(life_exp, pop_growth), .fns = min))
 
-worldbank%>% 
+worldbank %>%
   summarize(across(.cols = -life_exp, .fns = list(min, max)))
 ```
 
@@ -449,7 +451,7 @@ across(where(is.numeric) & starts_with("x"))
 Combinations of `mutate()` and `across()` work in a similar way to their summarize equivalents.
 
 ```{r mutate-across-everything}
-mtcars %>% 
+mtcars %>%
   mutate(across(everything(), .fns = log10))
 ```
 
@@ -458,7 +460,7 @@ mtcars %>%
 `across()` can also be useful when used in conjunction with `filter()`. For example, we can find all rows where no variable has missing values:
 
 ```{r filter-across-everything}
-worldbank %>% 
+worldbank %>%
   filter(across(everything(), ~ !is.na(.x)))
 ```
 

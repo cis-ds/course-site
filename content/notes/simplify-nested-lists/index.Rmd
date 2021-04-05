@@ -40,14 +40,17 @@ usethis::use_course("uc-cfss/getting-data-from-the-web-api-access")
 Not all lists are easily coerced into data frames by simply calling `content() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
 
 ```{r omdb-recursive, error = TRUE, warning = FALSE}
-sharknado <- GET(url = "http://www.omdbapi.com/?",
-    query = list(t = "Sharknado",
-                 y = 2013,
-                 apikey = getOption("omdb_key"))
+sharknado <- GET(
+  url = "http://www.omdbapi.com/?",
+  query = list(
+    t = "Sharknado",
+    y = 2013,
+    apikey = getOption("omdb_key")
+  )
 )
 
 # convert to data frame
-content(sharknado, as = "parsed", type = "application/json") %>% 
+content(sharknado, as = "parsed", type = "application/json") %>%
   as_tibble()
 ```
 
@@ -129,10 +132,10 @@ Extremely easy! However, there are a lot of components in `users`, and we don't 
 
 ```{r gh-users-hoist, dependson = "gh-users-df"}
 users %>%
-  hoist(user, 
-        followers = "followers", 
-        login = "login", 
-        url = "html_url"
+  hoist(user,
+    followers = "followers",
+    login = "login",
+    url = "html_url"
   )
 ```
 
@@ -158,27 +161,27 @@ Then we can use `unnest_wider()` or `hoist()`:
 
 ```{r gh-repos-hoist, dependson = "gh-repos-unnest-longer"}
 repos %>%
-  hoist(repo, 
-        login = c("owner", "login"), 
-        name = "name",
-        homepage = "homepage",
-        watchers = "watchers_count"
+  hoist(repo,
+    login = c("owner", "login"),
+    name = "name",
+    homepage = "homepage",
+    watchers = "watchers_count"
   )
 ```
 
 Note the use of `c("owner", "login")`: this allows us to reach two levels deep inside of a list. An alternative approach would be to pull out just `owner` and then put each element of it in a column:
 
 ```{r gh-repos-hoist-alt, dependson = "gh-repos-unnest-longer"}
-repos %>% 
-  hoist(repo, owner = "owner") %>% 
+repos %>%
+  hoist(repo, owner = "owner") %>%
   unnest_wider(owner)
 ```
 
 Instead of looking at the list and carefully thinking about whether it needs to become rows or columns, you can use `unnest_auto()`. It uses a handful of heuristics to figure out whether `unnest_longer()` or `unnest_wider()` is appropriate, and tells you about its reasoning.
 
 ```{r gh-repos-auto}
-tibble(repo = gh_repos) %>% 
-  unnest_auto(repo) %>% 
+tibble(repo = gh_repos) %>%
+  unnest_auto(repo) %>%
   unnest_auto(repo)
 ```
 
@@ -213,26 +216,26 @@ chars2 %>%
 What you do next will depend on the purposes of the analysis. Maybe you want a row for every book and TV series that the character appears in:
 
 ```{r got-appearances, dependson = "got"}
-chars2 %>% 
-  select(name, books, tvSeries) %>% 
-  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>% 
+chars2 %>%
+  select(name, books, tvSeries) %>%
+  pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>%
   unnest_longer(value)
 ```
 
 Or maybe you want to build a table that lets you match title to name:
 
 ```{r got-title-name, dependson = "got"}
-chars2 %>% 
-  select(name, title = titles) %>% 
+chars2 %>%
+  select(name, title = titles) %>%
   unnest_longer(title)
 ```
 
 Again, we could rewrite using `unnest_auto()`. This is convenient for exploration, but I wouldn't rely on it in the long term - `unnest_auto()` has the undesirable property that it will always succeed. That means if your data structure changes, `unnest_auto()` will continue to work, but might give very different output that causes cryptic failures from downstream functions.
 
 ```{r got-auto, dependson = "got"}
-tibble(char = got_chars) %>% 
-  unnest_auto(char) %>% 
-  select(name, title = titles) %>% 
+tibble(char = got_chars) %>%
+  unnest_auto(char) %>%
+  select(name, title = titles) %>%
   unnest_auto(title)
 ```
 
@@ -256,7 +259,8 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
 # clean up sw_species so it is one-row-per-species
 sw_height <- tibble(sw_species) %>%
   hoist(sw_species,
-        height = "average_height") %>%
+    height = "average_height"
+  ) %>%
   # fix height to be a numeric column
   mutate(height = parse_number(height))
 sw_height
@@ -264,8 +268,10 @@ sw_height
 # generate a histogram
 ggplot(data = sw_height, mapping = aes(x = height)) +
   geom_histogram() +
-  labs(x = "Height (in centimeters)",
-       y = "Number of species")
+  labs(
+    x = "Height (in centimeters)",
+    y = "Number of species"
+  )
 ```
     
 
@@ -291,10 +297,12 @@ sw_people_df %>%
   ggplot(mapping = aes(x = fct_reorder(.f = name, .x = n), y = n)) +
   geom_col() +
   coord_flip() +
-  labs(title = "Number of appearances in the Star Wars cinematic universe",
-       subtitle = "As of December 31, 2015",
-       x = NULL,
-       y = "Number of film appearances")
+  labs(
+    title = "Number of appearances in the Star Wars cinematic universe",
+    subtitle = "As of December 31, 2015",
+    x = NULL,
+    y = "Number of film appearances"
+  )
 ```
 
     {{< /spoiler >}}

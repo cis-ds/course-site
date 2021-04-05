@@ -213,7 +213,7 @@ wb_search("labor force")
 ```
 
 ```r
-wb_search("labor force", fields = "indicator")  # limit search to just the indicator name
+wb_search("labor force", fields = "indicator") # limit search to just the indicator name
 ```
 
 ```
@@ -314,8 +314,10 @@ By default, `wb_data()` returns queries as data frames in a wide format. So if w
 
 ```r
 female_vars <- wb_data(
-  indicator = c("fem_lab_part" = "SL.TLF.TOTL.FE.ZS",
-                "fem_educ_sec" = "SE.SEC.CUAT.UP.FE.ZS"),
+  indicator = c(
+    "fem_lab_part" = "SL.TLF.TOTL.FE.ZS",
+    "fem_educ_sec" = "SE.SEC.CUAT.UP.FE.ZS"
+  ),
   start_date = 1990,
   end_date = 2020
 )
@@ -518,9 +520,11 @@ mpds %>%
   count(partyname) %>%
   ggplot(aes(fct_reorder(partyname, n), n)) +
   geom_col() +
-  labs(title = "Political manifestos published in Sweden",
-       x = NULL,
-       y = "Total (1948-present)") +
+  labs(
+    title = "Political manifestos published in Sweden",
+    x = NULL,
+    y = "Total (1948-present)"
+  ) +
   coord_flip()
 ```
 
@@ -537,10 +541,12 @@ mpds %>%
   ggplot(aes(edate, ideo, color = partyname)) +
   geom_line() +
   scale_color_manual(values = c("blue", "red")) +
-  labs(title = "Ideological scaling of major US political parties",
-       x = "Year",
-       y = "Ideological position",
-       color = NULL) +
+  labs(
+    title = "Ideological scaling of major US political parties",
+    x = "Year",
+    y = "Ideological position",
+    color = NULL
+  ) +
   theme(legend.position = "bottom")
 ```
 
@@ -558,9 +564,11 @@ mpds %>%
 
 ```
 ## Connecting to Manifesto Project DB API... 
-## Connecting to Manifesto Project DB API... corpus version: 2020-1 
-## Connecting to Manifesto Project DB API... corpus version: 2020-1 
-## Connecting to Manifesto Project DB API... corpus version: 2020-1
+## Connecting to Manifesto Project DB API... corpus version: 2020-2 
+## Connecting to Manifesto Project DB API... 
+## Connecting to Manifesto Project DB API... corpus version: 2020-2 
+## Connecting to Manifesto Project DB API... corpus version: 2020-2 
+## Connecting to Manifesto Project DB API... corpus version: 2020-2
 ```
 
 ```
@@ -573,8 +581,10 @@ mpds %>%
 # generate wordcloud of most common terms
 docs %>%
   tidy() %>%
-  mutate(party = factor(party, levels = c(61320, 61620),
-                        labels = c("Democratic Party", "Republican Party"))) %>%
+  mutate(party = factor(party,
+    levels = c(61320, 61620),
+    labels = c("Democratic Party", "Republican Party")
+  )) %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words) %>%
   count(party, word, sort = TRUE) %>%
@@ -646,8 +656,10 @@ We can quickly visualize this data frame using `ggplot2`:
 ggplot(asia10, aes(x = reorder(NAME, value), y = value)) +
   geom_point() +
   scale_y_continuous(labels = scales::comma) +
-  labs(x = NULL,
-       y = "Number of residents of Asian ethnicity") +
+  labs(
+    x = NULL,
+    y = "Number of residents of Asian ethnicity"
+  ) +
   coord_flip()
 ```
 
@@ -657,15 +669,21 @@ Of course this graph is not entirely useful since it is based on the raw frequen
 
 
 ```r
-asia_pop <- get_decennial(geography = "state",
-                          variables = c("P008006", "P008001"),
-                          year = 2010) %>%
+asia_pop <- get_decennial(
+  geography = "state",
+  variables = c("P008006", "P008001"),
+  year = 2010
+) %>%
   spread(variable, value) %>%
   mutate(pct_asia = P008006 / P008001)
 ```
 
 ```
 ## Getting data from the 2010 decennial Census
+```
+
+```
+## Using Census Summary File 1
 ```
 
 ```r
@@ -693,8 +711,10 @@ asia_pop
 ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
   geom_point() +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = NULL,
-       y = "Percent of residents of Asian ethnicity") +
+  labs(
+    x = NULL,
+    y = "Percent of residents of Asian ethnicity"
+  ) +
   coord_flip()
 ```
 
@@ -704,9 +724,11 @@ ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
 
 
 ```r
-usa_inc <- get_acs(geography = "state", 
-                   variables = c(medincome = "B19013_001"), 
-                   year = 2019)
+usa_inc <- get_acs(
+  geography = "state",
+  variables = c(medincome = "B19013_001"),
+  year = 2019
+)
 ```
 
 ```
@@ -740,15 +762,20 @@ Now we return both an `estimate` column for the ACS estimate and `moe` for the m
 ```r
 usa_inc %>%
   ggplot(aes(x = reorder(NAME, estimate), y = estimate)) +
-  geom_pointrange(aes(ymin = estimate - moe,
-                     ymax = estimate + moe),
-                  size = .25) +
+  geom_pointrange(aes(
+    ymin = estimate - moe,
+    ymax = estimate + moe
+  ),
+  size = .25
+  ) +
   scale_y_continuous(labels = scales::dollar) +
   coord_flip() +
-  labs(title = "Household income by state",
+  labs(
+    title = "Household income by state",
     subtitle = "2019 American Community Survey (five-year estimates)",
-       x = "",
-       y = "ACS estimate (bars represent margin of error)")
+    x = "",
+    y = "ACS estimate (bars represent margin of error)"
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/income-usa-plot-1.png" width="672" />
@@ -763,12 +790,14 @@ usa_inc %>%
 
 
 ```r
-loudoun <- get_acs(state = "VA",
-                   county = "Loudoun",
-                   geography = "tract", 
-                   variables = c(medincome = "B19013_001"), 
-                   year = 2019,
-                   geometry = TRUE)
+loudoun <- get_acs(
+  state = "VA",
+  county = "Loudoun",
+  geography = "tract",
+  variables = c(medincome = "B19013_001"),
+  year = 2019,
+  geometry = TRUE
+)
 ```
 
 
@@ -778,10 +807,10 @@ loudoun
 
 ```
 ## Simple feature collection with 65 features and 5 fields
-## geometry type:  MULTIPOLYGON
-## dimension:      XY
-## bbox:           xmin: -77.9622 ymin: 38.84621 xmax: -77.32828 ymax: 39.32419
-## geographic CRS: NAD83
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -77.9622 ymin: 38.84621 xmax: -77.32828 ymax: 39.32419
+## Geodetic CRS:  NAD83
 ## First 10 features:
 ##          GEOID                                           NAME  variable
 ## 1  51107611005 Census Tract 6110.05, Loudoun County, Virginia medincome
@@ -841,136 +870,146 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.3 (2020-10-10)
-##  os       macOS Catalina 10.15.7      
+##  version  R version 4.0.4 (2021-02-15)
+##  os       macOS Big Sur 10.16         
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-03-01                  
+##  date     2021-04-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version date       lib source                              
-##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                      
-##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  base64enc      0.1-3   2015-07-28 [1] CRAN (R 4.0.0)                      
-##  blogdown       1.1     2021-01-19 [1] CRAN (R 4.0.3)                      
-##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)                      
-##  broom        * 0.7.3   2020-12-16 [1] CRAN (R 4.0.2)                      
-##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                      
-##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                      
-##  class          7.3-17  2020-04-26 [1] CRAN (R 4.0.3)                      
-##  classInt       0.4-3   2020-04-07 [1] CRAN (R 4.0.0)                      
-##  cli            2.3.1   2021-02-23 [1] CRAN (R 4.0.3)                      
-##  codetools      0.2-18  2020-11-04 [1] CRAN (R 4.0.2)                      
-##  colorspace     2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                      
-##  crayon         1.4.1   2021-02-08 [1] CRAN (R 4.0.2)                      
-##  DBI            1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                      
-##  dbplyr         2.0.0   2020-11-03 [1] CRAN (R 4.0.2)                      
-##  debugme        1.1.0   2017-10-22 [1] CRAN (R 4.0.0)                      
-##  desc           1.2.0   2018-05-01 [1] CRAN (R 4.0.0)                      
-##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                      
-##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                      
-##  dplyr        * 1.0.4   2021-02-02 [1] CRAN (R 4.0.2)                      
-##  DT             0.16    2020-10-13 [1] CRAN (R 4.0.2)                      
-##  e1071          1.7-4   2020-10-14 [1] CRAN (R 4.0.2)                      
-##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                      
-##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)                      
-##  fansi          0.4.2   2021-01-15 [1] CRAN (R 4.0.2)                      
-##  farver         2.0.3   2020-01-16 [1] CRAN (R 4.0.0)                      
-##  forcats      * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)                      
-##  foreign        0.8-81  2020-12-22 [1] CRAN (R 4.0.2)                      
-##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                      
-##  functional     0.6     2014-07-16 [1] CRAN (R 4.0.0)                      
-##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                      
-##  geonames     * 0.999   2019-02-19 [1] CRAN (R 4.0.0)                      
-##  ggplot2      * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                      
-##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  gridExtra      2.3     2017-09-09 [1] CRAN (R 4.0.0)                      
-##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                      
-##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                      
-##  here           1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                      
-##  highr          0.8     2019-03-20 [1] CRAN (R 4.0.0)                      
-##  hms            0.5.3   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools      0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)                      
-##  htmlwidgets    1.5.3   2020-12-10 [1] CRAN (R 4.0.2)                      
-##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                      
-##  janeaustenr    0.1.5   2017-06-10 [1] CRAN (R 4.0.0)                      
-##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  KernSmooth     2.23-18 2020-10-29 [1] CRAN (R 4.0.2)                      
-##  knitr          1.31    2021-01-27 [1] CRAN (R 4.0.2)                      
-##  labeling       0.4.2   2020-10-20 [1] CRAN (R 4.0.2)                      
-##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.3)                      
-##  lifecycle      1.0.0   2021-02-15 [1] CRAN (R 4.0.2)                      
-##  lubridate      1.7.9.2 2021-01-18 [1] Github (tidyverse/lubridate@aab2e30)
-##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                      
-##  manifestoR   * 1.5.0   2020-11-29 [1] CRAN (R 4.0.2)                      
-##  maptools       1.0-2   2020-08-24 [1] CRAN (R 4.0.2)                      
-##  Matrix         1.3-0   2020-12-22 [1] CRAN (R 4.0.2)                      
-##  memoise        1.1.0   2017-04-21 [1] CRAN (R 4.0.0)                      
-##  mnormt         2.0.2   2020-09-01 [1] CRAN (R 4.0.2)                      
-##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                      
-##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                      
-##  nlme           3.1-151 2020-12-10 [1] CRAN (R 4.0.2)                      
-##  NLP          * 0.2-1   2020-10-14 [1] CRAN (R 4.0.2)                      
-##  pillar         1.5.0   2021-02-22 [1] CRAN (R 4.0.3)                      
-##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                      
-##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                      
-##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.2)                      
-##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                      
-##  processx       3.4.5   2020-11-30 [1] CRAN (R 4.0.2)                      
-##  ps             1.5.0   2020-12-05 [1] CRAN (R 4.0.2)                      
-##  psych          2.0.12  2020-12-16 [1] CRAN (R 4.0.2)                      
-##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                      
-##  R6             2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                      
-##  rappdirs       0.3.1   2016-03-28 [1] CRAN (R 4.0.0)                      
-##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.0.0)                      
-##  Rcpp           1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                      
-##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                      
-##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                      
-##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex         1.0.0   2021-01-27 [1] CRAN (R 4.0.2)                      
-##  rgdal          1.5-18  2020-10-13 [1] CRAN (R 4.0.2)                      
-##  rlang          0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                      
-##  rmarkdown      2.6     2020-12-14 [1] CRAN (R 4.0.2)                      
-##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                      
-##  rstudioapi     0.13    2020-11-12 [1] CRAN (R 4.0.2)                      
-##  rvest          0.3.6   2020-07-25 [1] CRAN (R 4.0.2)                      
-##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                      
-##  sf             0.9-6   2020-09-13 [1] CRAN (R 4.0.2)                      
-##  slam           0.1-48  2020-12-03 [1] CRAN (R 4.0.2)                      
-##  SnowballC      0.7.0   2020-04-01 [1] CRAN (R 4.0.0)                      
-##  sp             1.4-4   2020-10-07 [1] CRAN (R 4.0.2)                      
-##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                      
-##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                      
-##  testthat       3.0.2   2021-02-14 [1] CRAN (R 4.0.2)                      
-##  tibble       * 3.0.6   2021-01-29 [1] CRAN (R 4.0.2)                      
-##  tidycensus   * 0.11    2020-12-14 [1] CRAN (R 4.0.2)                      
-##  tidyr        * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  tidytext     * 0.2.6   2020-09-20 [1] CRAN (R 4.0.2)                      
-##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                      
-##  tigris         1.0     2020-07-13 [1] CRAN (R 4.0.2)                      
-##  tm           * 0.7-8   2020-11-18 [1] CRAN (R 4.0.2)                      
-##  tmvnsim        1.0-2   2016-12-15 [1] CRAN (R 4.0.0)                      
-##  tokenizers     0.2.1   2018-03-29 [1] CRAN (R 4.0.0)                      
-##  units          0.6-7   2020-06-13 [1] CRAN (R 4.0.2)                      
-##  usethis        2.0.0   2020-12-10 [1] CRAN (R 4.0.2)                      
-##  utf8           1.1.4   2018-05-24 [1] CRAN (R 4.0.0)                      
-##  uuid           0.1-4   2020-02-26 [1] CRAN (R 4.0.0)                      
-##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  viridis      * 0.5.1   2018-03-29 [1] CRAN (R 4.0.0)                      
-##  viridisLite  * 0.3.0   2018-02-01 [1] CRAN (R 4.0.0)                      
-##  wbstats      * 1.0.4   2020-12-05 [1] CRAN (R 4.0.2)                      
-##  withr          2.4.1   2021-01-26 [1] CRAN (R 4.0.2)                      
-##  wordcloud    * 2.6     2018-08-24 [1] CRAN (R 4.0.0)                      
-##  xfun           0.21    2021-02-10 [1] CRAN (R 4.0.2)                      
-##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                      
-##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                      
-##  zoo            1.8-8   2020-05-02 [1] CRAN (R 4.0.0)                      
+##  package      * version date       lib source                           
+##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                   
+##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                   
+##  base64enc      0.1-3   2015-07-28 [1] CRAN (R 4.0.0)                   
+##  blogdown       1.2     2021-03-04 [1] CRAN (R 4.0.3)                   
+##  bookdown       0.21.7  2021-03-31 [1] Github (rstudio/bookdown@71bc601)
+##  broom        * 0.7.5   2021-02-19 [1] CRAN (R 4.0.2)                   
+##  bslib          0.2.4   2021-01-25 [1] CRAN (R 4.0.2)                   
+##  cachem         1.0.4   2021-02-13 [1] CRAN (R 4.0.2)                   
+##  callr          3.6.0   2021-03-28 [1] CRAN (R 4.0.2)                   
+##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                   
+##  class          7.3-18  2021-01-24 [1] CRAN (R 4.0.4)                   
+##  classInt       0.4-3   2020-04-07 [1] CRAN (R 4.0.0)                   
+##  cli            2.3.1   2021-02-23 [1] CRAN (R 4.0.3)                   
+##  codetools      0.2-18  2020-11-04 [1] CRAN (R 4.0.4)                   
+##  colorspace     2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                   
+##  crayon         1.4.1   2021-02-08 [1] CRAN (R 4.0.2)                   
+##  curl           4.3     2019-12-02 [1] CRAN (R 4.0.0)                   
+##  DBI            1.1.1   2021-01-15 [1] CRAN (R 4.0.2)                   
+##  dbplyr         2.1.0   2021-02-03 [1] CRAN (R 4.0.2)                   
+##  debugme        1.1.0   2017-10-22 [1] CRAN (R 4.0.0)                   
+##  desc           1.3.0   2021-03-05 [1] CRAN (R 4.0.2)                   
+##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                   
+##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                   
+##  dplyr        * 1.0.5   2021-03-05 [1] CRAN (R 4.0.3)                   
+##  DT             0.17    2021-01-06 [1] CRAN (R 4.0.2)                   
+##  e1071          1.7-6   2021-03-18 [1] CRAN (R 4.0.2)                   
+##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                   
+##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)                   
+##  fansi          0.4.2   2021-01-15 [1] CRAN (R 4.0.2)                   
+##  farver         2.1.0   2021-02-28 [1] CRAN (R 4.0.2)                   
+##  fastmap        1.1.0   2021-01-25 [1] CRAN (R 4.0.2)                   
+##  forcats      * 0.5.1   2021-01-27 [1] CRAN (R 4.0.2)                   
+##  foreign        0.8-81  2020-12-22 [1] CRAN (R 4.0.4)                   
+##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                   
+##  functional     0.6     2014-07-16 [1] CRAN (R 4.0.0)                   
+##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                   
+##  geonames     * 0.999   2019-02-19 [1] CRAN (R 4.0.0)                   
+##  ggplot2      * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                   
+##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                   
+##  gridExtra      2.3     2017-09-09 [1] CRAN (R 4.0.0)                   
+##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                   
+##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                   
+##  here           1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                   
+##  highr          0.8     2019-03-20 [1] CRAN (R 4.0.0)                   
+##  hms            1.0.0   2021-01-13 [1] CRAN (R 4.0.2)                   
+##  htmltools      0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)                   
+##  htmlwidgets    1.5.3   2020-12-10 [1] CRAN (R 4.0.2)                   
+##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                   
+##  janeaustenr    0.1.5   2017-06-10 [1] CRAN (R 4.0.0)                   
+##  jquerylib      0.1.3   2020-12-17 [1] CRAN (R 4.0.2)                   
+##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                   
+##  KernSmooth     2.23-18 2020-10-29 [1] CRAN (R 4.0.4)                   
+##  knitr          1.31    2021-01-27 [1] CRAN (R 4.0.2)                   
+##  labeling       0.4.2   2020-10-20 [1] CRAN (R 4.0.2)                   
+##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.4)                   
+##  lifecycle      1.0.0   2021-02-15 [1] CRAN (R 4.0.2)                   
+##  lubridate      1.7.10  2021-02-26 [1] CRAN (R 4.0.2)                   
+##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                   
+##  manifestoR   * 1.5.0   2020-11-29 [1] CRAN (R 4.0.2)                   
+##  maptools       1.1-1   2021-03-15 [1] CRAN (R 4.0.2)                   
+##  Matrix         1.3-2   2021-01-06 [1] CRAN (R 4.0.4)                   
+##  memoise        2.0.0   2021-01-26 [1] CRAN (R 4.0.2)                   
+##  mgcv           1.8-34  2021-02-16 [1] CRAN (R 4.0.2)                   
+##  mnormt         2.0.2   2020-09-01 [1] CRAN (R 4.0.2)                   
+##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                   
+##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                   
+##  nlme           3.1-152 2021-02-04 [1] CRAN (R 4.0.4)                   
+##  NLP          * 0.2-1   2020-10-14 [1] CRAN (R 4.0.2)                   
+##  pillar         1.5.1   2021-03-05 [1] CRAN (R 4.0.3)                   
+##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                   
+##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                   
+##  pkgload        1.2.0   2021-02-23 [1] CRAN (R 4.0.2)                   
+##  plyr           1.8.6   2020-03-03 [1] CRAN (R 4.0.0)                   
+##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                   
+##  processx       3.5.0   2021-03-23 [1] CRAN (R 4.0.2)                   
+##  proxy          0.4-25  2021-03-05 [1] CRAN (R 4.0.2)                   
+##  ps             1.6.0   2021-02-28 [1] CRAN (R 4.0.2)                   
+##  psych          2.1.3   2021-03-27 [1] CRAN (R 4.0.2)                   
+##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                   
+##  R6             2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                   
+##  rappdirs       0.3.3   2021-01-31 [1] CRAN (R 4.0.2)                   
+##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.0.0)                   
+##  Rcpp           1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                   
+##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                   
+##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                   
+##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                   
+##  reprex         1.0.0   2021-01-27 [1] CRAN (R 4.0.2)                   
+##  reshape2       1.4.4   2020-04-09 [1] CRAN (R 4.0.0)                   
+##  rgdal          1.5-23  2021-02-03 [1] CRAN (R 4.0.2)                   
+##  rlang          0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                   
+##  rmarkdown      2.7     2021-02-19 [1] CRAN (R 4.0.2)                   
+##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                   
+##  rstudioapi     0.13    2020-11-12 [1] CRAN (R 4.0.2)                   
+##  rvest          1.0.0   2021-03-09 [1] CRAN (R 4.0.2)                   
+##  sass           0.3.1   2021-01-24 [1] CRAN (R 4.0.2)                   
+##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                   
+##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                   
+##  sf             0.9-8   2021-03-17 [1] CRAN (R 4.0.2)                   
+##  slam           0.1-48  2020-12-03 [1] CRAN (R 4.0.2)                   
+##  SnowballC      0.7.0   2020-04-01 [1] CRAN (R 4.0.0)                   
+##  sp             1.4-5   2021-01-10 [1] CRAN (R 4.0.2)                   
+##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                   
+##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                   
+##  testthat       3.0.2   2021-02-14 [1] CRAN (R 4.0.2)                   
+##  tibble       * 3.1.0   2021-02-25 [1] CRAN (R 4.0.2)                   
+##  tidycensus   * 0.11.4  2021-01-20 [1] CRAN (R 4.0.2)                   
+##  tidyr        * 1.1.3   2021-03-03 [1] CRAN (R 4.0.2)                   
+##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                   
+##  tidytext     * 0.3.0   2021-01-06 [1] CRAN (R 4.0.2)                   
+##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                   
+##  tigris         1.0     2020-07-13 [1] CRAN (R 4.0.2)                   
+##  tm           * 0.7-8   2020-11-18 [1] CRAN (R 4.0.2)                   
+##  tmvnsim        1.0-2   2016-12-15 [1] CRAN (R 4.0.0)                   
+##  tokenizers     0.2.1   2018-03-29 [1] CRAN (R 4.0.0)                   
+##  units          0.7-1   2021-03-16 [1] CRAN (R 4.0.2)                   
+##  usethis        2.0.1   2021-02-10 [1] CRAN (R 4.0.2)                   
+##  utf8           1.2.1   2021-03-12 [1] CRAN (R 4.0.2)                   
+##  uuid           0.1-4   2020-02-26 [1] CRAN (R 4.0.0)                   
+##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                   
+##  viridis      * 0.5.1   2018-03-29 [1] CRAN (R 4.0.0)                   
+##  viridisLite  * 0.3.0   2018-02-01 [1] CRAN (R 4.0.0)                   
+##  wbstats      * 1.0.4   2020-12-05 [1] CRAN (R 4.0.2)                   
+##  withr          2.4.1   2021-01-26 [1] CRAN (R 4.0.2)                   
+##  wordcloud    * 2.6     2018-08-24 [1] CRAN (R 4.0.0)                   
+##  xfun           0.22    2021-03-11 [1] CRAN (R 4.0.2)                   
+##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                   
+##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                   
+##  zoo            1.8-9   2021-03-09 [1] CRAN (R 4.0.2)                   
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

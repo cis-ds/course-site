@@ -42,8 +42,10 @@ data("gss", package = "rcfss")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%
-  select(id, wtss, colmslm, age, black, degree,
-         hispanic_2, polviews, pray, sex, south, tolerance) %>%
+  select(
+    id, wtss, colmslm, age, black, degree,
+    hispanic_2, polviews, pray, sex, south, tolerance
+  ) %>%
   # drop observations with missing values - could always use imputation instead
   drop_na()
 
@@ -276,7 +278,7 @@ set.seed(123)
 gss_split <- initial_split(gss, strata = colmslm)
 
 gss_train <- training(gss_split)
-gss_test  <- testing(gss_split)
+gss_test <- testing(gss_split)
 ```
 
 We use the training data for tuning the model.
@@ -287,12 +289,12 @@ Let’s start with the `parsnip` package, using a [`decision_tree()`](https://ti
 
 
 ```r
-tune_spec <- 
+tune_spec <-
   decision_tree(
     cost_complexity = tune(),
     tree_depth = tune()
-  ) %>% 
-  set_engine("rpart") %>% 
+  ) %>%
+  set_engine("rpart") %>%
   set_mode("classification")
 
 tune_spec
@@ -315,8 +317,9 @@ We can't train this specification on a single data set (such as the entire train
 
 ```r
 tree_grid <- grid_regular(cost_complexity(),
-                          tree_depth(),
-                          levels = 5)
+  tree_depth(),
+  levels = 5
+)
 ```
 
 The function [`grid_regular()`](https://tidymodels.github.io/dials/reference/grid_regular.html) is from the [dials](https://tidymodels.github.io/dials/) package. It chooses sensible values to try for each hyperparameter; here, we asked for 5 of each. Since we have two to tune, `grid_regular()` returns 5 $\times$ 5 = 25 different possible tuning combinations to try in a tidy tibble format.
@@ -347,7 +350,7 @@ Here, you can see all 5 values of `cost_complexity` ranging up to 0.1. These val
 
 
 ```r
-tree_grid %>% 
+tree_grid %>%
   count(tree_depth)
 ```
 
@@ -390,12 +393,12 @@ tree_wf <- workflow() %>%
   add_model(tune_spec) %>%
   add_formula(colmslm ~ .)
 
-tree_res <- 
-  tree_wf %>% 
+tree_res <-
+  tree_wf %>%
   tune_grid(
     resamples = gss_folds,
     grid = tree_grid
-    )
+  )
 
 tree_res
 ```
@@ -422,24 +425,24 @@ Once we have our tuning results, we can both explore them through visualization 
 
 
 ```r
-tree_res %>% 
+tree_res %>%
   collect_metrics()
 ```
 
 ```
 ## # A tibble: 50 x 8
-##    cost_complexity tree_depth .metric  .estimator  mean     n std_err .config
-##              <dbl>      <int> <chr>    <chr>      <dbl> <int>   <dbl> <chr>  
-##  1    0.0000000001          1 accuracy binary     0.812    10  0.0111 Model01
-##  2    0.0000000001          1 roc_auc  binary     0.809    10  0.0108 Model01
-##  3    0.0000000178          1 accuracy binary     0.812    10  0.0111 Model02
-##  4    0.0000000178          1 roc_auc  binary     0.809    10  0.0108 Model02
-##  5    0.00000316            1 accuracy binary     0.812    10  0.0111 Model03
-##  6    0.00000316            1 roc_auc  binary     0.809    10  0.0108 Model03
-##  7    0.000562              1 accuracy binary     0.812    10  0.0111 Model04
-##  8    0.000562              1 roc_auc  binary     0.809    10  0.0108 Model04
-##  9    0.1                   1 accuracy binary     0.812    10  0.0111 Model05
-## 10    0.1                   1 roc_auc  binary     0.809    10  0.0108 Model05
+##    cost_complexity tree_depth .metric  .estimator  mean     n std_err .config   
+##              <dbl>      <int> <chr>    <chr>      <dbl> <int>   <dbl> <chr>     
+##  1    0.0000000001          1 accuracy binary     0.812    10  0.0111 Preproces…
+##  2    0.0000000001          1 roc_auc  binary     0.809    10  0.0108 Preproces…
+##  3    0.0000000178          1 accuracy binary     0.812    10  0.0111 Preproces…
+##  4    0.0000000178          1 roc_auc  binary     0.809    10  0.0108 Preproces…
+##  5    0.00000316            1 accuracy binary     0.812    10  0.0111 Preproces…
+##  6    0.00000316            1 roc_auc  binary     0.809    10  0.0108 Preproces…
+##  7    0.000562              1 accuracy binary     0.812    10  0.0111 Preproces…
+##  8    0.000562              1 roc_auc  binary     0.809    10  0.0108 Preproces…
+##  9    0.1                   1 accuracy binary     0.812    10  0.0111 Preproces…
+## 10    0.1                   1 roc_auc  binary     0.809    10  0.0108 Preproces…
 ## # … with 40 more rows
 ```
 
@@ -453,7 +456,7 @@ tree_res %>%
   ggplot(aes(cost_complexity, mean, color = tree_depth)) +
   geom_line(size = 1.5, alpha = 0.6) +
   geom_point(size = 2) +
-  facet_wrap(~ .metric, scales = "free", nrow = 2) +
+  facet_wrap(~.metric, scales = "free", nrow = 2) +
   scale_x_log10(labels = scales::label_number()) +
   scale_color_viridis_d(option = "plasma", begin = .9, end = 0)
 ```
@@ -470,13 +473,13 @@ tree_res %>%
 
 ```
 ## # A tibble: 5 x 8
-##   cost_complexity tree_depth .metric .estimator  mean     n std_err .config
-##             <dbl>      <int> <chr>   <chr>      <dbl> <int>   <dbl> <chr>  
-## 1    0.0000000001          8 roc_auc binary     0.839    10  0.0157 Model11
-## 2    0.0000000178          8 roc_auc binary     0.839    10  0.0157 Model12
-## 3    0.00000316            8 roc_auc binary     0.839    10  0.0157 Model13
-## 4    0.000562              8 roc_auc binary     0.839    10  0.0157 Model14
-## 5    0.0000000001         15 roc_auc binary     0.838    10  0.0179 Model21
+##   cost_complexity tree_depth .metric .estimator  mean     n std_err .config     
+##             <dbl>      <int> <chr>   <chr>      <dbl> <int>   <dbl> <chr>       
+## 1    0.0000000001          8 roc_auc binary     0.839    10  0.0157 Preprocesso…
+## 2    0.0000000178          8 roc_auc binary     0.839    10  0.0157 Preprocesso…
+## 3    0.00000316            8 roc_auc binary     0.839    10  0.0157 Preprocesso…
+## 4    0.000562              8 roc_auc binary     0.839    10  0.0157 Preprocesso…
+## 5    0.0000000001         15 roc_auc binary     0.838    10  0.0179 Preprocesso…
 ```
 
 We can also use the [`select_best()`](https://tidymodels.github.io/tune/reference/show_best.html) function to pull out the single set of hyperparameter values for our best decision tree model:
@@ -491,9 +494,9 @@ best_tree
 
 ```
 ## # A tibble: 1 x 3
-##   cost_complexity tree_depth .config
-##             <dbl>      <int> <chr>  
-## 1    0.0000000001          8 Model11
+##   cost_complexity tree_depth .config              
+##             <dbl>      <int> <chr>                
+## 1    0.0000000001          8 Preprocessor1_Model11
 ```
 
 These are the values for `tree_depth` and `cost_complexity` that maximize AUC in this data set of respondents. 
@@ -504,8 +507,8 @@ We can update (or "finalize") our workflow object `tree_wf` with the values from
 
 
 ```r
-final_wf <- 
-  tree_wf %>% 
+final_wf <-
+  tree_wf %>%
   finalize_workflow(best_tree)
 
 final_wf
@@ -537,9 +540,9 @@ Let's fit this final model to the training data. What does the decision tree loo
 
 
 ```r
-final_tree <- 
+final_tree <-
   final_wf %>%
-  fit(data = gss_train) 
+  fit(data = gss_train)
 
 final_tree
 ```
@@ -616,8 +619,8 @@ For example, perhaps we would also like to understand what variables are importa
 ```r
 library(vip)
 
-final_tree %>% 
-  pull_workflow_fit() %>% 
+final_tree %>%
+  pull_workflow_fit() %>%
   vip()
 ```
 
@@ -631,26 +634,26 @@ Finally, let's return to our test data and estimate the model performance we exp
 
 
 ```r
-final_fit <- 
+final_fit <-
   final_wf %>%
-  last_fit(gss_split) 
+  last_fit(gss_split)
 
 final_fit %>%
   collect_metrics()
 ```
 
 ```
-## # A tibble: 2 x 3
-##   .metric  .estimator .estimate
-##   <chr>    <chr>          <dbl>
-## 1 accuracy binary         0.765
-## 2 roc_auc  binary         0.801
+## # A tibble: 2 x 4
+##   .metric  .estimator .estimate .config             
+##   <chr>    <chr>          <dbl> <chr>               
+## 1 accuracy binary         0.765 Preprocessor1_Model1
+## 2 roc_auc  binary         0.801 Preprocessor1_Model1
 ```
 
 ```r
 final_fit %>%
-  collect_predictions() %>% 
-  roc_curve(colmslm, `.pred_Yes, allowed`) %>% 
+  collect_predictions() %>%
+  roc_curve(colmslm, `.pred_Yes, allowed`) %>%
   autoplot()
 ```
 
@@ -688,119 +691,137 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.3 (2020-10-10)
-##  os       macOS Catalina 10.15.7      
+##  version  R version 4.0.4 (2021-02-15)
+##  os       macOS Big Sur 10.16         
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-02-24                  
+##  date     2021-04-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version    date       lib source                              
-##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)                      
-##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)                      
-##  blogdown      1.1        2021-01-19 [1] CRAN (R 4.0.3)                      
-##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)                      
-##  broom       * 0.7.3      2020-12-16 [1] CRAN (R 4.0.2)                      
-##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)                      
-##  class         7.3-17     2020-04-26 [1] CRAN (R 4.0.3)                      
-##  cli           2.2.0      2020-11-20 [1] CRAN (R 4.0.2)                      
-##  codetools     0.2-18     2020-11-04 [1] CRAN (R 4.0.2)                      
-##  colorspace    2.0-0      2020-11-11 [1] CRAN (R 4.0.2)                      
-##  crayon        1.3.4      2017-09-16 [1] CRAN (R 4.0.0)                      
-##  desc          1.2.0      2018-05-01 [1] CRAN (R 4.0.0)                      
-##  devtools      2.3.2      2020-09-18 [1] CRAN (R 4.0.2)                      
-##  dials       * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)                      
-##  DiceDesign    1.8-1      2019-07-31 [1] CRAN (R 4.0.0)                      
-##  digest        0.6.27     2020-10-24 [1] CRAN (R 4.0.2)                      
-##  doParallel    1.0.16     2020-10-16 [1] CRAN (R 4.0.2)                      
-##  dplyr       * 1.0.2      2020-08-18 [1] CRAN (R 4.0.2)                      
-##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)                      
-##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)                      
-##  fansi         0.4.1      2020-01-08 [1] CRAN (R 4.0.0)                      
-##  foreach       1.5.1      2020-10-15 [1] CRAN (R 4.0.2)                      
-##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)                      
-##  furrr         0.2.1      2020-10-21 [1] CRAN (R 4.0.2)                      
-##  future        1.21.0     2020-12-10 [1] CRAN (R 4.0.2)                      
-##  generics      0.1.0      2020-10-31 [1] CRAN (R 4.0.2)                      
-##  ggplot2     * 3.3.3      2020-12-30 [1] CRAN (R 4.0.2)                      
-##  globals       0.14.0     2020-11-22 [1] CRAN (R 4.0.2)                      
-##  glue          1.4.2      2020-08-27 [1] CRAN (R 4.0.2)                      
-##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)                      
-##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)                      
-##  gridExtra     2.3        2017-09-09 [1] CRAN (R 4.0.0)                      
-##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)                      
-##  here          1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                      
-##  htmltools     0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                      
-##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                      
-##  infer       * 0.5.3      2020-07-14 [1] CRAN (R 4.0.2)                      
-##  ipred         0.9-9      2019-04-28 [1] CRAN (R 4.0.0)                      
-##  iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                      
-##  kableExtra  * 1.3.1      2020-10-22 [1] CRAN (R 4.0.2)                      
-##  knitr         1.31       2021-01-27 [1] CRAN (R 4.0.2)                      
-##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.3)                      
-##  lava          1.6.8.1    2020-11-04 [1] CRAN (R 4.0.2)                      
-##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)                      
-##  lifecycle     0.2.0      2020-03-06 [1] CRAN (R 4.0.0)                      
-##  listenv       0.8.0      2019-12-05 [1] CRAN (R 4.0.0)                      
-##  lubridate     1.7.9.2    2021-01-18 [1] Github (tidyverse/lubridate@aab2e30)
-##  magrittr      2.0.1      2020-11-17 [1] CRAN (R 4.0.2)                      
-##  MASS          7.3-53     2020-09-09 [1] CRAN (R 4.0.3)                      
-##  Matrix        1.3-0      2020-12-22 [1] CRAN (R 4.0.2)                      
-##  memoise       1.1.0      2017-04-21 [1] CRAN (R 4.0.0)                      
-##  modeldata   * 0.1.0      2020-10-22 [1] CRAN (R 4.0.2)                      
-##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)                      
-##  nnet          7.3-14     2020-04-26 [1] CRAN (R 4.0.3)                      
-##  parallelly    1.22.0     2020-12-13 [1] CRAN (R 4.0.2)                      
-##  parsnip     * 0.1.4      2020-10-27 [1] CRAN (R 4.0.2)                      
-##  pillar        1.4.7      2020-11-20 [1] CRAN (R 4.0.2)                      
-##  pkgbuild      1.2.0      2020-12-15 [1] CRAN (R 4.0.2)                      
-##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.0.0)                      
-##  pkgload       1.1.0      2020-05-29 [1] CRAN (R 4.0.0)                      
-##  plyr          1.8.6      2020-03-03 [1] CRAN (R 4.0.0)                      
-##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.0)                      
-##  pROC          1.16.2     2020-03-19 [1] CRAN (R 4.0.0)                      
-##  processx      3.4.5      2020-11-30 [1] CRAN (R 4.0.2)                      
-##  prodlim       2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)                      
-##  ps            1.5.0      2020-12-05 [1] CRAN (R 4.0.2)                      
-##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)                      
-##  R6            2.5.0      2020-10-28 [1] CRAN (R 4.0.2)                      
-##  Rcpp          1.0.6      2021-01-15 [1] CRAN (R 4.0.2)                      
-##  recipes     * 0.1.15     2020-11-11 [1] CRAN (R 4.0.2)                      
-##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)                      
-##  rlang         0.4.10     2020-12-30 [1] CRAN (R 4.0.2)                      
-##  rmarkdown     2.6        2020-12-14 [1] CRAN (R 4.0.2)                      
-##  rpart       * 4.1-15     2019-04-12 [1] CRAN (R 4.0.3)                      
-##  rprojroot     2.0.2      2020-11-15 [1] CRAN (R 4.0.2)                      
-##  rsample     * 0.0.8      2020-09-23 [1] CRAN (R 4.0.2)                      
-##  rstudioapi    0.13       2020-11-12 [1] CRAN (R 4.0.2)                      
-##  rvest         0.3.6      2020-07-25 [1] CRAN (R 4.0.2)                      
-##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)                      
-##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)                      
-##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)                      
-##  stringr       1.4.0      2019-02-10 [1] CRAN (R 4.0.0)                      
-##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.3)                      
-##  testthat      3.0.1      2020-12-17 [1] CRAN (R 4.0.2)                      
-##  tibble      * 3.0.4      2020-10-12 [1] CRAN (R 4.0.2)                      
-##  tidymodels  * 0.1.2      2020-11-22 [1] CRAN (R 4.0.2)                      
-##  tidyr       * 1.1.2      2020-08-27 [1] CRAN (R 4.0.2)                      
-##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)                      
-##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)                      
-##  tune        * 0.1.2      2020-11-17 [1] CRAN (R 4.0.2)                      
-##  usethis       2.0.0      2020-12-10 [1] CRAN (R 4.0.2)                      
-##  vctrs         0.3.6      2020-12-17 [1] CRAN (R 4.0.2)                      
-##  vip         * 0.3.2      2020-12-17 [1] CRAN (R 4.0.2)                      
-##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)                      
-##  webshot       0.5.2      2019-11-22 [1] CRAN (R 4.0.0)                      
-##  withr         2.3.0      2020-09-22 [1] CRAN (R 4.0.2)                      
-##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)                      
-##  xfun          0.21       2021-02-10 [1] CRAN (R 4.0.2)                      
-##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                      
-##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)                      
-##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)                      
+##  package     * version    date       lib source                           
+##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)                   
+##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)                   
+##  base64enc     0.1-3      2015-07-28 [1] CRAN (R 4.0.0)                   
+##  blogdown      1.2        2021-03-04 [1] CRAN (R 4.0.3)                   
+##  bookdown      0.21.7     2021-03-31 [1] Github (rstudio/bookdown@71bc601)
+##  broom       * 0.7.5      2021-02-19 [1] CRAN (R 4.0.2)                   
+##  bslib         0.2.4      2021-01-25 [1] CRAN (R 4.0.2)                   
+##  cachem        1.0.4      2021-02-13 [1] CRAN (R 4.0.2)                   
+##  callr         3.6.0      2021-03-28 [1] CRAN (R 4.0.2)                   
+##  class         7.3-18     2021-01-24 [1] CRAN (R 4.0.4)                   
+##  cli           2.3.1      2021-02-23 [1] CRAN (R 4.0.3)                   
+##  codetools     0.2-18     2020-11-04 [1] CRAN (R 4.0.4)                   
+##  colorspace    2.0-0      2020-11-11 [1] CRAN (R 4.0.2)                   
+##  crayon        1.4.1      2021-02-08 [1] CRAN (R 4.0.2)                   
+##  DBI           1.1.1      2021-01-15 [1] CRAN (R 4.0.2)                   
+##  debugme       1.1.0      2017-10-22 [1] CRAN (R 4.0.0)                   
+##  desc          1.3.0      2021-03-05 [1] CRAN (R 4.0.2)                   
+##  devtools      2.3.2      2020-09-18 [1] CRAN (R 4.0.2)                   
+##  dials       * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)                   
+##  DiceDesign    1.9        2021-02-13 [1] CRAN (R 4.0.2)                   
+##  digest        0.6.27     2020-10-24 [1] CRAN (R 4.0.2)                   
+##  doParallel    1.0.16     2020-10-16 [1] CRAN (R 4.0.2)                   
+##  dplyr       * 1.0.5      2021-03-05 [1] CRAN (R 4.0.3)                   
+##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)                   
+##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)                   
+##  fansi         0.4.2      2021-01-15 [1] CRAN (R 4.0.2)                   
+##  farver        2.1.0      2021-02-28 [1] CRAN (R 4.0.2)                   
+##  fastmap       1.1.0      2021-01-25 [1] CRAN (R 4.0.2)                   
+##  foreach       1.5.1      2020-10-15 [1] CRAN (R 4.0.2)                   
+##  fs            1.5.0      2020-07-31 [1] CRAN (R 4.0.2)                   
+##  furrr         0.2.2      2021-01-29 [1] CRAN (R 4.0.2)                   
+##  future        1.21.0     2020-12-10 [1] CRAN (R 4.0.2)                   
+##  generics      0.1.0      2020-10-31 [1] CRAN (R 4.0.2)                   
+##  ggplot2     * 3.3.3      2020-12-30 [1] CRAN (R 4.0.2)                   
+##  globals       0.14.0     2020-11-22 [1] CRAN (R 4.0.2)                   
+##  glue          1.4.2      2020-08-27 [1] CRAN (R 4.0.2)                   
+##  gower         0.2.2      2020-06-23 [1] CRAN (R 4.0.2)                   
+##  GPfit         1.0-8      2019-02-08 [1] CRAN (R 4.0.0)                   
+##  gridExtra     2.3        2017-09-09 [1] CRAN (R 4.0.0)                   
+##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)                   
+##  hardhat       0.1.5      2020-11-09 [1] CRAN (R 4.0.2)                   
+##  here          1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                   
+##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)                   
+##  htmltools     0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                   
+##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                   
+##  infer       * 0.5.4      2021-01-13 [1] CRAN (R 4.0.2)                   
+##  ipred         0.9-11     2021-03-12 [1] CRAN (R 4.0.2)                   
+##  iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                   
+##  jquerylib     0.1.3      2020-12-17 [1] CRAN (R 4.0.2)                   
+##  jsonlite      1.7.2      2020-12-09 [1] CRAN (R 4.0.2)                   
+##  kableExtra  * 1.3.4      2021-02-20 [1] CRAN (R 4.0.2)                   
+##  knitr         1.31       2021-01-27 [1] CRAN (R 4.0.2)                   
+##  labeling      0.4.2      2020-10-20 [1] CRAN (R 4.0.2)                   
+##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.4)                   
+##  lava          1.6.9      2021-03-11 [1] CRAN (R 4.0.2)                   
+##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)                   
+##  lifecycle     1.0.0      2021-02-15 [1] CRAN (R 4.0.2)                   
+##  listenv       0.8.0      2019-12-05 [1] CRAN (R 4.0.0)                   
+##  lubridate     1.7.10     2021-02-26 [1] CRAN (R 4.0.2)                   
+##  magrittr      2.0.1      2020-11-17 [1] CRAN (R 4.0.2)                   
+##  MASS          7.3-53.1   2021-02-12 [1] CRAN (R 4.0.2)                   
+##  Matrix        1.3-2      2021-01-06 [1] CRAN (R 4.0.4)                   
+##  memoise       2.0.0      2021-01-26 [1] CRAN (R 4.0.2)                   
+##  modeldata   * 0.1.0      2020-10-22 [1] CRAN (R 4.0.2)                   
+##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)                   
+##  nnet          7.3-15     2021-01-24 [1] CRAN (R 4.0.4)                   
+##  parallelly    1.24.0     2021-03-14 [1] CRAN (R 4.0.2)                   
+##  parsnip     * 0.1.5      2021-01-19 [1] CRAN (R 4.0.2)                   
+##  pillar        1.5.1      2021-03-05 [1] CRAN (R 4.0.3)                   
+##  pkgbuild      1.2.0      2020-12-15 [1] CRAN (R 4.0.2)                   
+##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.0.0)                   
+##  pkgload       1.2.0      2021-02-23 [1] CRAN (R 4.0.2)                   
+##  plyr          1.8.6      2020-03-03 [1] CRAN (R 4.0.0)                   
+##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.0)                   
+##  pROC          1.17.0.1   2021-01-13 [1] CRAN (R 4.0.2)                   
+##  processx      3.5.0      2021-03-23 [1] CRAN (R 4.0.2)                   
+##  prodlim       2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)                   
+##  ps            1.6.0      2021-02-28 [1] CRAN (R 4.0.2)                   
+##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)                   
+##  R6            2.5.0      2020-10-28 [1] CRAN (R 4.0.2)                   
+##  Rcpp          1.0.6      2021-01-15 [1] CRAN (R 4.0.2)                   
+##  recipes     * 0.1.15     2020-11-11 [1] CRAN (R 4.0.2)                   
+##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)                   
+##  repr          1.1.3      2021-01-21 [1] CRAN (R 4.0.2)                   
+##  rlang       * 0.4.10     2020-12-30 [1] CRAN (R 4.0.2)                   
+##  rmarkdown     2.7        2021-02-19 [1] CRAN (R 4.0.2)                   
+##  rpart       * 4.1-15     2019-04-12 [1] CRAN (R 4.0.4)                   
+##  rprojroot     2.0.2      2020-11-15 [1] CRAN (R 4.0.2)                   
+##  rsample     * 0.0.9      2021-02-17 [1] CRAN (R 4.0.2)                   
+##  rstudioapi    0.13       2020-11-12 [1] CRAN (R 4.0.2)                   
+##  rvest         1.0.0      2021-03-09 [1] CRAN (R 4.0.2)                   
+##  sass          0.3.1      2021-01-24 [1] CRAN (R 4.0.2)                   
+##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)                   
+##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)                   
+##  skimr         2.1.3      2021-03-07 [1] CRAN (R 4.0.2)                   
+##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)                   
+##  stringr       1.4.0      2019-02-10 [1] CRAN (R 4.0.0)                   
+##  survival      3.2-10     2021-03-16 [1] CRAN (R 4.0.2)                   
+##  svglite       2.0.0      2021-02-20 [1] CRAN (R 4.0.2)                   
+##  systemfonts   1.0.1      2021-02-09 [1] CRAN (R 4.0.2)                   
+##  testthat      3.0.2      2021-02-14 [1] CRAN (R 4.0.2)                   
+##  tibble      * 3.1.0      2021-02-25 [1] CRAN (R 4.0.2)                   
+##  tidymodels  * 0.1.2      2020-11-22 [1] CRAN (R 4.0.2)                   
+##  tidyr       * 1.1.3      2021-03-03 [1] CRAN (R 4.0.2)                   
+##  tidyselect    1.1.0      2020-05-11 [1] CRAN (R 4.0.0)                   
+##  timeDate      3043.102   2018-02-21 [1] CRAN (R 4.0.0)                   
+##  tune        * 0.1.3      2021-02-28 [1] CRAN (R 4.0.2)                   
+##  usethis       2.0.1      2021-02-10 [1] CRAN (R 4.0.2)                   
+##  utf8          1.2.1      2021-03-12 [1] CRAN (R 4.0.2)                   
+##  vctrs       * 0.3.6      2020-12-17 [1] CRAN (R 4.0.2)                   
+##  vip         * 0.3.2      2020-12-17 [1] CRAN (R 4.0.2)                   
+##  viridisLite   0.3.0      2018-02-01 [1] CRAN (R 4.0.0)                   
+##  webshot       0.5.2      2019-11-22 [1] CRAN (R 4.0.0)                   
+##  withr         2.4.1      2021-01-26 [1] CRAN (R 4.0.2)                   
+##  workflows   * 0.2.2      2021-03-10 [1] CRAN (R 4.0.2)                   
+##  xfun          0.22       2021-03-11 [1] CRAN (R 4.0.2)                   
+##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                   
+##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)                   
+##  yardstick   * 0.0.8      2021-03-28 [1] CRAN (R 4.0.2)                   
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

@@ -159,15 +159,19 @@ The resulting data frame is one row per joke and one column per token. To conver
 
 ```{r jokes-dtm, dependson = "jokes-bake"}
 jokes_dtm <- jokes_df %>%
-  pivot_longer(cols = -c(id, score),
-               names_to = "token",
-               values_to = "n") %>%
+  pivot_longer(
+    cols = -c(id, score),
+    names_to = "token",
+    values_to = "n"
+  ) %>%
   filter(n != 0) %>%
   # clean the token column so it just includes the token
   # drop empty levels from id - this includes jokes which did not
   # have any tokens retained after step_tokenfilter()
-  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
-         id = fct_drop(f = id)) %>%
+  mutate(
+    token = str_remove(string = token, pattern = "tf_joke_"),
+    id = fct_drop(f = id)
+  ) %>%
   cast_dtm(document = id, term = token, value = n)
 jokes_dtm
 ```
@@ -203,12 +207,14 @@ top_terms <- jokes_lda4_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 2) +
+  facet_wrap(~topic, scales = "free", ncol = 2) +
   coord_flip()
 ```
 
@@ -231,12 +237,14 @@ top_terms <- jokes_lda12_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 3) +
+  facet_wrap(~topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
 
@@ -275,15 +283,19 @@ if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
 ```
 
 ```{r jokes_lda_compare_viz, dependson="jokes_lda_compare"} 
-tibble(k = n_topics,
-       perplex = map_dbl(jokes_lda_compare, perplexity)) %>%
+tibble(
+  k = n_topics,
+  perplex = map_dbl(jokes_lda_compare, perplexity)
+) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
   geom_line() +
-  labs(title = "Evaluating LDA topic models",
-       subtitle = "Optimal number of topics (smaller is better)",
-       x = "Number of topics",
-       y = "Perplexity")
+  labs(
+    title = "Evaluating LDA topic models",
+    subtitle = "Optimal number of topics (smaller is better)",
+    x = "Number of topics",
+    y = "Perplexity"
+  )
 ```
 
 It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let's look just at the first 12 topics produced by the model (`ggplot2` has difficulty rendering a graph for 100 separate facets):
@@ -299,12 +311,14 @@ top_terms <- jokes_lda_td %>%
 
 top_terms %>%
   filter(topic <= 12) %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 3) +
+  facet_wrap(~topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
 
@@ -341,11 +355,13 @@ data(Jeopardy, package = "LDAvisData")
 str(Jeopardy)
 
 # convert to JSON file
-json <- createJSON(phi = Jeopardy$phi,
-                   theta = Jeopardy$theta,
-                   doc.length = Jeopardy$doc.length,
-                   vocab = Jeopardy$vocab,
-                   term.frequency = Jeopardy$term.frequency)
+json <- createJSON(
+  phi = Jeopardy$phi,
+  theta = Jeopardy$theta,
+  doc.length = Jeopardy$doc.length,
+  vocab = Jeopardy$vocab,
+  term.frequency = Jeopardy$term.frequency
+)
 ```
 
 ```{r ldavis-serv, eval = FALSE}
@@ -360,22 +376,24 @@ serVis(json)
 To convert the output of `topicmodels::LDA()` to view with `LDAvis`, use [this function](http://datacm.blogspot.com/2017/03/lda-visualization-with-r-topicmodels.html):
 
 ```{r topicmodels-lda-vis}
-topicmodels_json_ldavis <- function(fitted, doc_term){
+topicmodels_json_ldavis <- function(fitted, doc_term) {
   require(LDAvis)
   require(slam)
-  
+
   # Find required quantities
   phi <- as.matrix(posterior(fitted)$terms)
   theta <- as.matrix(posterior(fitted)$topics)
   vocab <- colnames(phi)
   term_freq <- slam::col_sums(doc_term)
-  
+
   # Convert to json
-  json_lda <- LDAvis::createJSON(phi = phi, theta = theta,
-                                 vocab = vocab,
-                                 doc.length = as.vector(table(doc_term$i)),
-                                 term.frequency = term_freq)
-  
+  json_lda <- LDAvis::createJSON(
+    phi = phi, theta = theta,
+    vocab = vocab,
+    doc.length = as.vector(table(doc_term$i)),
+    term.frequency = term_freq
+  )
+
   return(json_lda)
 }
 ```
@@ -383,8 +401,10 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
 Let's test it using the $k = 100$ LDA topic model for the `r/jokes` dataset.
 
 ```{r jokes-100-ldavis, dependson = "jokes-lda-compare", eval = FALSE}
-jokes_100_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[6]],
-                                       doc_term = jokes_dtm)
+jokes_100_json <- topicmodels_json_ldavis(
+  fitted = jokes_lda_compare[[6]],
+  doc_term = jokes_dtm
+)
 ```
 
 ```{r jokes-100-ldavis-serve, dependson = "jokes-100-ldavis", eval = FALSE}

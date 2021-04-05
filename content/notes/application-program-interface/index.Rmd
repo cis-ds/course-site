@@ -131,7 +131,7 @@ glimpse(wb_cachelist$countries)
 ```{r wb-search}
 wb_search("unemployment")
 wb_search("labor force")
-wb_search("labor force", fields = "indicator")  # limit search to just the indicator name
+wb_search("labor force", fields = "indicator") # limit search to just the indicator name
 ```
 
 ### Downloading data with `wb_data()`
@@ -175,8 +175,10 @@ By default, `wb_data()` returns queries as data frames in a wide format. So if w
 
 ```{r female-educ, message = FALSE, warning = FALSE}
 female_vars <- wb_data(
-  indicator = c("fem_lab_part" = "SL.TLF.TOTL.FE.ZS",
-                "fem_educ_sec" = "SE.SEC.CUAT.UP.FE.ZS"),
+  indicator = c(
+    "fem_lab_part" = "SL.TLF.TOTL.FE.ZS",
+    "fem_educ_sec" = "SE.SEC.CUAT.UP.FE.ZS"
+  ),
   start_date = 1990,
   end_date = 2020
 )
@@ -298,9 +300,11 @@ mpds %>%
   count(partyname) %>%
   ggplot(aes(fct_reorder(partyname, n), n)) +
   geom_col() +
-  labs(title = "Political manifestos published in Sweden",
-       x = NULL,
-       y = "Total (1948-present)") +
+  labs(
+    title = "Political manifestos published in Sweden",
+    x = NULL,
+    y = "Total (1948-present)"
+  ) +
   coord_flip()
 ```
 
@@ -314,10 +318,12 @@ mpds %>%
   ggplot(aes(edate, ideo, color = partyname)) +
   geom_line() +
   scale_color_manual(values = c("blue", "red")) +
-  labs(title = "Ideological scaling of major US political parties",
-       x = "Year",
-       y = "Ideological position",
-       color = NULL) +
+  labs(
+    title = "Ideological scaling of major US political parties",
+    x = "Year",
+    y = "Ideological position",
+    color = NULL
+  ) +
   theme(legend.position = "bottom")
 ```
 
@@ -332,8 +338,10 @@ mpds %>%
 # generate wordcloud of most common terms
 docs %>%
   tidy() %>%
-  mutate(party = factor(party, levels = c(61320, 61620),
-                        labels = c("Democratic Party", "Republican Party"))) %>%
+  mutate(party = factor(party,
+    levels = c(61320, 61620),
+    labels = c("Democratic Party", "Republican Party")
+  )) %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words) %>%
   count(party, word, sort = TRUE) %>%
@@ -376,17 +384,21 @@ We can quickly visualize this data frame using `ggplot2`:
 ggplot(asia10, aes(x = reorder(NAME, value), y = value)) +
   geom_point() +
   scale_y_continuous(labels = scales::comma) +
-  labs(x = NULL,
-       y = "Number of residents of Asian ethnicity") +
+  labs(
+    x = NULL,
+    y = "Number of residents of Asian ethnicity"
+  ) +
   coord_flip()
 ```
 
 Of course this graph is not entirely useful since it is based on the raw frequency of Asian individuals. California is at the top of the list, but it is also the most populous city. Instead, we could normalize this value as a percentage of the entire state population. To do that, we need to retrieve another variable:
 
 ```{r asia-total-pop, fig.asp = 1}
-asia_pop <- get_decennial(geography = "state",
-                          variables = c("P008006", "P008001"),
-                          year = 2010) %>%
+asia_pop <- get_decennial(
+  geography = "state",
+  variables = c("P008006", "P008001"),
+  year = 2010
+) %>%
   spread(variable, value) %>%
   mutate(pct_asia = P008006 / P008001)
 asia_pop
@@ -394,17 +406,21 @@ asia_pop
 ggplot(asia_pop, aes(x = reorder(NAME, pct_asia), y = pct_asia)) +
   geom_point() +
   scale_y_continuous(labels = scales::percent) +
-  labs(x = NULL,
-       y = "Percent of residents of Asian ethnicity") +
+  labs(
+    x = NULL,
+    y = "Percent of residents of Asian ethnicity"
+  ) +
   coord_flip()
 ```
 
 `get_acs()` retrieves data from the American Community Survey. This survey is administered to a sample of 3 million households on an annual basis, so the data points are estimates characterized by a margin of error. `tidycensus` returns both the original estimate and margin of error. Let's get median household income data from the 2014-2019 ACS for each state.
 
 ```{r income-usa}
-usa_inc <- get_acs(geography = "state", 
-                   variables = c(medincome = "B19013_001"), 
-                   year = 2019)
+usa_inc <- get_acs(
+  geography = "state",
+  variables = c(medincome = "B19013_001"),
+  year = 2019
+)
 usa_inc
 ```
 
@@ -413,15 +429,20 @@ Now we return both an `estimate` column for the ACS estimate and `moe` for the m
 ```{r income-usa-plot, fig.asp = 1}
 usa_inc %>%
   ggplot(aes(x = reorder(NAME, estimate), y = estimate)) +
-  geom_pointrange(aes(ymin = estimate - moe,
-                     ymax = estimate + moe),
-                  size = .25) +
+  geom_pointrange(aes(
+    ymin = estimate - moe,
+    ymax = estimate + moe
+  ),
+  size = .25
+  ) +
   scale_y_continuous(labels = scales::dollar) +
   coord_flip() +
-  labs(title = "Household income by state",
+  labs(
+    title = "Household income by state",
     subtitle = "2019 American Community Survey (five-year estimates)",
-       x = "",
-       y = "ACS estimate (bars represent margin of error)")
+    x = "",
+    y = "ACS estimate (bars represent margin of error)"
+  )
 ```
 
 ### Search for variables
@@ -433,12 +454,14 @@ usa_inc %>%
 `tidycensus` also can return [simple feature geometry](/notes/simple-features/) for geographic units along with variables from the decennial Census or ACS, which can then be [visualized using `geom_sf()`.](/notes/vector-maps/) Let's look at median household income by Census tracts from the 2014-2019 ACS in Loudoun County, Virginia:
 
 ```{r loudoun-sf, message = FALSE, results = "hide"}
-loudoun <- get_acs(state = "VA",
-                   county = "Loudoun",
-                   geography = "tract", 
-                   variables = c(medincome = "B19013_001"), 
-                   year = 2019,
-                   geometry = TRUE)
+loudoun <- get_acs(
+  state = "VA",
+  county = "Loudoun",
+  geography = "tract",
+  variables = c(medincome = "B19013_001"),
+  year = 2019,
+  geometry = TRUE
+)
 ```
 
 ```{r loudoun-sf-print, dependson = "loudoun-sf"}

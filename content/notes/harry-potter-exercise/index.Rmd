@@ -56,10 +56,12 @@ Note that there is a different package available on CRAN also called [`harrypott
 library(harrypotter)
 
 # names of each book
-hp_books <- c("philosophers_stone", "chamber_of_secrets",
-              "prisoner_of_azkaban", "goblet_of_fire",
-              "order_of_the_phoenix", "half_blood_prince",
-              "deathly_hallows")
+hp_books <- c(
+  "philosophers_stone", "chamber_of_secrets",
+  "prisoner_of_azkaban", "goblet_of_fire",
+  "order_of_the_phoenix", "half_blood_prince",
+  "deathly_hallows"
+)
 
 # combine books into a list
 hp_words <- list(
@@ -104,13 +106,15 @@ hp_words %>%
   slice_max(order_by = n, n = 15) %>%
   mutate(word = reorder_within(word, n, book)) %>%
   # create barplot
-  ggplot(aes(x = word, y = n, fill = book)) + 
+  ggplot(aes(x = word, y = n, fill = book)) +
   geom_col(color = "black") +
   scale_x_reordered() +
-  labs(title = "Most frequent words in Harry Potter",
-       x = NULL,
-       y = "Word count") +
-  facet_wrap(~ book, scales = "free") +
+  labs(
+    title = "Most frequent words in Harry Potter",
+    x = NULL,
+    y = "Word count"
+  ) +
+  facet_wrap(~book, scales = "free") +
   coord_flip() +
   theme(legend.position = "none")
 ```
@@ -122,7 +126,7 @@ hp_words %>%
 {{< spoiler text="Click for the solution" >}}
 
 ```{r hp-bing, dependson = "hp"}
-(hp_bing <- hp_words %>% 
+(hp_bing <- hp_words %>%
   inner_join(get_sentiments("bing")))
 ```
 
@@ -154,10 +158,12 @@ hp_bing %>%
   geom_col(show.legend = FALSE) +
   # used with reorder_within() to label the axis tick marks
   scale_x_reordered() +
-  facet_wrap(~ sentiment, scales = "free_y") +
-  labs(title = "Sentimental words used in the Harry Potter series",
-       x = NULL,
-       y = "Number of occurences in all seven books") +
+  facet_wrap(~sentiment, scales = "free_y") +
+  labs(
+    title = "Sentimental words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences in all seven books"
+  ) +
   coord_flip()
 
 # per book
@@ -176,10 +182,12 @@ hp_pos_neg_book %>%
   ggplot(aes(word, n)) +
   geom_col(show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ book, scales = "free_y") +
-  labs(title = "Positive words used in the Harry Potter series",
-       x = NULL,
-       y = "Number of occurences") +
+  facet_wrap(~book, scales = "free_y") +
+  labs(
+    title = "Positive words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences"
+  ) +
   coord_flip()
 
 ## negative words
@@ -189,10 +197,12 @@ hp_pos_neg_book %>%
   ggplot(aes(word, n)) +
   geom_col(show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ book, scales = "free_y") +
-  labs(title = "Negative words used in the Harry Potter series",
-       x = NULL,
-       y = "Number of occurences") +
+  facet_wrap(~book, scales = "free_y") +
+  labs(
+    title = "Negative words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences"
+  ) +
   coord_flip()
 ```
 
@@ -203,7 +213,7 @@ hp_pos_neg_book %>%
 {{< spoiler text="Click for the solution" >}}
 
 ```{r hp-afinn, dependson = "hp"}
-(hp_afinn <- hp_words %>% 
+(hp_afinn <- hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book, chapter))
 ```
@@ -219,7 +229,7 @@ We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds
 ```{r sentiment-outliers, dependson = "hp-afinn"}
 library(ggwordcloud)
 
-set.seed(123)   # ensure reproducibility of the wordcloud
+set.seed(123) # ensure reproducibility of the wordcloud
 hp_afinn %>%
   # count word frequency across books
   ungroup() %>%
@@ -250,7 +260,7 @@ hp_afinn <- hp_afinn %>%
   filter(word != "moody")
 
 # wordcloud without harry
-set.seed(123)   # ensure reproducibility of the wordcloud
+set.seed(123) # ensure reproducibility of the wordcloud
 hp_afinn %>%
   # count word frequency across books
   ungroup() %>%
@@ -270,31 +280,35 @@ hp_afinn %>%
 {{< spoiler text="Click for the solution" >}}
 
 ```{r affin-over-time, dependson = "sentiment-outlier-remove"}
-hp_words %>% 
+hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book, chapter) %>%
   summarize(value = sum(value)) %>%
   ggplot(mapping = aes(x = chapter, y = value, fill = book)) +
   geom_col() +
-  facet_wrap(~ book, scales = "free_x") +
-  labs(title = "Emotional arc of Harry Potter books",
-       subtitle = "AFINN sentiment dictionary",
-       x = "Chapter",
-       y = "Emotional score") +
+  facet_wrap(~book, scales = "free_x") +
+  labs(
+    title = "Emotional arc of Harry Potter books",
+    subtitle = "AFINN sentiment dictionary",
+    x = "Chapter",
+    y = "Emotional score"
+  ) +
   theme(legend.position = "none")
 
 # cumulative value
-hp_words %>% 
+hp_words %>%
   inner_join(get_sentiments("afinn")) %>%
   group_by(book) %>%
   mutate(cumvalue = cumsum(value)) %>%
   ggplot(mapping = aes(x = chapter, y = cumvalue, fill = book)) +
   geom_step() +
-  facet_wrap(~ book, scales = "free_x") +
-  labs(title = "Emotional arc of Harry Potter books",
-       subtitle = "AFINN sentiment dictionary",
-       x = "Chapter",
-       y = "Cumulative emotional value")
+  facet_wrap(~book, scales = "free_x") +
+  labs(
+    title = "Emotional arc of Harry Potter books",
+    subtitle = "AFINN sentiment dictionary",
+    x = "Chapter",
+    y = "Cumulative emotional value"
+  )
 ```
 
 {{< /spoiler >}}

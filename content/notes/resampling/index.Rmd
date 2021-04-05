@@ -14,9 +14,11 @@ menu:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
 ```
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
@@ -43,8 +45,10 @@ data("gss", package = "rcfss")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%
-  select(id, wtss, colmslm, age, black, degree,
-         hispanic_2, polviews, pray, sex, south, tolerance) %>%
+  select(
+    id, wtss, colmslm, age, black, degree,
+    hispanic_2, polviews, pray, sex, south, tolerance
+  ) %>%
   # drop observations with missing values - could always use imputation instead
   drop_na()
 
@@ -56,9 +60,9 @@ skimr::skim(gss)
 The outcome of interest `colmslm` is a factor variable coded as either ``"Yes, allowed"`` (respondent believes the person should be allowed to teach) or `"Not allowed"` (respondent believes the person should not allowed to teach). The rates of these classes are somewhat imbalanced; the majority of respondents do not believe these individuals should be allowed to teach in college:
 
 ```{r rates, dependson = "load-gss"}
-gss %>% 
-  count(colmslm) %>% 
-  mutate(prop = n/sum(n))
+gss %>%
+  count(colmslm) %>%
+  mutate(prop = n / sum(n))
 ```
 
 ## Data splitting {#data-split}
@@ -85,20 +89,20 @@ Here we used the [`strata` argument](https://tidymodels.github.io/rsample/refere
 
 ```{r gss-train-test, dependson = "split-gss"}
 gss_train <- training(gss_split)
-gss_test  <- testing(gss_split)
+gss_test <- testing(gss_split)
 
 nrow(gss_train)
 nrow(gss_train) / nrow(gss)
 
 # training set proportions by class
-gss_train %>% 
-  count(colmslm) %>% 
-  mutate(prop = n/sum(n))
+gss_train %>%
+  count(colmslm) %>%
+  mutate(prop = n / sum(n))
 
 # test set proportions by class
-gss_test %>% 
-  count(colmslm) %>% 
-  mutate(prop = n/sum(n))
+gss_test %>%
+  count(colmslm) %>%
+  mutate(prop = n / sum(n))
 ```
 
 The majority of the modeling work is then conducted on the training set data.
@@ -114,8 +118,8 @@ At the same time, the number of trees in the ensemble should be large (in the th
 To fit a random forest model on the training set, let's use the [`parsnip`](https://tidymodels.github.io/parsnip/) package with the [`ranger`](https://cran.r-project.org/web/packages/ranger/index.html) engine. We first define the model that we want to create:
 
 ```{r rf-def}
-rf_mod <- rand_forest(trees = 1000) %>% 
-  set_engine("ranger") %>% 
+rf_mod <- rand_forest(trees = 1000) %>%
+  set_engine("ranger") %>%
   set_mode("classification")
 ```
 
@@ -123,7 +127,7 @@ Starting with this parsnip model object, the `fit()` function can be used with a
 
 ```{r rf-fit, dependson = c("split-gss", "rf-def")}
 set.seed(234)
-rf_fit <- rf_mod %>% 
+rf_fit <- rf_mod %>%
   fit(colmslm ~ ., data = gss_train)
 rf_fit
 ```
@@ -145,36 +149,36 @@ The [`yardstick` package](https://tidymodels.github.io/yardstick/) has functions
 At first glance, it might seem like a good idea to use the training set data to compute these statistics. (This is actually a very bad idea.) Let's see what happens if we try this. To evaluate performance based on the training set, we call the `predict()` method to get both types of predictions (i.e. probabilities and hard class predictions).
 
 ```{r rf-train-pred, dependson = "rf-fit"}
-rf_training_pred <- predict(rf_fit, gss_train) %>% 
-  bind_cols(predict(rf_fit, gss_train, type = "prob")) %>% 
+rf_training_pred <- predict(rf_fit, gss_train) %>%
+  bind_cols(predict(rf_fit, gss_train, type = "prob")) %>%
   # Add the true outcome data back in
-  bind_cols(gss_train %>% 
-              select(colmslm))
+  bind_cols(gss_train %>%
+    select(colmslm))
 ```
 
 Using the `yardstick` functions, this model has spectacular results, so spectacular that you might be starting to get suspicious: 
 
 ```{r rf-train-perf, dependson = "rf-train"}
-rf_training_pred %>%                # training set predictions
+rf_training_pred %>% # training set predictions
   roc_auc(truth = colmslm, `.pred_Yes, allowed`)
-rf_training_pred %>%                # training set predictions
+rf_training_pred %>% # training set predictions
   accuracy(truth = colmslm, .pred_class)
 ```
 
 Now that we have this model with exceptional performance, we proceed to the test set. Unfortunately, we discover that, although our results aren't bad, they are certainly worse than what we initially thought based on predicting the training set: 
 
 ```{r rf-test, dependson = "rf-fit"}
-rf_testing_pred <- predict(rf_fit, gss_test) %>% 
-  bind_cols(predict(rf_fit, gss_test, type = "prob")) %>% 
+rf_testing_pred <- predict(rf_fit, gss_test) %>%
+  bind_cols(predict(rf_fit, gss_test, type = "prob")) %>%
   # Add the true outcome data back in
-  bind_cols(gss_test %>% 
-              select(colmslm))
+  bind_cols(gss_test %>%
+    select(colmslm))
 ```
 
 ```{r rf-test-perf, dependson = "rf-test"}
-rf_testing_pred %>%                   # test set predictions
+rf_testing_pred %>% # test set predictions
   roc_auc(truth = colmslm, `.pred_Yes, allowed`)
-rf_testing_pred %>%                   # test set predictions
+rf_testing_pred %>% # test set predictions
   accuracy(truth = colmslm, .pred_class)
 ```
 
@@ -216,16 +220,16 @@ rf_wf <- workflow() %>%
 set.seed(456)
 rf_fit_rs <- fit_resamples(rf_wf, folds)
 
-assessment_size <- 
-  folds %>% 
-  tidy() %>% 
-  group_by(Fold, Data) %>% 
-  count() %>% 
-  ungroup() %>% 
-  filter(Data == "Assessment") %>% 
+assessment_size <-
+  folds %>%
+  tidy() %>%
+  group_by(Fold, Data) %>%
+  count() %>%
+  ungroup() %>%
+  filter(Data == "Assessment") %>%
   select(`assessment size` = n, id = Fold)
 
-assessment_stats <- 
+assessment_stats <-
   collect_metrics(rf_fit_rs, summarize = FALSE) %>%
   select(id, .estimate, .metric) %>%
   pivot_wider(
@@ -233,7 +237,7 @@ assessment_stats <-
     names_from = c(.metric),
     values_from = c(.estimate)
   ) %>%
-  full_join(assessment_size, by = "id") %>% 
+  full_join(assessment_size, by = "id") %>%
   dplyr::rename(resample = id)
 
 rs_stats <- collect_metrics(rf_fit_rs)
@@ -242,7 +246,7 @@ rs_stats <- collect_metrics(rf_fit_rs)
 The final resampling estimates for the model are the **averages** of the performance statistics replicates. For example, suppose for our data the results were: 
 
 ```{r rs-table, dependson = "rf-rs", echo = FALSE}
-assessment_stats %>% 
+assessment_stats %>%
   knitr::kable(col.names = c("Resample", "Accuracy", "ROC_AUC", "Assessment Size"))
 ```
 
@@ -277,7 +281,7 @@ rf_wf <- workflow() %>%
   add_formula(colmslm ~ .)
 
 set.seed(456)
-rf_fit_rs <- rf_wf %>% 
+rf_fit_rs <- rf_wf %>%
   fit_resamples(folds)
 ```
 

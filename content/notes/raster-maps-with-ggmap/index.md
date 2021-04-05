@@ -53,13 +53,17 @@ Google has [recently changed its API requirements](https://developers.google.com
 
 ```r
 # store bounding box coordinates
-chi_bb <- c(left = -87.936287,
-            bottom = 41.679835,
-            right = -87.447052,
-            top = 42.000835)
+chi_bb <- c(
+  left = -87.936287,
+  bottom = 41.679835,
+  right = -87.447052,
+  top = 42.000835
+)
 
-chicago_stamen <- get_stamenmap(bbox = chi_bb,
-                                zoom = 11)
+chicago_stamen <- get_stamenmap(
+  bbox = chi_bb,
+  zoom = 11
+)
 chicago_stamen
 ```
 
@@ -81,8 +85,10 @@ The `zoom` argument in `get_stamenmap()` controls the level of detail in the map
 
 
 ```r
-get_stamenmap(bbox = chi_bb,
-              zoom = 12) %>%
+get_stamenmap(
+  bbox = chi_bb,
+  zoom = 12
+) %>%
   ggmap()
 ```
 
@@ -92,8 +98,10 @@ The smaller the number, the lesser the detail.
 
 
 ```r
-get_stamenmap(bbox = chi_bb,
-              zoom = 10) %>%
+get_stamenmap(
+  bbox = chi_bb,
+  zoom = 10
+) %>%
   ggmap()
 ```
 
@@ -120,12 +128,16 @@ chi_center <- c(lon = -87.65, lat = 41.855)
 chicago_google <- get_googlemap(center = chi_center)
 ggmap(chicago_google)
 
-get_googlemap(center = chi_center,
-              zoom = 12) %>%
+get_googlemap(
+  center = chi_center,
+  zoom = 12
+) %>%
   ggmap()
 
-get_googlemap(center = chi_center,
-              zoom = 8) %>%
+get_googlemap(
+  center = chi_center,
+  zoom = 8
+) %>%
   ggmap()
 ```
 
@@ -218,9 +230,13 @@ Since each row is a single reported incident of crime, we could use `geom_point(
 
 ```r
 ggmap(chicago) +
-  geom_point(data = crimes,
-             mapping = aes(x = Longitude,
-                           y = Latitude))
+  geom_point(
+    data = crimes,
+    mapping = aes(
+      x = Longitude,
+      y = Latitude
+    )
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-point-1.png" width="672" />
@@ -241,11 +257,15 @@ Oh yeah. There were 267345 reported incidents of crime in the city. Each inciden
 
 ```r
 ggmap(chicago) +
-  geom_point(data = crimes,
-             aes(x = Longitude,
-                 y = Latitude),
-             size = .25,
-             alpha = .01)
+  geom_point(
+    data = crimes,
+    aes(
+      x = Longitude,
+      y = Latitude
+    ),
+    size = .25,
+    alpha = .01
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-point-alpha-1.png" width="672" />
@@ -259,9 +279,13 @@ Instead of relying on `geom_point()` and plotting the raw data, a better approac
 
 ```r
 ggmap(chicago) +
-  geom_density_2d(data = crimes,
-                  aes(x = Longitude,
-                      y = Latitude))
+  geom_density_2d(
+    data = crimes,
+    aes(
+      x = Longitude,
+      y = Latitude
+    )
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/kde-contour-1.png" width="672" />
@@ -275,11 +299,15 @@ Rather than drawing lines, instead we can fill in the graph so that we use the `
 
 ```r
 ggmap(chicago) +
-  stat_density_2d(data = crimes,
-                  aes(x = Longitude,
-                      y = Latitude,
-                      fill = stat(level)),
-                  geom = "polygon")
+  stat_density_2d(
+    data = crimes,
+    aes(
+      x = Longitude,
+      y = Latitude,
+      fill = stat(level)
+    ),
+    geom = "polygon"
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/kde-fill-1.png" width="672" />
@@ -298,13 +326,17 @@ This is an improvement, but we can adjust some additional settings to make the g
 
 ```r
 ggmap(chicago) +
-  stat_density_2d(data = crimes,
-                  aes(x = Longitude,
-                      y = Latitude,
-                      fill = stat(level)),
-                  alpha = .2,
-                  bins = 25,
-                  geom = "polygon") +
+  stat_density_2d(
+    data = crimes,
+    aes(
+      x = Longitude,
+      y = Latitude,
+      fill = stat(level)
+    ),
+    alpha = .2,
+    bins = 25,
+    geom = "polygon"
+  ) +
   scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd"))
 ```
 
@@ -322,17 +354,23 @@ Because `ggmap` is built on `ggplot2`, we can use the core features of `ggplot2`
 
 ```r
 ggmap(chicago) +
-  stat_density_2d(data = crimes %>%
-                    filter(`Primary Type` %in% c("BURGLARY", "MOTOR VEHICLE THEFT",
-                                                 "NARCOTICS", "ROBBERY")),
-                  aes(x = Longitude,
-                      y = Latitude,
-                      fill = stat(level)),
-                  alpha = .4,
-                  bins = 10,
-                  geom = "polygon") +
+  stat_density_2d(
+    data = crimes %>%
+      filter(`Primary Type` %in% c(
+        "BURGLARY", "MOTOR VEHICLE THEFT",
+        "NARCOTICS", "ROBBERY"
+      )),
+    aes(
+      x = Longitude,
+      y = Latitude,
+      fill = stat(level)
+    ),
+    alpha = .4,
+    bins = 10,
+    geom = "polygon"
+  ) +
   scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd")) +
-  facet_wrap(~ `Primary Type`)
+  facet_wrap(~`Primary Type`)
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-wday-1.png" width="672" />
@@ -375,10 +413,14 @@ We can draw a map of the city with all homicides indicated on the map using `geo
 
 ```r
 ggmap(chicago) +
-  geom_point(data = homicides,
-             mapping = aes(x = Longitude,
-                           y = Latitude),
-             size = 1)
+  geom_point(
+    data = homicides,
+    mapping = aes(
+      x = Longitude,
+      y = Latitude
+    ),
+    size = 1
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/homicide-city-1.png" width="672" />
@@ -397,8 +439,10 @@ north_lawndale_bb <- c(
   right = -87.687893,
   top = 41.879850
 )
-north_lawndale <- get_stamenmap(bbox = north_lawndale_bb,
-                                zoom = 14)
+north_lawndale <- get_stamenmap(
+  bbox = north_lawndale_bb,
+  zoom = 14
+)
 
 kenwood_bb <- c(
   left = -87.613113,
@@ -406,8 +450,10 @@ kenwood_bb <- c(
   right = -87.582536,
   top = 41.819064
 )
-kenwood <- get_stamenmap(bbox = kenwood_bb,
-                                zoom = 15)
+kenwood <- get_stamenmap(
+  bbox = kenwood_bb,
+  zoom = 15
+)
 
 ggmap(north_lawndale)
 ```
@@ -425,16 +471,20 @@ To plot homicides specifically in these neighborhoods, change `ggmap(chicago)` t
 
 ```r
 ggmap(north_lawndale) +
-  geom_point(data = homicides,
-             aes(x = Longitude, y = Latitude))
+  geom_point(
+    data = homicides,
+    aes(x = Longitude, y = Latitude)
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-murder-1.png" width="672" />
 
 ```r
 ggmap(kenwood) +
-  geom_point(data = homicides,
-             aes(x = Longitude, y = Latitude))
+  geom_point(
+    data = homicides,
+    aes(x = Longitude, y = Latitude)
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-murder-2.png" width="672" />
@@ -446,38 +496,44 @@ All the other aesthetic customizations of `geom_point()` work with `ggmap`. So w
 
 ```r
 (violent <- crimes %>%
-  filter(`Primary Type` %in% c("HOMICIDE",
-                               "CRIM SEXUAL ASSAULT",
-                               "ROBBERY")))
+  filter(`Primary Type` %in% c(
+    "HOMICIDE",
+    "CRIM SEXUAL ASSAULT",
+    "ROBBERY"
+  )))
 ```
 
 ```
 ## # A tibble: 14,146 x 22
-##        ID `Case Number` Date  Block IUCR  `Primary Type` Description
-##     <dbl> <chr>         <chr> <chr> <chr> <chr>          <chr>      
-##  1 1.12e7 JA531910      12/0… 022X… 0265  CRIM SEXUAL A… AGGRAVATED…
-##  2 1.10e7 JA322389      06/2… 003X… 031A  ROBBERY        ARMED: HAN…
-##  3 1.12e7 JA545986      12/1… 007X… 031A  ROBBERY        ARMED: HAN…
-##  4 1.12e7 JA546734      12/1… 007X… 031A  ROBBERY        ARMED: HAN…
-##  5 1.12e7 JB147188      10/0… 092X… 0281  CRIM SEXUAL A… NON-AGGRAV…
-##  6 1.12e7 JB147599      08/2… 001X… 0281  CRIM SEXUAL A… NON-AGGRAV…
-##  7 2.31e4 JA149608      02/1… 001X… 0110  HOMICIDE       FIRST DEGR…
-##  8 1.10e7 JA378592      08/0… 038X… 0313  ROBBERY        ARMED: OTH…
-##  9 1.12e7 JA538651      12/0… 092X… 031A  ROBBERY        ARMED: HAN…
-## 10 1.12e7 JB149656      12/2… 005X… 0330  ROBBERY        AGGRAVATED 
-## # … with 14,136 more rows, and 15 more variables: `Location Description` <chr>,
+##         ID `Case Number` Date      Block     IUCR  `Primary Type` Description   
+##      <dbl> <chr>         <chr>     <chr>     <chr> <chr>          <chr>         
+##  1  1.12e7 JA531910      12/01/20… 022XX W … 0265  CRIM SEXUAL A… AGGRAVATED: O…
+##  2  1.10e7 JA322389      06/25/20… 003XX W … 031A  ROBBERY        ARMED: HANDGUN
+##  3  1.12e7 JA545986      12/11/20… 007XX N … 031A  ROBBERY        ARMED: HANDGUN
+##  4  1.12e7 JA546734      12/12/20… 007XX N … 031A  ROBBERY        ARMED: HANDGUN
+##  5  1.12e7 JB147188      10/08/20… 092XX S … 0281  CRIM SEXUAL A… NON-AGGRAVATED
+##  6  1.12e7 JB147599      08/26/20… 001XX W … 0281  CRIM SEXUAL A… NON-AGGRAVATED
+##  7  2.31e4 JA149608      02/11/20… 001XX N … 0110  HOMICIDE       FIRST DEGREE …
+##  8  1.10e7 JA378592      08/05/20… 038XX W … 0313  ROBBERY        ARMED: OTHER …
+##  9  1.12e7 JA538651      12/06/20… 092XX S … 031A  ROBBERY        ARMED: HANDGUN
+## 10  1.12e7 JB149656      12/24/20… 005XX S … 0330  ROBBERY        AGGRAVATED    
+## # … with 14,136 more rows, and 15 more variables: Location Description <chr>,
 ## #   Arrest <lgl>, Domestic <lgl>, Beat <chr>, District <chr>, Ward <dbl>,
-## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>, `Y
-## #   Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
+## #   Community Area <dbl>, FBI Code <chr>, X Coordinate <dbl>,
+## #   Y Coordinate <dbl>, Year <dbl>, Updated On <chr>, Latitude <dbl>,
 ## #   Longitude <dbl>, Location <chr>
 ```
 
 
 ```r
 ggmap(north_lawndale) +
-  geom_point(data = violent,
-             aes(x = Longitude, y = Latitude,
-                 color = `Primary Type`)) +
+  geom_point(
+    data = violent,
+    aes(
+      x = Longitude, y = Latitude,
+      color = `Primary Type`
+    )
+  ) +
   scale_color_brewer(type = "qual", palette = "Dark2")
 ```
 
@@ -485,9 +541,13 @@ ggmap(north_lawndale) +
 
 ```r
 ggmap(kenwood) +
-  geom_point(data = violent,
-             aes(x = Longitude, y = Latitude,
-                 color = `Primary Type`)) +
+  geom_point(
+    data = violent,
+    aes(
+      x = Longitude, y = Latitude,
+      color = `Primary Type`
+    )
+  ) +
   scale_color_brewer(type = "qual", palette = "Dark2")
 ```
 
@@ -508,101 +568,122 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value                       
-##  version  R version 4.0.3 (2020-10-10)
-##  os       macOS Catalina 10.15.7      
+##  version  R version 4.0.4 (2021-02-15)
+##  os       macOS Big Sur 10.16         
 ##  system   x86_64, darwin17.0          
 ##  ui       X11                         
 ##  language (EN)                        
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-01-21                  
+##  date     2021-04-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version date       lib source                              
-##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                      
-##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  bitops         1.0-6   2013-08-17 [1] CRAN (R 4.0.0)                      
-##  blogdown       1.1     2021-01-19 [1] CRAN (R 4.0.3)                      
-##  bookdown       0.21    2020-10-13 [1] CRAN (R 4.0.2)                      
-##  broom          0.7.3   2020-12-16 [1] CRAN (R 4.0.2)                      
-##  callr          3.5.1   2020-10-13 [1] CRAN (R 4.0.2)                      
-##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                      
-##  cli            2.2.0   2020-11-20 [1] CRAN (R 4.0.2)                      
-##  colorspace     2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                      
-##  crayon         1.3.4   2017-09-16 [1] CRAN (R 4.0.0)                      
-##  DBI            1.1.0   2019-12-15 [1] CRAN (R 4.0.0)                      
-##  dbplyr         2.0.0   2020-11-03 [1] CRAN (R 4.0.2)                      
-##  desc           1.2.0   2018-05-01 [1] CRAN (R 4.0.0)                      
-##  devtools       2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                      
-##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                      
-##  dplyr        * 1.0.2   2020-08-18 [1] CRAN (R 4.0.2)                      
-##  ellipsis       0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                      
-##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)                      
-##  fansi          0.4.1   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  forcats      * 0.5.0   2020-03-01 [1] CRAN (R 4.0.0)                      
-##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                      
-##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                      
-##  ggmap        * 3.0.0   2019-02-05 [1] CRAN (R 4.0.0)                      
-##  ggplot2      * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                      
-##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                      
-##  haven          2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                      
-##  here         * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                      
-##  hms            0.5.3   2020-01-08 [1] CRAN (R 4.0.0)                      
-##  htmltools      0.5.1   2021-01-12 [1] CRAN (R 4.0.2)                      
-##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                      
-##  jpeg           0.1-8.1 2019-10-24 [1] CRAN (R 4.0.0)                      
-##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                      
-##  knitr          1.30    2020-09-22 [1] CRAN (R 4.0.2)                      
-##  lattice        0.20-41 2020-04-02 [1] CRAN (R 4.0.3)                      
-##  lifecycle      0.2.0   2020-03-06 [1] CRAN (R 4.0.0)                      
-##  lubridate      1.7.9.2 2021-01-18 [1] Github (tidyverse/lubridate@aab2e30)
-##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                      
-##  memoise        1.1.0   2017-04-21 [1] CRAN (R 4.0.0)                      
-##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                      
-##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                      
-##  patchwork    * 1.1.1   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  pillar         1.4.7   2020-11-20 [1] CRAN (R 4.0.2)                      
-##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                      
-##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                      
-##  pkgload        1.1.0   2020-05-29 [1] CRAN (R 4.0.0)                      
-##  plyr           1.8.6   2020-03-03 [1] CRAN (R 4.0.0)                      
-##  png            0.1-7   2013-12-03 [1] CRAN (R 4.0.0)                      
-##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                      
-##  processx       3.4.5   2020-11-30 [1] CRAN (R 4.0.2)                      
-##  ps             1.5.0   2020-12-05 [1] CRAN (R 4.0.2)                      
-##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                      
-##  R6             2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                      
-##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.0.0)                      
-##  Rcpp           1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                      
-##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                      
-##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                      
-##  remotes        2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                      
-##  reprex         0.3.0   2019-05-16 [1] CRAN (R 4.0.0)                      
-##  RgoogleMaps    1.4.5.3 2020-02-12 [1] CRAN (R 4.0.0)                      
-##  rjson          0.2.20  2018-06-08 [1] CRAN (R 4.0.0)                      
-##  rlang          0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                      
-##  rmarkdown      2.6     2020-12-14 [1] CRAN (R 4.0.2)                      
-##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                      
-##  rstudioapi     0.13    2020-11-12 [1] CRAN (R 4.0.2)                      
-##  rvest          0.3.6   2020-07-25 [1] CRAN (R 4.0.2)                      
-##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                      
-##  sp             1.4-4   2020-10-07 [1] CRAN (R 4.0.2)                      
-##  stringi        1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                      
-##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                      
-##  testthat       3.0.1   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  tibble       * 3.0.4   2020-10-12 [1] CRAN (R 4.0.2)                      
-##  tidyr        * 1.1.2   2020-08-27 [1] CRAN (R 4.0.2)                      
-##  tidyselect     1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                      
-##  tidyverse    * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                      
-##  usethis        2.0.0   2020-12-10 [1] CRAN (R 4.0.2)                      
-##  vctrs          0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                      
-##  withr          2.3.0   2020-09-22 [1] CRAN (R 4.0.2)                      
-##  xfun           0.20    2021-01-06 [1] CRAN (R 4.0.2)                      
-##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                      
-##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                      
+##  package      * version  date       lib source                           
+##  assertthat     0.2.1    2019-03-21 [1] CRAN (R 4.0.0)                   
+##  backports      1.2.1    2020-12-09 [1] CRAN (R 4.0.2)                   
+##  bitops         1.0-6    2013-08-17 [1] CRAN (R 4.0.0)                   
+##  blogdown       1.2      2021-03-04 [1] CRAN (R 4.0.3)                   
+##  bookdown       0.21.7   2021-03-31 [1] Github (rstudio/bookdown@71bc601)
+##  broom          0.7.5    2021-02-19 [1] CRAN (R 4.0.2)                   
+##  bslib          0.2.4    2021-01-25 [1] CRAN (R 4.0.2)                   
+##  cachem         1.0.4    2021-02-13 [1] CRAN (R 4.0.2)                   
+##  callr          3.6.0    2021-03-28 [1] CRAN (R 4.0.2)                   
+##  cellranger     1.1.0    2016-07-27 [1] CRAN (R 4.0.0)                   
+##  class          7.3-18   2021-01-24 [1] CRAN (R 4.0.4)                   
+##  classInt       0.4-3    2020-04-07 [1] CRAN (R 4.0.0)                   
+##  cli            2.3.1    2021-02-23 [1] CRAN (R 4.0.3)                   
+##  codetools      0.2-18   2020-11-04 [1] CRAN (R 4.0.4)                   
+##  colorspace     2.0-0    2020-11-11 [1] CRAN (R 4.0.2)                   
+##  crayon         1.4.1    2021-02-08 [1] CRAN (R 4.0.2)                   
+##  curl           4.3      2019-12-02 [1] CRAN (R 4.0.0)                   
+##  DBI            1.1.1    2021-01-15 [1] CRAN (R 4.0.2)                   
+##  dbplyr         2.1.0    2021-02-03 [1] CRAN (R 4.0.2)                   
+##  debugme        1.1.0    2017-10-22 [1] CRAN (R 4.0.0)                   
+##  desc           1.3.0    2021-03-05 [1] CRAN (R 4.0.2)                   
+##  devtools       2.3.2    2020-09-18 [1] CRAN (R 4.0.2)                   
+##  digest         0.6.27   2020-10-24 [1] CRAN (R 4.0.2)                   
+##  dplyr        * 1.0.5    2021-03-05 [1] CRAN (R 4.0.3)                   
+##  e1071          1.7-6    2021-03-18 [1] CRAN (R 4.0.2)                   
+##  ellipsis       0.3.1    2020-05-15 [1] CRAN (R 4.0.0)                   
+##  evaluate       0.14     2019-05-28 [1] CRAN (R 4.0.0)                   
+##  fansi          0.4.2    2021-01-15 [1] CRAN (R 4.0.2)                   
+##  farver         2.1.0    2021-02-28 [1] CRAN (R 4.0.2)                   
+##  fastmap        1.1.0    2021-01-25 [1] CRAN (R 4.0.2)                   
+##  forcats      * 0.5.1    2021-01-27 [1] CRAN (R 4.0.2)                   
+##  fs             1.5.0    2020-07-31 [1] CRAN (R 4.0.2)                   
+##  generics       0.1.0    2020-10-31 [1] CRAN (R 4.0.2)                   
+##  ggmap        * 3.0.0    2019-02-05 [1] CRAN (R 4.0.0)                   
+##  ggplot2      * 3.3.3    2020-12-30 [1] CRAN (R 4.0.2)                   
+##  glue           1.4.2    2020-08-27 [1] CRAN (R 4.0.2)                   
+##  gtable         0.3.0    2019-03-25 [1] CRAN (R 4.0.0)                   
+##  haven          2.3.1    2020-06-01 [1] CRAN (R 4.0.0)                   
+##  here         * 1.0.1    2020-12-13 [1] CRAN (R 4.0.2)                   
+##  highr          0.8      2019-03-20 [1] CRAN (R 4.0.0)                   
+##  hms            1.0.0    2021-01-13 [1] CRAN (R 4.0.2)                   
+##  htmltools      0.5.1.1  2021-01-22 [1] CRAN (R 4.0.2)                   
+##  httr           1.4.2    2020-07-20 [1] CRAN (R 4.0.2)                   
+##  isoband        0.2.4    2021-03-03 [1] CRAN (R 4.0.2)                   
+##  jpeg           0.1-8.1  2019-10-24 [1] CRAN (R 4.0.0)                   
+##  jquerylib      0.1.3    2020-12-17 [1] CRAN (R 4.0.2)                   
+##  jsonlite       1.7.2    2020-12-09 [1] CRAN (R 4.0.2)                   
+##  KernSmooth     2.23-18  2020-10-29 [1] CRAN (R 4.0.4)                   
+##  knitr          1.31     2021-01-27 [1] CRAN (R 4.0.2)                   
+##  labeling       0.4.2    2020-10-20 [1] CRAN (R 4.0.2)                   
+##  lattice        0.20-41  2020-04-02 [1] CRAN (R 4.0.4)                   
+##  lifecycle      1.0.0    2021-02-15 [1] CRAN (R 4.0.2)                   
+##  lubridate      1.7.10   2021-02-26 [1] CRAN (R 4.0.2)                   
+##  magrittr       2.0.1    2020-11-17 [1] CRAN (R 4.0.2)                   
+##  MASS           7.3-53.1 2021-02-12 [1] CRAN (R 4.0.2)                   
+##  memoise        2.0.0    2021-01-26 [1] CRAN (R 4.0.2)                   
+##  modelr         0.1.8    2020-05-19 [1] CRAN (R 4.0.0)                   
+##  munsell        0.5.0    2018-06-12 [1] CRAN (R 4.0.0)                   
+##  patchwork    * 1.1.1    2020-12-17 [1] CRAN (R 4.0.2)                   
+##  pillar         1.5.1    2021-03-05 [1] CRAN (R 4.0.3)                   
+##  pkgbuild       1.2.0    2020-12-15 [1] CRAN (R 4.0.2)                   
+##  pkgconfig      2.0.3    2019-09-22 [1] CRAN (R 4.0.0)                   
+##  pkgload        1.2.0    2021-02-23 [1] CRAN (R 4.0.2)                   
+##  plyr           1.8.6    2020-03-03 [1] CRAN (R 4.0.0)                   
+##  png            0.1-7    2013-12-03 [1] CRAN (R 4.0.0)                   
+##  prettyunits    1.1.1    2020-01-24 [1] CRAN (R 4.0.0)                   
+##  processx       3.5.0    2021-03-23 [1] CRAN (R 4.0.2)                   
+##  proxy          0.4-25   2021-03-05 [1] CRAN (R 4.0.2)                   
+##  ps             1.6.0    2021-02-28 [1] CRAN (R 4.0.2)                   
+##  purrr        * 0.3.4    2020-04-17 [1] CRAN (R 4.0.0)                   
+##  R6             2.5.0    2020-10-28 [1] CRAN (R 4.0.2)                   
+##  RColorBrewer * 1.1-2    2014-12-07 [1] CRAN (R 4.0.0)                   
+##  Rcpp           1.0.6    2021-01-15 [1] CRAN (R 4.0.2)                   
+##  readr        * 1.4.0    2020-10-05 [1] CRAN (R 4.0.2)                   
+##  readxl         1.3.1    2019-03-13 [1] CRAN (R 4.0.0)                   
+##  remotes        2.2.0    2020-07-21 [1] CRAN (R 4.0.2)                   
+##  reprex         1.0.0    2021-01-27 [1] CRAN (R 4.0.2)                   
+##  RgoogleMaps    1.4.5.3  2020-02-12 [1] CRAN (R 4.0.0)                   
+##  rjson          0.2.20   2018-06-08 [1] CRAN (R 4.0.0)                   
+##  rlang          0.4.10   2020-12-30 [1] CRAN (R 4.0.2)                   
+##  rmarkdown      2.7      2021-02-19 [1] CRAN (R 4.0.2)                   
+##  rprojroot      2.0.2    2020-11-15 [1] CRAN (R 4.0.2)                   
+##  rstudioapi     0.13     2020-11-12 [1] CRAN (R 4.0.2)                   
+##  rvest          1.0.0    2021-03-09 [1] CRAN (R 4.0.2)                   
+##  sass           0.3.1    2021-01-24 [1] CRAN (R 4.0.2)                   
+##  scales         1.1.1    2020-05-11 [1] CRAN (R 4.0.0)                   
+##  sessioninfo    1.1.1    2018-11-05 [1] CRAN (R 4.0.0)                   
+##  sf           * 0.9-8    2021-03-17 [1] CRAN (R 4.0.2)                   
+##  sp             1.4-5    2021-01-10 [1] CRAN (R 4.0.2)                   
+##  stringi        1.5.3    2020-09-09 [1] CRAN (R 4.0.2)                   
+##  stringr      * 1.4.0    2019-02-10 [1] CRAN (R 4.0.0)                   
+##  testthat       3.0.2    2021-02-14 [1] CRAN (R 4.0.2)                   
+##  tibble       * 3.1.0    2021-02-25 [1] CRAN (R 4.0.2)                   
+##  tidyr        * 1.1.3    2021-03-03 [1] CRAN (R 4.0.2)                   
+##  tidyselect     1.1.0    2020-05-11 [1] CRAN (R 4.0.0)                   
+##  tidyverse    * 1.3.0    2019-11-21 [1] CRAN (R 4.0.0)                   
+##  units          0.7-1    2021-03-16 [1] CRAN (R 4.0.2)                   
+##  usethis        2.0.1    2021-02-10 [1] CRAN (R 4.0.2)                   
+##  utf8           1.2.1    2021-03-12 [1] CRAN (R 4.0.2)                   
+##  vctrs          0.3.6    2020-12-17 [1] CRAN (R 4.0.2)                   
+##  withr          2.4.1    2021-01-26 [1] CRAN (R 4.0.2)                   
+##  xfun           0.22     2021-03-11 [1] CRAN (R 4.0.2)                   
+##  xml2           1.3.2    2020-04-23 [1] CRAN (R 4.0.0)                   
+##  yaml           2.2.1    2020-02-01 [1] CRAN (R 4.0.0)                   
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

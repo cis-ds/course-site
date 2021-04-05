@@ -15,10 +15,12 @@ menu:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE,
-                      echo = FALSE,
-                      message = FALSE,
-                      warning = FALSE)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE
+)
 ```
 
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
@@ -41,10 +43,10 @@ By plotting the variables against one another using a scatterplot, we can see th
 ```{r get_ad, include = FALSE, cache.extra = file.info(here("static", "data", "Advertising.csv"))}
 # get advertising data
 (advertising <- here("static", "data", "Advertising.csv") %>%
-   read_csv() %>%
-   tbl_df() %>%
-   # remove id column
-   select(-X1))
+  read_csv() %>%
+  tbl_df() %>%
+  # remove id column
+  select(-X1))
 ```
 
 ```{r plot_ad, dependson="get_ad"}
@@ -52,7 +54,7 @@ By plotting the variables against one another using a scatterplot, we can see th
 plot_ad <- advertising %>%
   gather(method, spend, -Sales) %>%
   ggplot(aes(spend, Sales)) +
-  facet_wrap(~ method, scales = "free_x") +
+  facet_wrap(~method, scales = "free_x") +
   geom_point() +
   labs(x = "Spending (in thousands of dollars)")
 plot_ad
@@ -105,16 +107,20 @@ ad_pred <- advertising %>%
   gather(method, spend, -Sales) %>%
   group_by(method) %>%
   nest() %>%
-  mutate(model = map(data, method_model),
-         pred = map(model, broom::augment)) %>%
+  mutate(
+    model = map(data, method_model),
+    pred = map(model, broom::augment)
+  ) %>%
   unnest(pred)
 
 plot_ad +
   geom_smooth(method = "lm", se = FALSE) +
-  geom_linerange(data = ad_pred,
-                 aes(ymin = Sales, ymax = .fitted),
-                 color = "blue",
-                 alpha = .5) 
+  geom_linerange(
+    data = ad_pred,
+    aes(ymin = Sales, ymax = .fitted),
+    color = "blue",
+    alpha = .5
+  )
 ```
 
 This is only one possible estimation procedure, but is popular because it is relatively intuitive. This model-based approach is referred to as **parametric**, because it simplifies the problem of estimating $f$ to estimating a set of parameters in the function:
@@ -138,19 +144,25 @@ advertising %>%
   gather(method, spend, -Sales) %>%
   group_by(method) %>%
   nest() %>%
-  mutate(knn = map(data, ~ knn.reg(train = .x$spend,
-                                   y = .x$Sales,
-                                   test = data.frame(.x$spend),
-                                   k = 1)),
-         pred = map(knn, ~ .x$pred)) %>%
+  mutate(
+    knn = map(data, ~ knn.reg(
+      train = .x$spend,
+      y = .x$Sales,
+      test = data.frame(.x$spend),
+      k = 1
+    )),
+    pred = map(knn, ~ .x$pred)
+  ) %>%
   unnest(c(data, pred)) %>%
   ggplot(aes(spend, Sales)) +
-  facet_wrap(~ method, scales = "free_x") +
+  facet_wrap(~method, scales = "free_x") +
   geom_point(alpha = .25) +
   geom_step(aes(y = pred), color = "blue") +
-  labs(title = "K-Nearest Neighbor",
-       subtitle = "K = 1",
-       x = "Spending (in thousands of dollars)")
+  labs(
+    title = "K-Nearest Neighbor",
+    subtitle = "K = 1",
+    x = "Spending (in thousands of dollars)"
+  )
 ```
 
 Perhaps a bit too well. Compare this to $K=9$:
@@ -160,19 +172,25 @@ advertising %>%
   gather(method, spend, -Sales) %>%
   group_by(method) %>%
   nest() %>%
-  mutate(knn = map(data, ~ knn.reg(train = .x$spend,
-                                   y = .x$Sales,
-                                   test = data.frame(.x$spend),
-                                   k = 9)),
-         pred = map(knn, ~ .x$pred)) %>%
+  mutate(
+    knn = map(data, ~ knn.reg(
+      train = .x$spend,
+      y = .x$Sales,
+      test = data.frame(.x$spend),
+      k = 9
+    )),
+    pred = map(knn, ~ .x$pred)
+  ) %>%
   unnest(c(data, pred)) %>%
   ggplot(aes(spend, Sales)) +
-  facet_wrap(~ method, scales = "free_x") +
+  facet_wrap(~method, scales = "free_x") +
   geom_point(alpha = .25) +
   geom_step(aes(y = pred), color = "blue") +
-  labs(title = "K-Nearest Neighbor",
-       subtitle = "K = 9",
-       x = "Spending (in thousands of dollars)")
+  labs(
+    title = "K-Nearest Neighbor",
+    subtitle = "K = 9",
+    x = "Spending (in thousands of dollars)"
+  )
 ```
 
 This smoothing line averages over the nine nearest observations; while still a step function, it is smoother than $K=1$.

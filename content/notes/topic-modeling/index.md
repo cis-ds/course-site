@@ -223,15 +223,19 @@ The resulting data frame is one row per joke and one column per token. To conver
 
 ```r
 jokes_dtm <- jokes_df %>%
-  pivot_longer(cols = -c(id, score),
-               names_to = "token",
-               values_to = "n") %>%
+  pivot_longer(
+    cols = -c(id, score),
+    names_to = "token",
+    values_to = "n"
+  ) %>%
   filter(n != 0) %>%
   # clean the token column so it just includes the token
   # drop empty levels from id - this includes jokes which did not
   # have any tokens retained after step_tokenfilter()
-  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
-         id = fct_drop(f = id)) %>%
+  mutate(
+    token = str_remove(string = token, pattern = "tf_joke_"),
+    id = fct_drop(f = id)
+  ) %>%
   cast_dtm(document = id, term = token, value = n)
 jokes_dtm
 ```
@@ -281,12 +285,14 @@ top_terms <- jokes_lda4_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 2) +
+  facet_wrap(~topic, scales = "free", ncol = 2) +
   coord_flip()
 ```
 
@@ -317,12 +323,14 @@ top_terms <- jokes_lda12_td %>%
   arrange(topic, -beta)
 
 top_terms %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 3) +
+  facet_wrap(~topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
 
@@ -368,35 +376,21 @@ if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
 }
 ```
 
-```
-## Warning: Strategy 'multiprocess' is deprecated in future (>= 1.20.0). Instead,
-## explicitly specify either 'multisession' or 'multicore'. In the current R
-## session, 'multiprocess' equals 'multisession'.
-```
-
-```
-## Warning in supportsMulticoreAndRStudio(...): [ONE-TIME WARNING] Forked
-## processing ('multicore') is not supported when running R from RStudio
-## because it is considered unstable. For more details, how to control forked
-## processing or not, and how to silence this warning in future R sessions, see ?
-## parallelly::supportsMulticore
-```
-
-```
-## 1128.072 sec elapsed
-```
-
 
 ```r
-tibble(k = n_topics,
-       perplex = map_dbl(jokes_lda_compare, perplexity)) %>%
+tibble(
+  k = n_topics,
+  perplex = map_dbl(jokes_lda_compare, perplexity)
+) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
   geom_line() +
-  labs(title = "Evaluating LDA topic models",
-       subtitle = "Optimal number of topics (smaller is better)",
-       x = "Number of topics",
-       y = "Perplexity")
+  labs(
+    title = "Evaluating LDA topic models",
+    subtitle = "Optimal number of topics (smaller is better)",
+    x = "Number of topics",
+    y = "Perplexity"
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
@@ -415,12 +409,14 @@ top_terms <- jokes_lda_td %>%
 
 top_terms %>%
   filter(topic <= 12) %>%
-  mutate(topic = factor(topic),
-         term = reorder_within(term, beta, topic)) %>%
+  mutate(
+    topic = factor(topic),
+    term = reorder_within(term, beta, topic)
+  ) %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~ topic, scales = "free", ncol = 3) +
+  facet_wrap(~topic, scales = "free", ncol = 3) +
   coord_flip()
 ```
 
@@ -477,11 +473,13 @@ str(Jeopardy)
 
 ```r
 # convert to JSON file
-json <- createJSON(phi = Jeopardy$phi,
-                   theta = Jeopardy$theta,
-                   doc.length = Jeopardy$doc.length,
-                   vocab = Jeopardy$vocab,
-                   term.frequency = Jeopardy$term.frequency)
+json <- createJSON(
+  phi = Jeopardy$phi,
+  theta = Jeopardy$theta,
+  doc.length = Jeopardy$doc.length,
+  vocab = Jeopardy$vocab,
+  term.frequency = Jeopardy$term.frequency
+)
 ```
 
 
@@ -498,22 +496,24 @@ To convert the output of `topicmodels::LDA()` to view with `LDAvis`, use [this f
 
 
 ```r
-topicmodels_json_ldavis <- function(fitted, doc_term){
+topicmodels_json_ldavis <- function(fitted, doc_term) {
   require(LDAvis)
   require(slam)
-  
+
   # Find required quantities
   phi <- as.matrix(posterior(fitted)$terms)
   theta <- as.matrix(posterior(fitted)$topics)
   vocab <- colnames(phi)
   term_freq <- slam::col_sums(doc_term)
-  
+
   # Convert to json
-  json_lda <- LDAvis::createJSON(phi = phi, theta = theta,
-                                 vocab = vocab,
-                                 doc.length = as.vector(table(doc_term$i)),
-                                 term.frequency = term_freq)
-  
+  json_lda <- LDAvis::createJSON(
+    phi = phi, theta = theta,
+    vocab = vocab,
+    doc.length = as.vector(table(doc_term$i)),
+    term.frequency = term_freq
+  )
+
   return(json_lda)
 }
 ```
@@ -522,8 +522,10 @@ Let's test it using the $k = 100$ LDA topic model for the `r/jokes` dataset.
 
 
 ```r
-jokes_100_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[6]],
-                                       doc_term = jokes_dtm)
+jokes_100_json <- topicmodels_json_ldavis(
+  fitted = jokes_lda_compare[[6]],
+  doc_term = jokes_dtm
+)
 ```
 
 
@@ -555,18 +557,18 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-03-11                  
+##  date     2021-04-05                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version    date       lib source                               
 ##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.0.0)                       
 ##  backports     1.2.1      2020-12-09 [1] CRAN (R 4.0.2)                       
 ##  blogdown      1.2        2021-03-04 [1] CRAN (R 4.0.3)                       
-##  bookdown      0.21       2020-10-13 [1] CRAN (R 4.0.2)                       
+##  bookdown      0.21.7     2021-03-31 [1] Github (rstudio/bookdown@71bc601)    
 ##  broom       * 0.7.5      2021-02-19 [1] CRAN (R 4.0.2)                       
 ##  bslib         0.2.4      2021-01-25 [1] CRAN (R 4.0.2)                       
 ##  cachem        1.0.4      2021-02-13 [1] CRAN (R 4.0.2)                       
-##  callr         3.5.1      2020-10-13 [1] CRAN (R 4.0.2)                       
+##  callr         3.6.0      2021-03-28 [1] CRAN (R 4.0.2)                       
 ##  cellranger    1.1.0      2016-07-27 [1] CRAN (R 4.0.0)                       
 ##  class         7.3-18     2021-01-24 [1] CRAN (R 4.0.4)                       
 ##  cli           2.3.1      2021-02-23 [1] CRAN (R 4.0.3)                       
@@ -576,7 +578,7 @@ devtools::session_info()
 ##  DBI           1.1.1      2021-01-15 [1] CRAN (R 4.0.2)                       
 ##  dbplyr        2.1.0      2021-02-03 [1] CRAN (R 4.0.2)                       
 ##  debugme       1.1.0      2017-10-22 [1] CRAN (R 4.0.0)                       
-##  desc          1.2.0      2018-05-01 [1] CRAN (R 4.0.0)                       
+##  desc          1.3.0      2021-03-05 [1] CRAN (R 4.0.2)                       
 ##  devtools      2.3.2      2020-09-18 [1] CRAN (R 4.0.2)                       
 ##  dials       * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)                       
 ##  DiceDesign    1.9        2021-02-13 [1] CRAN (R 4.0.2)                       
@@ -585,6 +587,7 @@ devtools::session_info()
 ##  ellipsis      0.3.1      2020-05-15 [1] CRAN (R 4.0.0)                       
 ##  evaluate      0.14       2019-05-28 [1] CRAN (R 4.0.0)                       
 ##  fansi         0.4.2      2021-01-15 [1] CRAN (R 4.0.2)                       
+##  farver        2.1.0      2021-02-28 [1] CRAN (R 4.0.2)                       
 ##  fastmap       1.1.0      2021-01-25 [1] CRAN (R 4.0.2)                       
 ##  forcats     * 0.5.1      2021-01-27 [1] CRAN (R 4.0.2)                       
 ##  foreach       1.5.1      2020-10-15 [1] CRAN (R 4.0.2)                       
@@ -600,18 +603,20 @@ devtools::session_info()
 ##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.0.0)                       
 ##  haven         2.3.1      2020-06-01 [1] CRAN (R 4.0.0)                       
 ##  here        * 1.0.1      2020-12-13 [1] CRAN (R 4.0.2)                       
+##  highr         0.8        2019-03-20 [1] CRAN (R 4.0.0)                       
 ##  hms           1.0.0      2021-01-13 [1] CRAN (R 4.0.2)                       
 ##  htmltools     0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)                       
 ##  httr          1.4.2      2020-07-20 [1] CRAN (R 4.0.2)                       
 ##  infer       * 0.5.4      2021-01-13 [1] CRAN (R 4.0.2)                       
-##  ipred         0.9-10     2021-03-04 [1] CRAN (R 4.0.2)                       
+##  ipred         0.9-11     2021-03-12 [1] CRAN (R 4.0.2)                       
 ##  iterators     1.0.13     2020-10-15 [1] CRAN (R 4.0.2)                       
 ##  janeaustenr   0.1.5      2017-06-10 [1] CRAN (R 4.0.0)                       
 ##  jquerylib     0.1.3      2020-12-17 [1] CRAN (R 4.0.2)                       
 ##  jsonlite      1.7.2      2020-12-09 [1] CRAN (R 4.0.2)                       
 ##  knitr         1.31       2021-01-27 [1] CRAN (R 4.0.2)                       
+##  labeling      0.4.2      2020-10-20 [1] CRAN (R 4.0.2)                       
 ##  lattice       0.20-41    2020-04-02 [1] CRAN (R 4.0.4)                       
-##  lava          1.6.8.1    2020-11-04 [1] CRAN (R 4.0.2)                       
+##  lava          1.6.9      2021-03-11 [1] CRAN (R 4.0.2)                       
 ##  LDAvis      * 0.3.2      2015-10-24 [1] CRAN (R 4.0.0)                       
 ##  LDAvisData  * 0.1        2020-06-08 [1] Github (cpsievert/LDAvisData@43dd263)
 ##  lhs           1.1.1      2020-10-05 [1] CRAN (R 4.0.2)                       
@@ -619,7 +624,7 @@ devtools::session_info()
 ##  listenv       0.8.0      2019-12-05 [1] CRAN (R 4.0.0)                       
 ##  lubridate     1.7.10     2021-02-26 [1] CRAN (R 4.0.2)                       
 ##  magrittr      2.0.1      2020-11-17 [1] CRAN (R 4.0.2)                       
-##  MASS          7.3-53     2020-09-09 [1] CRAN (R 4.0.4)                       
+##  MASS          7.3-53.1   2021-02-12 [1] CRAN (R 4.0.2)                       
 ##  Matrix        1.3-2      2021-01-06 [1] CRAN (R 4.0.4)                       
 ##  memoise       2.0.0      2021-01-26 [1] CRAN (R 4.0.2)                       
 ##  modeldata   * 0.1.0      2020-10-22 [1] CRAN (R 4.0.2)                       
@@ -628,7 +633,7 @@ devtools::session_info()
 ##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.0.0)                       
 ##  NLP         * 0.2-1      2020-10-14 [1] CRAN (R 4.0.2)                       
 ##  nnet          7.3-15     2021-01-24 [1] CRAN (R 4.0.4)                       
-##  parallelly    1.23.0     2021-01-04 [1] CRAN (R 4.0.2)                       
+##  parallelly    1.24.0     2021-03-14 [1] CRAN (R 4.0.2)                       
 ##  parsnip     * 0.1.5      2021-01-19 [1] CRAN (R 4.0.2)                       
 ##  pillar        1.5.1      2021-03-05 [1] CRAN (R 4.0.3)                       
 ##  pkgbuild      1.2.0      2020-12-15 [1] CRAN (R 4.0.2)                       
@@ -637,8 +642,9 @@ devtools::session_info()
 ##  plyr          1.8.6      2020-03-03 [1] CRAN (R 4.0.0)                       
 ##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.0.0)                       
 ##  pROC          1.17.0.1   2021-01-13 [1] CRAN (R 4.0.2)                       
-##  processx      3.4.5      2020-11-30 [1] CRAN (R 4.0.2)                       
+##  processx      3.5.0      2021-03-23 [1] CRAN (R 4.0.2)                       
 ##  prodlim       2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)                       
+##  proxy         0.4-25     2021-03-05 [1] CRAN (R 4.0.2)                       
 ##  ps            1.6.0      2021-02-28 [1] CRAN (R 4.0.2)                       
 ##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)                       
 ##  R6            2.5.0      2020-10-28 [1] CRAN (R 4.0.2)                       
@@ -648,14 +654,16 @@ devtools::session_info()
 ##  recipes     * 0.1.15     2020-11-11 [1] CRAN (R 4.0.2)                       
 ##  remotes       2.2.0      2020-07-21 [1] CRAN (R 4.0.2)                       
 ##  reprex        1.0.0      2021-01-27 [1] CRAN (R 4.0.2)                       
+##  reshape2      1.4.4      2020-04-09 [1] CRAN (R 4.0.0)                       
 ##  rjson       * 0.2.20     2018-06-08 [1] CRAN (R 4.0.0)                       
+##  RJSONIO       1.3-1.4    2020-01-15 [1] CRAN (R 4.0.0)                       
 ##  rlang         0.4.10     2020-12-30 [1] CRAN (R 4.0.2)                       
 ##  rmarkdown     2.7        2021-02-19 [1] CRAN (R 4.0.2)                       
 ##  rpart         4.1-15     2019-04-12 [1] CRAN (R 4.0.4)                       
 ##  rprojroot     2.0.2      2020-11-15 [1] CRAN (R 4.0.2)                       
 ##  rsample     * 0.0.9      2021-02-17 [1] CRAN (R 4.0.2)                       
 ##  rstudioapi    0.13       2020-11-12 [1] CRAN (R 4.0.2)                       
-##  rvest         0.3.6      2020-07-25 [1] CRAN (R 4.0.2)                       
+##  rvest         1.0.0      2021-03-09 [1] CRAN (R 4.0.2)                       
 ##  sass          0.3.1      2021-01-24 [1] CRAN (R 4.0.2)                       
 ##  scales      * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)                       
 ##  sessioninfo   1.1.1      2018-11-05 [1] CRAN (R 4.0.0)                       
@@ -663,7 +671,7 @@ devtools::session_info()
 ##  SnowballC     0.7.0      2020-04-01 [1] CRAN (R 4.0.0)                       
 ##  stringi       1.5.3      2020-09-09 [1] CRAN (R 4.0.2)                       
 ##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)                       
-##  survival      3.2-7      2020-09-28 [1] CRAN (R 4.0.4)                       
+##  survival      3.2-10     2021-03-16 [1] CRAN (R 4.0.2)                       
 ##  testthat      3.0.2      2021-02-14 [1] CRAN (R 4.0.2)                       
 ##  textrecipes * 0.4.0      2020-11-12 [1] CRAN (R 4.0.2)                       
 ##  tibble      * 3.1.0      2021-02-25 [1] CRAN (R 4.0.2)                       
@@ -679,14 +687,14 @@ devtools::session_info()
 ##  topicmodels * 0.2-12     2021-01-29 [1] CRAN (R 4.0.2)                       
 ##  tune        * 0.1.3      2021-02-28 [1] CRAN (R 4.0.2)                       
 ##  usethis       2.0.1      2021-02-10 [1] CRAN (R 4.0.2)                       
-##  utf8          1.1.4      2018-05-24 [1] CRAN (R 4.0.0)                       
+##  utf8          1.2.1      2021-03-12 [1] CRAN (R 4.0.2)                       
 ##  vctrs         0.3.6      2020-12-17 [1] CRAN (R 4.0.2)                       
 ##  withr         2.4.1      2021-01-26 [1] CRAN (R 4.0.2)                       
-##  workflows   * 0.2.1      2020-10-08 [1] CRAN (R 4.0.2)                       
-##  xfun          0.21       2021-02-10 [1] CRAN (R 4.0.2)                       
+##  workflows   * 0.2.2      2021-03-10 [1] CRAN (R 4.0.2)                       
+##  xfun          0.22       2021-03-11 [1] CRAN (R 4.0.2)                       
 ##  xml2          1.3.2      2020-04-23 [1] CRAN (R 4.0.0)                       
 ##  yaml          2.2.1      2020-02-01 [1] CRAN (R 4.0.0)                       
-##  yardstick   * 0.0.7      2020-07-13 [1] CRAN (R 4.0.2)                       
+##  yardstick   * 0.0.8      2021-03-28 [1] CRAN (R 4.0.2)                       
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
