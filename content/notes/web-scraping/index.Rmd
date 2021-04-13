@@ -258,8 +258,8 @@ Therefore the CSS selector would be `span.itemprop`.
 `rvest` is a package that contains functions to easily extract information from a webpage. The basic workflow is:
 
 1. Download the HTML and turn it into an XML file with `read_html()`
-1. Extract specific nodes with `html_nodes()`
-1. Extract content from nodes with various functions
+1. Extract specific elements with `html_elements()`
+1. Extract content from elements with various functions
 
 ## Download the HTML
 
@@ -275,21 +275,21 @@ It is always a good practice when web scraping to store the output of `read_html
 
 {{% /callout %}}
 
-## Extract nodes
+## Extract elements
 
-```{r frozen-nodes, dependson = "frozen-dl"}
-itals <- html_nodes(frozen, "em")
+```{r frozen-elements, dependson = "frozen-dl"}
+itals <- html_elements(frozen, "em")
 itals
 ```
 
-* The first argument to `html_nodes()` is the HTML document or a node previously extracted from the document
-* The second argument is a CSS selector to identify which nodes to select
+* The first argument to `html_elements()` is the HTML document or a set of elements previously extracted from the document
+* The second argument is a CSS selector to identify which elements to select
 
-## Extract content from nodes
+## Extract content from elements
 
-```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes")}
+```{r frozen-content, dependson = c("frozen-dl", "frozen-elements")}
 itals
-html_text(itals)
+html_text2(itals)
 html_name(itals)
 html_children(itals)
 html_attr(itals, "class")
@@ -301,16 +301,16 @@ html_attrs(itals)
 Now it's your turn to practice.
 
 1. Read in the *Frozen* HTML
-1. Select the nodes that are both `id = "titleCast"` and `a`s
-1. Extract the text from the nodes
+1. Select the elements that are both `id = "titleCast"` and `a`s
+1. Extract the text from the elements
 
 {{< spoiler text="Click for the solution" >}}
 
 ```{r frozen-extract}
 library(rvest)
 frozen <- read_html("http://www.imdb.com/title/tt2294629/")
-cast <- html_nodes(frozen, "#titleCast a")
-html_text(cast)
+cast <- html_elements(frozen, "#titleCast a")
+html_text2(cast)
 ```
 
 {{< /spoiler >}}
@@ -334,7 +334,7 @@ Do you collect the cast names and only the cast names? We've scraped too much. T
 1. Click on yellow items you do not want to scrape
 1. Click on additional items that you do want to scrape
 1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
-1. Copy the selector to use with `html_nodes()`
+1. Copy the selector to use with `html_elements()`
 
 {{% callout note %}}
 
@@ -350,18 +350,15 @@ When using SelectorGadget, always make sure to scroll up and down the web page t
 {{< spoiler text="Click for the solution" >}}
 
 ```{r frozen-selectorgadget, dependson = "frozen-extract"}
-cast2 <- html_nodes(frozen, "#titleCast td:nth-child(2) a")
-html_text(cast2)
-
-# remove whitespace
-html_text(cast2) %>% str_trim(side = "both")
+cast2 <- html_elements(frozen, "#titleCast td:nth-child(2) a")
+html_text2(cast2)
 ```
 
 {{< /spoiler >}}
 
 ## Practice scraping data
 
-Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_nodes()` and `html_text()`.
+Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_elements()` and `html_text()`.
 
 {{< spoiler text="Click for the solution" >}}
 
@@ -370,13 +367,13 @@ For me, this means I need to obtain information on [Sterling, Virginia](http://w
 ```{r sterling}
 sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
 
-col <- html_nodes(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
-html_text(col)
+col <- html_elements(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+html_text2(col)
 
 # or use a piped operation
 sterling %>%
-  html_nodes(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
-  html_text()
+  html_elements(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
+  html_text2()
 ```
 
 {{< /spoiler >}}
@@ -386,7 +383,7 @@ sterling %>%
 Use `html_table()` to scrape whole tables of data as a data frame.
 
 ```{r sterling-table, dependson = "sterling"}
-tables <- html_nodes(sterling, css = "table")
+tables <- html_elements(sterling, css = "table")
 
 tables %>%
   # get the first table
@@ -406,11 +403,11 @@ For me, this means I need to obtain information on [Sterling, Virginia](http://w
 ```{r sterling-climate}
 sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
 
-climate <- html_nodes(sterling_climate, css = "table")
+climate <- html_elements(sterling_climate, css = "table")
 html_table(climate, header = TRUE, fill = TRUE)[[1]]
 
 sterling_climate %>%
-  html_nodes(css = "table") %>%
+  html_elements(css = "table") %>%
   nth(1) %>%
   html_table(header = TRUE)
 ```

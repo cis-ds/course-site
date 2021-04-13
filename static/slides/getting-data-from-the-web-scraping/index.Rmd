@@ -6,10 +6,12 @@ output: rcfss::xaringan
 
 ```{r setup, include=FALSE}
 options(htmltools.dir.version = FALSE, htmltools.preserve.raw = FALSE)
-knitr::opts_chunk$set(cache = TRUE,
-                      message = FALSE,
-                      warning = FALSE,
-                      fig.retina = 2, fig.width = 12)
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.retina = 2, fig.width = 12
+)
 
 library(tidyverse)
 library(rvest)
@@ -234,8 +236,8 @@ countdown(minutes = 3)
 # `rvest`
 
 1. Download the HTML and turn it into an XML file with `read_html()`
-1. Extract specific nodes with `html_nodes()`
-1. Extract content from nodes with various functions
+1. Extract specific elements with `html_elements()`
+1. Extract content from elements with various functions
 
 ---
 
@@ -249,20 +251,20 @@ frozen
 
 ---
 
-# Extract nodes
+# Extract elements
 
-```{r frozen-nodes, dependson = "frozen-dl"}
-itals <- html_nodes(frozen, "em")
+```{r frozen-elements, dependson = "frozen-dl"}
+itals <- html_elements(frozen, "em")
 itals
 ```
 
 ---
 
-# Extract content from nodes
+# Extract content from elements
 
-```{r frozen-content, dependson = c("frozen-dl", "frozen-nodes"), collapse = TRUE}
+```{r frozen-content, dependson = c("frozen-dl", "frozen-elements"), collapse = TRUE}
 itals
-html_text(itals)
+html_text2(itals)
 html_attr(itals, "class")
 ```
 
@@ -271,8 +273,8 @@ html_attr(itals, "class")
 # Extract content
 
 1. Read in the *Frozen* HTML
-1. Select the nodes that are both `id = "titleCast"` and `a`s
-1. Extract the text from the nodes
+1. Select the elements that are both `id = "titleCast"` and `a`s
+1. Extract the text from the elements
 
 ```{r echo = FALSE}
 countdown(minutes = 3)
@@ -285,8 +287,8 @@ countdown(minutes = 3)
 ```{r frozen-extract}
 library(rvest)
 frozen <- read_html("http://www.imdb.com/title/tt2294629/")
-cast <- html_nodes(frozen, "#titleCast a")
-html_text(cast)
+cast <- html_elements(frozen, "#titleCast a")
+html_text2(cast)
 ```
 
 ---
@@ -307,7 +309,7 @@ html_text(cast)
 1. Click on yellow items you do not want to scrape
 1. Click on additional items that you do want to scrape
 1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
-1. Copy the selector to use with `html_nodes()`
+1. Copy the selector to use with `html_elements()`
 
 ---
 
@@ -324,11 +326,8 @@ countdown(minutes = 3)
 # Practice using SelectorGadget
 
 ```{r frozen-selectorgadget, dependson = "frozen-extract"}
-cast2 <- html_nodes(frozen, "#titleCast td:nth-child(2) a")
-html_text(cast2)
-
-# remove whitespace
-html_text(cast2) %>% str_trim(side = "both")
+cast2 <- html_elements(frozen, "#titleCast td:nth-child(2) a")
+html_text2(cast2)
 ```
 
 ---
@@ -336,7 +335,7 @@ html_text(cast2) %>% str_trim(side = "both")
 # Practice scraping data
 
 1. Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/)
-1. Extract it with `html_nodes()` and `html_text()`
+1. Extract it with `html_elements()` and `html_text2()`
 
 ```{r echo = FALSE}
 countdown(minutes = 4)
@@ -349,13 +348,13 @@ countdown(minutes = 4)
 ```{r sterling}
 sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
 
-col <- html_nodes(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
-html_text(col)
+col <- html_elements(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+html_text2(col)
 
 # or use a piped operation
 sterling %>%
-  html_nodes(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
-  html_text()
+  html_elements(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
+  html_text2()
 ```
 
 ---
@@ -363,7 +362,7 @@ sterling %>%
 # Tables
 
 ```{r sterling-table, dependson = "sterling"}
-tables <- html_nodes(sterling, css = "table")
+tables <- html_elements(sterling, css = "table")
 
 tables %>%
   # get the first table
@@ -389,11 +388,11 @@ countdown(minutes = 3)
 ```{r sterling-climate, collapse = TRUE}
 sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
 
-climate <- html_nodes(sterling_climate, css = "table")
+climate <- html_elements(sterling_climate, css = "table")
 html_table(climate, header = TRUE, fill = TRUE)[[1]]
 
 sterling_climate %>%
-  html_nodes(css = "table") %>%
+  html_elements(css = "table") %>%
   nth(1) %>%
   html_table(header = TRUE)
 ```
@@ -405,8 +404,3 @@ sterling_climate %>%
 * Make sure you've obtained only what you want
 * If you are having trouble parsing, try selecting a smaller subset of the thing you are seeking
 * Confirm that there is no R package and no API
-
-
-
-
-
