@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw04-programming.html"]
 
 summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
-url_code: "https://github.com/cfss-win21/hw04"
+url_code: "https://github.com/cfss-su21/hw04"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 9:40am (Chicago) on February 9th.
 
 # Fork the `hw04` repository
 
-Go [here](https://github.com/cfss-win21/hw04) to fork the repo.
+Go [here](https://github.com/cfss-su21/hw04) to fork the repo.
 
 # Part 1: Programming exercises
 

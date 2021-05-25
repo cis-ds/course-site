@@ -64,11 +64,11 @@ math: false
 
 ## What you need to do after class
 
-* [Register your GitHub username for the course](https://forms.gle/XZ8XRBecWNKKwBme6) - all homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-win21). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
+* [Register your GitHub username for the course](https://forms.gle/HWP9FEubofjWeMda8) - all homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-su21). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
 * Complete your peer evaluations for homework 01. Review the following:
     * [General Homework Rubric](/faq/homework-evaluations/)
     * [Performing peer review](/faq/peer-evaluations/)
     * To find which peers you will evaluate:
-        * Navigate to the [pull request page for `hw01`](https://github.com/cfss-win21/hw01/pulls)
+        * Navigate to the [pull request page for `hw01`](https://github.com/cfss-su21/hw01/pulls)
         * Click **Reviews** > **Awaiting review from you**
         * If you submitted your pull request on-time, you were randomly assigned two other pull requests to evaluate. If you did not submit your pull request on-time, you are still expected to perform two peer evaluations. Select any two pull requests and provide feedback on their submission.

@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw06-stat-learn.html", "/homework/statistical-learning"]
 
 summary: "Implement machine learning methods for regression and classification."
-url_code: "https://github.com/cfss-win21/hw07"
+url_code: "https://github.com/cfss-su21/hw07"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 9:40am (Chicago) on March 2nd.
 
 # Fork the `hw07` repository
 
-Go [here](https://github.com/cfss-win21/hw07) to fork the repo.
+Go [here](https://github.com/cfss-su21/hw07) to fork the repo.
 
 # Part 1: Student debt
 
