@@ -1,6 +1,6 @@
 ---
 title: "Introduction to computing for the social sciences"
-date: 2021-01-12T09:30:00-06:00
+date: 2021-06-21T09:30:00-06:00
 publishDate: 2019-08-01T09:30:00-06:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/cm001.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-01-12T11:30:00-06:00
+time_end: 2021-06-21T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

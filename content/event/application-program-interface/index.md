@@ -1,6 +1,6 @@
 ---
 title: "Getting data from the web: API access"
-date: 2021-03-02T09:30:00-06:00
+date: 2021-07-19T09:30:00-06:00
 publishDate: 2019-06-01T09:30:00-06:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/cm015.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-03-02T11:30:00-06:00
+time_end: 2021-07-19T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
