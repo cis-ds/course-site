@@ -1,14 +1,14 @@
 ---
 title: "Data wrangling: relational data and factors"
-date: 2021-01-28T09:40:00-06:00
-publishDate: 2019-04-17T09:40:00-06:00
+date: 2021-01-28T09:30:00-06:00
+publishDate: 2019-04-17T09:30:00-06:00
 draft: false
 
 aliases: ["/cm006.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-01-28T11:00:00-06:00
+time_end: 2021-01-28T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

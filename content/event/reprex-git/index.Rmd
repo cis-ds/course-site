@@ -1,7 +1,7 @@
 ---
 title: "Reproducible examples and Git"
-date: 2021-02-18T09:40:00-06:00
-publishDate: 2019-05-01T09:40:00-06:00
+date: 2021-02-18T09:30:00-06:00
+publishDate: 2019-05-01T09:30:00-06:00
 draft: false
 
 # Talk start and end times.

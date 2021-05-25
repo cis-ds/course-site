@@ -1,14 +1,14 @@
 ---
 title: "Debugging and defensive programming"
-date: 2021-02-09T09:40:00-06:00
-publishDate: 2019-04-29T09:40:00-06:00
+date: 2021-02-09T09:30:00-06:00
+publishDate: 2019-04-29T09:30:00-06:00
 draft: false
 
 aliases: ["/cm009.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-02-09T11:00:00-06:00
+time_end: 2021-02-09T11:30:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
