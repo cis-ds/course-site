@@ -158,7 +158,7 @@ linear_reg() %>%
 
 The [documentation page for `linear_reg()`](https://tidymodels.github.io/parsnip/reference/linear_reg.html) lists the possible engines. We'll save this model object as `lm_mod`.
 
-![Artwork by @allison_horst](/media/allison_horst_art/parsnip.png)
+{{< figure src="allison_horst_art/parsnip.png" caption="Artwork by @allison_horst" >}}
 
 
 ```r

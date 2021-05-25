@@ -162,7 +162,7 @@ Each assignment will be evaluated by myself or the TA, as well as by *two peers*
 
 ## The computational social science workflow
 
-![Data science workflow. Source: [R for Data Science](http://r4ds.had.co.nz/) by Garrett Grolemund and Hadley Wickham.](/media/data-science.png)
+{{< figure src="data-science.png" caption="Data science workflow. Source: [R for Data Science](http://r4ds.had.co.nz/) by Garrett Grolemund and Hadley Wickham." >}}
 
 Computationally driven research follows a specific workflow. This is the ideal - in this course, I want to illustrate and explain to you why each stage is important and how to do it.
 
@@ -212,21 +212,21 @@ Virtually all programs are built using these fundamental components. Obviously t
 
 A **graphical user interface (GUI)** is a visual way of interacting with a computer using elements such as a mouse, icons, and menus.
 
-![Windows 3.1](/media/windows_3.1.png)
+{{< figure src="windows_3.1.png" caption="Windows 3.1" >}}
 
-![Mac OSX](/media/mac_os_x.png)
+{{< figure src="mac_os_x.png" caption="Mac OSX" >}}
 
-![Android operating system](/media/android_phones.jpg)
+{{< figure src="android_phones.jpg" caption="Android operating system" >}}
 
 GUI software runs using all the basic programming elements, but the end user is not aware of any of this. Instructions in GUI software are **implicit** to the user, whereas programming requires the user to make instructions **explicit**.
 
-![Programming in [the shell](/setup/shell/)](/media/shell.png)
+{{< figure src="shell.png" caption="Programming in [the shell](/setup/shell/)" >}}
 
 ## Benefits to programming vs. GUI software
 
 Let's demonstrate why you should want to learn to program.^[Example drawn from [*Code and Data for the Social Sciences: A Practitioner's Guide*](https://people.stanford.edu/gentzkow/sites/default/files/codeanddata.pdf).] What are the advantages over GUI software, such as Stata?
 
-![Stata](/media/stata14.png)
+{{< figure src="stata14.png" caption="Stata" >}}
 
 Here is a hypothetical assignment for a UChicago undergrad:
 
@@ -238,7 +238,7 @@ Let's see how two students (Jane and Sally) would complete this. Jane will use s
 
 1. Jane finds data files online with total annual ice cream sales in the 50 largest U.S. cities from 2001-2010 and total numbers of crimes (by type) for the 50 largest U.S. cities from 2001-2010. She gets them as spreadsheets and downloads them to her computer, saving them in her main `Downloads` folder which includes everything she's downloaded over the past three years. It probably looks something like this:
 
-    ![](/media/downloads_folder.png)
+    {{< figure src="downloads_folder.png" caption="" >}}
 
 1. Jane opens the files in Excel.
     * Ice cream sales - frozen yogurt is not ice cream. She deletes the column for frozen yogurt sales.
@@ -297,11 +297,11 @@ Many of you are probably familiar with cloud storage systems like Dropbox or Goo
 
 If you make a change and realize you don't want to keep it, you can rollback to a previous version of the repository - or even an individual file - without hassle because the VCS already contains a log of every change. VCS can be implemented locally on a single computer:
 
-![VCS on a local computer](https://git-scm.com/book/en/v2/book/01-introduction/images/local.png)
+{{< figure src="https://git-scm.com/book/en/v2/book/01-introduction/images/local.png" caption="VCS on a local computer" >}}
 
 Or in conjunction with remote servers to store backups of your repository:
 
-![VCS with a server](https://git-scm.com/book/en/v2/book/01-introduction/images/distributed.png)
+{{< figure src="https://git-scm.com/book/en/v2/book/01-introduction/images/distributed.png" caption="VCS with a server" >}}
 
 If Jane wanted to rollback to an earlier implementation of her linear regression model, she'd have to remember exactly what her settings were. However all Sally needs to do is use VCS when she revises her programs. Then to rollback to an earlier model formulation she just needs to find the earlier version of her program which generates that model.
 

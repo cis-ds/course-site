@@ -38,7 +38,7 @@ EDA relies heavily on visualizations and graphical interpretations of data. Whil
 
 ## Characteristics of exploratory graphs
 
-![Artwork by @allison_horst](/media/allison_horst_art/ggplot2_exploratory.png)
+{{< figure src="allison_horst_art/ggplot2_exploratory.png" caption="Artwork by @allison_horst" >}}
 
 Graphs generated through EDA are distinct from final graphs. You will typically generate dozens, if not hundreds, of exploratory graphs in the course of analyzing a dataset. Of these graphs, you may end up publishing one or two in a final format. One purpose of EDA is to develop a personal understanding of the data, so all your code and graphs should be geared towards that purpose. Important details that you might add if you were to publish a graph^[In perhaps an academic journal, or maybe a homework submission.] are not necessary in an exploratory graph. For example, say I want to explore how the flipper length of a penguin varies with it's body mass size. An appropriate technique would be a scatterplot:
 
@@ -77,7 +77,7 @@ ggplot(
 
 These additional details are very helpful in communicating the meaning of the graph, but take a substantial amount of time and code to write. For EDA, you don't have to add this detail to every exploratory graph.
 
-![Artwork by @allison_horst](/media/allison_horst_art/presenting_monster.png)
+{{< figure src="allison_horst_art/presenting_monster.png" caption="Artwork by @allison_horst" >}}
 
 ## Scorecard
 

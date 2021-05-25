@@ -29,11 +29,11 @@ theme_set(theme_minimal())
 
 About seven months ago, my wife and I became addicted to Hamilton.
 
-![My name is Alexander Hamilton](https://media.giphy.com/media/d4bmtcUmgA8ylgCk/giphy.gif)
+{{< figure src="https://media.giphy.com/media/d4bmtcUmgA8ylgCk/giphy.gif" caption="My name is Alexander Hamilton" >}}
 
 I admit, we were quite late to the party. I promise we did like it, but I wanted to wait and see the musical in-person before listening to the soundtrack. Alas, having three small children limits your free time to go out to the theater for an entire evening. So I finally caved and started listening to the soundtrack on Spotify. And it's amazing! My son's favorite song (he's four BTW) is My Shot.
 
-![My Shot](https://media.giphy.com/media/l378ovNpNyKXCQCHu/giphy.gif)
+{{< figure src="https://media.giphy.com/media/l378ovNpNyKXCQCHu/giphy.gif" caption="My Shot" >}}
 
 One of the nice things about the musical is that it is [sung-through](https://en.wikipedia.org/wiki/Sung-through), so the lyrics contain essentially all of the dialogue. This provides an interesting opportunity to use the `tidytext` package to analyze the lyrics. Here, I use the `geniusr` package to obtain the complete lyrics from [Genius](https://genius.com/albums/Lin-manuel-miranda/Hamilton-an-american-musical-original-broadway-cast-recording).[^lyrics]
 
@@ -232,7 +232,7 @@ hamilton_tf_idf %>%
 
 Again, some expected results stick out. Hamilton is always singing about not throwing away his shot, Eliza is helplessly in love with Alexander, while Burr regrets not being "in the room where it happens". And don't forget King George's love songs to his wayward children.
 
-![Jonathan Groff](https://media.giphy.com/media/26u6duhyJTMmLGMAE/giphy.gif)
+{{< figure src="https://media.giphy.com/media/26u6duhyJTMmLGMAE/giphy.gif" caption="Jonathan Groff" >}}
 
 ## Sentiment analysis
 
@@ -383,13 +383,13 @@ hamilton_afinn %>%
 
 Given his generally neutral sentiment, Aaron Burr clearly follows his own guidance.
 
-![Talk less](https://media.giphy.com/media/vDZw32VEqrGOQ/giphy.gif)
+{{< figure src="https://media.giphy.com/media/vDZw32VEqrGOQ/giphy.gif" caption="Talk less" >}}
 
-![Smile more](https://media.giphy.com/media/GPLL2dSTt9Jvy/giphy.gif)
+{{< figure src="https://media.giphy.com/media/GPLL2dSTt9Jvy/giphy.gif" caption="Smile more" >}}
 
 Also, can we please note Peggy's general pessimism?
 
-![And Peggy!](https://media.giphy.com/media/20EwQf08wjYrbq9Pfn/giphy.gif)
+{{< figure src="https://media.giphy.com/media/20EwQf08wjYrbq9Pfn/giphy.gif" caption="And Peggy!" >}}
 
 Tracking the cumulative sentiment across the entire musical, it's easy to identify the high and low points.
 
@@ -525,14 +525,14 @@ Finally we can examine the colocation of pairs of words to look for common usage
     ```
     
     ```
-    ## Rows: 3,532
+    ## Rows: 0
     ## Columns: 5
-    ## Groups: song_number [46]
-    ## $ song_number <dbl> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
-    ## $ song_name   <chr> "Alexander Hamilton", "Alexander Hamilton", "Alexander Ham…
-    ## $ line_num    <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,…
-    ## $ line        <chr> "How does a bastard, orphan, son of a whore and a", "Scots…
-    ## $ speaker     <chr> "Aaron Burr", "Aaron Burr", "Aaron Burr", "Aaron Burr", "J…
+    ## Groups: song_number [0]
+    ## $ song_number <dbl> 
+    ## $ song_name   <chr> 
+    ## $ line_num    <int> 
+    ## $ line        <chr> 
+    ## $ speaker     <chr>
     ```
     
 ## Session Info
@@ -554,121 +554,116 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-04-05                  
+##  date     2021-05-25                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version  date       lib source                           
-##  assertthat     0.2.1    2019-03-21 [1] CRAN (R 4.0.0)                   
-##  backports      1.2.1    2020-12-09 [1] CRAN (R 4.0.2)                   
-##  blogdown       1.2      2021-03-04 [1] CRAN (R 4.0.3)                   
-##  bookdown       0.21.7   2021-03-31 [1] Github (rstudio/bookdown@71bc601)
-##  broom          0.7.5    2021-02-19 [1] CRAN (R 4.0.2)                   
-##  bslib          0.2.4    2021-01-25 [1] CRAN (R 4.0.2)                   
-##  cachem         1.0.4    2021-02-13 [1] CRAN (R 4.0.2)                   
-##  callr          3.6.0    2021-03-28 [1] CRAN (R 4.0.2)                   
-##  cellranger     1.1.0    2016-07-27 [1] CRAN (R 4.0.0)                   
-##  cli            2.3.1    2021-02-23 [1] CRAN (R 4.0.3)                   
-##  codetools      0.2-18   2020-11-04 [1] CRAN (R 4.0.4)                   
-##  colorspace     2.0-0    2020-11-11 [1] CRAN (R 4.0.2)                   
-##  crayon         1.4.1    2021-02-08 [1] CRAN (R 4.0.2)                   
-##  curl           4.3      2019-12-02 [1] CRAN (R 4.0.0)                   
-##  DBI            1.1.1    2021-01-15 [1] CRAN (R 4.0.2)                   
-##  dbplyr         2.1.0    2021-02-03 [1] CRAN (R 4.0.2)                   
-##  debugme        1.1.0    2017-10-22 [1] CRAN (R 4.0.0)                   
-##  desc           1.3.0    2021-03-05 [1] CRAN (R 4.0.2)                   
-##  devtools       2.3.2    2020-09-18 [1] CRAN (R 4.0.2)                   
-##  digest         0.6.27   2020-10-24 [1] CRAN (R 4.0.2)                   
-##  dplyr        * 1.0.5    2021-03-05 [1] CRAN (R 4.0.3)                   
-##  ellipsis       0.3.1    2020-05-15 [1] CRAN (R 4.0.0)                   
-##  evaluate       0.14     2019-05-28 [1] CRAN (R 4.0.0)                   
-##  fansi          0.4.2    2021-01-15 [1] CRAN (R 4.0.2)                   
-##  farver         2.1.0    2021-02-28 [1] CRAN (R 4.0.2)                   
-##  fastmap        1.1.0    2021-01-25 [1] CRAN (R 4.0.2)                   
-##  forcats      * 0.5.1    2021-01-27 [1] CRAN (R 4.0.2)                   
-##  fs             1.5.0    2020-07-31 [1] CRAN (R 4.0.2)                   
-##  generics       0.1.0    2020-10-31 [1] CRAN (R 4.0.2)                   
-##  geniusr      * 1.2.0    2020-04-13 [1] CRAN (R 4.0.0)                   
-##  ggforce        0.3.3    2021-03-05 [1] CRAN (R 4.0.3)                   
-##  ggplot2      * 3.3.3    2020-12-30 [1] CRAN (R 4.0.2)                   
-##  ggraph       * 2.0.5    2021-02-23 [1] CRAN (R 4.0.2)                   
-##  ggrepel        0.9.1    2021-01-15 [1] CRAN (R 4.0.2)                   
-##  ggtext       * 0.1.1    2020-12-17 [1] CRAN (R 4.0.2)                   
-##  glue           1.4.2    2020-08-27 [1] CRAN (R 4.0.2)                   
-##  graphlayouts   0.7.1    2020-10-26 [1] CRAN (R 4.0.2)                   
-##  gridExtra      2.3      2017-09-09 [1] CRAN (R 4.0.0)                   
-##  gridtext       0.1.4    2020-12-10 [1] CRAN (R 4.0.2)                   
-##  gtable         0.3.0    2019-03-25 [1] CRAN (R 4.0.0)                   
-##  haven          2.3.1    2020-06-01 [1] CRAN (R 4.0.0)                   
-##  here         * 1.0.1    2020-12-13 [1] CRAN (R 4.0.2)                   
-##  highr          0.8      2019-03-20 [1] CRAN (R 4.0.0)                   
-##  hms            1.0.0    2021-01-13 [1] CRAN (R 4.0.2)                   
-##  htmltools      0.5.1.1  2021-01-22 [1] CRAN (R 4.0.2)                   
-##  httr           1.4.2    2020-07-20 [1] CRAN (R 4.0.2)                   
-##  igraph         1.2.6    2020-10-06 [1] CRAN (R 4.0.2)                   
-##  janeaustenr    0.1.5    2017-06-10 [1] CRAN (R 4.0.0)                   
-##  jquerylib      0.1.3    2020-12-17 [1] CRAN (R 4.0.2)                   
-##  jsonlite       1.7.2    2020-12-09 [1] CRAN (R 4.0.2)                   
-##  knitr          1.31     2021-01-27 [1] CRAN (R 4.0.2)                   
-##  labeling       0.4.2    2020-10-20 [1] CRAN (R 4.0.2)                   
-##  lattice        0.20-41  2020-04-02 [1] CRAN (R 4.0.4)                   
-##  lifecycle      1.0.0    2021-02-15 [1] CRAN (R 4.0.2)                   
-##  lubridate      1.7.10   2021-02-26 [1] CRAN (R 4.0.2)                   
-##  magrittr       2.0.1    2020-11-17 [1] CRAN (R 4.0.2)                   
-##  markdown       1.1      2019-08-07 [1] CRAN (R 4.0.0)                   
-##  MASS           7.3-53.1 2021-02-12 [1] CRAN (R 4.0.2)                   
-##  Matrix         1.3-2    2021-01-06 [1] CRAN (R 4.0.4)                   
-##  memoise        2.0.0    2021-01-26 [1] CRAN (R 4.0.2)                   
-##  modelr         0.1.8    2020-05-19 [1] CRAN (R 4.0.0)                   
-##  munsell        0.5.0    2018-06-12 [1] CRAN (R 4.0.0)                   
-##  pillar         1.5.1    2021-03-05 [1] CRAN (R 4.0.3)                   
-##  pkgbuild       1.2.0    2020-12-15 [1] CRAN (R 4.0.2)                   
-##  pkgconfig      2.0.3    2019-09-22 [1] CRAN (R 4.0.0)                   
-##  pkgload        1.2.0    2021-02-23 [1] CRAN (R 4.0.2)                   
-##  polyclip       1.10-0   2019-03-14 [1] CRAN (R 4.0.0)                   
-##  prettyunits    1.1.1    2020-01-24 [1] CRAN (R 4.0.0)                   
-##  processx       3.5.0    2021-03-23 [1] CRAN (R 4.0.2)                   
-##  ps             1.6.0    2021-02-28 [1] CRAN (R 4.0.2)                   
-##  purrr        * 0.3.4    2020-04-17 [1] CRAN (R 4.0.0)                   
-##  R6             2.5.0    2020-10-28 [1] CRAN (R 4.0.2)                   
-##  rappdirs       0.3.3    2021-01-31 [1] CRAN (R 4.0.2)                   
-##  Rcpp           1.0.6    2021-01-15 [1] CRAN (R 4.0.2)                   
-##  readr        * 1.4.0    2020-10-05 [1] CRAN (R 4.0.2)                   
-##  readxl         1.3.1    2019-03-13 [1] CRAN (R 4.0.0)                   
-##  remotes        2.2.0    2020-07-21 [1] CRAN (R 4.0.2)                   
-##  reprex         1.0.0    2021-01-27 [1] CRAN (R 4.0.2)                   
-##  rlang          0.4.10   2020-12-30 [1] CRAN (R 4.0.2)                   
-##  rmarkdown      2.7      2021-02-19 [1] CRAN (R 4.0.2)                   
-##  rprojroot      2.0.2    2020-11-15 [1] CRAN (R 4.0.2)                   
-##  rstudioapi     0.13     2020-11-12 [1] CRAN (R 4.0.2)                   
-##  rvest          1.0.0    2021-03-09 [1] CRAN (R 4.0.2)                   
-##  sass           0.3.1    2021-01-24 [1] CRAN (R 4.0.2)                   
-##  scales         1.1.1    2020-05-11 [1] CRAN (R 4.0.0)                   
-##  selectr        0.4-2    2019-11-20 [1] CRAN (R 4.0.0)                   
-##  sessioninfo    1.1.1    2018-11-05 [1] CRAN (R 4.0.0)                   
-##  SnowballC      0.7.0    2020-04-01 [1] CRAN (R 4.0.0)                   
-##  stopwords      2.2      2021-02-10 [1] CRAN (R 4.0.2)                   
-##  stringi        1.5.3    2020-09-09 [1] CRAN (R 4.0.2)                   
-##  stringr      * 1.4.0    2019-02-10 [1] CRAN (R 4.0.0)                   
-##  testthat       3.0.2    2021-02-14 [1] CRAN (R 4.0.2)                   
-##  textdata       0.4.1    2020-05-04 [1] CRAN (R 4.0.0)                   
-##  tibble       * 3.1.0    2021-02-25 [1] CRAN (R 4.0.2)                   
-##  tidygraph      1.2.0    2020-05-12 [1] CRAN (R 4.0.0)                   
-##  tidyr        * 1.1.3    2021-03-03 [1] CRAN (R 4.0.2)                   
-##  tidyselect     1.1.0    2020-05-11 [1] CRAN (R 4.0.0)                   
-##  tidytext     * 0.3.0    2021-01-06 [1] CRAN (R 4.0.2)                   
-##  tidyverse    * 1.3.0    2019-11-21 [1] CRAN (R 4.0.0)                   
-##  tokenizers     0.2.1    2018-03-29 [1] CRAN (R 4.0.0)                   
-##  tweenr         1.0.2    2021-03-23 [1] CRAN (R 4.0.2)                   
-##  usethis        2.0.1    2021-02-10 [1] CRAN (R 4.0.2)                   
-##  utf8           1.2.1    2021-03-12 [1] CRAN (R 4.0.2)                   
-##  vctrs          0.3.6    2020-12-17 [1] CRAN (R 4.0.2)                   
-##  viridis        0.5.1    2018-03-29 [1] CRAN (R 4.0.0)                   
-##  viridisLite    0.3.0    2018-02-01 [1] CRAN (R 4.0.0)                   
-##  widyr        * 0.1.3    2020-04-12 [1] CRAN (R 4.0.0)                   
-##  withr          2.4.1    2021-01-26 [1] CRAN (R 4.0.2)                   
-##  xfun           0.22     2021-03-11 [1] CRAN (R 4.0.2)                   
-##  xml2           1.3.2    2020-04-23 [1] CRAN (R 4.0.0)                   
-##  yaml           2.2.1    2020-02-01 [1] CRAN (R 4.0.0)                   
+##  package      * version date       lib source        
+##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
+##  blogdown       1.3     2021-04-14 [1] CRAN (R 4.0.2)
+##  bookdown       0.22    2021-04-22 [1] CRAN (R 4.0.2)
+##  broom          0.7.6   2021-04-05 [1] CRAN (R 4.0.4)
+##  bslib          0.2.5   2021-05-12 [1] CRAN (R 4.0.4)
+##  cachem         1.0.5   2021-05-15 [1] CRAN (R 4.0.2)
+##  callr          3.7.0   2021-04-20 [1] CRAN (R 4.0.2)
+##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli            2.5.0   2021-04-26 [1] CRAN (R 4.0.2)
+##  codetools      0.2-18  2020-11-04 [1] CRAN (R 4.0.4)
+##  colorspace     2.0-1   2021-05-04 [1] CRAN (R 4.0.2)
+##  crayon         1.4.1   2021-02-08 [1] CRAN (R 4.0.2)
+##  curl           4.3.1   2021-04-30 [1] CRAN (R 4.0.2)
+##  DBI            1.1.1   2021-01-15 [1] CRAN (R 4.0.2)
+##  dbplyr         2.1.1   2021-04-06 [1] CRAN (R 4.0.4)
+##  desc           1.3.0   2021-03-05 [1] CRAN (R 4.0.2)
+##  devtools       2.4.1   2021-05-05 [1] CRAN (R 4.0.2)
+##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.0.2)
+##  dplyr        * 1.0.6   2021-05-05 [1] CRAN (R 4.0.2)
+##  ellipsis       0.3.2   2021-04-29 [1] CRAN (R 4.0.2)
+##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi          0.4.2   2021-01-15 [1] CRAN (R 4.0.2)
+##  farver         2.1.0   2021-02-28 [1] CRAN (R 4.0.2)
+##  fastmap        1.1.0   2021-01-25 [1] CRAN (R 4.0.2)
+##  forcats      * 0.5.1   2021-01-27 [1] CRAN (R 4.0.2)
+##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
+##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.0.2)
+##  geniusr      * 1.2.0   2020-04-13 [1] CRAN (R 4.0.0)
+##  ggforce        0.3.3   2021-03-05 [1] CRAN (R 4.0.3)
+##  ggplot2      * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)
+##  ggraph       * 2.0.5   2021-02-23 [1] CRAN (R 4.0.2)
+##  ggrepel        0.9.1   2021-01-15 [1] CRAN (R 4.0.2)
+##  ggtext       * 0.1.1   2020-12-17 [1] CRAN (R 4.0.2)
+##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  graphlayouts   0.7.1   2020-10-26 [1] CRAN (R 4.0.2)
+##  gridExtra      2.3     2017-09-09 [1] CRAN (R 4.0.0)
+##  gridtext       0.1.4   2020-12-10 [1] CRAN (R 4.0.2)
+##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven          2.4.1   2021-04-23 [1] CRAN (R 4.0.2)
+##  here         * 1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
+##  hms            1.1.0   2021-05-17 [1] CRAN (R 4.0.4)
+##  htmltools      0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)
+##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  igraph         1.2.6   2020-10-06 [1] CRAN (R 4.0.2)
+##  janeaustenr    0.1.5   2017-06-10 [1] CRAN (R 4.0.0)
+##  jquerylib      0.1.4   2021-04-26 [1] CRAN (R 4.0.2)
+##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.0.2)
+##  knitr          1.33    2021-04-24 [1] CRAN (R 4.0.2)
+##  lattice        0.20-44 2021-05-02 [1] CRAN (R 4.0.2)
+##  lifecycle      1.0.0   2021-02-15 [1] CRAN (R 4.0.2)
+##  lubridate      1.7.10  2021-02-26 [1] CRAN (R 4.0.2)
+##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.0.2)
+##  MASS           7.3-54  2021-05-03 [1] CRAN (R 4.0.2)
+##  Matrix         1.3-3   2021-05-04 [1] CRAN (R 4.0.2)
+##  memoise        2.0.0   2021-01-26 [1] CRAN (R 4.0.2)
+##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  pillar         1.6.1   2021-05-16 [1] CRAN (R 4.0.4)
+##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.0.2)
+##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload        1.2.1   2021-04-06 [1] CRAN (R 4.0.2)
+##  polyclip       1.10-0  2019-03-14 [1] CRAN (R 4.0.0)
+##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx       3.5.2   2021-04-30 [1] CRAN (R 4.0.2)
+##  ps             1.6.0   2021-02-28 [1] CRAN (R 4.0.2)
+##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6             2.5.0   2020-10-28 [1] CRAN (R 4.0.2)
+##  rappdirs       0.3.3   2021-01-31 [1] CRAN (R 4.0.2)
+##  Rcpp           1.0.6   2021-01-15 [1] CRAN (R 4.0.2)
+##  readr        * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes        2.3.0   2021-04-01 [1] CRAN (R 4.0.2)
+##  reprex         2.0.0   2021-04-02 [1] CRAN (R 4.0.2)
+##  rlang          0.4.11  2021-04-30 [1] CRAN (R 4.0.2)
+##  rmarkdown      2.8     2021-05-07 [1] CRAN (R 4.0.2)
+##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.0.2)
+##  rstudioapi     0.13    2020-11-12 [1] CRAN (R 4.0.2)
+##  rvest          1.0.0   2021-03-09 [1] CRAN (R 4.0.2)
+##  sass           0.4.0   2021-05-12 [1] CRAN (R 4.0.2)
+##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  selectr        0.4-2   2019-11-20 [1] CRAN (R 4.0.0)
+##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  SnowballC      0.7.0   2020-04-01 [1] CRAN (R 4.0.0)
+##  stringi        1.6.1   2021-05-10 [1] CRAN (R 4.0.2)
+##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat       3.0.2   2021-02-14 [1] CRAN (R 4.0.2)
+##  textdata       0.4.1   2020-05-04 [1] CRAN (R 4.0.0)
+##  tibble       * 3.1.1   2021-04-18 [1] CRAN (R 4.0.2)
+##  tidygraph      1.2.0   2020-05-12 [1] CRAN (R 4.0.0)
+##  tidyr        * 1.1.3   2021-03-03 [1] CRAN (R 4.0.2)
+##  tidyselect     1.1.1   2021-04-30 [1] CRAN (R 4.0.2)
+##  tidytext     * 0.3.1   2021-04-10 [1] CRAN (R 4.0.2)
+##  tidyverse    * 1.3.1   2021-04-15 [1] CRAN (R 4.0.2)
+##  tokenizers     0.2.1   2018-03-29 [1] CRAN (R 4.0.0)
+##  tweenr         1.0.2   2021-03-23 [1] CRAN (R 4.0.2)
+##  usethis        2.0.1   2021-02-10 [1] CRAN (R 4.0.2)
+##  utf8           1.2.1   2021-03-12 [1] CRAN (R 4.0.2)
+##  vctrs          0.3.8   2021-04-29 [1] CRAN (R 4.0.2)
+##  viridis        0.6.1   2021-05-11 [1] CRAN (R 4.0.2)
+##  viridisLite    0.4.0   2021-04-13 [1] CRAN (R 4.0.2)
+##  widyr        * 0.1.3   2020-04-12 [1] CRAN (R 4.0.0)
+##  withr          2.4.2   2021-04-18 [1] CRAN (R 4.0.2)
+##  xfun           0.23    2021-05-15 [1] CRAN (R 4.0.2)
+##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```

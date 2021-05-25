@@ -30,8 +30,8 @@ How can you avoid `setwd()` at the top of every script?
 * Use the `here()` function from the [`here` package](https://CRAN.R-project.org/package=here) to build the path when you read or write a file. Create paths relative to the top-level directory.
 * Whenever you work on this project, launch the R process from the project's top-level directory.
 
-![Artwork by @allison_horst](/media/allison_horst_art/here.png)
-  
+{{< figure src="allison_horst_art/here.png" caption="Artwork by @allison_horst" >}}
+
 ## How to use the `here` package
 
 1. Install [`here`](https://cran.r-project.org/web/packages/here/index.html).
@@ -117,7 +117,7 @@ Here are the criteria. The order doesn't really matter because all of them are c
 * Is this an RStudio Project? Literally, can I find a file named something like `foo.Rproj`?
 * Is this a checkout from a version control system? Does it have a directory named `.git` or `.svn`? Currently, only Git and Subversion are supported.
 
-![Artwork by @allsion_horst](/media/allison_horst_art/cracked_setwd.png)
+{{< figure src="allison_horst_art/cracked_setwd.png" caption="Artwork by @allsion_horst" >}}
 
 ## Filepaths and R Markdown documents
 

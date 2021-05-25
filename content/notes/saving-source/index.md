@@ -32,7 +32,7 @@ Your **workspace** in R is the current working environment. It includes any libr
 
 Everything that really matters should be achieved through code that you save.
 
-![](/media/if-you-liked-it-you-should-have-saved-the-source-for-it.jpg)
+{{< figure src="if-you-liked-it-you-should-have-saved-the-source-for-it.jpg" caption="" >}}
 
 All important objects or figures should be explicitly saved to file, in a granular way. This is in contrast to storing them implicitly or explicitly, as part of an entire workspace, or saving them via the mouse. These recommendations make useful objects readily available for use in other scripts or documents, with the additional assurance that they can be regenerated on-demand.
 
@@ -48,7 +48,7 @@ When you quit R, do not save the workspace to an `.Rdata` file. When you launch,
 
 In RStudio, set this via *Tools > Global Options*.
 
-![](/media/rstudio-workspace.png)
+{{< figure src="rstudio-workspace.png" caption="" >}}
 
 ## Restart R often during development
 

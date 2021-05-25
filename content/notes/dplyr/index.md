@@ -24,8 +24,6 @@ library(nycflights13)
 
 {{< figure src="data-science.png" caption="Data science workflow" >}}
 
-![Data science workflow](/data-science.png)
-
 Rarely will your data arrive in exactly the form you require in order to analyze it appropriately. As part of the data science workflow you will need to **transform** your data in order to analyze it. Just as we established a syntax for generating graphics (the **layered grammar of graphics**), so too will we have a syntax for data transformation.
 
 From the same author of `ggplot2`, I give you `dplyr`! This package contains useful functions for transforming and manipulating data frames, the bread-and-butter format for data in R. These functions can be thought of as **verbs**. The noun is the data, and the verb is acting on the noun. All of the `dplyr` verbs (and in fact all the verbs in the wider `tidyverse`) work similarly:
@@ -48,7 +46,7 @@ From the same author of `ggplot2`, I give you `dplyr`! This package contains use
 `group_by()`    | Changes the unit of analysis from the complete dataset to individual groups
 `summarize()`   | Collapses the data frame to a smaller number of rows which summarize the larger data
 
-![Artwork by @allison_horst](/media/allison_horst_art/dplyr_mutate.png)
+{{< figure src="allison_horst_art/dplyr_mutate.png" caption="Artwork by @allison_horst" >}}
 
 These are the basic verbs you will use to transform your data. By combining them together, you can perform powerful data manipulation tasks.
 
@@ -117,7 +115,7 @@ diamonds_ideal <- filter(.data = diamonds, cut == "Ideal") # saved, but not prin
 ## # … with 21,541 more rows
 ```
 
-![Artwork by @allison_horst](/media/allison_horst_art/dplyr_filter.jpg)
+{{< figure src="allison_horst_art/dplyr_filter.jpg" caption="Artwork by @allison_horst" >}}
 
 {{% callout note %}}
 

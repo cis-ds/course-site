@@ -30,17 +30,17 @@ usethis::use_course("uc-cfss/a-deep-dive-into-r-markdown")
 
 ## Reproducibility in scientific research
 
-![](/media/data-science/base.png)
+{{< figure src="data-science/base.png" caption="" >}}
 
 **Reproducibility** is "the idea that data analyses, and more generally, scientific claims, are published with their data and software code so that others may verify the findings and build upon them."^[[Coursera: Reproducible Research](https://www.coursera.org/learn/reproducible-research)] Scholars who implement reproducibility in their projects can quickly and easily reproduce the original results and trace back to determine how they were derived. This easily enables verification and replication, and allows the researcher to precisely replicate his or her analysis. This is extremely important when writing a paper, submitting it to a journal, then coming back months later for a revise and resubmit because you won't remember how all the code/analysis works together when completing your revisions.
 
 Reproducibility is also key for communicating findings with other researchers and decision makers; it allows them to verify your results, assess your assumptions, and understand how your answers were formed rather than solely relying on your claims. In the data science framework employed in [R for Data Science](http://r4ds.had.co.nz), reproducibility is infused throughout the entire workflow.
 
-![Artwork by @allison_horst](/media/allison_horst_art/reproducibility_court.png)
+{{< figure src="allison_horst_art/reproducibility_court.png" caption="Artwork by @allison_horst" >}}
 
 [R Markdown](http://rmarkdown.rstudio.com/) is one approach to ensuring reproducibility by providing a single cohesive authoring framework. It allows you to combine code, output, and analysis into a single document, are easily reproducible, and can be output to many different file formats. R Markdown is just one tool for enabling reproducibility. Another tool is [Git](https://git-scm.com/) for **version control**, which is crucial for collaboration and tracking changes to code and analysis.
 
-![Artwork by @allison_horst](/media/allison_horst_art/rmarkdown_rockstar.png)
+{{< figure src="allison_horst_art/rmarkdown_rockstar.png" caption="Artwork by @allison_horst" >}}
 
 ### Jupyter Notebooks
 
@@ -99,7 +99,7 @@ Code chunks are interspersed with text throughout the document. To complete the 
 
 When you **knit** the document you send your `.Rmd` file to [`knitr`](https://yihui.name/knitr/), a package for R that executes all the code chunks and creates a second **markdown** document (`.md`). That markdown document is then passed onto [**pandoc**](http://pandoc.org/), a document rendering software program independent from R. Pandoc allows users to convert back and forth between many different document formats such as HTML, $\LaTeX$, Microsoft Word, etc. By splitting the workflow up, you can convert your R Markdown document into a wide range of output formats.
 
-![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)
+{{< figure src="https://r4ds.had.co.nz/images/RMarkdownFlow.png" caption="" >}}
 
 ## Text formatting with Markdown
 
@@ -136,7 +136,7 @@ For example, if I wanted a code chunk to not print the code itself or any warnin
 
 Remember the R Markdown workflow?
 
-![](https://r4ds.had.co.nz/images/RMarkdownFlow.png)
+{{< figure src="https://r4ds.had.co.nz/images/RMarkdownFlow.png" caption="" >}}
 
 By default, every time you knit a document R starts completely fresh. None of the previous results are saved. If you have code chunks that run computationally intensive tasks, you might want to store these results to be more efficient and save time. If you use `cache = TRUE`, R will do exactly this. The output of the chunk will be saved to a specially named file on disk. If your [`.gitignore` file is setup correctly](/notes/common-git-problems/#how-to-use-gitignore), this cached file will not be tracked by Git. This is in fact preferable since the cached file could be hundreds of megabytes in size. Now, every time you knit the document the cached results will be used instead of running the code fresh.
 
@@ -472,7 +472,7 @@ youth %>%
 
 You edit scripts in the editor panel in R Studio.
 
-![](https://r4ds.had.co.nz/diagrams/rstudio-editor.png)
+{{< figure src="https://r4ds.had.co.nz/diagrams/rstudio-editor.png" caption="" >}}
 
 ## When to use a script?
 
@@ -516,7 +516,7 @@ Rscript -e "rmarkdown::render('gun-deaths.Rmd')"
 
 This creates a temporary R script which contains the single command `rmarkdown::render('gun-deaths.Rmd')` and executes it via `Rscript`.
 
-![Artwork by @allison_horst](/media/allison_horst_art/rmarkdown_wizards.png)
+{{< figure src="allison_horst_art/rmarkdown_wizards.png" caption="Artwork by @allison_horst" >}}
 
 ## Acknowledgments
 

@@ -70,7 +70,7 @@ As you might suspect from the example above, surfing the web is basically equiva
 
 Suppose, for instance, you wanted to look something up on Wikipedia. The first step would be to open your web browser and type in `http://www.wikipedia.org`. Once you hit return, you would see the page below.  
 
-![](/media/wikipedia.png)
+{{< figure src="wikipedia.png" caption="" >}}
 
 Several different processes occurred, however, between hitting "return" and the page finally being rendered. In order:
 

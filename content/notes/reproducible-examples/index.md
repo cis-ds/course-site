@@ -64,7 +64,7 @@ reprex()
 
 A nicely rendered HTML preview will display in RStudio's Viewer (if you're in RStudio) or your default browser otherwise.
 
-![Output of `reprex()`](/media/reprex-output.png)
+{{< figure src="reprex-output.png" caption="Output of `reprex()`" >}}
 
 The relevant bit of GitHub-flavored Markdown is ready to be pasted from your clipboard:
 
@@ -117,8 +117,7 @@ To ensure your example is a reproducible example, you need to make sure to load 
 * Ensure portability of the code
     * Don't use [`rm(list = ls())`](/notes/saving-source/#what-s-wrong-with-rm-list-ls) or [`setwd()`](/notes/project-oriented-workflow/#we-need-to-talk-about-setwd-path-that-only-works-on-my-machine).
 
-
-![Artwork by @allison_horst](/media/allison_horst_art/reprex.png)
+{{< figure src="allison_horst_art/reprex.png" caption="Artwork by @allison_horst" >}}
 
 ## Acknowledgments
 
