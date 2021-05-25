@@ -69,12 +69,19 @@ reprex()
 
 A nicely rendered HTML preview will display in RStudio's Viewer (if you're in RStudio) or your default browser otherwise.
 
-![Output of `reprex()`](/img/reprex-output.png)
+{{< figure src="reprex-output.png" caption="Output of `reprex()`" >}}
 
 The relevant bit of GitHub-flavored Markdown is ready to be pasted from your clipboard:
 
 
 ````
+---
+author: soltoffbc
+date: 2021-05-25
+output: "reprex::reprex\\_document"
+title: bonny-fox\_reprex.R
+---
+
 ``` r
 library(tidyverse)
 count(diamonds, colour)
@@ -82,12 +89,19 @@ count(diamonds, colour)
 #> * Column `colour` is not found.
 ```
 
-<sup>Created on 2021-01-21 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
+<sup>Created on 2021-05-25 by the [reprex package](https://reprex.tidyverse.org) (v2.0.0)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
 
 
+
+
+
+
+
+
+
 ``` r
 library(tidyverse)
 count(diamonds, colour)
@@ -95,7 +109,7 @@ count(diamonds, colour)
 #> * Column `colour` is not found.
 ```
 
-<sup>Created on 2021-01-21 by the [reprex package](https://reprex.tidyverse.org) (v0.3.0)</sup>
+<sup>Created on 2021-05-25 by the [reprex package](https://reprex.tidyverse.org) (v2.0.0)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 

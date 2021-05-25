@@ -74,7 +74,7 @@ This template is by itself a working minimal Shiny app that doesn't do much. It 
 
 After saving the file, RStudio should recognize that this is a Shiny app, and you should see the usual *Run* button at the top change to *Run App*.
 
-[![Shiny Run App](/img/shiny-runapp.png)](/img/shiny-runapp.png)
+{{< figure src="shiny-runapp.png" caption="Shiny Run App" >}}
 
 If you don't see the *Run App* button, it means you either have a very old version of RStudio, don't have Shiny installed, or didn't follow the file naming conventions.
 
@@ -82,7 +82,7 @@ Click the *Run App* button, and now your app should run. You won't see much beca
 
 Click the stop button to stop the app, or press the *Escape* key.
 
-[![Shiny Stop App](/img/shiny-stopapp.png)](/img/shiny-stopapp.png)
+{{< figure src="shiny-stopapp.png" caption="Shiny Stop App" >}}
 
 You may have noticed that when you click the *Run App* button, all it's doing is just running the function `shiny::runApp()` in the console. You can run that command instead of clicking the button if you prefer.
 
@@ -219,7 +219,7 @@ server <- function(input, output) {}
 shinyApp(ui = ui, server = server)
 ```
 
-[![Shiny layout](/img/shiny-layout.png)](/img/shiny-layout.png)
+{{< figure src="shiny-layout.png" caption="Shiny layout" >}}
 
 {{% callout note %}}
 
@@ -255,7 +255,7 @@ This should make you appreciate Shiny for not making you write horrendous HTML b
 
 Inputs are what gives users a way to interact with a Shiny app. Shiny provides many input functions to support many kinds of interactions that the user could have with an app. For example, `textInput()` is used to let the user enter text, `numericInput()` lets the user select a number, `dateInput()` is for selecting a date, `selectInput()` is for creating a select box (aka a dropdown menu).
 
-[![Shiny inputs](/img/shiny-inputs.png)](/img/shiny-inputs.png)
+{{< figure src="shiny-inputs.png" caption="Shiny inputs" >}}
 
 All input functions have the same first two arguments: `inputId` and `label`. The `inputId` will be the name that Shiny will use to refer to this input when you want to retrieve its current value. It is important to note that every input must have a unique `inputId`. If you give more than one input the same id, Shiny will unfortunately not give you an explicit error, but your app won't work correctly. The `label` argument specifies the text in the display label that goes along with the input widget. Every input can also have multiple other arguments specific to that input type. The only way to find out what arguments you can use with a specific input function is to look at its help file.
 
@@ -392,7 +392,7 @@ server <- function(input, output) {}
 shinyApp(ui = ui, server = server)
 ```
 
-[![Shiny add inputs](/img/shiny-addinputs.png)](/img/shiny-addinputs.png)
+{{< figure src="shiny-addinputs.png" caption="Shiny add inputs" >}}
 
 ## Add placeholders for outputs
 
@@ -589,7 +589,7 @@ server <- function(input, output) {
 shinyApp(ui = ui, server = server)
 ```
 
-[![Shiny add plot](/img/shiny-addplot.png)](/img/shiny-addplot.png)
+{{< figure src="shiny-addplot.png" caption="Shiny add plo" >}}
 
 **Exercise:** The current plot doesn't look very nice, you could enhance the plot and make it much more pleasant to look at.
 
@@ -742,7 +742,7 @@ employ_filter <- reactive({
 
 But notice what happens if you run the app. You get a blank plot:
 
-[![Shiny App with Blank Plot](/img/shiny-nullinput.png)](/img/shiny-nullinput.png)
+{{< figure src="shiny-nullinput.png" caption="Shiny App with Blank Plot" >}}
 
 However once you select a department (e.g. City Council), the histrogram is correctly drawn. What gives? The problem is that if you do not select any values for `selectInput(inputId = "department")`, then the value of `input$department` is not all the possible values for `employ$department` -- it's value is `NULL`. So the `employ` data frame is being filtered to 0 rows because every observation has a value for `department` (even if that value is `NA`).
 
@@ -971,7 +971,7 @@ RStudio provides a service called [shinyapps.io](http://www.shinyapps.io/) which
 
 Hosting your app on shinyapps.io is the easy and recommended way of getting your app online. Go to [www.shinyapps.io](http://www.shinyapps.io/) and sign up for an account. When you're ready to publish your app, click on the "Publish Application" button in RStudio and follow their instructions. You might be asked to install a couple packages if it's your first time.
 
-[![Shiny publish](/img/shiny-publish.png)](/img/shiny-publish.png)
+{{< figure src="shiny-publish.png" caption="Shiny publish" >}}
 
 After a successful deployment to shinyapps.io, you will be redirected to your app in the browser. You can use that URL to show off to your family what a cool app you wrote.
 
@@ -1147,96 +1147,94 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-04-05                  
+##  date     2021-05-25                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source                           
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)                   
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)                   
-##  blogdown      1.2     2021-03-04 [1] CRAN (R 4.0.3)                   
-##  bookdown      0.21.7  2021-03-31 [1] Github (rstudio/bookdown@71bc601)
-##  broom         0.7.5   2021-02-19 [1] CRAN (R 4.0.2)                   
-##  bslib         0.2.4   2021-01-25 [1] CRAN (R 4.0.2)                   
-##  cachem        1.0.4   2021-02-13 [1] CRAN (R 4.0.2)                   
-##  callr         3.6.0   2021-03-28 [1] CRAN (R 4.0.2)                   
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)                   
-##  cli           2.3.1   2021-02-23 [1] CRAN (R 4.0.3)                   
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.0.4)                   
-##  colorspace    2.0-0   2020-11-11 [1] CRAN (R 4.0.2)                   
-##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.0.2)                   
-##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.0.2)                   
-##  dbplyr        2.1.0   2021-02-03 [1] CRAN (R 4.0.2)                   
-##  debugme       1.1.0   2017-10-22 [1] CRAN (R 4.0.0)                   
-##  desc          1.3.0   2021-03-05 [1] CRAN (R 4.0.2)                   
-##  devtools      2.3.2   2020-09-18 [1] CRAN (R 4.0.2)                   
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)                   
-##  dplyr       * 1.0.5   2021-03-05 [1] CRAN (R 4.0.3)                   
-##  ellipsis      0.3.1   2020-05-15 [1] CRAN (R 4.0.0)                   
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)                   
-##  fansi         0.4.2   2021-01-15 [1] CRAN (R 4.0.2)                   
-##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.0.2)                   
-##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.0.2)                   
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)                   
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.0.2)                   
-##  ggplot2     * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)                   
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)                   
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)                   
-##  haven         2.3.1   2020-06-01 [1] CRAN (R 4.0.0)                   
-##  here          1.0.1   2020-12-13 [1] CRAN (R 4.0.2)                   
-##  hms           1.0.0   2021-01-13 [1] CRAN (R 4.0.2)                   
-##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)                   
-##  httpuv        1.5.5   2021-01-13 [1] CRAN (R 4.0.2)                   
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)                   
-##  jquerylib     0.1.3   2020-12-17 [1] CRAN (R 4.0.2)                   
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.0.2)                   
-##  knitr         1.31    2021-01-27 [1] CRAN (R 4.0.2)                   
-##  later         1.1.0.1 2020-06-05 [1] CRAN (R 4.0.1)                   
-##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.0.2)                   
-##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.0.2)                   
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)                   
-##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.0.2)                   
-##  mime          0.10    2021-02-13 [1] CRAN (R 4.0.2)                   
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)                   
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)                   
-##  pillar        1.5.1   2021-03-05 [1] CRAN (R 4.0.3)                   
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)                   
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)                   
-##  pkgload       1.2.0   2021-02-23 [1] CRAN (R 4.0.2)                   
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)                   
-##  processx      3.5.0   2021-03-23 [1] CRAN (R 4.0.2)                   
-##  promises      1.2.0.1 2021-02-11 [1] CRAN (R 4.0.2)                   
-##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.0.2)                   
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)                   
-##  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)                   
-##  Rcpp          1.0.6   2021-01-15 [1] CRAN (R 4.0.2)                   
-##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)                   
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)                   
-##  remotes       2.2.0   2020-07-21 [1] CRAN (R 4.0.2)                   
-##  reprex        1.0.0   2021-01-27 [1] CRAN (R 4.0.2)                   
-##  rlang         0.4.10  2020-12-30 [1] CRAN (R 4.0.2)                   
-##  rmarkdown     2.7     2021-02-19 [1] CRAN (R 4.0.2)                   
-##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)                   
-##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.0.2)                   
-##  rvest         1.0.0   2021-03-09 [1] CRAN (R 4.0.2)                   
-##  sass          0.3.1   2021-01-24 [1] CRAN (R 4.0.2)                   
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)                   
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)                   
-##  shiny       * 1.6.0   2021-01-25 [1] CRAN (R 4.0.2)                   
-##  stringi       1.5.3   2020-09-09 [1] CRAN (R 4.0.2)                   
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)                   
-##  testthat      3.0.2   2021-02-14 [1] CRAN (R 4.0.2)                   
-##  tibble      * 3.1.0   2021-02-25 [1] CRAN (R 4.0.2)                   
-##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.0.2)                   
-##  tidyselect    1.1.0   2020-05-11 [1] CRAN (R 4.0.0)                   
-##  tidyverse   * 1.3.0   2019-11-21 [1] CRAN (R 4.0.0)                   
-##  usethis       2.0.1   2021-02-10 [1] CRAN (R 4.0.2)                   
-##  utf8          1.2.1   2021-03-12 [1] CRAN (R 4.0.2)                   
-##  vctrs         0.3.6   2020-12-17 [1] CRAN (R 4.0.2)                   
-##  withr         2.4.1   2021-01-26 [1] CRAN (R 4.0.2)                   
-##  xfun          0.22    2021-03-11 [1] CRAN (R 4.0.2)                   
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)                   
-##  xtable        1.8-4   2019-04-21 [1] CRAN (R 4.0.0)                   
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)                   
+##  package     * version date       lib source        
+##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.0.0)
+##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.0.2)
+##  blogdown      1.3     2021-04-14 [1] CRAN (R 4.0.2)
+##  bookdown      0.22    2021-04-22 [1] CRAN (R 4.0.2)
+##  broom         0.7.6   2021-04-05 [1] CRAN (R 4.0.4)
+##  bslib         0.2.5   2021-05-12 [1] CRAN (R 4.0.4)
+##  cachem        1.0.5   2021-05-15 [1] CRAN (R 4.0.2)
+##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.0.2)
+##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.0.0)
+##  cli           2.5.0   2021-04-26 [1] CRAN (R 4.0.2)
+##  colorspace    2.0-1   2021-05-04 [1] CRAN (R 4.0.2)
+##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.0.2)
+##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.0.2)
+##  dbplyr        2.1.1   2021-04-06 [1] CRAN (R 4.0.4)
+##  desc          1.3.0   2021-03-05 [1] CRAN (R 4.0.2)
+##  devtools      2.4.1   2021-05-05 [1] CRAN (R 4.0.2)
+##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.0.2)
+##  dplyr       * 1.0.6   2021-05-05 [1] CRAN (R 4.0.2)
+##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.0.2)
+##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.0.0)
+##  fansi         0.4.2   2021-01-15 [1] CRAN (R 4.0.2)
+##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.0.2)
+##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.0.2)
+##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.0.2)
+##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.0.2)
+##  ggplot2     * 3.3.3   2020-12-30 [1] CRAN (R 4.0.2)
+##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.0.2)
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.0.0)
+##  haven         2.4.1   2021-04-23 [1] CRAN (R 4.0.2)
+##  here          1.0.1   2020-12-13 [1] CRAN (R 4.0.2)
+##  hms           1.1.0   2021-05-17 [1] CRAN (R 4.0.4)
+##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.0.2)
+##  httpuv        1.6.1   2021-05-07 [1] CRAN (R 4.0.2)
+##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.0.2)
+##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.0.2)
+##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.0.2)
+##  knitr         1.33    2021-04-24 [1] CRAN (R 4.0.2)
+##  later         1.2.0   2021-04-23 [1] CRAN (R 4.0.2)
+##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.0.2)
+##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.0.2)
+##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.0.2)
+##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.0.2)
+##  mime          0.10    2021-02-13 [1] CRAN (R 4.0.2)
+##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.0.0)
+##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.0.0)
+##  pillar        1.6.1   2021-05-16 [1] CRAN (R 4.0.4)
+##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.0.2)
+##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.0.0)
+##  pkgload       1.2.1   2021-04-06 [1] CRAN (R 4.0.2)
+##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.0.0)
+##  processx      3.5.2   2021-04-30 [1] CRAN (R 4.0.2)
+##  promises      1.2.0.1 2021-02-11 [1] CRAN (R 4.0.2)
+##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.0.2)
+##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.0.0)
+##  R6            2.5.0   2020-10-28 [1] CRAN (R 4.0.2)
+##  Rcpp          1.0.6   2021-01-15 [1] CRAN (R 4.0.2)
+##  readr       * 1.4.0   2020-10-05 [1] CRAN (R 4.0.2)
+##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.0.0)
+##  remotes       2.3.0   2021-04-01 [1] CRAN (R 4.0.2)
+##  reprex        2.0.0   2021-04-02 [1] CRAN (R 4.0.2)
+##  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.0.2)
+##  rmarkdown     2.8     2021-05-07 [1] CRAN (R 4.0.2)
+##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.0.2)
+##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.0.2)
+##  rvest         1.0.0   2021-03-09 [1] CRAN (R 4.0.2)
+##  sass          0.4.0   2021-05-12 [1] CRAN (R 4.0.2)
+##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.0.0)
+##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.0.0)
+##  shiny       * 1.6.0   2021-01-25 [1] CRAN (R 4.0.2)
+##  stringi       1.6.1   2021-05-10 [1] CRAN (R 4.0.2)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.0.0)
+##  testthat      3.0.2   2021-02-14 [1] CRAN (R 4.0.2)
+##  tibble      * 3.1.1   2021-04-18 [1] CRAN (R 4.0.2)
+##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.0.2)
+##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.0.2)
+##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.0.2)
+##  usethis       2.0.1   2021-02-10 [1] CRAN (R 4.0.2)
+##  utf8          1.2.1   2021-03-12 [1] CRAN (R 4.0.2)
+##  vctrs         0.3.8   2021-04-29 [1] CRAN (R 4.0.2)
+##  withr         2.4.2   2021-04-18 [1] CRAN (R 4.0.2)
+##  xfun          0.23    2021-05-15 [1] CRAN (R 4.0.2)
+##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.0.0)
+##  xtable        1.8-4   2019-04-21 [1] CRAN (R 4.0.0)
+##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.0.0)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
 ```
