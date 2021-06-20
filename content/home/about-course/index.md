@@ -27,7 +27,8 @@ design:
   * Teaching Assistants
       - Rubén Rodríguez Barrón
   * Meeting day/time: MTuWTh 9:30-11:30am
-  * Office hours - to be determined
+  * Office hours
+      - Rubén - MTuWTh 1:30-2:30pm
   * Prerequisites: None
   * Requirements: Bring your own laptop
 
