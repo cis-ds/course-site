@@ -28,6 +28,7 @@ design:
       - Rubén Rodríguez Barrón
   * Meeting day/time: MTuWTh 9:30-11:30am
   * Office hours
+      - Benjamin - [by appointment](https://appoint.ly/s/bensoltoff/office-hours)
       - Rubén - MTuWTh 1:30-2:30pm
   * Prerequisites: None
   * Requirements: Bring your own laptop
