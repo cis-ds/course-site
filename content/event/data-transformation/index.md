@@ -64,7 +64,6 @@ math: false
 
 ## What you need to do after class
 
-* [Register your GitHub username for the course](https://forms.gle/HWP9FEubofjWeMda8) - all homework assignments will be in **private repositories**. Private repos can only be seen and edited by members of our [course organization](https://github.com/cfss-su21). Once you register your GitHub account, I will invite you to join the course organization. If you don't register your account, you won't have access to any of the homework assignments.
 * Complete your peer evaluations for homework 01. Review the following:
     * [General Homework Rubric](/faq/homework-evaluations/)
     * [Performing peer review](/faq/peer-evaluations/)
