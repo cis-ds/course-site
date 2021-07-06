@@ -1,12 +1,12 @@
 ---
 title: "Lab day/catch-up"
-date: 2021-07-13T09:30:00-06:00
+date: 2021-07-12T09:30:00-06:00
 publishDate: 2019-03-01T09:30:00-06:00
 draft: false
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-07-13T11:30:00-06:00
+time_end: 2021-07-12T10:50:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
