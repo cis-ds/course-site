@@ -21,6 +21,7 @@ knitr::opts_chunk$set(cache = TRUE)
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(rvest)
+library(lubridate)
 
 theme_set(theme_minimal())
 ```
@@ -41,7 +42,7 @@ What if data is present on a website, but isn't provided in an API at all? It is
 
 HTML is a structured way of displaying information. It is very similar in structure to XML (in fact many modern html sites are actually XHTML5, [which is also valid XML](http://www.w3.org/TR/html5/the-xhtml-syntax.html))
 
-{{< figure src="https://medias.xkcd.com/comics/tags.png" caption="[tags](https://xkcd.com/1144/)" >}}
+{{< figure src="https://imgs.xkcd.com/comics/tags.png" caption="[tags](https://xkcd.com/1144/)" >}}
 
 ## Process
 
@@ -144,20 +145,6 @@ Let's say we want to find the content "here". Which tag in our sample HTML code 
                 * `td`
         * `img`
 
-## Find the source code
-
-Navigate to [the IMDB page for *Frozen*](http://www.imdb.com/title/tt2294629/) and open the source code. Locate the piece of HTML that inserts "Kristen Bell" into the cast section. Which HTML tag surrounds her name?
-
-{{< figure src="frozen_bell.png" caption="IMDB page for *Frozen*" >}}
-
-{{< spoiler text="Click for the solution" >}}
-
-{{< figure src="frozen_span.png" caption="HTML tag for 'Kristen Bell'" >}}
-
-"Kristen Bell" is enclosed in the `span` tag. But look through the some of the other source code. `span` is used many times throughout the page. How can we select just the element containing "Kristen Bell", or all the cast member names but nothing else?
-
-{{< /spoiler >}}
-
 ## CSS selectors
 
 **Cascading Style Sheets** (CSS) are a flexible framework for customizing the appearance of elements in a web page. They work in conjunction with HTML to format the appearance of content on the web.
@@ -240,123 +227,258 @@ none   | tag
 
 ## Find the CSS selector
 
-Which CSS identifiers are associated with Kristen Bell's name in the *Frozen* page? Write a CSS selector that targets them.
+```html
+<body>
+    <table id="content">
+        <tr class='name'>
+            <td class='firstname'>
+                Kurtis
+            </td>
+            <td class='lastname'>
+                McCoy
+            </td>
+        </tr>
+        <tr class='name'>
+            <td class='firstname'>
+                Leah
+            </td>
+            <td class='lastname'>
+                Guerrero
+            </td>
+        </tr>
+    </table>
+</body>
+```
 
-{{< figure src="frozen_css.png" caption="" >}}
+Find the CSS selectors for the following elements in the HTML above:
+
+1. The entire table.
+1. Just the element containing first names.
+
+(Hint: There will be multiple solutions for each.)
 
 {{< spoiler text="Click for the solution" >}}
 
-* `span` - the element
-* `itemprop` - the class
+1. Options include
 
-Therefore the CSS selector would be `span.itemprop`.
+    ```css
+    table
+    #content
+    table#content
+    ```
+1. Options include
 
+    ```css
+    .firstname
+    ```
 {{< /spoiler >}}
 
-## `rvest`
+## Scraping presidential statements
 
-`rvest` is a package that contains functions to easily extract information from a webpage. The basic workflow is:
+To demonstrate webscraping in R, we are going to collect records on presidential statements from [The American Presidency Project](https://www.presidency.ucsb.edu/).
 
-1. Download the HTML and turn it into an XML file with `read_html()`
-1. Extract specific elements with `html_elements()`
-1. Extract content from elements with various functions
+Let's say we are interested in how presidents speak about "space exploration." On the website, we punch in this search term, and we get the [following 346 results](https://www.presidency.ucsb.edu/advanced-search?field-keywords=%22space+exploration%22&field-keywords2=&field-keywords3=&from%5Bdate%5D=&to%5Bdate%5D=&person2=&items_per_page=100).^[346 results as of July 13, 2021.]
 
-## Download the HTML
+Our goal is to scrape these records and store pertinent information in a data frame. We will be doing this in two steps:
 
-```{r frozen-dl}
+1. Write a function to scrape each individual record page.
+2. Use this function to loop through all results, and collect all pages.
+
+Load the following packages to get started:
+
+```r
+library(tidyverse)
 library(rvest)
-frozen <- read_html("http://www.imdb.com/title/tt2294629/")
-frozen
+library(lubridate)
 ```
 
-{{% callout note %}}
+### Using `rvest` to read HTML
 
-It is always a good practice when web scraping to store the output of `read_html()` in an object immediately, then apply further functions to the stored HTML file. Otherwise you send a request to the server every time you extract information from the HTML. For longer-term projects, you can store `read_html()` objects locally on your computer using `readr::write_rds()` and retrieve them using `readr::read_rds()`. This caches a local copy of the file so you always have a copy preserved, in case the webpage's underlying HTML code is modified (or the website is taken offline).
+The package [`rvest`](https://rvest.tidyverse.org/) allows us to:
 
-{{% /callout %}}
+1. Collect the HTML source code of a webpage.
+2. Read the HTML of the page.
+3. Select and keep certain elements of the page that are of interest.
 
-## Extract elements
+Let's start with step one. We use the `read_html` function to call the results URL and grab the HTML response. Store this result as an object.
 
-```{r frozen-elements, dependson = "frozen-dl"}
-itals <- html_elements(frozen, "em")
-itals
+```{r get-statement}
+dwight <- read_html(x = "https://www.presidency.ucsb.edu/documents/special-message-the-congress-relative-space-science-and-exploration")
+
+# Let's take a look at the object we just created
+dwight
 ```
 
-* The first argument to `html_elements()` is the HTML document or a set of elements previously extracted from the document
-* The second argument is a CSS selector to identify which elements to select
+This is pretty messy. We need to use `rvest` to make this information more usable.
 
-## Extract content from elements
+### Find page elements
 
-```{r frozen-content, dependson = c("frozen-dl", "frozen-elements")}
-itals
-html_text2(itals)
-html_name(itals)
-html_children(itals)
-html_attr(itals, "class")
-html_attrs(itals)
+`rvest` has a number of functions to find information on a page. Like other webscraping tools, `rvest` lets you find elements by their:
+
+1. HTML tags.
+1. HTML attributes.
+1. CSS selectors.
+
+Let's search first for HTML tags.
+
+The function `html_nodes` searches a parsed HTML object to find all the elements with a particular HTML tag, and returns all of those elements.
+
+What does the example below do?
+
+```{r nodes, dependson = "get-statement"}
+html_elements(x = dwight, css = "a")
 ```
 
-## Extract content
+That is a lot of results! Many elements on a page will have the same HTML tag. For instance, if you search for everything with the `a` tag, you are likely to get a lot of stuff, much of which you do not want. 
 
-Now it's your turn to practice.
+In our case, we only want the links corresponding to the speaker Dwight D. Eisenhower.
 
-1. Read in the *Frozen* HTML
-1. Select the elements that are both `id = "titleCast"` and `a`s
-1. Extract the text from the elements
+{{< figure src="scraping-links.png" caption="Special Message to the Congress Relative to Space Science and Exploration." >}}
+
+#### Find the CSS selector
+
+Use Selector Gadget to find the CSS selector for the document's *speaker*.
+
+Then, modify an argument in `html_nodes` to look for this more specific CSS selector.
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r frozen-extract}
-library(rvest)
-frozen <- read_html("http://www.imdb.com/title/tt2294629/")
-cast <- html_elements(frozen, "#titleCast a")
-html_text2(cast)
+```{r get-speaker, dependson = "get-statement"}
+html_elements(x = dwight, css = ".diet-title a")
 ```
 
 {{< /spoiler >}}
 
-Do you collect the cast names and only the cast names? We've scraped too much. The problem is that our CSS selector is not specific enough for our needs. We need an easy way to identify CSS selector combinations to extract only the content we want, and nothing more.
+### Get attributes and text of elements
 
-## SelectorGadget
+Once we identify elements, we want to access information in those elements. Oftentimes this means two things:
 
-**SelectorGadget** is a GUI tool used to identify CSS selector combinations from a webpage.
+1. Text
+1. Attributes
 
-## Install SelectorGadget
+Getting the text inside an element is pretty straightforward. We can use the `html_text2()` command inside of `rvest` to get the text of an element:
 
-1. Run `vignette("selectorgadget")`
-1. Drag **SelectorGadget** link into your browser's bookmark bar
+```{r get-speaker-text, dependson = "get-statement"}
+# identify element with speaker name
+speaker <- html_nodes(dwight, ".diet-title a") %>% 
+  html_text2() # Select text of element
 
-## Using SelectorGadget
+speaker
+```
 
-1. Navigate to a webpage
-1. Open the SelectorGadget bookmark
-1. Click on the item to scrape
-1. Click on yellow items you do not want to scrape
-1. Click on additional items that you do want to scrape
-1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
-1. Copy the selector to use with `html_elements()`
+You can access a tag's attributes using `html_attr`. For example, we often want to get a URL from an `a` (link) element. This is the URL the link "points" to. It is contained in the attribute `href`:
 
-{{% callout note %}}
+```{r}
+speaker_link <- html_nodes(dwight, ".diet-title a") %>% 
+  html_attr("href")
 
-When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.
+speaker_link
+```
 
-{{% /callout %}}
+### Let's do this!
 
-## Practice using SelectorGadget
+Believe it or not, that is all you need to scrape a website. Let's apply those skills to scrape a sample document from the UCSB website -- the [first item in our search results](https://www.presidency.ucsb.edu/documents/special-message-the-congress-relative-space-science-and-exploration). 
 
-1. Install SelectorGadget in your browser
-1. Use SelectorGadget to find a CSS selector combination that identifies just the cast member names
+We will collect the document's date, speaker, title, and full text.
+
+**Think**: Why are we doing through all this effort to scrape just one page?
+
+1. Date
+
+    ```{r get-date, dependson = "get-statement"}
+    date <- html_nodes(x = dwight, css = ".date-display-single") %>%
+      html_text2() %>% # Grab element text
+      mdy() # Format using lubridate
+    date
+    ```
+
+1. Speaker
+
+    ```{r get-speaker-2, dependson = "get-statement"}
+    speaker <- html_nodes(x = dwight, css = ".diet-title a") %>%
+      html_text2()
+    speaker
+    ```
+    
+1. Title
+
+    ```{r get-title, dependson = "get-statement"}
+    title <- html_nodes(x = dwight, css = "h1") %>%
+      html_text2()
+    title
+    ```
+
+1. Text
+
+    ```{r get-text, dependson = "get-statement"}
+    text <- html_nodes(x = dwight, css = "div.field-docs-content") %>%
+      html_text2()
+    
+    # This is a long document, so let's just display the first 1,000 characters
+    text %>% str_sub(1, 1000) 
+    ```
+    
+#### Make a function
+
+Make a function called `scrape_docs` that accepts a URL of an individual document, scrapes the page, and returns a data frame containing the document's date, speaker, title, and full text.
+
+This involves:
+
+- Requesting the HTML of the webpage using the full URL and `rvest`
+- Using `rvest` to locate all elements on the page we want to save
+- Storing each of those items into a data frame
+- Returning that data frame
+
+```r
+scrape_doc <- function(url){
+
+  # YOUR CODE HERE
+  
+}
+
+# Uncomment to test
+# scrape_doc("https://www.presidency.ucsb.edu/documents/letter-t-keith-glennan-administrator-national-aeronautics-and-space-administration")
+```
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r frozen-selectorgadget, dependson = "frozen-extract"}
-cast2 <- html_elements(frozen, "#titleCast td:nth-child(2) a")
-html_text2(cast2)
+```{r scrape-function}
+scrape_doc <- function(url){
+  # get HTML page
+  url_contents <- read_html(x = url)
+  
+  # extract elements we want
+  date <- html_nodes(x = url_contents, css = ".date-display-single") %>%
+    html_text2() %>% # Grab element text
+    mdy() # Format using lubridate
+  
+  speaker <- html_nodes(x = url_contents, css = ".diet-title a") %>%
+    html_text2()
+  
+  title <- html_nodes(x = url_contents, css = "h1") %>%
+    html_text2()
+  
+  text <- html_nodes(x = url_contents, css = "div.field-docs-content") %>%
+    html_text2()
+  
+  # store in a data frame
+  url_data <- tibble(
+    date = date,
+    speaker = speaker,
+    title = title,
+    text = text
+  )
+  
+  # return the data frame
+  return(url_data)
+}
+
+scrape_doc("https://www.presidency.ucsb.edu/documents/letter-t-keith-glennan-administrator-national-aeronautics-and-space-administration")
 ```
 
 {{< /spoiler >}}
 
-## Practice scraping data
+## Scrape cost of living data
 
 Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_elements()` and `html_text()`.
 
@@ -416,7 +538,7 @@ sterling_climate %>%
 
 ## Acknowledgments
 
-* Web scraping lesson drawn from [Extracting data from the web APIs and beyond](https://github.com/ropensci/user2016-tutorial)
+* Scraping presidential statements drawn from [PLSC 31101: Computational Tools for Social Science](https://plsc-31101.github.io/course/collecting-data-from-the-web.html#webscraping)
 * [HTML| Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/HTML)
 * [CSS | Mozilla Developer Network](https://developer.mozilla.org/en-US/docs/Web/CSS)
 
