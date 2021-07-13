@@ -323,8 +323,8 @@ This is pretty messy. We need to use `rvest` to make this information more usabl
 `rvest` has a number of functions to find information on a page. Like other webscraping tools, `rvest` lets you find elements by their:
 
 1. HTML tags.
-2. HTML attributes.
-3. CSS selectors.
+1. HTML attributes.
+1. CSS selectors.
 
 Let's search first for HTML tags.
 
@@ -496,7 +496,7 @@ This involves:
 - Requesting the HTML of the webpage using the full URL and `rvest`
 - Using `rvest` to locate all elements on the page we want to save
 - Storing each of those items into a data frame
-- Returning that list
+- Returning that data frame
 
 ```r
 scrape_doc <- function(url){
