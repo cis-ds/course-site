@@ -321,7 +321,7 @@ This is pretty messy. We need to use `rvest` to make this information more usabl
 
 Let's search first for HTML tags.
 
-The function `html_nodes` searches a parsed HTML object to find all the elements with a particular HTML tag, and returns all of those elements.
+The function `html_elements` searches a parsed HTML object to find all the elements with a particular HTML tag, and returns all of those elements.
 
 What does the example below do?
 
@@ -335,11 +335,36 @@ In our case, we only want the links corresponding to the speaker Dwight D. Eisen
 
 {{< figure src="scraping-links.png" caption="Special Message to the Congress Relative to Space Science and Exploration." >}}
 
+### SelectorGadget
+
+**SelectorGadget** is a GUI tool used to identify CSS selector combinations from a webpage.
+
+#### Install SelectorGadget
+
+1. Run `vignette("selectorgadget")`
+1. Drag **SelectorGadget** link into your browser's bookmark bar
+
+#### Using SelectorGadget
+
+1. Navigate to a webpage
+1. Open the SelectorGadget bookmark
+1. Click on the item to scrape
+1. Click on yellow items you do not want to scrape
+1. Click on additional items that you do want to scrape
+1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
+1. Copy the selector to use with `html_elements()`
+
+{{% callout note %}}
+
+When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.
+
+{{% /callout %}}
+
 #### Find the CSS selector
 
 Use Selector Gadget to find the CSS selector for the document's *speaker*.
 
-Then, modify an argument in `html_nodes` to look for this more specific CSS selector.
+Then, modify an argument in `html_elements` to look for this more specific CSS selector.
 
 {{< spoiler text="Click for the solution" >}}
 
@@ -360,7 +385,7 @@ Getting the text inside an element is pretty straightforward. We can use the `ht
 
 ```{r get-speaker-text, dependson = "get-statement"}
 # identify element with speaker name
-speaker <- html_nodes(dwight, ".diet-title a") %>% 
+speaker <- html_elements(dwight, ".diet-title a") %>% 
   html_text2() # Select text of element
 
 speaker
@@ -369,7 +394,7 @@ speaker
 You can access a tag's attributes using `html_attr`. For example, we often want to get a URL from an `a` (link) element. This is the URL the link "points" to. It is contained in the attribute `href`:
 
 ```{r}
-speaker_link <- html_nodes(dwight, ".diet-title a") %>% 
+speaker_link <- html_elements(dwight, ".diet-title a") %>% 
   html_attr("href")
 
 speaker_link
@@ -386,7 +411,7 @@ We will collect the document's date, speaker, title, and full text.
 1. Date
 
     ```{r get-date, dependson = "get-statement"}
-    date <- html_nodes(x = dwight, css = ".date-display-single") %>%
+    date <- html_elements(x = dwight, css = ".date-display-single") %>%
       html_text2() %>% # Grab element text
       mdy() # Format using lubridate
     date
@@ -395,7 +420,7 @@ We will collect the document's date, speaker, title, and full text.
 1. Speaker
 
     ```{r get-speaker-2, dependson = "get-statement"}
-    speaker <- html_nodes(x = dwight, css = ".diet-title a") %>%
+    speaker <- html_elements(x = dwight, css = ".diet-title a") %>%
       html_text2()
     speaker
     ```
@@ -403,7 +428,7 @@ We will collect the document's date, speaker, title, and full text.
 1. Title
 
     ```{r get-title, dependson = "get-statement"}
-    title <- html_nodes(x = dwight, css = "h1") %>%
+    title <- html_elements(x = dwight, css = "h1") %>%
       html_text2()
     title
     ```
@@ -411,7 +436,7 @@ We will collect the document's date, speaker, title, and full text.
 1. Text
 
     ```{r get-text, dependson = "get-statement"}
-    text <- html_nodes(x = dwight, css = "div.field-docs-content") %>%
+    text <- html_elements(x = dwight, css = "div.field-docs-content") %>%
       html_text2()
     
     # This is a long document, so let's just display the first 1,000 characters
@@ -448,17 +473,17 @@ scrape_doc <- function(url){
   url_contents <- read_html(x = url)
   
   # extract elements we want
-  date <- html_nodes(x = url_contents, css = ".date-display-single") %>%
+  date <- html_elements(x = url_contents, css = ".date-display-single") %>%
     html_text2() %>% # Grab element text
     mdy() # Format using lubridate
   
-  speaker <- html_nodes(x = url_contents, css = ".diet-title a") %>%
+  speaker <- html_elements(x = url_contents, css = ".diet-title a") %>%
     html_text2()
   
-  title <- html_nodes(x = url_contents, css = "h1") %>%
+  title <- html_elements(x = url_contents, css = "h1") %>%
     html_text2()
   
-  text <- html_nodes(x = url_contents, css = "div.field-docs-content") %>%
+  text <- html_elements(x = url_contents, css = "div.field-docs-content") %>%
     html_text2()
   
   # store in a data frame

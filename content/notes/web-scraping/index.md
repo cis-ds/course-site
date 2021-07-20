@@ -328,7 +328,7 @@ This is pretty messy. We need to use `rvest` to make this information more usabl
 
 Let's search first for HTML tags.
 
-The function `html_nodes` searches a parsed HTML object to find all the elements with a particular HTML tag, and returns all of those elements.
+The function `html_elements` searches a parsed HTML object to find all the elements with a particular HTML tag, and returns all of those elements.
 
 What does the example below do?
 
@@ -368,11 +368,36 @@ In our case, we only want the links corresponding to the speaker Dwight D. Eisen
 
 {{< figure src="scraping-links.png" caption="Special Message to the Congress Relative to Space Science and Exploration." >}}
 
+### SelectorGadget
+
+**SelectorGadget** is a GUI tool used to identify CSS selector combinations from a webpage.
+
+#### Install SelectorGadget
+
+1. Run `vignette("selectorgadget")`
+1. Drag **SelectorGadget** link into your browser's bookmark bar
+
+#### Using SelectorGadget
+
+1. Navigate to a webpage
+1. Open the SelectorGadget bookmark
+1. Click on the item to scrape
+1. Click on yellow items you do not want to scrape
+1. Click on additional items that you do want to scrape
+1. Rinse and repeat until only the items you want to scrape are highlighted in yellow
+1. Copy the selector to use with `html_elements()`
+
+{{% callout note %}}
+
+When using SelectorGadget, always make sure to scroll up and down the web page to make sure you have properly selected only the content you want.
+
+{{% /callout %}}
+
 #### Find the CSS selector
 
 Use Selector Gadget to find the CSS selector for the document's *speaker*.
 
-Then, modify an argument in `html_nodes` to look for this more specific CSS selector.
+Then, modify an argument in `html_elements` to look for this more specific CSS selector.
 
 {{< spoiler text="Click for the solution" >}}
 
@@ -400,7 +425,7 @@ Getting the text inside an element is pretty straightforward. We can use the `ht
 
 ```r
 # identify element with speaker name
-speaker <- html_nodes(dwight, ".diet-title a") %>% 
+speaker <- html_elements(dwight, ".diet-title a") %>% 
   html_text2() # Select text of element
 
 speaker
@@ -414,7 +439,7 @@ You can access a tag's attributes using `html_attr`. For example, we often want 
 
 
 ```r
-speaker_link <- html_nodes(dwight, ".diet-title a") %>% 
+speaker_link <- html_elements(dwight, ".diet-title a") %>% 
   html_attr("href")
 
 speaker_link
@@ -436,7 +461,7 @@ We will collect the document's date, speaker, title, and full text.
 
     
     ```r
-    date <- html_nodes(x = dwight, css = ".date-display-single") %>%
+    date <- html_elements(x = dwight, css = ".date-display-single") %>%
       html_text2() %>% # Grab element text
       mdy() # Format using lubridate
     date
@@ -450,7 +475,7 @@ We will collect the document's date, speaker, title, and full text.
 
     
     ```r
-    speaker <- html_nodes(x = dwight, css = ".diet-title a") %>%
+    speaker <- html_elements(x = dwight, css = ".diet-title a") %>%
       html_text2()
     speaker
     ```
@@ -463,7 +488,7 @@ We will collect the document's date, speaker, title, and full text.
 
     
     ```r
-    title <- html_nodes(x = dwight, css = "h1") %>%
+    title <- html_elements(x = dwight, css = "h1") %>%
       html_text2()
     title
     ```
@@ -476,7 +501,7 @@ We will collect the document's date, speaker, title, and full text.
 
     
     ```r
-    text <- html_nodes(x = dwight, css = "div.field-docs-content") %>%
+    text <- html_elements(x = dwight, css = "div.field-docs-content") %>%
       html_text2()
     
     # This is a long document, so let's just display the first 1,000 characters
@@ -518,17 +543,17 @@ scrape_doc <- function(url){
   url_contents <- read_html(x = url)
   
   # extract elements we want
-  date <- html_nodes(x = url_contents, css = ".date-display-single") %>%
+  date <- html_elements(x = url_contents, css = ".date-display-single") %>%
     html_text2() %>% # Grab element text
     mdy() # Format using lubridate
   
-  speaker <- html_nodes(x = url_contents, css = ".diet-title a") %>%
+  speaker <- html_elements(x = url_contents, css = ".diet-title a") %>%
     html_text2()
   
-  title <- html_nodes(x = url_contents, css = "h1") %>%
+  title <- html_elements(x = url_contents, css = "h1") %>%
     html_text2()
   
-  text <- html_nodes(x = url_contents, css = "div.field-docs-content") %>%
+  text <- html_elements(x = url_contents, css = "div.field-docs-content") %>%
     html_text2()
   
   # store in a data frame
@@ -711,8 +736,10 @@ devtools::session_info()
 ##  callr         3.7.0   2021-04-20 [2] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 4.0.0)
 ##  cli           2.5.0   2021-04-26 [2] CRAN (R 4.0.2)
+##  codetools     0.2-18  2020-11-04 [2] CRAN (R 4.0.4)
 ##  colorspace    2.0-1   2021-05-04 [2] CRAN (R 4.0.2)
 ##  crayon        1.4.1   2021-02-08 [2] CRAN (R 4.0.2)
+##  curl          4.3.1   2021-04-30 [2] CRAN (R 4.0.2)
 ##  DBI           1.1.1   2021-01-15 [2] CRAN (R 4.0.2)
 ##  dbplyr        2.1.1   2021-04-06 [2] CRAN (R 4.0.4)
 ##  desc          1.3.0   2021-03-05 [2] CRAN (R 4.0.2)
@@ -764,6 +791,7 @@ devtools::session_info()
 ##  rvest       * 1.0.0   2021-03-09 [2] CRAN (R 4.0.2)
 ##  sass          0.4.0   2021-05-12 [2] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [2] CRAN (R 4.0.0)
+##  selectr       0.4-2   2019-11-20 [2] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [2] CRAN (R 4.0.0)
 ##  stringi       1.6.1   2021-05-10 [2] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [2] CRAN (R 4.0.0)
