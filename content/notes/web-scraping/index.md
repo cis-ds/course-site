@@ -96,7 +96,7 @@ You can think of elements as R functions, and attributes are the arguments to fu
 ```
 
 * `<a></a>` - tag name
-* `href` - attribute (name)
+* `href` - attribute (argument)
 * `"http://github.com"` - attribute (value)
 * `GitHub` - content
 
@@ -697,7 +697,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-07-13                  
+##  date     2021-07-20                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
