@@ -269,7 +269,11 @@ Find the CSS selectors for the following elements in the HTML above:
 
     ```css
     .firstname
+    td.firstname
+    .name .firstname
+    tr .firstname
     ```
+    
 {{< /spoiler >}}
 
 ## Scraping presidential statements
@@ -736,10 +740,8 @@ devtools::session_info()
 ##  callr         3.7.0   2021-04-20 [2] CRAN (R 4.0.2)
 ##  cellranger    1.1.0   2016-07-27 [2] CRAN (R 4.0.0)
 ##  cli           2.5.0   2021-04-26 [2] CRAN (R 4.0.2)
-##  codetools     0.2-18  2020-11-04 [2] CRAN (R 4.0.4)
 ##  colorspace    2.0-1   2021-05-04 [2] CRAN (R 4.0.2)
 ##  crayon        1.4.1   2021-02-08 [2] CRAN (R 4.0.2)
-##  curl          4.3.1   2021-04-30 [2] CRAN (R 4.0.2)
 ##  DBI           1.1.1   2021-01-15 [2] CRAN (R 4.0.2)
 ##  dbplyr        2.1.1   2021-04-06 [2] CRAN (R 4.0.4)
 ##  desc          1.3.0   2021-03-05 [2] CRAN (R 4.0.2)
@@ -791,7 +793,6 @@ devtools::session_info()
 ##  rvest       * 1.0.0   2021-03-09 [2] CRAN (R 4.0.2)
 ##  sass          0.4.0   2021-05-12 [2] CRAN (R 4.0.2)
 ##  scales        1.1.1   2020-05-11 [2] CRAN (R 4.0.0)
-##  selectr       0.4-2   2019-11-20 [2] CRAN (R 4.0.0)
 ##  sessioninfo   1.1.1   2018-11-05 [2] CRAN (R 4.0.0)
 ##  stringi       1.6.1   2021-05-10 [2] CRAN (R 4.0.2)
 ##  stringr     * 1.4.0   2019-02-10 [2] CRAN (R 4.0.0)
