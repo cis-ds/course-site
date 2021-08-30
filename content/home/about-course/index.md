@@ -17,19 +17,13 @@ design:
 <div class="row">
   <div class="col-sm-11 col-xs-12">
 
-  {{% callout note %}}
-  
-  All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/35981) (UChicago authentication required).
-  
-  {{% /callout %}}
+  <div></div>
   
   * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-  * Teaching Assistants
-      - Rubén Rodríguez Barrón
-  * Meeting day/time: MTuWTh 9:30-11:30am
-  * Office hours
-      - Benjamin - [by appointment](https://appoint.ly/s/bensoltoff/office-hours)
-      - Rubén - MTuWTh 1:30-2:30pm
+  * Teaching Assistants - TBD
+  * Meeting day/time: TuTh 9:30-10:50am
+  - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Not online! For now...]
+  * Office hours - TBD
   * Prerequisites: None
   * Requirements: Bring your own laptop
 
