@@ -21,17 +21,17 @@ Before we can do any of this, we need to install all the necessary software and 
 
 {{% callout note %}}
 
-Given the remote learning format, I strongly encourage students to utilize the RStudio Server option. This will ensure all students use a consistent software environment, and I have tested all the course notes, exercises, and homework assignments to ensure they will run on the RStudio Server. If you choose to install your own software locally, I cannot guarantee the instructional staff will be able to help you troubleshoot issues caused by software configuration.
+I strongly encourage students to utilize the RStudio Workbench option. This will ensure all students use a consistent software environment, and I have tested all the course notes, exercises, and homework assignments to ensure they will run on RStudio Workbench. If you choose to install your own software locally, I cannot guarantee the instructional staff will be able to help you troubleshoot issues caused by software configuration.
 
 {{% /callout %}}
 
-## Option 1 - use RStudio Server
+## Option 1 - use RStudio Workbench
 
 If you want to avoid installing anything on your computer and access R and RStudio through your web browser, follow these instructions.
 
 * R
     * [Why R?](/setup/what-is-r/)
-    * [Accessing RStudio Server](/setup/r-server/)
+    * [Accessing RStudio Workbench](/setup/r-server/)
 * Git
     * [What is Git?](/setup/what-is-git/)
     * [Register a free GitHub account.](https://github.com/) As a university student, also check to see if you are eligible for [GitHub Education offers](https://education.github.com/). Some of these are very useful, such as unlimited [private repositories](https://help.github.com/articles/what-plan-should-i-choose/). Remember that once you create a GitHub account, you are stuck with that username. Choose something professional and start building a positive social media presence.
