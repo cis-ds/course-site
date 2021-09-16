@@ -1,6 +1,6 @@
 ---
 title: "Visualizations and the grammar of graphics"
-date: 2021-06-22T09:30:00-06:00
+date: 2021-09-30T09:30:00-06:00
 publishDate: 2019-04-03T09:30:00-06:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/cm002.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-06-22T11:30:00-06:00
+time_end: 2021-09-30T10:50:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -19,7 +19,7 @@ abstract: ""
 summary: "Introduction to data visualizations, the grammar of graphics, and ggplot2."
 
 # Location of event.
-location: "Online"
+location: "Room 295, 1155 E 60th St"
 
 # Is this a selected talk? (true/false)
 selected: false

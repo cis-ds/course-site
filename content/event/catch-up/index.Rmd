@@ -17,7 +17,7 @@ abstract: ""
 summary: "Optional lab/extended office hours to get support on homework 06."
 
 # Location of event.
-location: "Online"
+location: "Room 295, 1155 E 60th St"
 
 # Is this a selected talk? (true/false)
 selected: false

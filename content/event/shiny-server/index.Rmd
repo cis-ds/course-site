@@ -8,7 +8,7 @@ aliases: ["/cm020.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2020-07-23T11:30:00-06:00
+time_end: 2020-07-23T10:50:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -19,7 +19,7 @@ abstract: ""
 summary: "Explain reactivity and construct the server function for a Shiny application."
 
 # Location of event.
-location: "Online"
+location: "Room 295, 1155 E 60th St"
 
 # Is this a selected talk? (true/false)
 selected: false

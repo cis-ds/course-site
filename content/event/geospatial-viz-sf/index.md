@@ -17,7 +17,7 @@ abstract: ""
 summary: "Review methods for storing spatial data, define simple features data frames, and construct vector maps in ggplot2."
 
 # Location of event.
-location: "Online"
+location: "Room 295, 1155 E 60th St"
 
 # Is this a selected talk? (true/false)
 selected: false

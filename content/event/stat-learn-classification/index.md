@@ -8,7 +8,7 @@ aliases: ["/cm012.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2019-11-14T11:30:00-06:00
+time_end: 2019-11-14T10:50:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

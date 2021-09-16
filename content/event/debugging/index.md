@@ -1,6 +1,6 @@
 ---
 title: "Debugging and defensive programming"
-date: 2021-07-06T09:30:00-06:00
+date: 2021-10-26T09:30:00-06:00
 publishDate: 2019-04-29T09:30:00-06:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/cm009.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-07-06T11:30:00-06:00
+time_end: 2021-10-266T10:50:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -19,7 +19,7 @@ abstract: ""
 summary: "Define computer bugs, discuss defensive programming tactics, and practice troubleshooting scripts."
 
 # Location of event.
-location: "Online"
+location: "Room 295, 1155 E 60th St"
 
 # Is this a selected talk? (true/false)
 selected: false
