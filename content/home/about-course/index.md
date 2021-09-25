@@ -20,10 +20,15 @@ design:
   <div></div>
   
   * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-  * Teaching Assistants - TBD
+  * Teaching Assistants
+      - Amy Maldonado
+      - Kaitlyn Van Baalen
   * Meeting day/time: TuTh 9:30-10:50am
   - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Not online! For now...]
-  * Office hours - TBD
+  * Office hours
+      - Benjamin: Monday 10-12pm (Room 219, 1155 E 60th St)
+      - Amy: Monday 5:30-7:30 (virtual)
+      - Kaitlyn: Sunday 5-7pm
   * Prerequisites: None
   * Requirements: Bring your own laptop
 
