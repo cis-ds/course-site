@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-fa21/hw08"
 
 # Overview
 
-Due by 9:30am (Chicago) on July 22nd.
+Due by 9:30am (Chicago) on November 30th.
 
 We learned three ways of collecting data from the internet:
 

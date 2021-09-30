@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-fa21/hw04"
 
 # Overview
 
-Due by 9:30am (Chicago) on July 6th.
+Due by 9:30am (Chicago) on October 26th.
 
 # Fork the `hw04` repository
 
