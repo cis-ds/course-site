@@ -28,7 +28,7 @@ design:
   * Office hours
       - Benjamin: Monday 10-12pm (Room 219, 1155 E 60th St)
       - Amy: Monday 5:30-7:30 (virtual)
-      - Kaitlyn: Sunday 5-7pm
+      - Kaitlyn: Sunday 5-7pm (virtual)
   * Prerequisites: None
   * Requirements: Bring your own laptop
 
