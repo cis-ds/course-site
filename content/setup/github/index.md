@@ -143,7 +143,7 @@ If you have never pushed a commit to GitHub, you will be challenged to enter you
 
 ## Authenticating with GitHub for each push
 
-While the need to authenticate users is obvious (if there was no authentication, anyone could upload changes to your repository), it can be tedious to enter your username and password every time you want to push a change to GitHub. Fortunately there are a couple different options for caching your credentials which we will review [here](/setup/git-cache-credentials/).
+While the need to authenticate users is obvious (if there was no authentication, anyone could upload changes to your repository), it can be tedious to enter your username and password every time you want to push a change to GitHub. Fortunately there are a couple different options for caching your credentials which we will review [here](/setup/git-configure/#cache-credentials).
 
 ## Clean up
 
