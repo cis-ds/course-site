@@ -12,7 +12,7 @@ design:
   columns: "1"
 ---
 
-# MACS 30500^[aka ENST 20550/MACS 20500/CHDV 30511/MAPS 30500/PLSC 30235/SOCI 20278/SOCI 40176/SOSC 26032] - Computing for the Social Sciences <img src="img/cfss.svg" align="right" />
+# MACS 30500^[aka CHDV 30511/ENST 20550/MACS 20500/MAPS 30500/PLSC 30235/PSYC 30510/SOCI 20278/SOCI 40176/SOSC 26032] - Computing for the Social Sciences <img src="img/cfss.svg" align="right" />
 
 <div class="row">
   <div class="col-sm-11 col-xs-12">
