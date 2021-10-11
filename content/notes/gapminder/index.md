@@ -251,9 +251,9 @@ ggplot(mpg, aes(displ, hwy)) +
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/facet-grid-1.png" width="672" />
 
-There are 4 distinct `cyl` and 7 distinct `class` values. This plot  displays $4 \times 7 = 28$ plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
+There are 4 distinct `cyl` and 7 distinct `class` values. This plot displays $4 \times 7 = 28$ plots, even if some are empty (because some classes do not have corresponding cylinder values, like rows with `class = "midsize"` doesn't have any corresponding `cyl = 5` value ).
 
-`facet_wrap(x ~ y)` displays only the plots having actual values.
+`facet_wrap(facets = vars(cyl, class))` displays only the plots having actual values.
 
 
 ```r
@@ -309,7 +309,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-09-01                  
+##  date     2021-10-11                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -323,7 +323,6 @@ devtools::session_info()
 ##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
 ##  cli           3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
 ##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
 ##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
 ##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
@@ -335,35 +334,27 @@ devtools::session_info()
 ##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.1.0)
 ##  fansi         0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
-##  farver        2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
 ##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
 ##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
 ##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  gapminder   * 0.3.0   2017-10-31 [1] CRAN (R 4.1.0)
 ##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
 ##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
 ##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.1.0)
 ##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
 ##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
 ##  here          1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  highr         0.9     2021-04-16 [1] CRAN (R 4.1.0)
 ##  hms           1.1.0   2021-05-17 [1] CRAN (R 4.1.0)
 ##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.1.0)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
 ##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
 ##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
 ##  knitr         1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  labeling      0.4.2   2020-10-20 [1] CRAN (R 4.1.0)
-##  lattice       0.20-44 2021-05-02 [1] CRAN (R 4.1.0)
 ##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.1.0)
 ##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
 ##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  Matrix        1.3-4   2021-06-01 [1] CRAN (R 4.1.0)
 ##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
-##  mgcv          1.8-36  2021-06-01 [1] CRAN (R 4.1.0)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  nlme          3.1-152 2021-02-04 [1] CRAN (R 4.1.0)
 ##  pillar        1.6.2   2021-07-29 [1] CRAN (R 4.1.0)
 ##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
