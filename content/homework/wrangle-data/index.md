@@ -43,7 +43,29 @@ Tidy this data frame so that it adheres to the tidy data principles:
 1. Each observation must have its own row.
 1. Each value must have its own cell.
 
-**NOTE: You can accomplish this task in a single piped operation using only `tidyr` functions. Code which does not use `tidyr` functions is acceptable, but will not merit a "check plus" on your evaluation.**
+{{% callout note %}}
+
+You can accomplish this task in a single piped operation using only `tidyr` functions. Code which does not use `tidyr` functions is acceptable, but will not merit a "check plus" on your evaluation.
+
+{{% /callout %}}
+
+Once you have tidied the data frame, generate a plot using the exact code below.
+
+```r
+ggplot(data = dadmom_tidy, mapping = aes(x = parent, y = inc)) +
+  geom_point() +
+  geom_line(mapping = aes(group = famid)) +
+  scale_y_continuous(labels = scales::dollar) +
+  labs(
+    title = "Gender parity and household income",
+    subtitle = "Each line identifies a distinct family",
+    x = "Mom or Dad",
+    y = "Income",
+  ) +
+  theme_minimal()
+```
+
+If you tidied the data frame correctly, then you will not have to make any changes to this code.
 
 # Part 2: Wrangling and visualizing messy(ish) data
 
