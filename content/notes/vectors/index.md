@@ -666,7 +666,7 @@ str(y$c)
 
     {{< /spoiler >}}
 
-1. Subset the first and third elements from `x`.
+1. Subset the first and third elements from `y`.
 
     {{< spoiler text="Click for the solution" >}}
 
@@ -716,7 +716,7 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-10-11                  
+##  date     2021-10-21                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package     * version date       lib source        
@@ -730,7 +730,6 @@ devtools::session_info()
 ##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
 ##  cli           3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
 ##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
 ##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
 ##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
@@ -757,13 +756,13 @@ devtools::session_info()
 ##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
 ##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
 ##  knitr         1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.1.0)
+##  lifecycle     1.0.1   2021-09-24 [1] CRAN (R 4.1.0)
 ##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
 ##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
 ##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  pillar        1.6.2   2021-07-29 [1] CRAN (R 4.1.0)
+##  pillar        1.6.3   2021-09-26 [1] CRAN (R 4.1.0)
 ##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
 ##  pkgload       1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
@@ -789,7 +788,7 @@ devtools::session_info()
 ##  stringi       1.7.3   2021-07-16 [1] CRAN (R 4.1.0)
 ##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
 ##  testthat      3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble      * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
+##  tibble      * 3.1.5   2021-09-30 [1] CRAN (R 4.1.0)
 ##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.1.0)
 ##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
 ##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
