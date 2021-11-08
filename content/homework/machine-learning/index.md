@@ -25,10 +25,7 @@ Go [here](https://github.com/cfss-fa21/hw07) to fork the repo.
 
 Median student debt in the United States has increased substantially over the past twenty years.
 
-<div class="figure">
-<img src="https://www.stlouisfed.org/~/media/Blog/2020/January/BlogImage_AvgMedianDebt_011420.png?la=en" alt="Median federal debt for students has increased since 2006. Source: &lt;a href=&quot;https://www.stlouisfed.org/on-the-economy/2020/january/rising-student-debt-great-recession&quot;&gt;Federal Reserve Bank of St. Louis&lt;/a&gt;"  />
-<p class="caption">Figure 1: Median federal debt for students has increased since 2006. Source: <a href="https://www.stlouisfed.org/on-the-economy/2020/january/rising-student-debt-great-recession">Federal Reserve Bank of St. Louis</a></p>
-</div>
+{{< figure src="avg-median-debt.png" caption="Median federal debt for students has increased since 2006. Source: <a href='https://www.stlouisfed.org/on-the-economy/2020/january/rising-student-debt-great-recession'>Federal Reserve Bank of St. Louis</a>" >}}
 
 `rcfss::scorecard` includes `debt`, which reports the median debt of students after leaving school in 2019.
 
@@ -38,7 +35,8 @@ For all models, exclude `unitid` and `name` as predictors. These serve as id var
 
 {{% /callout %}}
 
-1. Using the `tidymodels` framework, estimate a basic linear regression model to predict `debt` as a function of all the other variables in the dataset except for `state` and `openadmp`. Report the RMSE for the model.^[View the [documentation for `yardstick`](https://yardstick.tidymodels.org/reference/index.html#section-regression-metrics) to find the appropriate function for RMSE.]
+1. Split `scorecard` into training and test sets with 75% allocated to training and 25% allocated to testing.
+1. Estimate a basic linear regression model to predict `debt` as a function of all the other variables in the dataset except for `state` and `openadmp`. Report the RMSE for the model.^[View the [documentation for `yardstick`](https://yardstick.tidymodels.org/reference/index.html#section-regression-metrics) to find the appropriate function for RMSE.]
 1. Estimate the same linear regression model, but this time implement 10-fold cross-validation. Report the RMSE for the model.
 1. Estimate a decision tree model to predict `debt` using 10-fold cross-validation. Use the `rpart` engine. Report the RMSE for the model.
 
