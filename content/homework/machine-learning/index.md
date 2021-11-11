@@ -74,6 +74,7 @@ For all models, exclude `id` and `wtss` as predictors. These serve as id variabl
 
 {{% /callout %}}
 
+1. Split `gss` into training and test sets with 75% allocated to training and 25% allocated to testing.
 1. Estimate a logistic regression model to predict `colrac` as a function of `age`, `black`, `degree`, `partyid_3`, `sex,` and `south`. Implement 10-fold cross-validation. Report the accuracy of the model.
 1. Estimate a random forest model to predict `colrac` as a function of all the other variables in the dataset (except `id` and `wtss`). In order to do this, you need to **impute** missing values for all the predictor columns. This means replacing missing values (`NA`) with plausible values given what we know about the other observations.
     - Remove rows with an `NA` for `colrac` - we want to omit observations with missing values for outcomes, not impute them
@@ -83,6 +84,7 @@ For all models, exclude `id` and `wtss` as predictors. These serve as id variabl
     Implement 10-fold cross-validation. Report the accuracy of the model.
 1. Estimate a $5$-nearest neighbors model to predict `colrac`. Use `recipes` to prepare the data set for training this model (e.g. scaling and normalizing variables, ensuring all predictors are numeric). Be sure to also perform the same preprocessing as for the random forest model. **Make sure your step order is correct for the recipe.** Implement 10-fold cross-validation. Report the accuracy of the model.
 1. Estimate a ridge logistic regression model to predict `colrac`.^[`logistic_reg(penalty = .01, mixture = 0)`] Use the same recipe as for the $5$-nearest neighbors model. Implement 10-fold cross-validation, and utilize the same recipe as for the $k$-nearest neighbors model. Report the accuracy of the model.
+1. Select the best performing model and report the accuracy using the held-out test sample of data.
 
 ## For those looking to stretch themselves
 
