@@ -84,7 +84,7 @@ For all models, exclude `id` and `wtss` as predictors. These serve as id variabl
     Implement 10-fold cross-validation. Report the accuracy of the model.
 1. Estimate a $5$-nearest neighbors model to predict `colrac`. Use `recipes` to prepare the data set for training this model (e.g. scaling and normalizing variables, ensuring all predictors are numeric). Be sure to also perform the same preprocessing as for the random forest model. **Make sure your step order is correct for the recipe.** Implement 10-fold cross-validation. Report the accuracy of the model.
 1. Estimate a ridge logistic regression model to predict `colrac`.^[`logistic_reg(penalty = .01, mixture = 0)`] Use the same recipe as for the $5$-nearest neighbors model. Implement 10-fold cross-validation, and utilize the same recipe as for the $k$-nearest neighbors model. Report the accuracy of the model.
-1. Select the best performing model and report the accuracy using the held-out test sample of data.
+1. Select the best performing model. Train that recipe/model using the full training set and report the accuracy using the held-out test set of data.
 
 ## For those looking to stretch themselves
 
