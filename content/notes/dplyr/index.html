@@ -1,0 +1,499 @@
+---
+title: "dplyr in brief"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+aliases: ["/datawrangle_dplyr.html"]
+categories: ["datawrangle"]
+
+menu:
+  notes:
+    parent: Data wrangling
+    weight: 2
+---
+
+<script src="{{< blogdown/postref >}}index_files/header-attrs/header-attrs.js"></script>
+<script src="{{< blogdown/postref >}}index_files/accessible-code-block/empty-anchor.js"></script>
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+<div id="TOC">
+<ul>
+<li><a href="#key-functions-in-dplyr"><span class="toc-section-number">0.1</span> Key functions in <code>dplyr</code></a></li>
+<li><a href="#american-vs.-british-english"><span class="toc-section-number">0.2</span> American vs. British English</a></li>
+<li><a href="#saving-transformed-data"><span class="toc-section-number">0.3</span> Saving transformed data</a></li>
+<li><a href="#using-backticks-to-refer-to-column-names"><span class="toc-section-number">0.4</span> Using backticks to refer to column names</a></li>
+<li><a href="#missing-values"><span class="toc-section-number">0.5</span> Missing values</a></li>
+<li><a href="#piping"><span class="toc-section-number">0.6</span> Piping</a></li>
+<li><a href="#things-to-not-do-with-piping"><span class="toc-section-number">0.7</span> Things to not do with piping</a></li>
+<li><a href="#acknowledgments"><span class="toc-section-number">0.8</span> Acknowledgments</a></li>
+<li><a href="#session-info"><span class="toc-section-number">0.9</span> Session Info</a></li>
+</ul>
+</div>
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(tidyverse)</span></code></pre></div>
+<pre><code>## Warning: package &#39;ggplot2&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## Warning: package &#39;tibble&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## Warning: package &#39;tidyr&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## Warning: package &#39;purrr&#39; was built under R version 3.6.2</code></pre>
+<pre><code>## Warning: package &#39;dplyr&#39; was built under R version 3.6.2</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">library</span>(nycflights13)</span></code></pre></div>
+<p>{{&lt; figure src=“data-science.png” caption=“Data science workflow” &gt;}}</p>
+<p>Rarely will your data arrive in exactly the form you require in order to analyze it appropriately. As part of the data science workflow you will need to <strong>transform</strong> your data in order to analyze it. Just as we established a syntax for generating graphics (the <strong>layered grammar of graphics</strong>), so too will we have a syntax for data transformation.</p>
+<p>From the same author of <code>ggplot2</code>, I give you <code>dplyr</code>! This package contains useful functions for transforming and manipulating data frames, the bread-and-butter format for data in R. These functions can be thought of as <strong>verbs</strong>. The noun is the data, and the verb is acting on the noun. All of the <code>dplyr</code> verbs (and in fact all the verbs in the wider <code>tidyverse</code>) work similarly:</p>
+<ol style="list-style-type: decimal">
+<li>The first argument is a data frame</li>
+<li>Subsequent arguments describe what to do with the data frame</li>
+<li>The result is a new data frame</li>
+</ol>
+<p>{{&lt; figure src=“allison_horst_art/dplyr_wrangling.png” caption=“Artwork by <span class="citation">@allison_horst</span>” &gt;}}</p>
+<div id="key-functions-in-dplyr" class="section level2" number="0.1">
+<h2><span class="header-section-number">0.1</span> Key functions in <code>dplyr</code></h2>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="77%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th><code>function()</code></th>
+<th>Action performed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>filter()</code></td>
+<td>Subsets observations based on their values</td>
+</tr>
+<tr class="even">
+<td><code>arrange()</code></td>
+<td>Changes the order of observations based on their values</td>
+</tr>
+<tr class="odd">
+<td><code>select()</code></td>
+<td>Selects a subset of columns from the data frame</td>
+</tr>
+<tr class="even">
+<td><code>rename()</code></td>
+<td>Changes the name of columns in the data frame</td>
+</tr>
+<tr class="odd">
+<td><code>mutate()</code></td>
+<td>Creates new columns (or variables)</td>
+</tr>
+<tr class="even">
+<td><code>group_by()</code></td>
+<td>Changes the unit of analysis from the complete dataset to individual groups</td>
+</tr>
+<tr class="odd">
+<td><code>summarize()</code></td>
+<td>Collapses the data frame to a smaller number of rows which summarize the larger data</td>
+</tr>
+</tbody>
+</table>
+<p>{{&lt; figure src=“allison_horst_art/dplyr_mutate.png” caption=“Artwork by <span class="citation">@allison_horst</span>” &gt;}}</p>
+<p>These are the basic verbs you will use to transform your data. By combining them together, you can perform powerful data manipulation tasks.</p>
+</div>
+<div id="american-vs.-british-english" class="section level2" number="0.2">
+<h2><span class="header-section-number">0.2</span> American vs. British English</h2>
+<p>Hadley Wickham is from New Zealand. As such he (and base R) favours British spellings:</p>
+<p>{{&lt; tweet 405707093770244097 &gt;}}</p>
+<p>While British spelling is perhaps the norm, this is America!</p>
+<p><img src="https://media.giphy.com/media/8KnfG3knLExpu/giphy.gif" /><!-- --></p>
+<p>Fortunately many R functions can be written using American or British variants:</p>
+<ul>
+<li><code>summarize()</code> = <code>summarise()</code></li>
+<li><code>color()</code> = <code>colour()</code></li>
+</ul>
+<p>Therefore in this class I will generally stick to American spelling.</p>
+</div>
+<div id="saving-transformed-data" class="section level2" number="0.3">
+<h2><span class="header-section-number">0.3</span> Saving transformed data</h2>
+<p><code>dplyr</code> never overwrites existing data. If you want a copy of the transformed data for later use in the program, you need to explicitly save it. You can do this by using the assignment operator <code>&lt;-</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">filter</span>(<span class="dt">.data =</span> diamonds, cut <span class="op">==</span><span class="st"> &quot;Ideal&quot;</span>) <span class="co"># printed, but not saved</span></span></code></pre></div>
+<pre><code>## # A tibble: 21,551 x 10
+##    carat cut   color clarity depth table price     x     y     z
+##    &lt;dbl&gt; &lt;ord&gt; &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1  0.23 Ideal E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2  0.23 Ideal J     VS1      62.8    56   340  3.93  3.9   2.46
+##  3  0.31 Ideal J     SI2      62.2    54   344  4.35  4.37  2.71
+##  4  0.3  Ideal I     SI2      62      54   348  4.31  4.34  2.68
+##  5  0.33 Ideal I     SI2      61.8    55   403  4.49  4.51  2.78
+##  6  0.33 Ideal I     SI2      61.2    56   403  4.49  4.5   2.75
+##  7  0.33 Ideal J     SI1      61.1    56   403  4.49  4.55  2.76
+##  8  0.23 Ideal G     VS1      61.9    54   404  3.93  3.95  2.44
+##  9  0.32 Ideal I     SI1      60.9    55   404  4.45  4.48  2.72
+## 10  0.3  Ideal I     SI2      61      59   405  4.3   4.33  2.63
+## # … with 21,541 more rows</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>diamonds_ideal &lt;-<span class="st"> </span><span class="kw">filter</span>(<span class="dt">.data =</span> diamonds, cut <span class="op">==</span><span class="st"> &quot;Ideal&quot;</span>) <span class="co"># saved, but not printed</span></span>
+<span id="cb10-2"><a href="#cb10-2"></a>(diamonds_ideal &lt;-<span class="st"> </span><span class="kw">filter</span>(<span class="dt">.data =</span> diamonds, cut <span class="op">==</span><span class="st"> &quot;Ideal&quot;</span>)) <span class="co"># saved and printed</span></span></code></pre></div>
+<pre><code>## # A tibble: 21,551 x 10
+##    carat cut   color clarity depth table price     x     y     z
+##    &lt;dbl&gt; &lt;ord&gt; &lt;ord&gt; &lt;ord&gt;   &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1  0.23 Ideal E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2  0.23 Ideal J     VS1      62.8    56   340  3.93  3.9   2.46
+##  3  0.31 Ideal J     SI2      62.2    54   344  4.35  4.37  2.71
+##  4  0.3  Ideal I     SI2      62      54   348  4.31  4.34  2.68
+##  5  0.33 Ideal I     SI2      61.8    55   403  4.49  4.51  2.78
+##  6  0.33 Ideal I     SI2      61.2    56   403  4.49  4.5   2.75
+##  7  0.33 Ideal J     SI1      61.1    56   403  4.49  4.55  2.76
+##  8  0.23 Ideal G     VS1      61.9    54   404  3.93  3.95  2.44
+##  9  0.32 Ideal I     SI1      60.9    55   404  4.45  4.48  2.72
+## 10  0.3  Ideal I     SI2      61      59   405  4.3   4.33  2.63
+## # … with 21,541 more rows</code></pre>
+<p>{{&lt; figure src=“allison_horst_art/dplyr_filter.jpg” caption=“Artwork by <span class="citation">@allison_horst</span>” &gt;}}</p>
+<p>{{% callout note %}}</p>
+<p>Do not use <code>=</code> to assign objects. <a href="http://stackoverflow.com/a/1742550">Read this for more information on the difference between <code>&lt;-</code> and <code>=</code>.</a></p>
+<p>{{% /callout %}}</p>
+</div>
+<div id="using-backticks-to-refer-to-column-names" class="section level2" number="0.4">
+<h2><span class="header-section-number">0.4</span> Using backticks to refer to column names</h2>
+<p>Normally within <code>tidyverse</code> functions you can refer to column names directly. For example,</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="kw">count</span>(<span class="dt">x =</span> diamonds, color)</span></code></pre></div>
+<pre><code>## # A tibble: 7 x 2
+##   color     n
+##   &lt;ord&gt; &lt;int&gt;
+## 1 D      6775
+## 2 E      9797
+## 3 F      9542
+## 4 G     11292
+## 5 H      8304
+## 6 I      5422
+## 7 J      2808</code></pre>
+<p><code>color</code> is a column in <code>diamonds</code> so I can refer to it directly within <code>count()</code>. However this becomes a problem for any column name that is <strong>non-syntactic</strong>.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> A <strong>syntactic</strong> name consists only of letters, digits, and <code>.</code> and <code>_</code>. Examples of non-syntactic column names include:</p>
+<ul>
+<li><code>Social conservative</code></li>
+<li><code>7-point ideology</code></li>
+<li><code>_id</code></li>
+</ul>
+<p>Any time you encounter a column that contains non-syntactic characters, you should refer to the column name using backticks <code>``</code>.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a><span class="kw">count</span>(<span class="dt">x =</span> diamonds, <span class="st">`</span><span class="dt">color</span><span class="st">`</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 7 x 2
+##   color     n
+##   &lt;ord&gt; &lt;int&gt;
+## 1 D      6775
+## 2 E      9797
+## 3 F      9542
+## 4 G     11292
+## 5 H      8304
+## 6 I      5422
+## 7 J      2808</code></pre>
+<p><strong>Do not use quotation marks (<code>''</code> or <code>""</code>) to refer to the column name.</strong> This appears to work, but is not consistent and will fail when you do not expect it. Consider the same operation as above but using quotation marks instead of backticks.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="kw">count</span>(<span class="dt">x =</span> diamonds, <span class="st">&quot;color&quot;</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 2
+##   `&quot;color&quot;`     n
+##   &lt;chr&gt;     &lt;int&gt;
+## 1 color     53940</code></pre>
+<p>The word “color” has been duplicated 53940 times and tabulated using the <code>count()</code> function. Not what we intended. Always use the backticks for non-syntactic column names.</p>
+</div>
+<div id="missing-values" class="section level2" number="0.5">
+<h2><span class="header-section-number">0.5</span> Missing values</h2>
+<p><code>NA</code> represents an unknown value. Missing values are contagious, in that their properties will transfer to any operation performed on it.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a><span class="ot">NA</span> <span class="op">&gt;</span><span class="st"> </span><span class="dv">5</span></span></code></pre></div>
+<pre><code>## [1] NA</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="dv">10</span> <span class="op">==</span><span class="st"> </span><span class="ot">NA</span></span></code></pre></div>
+<pre><code>## [1] NA</code></pre>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="ot">NA</span> <span class="op">+</span><span class="st"> </span><span class="dv">10</span></span></code></pre></div>
+<pre><code>## [1] NA</code></pre>
+<p>To determine if a value is missing, use the <code>is.na()</code> function.</p>
+<p>When filtering, you must explicitly call for missing values to be returned.</p>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>df &lt;-<span class="st"> </span><span class="kw">tibble</span>(<span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="ot">NA</span>, <span class="dv">3</span>))</span>
+<span id="cb24-2"><a href="#cb24-2"></a>df</span></code></pre></div>
+<pre><code>## # A tibble: 3 x 1
+##       x
+##   &lt;dbl&gt;
+## 1     1
+## 2    NA
+## 3     3</code></pre>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="kw">filter</span>(df, x <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 1
+##       x
+##   &lt;dbl&gt;
+## 1     3</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="kw">filter</span>(df, <span class="kw">is.na</span>(x) <span class="op">|</span><span class="st"> </span>x <span class="op">&gt;</span><span class="st"> </span><span class="dv">1</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 2 x 1
+##       x
+##   &lt;dbl&gt;
+## 1    NA
+## 2     3</code></pre>
+<p>Or when calculating summary statistics, you need to explicitly ignore missing values.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>df &lt;-<span class="st"> </span><span class="kw">tibble</span>(</span>
+<span id="cb30-2"><a href="#cb30-2"></a>  <span class="dt">x =</span> <span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">5</span>, <span class="ot">NA</span>)</span>
+<span id="cb30-3"><a href="#cb30-3"></a>)</span>
+<span id="cb30-4"><a href="#cb30-4"></a>df</span></code></pre></div>
+<pre><code>## # A tibble: 5 x 1
+##       x
+##   &lt;dbl&gt;
+## 1     1
+## 2     2
+## 3     3
+## 4     5
+## 5    NA</code></pre>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="kw">summarize</span>(df, <span class="dt">meanx =</span> <span class="kw">mean</span>(x))</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 1
+##   meanx
+##   &lt;dbl&gt;
+## 1    NA</code></pre>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="kw">summarize</span>(df, <span class="dt">meanx =</span> <span class="kw">mean</span>(x, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>))</span></code></pre></div>
+<pre><code>## # A tibble: 1 x 1
+##   meanx
+##   &lt;dbl&gt;
+## 1  2.75</code></pre>
+</div>
+<div id="piping" class="section level2" number="0.6">
+<h2><span class="header-section-number">0.6</span> Piping</h2>
+<p>As we discussed, frequently you need to perform a series of intermediate steps to transform data for analysis. If we write each step as a discrete command and store their contents as new objects, your code can become convoluted.</p>
+<p>Drawing on <a href="http://r4ds.had.co.nz/transform.html#combining-multiple-operations-with-the-pipe">this example from <em>R for Data Science</em></a>, let’s explore the relationship between the distance and average delay for each location. At this point, we would write it something like this:</p>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a>by_dest &lt;-<span class="st"> </span><span class="kw">group_by</span>(<span class="dt">.data =</span> flights, dest)</span>
+<span id="cb36-2"><a href="#cb36-2"></a>delay &lt;-<span class="st"> </span><span class="kw">summarise</span>(</span>
+<span id="cb36-3"><a href="#cb36-3"></a>  <span class="dt">.data =</span> by_dest,</span>
+<span id="cb36-4"><a href="#cb36-4"></a>  <span class="dt">count =</span> <span class="kw">n</span>(),</span>
+<span id="cb36-5"><a href="#cb36-5"></a>  <span class="dt">dist =</span> <span class="kw">mean</span>(distance, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb36-6"><a href="#cb36-6"></a>  <span class="dt">delay =</span> <span class="kw">mean</span>(arr_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb36-7"><a href="#cb36-7"></a>)</span></code></pre></div>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<div class="sourceCode" id="cb38"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a>delay &lt;-<span class="st"> </span><span class="kw">filter</span>(<span class="dt">.data =</span> delay, count <span class="op">&gt;</span><span class="st"> </span><span class="dv">20</span>, dest <span class="op">!=</span><span class="st"> &quot;HNL&quot;</span>)</span>
+<span id="cb38-2"><a href="#cb38-2"></a></span>
+<span id="cb38-3"><a href="#cb38-3"></a><span class="kw">ggplot</span>(<span class="dt">data =</span> delay, <span class="dt">mapping =</span> <span class="kw">aes</span>(<span class="dt">x =</span> dist, <span class="dt">y =</span> delay)) <span class="op">+</span></span>
+<span id="cb38-4"><a href="#cb38-4"></a><span class="st">  </span><span class="kw">geom_point</span>(<span class="kw">aes</span>(<span class="dt">size =</span> count), <span class="dt">alpha =</span> <span class="dv">1</span> <span class="op">/</span><span class="st"> </span><span class="dv">3</span>) <span class="op">+</span></span>
+<span id="cb38-5"><a href="#cb38-5"></a><span class="st">  </span><span class="kw">geom_smooth</span>(<span class="dt">se =</span> <span class="ot">FALSE</span>)</span></code></pre></div>
+<pre><code>## `geom_smooth()` using method = &#39;loess&#39; and formula &#39;y ~ x&#39;</code></pre>
+<p><img src="{{< blogdown/postref >}}index_files/figure-html/intermediate-1.png" width="672" /></p>
+<p>Decomposing the problem, there are three basic steps:</p>
+<ol style="list-style-type: decimal">
+<li>Group <code>flights</code> by destination.</li>
+<li>Summarize to compute distance, average delay, and number of flights.</li>
+<li>Filter to remove noisy points and the Honolulu airport, which is almost twice as far away as the next closest airport.</li>
+</ol>
+<p>The code as written is inefficient because we have to name and store each intermediate data frame, even though we don’t care about them. It also provides more opportunities for typos and errors.</p>
+<p>Because all <code>dplyr</code> verbs follow the same syntax (data first, then options for the function), we can use the pipe operator <code>%&gt;%</code> to <strong>chain</strong> a series of functions together in one command:</p>
+<div class="sourceCode" id="cb40"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a>delays &lt;-<span class="st"> </span>flights <span class="op">%&gt;%</span></span>
+<span id="cb40-2"><a href="#cb40-2"></a><span class="st">  </span><span class="kw">group_by</span>(dest) <span class="op">%&gt;%</span></span>
+<span id="cb40-3"><a href="#cb40-3"></a><span class="st">  </span><span class="kw">summarize</span>(</span>
+<span id="cb40-4"><a href="#cb40-4"></a>    <span class="dt">count =</span> <span class="kw">n</span>(),</span>
+<span id="cb40-5"><a href="#cb40-5"></a>    <span class="dt">dist =</span> <span class="kw">mean</span>(distance, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb40-6"><a href="#cb40-6"></a>    <span class="dt">delay =</span> <span class="kw">mean</span>(arr_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb40-7"><a href="#cb40-7"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb40-8"><a href="#cb40-8"></a><span class="st">  </span><span class="kw">filter</span>(count <span class="op">&gt;</span><span class="st"> </span><span class="dv">20</span>, dest <span class="op">!=</span><span class="st"> &quot;HNL&quot;</span>)</span></code></pre></div>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<p>Now, we don’t have to name each intermediate step and store them as data frames. We only store a single data frame (<code>delays</code>) which contains the final version of the transformed data frame. We could read this code as use the <code>flights</code> data, then group by destination, then summarize for each destination the number of flights, the average disance, and the average delay, then subset only the destinations with at least 20 flights and exclude Honolulu.</p>
+</div>
+<div id="things-to-not-do-with-piping" class="section level2" number="0.7">
+<h2><span class="header-section-number">0.7</span> Things to not do with piping</h2>
+<p>Remember that with pipes, we don’t have to save all of our intermediate steps. We only use one assignment, like this:</p>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a>delays &lt;-<span class="st"> </span>flights <span class="op">%&gt;%</span></span>
+<span id="cb42-2"><a href="#cb42-2"></a><span class="st">  </span><span class="kw">group_by</span>(dest) <span class="op">%&gt;%</span></span>
+<span id="cb42-3"><a href="#cb42-3"></a><span class="st">  </span><span class="kw">summarize</span>(</span>
+<span id="cb42-4"><a href="#cb42-4"></a>    <span class="dt">count =</span> <span class="kw">n</span>(),</span>
+<span id="cb42-5"><a href="#cb42-5"></a>    <span class="dt">dist =</span> <span class="kw">mean</span>(distance, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb42-6"><a href="#cb42-6"></a>    <span class="dt">delay =</span> <span class="kw">mean</span>(arr_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb42-7"><a href="#cb42-7"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb42-8"><a href="#cb42-8"></a><span class="st">  </span><span class="kw">filter</span>(count <span class="op">&gt;</span><span class="st"> </span><span class="dv">20</span>, dest <span class="op">!=</span><span class="st"> &quot;HNL&quot;</span>)</span></code></pre></div>
+<pre><code>## `summarise()` ungrouping output (override with `.groups` argument)</code></pre>
+<p>Do not do this:</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a>delays &lt;-<span class="st"> </span>flights <span class="op">%&gt;%</span></span>
+<span id="cb44-2"><a href="#cb44-2"></a><span class="st">  </span><span class="kw">by_dest</span>() &lt;-<span class="st"> </span><span class="kw">group_by</span>(dest) <span class="op">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3"></a><span class="st">  </span><span class="kw">delay</span>() &lt;-<span class="st"> </span><span class="kw">summarize</span>(</span>
+<span id="cb44-4"><a href="#cb44-4"></a>  <span class="dt">count =</span> <span class="kw">n</span>(),</span>
+<span id="cb44-5"><a href="#cb44-5"></a>  <span class="dt">dist =</span> <span class="kw">mean</span>(distance, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb44-6"><a href="#cb44-6"></a>  <span class="dt">delay =</span> <span class="kw">mean</span>(arr_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb44-7"><a href="#cb44-7"></a>) <span class="op">%&gt;%</span></span>
+<span id="cb44-8"><a href="#cb44-8"></a><span class="st">  </span><span class="kw">delay</span>() &lt;-<span class="st"> </span><span class="kw">filter</span>(count <span class="op">&gt;</span><span class="st"> </span><span class="dv">20</span>, dest <span class="op">!=</span><span class="st"> &quot;HNL&quot;</span>)</span></code></pre></div>
+<pre><code>Error: bad assignment: 
+     summarize(count = n(), dist = mean(distance, na.rm = TRUE), delay = mean(arr_delay, 
+         na.rm = TRUE)) %&gt;% delay &lt;- filter(count &gt; 20, dest != &quot;HNL&quot;)</code></pre>
+<p>Or this:</p>
+<div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a>delays &lt;-<span class="st"> </span>flights <span class="op">%&gt;%</span></span>
+<span id="cb46-2"><a href="#cb46-2"></a><span class="st">  </span><span class="kw">group_by</span>(<span class="dt">.data =</span> flights, dest) <span class="op">%&gt;%</span></span>
+<span id="cb46-3"><a href="#cb46-3"></a><span class="st">  </span><span class="kw">summarize</span>(</span>
+<span id="cb46-4"><a href="#cb46-4"></a>    <span class="dt">.data =</span> flights,</span>
+<span id="cb46-5"><a href="#cb46-5"></a>    <span class="dt">count =</span> <span class="kw">n</span>(),</span>
+<span id="cb46-6"><a href="#cb46-6"></a>    <span class="dt">dist =</span> <span class="kw">mean</span>(distance, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>),</span>
+<span id="cb46-7"><a href="#cb46-7"></a>    <span class="dt">delay =</span> <span class="kw">mean</span>(arr_delay, <span class="dt">na.rm =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb46-8"><a href="#cb46-8"></a>  ) <span class="op">%&gt;%</span></span>
+<span id="cb46-9"><a href="#cb46-9"></a><span class="st">  </span><span class="kw">filter</span>(<span class="dt">.data =</span> flights, count <span class="op">&gt;</span><span class="st"> </span><span class="dv">20</span>, dest <span class="op">!=</span><span class="st"> &quot;HNL&quot;</span>)</span></code></pre></div>
+<pre><code>## Error: Problem with `filter()` input `..1`.
+## ✖ Problem with `summarise()` input `..1`.
+## ✖ Must group by variables found in `.data`.
+## * Column `.` is not found.
+## ℹ Input `..1` is `.`.
+## ℹ Input `..1` is `.`.</code></pre>
+<p>If you use pipes, you don’t have to reference the data frame with each function - just the first time at the beginning of the pipe sequence.</p>
+<p>{{% callout note %}}</p>
+<p>If you want to visualize the transformations some tidyverse code makes to your data, <a href="https://tidydatatutor.com/">TidyDataTutor</a> might be a useful resource.</p>
+<p>{{% /callout %}}</p>
+</div>
+<div id="acknowledgments" class="section level2" number="0.8">
+<h2><span class="header-section-number">0.8</span> Acknowledgments</h2>
+<ul>
+<li>Artwork by <span class="citation">[@allison_horst]</span>(<a href="https://github.com/allisonhorst/stats-illustrations" class="uri">https://github.com/allisonhorst/stats-illustrations</a>)</li>
+<li><a href="https://tidydatatutor.com/">TidyDataTutor</a> developed by Sean Kross and Phillip Guo</li>
+</ul>
+</div>
+<div id="session-info" class="section level2" number="0.9">
+<h2><span class="header-section-number">0.9</span> Session Info</h2>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1"></a>devtools<span class="op">::</span><span class="kw">session_info</span>()</span></code></pre></div>
+<pre><code>## Error in get(genname, envir = envir) : object &#39;testthat_print&#39; not found</code></pre>
+<pre><code>## ─ Session info ───────────────────────────────────────────────────────────────
+##  setting  value                       
+##  version  R version 3.6.1 (2019-07-05)
+##  os       macOS Mojave 10.14.6        
+##  system   x86_64, darwin15.6.0        
+##  ui       X11                         
+##  language (EN)                        
+##  collate  en_US.UTF-8                 
+##  ctype    en_US.UTF-8                 
+##  tz       America/Los_Angeles         
+##  date     2021-12-04                  
+## 
+## ─ Packages ───────────────────────────────────────────────────────────────────
+##  package      * version    date       lib source                           
+##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 3.6.0)                   
+##  backports      1.1.6      2020-04-05 [1] CRAN (R 3.6.1)                   
+##  blogdown       1.0        2021-01-09 [1] CRAN (R 3.6.2)                   
+##  bookdown       0.22.2     2021-05-16 [1] Github (rstudio/bookdown@e293790)
+##  broom          0.7.3      2020-12-16 [1] CRAN (R 3.6.2)                   
+##  bslib          0.2.5.9000 2021-05-16 [1] Github (rstudio/bslib@39976d5)   
+##  callr          3.4.3      2020-03-28 [1] CRAN (R 3.6.2)                   
+##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 3.6.0)                   
+##  cli            2.2.0      2020-11-20 [1] CRAN (R 3.6.2)                   
+##  colorspace     1.4-1      2019-03-18 [1] CRAN (R 3.6.0)                   
+##  crayon         1.3.4      2017-09-16 [1] CRAN (R 3.6.0)                   
+##  DBI            1.1.0      2019-12-15 [1] CRAN (R 3.6.0)                   
+##  dbplyr         1.4.2      2019-06-17 [1] CRAN (R 3.6.0)                   
+##  desc           1.2.0      2018-05-01 [1] CRAN (R 3.6.0)                   
+##  devtools       2.2.2      2020-02-17 [1] CRAN (R 3.6.0)                   
+##  digest         0.6.27     2020-10-24 [1] CRAN (R 3.6.2)                   
+##  dplyr        * 1.0.2      2020-08-18 [1] CRAN (R 3.6.2)                   
+##  ellipsis       0.3.1      2020-05-15 [1] CRAN (R 3.6.2)                   
+##  evaluate       0.14       2019-05-28 [1] CRAN (R 3.6.0)                   
+##  fansi          0.4.1      2020-01-08 [1] CRAN (R 3.6.0)                   
+##  forcats      * 0.5.0      2020-03-01 [1] CRAN (R 3.6.0)                   
+##  fs             1.5.0      2020-07-31 [1] CRAN (R 3.6.2)                   
+##  generics       0.1.0      2020-10-31 [1] CRAN (R 3.6.2)                   
+##  ggplot2      * 3.3.2      2020-06-19 [1] CRAN (R 3.6.2)                   
+##  glue           1.4.2      2020-08-27 [1] CRAN (R 3.6.2)                   
+##  gtable         0.3.0      2019-03-25 [1] CRAN (R 3.6.0)                   
+##  haven          2.3.1      2020-06-01 [1] CRAN (R 3.6.2)                   
+##  here           0.1        2017-05-28 [1] CRAN (R 3.6.0)                   
+##  hms            0.5.3      2020-01-08 [1] CRAN (R 3.6.0)                   
+##  htmltools      0.5.1.1    2021-01-22 [1] CRAN (R 3.6.2)                   
+##  httr           1.4.2      2020-07-20 [1] CRAN (R 3.6.2)                   
+##  jquerylib      0.1.4      2021-04-26 [1] CRAN (R 3.6.2)                   
+##  jsonlite       1.7.2      2020-12-09 [1] CRAN (R 3.6.2)                   
+##  knitr          1.28       2020-02-06 [1] CRAN (R 3.6.0)                   
+##  lifecycle      0.2.0      2020-03-06 [1] CRAN (R 3.6.0)                   
+##  lubridate      1.8.0      2021-10-07 [1] CRAN (R 3.6.2)                   
+##  magrittr       2.0.1      2020-11-17 [1] CRAN (R 3.6.2)                   
+##  memoise        1.1.0      2017-04-21 [1] CRAN (R 3.6.0)                   
+##  modelr         0.1.6      2020-02-22 [1] CRAN (R 3.6.0)                   
+##  munsell        0.5.0      2018-06-12 [1] CRAN (R 3.6.0)                   
+##  nycflights13 * 1.0.1      2019-09-16 [1] CRAN (R 3.6.0)                   
+##  pillar         1.4.7      2020-11-20 [1] CRAN (R 3.6.2)                   
+##  pkgbuild       1.0.6      2019-10-09 [1] CRAN (R 3.6.0)                   
+##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 3.6.0)                   
+##  pkgload        1.0.2      2018-10-29 [1] CRAN (R 3.6.0)                   
+##  prettyunits    1.1.1      2020-01-24 [1] CRAN (R 3.6.0)                   
+##  processx       3.4.2      2020-02-09 [1] CRAN (R 3.6.0)                   
+##  ps             1.3.2      2020-02-13 [1] CRAN (R 3.6.0)                   
+##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 3.6.2)                   
+##  R6             2.5.0      2020-10-28 [1] CRAN (R 3.6.2)                   
+##  Rcpp           1.0.5      2020-07-06 [1] CRAN (R 3.6.2)                   
+##  readr        * 1.3.1      2018-12-21 [1] CRAN (R 3.6.0)                   
+##  readxl         1.3.1      2019-03-13 [1] CRAN (R 3.6.0)                   
+##  remotes        2.1.1      2020-02-15 [1] CRAN (R 3.6.0)                   
+##  reprex         0.3.0      2019-05-16 [1] CRAN (R 3.6.0)                   
+##  rlang          0.4.11     2021-04-30 [1] CRAN (R 3.6.2)                   
+##  rmarkdown      2.11       2021-09-14 [1] CRAN (R 3.6.2)                   
+##  rprojroot      2.0.2      2020-11-15 [1] CRAN (R 3.6.2)                   
+##  rstudioapi     0.13       2020-11-12 [1] CRAN (R 3.6.2)                   
+##  rvest          0.3.6      2020-07-25 [1] CRAN (R 3.6.2)                   
+##  sass           0.4.0      2021-05-12 [1] CRAN (R 3.6.2)                   
+##  scales         1.1.0      2019-11-18 [1] CRAN (R 3.6.0)                   
+##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 3.6.0)                   
+##  stringi        1.5.3      2020-09-09 [1] CRAN (R 3.6.2)                   
+##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 3.6.0)                   
+##  testthat       2.3.2      2020-03-02 [1] CRAN (R 3.6.0)                   
+##  tibble       * 3.0.4      2020-10-12 [1] CRAN (R 3.6.2)                   
+##  tidyr        * 1.1.2      2020-08-27 [1] CRAN (R 3.6.2)                   
+##  tidyselect     1.1.0      2020-05-11 [1] CRAN (R 3.6.2)                   
+##  tidyverse    * 1.3.0      2019-11-21 [1] CRAN (R 3.6.0)                   
+##  usethis        1.6.3      2020-09-17 [1] CRAN (R 3.6.2)                   
+##  vctrs          0.3.5      2020-11-17 [1] CRAN (R 3.6.2)                   
+##  withr          2.3.0      2020-09-22 [1] CRAN (R 3.6.2)                   
+##  xfun           0.23       2021-05-15 [1] CRAN (R 3.6.1)                   
+##  xml2           1.3.2      2020-04-23 [1] CRAN (R 3.6.2)                   
+##  yaml           2.2.1      2020-02-01 [1] CRAN (R 3.6.0)                   
+## 
+## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library</code></pre>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>See <a href="https://adv-r.hadley.nz/names-values.html#non-syntactic"><em>Advanced R</em></a> for a more detailed discussion - but note that the book is called * <strong>Advanced</strong> R* for a reason.<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
