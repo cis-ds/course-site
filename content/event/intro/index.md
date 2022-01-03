@@ -60,5 +60,5 @@ math: false
 ## What you need to do after class
 
 * [Install and setup software](/setup/)
-* [Register your GitHub username for the course](https://forms.gle/uMgGMa3h2dstx6Aq6)
+* [Register your GitHub username for the course](https://forms.gle/Q7upnSrhDnYbj1RTA)
 * [Begin homework 1](/homework/edit-readme/)
