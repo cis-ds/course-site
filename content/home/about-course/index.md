@@ -21,14 +21,11 @@ design:
   
   * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
   * Teaching Assistants
-      - Amy Maldonado
+      - Neeraj Sharma
       - Kaitlyn Van Baalen
-  * Meeting day/time: TuTh 9:30-10:50am
+  * Meeting day/time: MW 9:30-11:20am
   - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Not online! For now...]
   * Office hours
-      - Benjamin: Monday 10-12pm (Room 219, 1155 E 60th St)
-      - Amy: Monday 5:30-7:30 (virtual)
-      - Kaitlyn: Sunday 5-7pm (virtual)
   * Prerequisites: None
   * Requirements: Bring your own laptop
 
