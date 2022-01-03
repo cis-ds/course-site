@@ -1,14 +1,14 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2021-10-28T09:30:00-06:00
-publishDate: 2019-03-01T09:30:00-06:00
+date: 2022-02-14T10:30:00-06:00
+publishDate: 2019-03-01T10:30:00-06:00
 draft: false
 
 aliases: ["/cm010.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-10-28T10:50:00-06:00
+time_end: 2022-02-14T11:20:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

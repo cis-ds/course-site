@@ -1,14 +1,14 @@
 ---
 title: "Text analysis: fundamentals and sentiment analysis"
-date: 2021-11-30T09:30:00-06:00
-publishDate: 2019-06-03T09:30:00-06:00
+date: 2022-03-07T10:30:00-06:00
+publishDate: 2019-06-03T10:30:00-06:00
 draft: false
 
 aliases: ["/cm017.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2021-11-30T10:50:00-06:00
+time_end: 2022-03-07T11:20:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
