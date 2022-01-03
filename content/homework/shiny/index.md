@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw10-shiny.html"]
 
 summary: "Build/enhance a Shiny application."
-url_code: "https://github.com/cfss-fa21/hw10"
+url_code: "https://github.com/cfss-win22/hw10"
 ---
 
 
@@ -19,7 +19,7 @@ Due by 9:30 am CT (Chicago) on July 27th.
 
 # Fork the `hw10` repository
 
-Go [here](https://github.com/cfss-fa21/hw10) to fork the repo.
+Go [here](https://github.com/cfss-win22/hw10) to fork the repo.
 
 # What we've done
 

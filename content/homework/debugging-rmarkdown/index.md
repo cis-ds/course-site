@@ -7,7 +7,7 @@ draft: false
 type: post
 
 summary: "Resolve code errors and generate reproducible R Markdown documents."
-url_code: "https://github.com/cfss-fa21/hw05"
+url_code: "https://github.com/cfss-win22/hw05"
 ---
 
 
@@ -18,7 +18,7 @@ Due by 9:30am (Chicago) on November 2nd.
 
 # Fork the `hw05` repository
 
-Go [here](https://github.com/cfss-fa21/hw05) to fork the repo for homework 05.
+Go [here](https://github.com/cfss-win22/hw05) to fork the repo for homework 05.
 
 # Debugging code
 

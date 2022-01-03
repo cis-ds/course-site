@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw03-wrangle-data.html"]
 
 summary: "Wrangle and explore messy datasets in practical research environments."
-url_code: "https://github.com/cfss-fa21/hw03"
+url_code: "https://github.com/cfss-win22/hw03"
 ---
 
 
@@ -21,7 +21,7 @@ The goal of this assignment is to practice wrangling and exploring data in a res
 
 # Fork the `hw03` repository
 
-Go [here](https://github.com/cfss-fa21/hw03) to fork the repo.
+Go [here](https://github.com/cfss-win22/hw03) to fork the repo.
 
 # Part 1: Tidying messy data
 

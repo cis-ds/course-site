@@ -8,7 +8,7 @@ type: post
 aliases: ["/hw02-explore-data.html"]
 
 summary: "Transform and explore a cleaned dataset on gun deaths in the United States."
-url_code: "https://github.com/cfss-fa21/hw02"
+url_code: "https://github.com/cfss-win22/hw02"
 ---
 
 
@@ -21,7 +21,7 @@ Now that you've demonstrated your software is setup, the goal of this assignment
 
 # Fork the `hw02` repository
 
-Go [here](https://github.com/cfss-fa21/hw02) to fork the repo.
+Go [here](https://github.com/cfss-win22/hw02) to fork the repo.
 
 # Exploring clean data
 
@@ -81,11 +81,11 @@ When presenting tabular data (aka `dplyr::summarize()`), make sure you format it
 ##   location_type     n
 ##   <chr>         <int>
 ## 1 Airport           1
-## 2 Military          5
-## 3 Other            47
+## 2 Military          6
+## 3 Other            49
 ## 4 Religious         6
 ## 5 School           17
-## 6 Workplace        38
+## 6 Workplace        45
 ```
 
 Instead, use `kable()` to format the table, add a caption, and label the columns:
@@ -96,11 +96,11 @@ Table: Table 1: Mass shootings in the United States (1982-2019), by location
 |Location  | Number of incidents|
 |:---------|-------------------:|
 |Airport   |                   1|
-|Military  |                   5|
-|Other     |                  47|
+|Military  |                   6|
+|Other     |                  49|
 |Religious |                   6|
 |School    |                  17|
-|Workplace |                  38|
+|Workplace |                  45|
 
 Run `?kable` in the console to see how additional options.
 
