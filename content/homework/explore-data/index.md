@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-win22/hw02"
 
 # Overview
 
-Due by 9:30am (Chicago) on October 12th.
+Due by 10:30am (Chicago) on January 31st.
 
 Now that you've demonstrated your software is setup, the goal of this assignment is to practice transforming and exploring data.
 
