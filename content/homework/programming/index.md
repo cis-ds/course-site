@@ -48,15 +48,9 @@ Go [here](https://github.com/cfss-win22/hw04) to fork the repo.
         
     
 
-    <div class="figure">
-    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" alt="Correct use cases of the function." width="672" />
-    <p class="caption">(\#fig:unnamed-chunk-2)Correct use cases of the function.</p>
-    </div>
+    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" title="Correct use cases of the function." alt="Correct use cases of the function." width="672" />
 
-    <div class="figure">
-    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" alt="Incorrect use cases of the function." width="672" />
-    <p class="caption">(\#fig:unnamed-chunk-3)Incorrect use cases of the function.</p>
-    </div>
+    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" title="Incorrect use cases of the function." alt="Incorrect use cases of the function." width="672" />
 
 
 # Part 2: Using programming in data analysis
