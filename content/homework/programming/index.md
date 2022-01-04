@@ -44,6 +44,20 @@ Go [here](https://github.com/cfss-win22/hw04) to fork the repo.
     * This function should be flexible - that is, the function works if I give it values for $a$ and $b$, or $b$ and $c$, or $a$ and $c$
     * If the user only provides the length of one side, the function should [throw an error with `stop()`](http://r4ds.had.co.nz/functions.html). Likewise, if the user provides the lengths of all three sides, the function should throw an error.
     * If the user provides any values other than numeric values, the function should throw an error
+    * Your function should be able to correctly handle the examples below:
+        
+    
+
+    <div class="figure">
+    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" alt="Correct use cases of the function." width="672" />
+    <p class="caption">(\#fig:unnamed-chunk-2)Correct use cases of the function.</p>
+    </div>
+
+    <div class="figure">
+    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" alt="Incorrect use cases of the function." width="672" />
+    <p class="caption">(\#fig:unnamed-chunk-3)Incorrect use cases of the function.</p>
+    </div>
+
 
 # Part 2: Using programming in data analysis
 
