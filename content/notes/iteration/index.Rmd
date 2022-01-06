@@ -21,6 +21,8 @@ knitr::opts_chunk$set(cache = TRUE)
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
 library(rcfss)
+library(palmerpenguins)
+
 set.seed(1234)
 theme_set(theme_minimal())
 ```
@@ -106,24 +108,24 @@ This is the code that actually performs the desired calculations. It runs multip
 
 If you don't preallocate space for the output, each time the `for` loop iterates, it makes a copy of the output and appends the new value at the end. Copying data takes time and memory. If the output is preallocated space, the loop simply fills in the slots with the correct values.
 
-Consider the following task: duplicate the data frame `mpg` 100 times and bind them together into a single data frame. We can accomplish the latter task using `bind_rows()`, and use a `for` loop to create 100 copies of `mpg`. What is the difference if we preallocate space for the output as opposed to just copying and extending the data frame each time?
+Consider the following task: duplicate the data frame `palmerpenguins::penguins` 100 times and bind them together into a single data frame. We can accomplish the latter task using `bind_rows()`, and use a `for` loop to create 100 copies of `penguins`. What is the difference if we preallocate space for the output as opposed to just copying and extending the data frame each time?
 
 ```r
 # no preallocation
-mpg_no_preall <- tibble()
+penguins_no_preall <- tibble()
 
 for(i in 1:100){
-  mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+  penguins_no_preall <- bind_rows(penguins_no_preall, penguins)
 }
 
 # with preallocation using a list
-mpg_preall <- vector(mode = "list", length = 100)
+penguins_preall <- vector(mode = "list", length = 100)
 
 for(i in 1:100){
-  mpg_preall[[i]] <- mpg
+  penguins_preall[[i]] <- penguins
 }
 
-mpg_preall <- bind_rows(mpg_preall)
+penguins_preall <- bind_rows(penguins_preall)
 ```
 
 Let's compare the time it takes to complete each of these loops by replicating each example 100 times and measuring how long it takes for the expression to evaluate.
@@ -131,30 +133,30 @@ Let's compare the time it takes to complete each of these loops by replicating e
 ```{r preallocate, echo = FALSE, message = FALSE}
 library(microbenchmark)
 
-# bind together 100 copies of mpg
+# bind together 100 copies of penguins
 times <- microbenchmark(
   `No preallocation` = {
-    mpg_no_preall <- tibble()
+    penguins_no_preall <- tibble()
 
     for (i in 1:100) {
-      mpg_no_preall <- bind_rows(mpg_no_preall, mpg)
+      penguins_no_preall <- bind_rows(penguins_no_preall, penguins)
     }
   },
   `Preallocation` = {
-    mpg_preall <- vector(mode = "list", length = 100)
+    penguins_preall <- vector(mode = "list", length = 100)
 
     for (i in 1:100) {
-      mpg_preall[[i]] <- mpg
+      penguins_preall[[i]] <- penguins
     }
 
-    mpg_preall <- bind_rows(mpg_preall)
+    penguins_preall <- bind_rows(penguins_preall)
   }
 )
 
 autoplot(times)
 ```
 
-Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 30.
+Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 10.
 
 ## Exercise: write a `for` loop
 

@@ -15,7 +15,7 @@ menu:
 ---
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(cache = TRUE)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 options(digits = 3)
 ```
 
@@ -28,6 +28,7 @@ This page is a summary of [*A Layered Grammar of Graphics*](http://www-tandfonli
 ```{r packages, cache = FALSE, message = FALSE}
 library(tidyverse)
 library(knitr)
+library(palmerpenguins)
 ```
 
 Google defines a **grammar** as "the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics".^[[Google](https://www.google.com/search?q=grammar)] Others consider a grammar to be "the fundamental principles or rules of an art or science".^[[Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)] Applied to visualizations, a **grammar of graphics** is a grammar used to describe and create a wide range of statistical graphics.^[[Wilkinson, Leland. (2005). *The Grammar of Graphics*. (UChicago authentication required)](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F0-387-28695-0)]
@@ -81,21 +82,21 @@ tibble(
 
 **Data** defines the source of the information to be visualized, but is independent from the other elements. So a layered graphic can be built which utilizes different data sources while keeping the other components the same.
 
-For our running example, let's use the `mpg` dataset in the `ggplot2` package.^[Run `?mpg` in the console to get more information about this dataset.]
+For our running example, let's use the `penguins` dataset in the [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/) package.^[Run `?penguins` in the console to get more information about this dataset.]
 
-```{r mpg}
-head(x = mpg) %>%
+```{r penguins}
+head(x = penguins) %>%
   kable(caption = "Dataset of automobiles")
 ```
 
-**Mapping** defines how the variables are applied to the plot. So if we were graphing information from `mpg`, we might map a car's engine displacement to the $x$ position and highway mileage to the $y$ position.
+**Mapping** defines how the variables are applied to the plot. So if we were graphing information from `penguins`, we might map a penguin's flipper length to the $x$ position and body mass to the $y$ position.
 
 ```{r mapping}
-mpg %>%
-  select(displ, hwy) %>%
+penguins %>%
+  select(flipper_length_mm, body_mass_g) %>%
   rename(
-    x = displ,
-    y = hwy
+    x = flipper_length_mm,
+    y = body_mass_g
   )
 ```
 
@@ -106,15 +107,15 @@ A **statistical transformation** (*stat*) transforms the data, generally by summ
 A stat is a function that takes in a dataset as the input and returns a dataset as the output; a stat can add new variables to the original dataset, or create an entirely new dataset. So instead of graphing this data in its raw form:
 
 ```{r stat_raw}
-mpg %>%
-  select(cyl)
+penguins %>%
+  select(island)
 ```
 
 You would transform it to:
 
 ```{r stat_transform}
-mpg %>%
-  count(cyl)
+penguins %>%
+  count(island)
 ```
 
 {{% callout note %}}
@@ -134,37 +135,37 @@ Sometimes you don't need to make a statistical transformation. For example, in a
 Each geom can only display certain **aesthetics** or visual attributes of the geom. For example, a point geom has position, color, shape, and size aesthetics.
 
 ```{r geom_point}
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
   geom_point() +
   ggtitle("A point geom with position and color aesthetics")
 ```
 
 * Position defines where each point is drawn on the plot
-* Color defines the color of each point. Here the color is determined by the class of the car (observation)
+* Color defines the color of each point. Here the color is determined by the species of the car (observation)
 
 Whereas a bar geom has position, height, width, and fill color.
 
 ```{r geom_bar}
-ggplot(data = mpg, aes(x = cyl)) +
+ggplot(data = penguins, aes(x = island)) +
   geom_bar() +
   ggtitle("A bar geom with position and height aesthetics")
 ```
 
 * Position determines the starting location (origin) of each bar
-* Height determines how tall to draw the bar. Here the height is based on the number of observations in the dataset for each possible number of cylinders.
+* Height determines how tall to draw the bar. Here the height is based on the number of observations in the dataset for each island.
 
 ## Position adjustment
 
 Sometimes with dense data we need to adjust the position of elements on the plot, otherwise data points might obscure one another. Bar plots frequently **stack** or **dodge** the bars to avoid overlap:
 
 ```{r position_dodge}
-count(x = mpg, class, cyl) %>%
-  ggplot(mapping = aes(x = cyl, y = n, fill = class)) +
+count(x = penguins, species, island) %>%
+  ggplot(mapping = aes(x = island, y = n, fill = species)) +
   geom_bar(stat = "identity") +
   ggtitle(label = "A stacked bar chart")
 
-count(x = mpg, class, cyl) %>%
-  ggplot(mapping = aes(x = cyl, y = n, fill = class)) +
+count(x = penguins, species, island) %>%
+  ggplot(mapping = aes(x = island, y = n, fill = species)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle(label = "A dodged bar chart")
 ```
@@ -172,11 +173,11 @@ count(x = mpg, class, cyl) %>%
 Sometimes scatterplots with few unique $x$ and $y$ values are **jittered** (random noise is added) to reduce overplotting.
 
 ```{r position}
-ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = island, y = body_mass_g)) +
   geom_point() +
   ggtitle("A point geom with obscured data points")
 
-ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = island, y = body_mass_g)) +
   geom_jitter() +
   ggtitle("A point geom with jittered data points")
 ```
@@ -186,21 +187,21 @@ ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
 A **scale** controls how data is mapped to aesthetic attributes, so we need one scale for every aesthetic property employed in a layer. For example, this graph defines a scale for color:
 
 ```{r scale_color}
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
   geom_point() +
   guides(color = guide_legend(override.aes = list(size = 4)))
 ```
 
-Note that the scale is consistent - every point for a compact car is drawn in tan, whereas SUVs are drawn in pink. The scale can be changed to use a different color palette:
+Note that the scale is consistent - every point for an Adèlie penguin is drawn in red, whereas Chinstrap penguins are drawn in green The scale can be changed to use a different color palette:
 
 ```{r scale_color_palette}
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
   geom_point() +
   guides(color = guide_legend(override.aes = list(size = 4))) +
   scale_color_brewer(palette = "Dark2")
 ```
 
-Now we are using a different palette, but the scale is still consistent: all compact cars utilize the same color, whereas SUVs use a new color **but each SUV still uses the same, consistent color**.
+Now we are using a different palette, but the scale is still consistent: all Adèlie penguins utilize the same color, whereas Chinstrap penguins use a new color **but each Chinstrap penguin still uses the same, consistent color**.
 
 ## Coordinate system
 
@@ -236,21 +237,21 @@ p +
 **Faceting** can be used to split the data up into subsets of the entire dataset. This is a powerful tool when investigating whether patterns are the same or different across conditions, and allows the subsets to be visualized on the same plot (known as **conditioned** or **trellis** plots). The faceting specification describes which variables should be used to split up the data, and how they should be arranged.
 
 ```{r facet}
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point() +
-  facet_wrap(facets = vars(class))
+  facet_wrap(facets = vars(species))
 ```
 
 ## Defaults
 
 Rather than explicitly declaring each component of a layered graphic (which will use more code and introduces opportunities for errors), we can establish intelligent defaults for specific geoms and scales. For instance, whenever we want to use a bar geom, we can default to using a stat that counts the number of observations in each group of our variable in the $x$ position.
 
-Consider the following scenario: you wish to generate a scatterplot visualizing the relationship between engine displacement size and highway fuel efficiency. With no defaults, the code to generate this graph is:
+Consider the following scenario: you wish to generate a scatterplot visualizing the relationship between flipper length and body mass. With no defaults, the code to generate this graph is:
 
 ```{r default}
 ggplot() +
   layer(
-    data = mpg, mapping = aes(x = displ, y = hwy),
+    data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g),
     geom = "point", stat = "identity", position = "identity"
   ) +
   scale_x_continuous() +
@@ -262,8 +263,8 @@ The above code:
 
 * Creates a new plot object (`ggplot`)
 * Adds a layer (`layer`)
-    * Specifies the data (`mpg`)
-    * Maps engine displacement to the $x$ position and highway mileage to the $y$ position (`mapping`)
+    * Specifies the data (`penguins`)
+    * Maps flipper length to the $x$ position and body mass to the $y$ position (`mapping`)
     * Uses the point geometric transformation (`geom = "point"`)
     * Implements an identity transformation and position (`stat = "identity"` and `position = "identity"`)
 * Establishes two continuous position scales (`scale_x_continuous` and `scale_y_continuous`)
@@ -282,36 +283,36 @@ Using these defaults, we can rewrite the above code as:
 
 ```{r default2}
 ggplot() +
-  geom_point(data = mpg, mapping = aes(x = displ, y = hwy))
+  geom_point(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g))
 ```
 
 This generates the exact same plot, but uses fewer lines of code. Because multiple layers can use the same components (data, mapping, etc.), we can also specify that information in the `ggplot()` function rather than in the `layer()` function:
 
 ```{r default3}
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point()
 ```
 
 And as we will learn, function arguments in R use specific ordering, so we can omit the explicit call to `data` and `mapping`:
 
 ```{r default4}
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(penguins, aes(flipper_length_mm, body_mass_g)) +
   geom_point()
 ```
 
 With this specification, it is easy to build the graphic up with additional layers, without modifying the original code:
 
 ```{r default5}
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(penguins, aes(flipper_length_mm, body_mass_g)) +
   geom_point() +
   geom_smooth()
 ```
 
-Because we called `aes(displ, hwy)` within the `ggplot()` function, it is automatically passed along to both `geom_point()` and `geom_smooth()`. If we fail to do this, we get an error:
+Because we called `aes(flipper_length_mm, body_mass_g)` within the `ggplot()` function, it is automatically passed along to both `geom_point()` and `geom_smooth()`. If we fail to do this, we get an error:
 
 ```{r default6, error = TRUE}
-ggplot(mpg) +
-  geom_point(aes(displ, hwy)) +
+ggplot(penguins) +
+  geom_point(aes(flipper_length_mm, body_mass_g)) +
   geom_smooth()
 ```
 

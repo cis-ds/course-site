@@ -26,6 +26,7 @@ This page is a summary of [*A Layered Grammar of Graphics*](http://www-tandfonli
 ```r
 library(tidyverse)
 library(knitr)
+library(palmerpenguins)
 ```
 
 Google defines a **grammar** as "the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics".^[[Google](https://www.google.com/search?q=grammar)] Others consider a grammar to be "the fundamental principles or rules of an art or science".^[[Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](http://www.jstor.org.proxy.uchicago.edu/stable/25651297)] Applied to visualizations, a **grammar of graphics** is a grammar used to describe and create a wide range of statistical graphics.^[[Wilkinson, Leland. (2005). *The Grammar of Graphics*. (UChicago authentication required)](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F0-387-28695-0)]
@@ -59,22 +60,17 @@ The **layered grammar of graphics** approach is implemented in [`ggplot2`](https
 
 Layers are typically related to one another and share many common features. For instance, multiple layers can be built using the same underlying data. An example would be a scatterplot overlayed with a smoothed regression line to summarize the relationship between two variables:
 
-
-```
-## `geom_smooth()` using formula 'y ~ x'
-```
-
 <img src="{{< blogdown/postref >}}index_files/figure-html/layers-1.png" width="672" />
 
 ## Data and mapping
 
 **Data** defines the source of the information to be visualized, but is independent from the other elements. So a layered graphic can be built which utilizes different data sources while keeping the other components the same.
 
-For our running example, let's use the `mpg` dataset in the `ggplot2` package.^[Run `?mpg` in the console to get more information about this dataset.]
+For our running example, let's use the `penguins` dataset in the [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/) package.^[Run `?penguins` in the console to get more information about this dataset.]
 
 
 ```r
-head(x = mpg) %>%
+head(x = penguins) %>%
   kable(caption = "Dataset of automobiles")
 ```
 
@@ -82,42 +78,42 @@ head(x = mpg) %>%
 
 Table: Table 1: Dataset of automobiles
 
-|manufacturer |model | displ| year| cyl|trans      |drv | cty| hwy|fl |class   |
-|:------------|:-----|-----:|----:|---:|:----------|:---|---:|---:|:--|:-------|
-|audi         |a4    |   1.8| 1999|   4|auto(l5)   |f   |  18|  29|p  |compact |
-|audi         |a4    |   1.8| 1999|   4|manual(m5) |f   |  21|  29|p  |compact |
-|audi         |a4    |   2.0| 2008|   4|manual(m6) |f   |  20|  31|p  |compact |
-|audi         |a4    |   2.0| 2008|   4|auto(av)   |f   |  21|  30|p  |compact |
-|audi         |a4    |   2.8| 1999|   6|auto(l5)   |f   |  16|  26|p  |compact |
-|audi         |a4    |   2.8| 1999|   6|manual(m5) |f   |  18|  26|p  |compact |
+|species |island    | bill_length_mm| bill_depth_mm| flipper_length_mm| body_mass_g|sex    | year|
+|:-------|:---------|--------------:|-------------:|-----------------:|-----------:|:------|----:|
+|Adelie  |Torgersen |           39.1|          18.7|               181|        3750|male   | 2007|
+|Adelie  |Torgersen |           39.5|          17.4|               186|        3800|female | 2007|
+|Adelie  |Torgersen |           40.3|          18.0|               195|        3250|female | 2007|
+|Adelie  |Torgersen |             NA|            NA|                NA|          NA|NA     | 2007|
+|Adelie  |Torgersen |           36.7|          19.3|               193|        3450|female | 2007|
+|Adelie  |Torgersen |           39.3|          20.6|               190|        3650|male   | 2007|
 
-**Mapping** defines how the variables are applied to the plot. So if we were graphing information from `mpg`, we might map a car's engine displacement to the $x$ position and highway mileage to the $y$ position.
+**Mapping** defines how the variables are applied to the plot. So if we were graphing information from `penguins`, we might map a penguin's flipper length to the $x$ position and body mass to the $y$ position.
 
 
 ```r
-mpg %>%
-  select(displ, hwy) %>%
+penguins %>%
+  select(flipper_length_mm, body_mass_g) %>%
   rename(
-    x = displ,
-    y = hwy
+    x = flipper_length_mm,
+    y = body_mass_g
   )
 ```
 
 ```
-## # A tibble: 234 x 2
+## # A tibble: 344 × 2
 ##        x     y
-##    <dbl> <int>
-##  1   1.8    29
-##  2   1.8    29
-##  3   2      31
-##  4   2      30
-##  5   2.8    26
-##  6   2.8    26
-##  7   3.1    27
-##  8   1.8    26
-##  9   1.8    25
-## 10   2      28
-## # … with 224 more rows
+##    <int> <int>
+##  1   181  3750
+##  2   186  3800
+##  3   195  3250
+##  4    NA    NA
+##  5   193  3450
+##  6   190  3650
+##  7   181  3625
+##  8   195  4675
+##  9   193  3475
+## 10   190  4250
+## # … with 334 more rows
 ```
 
 ## Statistical transformation
@@ -128,43 +124,42 @@ A stat is a function that takes in a dataset as the input and returns a dataset 
 
 
 ```r
-mpg %>%
-  select(cyl)
+penguins %>%
+  select(island)
 ```
 
 ```
-## # A tibble: 234 x 1
-##      cyl
-##    <int>
-##  1     4
-##  2     4
-##  3     4
-##  4     4
-##  5     6
-##  6     6
-##  7     6
-##  8     4
-##  9     4
-## 10     4
-## # … with 224 more rows
+## # A tibble: 344 × 1
+##    island   
+##    <fct>    
+##  1 Torgersen
+##  2 Torgersen
+##  3 Torgersen
+##  4 Torgersen
+##  5 Torgersen
+##  6 Torgersen
+##  7 Torgersen
+##  8 Torgersen
+##  9 Torgersen
+## 10 Torgersen
+## # … with 334 more rows
 ```
 
 You would transform it to:
 
 
 ```r
-mpg %>%
-  count(cyl)
+penguins %>%
+  count(island)
 ```
 
 ```
-## # A tibble: 4 x 2
-##     cyl     n
-##   <int> <int>
-## 1     4    81
-## 2     5     4
-## 3     6    79
-## 4     8    70
+## # A tibble: 3 × 2
+##   island        n
+##   <fct>     <int>
+## 1 Biscoe      168
+## 2 Dream       124
+## 3 Torgersen    52
 ```
 
 {{% callout note %}}
@@ -185,7 +180,7 @@ Each geom can only display certain **aesthetics** or visual attributes of the ge
 
 
 ```r
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
   geom_point() +
   ggtitle("A point geom with position and color aesthetics")
 ```
@@ -193,13 +188,13 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
 <img src="{{< blogdown/postref >}}index_files/figure-html/geom_point-1.png" width="672" />
 
 * Position defines where each point is drawn on the plot
-* Color defines the color of each point. Here the color is determined by the class of the car (observation)
+* Color defines the color of each point. Here the color is determined by the species of the car (observation)
 
 Whereas a bar geom has position, height, width, and fill color.
 
 
 ```r
-ggplot(data = mpg, aes(x = cyl)) +
+ggplot(data = penguins, aes(x = island)) +
   geom_bar() +
   ggtitle("A bar geom with position and height aesthetics")
 ```
@@ -207,7 +202,7 @@ ggplot(data = mpg, aes(x = cyl)) +
 <img src="{{< blogdown/postref >}}index_files/figure-html/geom_bar-1.png" width="672" />
 
 * Position determines the starting location (origin) of each bar
-* Height determines how tall to draw the bar. Here the height is based on the number of observations in the dataset for each possible number of cylinders.
+* Height determines how tall to draw the bar. Here the height is based on the number of observations in the dataset for each island.
 
 ## Position adjustment
 
@@ -215,8 +210,8 @@ Sometimes with dense data we need to adjust the position of elements on the plot
 
 
 ```r
-count(x = mpg, class, cyl) %>%
-  ggplot(mapping = aes(x = cyl, y = n, fill = class)) +
+count(x = penguins, species, island) %>%
+  ggplot(mapping = aes(x = island, y = n, fill = species)) +
   geom_bar(stat = "identity") +
   ggtitle(label = "A stacked bar chart")
 ```
@@ -224,8 +219,8 @@ count(x = mpg, class, cyl) %>%
 <img src="{{< blogdown/postref >}}index_files/figure-html/position_dodge-1.png" width="672" />
 
 ```r
-count(x = mpg, class, cyl) %>%
-  ggplot(mapping = aes(x = cyl, y = n, fill = class)) +
+count(x = penguins, species, island) %>%
+  ggplot(mapping = aes(x = island, y = n, fill = species)) +
   geom_bar(stat = "identity", position = "dodge") +
   ggtitle(label = "A dodged bar chart")
 ```
@@ -236,7 +231,7 @@ Sometimes scatterplots with few unique $x$ and $y$ values are **jittered** (rand
 
 
 ```r
-ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = island, y = body_mass_g)) +
   geom_point() +
   ggtitle("A point geom with obscured data points")
 ```
@@ -244,7 +239,7 @@ ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
 <img src="{{< blogdown/postref >}}index_files/figure-html/position-1.png" width="672" />
 
 ```r
-ggplot(data = mpg, mapping = aes(x = cyl, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = island, y = body_mass_g)) +
   geom_jitter() +
   ggtitle("A point geom with jittered data points")
 ```
@@ -257,18 +252,18 @@ A **scale** controls how data is mapped to aesthetic attributes, so we need one 
 
 
 ```r
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
   geom_point() +
   guides(color = guide_legend(override.aes = list(size = 4)))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/scale_color-1.png" width="672" />
 
-Note that the scale is consistent - every point for a compact car is drawn in tan, whereas SUVs are drawn in pink. The scale can be changed to use a different color palette:
+Note that the scale is consistent - every point for an Adèlie penguin is drawn in red, whereas Chinstrap penguins are drawn in green The scale can be changed to use a different color palette:
 
 
 ```r
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g, color = species)) +
   geom_point() +
   guides(color = guide_legend(override.aes = list(size = 4))) +
   scale_color_brewer(palette = "Dark2")
@@ -276,7 +271,7 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy, color = class)) +
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/scale_color_palette-1.png" width="672" />
 
-Now we are using a different palette, but the scale is still consistent: all compact cars utilize the same color, whereas SUVs use a new color **but each SUV still uses the same, consistent color**.
+Now we are using a different palette, but the scale is still consistent: all Adèlie penguins utilize the same color, whereas Chinstrap penguins use a new color **but each Chinstrap penguin still uses the same, consistent color**.
 
 ## Coordinate system
 
@@ -322,9 +317,9 @@ p +
 
 
 ```r
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point() +
-  facet_wrap(facets = vars(class))
+  facet_wrap(facets = vars(species))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/facet-1.png" width="672" />
@@ -333,13 +328,13 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
 
 Rather than explicitly declaring each component of a layered graphic (which will use more code and introduces opportunities for errors), we can establish intelligent defaults for specific geoms and scales. For instance, whenever we want to use a bar geom, we can default to using a stat that counts the number of observations in each group of our variable in the $x$ position.
 
-Consider the following scenario: you wish to generate a scatterplot visualizing the relationship between engine displacement size and highway fuel efficiency. With no defaults, the code to generate this graph is:
+Consider the following scenario: you wish to generate a scatterplot visualizing the relationship between flipper length and body mass. With no defaults, the code to generate this graph is:
 
 
 ```r
 ggplot() +
   layer(
-    data = mpg, mapping = aes(x = displ, y = hwy),
+    data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g),
     geom = "point", stat = "identity", position = "identity"
   ) +
   scale_x_continuous() +
@@ -353,8 +348,8 @@ The above code:
 
 * Creates a new plot object (`ggplot`)
 * Adds a layer (`layer`)
-    * Specifies the data (`mpg`)
-    * Maps engine displacement to the $x$ position and highway mileage to the $y$ position (`mapping`)
+    * Specifies the data (`penguins`)
+    * Maps flipper length to the $x$ position and body mass to the $y$ position (`mapping`)
     * Uses the point geometric transformation (`geom = "point"`)
     * Implements an identity transformation and position (`stat = "identity"` and `position = "identity"`)
 * Establishes two continuous position scales (`scale_x_continuous` and `scale_y_continuous`)
@@ -374,7 +369,7 @@ Using these defaults, we can rewrite the above code as:
 
 ```r
 ggplot() +
-  geom_point(data = mpg, mapping = aes(x = displ, y = hwy))
+  geom_point(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/default2-1.png" width="672" />
@@ -383,7 +378,7 @@ This generates the exact same plot, but uses fewer lines of code. Because multip
 
 
 ```r
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
+ggplot(data = penguins, mapping = aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point()
 ```
 
@@ -393,7 +388,7 @@ And as we will learn, function arguments in R use specific ordering, so we can o
 
 
 ```r
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(penguins, aes(flipper_length_mm, body_mass_g)) +
   geom_point()
 ```
 
@@ -403,28 +398,20 @@ With this specification, it is easy to build the graphic up with additional laye
 
 
 ```r
-ggplot(mpg, aes(displ, hwy)) +
+ggplot(penguins, aes(flipper_length_mm, body_mass_g)) +
   geom_point() +
   geom_smooth()
 ```
 
-```
-## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
-```
-
 <img src="{{< blogdown/postref >}}index_files/figure-html/default5-1.png" width="672" />
 
-Because we called `aes(displ, hwy)` within the `ggplot()` function, it is automatically passed along to both `geom_point()` and `geom_smooth()`. If we fail to do this, we get an error:
+Because we called `aes(flipper_length_mm, body_mass_g)` within the `ggplot()` function, it is automatically passed along to both `geom_point()` and `geom_smooth()`. If we fail to do this, we get an error:
 
 
 ```r
-ggplot(mpg) +
-  geom_point(aes(displ, hwy)) +
+ggplot(penguins) +
+  geom_point(aes(flipper_length_mm, body_mass_g)) +
   geom_smooth()
-```
-
-```
-## `geom_smooth()` using method = 'loess' and formula 'y ~ x'
 ```
 
 ```
@@ -452,93 +439,99 @@ devtools::session_info()
 ##  collate  en_US.UTF-8                 
 ##  ctype    en_US.UTF-8                 
 ##  tz       America/Chicago             
-##  date     2021-09-01                  
+##  date     2022-01-06                  
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
-##  blogdown      1.4     2021-07-23 [1] CRAN (R 4.1.0)
-##  bookdown      0.23    2021-08-13 [1] CRAN (R 4.1.0)
-##  broom         0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-##  bslib         0.2.5.1 2021-05-18 [1] CRAN (R 4.1.0)
-##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
-##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  cli           3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
-##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
-##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
-##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
-##  dbplyr        2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc          1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
-##  devtools      2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.1.0)
-##  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.1.0)
-##  fansi         0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
-##  farver        2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
-##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.1.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
-##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
-##  here          1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  highr         0.9     2021-04-16 [1] CRAN (R 4.1.0)
-##  hms           1.1.0   2021-05-17 [1] CRAN (R 4.1.0)
-##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.1.0)
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
-##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
-##  knitr       * 1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  labeling      0.4.2   2020-10-20 [1] CRAN (R 4.1.0)
-##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.1.0)
-##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  pillar        1.6.2   2021-07-29 [1] CRAN (R 4.1.0)
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload       1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
-##  processx      3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
-##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  Rcpp          1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
-##  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.1.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes       2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
-##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
-##  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-##  rmarkdown     2.10    2021-08-06 [1] CRAN (R 4.1.0)
-##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
-##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest         1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
-##  sass          0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
-##  stringi       1.7.3   2021-07-16 [1] CRAN (R 4.1.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
-##  testthat      3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble      * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
-##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.1.0)
-##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
-##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb          0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
-##  usethis       2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
-##  utf8          1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs         0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr         2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
-##  xfun          0.25    2021-08-06 [1] CRAN (R 4.1.0)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
+##  package        * version date       lib source        
+##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
+##  backports        1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
+##  blogdown         1.7     2021-12-19 [1] CRAN (R 4.1.0)
+##  bookdown         0.23    2021-08-13 [1] CRAN (R 4.1.0)
+##  broom            0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
+##  bslib            0.3.1   2021-10-06 [1] CRAN (R 4.1.0)
+##  cachem           1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
+##  callr            3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
+##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
+##  cli              3.1.0   2021-10-27 [1] CRAN (R 4.1.0)
+##  codetools        0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
+##  colorspace       2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
+##  crayon           1.4.2   2021-10-29 [1] CRAN (R 4.1.0)
+##  DBI              1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
+##  dbplyr           2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
+##  desc             1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
+##  devtools         2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
+##  digest           0.6.28  2021-09-23 [1] CRAN (R 4.1.0)
+##  dplyr          * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
+##  ellipsis         0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
+##  evaluate         0.14    2019-05-28 [1] CRAN (R 4.1.0)
+##  fansi            0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
+##  farver           2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
+##  fastmap          1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
+##  forcats        * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
+##  fs               1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
+##  generics         0.1.1   2021-10-25 [1] CRAN (R 4.1.0)
+##  ggplot2        * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
+##  glue             1.5.0   2021-11-07 [1] CRAN (R 4.1.0)
+##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
+##  haven            2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
+##  here             1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
+##  highr            0.9     2021-04-16 [1] CRAN (R 4.1.0)
+##  hms              1.1.1   2021-09-26 [1] CRAN (R 4.1.0)
+##  htmltools        0.5.2   2021-08-25 [1] CRAN (R 4.1.0)
+##  httr             1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
+##  jquerylib        0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
+##  jsonlite         1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
+##  knitr          * 1.33    2021-04-24 [1] CRAN (R 4.1.0)
+##  labeling         0.4.2   2020-10-20 [1] CRAN (R 4.1.0)
+##  lattice          0.20-44 2021-05-02 [1] CRAN (R 4.1.0)
+##  lifecycle        1.0.1   2021-09-24 [1] CRAN (R 4.1.0)
+##  lubridate        1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
+##  magrittr         2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
+##  Matrix           1.3-4   2021-06-01 [1] CRAN (R 4.1.0)
+##  memoise          2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
+##  mgcv             1.8-36  2021-06-01 [1] CRAN (R 4.1.0)
+##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
+##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
+##  nlme             3.1-152 2021-02-04 [1] CRAN (R 4.1.0)
+##  palmerpenguins * 0.1.0   2020-07-23 [1] CRAN (R 4.1.0)
+##  pillar           1.6.4   2021-10-18 [1] CRAN (R 4.1.0)
+##  pkgbuild         1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
+##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
+##  pkgload          1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
+##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
+##  processx         3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
+##  ps               1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
+##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
+##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
+##  RColorBrewer     1.1-2   2014-12-07 [1] CRAN (R 4.1.0)
+##  Rcpp             1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
+##  readr          * 2.0.2   2021-09-27 [1] CRAN (R 4.1.0)
+##  readxl           1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
+##  remotes          2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
+##  reprex           2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
+##  rlang            0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
+##  rmarkdown        2.11    2021-09-14 [1] CRAN (R 4.1.0)
+##  rprojroot        2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
+##  rstudioapi       0.13    2020-11-12 [1] CRAN (R 4.1.0)
+##  rvest            1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
+##  sass             0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
+##  scales           1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
+##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
+##  stringi          1.7.5   2021-10-04 [1] CRAN (R 4.1.0)
+##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
+##  testthat         3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
+##  tibble         * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
+##  tidyr          * 1.1.4   2021-09-27 [1] CRAN (R 4.1.0)
+##  tidyselect       1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
+##  tidyverse      * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
+##  tzdb             0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
+##  usethis          2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
+##  utf8             1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
+##  vctrs            0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
+##  withr            2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
+##  xfun             0.29    2021-12-14 [1] CRAN (R 4.1.0)
+##  xml2             1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
+##  yaml             2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
 ## 
 ## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
 ```
