@@ -24,7 +24,7 @@ design:
       - Neeraj Sharma
       - Kaitlyn Van Baalen
   * Meeting day/time: MW 9:30-11:20am
-  - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Not online! For now...]
+  - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Online for the first two weeks. After that? :confused:]
   * Office hours
   * Prerequisites: None
   * Requirements: Bring your own laptop
