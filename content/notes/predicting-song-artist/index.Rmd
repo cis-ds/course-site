@@ -1,0 +1,198 @@
+---
+title: "Predicting song artist from lyrics"
+date: 2019-03-01
+
+type: docs
+toc: true
+draft: false
+categories: ["text"]
+
+menu:
+  notes:
+    parent: Text analysis
+    weight: 5
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidymodels)
+library(textrecipes)
+library(themis)
+
+set.seed(123)
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/predicting-song-artist")
+```
+
+{{% /callout %}}
+
+```{r}
+# get beyonce and taylor swift lyrics
+beyonce_lyrics <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/beyonce_lyrics.csv")
+taylor_swift_lyrics <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/taylor_swift_lyrics.csv")
+
+# clean lyrics for binding
+beyonce_clean <- beyonce_lyrics %>%
+  # convert to one row per song
+  group_by(song_id, song_name, artist_name) %>%
+  summarize(Lyrics = str_flatten(line, collapse = " ")) %>%
+  ungroup() %>%
+  # clean column names
+  select(artist = artist_name, song_title = song_name, lyrics = Lyrics)
+taylor_swift_clean <- taylor_swift_lyrics %>%
+  # clean column names
+  select(artist = Artist, song_title = Title, lyrics = Lyrics)
+
+# combine into single data file
+lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
+  mutate(artist = factor(artist))
+```
+
+```{r}
+# split into training/testing
+set.seed(123)
+lyrics_split <- initial_split(data = lyrics, strata = artist, prop = 0.75)
+
+lyrics_train <- training(lyrics_split)
+lyrics_test <- testing(lyrics_split)
+
+# create cross-validation folds
+lyrics_folds <- vfold_cv(data = lyrics_train, strata = artist)
+```
+
+```{r}
+# define preprocessing recipe
+lyrics_rec <- recipe(artist ~ lyrics, data = lyrics_train) %>%
+  step_tokenize(lyrics) %>%
+  step_stopwords(lyrics) %>%
+  step_tokenfilter(lyrics, max_tokens = 500) %>%
+  step_tfidf(lyrics) %>%
+  # Simplify these names
+  step_rename_at(starts_with("tfidf_lyrics_"), fn = ~ gsub("tfidf_lyrics_", "", .)) %>%
+  step_downsample(artist)
+```
+
+## Naive Bayes
+
+```{r}
+# train a naive Bayes model
+library(discrim)
+
+nb_spec <- naive_Bayes() %>%
+  set_mode("classification") %>%
+  set_engine("naivebayes")
+nb_spec
+
+nb_wf <- workflow() %>%
+  add_recipe(lyrics_rec) %>%
+  add_model(nb_spec)
+nb_wf
+
+nb_cv <- nb_wf %>%
+  fit_resamples(
+    resamples = lyrics_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+# extract metrics and predictions
+nb_cv_metrics <- collect_metrics(nb_cv)
+nb_cv_predictions <- collect_predictions(nb_cv)
+
+nb_cv_metrics
+
+# roc curve
+nb_cv_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = artist, .pred_Beyoncé) %>%
+  autoplot()
+
+# confusion matrix
+conf_mat_resampled(x = nb_cv, tidy = FALSE) %>%
+  autoplot(type = "heatmap")
+```
+
+## Random forest
+
+```{r}
+# try a random forest
+ranger_spec <- rand_forest(trees = 1000) %>%
+  set_mode("classification") %>%
+  set_engine("ranger", importance = "impurity")
+
+ranger_workflow <- workflow() %>%
+  add_recipe(lyrics_rec) %>%
+  add_model(ranger_spec)
+
+ranger_cv <- ranger_workflow %>%
+  fit_resamples(
+    resamples = lyrics_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+# extract metrics and predictions
+ranger_cv_metrics <- collect_metrics(ranger_cv)
+ranger_cv_predictions <- collect_predictions(ranger_cv)
+
+ranger_cv_metrics
+
+# roc curve
+ranger_cv_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = artist, .pred_Beyoncé) %>%
+  autoplot()
+
+# confusion matrix
+conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
+  autoplot(type = "heatmap")
+```
+
+## Penalized regression
+
+```{r}
+# penalized regression
+glmnet_spec <- logistic_reg(penalty = tune(), mixture = tune()) %>%
+  set_mode("classification") %>%
+  set_engine("glmnet")
+
+glmnet_workflow <- workflow() %>%
+  add_recipe(lyrics_rec) %>%
+  add_model(glmnet_spec)
+
+glmnet_grid <- tidyr::crossing(
+  penalty = 10^seq(-6, -1, length.out = 20),
+  mixture = c(0.05, 0.2, 0.4, 0.6, 0.8, 1)
+)
+
+glmnet_tune <- tune_grid(
+  object = glmnet_workflow,
+  resamples = lyrics_folds,
+  grid = glmnet_grid,
+  control = control_resamples(save_pred = TRUE)
+)
+
+# evaluate results
+# view average metrics
+collect_metrics(x = glmnet_tune)
+autoplot(glmnet_tune)
+
+show_best(x = glmnet_tune, metric = "roc_auc")
+```
+
+## Acknowledgments
+
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
