@@ -22,6 +22,7 @@ library(tidyverse)
 library(tidymodels)
 library(textrecipes)
 library(themis)
+library(vip)
 
 set.seed(123)
 theme_set(theme_minimal())
@@ -83,45 +84,6 @@ lyrics_rec <- recipe(artist ~ lyrics, data = lyrics_train) %>%
   step_downsample(artist)
 ```
 
-## Naive Bayes
-
-```{r}
-# train a naive Bayes model
-library(discrim)
-
-nb_spec <- naive_Bayes() %>%
-  set_mode("classification") %>%
-  set_engine("naivebayes")
-nb_spec
-
-nb_wf <- workflow() %>%
-  add_recipe(lyrics_rec) %>%
-  add_model(nb_spec)
-nb_wf
-
-nb_cv <- nb_wf %>%
-  fit_resamples(
-    resamples = lyrics_folds,
-    control = control_resamples(save_pred = TRUE)
-  )
-
-# extract metrics and predictions
-nb_cv_metrics <- collect_metrics(nb_cv)
-nb_cv_predictions <- collect_predictions(nb_cv)
-
-nb_cv_metrics
-
-# roc curve
-nb_cv_predictions %>%
-  group_by(id) %>%
-  roc_curve(truth = artist, .pred_Beyoncé) %>%
-  autoplot()
-
-# confusion matrix
-conf_mat_resampled(x = nb_cv, tidy = FALSE) %>%
-  autoplot(type = "heatmap")
-```
-
 ## Random forest
 
 ```{r}
@@ -143,7 +105,6 @@ ranger_cv <- ranger_workflow %>%
 # extract metrics and predictions
 ranger_cv_metrics <- collect_metrics(ranger_cv)
 ranger_cv_predictions <- collect_predictions(ranger_cv)
-
 ranger_cv_metrics
 
 # roc curve
@@ -155,6 +116,19 @@ ranger_cv_predictions %>%
 # confusion matrix
 conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap")
+```
+
+### Variable importance
+
+```{r}
+# train RF model and full training set
+final_rf <- ranger_workflow %>%
+  last_fit(lyrics_split)
+
+# generate variable importance plot
+final_rf %>%
+  extract_fit_parsnip() %>%
+  vip()
 ```
 
 ## Penalized regression
