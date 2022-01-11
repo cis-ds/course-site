@@ -26,6 +26,9 @@ design:
   * Meeting day/time: MW 9:30-11:20am
   - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Online for the first two weeks. After that? :confused:]
   * Office hours
+      - Benjamin: Thursday 12:30-2:30pm
+      - Neeraj: Friday 12-2pm
+      - Kaitlyn: Tuesday 11am-1pm
   * Prerequisites: None
   * Requirements: Bring your own laptop
 
