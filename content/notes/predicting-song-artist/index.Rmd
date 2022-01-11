@@ -134,18 +134,29 @@ final_rf %>%
 ## Penalized regression
 
 ```{r}
+# redefine recipe to tune for n-grams
+glmnet_rec <- recipe(artist ~ lyrics, data = lyrics_train) %>%
+  step_tokenize(lyrics) %>%
+  step_stopwords(lyrics) %>%
+  step_ngram(lyrics, num_tokens = 5L, min_num_tokens = 1L) %>%
+  step_tokenfilter(lyrics, max_tokens = 1000) %>%
+  step_tfidf(lyrics) %>%
+  # Simplify these names
+  step_rename_at(starts_with("tfidf_lyrics_"), fn = ~ gsub("tfidf_lyrics_", "", .)) %>%
+  step_downsample(artist)
+
 # penalized regression
 glmnet_spec <- logistic_reg(penalty = tune(), mixture = tune()) %>%
   set_mode("classification") %>%
   set_engine("glmnet")
 
 glmnet_workflow <- workflow() %>%
-  add_recipe(lyrics_rec) %>%
+  add_recipe(glmnet_rec) %>%
   add_model(glmnet_spec)
 
 glmnet_grid <- tidyr::crossing(
   penalty = 10^seq(-6, -1, length.out = 20),
-  mixture = c(0.05, 0.2, 0.4, 0.6, 0.8, 1)
+  mixture = c(0, 0.2, 0.4, 0.6, 0.8, 1)
 )
 
 glmnet_tune <- tune_grid(
@@ -161,6 +172,21 @@ collect_metrics(x = glmnet_tune)
 autoplot(glmnet_tune)
 
 show_best(x = glmnet_tune, metric = "roc_auc")
+```
+
+```{r}
+# best model
+glmnet_best <- select_best(glmnet_tune, metric = "roc_auc")
+
+glmnet_final <- glmnet_workflow %>%
+  finalize_workflow(parameters = glmnet_best) %>%
+  last_fit(split = lyrics_split)
+collect_metrics(glmnet_final)
+
+# get VIP
+glmnet_final %>%
+  extract_fit_parsnip() %>%
+  vip(num_features = 20)
 ```
 
 ## Acknowledgments
