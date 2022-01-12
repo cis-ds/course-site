@@ -58,6 +58,6 @@ math: false
 * [Text analysis: supervised classification](/notes/supervised-text-classification/)
 * [Text analysis: topic modeling](/notes/topic-modeling/)
 
-## To do for Tuesday
+## What you need to do after class
 
 * [Complete the text analysis homework](/homework/text-analysis/)
