@@ -38,7 +38,13 @@ usethis::use_course("uc-cfss/predicting-song-artist")
 
 {{% /callout %}}
 
+{{< figure src="beyonce-taylor-swift.jpeg" caption="Beyoncé and Taylor Swift at the 2009 MTV Video Music Awards." >}}
+
+Beyoncé and Taylor Swift are two iconic singer/songwriters from the past twenty years. While they have achieved worldwide recognition for their contributions to music, they also have quite diverse musical genres and themes. For example, much of Taylor Swift's early work is commonly associated with [love and heartbreak](https://en.wikipedia.org/wiki/Taylor_Swift#Songwriting), while Beyoncé's career has been noted for many compositions surrounding [female-empowerment](https://en.wikipedia.org/wiki/Beyonc%C3%A9#Songwriting). Based purely on the lyrics, can we predict if a song is by Beyoncé or Taylor Swift?
+
 ## Import data
+
+Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29) which compiled individual song lyrics from each singer's discography as of September 29, 2020. Here we import the data files and do some light cleaning to standardize each file.^[Importantly, the Beyoncé lyrics are originally stored as one row per line per song whereas we need them stored as one row per song for modeling purposes.]
 
 
 ```r
@@ -106,6 +112,24 @@ taylor_swift_clean <- taylor_swift_lyrics %>%
 # combine into single data file
 lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
   mutate(artist = factor(artist))
+lyrics
+```
+
+```
+## # A tibble: 523 × 3
+##    artist  song_title                         lyrics                            
+##    <fct>   <chr>                              <chr>                             
+##  1 Beyoncé Ego (Remix) (Ft. Kanye West)       "I got a big ego (Ha ha ha) I’m s…
+##  2 Beyoncé Irreplaceable (Rap Version) (Ft. … "To the left To the left To the l…
+##  3 Beyoncé Smash Into You                     "Head down As I watch my feet tak…
+##  4 Beyoncé Cards Never Lie (Ft. Rah Digga & … "The cards never lie, my last bre…
+##  5 Beyoncé If Looks Could Kill (You Would Be… "Sweetness flowing like a faucet,…
+##  6 Beyoncé The Last Great Seduction (Ft. Mek… "You know you really, really, rea…
+##  7 Beyoncé Check on It (LP Version) (Ft. Sli… "Swizz Beatz DC, Destiny Child (S…
+##  8 Beyoncé Crazy in Love (Ft. JAY-Z)          "Yes! So crazy right now! Most in…
+##  9 Beyoncé Déjà Vu (Ft. JAY-Z)                "Bass (Uh) Hi-hat (Uh) 808 (Uh) J…
+## 10 Beyoncé Me, Myself & I (Remix) (Ft. Ghost… "Ahh, ahh, ahh all the ladies if …
+## # … with 513 more rows
 ```
 
 ## Preprocess the dataset for modeling
@@ -116,6 +140,8 @@ lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
 - Split the training set into 10 cross-validation folds
 
 {{< spoiler text="Click for the solution" >}}
+
+[`rsample`](/notes/resampling/) is the go-to package for this resampling.
 
 
 ```r
@@ -152,7 +178,7 @@ lyrics_folds <- vfold_cv(data = lyrics_train, strata = artist)
         )
         ```
         
-- Downsample the observations so there are an equal number of songs by Beyoncé and Taylor Swift in the analysis set
+- [Downsample](/notes/supervised-text-classification/#concerns-regarding-multiclass-classification) the observations so there are an equal number of songs by Beyoncé and Taylor Swift in the analysis set
 
 {{< spoiler text="Click for the solution" >}}
 
@@ -272,38 +298,11 @@ conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/ranger-metrics-2.png" width="672" />
 
+Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of 0.9491533 is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (391 songs compared to only 132 for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
+
 {{< /spoiler >}}
 
-### Variable importance
 
-Describe a variable importance plot and interpret the results. Don't expect students to write this themselves
-
-
-```r
-# fit the random forest model using the full training set and evaluate using the test set
-ranger_final <- ranger_workflow %>%
-  last_fit(lyrics_split)
-collect_metrics(ranger_final)
-```
-
-```
-## # A tibble: 2 × 4
-##   .metric  .estimator .estimate .config             
-##   <chr>    <chr>          <dbl> <chr>               
-## 1 accuracy binary         0.771 Preprocessor1_Model1
-## 2 roc_auc  binary         0.925 Preprocessor1_Model1
-```
-
-```r
-# generate variable importance plot
-ranger_final %>%
-  # extract the underlying parsnip model fit
-  extract_fit_parsnip() %>%
-  # draw the variable importance plot
-  vip()
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/ranger-vip-1.png" width="672" />
 
 ## Penalized regression
 
@@ -438,6 +437,8 @@ show_best(x = glmnet_tune, metric = "roc_auc")
 ## 5 0.0000113        0 roc_auc binary     0.884    10  0.0268 Preprocessor1_Model…
 ```
 
+Based on the ROC AUC, any penalty parameter with a mixture of `0` provides the optimal model performance. Though compared to the random forest model, the penalized regression approach consistently generates lower ROC AUC scores. This is likely because penalized regression models are a form of generalized linear models which assume linear, additive relationships between the predictors (i.e. n-grams) and the outcome of interest. Random forests are built from decision trees which are highly interactive and non-linear, so they allow for more flexible relationships between the predictors and outcome.
+
 {{< /spoiler >}}
 
 ### Fit the best model
@@ -467,24 +468,60 @@ collect_metrics(glmnet_final)
 ## 2 roc_auc  binary         0.859 Preprocessor1_Model1
 ```
 
+Not surprisingly the test set performance is slightly lower than the cross-validated metrics, however it still offers decent performance.
+
+0.8593074
+
 {{< /spoiler >}}
 
 ### Variable importance
 
-What were the most important 20 n-grams to predicting Beyoncé or Taylor Swift?
+Beyond predictive power, we can analyze which n-grams contribute most strongly to the model's predictions. Here we use the [`vip`](https://koalaverse.github.io/vip/index.html) and `vi()` to calculate the importance score for each n-gram, then visualize them using a bar plot.
 
 
 ```r
-# which n-grams were most important to generating predictions?
-glmnet_final %>%
-  extract_fit_parsnip() %>%
-  vip(num_features = 20)
+# extract parnsip model fit
+glmnet_imp <- extract_fit_parsnip(glmnet_final) %>%
+  # calculate variable importance for the specific penalty parameter used
+  vi(lambda = glmnet_best$penalty)
+
+# clean up the data frame for visualization
+glmnet_imp %>%
+  mutate(
+    Sign = case_when(
+      Sign == "POS" ~ "More likely from Beyoncé",
+      Sign == "NEG" ~ "More likely from Taylor Swift"
+    ),
+    Importance = abs(Importance)
+  ) %>%
+  group_by(Sign) %>%
+  # extract 20 most important n-grams for each artist
+  slice_max(order_by = Importance, n = 20) %>%
+  ggplot(mapping = aes(
+    x = Importance,
+    y = fct_reorder(Variable, Importance),
+    fill = Sign
+  )) +
+  geom_col(show.legend = FALSE) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_fill_brewer(type = "qual") +
+  facet_wrap(facets = vars(Sign), scales = "free") +
+  labs(
+    y = NULL,
+    title = "Variable importance for predicting the song artist",
+    subtitle = "These features are the most important in predicting\nwhether a song is by Beyoncé or Taylor Swift"
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/glmnet-vip-1.png" width="672" />
 
+This helps provide facial validity for the model's predictions. Not surprisingly, most of the n-grams relevant to Taylor Swift involve "love" and "baby", whereas "girls girls" is likely generalized from "Run the World (Girls)".
+
+{{< youtube id="VBmMU_iwe6U" title="Beyoncé - Run the World (Girls) (Official Video)" >}}
+
 ## Acknowledgments
 
+- Exercise inspired by the [#TidyTuesday challenge on September 29, 2020](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29).
 
 ## Session Info
 
@@ -539,7 +576,6 @@ devtools::session_info()
 ##  ellipsis       0.3.2      2021-04-29 [1] CRAN (R 4.1.0)
 ##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.1.0)
 ##  fansi          0.5.0      2021-05-25 [1] CRAN (R 4.1.0)
-##  farver         2.1.0      2021-02-28 [1] CRAN (R 4.1.0)
 ##  fastmap        1.1.0      2021-01-25 [1] CRAN (R 4.1.0)
 ##  fastmatch      1.1-3      2021-07-23 [1] CRAN (R 4.1.0)
 ##  FNN            1.1.3      2019-02-15 [1] CRAN (R 4.1.0)
@@ -551,7 +587,6 @@ devtools::session_info()
 ##  future.apply   1.8.1      2021-08-10 [1] CRAN (R 4.1.1)
 ##  generics       0.1.1      2021-10-25 [1] CRAN (R 4.1.1)
 ##  ggplot2      * 3.3.5      2021-06-25 [1] CRAN (R 4.1.1)
-##  glmnet       * 4.1-3      2021-11-02 [1] CRAN (R 4.1.1)
 ##  globals        0.14.0     2020-11-22 [1] CRAN (R 4.1.0)
 ##  glue           1.6.0      2021-12-17 [1] CRAN (R 4.1.1)
 ##  gower          0.2.2      2020-06-23 [1] CRAN (R 4.1.0)
@@ -561,7 +596,6 @@ devtools::session_info()
 ##  hardhat        0.1.6      2021-07-14 [1] CRAN (R 4.1.0)
 ##  haven          2.4.3      2021-08-04 [1] CRAN (R 4.1.1)
 ##  here           1.0.1      2020-12-13 [1] CRAN (R 4.1.0)
-##  highr          0.9        2021-04-16 [1] CRAN (R 4.1.0)
 ##  hms            1.1.1      2021-09-26 [1] CRAN (R 4.1.1)
 ##  htmltools      0.5.2      2021-08-25 [1] CRAN (R 4.1.1)
 ##  httr           1.4.2      2020-07-20 [1] CRAN (R 4.1.0)
@@ -571,7 +605,6 @@ devtools::session_info()
 ##  jquerylib      0.1.4      2021-04-26 [1] CRAN (R 4.1.0)
 ##  jsonlite       1.7.2      2020-12-09 [1] CRAN (R 4.1.0)
 ##  knitr          1.37       2021-12-16 [1] CRAN (R 4.1.1)
-##  labeling       0.4.2      2020-10-20 [1] CRAN (R 4.1.0)
 ##  lattice        0.20-45    2021-09-22 [1] CRAN (R 4.1.2)
 ##  lava           1.6.10     2021-09-02 [1] CRAN (R 4.1.1)
 ##  lhs            1.1.3      2021-09-08 [1] CRAN (R 4.1.1)
@@ -580,7 +613,7 @@ devtools::session_info()
 ##  lubridate      1.8.0      2021-10-07 [1] CRAN (R 4.1.1)
 ##  magrittr       2.0.1      2020-11-17 [1] CRAN (R 4.1.0)
 ##  MASS           7.3-54     2021-05-03 [1] CRAN (R 4.1.0)
-##  Matrix       * 1.3-4      2021-06-01 [1] CRAN (R 4.1.2)
+##  Matrix         1.3-4      2021-06-01 [1] CRAN (R 4.1.2)
 ##  memoise        2.0.1      2021-11-26 [1] CRAN (R 4.1.1)
 ##  mlr            2.19.0     2021-02-22 [1] CRAN (R 4.1.0)
 ##  modeldata    * 0.1.1      2021-07-14 [1] CRAN (R 4.1.0)
@@ -603,7 +636,6 @@ devtools::session_info()
 ##  ps             1.6.0      2021-02-28 [1] CRAN (R 4.1.0)
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.1.0)
 ##  R6             2.5.1      2021-08-19 [1] CRAN (R 4.1.1)
-##  ranger       * 0.13.1     2021-07-14 [1] CRAN (R 4.1.0)
 ##  RANN           2.6.1      2019-01-08 [1] CRAN (R 4.1.0)
 ##  Rcpp           1.0.7      2021-07-07 [1] CRAN (R 4.1.0)
 ##  readr        * 2.1.1      2021-11-30 [1] CRAN (R 4.1.1)
@@ -611,7 +643,7 @@ devtools::session_info()
 ##  recipes      * 0.1.17     2021-09-27 [1] CRAN (R 4.1.1)
 ##  remotes        2.4.2      2021-11-30 [1] CRAN (R 4.1.1)
 ##  reprex         2.0.1      2021-08-05 [1] CRAN (R 4.1.1)
-##  rlang        * 0.4.12     2021-10-18 [1] CRAN (R 4.1.1)
+##  rlang          0.4.12     2021-10-18 [1] CRAN (R 4.1.1)
 ##  rmarkdown      2.11       2021-09-14 [1] CRAN (R 4.1.1)
 ##  ROSE           0.0-4      2021-06-14 [1] CRAN (R 4.1.0)
 ##  rpart          4.1-15     2019-04-12 [1] CRAN (R 4.1.0)
@@ -622,9 +654,7 @@ devtools::session_info()
 ##  sass           0.4.0      2021-05-12 [1] CRAN (R 4.1.0)
 ##  scales       * 1.1.1      2020-05-11 [1] CRAN (R 4.1.0)
 ##  sessioninfo    1.2.2      2021-12-06 [1] CRAN (R 4.1.1)
-##  shape          1.4.6      2021-05-19 [1] CRAN (R 4.1.0)
 ##  SnowballC      0.7.0      2020-04-01 [1] CRAN (R 4.1.0)
-##  stopwords    * 2.3        2021-10-28 [1] CRAN (R 4.1.1)
 ##  stringi        1.7.6      2021-11-29 [1] CRAN (R 4.1.1)
 ##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 4.1.1)
 ##  survival       3.2-13     2021-08-24 [1] CRAN (R 4.1.2)
@@ -643,7 +673,7 @@ devtools::session_info()
 ##  unbalanced     2.0        2015-06-26 [1] CRAN (R 4.1.0)
 ##  usethis        2.1.5      2021-12-09 [1] CRAN (R 4.1.1)
 ##  utf8           1.2.2      2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs        * 0.3.8      2021-04-29 [1] CRAN (R 4.1.0)
+##  vctrs          0.3.8      2021-04-29 [1] CRAN (R 4.1.0)
 ##  vip          * 0.3.2      2020-12-17 [1] CRAN (R 4.1.0)
 ##  withr          2.4.3      2021-11-30 [1] CRAN (R 4.1.1)
 ##  workflows    * 0.2.4      2021-10-12 [1] CRAN (R 4.1.1)

@@ -39,7 +39,13 @@ usethis::use_course("uc-cfss/predicting-song-artist")
 
 {{% /callout %}}
 
+{{< figure src="beyonce-taylor-swift.jpeg" caption="Beyoncé and Taylor Swift at the 2009 MTV Video Music Awards." >}}
+
+Beyoncé and Taylor Swift are two iconic singer/songwriters from the past twenty years. While they have achieved worldwide recognition for their contributions to music, they also have quite diverse musical genres and themes. For example, much of Taylor Swift's early work is commonly associated with [love and heartbreak](https://en.wikipedia.org/wiki/Taylor_Swift#Songwriting), while Beyoncé's career has been noted for many compositions surrounding [female-empowerment](https://en.wikipedia.org/wiki/Beyonc%C3%A9#Songwriting). Based purely on the lyrics, can we predict if a song is by Beyoncé or Taylor Swift?
+
 ## Import data
+
+Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29) which compiled individual song lyrics from each singer's discography as of September 29, 2020. Here we import the data files and do some light cleaning to standardize each file.^[Importantly, the Beyoncé lyrics are originally stored as one row per line per song whereas we need them stored as one row per song for modeling purposes.]
 
 ```{r get-data}
 # get beyonce and taylor swift lyrics
@@ -61,6 +67,7 @@ taylor_swift_clean <- taylor_swift_lyrics %>%
 # combine into single data file
 lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
   mutate(artist = factor(artist))
+lyrics
 ```
 
 ## Preprocess the dataset for modeling
@@ -71,6 +78,8 @@ lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
 - Split the training set into 10 cross-validation folds
 
 {{< spoiler text="Click for the solution" >}}
+
+[`rsample`](/notes/resampling/) is the go-to package for this resampling.
 
 ```{r rsample, dependson = "get-data"}
 # split into training/testing
@@ -106,7 +115,7 @@ lyrics_folds <- vfold_cv(data = lyrics_train, strata = artist)
         )
         ```
         
-- Downsample the observations so there are an equal number of songs by Beyoncé and Taylor Swift in the analysis set
+- [Downsample](/notes/supervised-text-classification/#concerns-regarding-multiclass-classification) the observations so there are an equal number of songs by Beyoncé and Taylor Swift in the analysis set
 
 {{< spoiler text="Click for the solution" >}}
 
@@ -188,13 +197,11 @@ conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap")
 ```
 
+Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of `r pull(ranger_cv_metrics, mean)[[2]]` is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (`r nrow(beyonce_clean)` songs compared to only `r nrow(taylor_swift_clean)` for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
+
 {{< /spoiler >}}
 
-### Variable importance
-
-Describe a variable importance plot and interpret the results. Don't expect students to write this themselves
-
-```{r ranger-vip, dependson = "ranger-wf"}
+```{r ranger-vip, dependson = "ranger-wf", include = FALSE}
 # fit the random forest model using the full training set and evaluate using the test set
 ranger_final <- ranger_workflow %>%
   last_fit(lyrics_split)
@@ -205,7 +212,10 @@ ranger_final %>%
   # extract the underlying parsnip model fit
   extract_fit_parsnip() %>%
   # draw the variable importance plot
-  vip()
+  vip(num_features = 20) +
+  labs(
+    title = "Variable importance for predicting Beyoncé songs\nfrom Taylor Swift songs"
+  )
 ```
 
 ## Penalized regression
@@ -283,6 +293,8 @@ autoplot(glmnet_tune)
 show_best(x = glmnet_tune, metric = "roc_auc")
 ```
 
+Based on the ROC AUC, any penalty parameter with a mixture of `0` provides the optimal model performance. Though compared to the random forest model, the penalized regression approach consistently generates lower ROC AUC scores. This is likely because penalized regression models are a form of generalized linear models which assume linear, additive relationships between the predictors (i.e. n-grams) and the outcome of interest. Random forests are built from decision trees which are highly interactive and non-linear, so they allow for more flexible relationships between the predictors and outcome.
+
 {{< /spoiler >}}
 
 ### Fit the best model
@@ -303,21 +315,57 @@ glmnet_final <- glmnet_workflow %>%
 collect_metrics(glmnet_final)
 ```
 
+Not surprisingly the test set performance is slightly lower than the cross-validated metrics, however it still offers decent performance.
+
+`r pull(collect_metrics(glmnet_final), .estimate)[[2]]`
+
 {{< /spoiler >}}
 
 ### Variable importance
 
-What were the most important 20 n-grams to predicting Beyoncé or Taylor Swift?
+Beyond predictive power, we can analyze which n-grams contribute most strongly to the model's predictions. Here we use the [`vip`](https://koalaverse.github.io/vip/index.html) and `vi()` to calculate the importance score for each n-gram, then visualize them using a bar plot.
 
 ```{r glmnet-vip, dependson = "glmnet-best"}
-# which n-grams were most important to generating predictions?
-glmnet_final %>%
-  extract_fit_parsnip() %>%
-  vip(num_features = 20)
+# extract parnsip model fit
+glmnet_imp <- extract_fit_parsnip(glmnet_final) %>%
+  # calculate variable importance for the specific penalty parameter used
+  vi(lambda = glmnet_best$penalty)
+
+# clean up the data frame for visualization
+glmnet_imp %>%
+  mutate(
+    Sign = case_when(
+      Sign == "POS" ~ "More likely from Beyoncé",
+      Sign == "NEG" ~ "More likely from Taylor Swift"
+    ),
+    Importance = abs(Importance)
+  ) %>%
+  group_by(Sign) %>%
+  # extract 20 most important n-grams for each artist
+  slice_max(order_by = Importance, n = 20) %>%
+  ggplot(mapping = aes(
+    x = Importance,
+    y = fct_reorder(Variable, Importance),
+    fill = Sign
+  )) +
+  geom_col(show.legend = FALSE) +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_fill_brewer(type = "qual") +
+  facet_wrap(facets = vars(Sign), scales = "free") +
+  labs(
+    y = NULL,
+    title = "Variable importance for predicting the song artist",
+    subtitle = "These features are the most important in predicting\nwhether a song is by Beyoncé or Taylor Swift"
+  )
 ```
+
+This helps provide facial validity for the model's predictions. Not surprisingly, most of the n-grams relevant to Taylor Swift involve "love" and "baby", whereas "girls girls" is likely generalized from "Run the World (Girls)".
+
+{{< youtube id="VBmMU_iwe6U" title="Beyoncé - Run the World (Girls) (Official Video)" >}}
 
 ## Acknowledgments
 
+- Exercise inspired by the [#TidyTuesday challenge on September 29, 2020](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29).
 
 ## Session Info
 
