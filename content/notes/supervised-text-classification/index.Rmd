@@ -172,12 +172,10 @@ nb_cv_predictions %>%
   )
 ```
 
-Another way to evaluate our model is to evaluate the [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix). A confusion matrix visualizes a model's false positives and false negatives for each class. There is not a trivial way to visualize multiple confusion matrices, so we can look at them individually for a single fold.
+Another way to evaluate our model is to evaluate the [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix). A confusion matrix visualizes a model's false positives and false negatives for each class. Because we implemented 10-fold cross-validation, we actually have 10 confusion matricies. `conf_mat_resampled()` averages the results from each validation fold to generate the summarized confusion matrix.
 
 ```{r nb-confusion, dependson = "nb-cv-info"}
-nb_cv_predictions %>%
-  filter(id == "Fold01") %>%
-  conf_mat(major, .pred_class) %>%
+conf_mat_resampled(x = nb_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap") +
   scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
   scale_x_discrete(labels = function(x) str_wrap(x, 20))
@@ -236,57 +234,52 @@ congress_rec <- congress_rec %>%
 congress_rec
 ```
 
-Let's also switch to an alternative modeling approach which handles multiclass problems better, support vector machine (SVM).
+Let's also switch to an alternative modeling approach which handles multiclass problems better, decision trees.
 
-```{r svm-spec}
-svm_spec <- svm_rbf() %>%
+```{r tree-spec}
+tree_spec <- decision_tree() %>%
   set_mode("classification") %>%
-  set_engine("liquidSVM")
+  set_engine("C5.0")
 
-svm_spec
+tree_spec
 ```
 
-```{r svm-wf, dependson = c("recipe-steps", "svm-spec")}
-svm_wf <- workflow() %>%
+```{r tree-wf, dependson = c("recipe-steps", "tree-spec")}
+tree_wf <- workflow() %>%
   add_recipe(congress_rec) %>%
-  add_model(svm_spec)
+  add_model(tree_spec)
 
-svm_wf
+tree_wf
 ```
 
-The `liquidSVM` engine doesn't support class probabilities as output so we need to replace the default metric set with a metric set that doesn't use class probabilities. Here we use accuracy, sensitivity, and specificity.
-
-```{r svm-fit, dependson = "svm-wf"}
+```{r tree-fit, dependson = "tree-wf"}
 set.seed(123)
 
-svm_cv <- fit_resamples(
-  svm_wf,
+tree_cv <- fit_resamples(
+  tree_wf,
   congress_folds,
-  metrics = metric_set(accuracy),
   control = control_resamples(save_pred = TRUE)
 )
-svm_cv
+tree_cv
 ```
 
-```{r svm-metrics, dependson = "svm-fit"}
-svm_cv_metrics <- collect_metrics(svm_cv)
-svm_cv_predictions <- collect_predictions(svm_cv)
+```{r tree-metrics, dependson = "tree-fit"}
+tree_cv_metrics <- collect_metrics(tree_cv)
+tree_cv_predictions <- collect_predictions(tree_cv)
 
-svm_cv_metrics
+tree_cv_metrics
 ```
 
 While still low, the accuracy has risen substantially compared to the naive Bayes model. This is typical for multiclass models since the classification task is harder than for binary classification - rather than having one right answer and one wrong answer, there is one right answer and nineteen wrong answers.
 
-```{r svm-confusion, dependson = "svm-metrics"}
-svm_cv_predictions %>%
-  filter(id == "Fold01") %>%
-  conf_mat(major, .pred_class) %>%
+```{r tree-confusion, dependson = "tree-metrics"}
+conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap") +
   scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
   scale_x_discrete(labels = function(x) str_wrap(x, 20))
 ```
 
-It seems the model is still substantially over-predicting the "other" category, but there are more observations on the diagonal now.
+Now there are still prediction errors, but they same more evenly distributed across the matrix.
 
 ## Acknowledgments
 

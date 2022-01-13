@@ -17,11 +17,13 @@ knitr::opts_chunk$set(
 library(tidyverse)
 library(tidymodels)
 library(tidytext)
+library(themis)
 library(rjson)
 library(topicmodels)
 library(here)
 library(patchwork)
 library(tictoc)
+library(countdown)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcfss::base_size))
@@ -75,132 +77,19 @@ head(congress$text)
 ```{r split, dependson = "get-docs"}
 set.seed(123)
 
+# convert response variable to factor
 congress <- congress %>%
   mutate(major = factor(x = major, levels = major, labels = label))
 
+# split into training and testing sets
 congress_split <- initial_split(data = congress, strata = major, prop = .8)
 congress_split
 
 congress_train <- training(congress_split)
 congress_test <- testing(congress_split)
-```
 
----
-
-# Preprocessing the data frame
-
-```{r recipe, dependson = "split"}
-congress_rec <- recipe(major ~ text, data = congress_train)
-```
-
-```{r recipe-steps, dependson = "recipe"}
-library(textrecipes)
-
-congress_rec <- congress_rec %>%
-  step_tokenize(text) %>%
-  step_stopwords(text) %>%
-  step_tokenfilter(text, max_tokens = 500) %>%
-  step_tfidf(text)
-```
-
----
-
-# Train a model
-
-```{r nb-model}
-library(discrim)
-nb_spec <- naive_Bayes() %>%
-  set_mode("classification") %>%
-  set_engine("naivebayes")
-
-nb_spec
-```
-
----
-
-# Train a model
-
-```{r nb-fit, dependson = c("recipe-steps", "nb-model")}
-nb_wf <- workflow() %>%
-  add_recipe(congress_rec) %>%
-  add_model(nb_spec)
-
-nb_wf %>%
-  fit(data = congress_train)
-```
-
----
-
-# Evaluation
-
-```{r congress-cv, dependson = "split"}
-set.seed(123)
-
+# generate cross-validation folds
 congress_folds <- vfold_cv(data = congress_train, strata = major)
-```
-
-```{r nb-cv, dependson = c("congress-cv", "nb-fit")}
-nb_cv <- nb_wf %>%
-  fit_resamples(
-    congress_folds,
-    control = control_resamples(save_pred = TRUE)
-  )
-```
-
-```{r nb-cv-info, dependson = "nb-cv"}
-nb_cv_metrics <- collect_metrics(nb_cv)
-nb_cv_predictions <- collect_predictions(nb_cv)
-
-nb_cv_metrics
-```
-
----
-
-# Receiver operator curve
-
-```{r nb-roc-curve, dependson = "nb-cv-info", echo = FALSE}
-nb_cv_predictions %>%
-  group_by(id) %>%
-  roc_curve(truth = major, c(starts_with(".pred"), -.pred_class)) %>%
-  autoplot() +
-  labs(
-    color = NULL,
-    title = "Receiver operator curve for Congressional bills",
-    subtitle = "Each resample fold is shown in a different color"
-  )
-```
-
----
-
-# Confusion matrix
-
-```{r nb-confusion, dependson = "nb-cv-info", echo = FALSE}
-nb_cv_predictions %>%
-  filter(id == "Fold01") %>%
-  conf_mat(major, .pred_class) %>%
-  autoplot(type = "heatmap") +
-  scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
-  scale_x_discrete(labels = function(x) str_wrap(x, 20))
-```
-
----
-
-# Compare to the null model
-
-```{r null-mod, dependson = c("recipe-steps", "congress-cv")}
-null_classification <- null_model() %>%
-  set_engine("parsnip") %>%
-  set_mode("classification")
-
-null_cv <- workflow() %>%
-  add_recipe(congress_rec) %>%
-  add_model(null_classification) %>%
-  fit_resamples(
-    congress_folds
-  )
-
-null_cv %>%
-  collect_metrics()
 ```
 
 ---
@@ -221,70 +110,91 @@ ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
 
 ---
 
-# Downsampling
+# Preprocessing the data frame
 
-```{r recipe-downsample, dependson = "recipe-steps"}
-library(themis)
+```{r recipe, dependson = "split"}
+congress_rec <- recipe(major ~ text, data = congress_train)
+```
 
-# build on existing recipe
+```{r recipe-steps, dependson = "recipe"}
+library(textrecipes)
+
 congress_rec <- congress_rec %>%
+  step_tokenize(text) %>%
+  step_stopwords(text) %>%
+  step_tokenfilter(text, max_tokens = 500) %>%
+  step_tfidf(text) %>%
   step_downsample(major)
-congress_rec
 ```
 
 ---
 
-# Support vector machine
+# Define the model
 
-```{r svm-spec}
-svm_spec <- svm_rbf() %>%
+```{r tree-spec}
+tree_spec <- decision_tree() %>%
   set_mode("classification") %>%
-  set_engine("liquidSVM")
+  set_engine("C5.0")
 
-svm_spec
+tree_spec
 ```
 
 ---
 
-# Downsampling
+# Train the model
 
-```{r svm-wf, dependson = c("recipe-steps", "svm-spec")}
-svm_wf <- workflow() %>%
+```{r tree-wf, dependson = c("recipe-steps", "tree-spec")}
+tree_wf <- workflow() %>%
   add_recipe(congress_rec) %>%
-  add_model(svm_spec)
+  add_model(tree_spec)
 ```
 
-```{r svm-fit, dependson = "svm-wf"}
+```{r tree-fit, dependson = "tree-wf"}
 set.seed(123)
 
-svm_cv <- fit_resamples(
-  svm_wf,
+tree_cv <- fit_resamples(
+  tree_wf,
   congress_folds,
-  metrics = metric_set(accuracy),
   control = control_resamples(save_pred = TRUE)
 )
 ```
 
-```{r svm-metrics, dependson = "svm-fit"}
-svm_cv_metrics <- collect_metrics(svm_cv)
-svm_cv_predictions <- collect_predictions(svm_cv)
-
-svm_cv_metrics
+```{r tree-metrics, dependson = "tree-fit"}
+tree_cv_metrics <- collect_metrics(tree_cv)
+tree_cv_predictions <- collect_predictions(tree_cv)
+tree_cv_metrics
 ```
 
 ---
 
 # Confusion matrix
 
-```{r svm-confusion, dependson = "svm-metrics", echo = FALSE}
-svm_cv_predictions %>%
-  filter(id == "Fold01") %>%
-  conf_mat(major, .pred_class) %>%
+```{r tree-confusion, dependson = "tree-metrics", echo = FALSE}
+conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap") +
   scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
   scale_x_discrete(labels = function(x) str_wrap(x, 20))
 ```
 
+---
+
+# Name That Tune!
+
+.pull-left[
+
+<div style="width:100%;height:0;padding-bottom:54%;position:relative;"><iframe src="https://giphy.com/embed/10JbbHzFsBpg40" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+]
+
+.pull-right[
+
+<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/7SKWbnycqb2Pze62Zk" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+]
+
+```{r countdown, cache = FALSE, echo = FALSE}
+countdown(minutes = 15)
+```
 
 ---
 

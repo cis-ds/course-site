@@ -8,6 +8,8 @@
     <link href="libs/remark-css/default.css" rel="stylesheet" />
     <link href="libs/remark-css/metropolis.css" rel="stylesheet" />
     <link href="libs/remark-css/lucy-fonts.css" rel="stylesheet" />
+    <link href="libs/countdown/countdown.css" rel="stylesheet" />
+    <script src="libs/countdown/countdown.js"></script>
   </head>
   <body>
     <textarea id="source">
@@ -63,17 +65,28 @@ class: center, middle, inverse, title-slide
 ```r
 set.seed(123)
 
+# convert response variable to factor
 congress &lt;- congress %&gt;%
   mutate(major = factor(x = major, levels = major, labels = label))
 
+# split into training and testing sets
 congress_split &lt;- initial_split(data = congress, strata = major, prop = .8)
 congress_split
 ## &lt;Analysis/Assess/Total&gt;
-## &lt;3560/889/4449&gt;
+## &lt;3558/891/4449&gt;
 
 congress_train &lt;- training(congress_split)
 congress_test &lt;- testing(congress_split)
+
+# generate cross-validation folds
+congress_folds &lt;- vfold_cv(data = congress_train, strata = major)
 ```
+
+---
+
+# Class imbalance
+
+&lt;img src="index_files/figure-html/major-topic-dist-1.png" width="864" /&gt;
 
 ---
 
@@ -92,269 +105,85 @@ congress_rec &lt;- congress_rec %&gt;%
   step_tokenize(text) %&gt;%
   step_stopwords(text) %&gt;%
   step_tokenfilter(text, max_tokens = 500) %&gt;%
-  step_tfidf(text)
-```
-
----
-
-# Train a model
-
-
-```r
-library(discrim)
-nb_spec &lt;- naive_Bayes() %&gt;%
-  set_mode("classification") %&gt;%
-  set_engine("naivebayes")
-
-nb_spec
-## Naive Bayes Model Specification (classification)
-## 
-## Computational engine: naivebayes
-```
-
----
-
-# Train a model
-
-
-```r
-nb_wf &lt;- workflow() %&gt;%
-  add_recipe(congress_rec) %&gt;%
-  add_model(nb_spec)
-
-nb_wf %&gt;%
-  fit(data = congress_train)
-## ══ Workflow [trained] ══════════════════════════════════════════════════════════
-## Preprocessor: Recipe
-## Model: naive_Bayes()
-## 
-## ── Preprocessor ────────────────────────────────────────────────────────────────
-## 4 Recipe Steps
-## 
-## ● step_tokenize()
-## ● step_stopwords()
-## ● step_tokenfilter()
-## ● step_tfidf()
-## 
-## ── Model ───────────────────────────────────────────────────────────────────────
-## 
-## ================================== Naive Bayes ================================== 
-##  
-##  Call: 
-## naive_bayes.default(x = maybe_data_frame(x), y = y, usekernel = TRUE)
-## 
-## --------------------------------------------------------------------------------- 
-##  
-## Laplace smoothing: 0
-## 
-## --------------------------------------------------------------------------------- 
-##  
-##  A priori probabilities: 
-## 
-##                                  Foreign trade 
-##                                    0.088202247 
-##                           Labor and employment 
-##                                    0.058988764 
-##              Public lands and water management 
-##                                    0.110674157 
-##        Banking, finance, and domestic commerce 
-##                                    0.061516854 
-##                                        Defense 
-##                                    0.049719101 
-##                      Law, crime, family issues 
-##                                    0.064606742 
-## Civil rights, minority issues, civil liberties 
-##                                    0.017696629 
-##                                         Health 
-##                                    0.137359551 
-##          International affairs and foreign aid 
-##                                    0.028370787 
-##                          Government operations 
-##                                    0.085393258 
-##                           Other, miscellaneous 
-##                                    0.006460674 
-##                                 Transportation 
-##                                    0.039044944 
-##                                      Education 
-##                                    0.048595506 
-##          Space, technology, and communications 
-##                                    0.019101124 
-##                                    Environment 
-##                                    0.046348315 
-##                                 Macroeconomics 
-##                                    0.035393258 
-##                                 Social welfare 
-##                                    0.020786517 
-##                                         Energy 
-##                                    0.030617978 
-## 
-## ...
-## and 1715 more lines.
-```
-
----
-
-# Evaluation
-
-
-```r
-set.seed(123)
-
-congress_folds &lt;- vfold_cv(data = congress_train, strata = major)
-```
-
-
-```r
-nb_cv &lt;- nb_wf %&gt;%
-  fit_resamples(
-    congress_folds,
-    control = control_resamples(save_pred = TRUE)
-  )
-```
-
-
-```r
-nb_cv_metrics &lt;- collect_metrics(nb_cv)
-nb_cv_predictions &lt;- collect_predictions(nb_cv)
-
-nb_cv_metrics
-## # A tibble: 2 x 6
-##   .metric  .estimator  mean     n std_err .config             
-##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 accuracy multiclass 0.137    10 0.00532 Preprocessor1_Model1
-## 2 roc_auc  hand_till  0.536    10 0.00488 Preprocessor1_Model1
-```
-
----
-
-# Receiver operator curve
-
-&lt;img src="index_files/figure-html/nb-roc-curve-1.png" width="864" /&gt;
-
----
-
-# Confusion matrix
-
-&lt;img src="index_files/figure-html/nb-confusion-1.png" width="864" /&gt;
-
----
-
-# Compare to the null model
-
-
-```r
-null_classification &lt;- null_model() %&gt;%
-  set_engine("parsnip") %&gt;%
-  set_mode("classification")
-
-null_cv &lt;- workflow() %&gt;%
-  add_recipe(congress_rec) %&gt;%
-  add_model(null_classification) %&gt;%
-  fit_resamples(
-    congress_folds
-  )
-
-null_cv %&gt;%
-  collect_metrics()
-## # A tibble: 2 x 6
-##   .metric  .estimator  mean     n std_err .config             
-##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 accuracy multiclass 0.137    10 0.00532 Preprocessor1_Model1
-## 2 roc_auc  hand_till  0.5      10 0       Preprocessor1_Model1
-```
-
----
-
-# Class imbalance
-
-&lt;img src="index_files/figure-html/major-topic-dist-1.png" width="864" /&gt;
-
----
-
-# Downsampling
-
-
-```r
-library(themis)
-
-# build on existing recipe
-congress_rec &lt;- congress_rec %&gt;%
+  step_tfidf(text) %&gt;%
   step_downsample(major)
-congress_rec
-## Data Recipe
-## 
-## Inputs:
-## 
-##       role #variables
-##    outcome          1
-##  predictor          1
-## 
-## Operations:
-## 
-## Tokenization for text
-## Stop word removal for text
-## Text filtering for text
-## Term frequency-inverse document frequency with text
-## Down-sampling based on major
 ```
 
 ---
 
-# Support vector machine
+# Define the model
 
 
 ```r
-svm_spec &lt;- svm_rbf() %&gt;%
+tree_spec &lt;- decision_tree() %&gt;%
   set_mode("classification") %&gt;%
-  set_engine("liquidSVM")
+  set_engine("C5.0")
 
-svm_spec
-## Radial Basis Function Support Vector Machine Specification (classification)
+tree_spec
+## Decision Tree Model Specification (classification)
 ## 
-## Computational engine: liquidSVM
+## Computational engine: C5.0
 ```
 
 ---
 
-# Downsampling
+# Train the model
 
 
 ```r
-svm_wf &lt;- workflow() %&gt;%
+tree_wf &lt;- workflow() %&gt;%
   add_recipe(congress_rec) %&gt;%
-  add_model(svm_spec)
+  add_model(tree_spec)
 ```
 
 
 ```r
 set.seed(123)
 
-svm_cv &lt;- fit_resamples(
-  svm_wf,
+tree_cv &lt;- fit_resamples(
+  tree_wf,
   congress_folds,
-  metrics = metric_set(accuracy),
   control = control_resamples(save_pred = TRUE)
 )
 ```
 
 
 ```r
-svm_cv_metrics &lt;- collect_metrics(svm_cv)
-svm_cv_predictions &lt;- collect_predictions(svm_cv)
-
-svm_cv_metrics
-## # A tibble: 1 x 6
+tree_cv_metrics &lt;- collect_metrics(tree_cv)
+tree_cv_predictions &lt;- collect_predictions(tree_cv)
+tree_cv_metrics
+## # A tibble: 2 × 6
 ##   .metric  .estimator  mean     n std_err .config             
 ##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;               
-## 1 accuracy multiclass 0.347    10  0.0125 Preprocessor1_Model1
+## 1 accuracy multiclass 0.422    10 0.0120  Preprocessor1_Model1
+## 2 roc_auc  hand_till  0.761    10 0.00720 Preprocessor1_Model1
 ```
 
 ---
 
 # Confusion matrix
 
-&lt;img src="index_files/figure-html/svm-confusion-1.png" width="864" /&gt;
+&lt;img src="index_files/figure-html/tree-confusion-1.png" width="864" /&gt;
 
+---
+
+# Name That Tune!
+
+.pull-left[
+
+&lt;div style="width:100%;height:0;padding-bottom:54%;position:relative;"&gt;&lt;iframe src="https://giphy.com/embed/10JbbHzFsBpg40" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;/div&gt;
+
+]
+
+.pull-right[
+
+&lt;div style="width:100%;height:0;padding-bottom:100%;position:relative;"&gt;&lt;iframe src="https://giphy.com/embed/7SKWbnycqb2Pze62Zk" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;/div&gt;
+
+]
+
+<div class="countdown" id="timer_61e0734d" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">15</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
 
 ---
 
@@ -436,47 +265,21 @@ jokes_prep &lt;- prep(jokes_rec)
 jokes_df &lt;- bake(jokes_prep, new_data = NULL)
 jokes_df %&gt;%
   slice(1:5)
-## # A tibble: 5 x 2,502
-##   id     score tf_joke_0 tf_joke_1 tf_joke_1_2 tf_joke_10 tf_joke_100
-##   &lt;fct&gt;  &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;
-## 1 36bbmw     1         0         0           0          0           0
-## 2 4mvekf     5         0         0           0          0           0
-## 3 2tj7sk     0         0         0           0          0           0
-## 4 2qhtww     0         0         0           0          0           0
-## 5 21n2rz    11         0         0           0          0           0
-## # … with 2,495 more variables: tf_joke_1000 &lt;dbl&gt;, tf_joke_11 &lt;dbl&gt;,
-## #   tf_joke_12 &lt;dbl&gt;, tf_joke_14 &lt;dbl&gt;, tf_joke_15 &lt;dbl&gt;, tf_joke_16 &lt;dbl&gt;,
-## #   tf_joke_18 &lt;dbl&gt;, tf_joke_2 &lt;dbl&gt;, tf_joke_20 &lt;dbl&gt;,
-## #   tf_joke_20_years &lt;dbl&gt;, tf_joke_200 &lt;dbl&gt;, tf_joke_24 &lt;dbl&gt;,
-## #   tf_joke_25 &lt;dbl&gt;, tf_joke_2nd &lt;dbl&gt;, tf_joke_3 &lt;dbl&gt;, tf_joke_30 &lt;dbl&gt;,
-## #   tf_joke_3rd &lt;dbl&gt;, tf_joke_4 &lt;dbl&gt;, tf_joke_40 &lt;dbl&gt;, tf_joke_45 &lt;dbl&gt;,
-## #   tf_joke_5 &lt;dbl&gt;, tf_joke_50 &lt;dbl&gt;, tf_joke_500 &lt;dbl&gt;, tf_joke_6 &lt;dbl&gt;,
-## #   tf_joke_60 &lt;dbl&gt;, tf_joke_69 &lt;dbl&gt;, tf_joke_7 &lt;dbl&gt;, tf_joke_8 &lt;dbl&gt;,
-## #   tf_joke_80 &lt;dbl&gt;, tf_joke_9 &lt;dbl&gt;, tf_joke_9_11 &lt;dbl&gt;, tf_joke_90 &lt;dbl&gt;,
-## #   tf_joke_able &lt;dbl&gt;, tf_joke_absolutely &lt;dbl&gt;, tf_joke_accept &lt;dbl&gt;,
-## #   tf_joke_accident &lt;dbl&gt;, tf_joke_accidentally &lt;dbl&gt;,
-## #   tf_joke_according &lt;dbl&gt;, tf_joke_account &lt;dbl&gt;, tf_joke_across &lt;dbl&gt;,
-## #   tf_joke_across_street &lt;dbl&gt;, tf_joke_act &lt;dbl&gt;, tf_joke_action &lt;dbl&gt;,
-## #   tf_joke_actually &lt;dbl&gt;, tf_joke_adam &lt;dbl&gt;, tf_joke_add &lt;dbl&gt;,
-## #   tf_joke_added &lt;dbl&gt;, tf_joke_admit &lt;dbl&gt;, tf_joke_advice &lt;dbl&gt;,
-## #   tf_joke_afraid &lt;dbl&gt;, tf_joke_africa &lt;dbl&gt;, tf_joke_african &lt;dbl&gt;,
-## #   tf_joke_afternoon &lt;dbl&gt;, tf_joke_age &lt;dbl&gt;, tf_joke_aged &lt;dbl&gt;,
-## #   tf_joke_agent &lt;dbl&gt;, tf_joke_ago &lt;dbl&gt;, tf_joke_agree &lt;dbl&gt;,
-## #   tf_joke_agreed &lt;dbl&gt;, tf_joke_agrees &lt;dbl&gt;, tf_joke_ah &lt;dbl&gt;,
-## #   tf_joke_ahead &lt;dbl&gt;, tf_joke_aids &lt;dbl&gt;, tf_joke_ain't &lt;dbl&gt;,
-## #   tf_joke_air &lt;dbl&gt;, tf_joke_airplane &lt;dbl&gt;, tf_joke_airport &lt;dbl&gt;,
-## #   tf_joke_alcohol &lt;dbl&gt;, tf_joke_alien &lt;dbl&gt;, tf_joke_alive &lt;dbl&gt;,
-## #   tf_joke_alley &lt;dbl&gt;, tf_joke_allowed &lt;dbl&gt;, tf_joke_almost &lt;dbl&gt;,
-## #   tf_joke_alone &lt;dbl&gt;, tf_joke_along &lt;dbl&gt;, tf_joke_alphabet &lt;dbl&gt;,
-## #   tf_joke_already &lt;dbl&gt;, tf_joke_alright &lt;dbl&gt;, tf_joke_also &lt;dbl&gt;,
-## #   tf_joke_alternative &lt;dbl&gt;, tf_joke_always &lt;dbl&gt;, tf_joke_amazed &lt;dbl&gt;,
-## #   tf_joke_amazing &lt;dbl&gt;, tf_joke_america &lt;dbl&gt;, tf_joke_american &lt;dbl&gt;,
-## #   tf_joke_americans &lt;dbl&gt;, tf_joke_amount &lt;dbl&gt;, tf_joke_anal &lt;dbl&gt;,
-## #   tf_joke_andy &lt;dbl&gt;, tf_joke_angel &lt;dbl&gt;, tf_joke_angrily &lt;dbl&gt;,
-## #   tf_joke_angry &lt;dbl&gt;, tf_joke_animal &lt;dbl&gt;, tf_joke_animals &lt;dbl&gt;,
-## #   tf_joke_anniversary &lt;dbl&gt;, tf_joke_announced &lt;dbl&gt;, tf_joke_annoyed &lt;dbl&gt;,
-## #   tf_joke_another &lt;dbl&gt;, tf_joke_another_man &lt;dbl&gt;,
-## #   tf_joke_another_one &lt;dbl&gt;, …
+## # A tibble: 5 × 2,502
+##   id    score tf_joke_0 tf_joke_1 tf_joke_10 tf_joke_100 tf_joke_1000 tf_joke_11
+##   &lt;fct&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;
+## 1 2tzi…    12         0         0          0           0            0          0
+## 2 4zqp…     0         0         0          0           0            0          0
+## 3 2lgw…    58         0         0          0           0            0          0
+## 4 3qx3…     9         0         0          0           0            0          0
+## 5 2x2z…     0         0         0          0           0            0          0
+## # … with 2,494 more variables: tf_joke_12 &lt;dbl&gt;, tf_joke_13 &lt;dbl&gt;,
+## #   tf_joke_14 &lt;dbl&gt;, tf_joke_15 &lt;dbl&gt;, tf_joke_16 &lt;dbl&gt;, tf_joke_18 &lt;dbl&gt;,
+## #   tf_joke_1st &lt;dbl&gt;, tf_joke_2 &lt;dbl&gt;, tf_joke_20 &lt;dbl&gt;,
+## #   tf_joke_20_years &lt;dbl&gt;, tf_joke_200 &lt;dbl&gt;, tf_joke_2015 &lt;dbl&gt;,
+## #   tf_joke_25 &lt;dbl&gt;, tf_joke_3 &lt;dbl&gt;, tf_joke_30 &lt;dbl&gt;, tf_joke_3rd &lt;dbl&gt;,
+## #   tf_joke_4 &lt;dbl&gt;, tf_joke_40 &lt;dbl&gt;, tf_joke_4th &lt;dbl&gt;, tf_joke_5 &lt;dbl&gt;,
+## #   tf_joke_50 &lt;dbl&gt;, tf_joke_500 &lt;dbl&gt;, tf_joke_5th &lt;dbl&gt;, tf_joke_6 &lt;dbl&gt;, …
 ```
 
 ---
@@ -497,10 +300,10 @@ jokes_dtm &lt;- jokes_df %&gt;%
          id = fct_drop(f = id)) %&gt;%
   cast_dtm(document = id, term = token, value = n)
 jokes_dtm
-## &lt;&lt;DocumentTermMatrix (documents: 9956, terms: 2500)&gt;&gt;
-## Non-/sparse entries: 138201/24751799
+## &lt;&lt;DocumentTermMatrix (documents: 9944, terms: 2500)&gt;&gt;
+## Non-/sparse entries: 140880/24719120
 ## Sparsity           : 99%
-## Maximal term length: 34
+## Maximal term length: 60
 ## Weighting          : term frequency (tf)
 ```
 
@@ -530,7 +333,7 @@ jokes_lda4 &lt;- LDA(jokes_dtm, k = 4, control = list(seed = 123))
 * A statistical measure of how well a probability model predicts a sample
 * Given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents
 * Perplexity for LDA model with 12 topics
-    * 1003.3647235
+    * 994.9666512
 
 ---
 
