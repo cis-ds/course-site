@@ -67,7 +67,7 @@ major_topics <- tibble(
 ```
 
 ```
-## # A tibble: 4,449 x 7
+## # A tibble: 4,449 × 7
 ##       ID  cong billnum h_or_sen major text                        label         
 ##    <dbl> <dbl>   <dbl> <chr>    <dbl> <chr>                       <chr>         
 ##  1     1   107    4499 HR          18 To suspend temporarily the… Foreign trade 
@@ -104,7 +104,7 @@ congress_split
 
 ```
 ## <Analysis/Assess/Total>
-## <3560/889/4449>
+## <3558/891/4449>
 ```
 
 ```r
@@ -184,10 +184,10 @@ nb_wf
 ## ── Preprocessor ────────────────────────────────────────────────────────────────
 ## 4 Recipe Steps
 ## 
-## ● step_tokenize()
-## ● step_stopwords()
-## ● step_tokenfilter()
-## ● step_tfidf()
+## • step_tokenize()
+## • step_stopwords()
+## • step_tokenfilter()
+## • step_tfidf()
 ## 
 ## ── Model ───────────────────────────────────────────────────────────────────────
 ## Naive Bayes Model Specification (classification)
@@ -208,10 +208,10 @@ nb_wf %>%
 ## ── Preprocessor ────────────────────────────────────────────────────────────────
 ## 4 Recipe Steps
 ## 
-## ● step_tokenize()
-## ● step_stopwords()
-## ● step_tokenfilter()
-## ● step_tfidf()
+## • step_tokenize()
+## • step_stopwords()
+## • step_tokenfilter()
+## • step_tfidf()
 ## 
 ## ── Model ───────────────────────────────────────────────────────────────────────
 ## 
@@ -229,41 +229,41 @@ nb_wf %>%
 ##  A priori probabilities: 
 ## 
 ##                                  Foreign trade 
-##                                    0.088202247 
+##                                    0.089938168 
 ##                           Labor and employment 
-##                                    0.058988764 
+##                                    0.059584036 
 ##              Public lands and water management 
-##                                    0.110674157 
+##                                    0.105115233 
 ##        Banking, finance, and domestic commerce 
-##                                    0.061516854 
+##                                    0.063518831 
 ##                                        Defense 
-##                                    0.049719101 
+##                                    0.047498595 
 ##                      Law, crime, family issues 
-##                                    0.064606742 
+##                                    0.065767285 
 ## Civil rights, minority issues, civil liberties 
-##                                    0.017696629 
+##                                    0.017987634 
 ##                                         Health 
-##                                    0.137359551 
+##                                    0.138279933 
 ##          International affairs and foreign aid 
-##                                    0.028370787 
+##                                    0.026700393 
 ##                          Government operations 
-##                                    0.085393258 
+##                                    0.086003373 
 ##                           Other, miscellaneous 
-##                                    0.006460674 
+##                                    0.007588533 
 ##                                 Transportation 
-##                                    0.039044944 
+##                                    0.039066892 
 ##                                      Education 
-##                                    0.048595506 
+##                                    0.052276560 
 ##          Space, technology, and communications 
-##                                    0.019101124 
+##                                    0.019673974 
 ##                                    Environment 
-##                                    0.046348315 
+##                                    0.042158516 
 ##                                 Macroeconomics 
-##                                    0.035393258 
+##                                    0.037380551 
 ##                                 Social welfare 
-##                                    0.020786517 
+##                                    0.020798201 
 ##                                         Energy 
-##                                    0.030617978 
+##                                    0.033164699 
 ## 
 ## ...
 ## and 1715 more lines.
@@ -285,19 +285,19 @@ congress_folds
 
 ```
 ## #  10-fold cross-validation using stratification 
-## # A tibble: 10 x 2
+## # A tibble: 10 × 2
 ##    splits             id    
 ##    <list>             <chr> 
-##  1 <split [3203/357]> Fold01
-##  2 <split [3203/357]> Fold02
-##  3 <split [3203/357]> Fold03
-##  4 <split [3204/356]> Fold04
-##  5 <split [3204/356]> Fold05
-##  6 <split [3204/356]> Fold06
-##  7 <split [3204/356]> Fold07
-##  8 <split [3205/355]> Fold08
-##  9 <split [3205/355]> Fold09
-## 10 <split [3205/355]> Fold10
+##  1 <split [3201/357]> Fold01
+##  2 <split [3201/357]> Fold02
+##  3 <split [3201/357]> Fold03
+##  4 <split [3201/357]> Fold04
+##  5 <split [3203/355]> Fold05
+##  6 <split [3203/355]> Fold06
+##  7 <split [3203/355]> Fold07
+##  8 <split [3203/355]> Fold08
+##  9 <split [3203/355]> Fold09
+## 10 <split [3203/355]> Fold10
 ```
 
 
@@ -320,11 +320,11 @@ nb_cv_metrics
 ```
 
 ```
-## # A tibble: 2 x 6
+## # A tibble: 2 × 6
 ##   .metric  .estimator  mean     n std_err .config             
 ##   <chr>    <chr>      <dbl> <int>   <dbl> <chr>               
-## 1 accuracy multiclass 0.137    10 0.00532 Preprocessor1_Model1
-## 2 roc_auc  hand_till  0.536    10 0.00488 Preprocessor1_Model1
+## 1 accuracy multiclass 0.138    10 0.00492 Preprocessor1_Model1
+## 2 roc_auc  hand_till  0.536    10 0.00335 Preprocessor1_Model1
 ```
 
 The default performance parameters for multiclass classification are accuracy and ROC AUC (area under the receiver operator curve). The accuracy is the percentage of accurate predictions. For both metrics, values closer to 1 are better. These results suggest the naive Bayes model is performing quite poorly.
@@ -346,13 +346,11 @@ nb_cv_predictions %>%
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/nb-roc-curve-1.png" width="672" />
 
-Another way to evaluate our model is to evaluate the [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix). A confusion matrix visualizes a model's false positives and false negatives for each class. There is not a trivial way to visualize multiple confusion matrices, so we can look at them individually for a single fold.
+Another way to evaluate our model is to evaluate the [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix). A confusion matrix visualizes a model's false positives and false negatives for each class. Because we implemented 10-fold cross-validation, we actually have 10 confusion matricies. `conf_mat_resampled()` averages the results from each validation fold to generate the summarized confusion matrix.
 
 
 ```r
-nb_cv_predictions %>%
-  filter(id == "Fold01") %>%
-  conf_mat(major, .pred_class) %>%
+conf_mat_resampled(x = nb_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap") +
   scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
   scale_x_discrete(labels = function(x) str_wrap(x, 20))
@@ -384,10 +382,10 @@ null_cv %>%
 ```
 
 ```
-## # A tibble: 2 x 6
+## # A tibble: 2 × 6
 ##   .metric  .estimator  mean     n std_err .config             
 ##   <chr>    <chr>      <dbl> <int>   <dbl> <chr>               
-## 1 accuracy multiclass 0.137    10 0.00532 Preprocessor1_Model1
+## 1 accuracy multiclass 0.138    10 0.00492 Preprocessor1_Model1
 ## 2 roc_auc  hand_till  0.5      10 0       Preprocessor1_Model1
 ```
 
@@ -419,7 +417,33 @@ There are many different ways to deal with imbalanced data. Here we will take a 
 
 ```r
 library(themis)
+```
 
+```
+## Registered S3 methods overwritten by 'themis':
+##   method                  from   
+##   bake.step_downsample    recipes
+##   bake.step_upsample      recipes
+##   prep.step_downsample    recipes
+##   prep.step_upsample      recipes
+##   tidy.step_downsample    recipes
+##   tidy.step_upsample      recipes
+##   tunable.step_downsample recipes
+##   tunable.step_upsample   recipes
+```
+
+```
+## 
+## Attaching package: 'themis'
+```
+
+```
+## The following objects are masked from 'package:recipes':
+## 
+##     step_downsample, step_upsample
+```
+
+```r
 # build on existing recipe
 congress_rec <- congress_rec %>%
   step_downsample(major)
@@ -427,7 +451,7 @@ congress_rec
 ```
 
 ```
-## Data Recipe
+## Recipe
 ## 
 ## Inputs:
 ## 
@@ -444,165 +468,111 @@ congress_rec
 ## Down-sampling based on major
 ```
 
-Let's also switch to an alternative modeling approach which handles multiclass problems better, support vector machine (SVM).
+Let's also switch to an alternative modeling approach which handles multiclass problems better, decision trees.
 
 
 ```r
-svm_spec <- svm_rbf() %>%
+tree_spec <- decision_tree() %>%
   set_mode("classification") %>%
-  set_engine("liquidSVM")
+  set_engine("C5.0")
 
-svm_spec
+tree_spec
 ```
 
 ```
-## Radial Basis Function Support Vector Machine Specification (classification)
+## Decision Tree Model Specification (classification)
 ## 
-## Computational engine: liquidSVM
+## Computational engine: C5.0
 ```
 
 
 ```r
-svm_wf <- workflow() %>%
+tree_wf <- workflow() %>%
   add_recipe(congress_rec) %>%
-  add_model(svm_spec)
+  add_model(tree_spec)
 
-svm_wf
+tree_wf
 ```
 
 ```
 ## ══ Workflow ════════════════════════════════════════════════════════════════════
 ## Preprocessor: Recipe
-## Model: svm_rbf()
+## Model: decision_tree()
 ## 
 ## ── Preprocessor ────────────────────────────────────────────────────────────────
 ## 5 Recipe Steps
 ## 
-## ● step_tokenize()
-## ● step_stopwords()
-## ● step_tokenfilter()
-## ● step_tfidf()
-## ● step_downsample()
+## • step_tokenize()
+## • step_stopwords()
+## • step_tokenfilter()
+## • step_tfidf()
+## • step_downsample()
 ## 
 ## ── Model ───────────────────────────────────────────────────────────────────────
-## Radial Basis Function Support Vector Machine Specification (classification)
+## Decision Tree Model Specification (classification)
 ## 
-## Computational engine: liquidSVM
+## Computational engine: C5.0
 ```
-
-The `liquidSVM` engine doesn't support class probabilities as output so we need to replace the default metric set with a metric set that doesn't use class probabilities. Here we use accuracy, sensitivity, and specificity.
 
 
 ```r
 set.seed(123)
 
-svm_cv <- fit_resamples(
-  svm_wf,
+tree_cv <- fit_resamples(
+  tree_wf,
   congress_folds,
-  metrics = metric_set(accuracy),
   control = control_resamples(save_pred = TRUE)
 )
-```
-
-```
-## ! Fold01: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold02: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold03: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold04: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold05: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold06: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold07: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold08: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold09: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```
-## ! Fold10: preprocessor 1/1, model 1/1: Solution may not be optimal: try training a...
-```
-
-```r
-svm_cv
-```
-
-```
-## Warning: This tuning result has notes. Example notes on model fitting include:
-## preprocessor 1/1, model 1/1: Solution may not be optimal: try training again using min_gamma=0.04, Solution may not be optimal: try training again using max_gamma=25
-## preprocessor 1/1, model 1/1: Solution may not be optimal: try training again using min_gamma=0.04, Solution may not be optimal: try training again using max_gamma=25
-## preprocessor 1/1, model 1/1: Solution may not be optimal: try training again using min_gamma=0.04, Solution may not be optimal: try training again using max_gamma=25
+tree_cv
 ```
 
 ```
 ## # Resampling results
 ## # 10-fold cross-validation using stratification 
-## # A tibble: 10 x 5
+## # A tibble: 10 × 5
 ##    splits             id     .metrics         .notes           .predictions     
 ##    <list>             <chr>  <list>           <list>           <list>           
-##  1 <split [3203/357]> Fold01 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [357 × 4…
-##  2 <split [3203/357]> Fold02 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [357 × 4…
-##  3 <split [3203/357]> Fold03 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [357 × 4…
-##  4 <split [3204/356]> Fold04 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [356 × 4…
-##  5 <split [3204/356]> Fold05 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [356 × 4…
-##  6 <split [3204/356]> Fold06 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [356 × 4…
-##  7 <split [3204/356]> Fold07 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [356 × 4…
-##  8 <split [3205/355]> Fold08 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [355 × 4…
-##  9 <split [3205/355]> Fold09 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [355 × 4…
-## 10 <split [3205/355]> Fold10 <tibble [1 × 4]> <tibble [1 × 1]> <tibble [355 × 4…
+##  1 <split [3201/357]> Fold01 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [357 × 2…
+##  2 <split [3201/357]> Fold02 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [357 × 2…
+##  3 <split [3201/357]> Fold03 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [357 × 2…
+##  4 <split [3201/357]> Fold04 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [357 × 2…
+##  5 <split [3203/355]> Fold05 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [355 × 2…
+##  6 <split [3203/355]> Fold06 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [355 × 2…
+##  7 <split [3203/355]> Fold07 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [355 × 2…
+##  8 <split [3203/355]> Fold08 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [355 × 2…
+##  9 <split [3203/355]> Fold09 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [355 × 2…
+## 10 <split [3203/355]> Fold10 <tibble [2 × 4]> <tibble [0 × 1]> <tibble [355 × 2…
 ```
 
 
 ```r
-svm_cv_metrics <- collect_metrics(svm_cv)
-svm_cv_predictions <- collect_predictions(svm_cv)
+tree_cv_metrics <- collect_metrics(tree_cv)
+tree_cv_predictions <- collect_predictions(tree_cv)
 
-svm_cv_metrics
+tree_cv_metrics
 ```
 
 ```
-## # A tibble: 1 x 6
+## # A tibble: 2 × 6
 ##   .metric  .estimator  mean     n std_err .config             
 ##   <chr>    <chr>      <dbl> <int>   <dbl> <chr>               
-## 1 accuracy multiclass 0.347    10  0.0125 Preprocessor1_Model1
+## 1 accuracy multiclass 0.456    10 0.00986 Preprocessor1_Model1
+## 2 roc_auc  hand_till  0.767    10 0.0103  Preprocessor1_Model1
 ```
 
 While still low, the accuracy has risen substantially compared to the naive Bayes model. This is typical for multiclass models since the classification task is harder than for binary classification - rather than having one right answer and one wrong answer, there is one right answer and nineteen wrong answers.
 
 
 ```r
-svm_cv_predictions %>%
-  filter(id == "Fold01") %>%
-  conf_mat(major, .pred_class) %>%
+conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap") +
   scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
   scale_x_discrete(labels = function(x) str_wrap(x, 20))
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/svm-confusion-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/tree-confusion-1.png" width="672" />
 
-It seems the model is still substantially over-predicting the "other" category, but there are more observations on the diagonal now.
+Now there are still prediction errors, but they same more evenly distributed across the matrix.
 
 ## Acknowledgments
 
@@ -618,138 +588,171 @@ devtools::session_info()
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.0.4 (2021-02-15)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-07-22                  
+##  setting  value
+##  version  R version 4.1.2 (2021-11-01)
+##  os       macOS Big Sur 11.6
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/Chicago
+##  date     2022-01-13
+##  pandoc   2.14.2 @ /usr/local/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version    date       lib source        
-##  assertthat     0.2.1      2019-03-21 [2] CRAN (R 4.0.0)
-##  backports      1.2.1      2020-12-09 [2] CRAN (R 4.0.2)
-##  blogdown       1.3        2021-04-14 [2] CRAN (R 4.0.2)
-##  bookdown       0.22       2021-04-22 [2] CRAN (R 4.0.2)
-##  broom        * 0.7.6      2021-04-05 [2] CRAN (R 4.0.4)
-##  bslib          0.2.5      2021-05-12 [2] CRAN (R 4.0.4)
-##  cachem         1.0.5      2021-05-15 [2] CRAN (R 4.0.2)
-##  callr          3.7.0      2021-04-20 [2] CRAN (R 4.0.2)
-##  cellranger     1.1.0      2016-07-27 [2] CRAN (R 4.0.0)
-##  class          7.3-19     2021-05-03 [2] CRAN (R 4.0.2)
-##  cli            2.5.0      2021-04-26 [2] CRAN (R 4.0.2)
-##  codetools      0.2-18     2020-11-04 [2] CRAN (R 4.0.4)
-##  colorspace     2.0-1      2021-05-04 [2] CRAN (R 4.0.2)
-##  crayon         1.4.1      2021-02-08 [2] CRAN (R 4.0.2)
-##  DBI            1.1.1      2021-01-15 [2] CRAN (R 4.0.2)
-##  dbplyr         2.1.1      2021-04-06 [2] CRAN (R 4.0.4)
-##  desc           1.3.0      2021-03-05 [2] CRAN (R 4.0.2)
-##  devtools       2.4.1      2021-05-05 [2] CRAN (R 4.0.2)
-##  dials        * 0.0.9      2020-09-16 [2] CRAN (R 4.0.2)
-##  DiceDesign     1.9        2021-02-13 [2] CRAN (R 4.0.2)
-##  digest         0.6.27     2020-10-24 [2] CRAN (R 4.0.2)
-##  dplyr        * 1.0.6      2021-05-05 [2] CRAN (R 4.0.2)
-##  ellipsis       0.3.2      2021-04-29 [2] CRAN (R 4.0.2)
-##  evaluate       0.14       2019-05-28 [2] CRAN (R 4.0.0)
-##  fansi          0.4.2      2021-01-15 [2] CRAN (R 4.0.2)
-##  fastmap        1.1.0      2021-01-25 [2] CRAN (R 4.0.2)
-##  forcats      * 0.5.1      2021-01-27 [2] CRAN (R 4.0.2)
-##  foreach        1.5.1      2020-10-15 [2] CRAN (R 4.0.2)
-##  fs             1.5.0      2020-07-31 [2] CRAN (R 4.0.2)
-##  furrr          0.2.2      2021-01-29 [2] CRAN (R 4.0.2)
-##  future         1.21.0     2020-12-10 [2] CRAN (R 4.0.2)
-##  generics       0.1.0      2020-10-31 [2] CRAN (R 4.0.2)
-##  ggplot2      * 3.3.3      2020-12-30 [2] CRAN (R 4.0.2)
-##  globals        0.14.0     2020-11-22 [2] CRAN (R 4.0.2)
-##  glue           1.4.2      2020-08-27 [2] CRAN (R 4.0.2)
-##  gower          0.2.2      2020-06-23 [2] CRAN (R 4.0.2)
-##  GPfit          1.0-8      2019-02-08 [2] CRAN (R 4.0.0)
-##  gtable         0.3.0      2019-03-25 [2] CRAN (R 4.0.0)
-##  haven          2.4.1      2021-04-23 [2] CRAN (R 4.0.2)
-##  here           1.0.1      2020-12-13 [2] CRAN (R 4.0.2)
-##  hms            1.1.0      2021-05-17 [2] CRAN (R 4.0.4)
-##  htmltools      0.5.1.1    2021-01-22 [2] CRAN (R 4.0.2)
-##  httr           1.4.2      2020-07-20 [2] CRAN (R 4.0.2)
-##  infer        * 0.5.4      2021-01-13 [2] CRAN (R 4.0.2)
-##  ipred          0.9-11     2021-03-12 [2] CRAN (R 4.0.2)
-##  iterators      1.0.13     2020-10-15 [2] CRAN (R 4.0.2)
-##  janeaustenr    0.1.5      2017-06-10 [2] CRAN (R 4.0.0)
-##  jquerylib      0.1.4      2021-04-26 [2] CRAN (R 4.0.2)
-##  jsonlite       1.7.2      2020-12-09 [2] CRAN (R 4.0.2)
-##  knitr          1.33       2021-04-24 [2] CRAN (R 4.0.2)
-##  lattice        0.20-44    2021-05-02 [2] CRAN (R 4.0.2)
-##  lava           1.6.9      2021-03-11 [2] CRAN (R 4.0.2)
-##  lhs            1.1.1      2020-10-05 [2] CRAN (R 4.0.2)
-##  lifecycle      1.0.0      2021-02-15 [2] CRAN (R 4.0.2)
-##  listenv        0.8.0      2019-12-05 [2] CRAN (R 4.0.0)
-##  lubridate      1.7.10     2021-02-26 [2] CRAN (R 4.0.2)
-##  magrittr       2.0.1      2020-11-17 [2] CRAN (R 4.0.2)
-##  MASS           7.3-54     2021-05-03 [2] CRAN (R 4.0.2)
-##  Matrix         1.3-3      2021-05-04 [2] CRAN (R 4.0.2)
-##  memoise        2.0.0      2021-01-26 [2] CRAN (R 4.0.2)
-##  modeldata    * 0.1.0      2020-10-22 [2] CRAN (R 4.0.2)
-##  modelr         0.1.8      2020-05-19 [2] CRAN (R 4.0.0)
-##  munsell        0.5.0      2018-06-12 [2] CRAN (R 4.0.0)
-##  nnet           7.3-16     2021-05-03 [2] CRAN (R 4.0.2)
-##  parallelly     1.25.0     2021-04-30 [2] CRAN (R 4.0.2)
-##  parsnip      * 0.1.5      2021-01-19 [2] CRAN (R 4.0.2)
-##  pillar         1.6.1      2021-05-16 [2] CRAN (R 4.0.4)
-##  pkgbuild       1.2.0      2020-12-15 [2] CRAN (R 4.0.2)
-##  pkgconfig      2.0.3      2019-09-22 [2] CRAN (R 4.0.0)
-##  pkgload        1.2.1      2021-04-06 [2] CRAN (R 4.0.2)
-##  plyr           1.8.6      2020-03-03 [2] CRAN (R 4.0.0)
-##  prettyunits    1.1.1      2020-01-24 [2] CRAN (R 4.0.0)
-##  pROC           1.17.0.1   2021-01-13 [2] CRAN (R 4.0.2)
-##  processx       3.5.2      2021-04-30 [2] CRAN (R 4.0.2)
-##  prodlim        2019.11.13 2019-11-17 [2] CRAN (R 4.0.0)
-##  ps             1.6.0      2021-02-28 [2] CRAN (R 4.0.2)
-##  purrr        * 0.3.4      2020-04-17 [2] CRAN (R 4.0.0)
-##  R6             2.5.0      2020-10-28 [2] CRAN (R 4.0.2)
-##  Rcpp           1.0.6      2021-01-15 [2] CRAN (R 4.0.2)
-##  readr        * 1.4.0      2020-10-05 [2] CRAN (R 4.0.2)
-##  readxl         1.3.1      2019-03-13 [2] CRAN (R 4.0.0)
-##  recipes      * 0.1.16     2021-04-16 [2] CRAN (R 4.0.2)
-##  remotes        2.3.0      2021-04-01 [2] CRAN (R 4.0.2)
-##  reprex         2.0.0      2021-04-02 [2] CRAN (R 4.0.2)
-##  rlang          0.4.11     2021-04-30 [2] CRAN (R 4.0.2)
-##  rmarkdown      2.8        2021-05-07 [2] CRAN (R 4.0.2)
-##  rpart          4.1-15     2019-04-12 [2] CRAN (R 4.0.4)
-##  rprojroot      2.0.2      2020-11-15 [2] CRAN (R 4.0.2)
-##  rsample      * 0.1.0      2021-05-08 [2] CRAN (R 4.0.2)
-##  rstudioapi     0.13       2020-11-12 [2] CRAN (R 4.0.2)
-##  rvest          1.0.0      2021-03-09 [2] CRAN (R 4.0.2)
-##  sass           0.4.0      2021-05-12 [2] CRAN (R 4.0.2)
-##  scales       * 1.1.1      2020-05-11 [2] CRAN (R 4.0.0)
-##  sessioninfo    1.1.1      2018-11-05 [2] CRAN (R 4.0.0)
-##  SnowballC      0.7.0      2020-04-01 [2] CRAN (R 4.0.0)
-##  stringi        1.6.1      2021-05-10 [2] CRAN (R 4.0.2)
-##  stringr      * 1.4.0      2019-02-10 [2] CRAN (R 4.0.0)
-##  survival       3.2-11     2021-04-26 [2] CRAN (R 4.0.2)
-##  testthat       3.0.2      2021-02-14 [2] CRAN (R 4.0.2)
-##  tibble       * 3.1.1      2021-04-18 [2] CRAN (R 4.0.2)
-##  tidymodels   * 0.1.3      2021-04-19 [2] CRAN (R 4.0.2)
-##  tidyr        * 1.1.3      2021-03-03 [2] CRAN (R 4.0.2)
-##  tidyselect     1.1.1      2021-04-30 [2] CRAN (R 4.0.2)
-##  tidytext     * 0.3.1      2021-04-10 [2] CRAN (R 4.0.2)
-##  tidyverse    * 1.3.1      2021-04-15 [2] CRAN (R 4.0.2)
-##  timeDate       3043.102   2018-02-21 [2] CRAN (R 4.0.0)
-##  tokenizers     0.2.1      2018-03-29 [2] CRAN (R 4.0.0)
-##  tune         * 0.1.5      2021-04-23 [2] CRAN (R 4.0.2)
-##  usethis        2.0.1      2021-02-10 [2] CRAN (R 4.0.2)
-##  utf8           1.2.1      2021-03-12 [2] CRAN (R 4.0.2)
-##  vctrs          0.3.8      2021-04-29 [2] CRAN (R 4.0.2)
-##  withr          2.4.2      2021-04-18 [2] CRAN (R 4.0.2)
-##  workflows    * 0.2.2      2021-03-10 [2] CRAN (R 4.0.2)
-##  workflowsets * 0.0.2      2021-04-16 [2] CRAN (R 4.0.2)
-##  xfun           0.23       2021-05-15 [2] CRAN (R 4.0.2)
-##  xml2           1.3.2      2020-04-23 [2] CRAN (R 4.0.0)
-##  yaml           2.2.1      2020-02-01 [2] CRAN (R 4.0.0)
-##  yardstick    * 0.0.8      2021-03-28 [2] CRAN (R 4.0.2)
+##  package      * version    date (UTC) lib source
+##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 4.1.0)
+##  backports      1.4.1      2021-12-13 [1] CRAN (R 4.1.1)
+##  BBmisc         1.11       2017-03-10 [1] CRAN (R 4.1.0)
+##  blogdown       1.7        2021-12-19 [1] CRAN (R 4.1.1)
+##  bookdown       0.24       2021-09-02 [1] CRAN (R 4.1.1)
+##  broom        * 0.7.11     2022-01-03 [1] CRAN (R 4.1.2)
+##  bslib          0.3.1      2021-10-06 [1] CRAN (R 4.1.1)
+##  C50          * 0.1.5      2021-06-01 [1] CRAN (R 4.1.1)
+##  cachem         1.0.6      2021-08-19 [1] CRAN (R 4.1.1)
+##  callr          3.7.0      2021-04-20 [1] CRAN (R 4.1.0)
+##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 4.1.0)
+##  checkmate      2.0.0      2020-02-06 [1] CRAN (R 4.1.1)
+##  class          7.3-19     2021-05-03 [1] CRAN (R 4.1.2)
+##  cli            3.1.0      2021-10-27 [1] CRAN (R 4.1.1)
+##  codetools      0.2-18     2020-11-04 [1] CRAN (R 4.1.2)
+##  colorspace     2.0-2      2021-06-24 [1] CRAN (R 4.1.1)
+##  crayon         1.4.2      2021-10-29 [1] CRAN (R 4.1.1)
+##  Cubist         0.3.0      2021-05-28 [1] CRAN (R 4.1.0)
+##  data.table     1.14.2     2021-09-27 [1] CRAN (R 4.1.1)
+##  DBI            1.1.2      2021-12-20 [1] CRAN (R 4.1.1)
+##  dbplyr         2.1.1      2021-04-06 [1] CRAN (R 4.1.0)
+##  desc           1.4.0      2021-09-28 [1] CRAN (R 4.1.1)
+##  devtools       2.4.3      2021-11-30 [1] CRAN (R 4.1.1)
+##  dials        * 0.0.10     2021-09-10 [1] CRAN (R 4.1.1)
+##  DiceDesign     1.9        2021-02-13 [1] CRAN (R 4.1.0)
+##  digest         0.6.29     2021-12-01 [1] CRAN (R 4.1.1)
+##  discrim      * 0.1.3      2021-07-21 [1] CRAN (R 4.1.0)
+##  doParallel     1.0.16     2020-10-16 [1] CRAN (R 4.1.0)
+##  dplyr        * 1.0.7      2021-06-18 [1] CRAN (R 4.1.0)
+##  ellipsis       0.3.2      2021-04-29 [1] CRAN (R 4.1.0)
+##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.1.0)
+##  fansi          0.5.0      2021-05-25 [1] CRAN (R 4.1.0)
+##  farver         2.1.0      2021-02-28 [1] CRAN (R 4.1.0)
+##  fastmap        1.1.0      2021-01-25 [1] CRAN (R 4.1.0)
+##  fastmatch      1.1-3      2021-07-23 [1] CRAN (R 4.1.0)
+##  FNN            1.1.3      2019-02-15 [1] CRAN (R 4.1.0)
+##  forcats      * 0.5.1      2021-01-27 [1] CRAN (R 4.1.1)
+##  foreach        1.5.1      2020-10-15 [1] CRAN (R 4.1.0)
+##  Formula        1.2-4      2020-10-16 [1] CRAN (R 4.1.0)
+##  fs             1.5.2      2021-12-08 [1] CRAN (R 4.1.1)
+##  furrr          0.2.3      2021-06-25 [1] CRAN (R 4.1.0)
+##  future         1.23.0     2021-10-31 [1] CRAN (R 4.1.1)
+##  future.apply   1.8.1      2021-08-10 [1] CRAN (R 4.1.1)
+##  generics       0.1.1      2021-10-25 [1] CRAN (R 4.1.1)
+##  ggplot2      * 3.3.5      2021-06-25 [1] CRAN (R 4.1.1)
+##  globals        0.14.0     2020-11-22 [1] CRAN (R 4.1.0)
+##  glue           1.6.0      2021-12-17 [1] CRAN (R 4.1.1)
+##  gower          0.2.2      2020-06-23 [1] CRAN (R 4.1.0)
+##  GPfit          1.0-8      2019-02-08 [1] CRAN (R 4.1.0)
+##  gtable         0.3.0      2019-03-25 [1] CRAN (R 4.1.1)
+##  hardhat        0.1.6      2021-07-14 [1] CRAN (R 4.1.0)
+##  haven          2.4.3      2021-08-04 [1] CRAN (R 4.1.1)
+##  here           1.0.1      2020-12-13 [1] CRAN (R 4.1.0)
+##  highr          0.9        2021-04-16 [1] CRAN (R 4.1.0)
+##  hms            1.1.1      2021-09-26 [1] CRAN (R 4.1.1)
+##  htmltools      0.5.2      2021-08-25 [1] CRAN (R 4.1.1)
+##  httr           1.4.2      2020-07-20 [1] CRAN (R 4.1.0)
+##  infer        * 1.0.0      2021-08-13 [1] CRAN (R 4.1.1)
+##  inum           1.0-4      2021-04-12 [1] CRAN (R 4.1.0)
+##  ipred          0.9-12     2021-09-15 [1] CRAN (R 4.1.1)
+##  iterators      1.0.13     2020-10-15 [1] CRAN (R 4.1.0)
+##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 4.1.0)
+##  jquerylib      0.1.4      2021-04-26 [1] CRAN (R 4.1.0)
+##  jsonlite       1.7.2      2020-12-09 [1] CRAN (R 4.1.0)
+##  knitr          1.37       2021-12-16 [1] CRAN (R 4.1.1)
+##  labeling       0.4.2      2020-10-20 [1] CRAN (R 4.1.0)
+##  lattice        0.20-45    2021-09-22 [1] CRAN (R 4.1.2)
+##  lava           1.6.10     2021-09-02 [1] CRAN (R 4.1.1)
+##  lhs            1.1.3      2021-09-08 [1] CRAN (R 4.1.1)
+##  libcoin        1.0-9      2021-09-27 [1] CRAN (R 4.1.1)
+##  lifecycle      1.0.1      2021-09-24 [1] CRAN (R 4.1.1)
+##  listenv        0.8.0      2019-12-05 [1] CRAN (R 4.1.0)
+##  lubridate      1.8.0      2021-10-07 [1] CRAN (R 4.1.1)
+##  magrittr       2.0.1      2020-11-17 [1] CRAN (R 4.1.0)
+##  MASS           7.3-54     2021-05-03 [1] CRAN (R 4.1.0)
+##  Matrix         1.3-4      2021-06-01 [1] CRAN (R 4.1.2)
+##  memoise        2.0.1      2021-11-26 [1] CRAN (R 4.1.1)
+##  mlr            2.19.0     2021-02-22 [1] CRAN (R 4.1.0)
+##  modeldata    * 0.1.1      2021-07-14 [1] CRAN (R 4.1.0)
+##  modelr         0.1.8      2020-05-19 [1] CRAN (R 4.1.0)
+##  munsell        0.5.0      2018-06-12 [1] CRAN (R 4.1.0)
+##  mvtnorm        1.1-3      2021-10-08 [1] CRAN (R 4.1.1)
+##  naivebayes   * 0.9.7      2020-03-08 [1] CRAN (R 4.1.0)
+##  nnet           7.3-16     2021-05-03 [1] CRAN (R 4.1.2)
+##  parallelly     1.30.0     2021-12-17 [1] CRAN (R 4.1.1)
+##  parallelMap    1.5.1      2021-06-28 [1] CRAN (R 4.1.0)
+##  ParamHelpers   1.14       2020-03-24 [1] CRAN (R 4.1.0)
+##  parsnip      * 0.1.7      2021-07-21 [1] CRAN (R 4.1.0)
+##  partykit       1.2-15     2021-08-23 [1] CRAN (R 4.1.1)
+##  pillar         1.6.4      2021-10-18 [1] CRAN (R 4.1.1)
+##  pkgbuild       1.3.1      2021-12-20 [1] CRAN (R 4.1.1)
+##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 4.1.0)
+##  pkgload        1.2.4      2021-11-30 [1] CRAN (R 4.1.1)
+##  plyr           1.8.6      2020-03-03 [1] CRAN (R 4.1.0)
+##  prettyunits    1.1.1      2020-01-24 [1] CRAN (R 4.1.0)
+##  pROC           1.18.0     2021-09-03 [1] CRAN (R 4.1.1)
+##  processx       3.5.2      2021-04-30 [1] CRAN (R 4.1.0)
+##  prodlim        2019.11.13 2019-11-17 [1] CRAN (R 4.1.0)
+##  ps             1.6.0      2021-02-28 [1] CRAN (R 4.1.0)
+##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.1.0)
+##  R6             2.5.1      2021-08-19 [1] CRAN (R 4.1.1)
+##  RANN           2.6.1      2019-01-08 [1] CRAN (R 4.1.0)
+##  Rcpp           1.0.7      2021-07-07 [1] CRAN (R 4.1.0)
+##  readr        * 2.1.1      2021-11-30 [1] CRAN (R 4.1.1)
+##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.1.0)
+##  recipes      * 0.1.17     2021-09-27 [1] CRAN (R 4.1.1)
+##  remotes        2.4.2      2021-11-30 [1] CRAN (R 4.1.1)
+##  reprex         2.0.1      2021-08-05 [1] CRAN (R 4.1.1)
+##  reshape2       1.4.4      2020-04-09 [1] CRAN (R 4.1.0)
+##  rlang        * 0.4.12     2021-10-18 [1] CRAN (R 4.1.1)
+##  rmarkdown      2.11       2021-09-14 [1] CRAN (R 4.1.1)
+##  ROSE           0.0-4      2021-06-14 [1] CRAN (R 4.1.0)
+##  rpart          4.1-15     2019-04-12 [1] CRAN (R 4.1.0)
+##  rprojroot      2.0.2      2020-11-15 [1] CRAN (R 4.1.0)
+##  rsample      * 0.1.1      2021-11-08 [1] CRAN (R 4.1.1)
+##  rstudioapi     0.13       2020-11-12 [1] CRAN (R 4.1.0)
+##  rvest          1.0.2      2021-10-16 [1] CRAN (R 4.1.1)
+##  sass           0.4.0      2021-05-12 [1] CRAN (R 4.1.0)
+##  scales       * 1.1.1      2020-05-11 [1] CRAN (R 4.1.0)
+##  sessioninfo    1.2.2      2021-12-06 [1] CRAN (R 4.1.1)
+##  SnowballC      0.7.0      2020-04-01 [1] CRAN (R 4.1.0)
+##  stopwords    * 2.3        2021-10-28 [1] CRAN (R 4.1.1)
+##  stringi        1.7.6      2021-11-29 [1] CRAN (R 4.1.1)
+##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 4.1.1)
+##  survival       3.2-13     2021-08-24 [1] CRAN (R 4.1.2)
+##  testthat       3.1.1      2021-12-03 [1] CRAN (R 4.1.1)
+##  textrecipes  * 0.4.1      2021-07-11 [1] CRAN (R 4.1.0)
+##  themis       * 0.1.4      2021-06-12 [1] CRAN (R 4.1.0)
+##  tibble       * 3.1.6      2021-11-07 [1] CRAN (R 4.1.1)
+##  tidymodels   * 0.1.4      2021-10-01 [1] CRAN (R 4.1.1)
+##  tidyr        * 1.1.4      2021-09-27 [1] CRAN (R 4.1.1)
+##  tidyselect     1.1.1      2021-04-30 [1] CRAN (R 4.1.0)
+##  tidytext     * 0.3.2      2021-09-30 [1] CRAN (R 4.1.1)
+##  tidyverse    * 1.3.1      2021-04-15 [1] CRAN (R 4.1.0)
+##  timeDate       3043.102   2018-02-21 [1] CRAN (R 4.1.0)
+##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 4.1.0)
+##  tune         * 0.1.6      2021-07-21 [1] CRAN (R 4.1.0)
+##  tzdb           0.2.0      2021-10-27 [1] CRAN (R 4.1.1)
+##  unbalanced     2.0        2015-06-26 [1] CRAN (R 4.1.0)
+##  usethis        2.1.5      2021-12-09 [1] CRAN (R 4.1.1)
+##  utf8           1.2.2      2021-07-24 [1] CRAN (R 4.1.0)
+##  vctrs        * 0.3.8      2021-04-29 [1] CRAN (R 4.1.0)
+##  withr          2.4.3      2021-11-30 [1] CRAN (R 4.1.1)
+##  workflows    * 0.2.4      2021-10-12 [1] CRAN (R 4.1.1)
+##  workflowsets * 0.1.0      2021-07-22 [1] CRAN (R 4.1.1)
+##  xfun           0.29       2021-12-14 [1] CRAN (R 4.1.1)
+##  xml2           1.3.3      2021-11-30 [1] CRAN (R 4.1.1)
+##  yaml           2.2.1      2020-02-01 [1] CRAN (R 4.1.0)
+##  yardstick    * 0.0.9      2021-11-22 [1] CRAN (R 4.1.1)
 ## 
-## [1] /Users/soltoffbc/Library/R/4.0/library
-## [2] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```
