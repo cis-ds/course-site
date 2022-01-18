@@ -11,6 +11,22 @@ type: docs
 aliases: ["/hw00_homework_grading.html", "/hw00_github_rubric.html"]
 ---
 
+## Evaluation philosophy
+
+The university requires that I assign each student a letter grade at the end of the quarter. However I find that numeric scores on assignments tend to cause students grading anxiety if they do not achieve a perfect 100%. Nor does the numeric score convey specific, targeted feedback as to what the student has done well on an assignment, combined with feedback on areas for improvement.
+
+As such, I do not assign numeric scores in this class. All homework assignments are evaluated using the grading rubric below. Final grades are calculated as the cumulative performance across all homework assignments. Failure to complete the two weekly [peer evaluation assignments](/faq/peer-evaluations/) causes a minor deduction in the final grade.
+
+## How do the rubric scores convert to a letter grade?
+
+One year on my course evaluations a student commented
+
+> [T]he grading policy is locked in some chest somewhere under the ocean
+
+Let's pull back the curtain and demystify how I calculate final grade! In this course, "Satisfactory" is equivalent to a B+. So if you earned "Satisfactory" on every assignment for every rubric element, at the end of the quarter you would earn a B+. If you earn a combination of "Satisfactory" and "Excellent" scores you are looking at the difference between a B+ and an A-, or an A- and an A. If you earn a combination of "Satisfactory" and "Needs Improvement" scores, then you might be somewhere between a B+ and a B or lower.
+
+Historically, **95% of students earn a B+ or higher**. I don't impose a specific curve, it is simply the case that students rise to meet those expectations by the end of the quarter.
+
 ## Rubric
 
 *Also consult any specific guidance given in the relevant assignment itself*
