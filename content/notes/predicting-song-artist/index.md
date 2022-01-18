@@ -33,7 +33,7 @@ theme_set(theme_minimal())
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("uc-cfss/predicting-song-artist")
+usethis::use_course("uc-cfss/text-analysis-classification-and-topic-modeling")
 ```
 
 {{% /callout %}}
@@ -49,7 +49,7 @@ Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesda
 
 ```r
 # get beyonce and taylor swift lyrics
-beyonce_lyrics <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/beyonce_lyrics.csv")
+beyonce_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/beyonce_lyrics.csv")
 ```
 
 ```
@@ -70,7 +70,7 @@ beyonce_lyrics <- readr::read_csv("https://raw.githubusercontent.com/rfordatasci
 ```
 
 ```r
-taylor_swift_lyrics <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/taylor_swift_lyrics.csv")
+taylor_swift_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/taylor_swift_lyrics.csv")
 ```
 
 ```
@@ -225,8 +225,7 @@ lyrics_rec
 
 ## Estimate a random forest model
 
-- Define a random forest model grown with 1000 trees
-    - Use the `ranger` engine. When specifying the engine, set the parameter `importance = "impurity"`. This will allow us to generate variable importance plots later.
+- Define a random forest model grown with 1000 trees using the `ranger` engine.
 - Define a workflow using the feature engineering recipe and random forest model specification. Fit the workflow using the cross-validation folds.
     - Use `control = control_resamples(save_pred = TRUE)` to save the assessment set predictions. We need these to assess the model's performance.
     
@@ -237,7 +236,7 @@ lyrics_rec
 # define the model specification
 ranger_spec <- rand_forest(trees = 1000) %>%
   set_mode("classification") %>%
-  set_engine("ranger", importance = "impurity")
+  set_engine("ranger")
 
 # define the workflow
 ranger_workflow <- workflow() %>%
@@ -301,8 +300,6 @@ conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
 Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of 0.9491533 is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (391 songs compared to only 132 for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
 
 {{< /spoiler >}}
-
-
 
 ## Penalized regression
 
@@ -535,14 +532,14 @@ devtools::session_info()
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value
 ##  version  R version 4.1.2 (2021-11-01)
-##  os       macOS Big Sur 11.6
+##  os       macOS Monterey 12.1
 ##  system   aarch64, darwin20
 ##  ui       X11
 ##  language (EN)
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/Chicago
-##  date     2022-01-12
+##  date     2022-01-18
 ##  pandoc   2.14.2 @ /usr/local/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
