@@ -24,6 +24,16 @@ set.seed(1234)
 
 {{< figure src="grace-hopper.jpg" caption="Admiral Grace Hopper discovered the first bug in a computer" >}}
 
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("uc-cfss/debugging-and-defensive-programming")
+```
+
+{{% /callout %}}
+
 A **software bug** is "an error, flaw, failure or fault in a computer program or system that causes it to produce an incorrect or unexpected result, or to behave in unintended ways."^[Source: [Wikipedia](https://en.wikipedia.org/wiki/Software_bug)] In an ideal world, the computer will warn you when it encounters a bug. R has the ability to do this in some situations (see our discussion below of errors, warnings, and messages). However bugs also arise because you expect the program to do one thing but provide it the ability to perform different from expectations.
 
 As I have repeatedly emphasized in class, **computers are powerful tools that are incredibly stupid**. They will do exactly what you tell them to, nothing more and nothing less. If you write your code in a way that allows it to behave in an unintended way, this is your fault. The first goal of debugging should be to prevent unintended behaviors before they strike. However, when such bugs occur we need the tools and knowledge to track down these unintended behaviors and correct them in our code.
@@ -483,27 +493,31 @@ library(tidyverse)
 library(modelr)
 library(broom)
 library(gam)
-College <- as_tibble(ISLR::College) %>% mutate(Outstate = Outstate / 1000, Room.Board = Room.Board / 1000, PhD_log = log(PhD)) # rescale Outstate in thousands of dollars
+College <- as_tibble(ISLR::College) %>%
+mutate(Outstate = Outstate / 1000,
+Room.Board = Room.Board / 1000,
+PhD_log = log(PhD)) # rescale Outstate in thousands of dollars
 crossv_kfold(College, k = 10) %>%
-  mutate(linear = map(train, ~ glm(Outstate ~ PhD, data = .)), log = map(train, ~ glm(Outstate ~ PhD_log, data = .)), spline = map(train, ~ glm(Outstate ~ bs(PhD, df = 5), data = .))) %>%
-  gather(type, model, linear:spline) %>%
-  mutate(mse = map2_dbl(model, test, mse)) %>%
-  group_by(type) %>%
-  summarize(mse = mean(mse)) # k-fold cv of three model types
+mutate(linear = map(train, ~ glm(Outstate ~ PhD,
+data = .)),
+log = map(train, ~ glm(Outstate ~ PhD_log, data = .)),
+spline = map(train, ~ glm(Outstate ~ bs(PhD, df = 5), data = .))) %>% gather(type, model, linear:spline) %>%
+mutate(mse = map2_dbl(model, test, mse)) %>% group_by(type) %>%
+summarize(mse = mean(mse)) # k-fold cv of three model types
 college_phd_spline <- gam(Outstate ~ bs(PhD, df = 5), data = College) # spline has the best model fit
 college_phd_terms <- preplot(college_phd_spline, se = TRUE, rug = FALSE) # get first difference for age
 # age plot
 tibble(
-  x = college_phd_terms$`bs(PhD, df = 5)`$x,
-  y = college_phd_terms$`bs(PhD, df = 5)`$y,
-  se.fit = college_phd_terms$`bs(PhD, df = 5)`$se.y
-) %>%
-  mutate(y_low = y - 1.96 * se.fit, y_high = y + 1.96 * se.fit) %>%
-  ggplot(aes(x, y)) +
-  geom_line() +
-  geom_line(aes(y = y_low), linetype = 2) +
-  geom_line(aes(y = y_high), linetype = 2) +
-  labs(title = "Cubic spline of out-of-state tuition", subtitle = "Knots = 2", x = "Percent of faculty with PhDs", y = expression(f[1](PhD)))
+x = college_phd_terms$`bs(PhD, df = 5)`$x,
+y = college_phd_terms$`bs(PhD, df = 5)`$y,
+se.fit = college_phd_terms$`bs(PhD, df = 5)`$se.y
+)%>%mutate(y_low = y - 1.96 * se.fit, y_high = y + 1.96 * se.fit) %>%
+ggplot(aes(x, y))+geom_line()+
+geom_line(aes(y = y_low), linetype = 2)+
+geom_line(aes(y = y_high), linetype = 2) +
+labs(title = "Cubic spline of out-of-state tuition",
+subtitle = "Knots = 2",
+x = "Percent of faculty with PhDs", y = expression(f[1](PhD)))
 ```
 
 {{< spoiler text="Click for the solution" >}}
@@ -515,8 +529,8 @@ library(modelr)
 library(broom)
 library(gam)
 
+# rescale Outstate in thousands of dollars
 College <- as_tibble(ISLR::College) %>%
-  # rescale Outstate in thousands of dollars
   mutate(
     Outstate = Outstate / 1000,
     Room.Board = Room.Board / 1000,
@@ -526,7 +540,9 @@ College <- as_tibble(ISLR::College) %>%
 # k-fold cv of three model types
 crossv_kfold(College, k = 10) %>%
   mutate(
-    linear = map(train, ~ glm(Outstate ~ PhD, data = .)),
+    linear = map(train, ~ glm(Outstate ~ PhD,
+      data = .
+    )),
     log = map(train, ~ glm(Outstate ~ PhD_log, data = .)),
     spline = map(train, ~ glm(Outstate ~ bs(PhD, df = 5), data = .))
   ) %>%
@@ -536,7 +552,7 @@ crossv_kfold(College, k = 10) %>%
   summarize(mse = mean(mse))
 
 # spline has the best model fit
-college_phd_spline <- gam(Outstate ~ bs(PhD, df = 5), data = College)
+college_phd_spline <- gam(Outstate ~ bs(PhD, df = 5), data = College) 
 
 # get first difference for age
 college_phd_terms <- preplot(college_phd_spline, se = TRUE, rug = FALSE)
@@ -547,10 +563,7 @@ tibble(
   y = college_phd_terms$`bs(PhD, df = 5)`$y,
   se.fit = college_phd_terms$`bs(PhD, df = 5)`$se.y
 ) %>%
-  mutate(
-    y_low = y - 1.96 * se.fit,
-    y_high = y + 1.96 * se.fit
-  ) %>%
+  mutate(y_low = y - 1.96 * se.fit, y_high = y + 1.96 * se.fit) %>%
   ggplot(aes(x, y)) +
   geom_line() +
   geom_line(aes(y = y_low), linetype = 2) +
@@ -575,102 +588,102 @@ devtools::session_info()
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.1.0 (2021-05-18)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-10-26                  
+##  setting  value
+##  version  R version 4.1.2 (2021-11-01)
+##  os       macOS Monterey 12.1
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/Chicago
+##  date     2022-02-09
+##  pandoc   2.14.2 @ /usr/local/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
+##  package     * version date (UTC) lib source
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
-##  blogdown      1.4     2021-07-23 [1] CRAN (R 4.1.0)
-##  bookdown      0.23    2021-08-13 [1] CRAN (R 4.1.0)
-##  broom       * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-##  bslib         0.2.5.1 2021-05-18 [1] CRAN (R 4.1.0)
-##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
+##  backports     1.4.1   2021-12-13 [1] CRAN (R 4.1.1)
+##  blogdown      1.7     2021-12-19 [1] CRAN (R 4.1.1)
+##  bookdown      0.24    2021-09-02 [1] CRAN (R 4.1.1)
+##  brio          1.1.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  broom         0.7.12  2022-01-28 [1] CRAN (R 4.1.1)
+##  bslib         0.3.1   2021-10-06 [1] CRAN (R 4.1.1)
+##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.1)
 ##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  cli           3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
-##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
-##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
-##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
+##  cli           3.1.1   2022-01-20 [1] CRAN (R 4.1.1)
+##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.1)
+##  crayon        1.4.2   2021-10-29 [1] CRAN (R 4.1.1)
+##  DBI           1.1.2   2021-12-20 [1] CRAN (R 4.1.1)
 ##  dbplyr        2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc          1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
-##  devtools      2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.1.0)
+##  desc          1.4.0   2021-09-28 [1] CRAN (R 4.1.1)
+##  devtools      2.4.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  digest        0.6.29  2021-12-01 [1] CRAN (R 4.1.1)
 ##  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 ##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
 ##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.1.0)
-##  fansi         0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
+##  fansi         1.0.2   2022-01-14 [1] CRAN (R 4.1.1)
 ##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
-##  foreach     * 1.5.1   2020-10-15 [1] CRAN (R 4.1.0)
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  gam         * 1.20    2020-07-05 [1] CRAN (R 4.1.0)
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
-##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.1.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
-##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
+##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.1)
+##  fs            1.5.2   2021-12-08 [1] CRAN (R 4.1.1)
+##  generics      0.1.1   2021-10-25 [1] CRAN (R 4.1.1)
+##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.1)
+##  glue          1.6.1   2022-01-22 [1] CRAN (R 4.1.1)
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.1)
+##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.1)
 ##  here          1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  hms           1.1.0   2021-05-17 [1] CRAN (R 4.1.0)
-##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.1.0)
+##  hms           1.1.1   2021-09-26 [1] CRAN (R 4.1.1)
+##  htmltools     0.5.2   2021-08-25 [1] CRAN (R 4.1.1)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
-##  iterators     1.0.13  2020-10-15 [1] CRAN (R 4.1.0)
 ##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
-##  knitr         1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  lifecycle     1.0.1   2021-09-24 [1] CRAN (R 4.1.0)
-##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
-##  modelr      * 0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
+##  jsonlite      1.7.3   2022-01-17 [1] CRAN (R 4.1.1)
+##  knitr         1.37    2021-12-16 [1] CRAN (R 4.1.1)
+##  lifecycle     1.0.1   2021-09-24 [1] CRAN (R 4.1.1)
+##  lubridate     1.8.0   2021-10-07 [1] CRAN (R 4.1.1)
+##  magrittr      2.0.2   2022-01-26 [1] CRAN (R 4.1.1)
+##  memoise       2.0.1   2021-11-26 [1] CRAN (R 4.1.1)
+##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  pillar        1.6.3   2021-09-26 [1] CRAN (R 4.1.0)
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
+##  pillar        1.6.5   2022-01-25 [1] CRAN (R 4.1.2)
+##  pkgbuild      1.3.1   2021-12-20 [1] CRAN (R 4.1.1)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload       1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
+##  pkgload       1.2.4   2021-11-30 [1] CRAN (R 4.1.1)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
 ##  processx      3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
 ##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  Rcpp          1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
-##  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.1.0)
+##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.1)
+##  Rcpp          1.0.8   2022-01-13 [1] CRAN (R 4.1.1)
+##  readr       * 2.1.1   2021-11-30 [1] CRAN (R 4.1.1)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes       2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
-##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
-##  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-##  rmarkdown     2.10    2021-08-06 [1] CRAN (R 4.1.0)
+##  remotes       2.4.2   2021-11-30 [1] CRAN (R 4.1.1)
+##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.1)
+##  rlang         1.0.0   2022-01-26 [1] CRAN (R 4.1.1)
+##  rmarkdown     2.11    2021-09-14 [1] CRAN (R 4.1.1)
 ##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
 ##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest         1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
+##  rvest         1.0.2   2021-10-16 [1] CRAN (R 4.1.1)
 ##  sass          0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
-##  stringi       1.7.3   2021-07-16 [1] CRAN (R 4.1.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
-##  testthat      3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble      * 3.1.5   2021-09-30 [1] CRAN (R 4.1.0)
-##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.1.0)
+##  sessioninfo   1.2.2   2021-12-06 [1] CRAN (R 4.1.1)
+##  stringi       1.7.6   2021-11-29 [1] CRAN (R 4.1.1)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.1)
+##  testthat      3.1.2   2022-01-20 [1] CRAN (R 4.1.1)
+##  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.1.1)
+##  tidyr       * 1.1.4   2021-09-27 [1] CRAN (R 4.1.1)
 ##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
 ##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb          0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
-##  usethis       2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
+##  tzdb          0.2.0   2021-10-27 [1] CRAN (R 4.1.1)
+##  usethis       2.1.5   2021-12-09 [1] CRAN (R 4.1.1)
 ##  utf8          1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
 ##  vctrs         0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr         2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
-##  xfun          0.25    2021-08-06 [1] CRAN (R 4.1.0)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
+##  withr         2.4.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  xfun          0.29    2021-12-14 [1] CRAN (R 4.1.1)
+##  xml2          1.3.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  yaml          2.2.2   2022-01-25 [1] CRAN (R 4.1.1)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```
