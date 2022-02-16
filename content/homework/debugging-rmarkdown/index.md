@@ -14,7 +14,7 @@ url_code: "https://github.com/cfss-win22/hw05"
 
 # Overview
 
-Due by 10:30am (Chicago) on February 18th.
+Due by ~~10:30am~~ 11:59pm (Chicago) on February 18th.
 
 # Fork the `hw05` repository
 
