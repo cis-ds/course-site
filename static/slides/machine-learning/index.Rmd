@@ -192,63 +192,53 @@ splits_pal <- c(data_color, train_color, test_color)
 
 ---
 
-# Alzheimer's disease data
+# Bechdel film test
 
-Data from a clinical trial of individuals with well-characterized cognitive impairment, and age-matched control participants.
+1. It has to have at least two [named] women in it
+2. Who talk to each other
+3. About something besides a man
 
 ```{r}
-# install.packages("modeldata")
-library(modeldata)
-data("ad_data")
-alz <- ad_data
+library(rcfss)
+data("bechdel")
+bechdel
 ```
 
 ---
-class: middle
 
 ```{r}
-glimpse(alz)
+glimpse(bechdel)
 ```
 
 ---
-background-image: url(images/hands.jpg)
-background-size: contain
-background-position: left
-class: middle
 
-.pull-right[
+# Bechdel test data
 
-## Alzheimer's disease data
++ N = `r nrow(bechdel)`
 
-+ N = `r nrow(alz)`
++ 1 categorical outcome: `bechdel`
 
-+ 1 categorical outcome: `Class`
-
-+ `r ncol(alz) - 1` predictors
-
-+ 126 protein measurements
-
-+ also: `age`, `male`, `Genotype`
-
-]
++ `r ncol(bechdel) - 1` predictors
 
 ---
-background-image: url(images/hands.jpg)
-background-size: contain
-background-position: left
-class: middle
 
-.pull-right[
-
-```{r echo=FALSE, fig.width = 6}
-ggplot(alz, aes(x = tau, 
-                y = VEGF,
-                colour = Class)) +
-  geom_point(alpha = .5, size = 3) +
+```{r echo=FALSE}
+ggplot(data = bechdel, aes(
+  x = metascore,
+  y = domgross_2013,
+  color = bechdel
+)) +
+  geom_point(alpha = .3, size = 3) +
+  scale_y_log10(labels = scales::dollar) +
   scale_color_manual(values = c("#1a162d", "#CA225E")) +
+  labs(
+    x = "Metacritic score",
+    y = "Domestic gross (in millions of 2013 dollars)",
+    color = "Bechdel test"
+  ) +
   theme(legend.position = "top")
 ```
-]
+
 
 ---
 
@@ -307,7 +297,7 @@ knitr::include_url("https://parsnip.tidymodels.org")
 
 
 ```{r}
-glm(Class ~ tau, family = binomial, data = alz)
+glm(bechdel ~ metascore, family = binomial, data = bechdel)
 ```
 
 ---
@@ -477,8 +467,8 @@ Many learn model parameters, which *can* be useful as values for inference and i
 
 ```{r}
 lr_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz) %>% 
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel) %>% 
   broom::tidy()
 ```
 ]
@@ -486,11 +476,19 @@ lr_mod %>%
 .pull-right[
 
 ```{r echo=FALSE, fig.width = 6}
-ggplot(alz, aes(x = tau, 
-                y = VEGF,
-                colour = Class)) +
-  geom_point(alpha = .5, size = 3) +
-  scale_color_manual(values = c("#1a162d", "#cd4173")) +
+ggplot(data = bechdel, aes(
+  x = metascore,
+  y = domgross_2013,
+  color = bechdel
+)) +
+  geom_point(alpha = .3, size = 3) +
+  scale_y_log10(labels = scales::dollar) +
+  scale_color_manual(values = c("#1a162d", "#CA225E")) +
+  labs(
+    x = "Metacritic score",
+    y = "Domestic gross (in millions of 2013 dollars)",
+    color = "Bechdel test"
+  ) +
   theme(legend.position = "top")
 ```
 ]
@@ -501,25 +499,30 @@ ggplot(alz, aes(x = tau,
 
 ```{r include=FALSE}
 lr_preds <- lr_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz) %>% 
-  predict(new_data = alz) %>% 
-  bind_cols(alz) %>% 
-  mutate(.pred_match = if_else(Class == .pred_class, 1, 0))
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel) %>% 
+  predict(new_data = bechdel) %>% 
+  bind_cols(bechdel) %>% 
+  mutate(.pred_match = if_else(bechdel == .pred_class, 1, 0))
 ```
 
 ```{r echo=FALSE}
-ggplot(lr_preds, 
-       aes(x = tau, 
-           y = VEGF,
-           shape = as.factor(.pred_match),
-           colour = Class,
+ggplot(data = lr_preds, aes(
+  x = metascore,
+  y = domgross_2013,
+  shape = as.factor(.pred_match),
+           colour = bechdel,
            alpha = as.factor(.pred_match))) +
   geom_point(size = 3) +
+  scale_y_log10(labels = scales::dollar) +
   scale_alpha_manual(values = c(1, .2), guide = FALSE) +
   scale_shape_manual(values = c(4, 19), guide = FALSE) +
-  scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE)+
-  ggtitle("Logistic regression model")
+  scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE) +
+   labs(
+     title = "Logistic regression model",
+    x = "Metacritic score",
+    y = "Domestic gross (in millions of 2013 dollars)"
+  )
 ```
 
 ---
@@ -528,25 +531,30 @@ ggplot(lr_preds,
 
 ```{r include=FALSE}
 tree_preds <- tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz) %>% 
-  predict(new_data = alz) %>% 
-  bind_cols(alz) %>% 
-  mutate(.pred_match = if_else(Class == .pred_class, 1, 0))
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel) %>% 
+  predict(new_data = bechdel) %>% 
+  bind_cols(bechdel) %>% 
+  mutate(.pred_match = if_else(bechdel == .pred_class, 1, 0))
 ```
 
 ```{r echo=FALSE}
-ggplot(tree_preds, 
-       aes(x = tau, 
-           y = VEGF,
-           shape = as.factor(.pred_match),
-           colour = Class,
+ggplot(data = tree_preds, aes(
+  x = metascore,
+  y = domgross_2013,
+  shape = as.factor(.pred_match),
+           colour = bechdel,
            alpha = as.factor(.pred_match))) +
   geom_point(size = 3) +
+  scale_y_log10(labels = scales::dollar) +
   scale_alpha_manual(values = c(1, .2), guide = FALSE) +
   scale_shape_manual(values = c(4, 19), guide = FALSE) +
   scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE) +
-  ggtitle("C5.0 classification tree model")
+   labs(
+     title = "C5.0 classification tree model",
+    x = "Metacritic score",
+    y = "Domestic gross (in millions of 2013 dollars)"
+  )
 ```
 
 ---
@@ -554,11 +562,11 @@ ggplot(tree_preds,
 # Predict new data
 
 ```{r}
-alz_new <- tibble(tau = c(5, 6, 7), 
-         VEGF = c(15, 15, 15),
-         Class = c("Control", "Control", "Impaired")) %>% 
-  mutate(Class = factor(Class, levels = c("Impaired", "Control")))
-alz_new
+bechdel_new <- tibble(metascore = c(40, 50, 60), 
+         domgross_2013 = c(5, 5, 5),
+         bechdel = c("Fail", "Fail", "Pass")) %>% 
+  mutate(bechdel = factor(bechdel, levels = c("Fail", "Pass")))
+bechdel_new
 ```
 
 ---
@@ -567,11 +575,11 @@ alz_new
 
 ```{r predict-old}
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz) %>% 
-  predict(new_data = alz) %>% 
-  mutate(true_class = alz$Class) %>% 
-  accuracy(truth = true_class, 
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel) %>% 
+  predict(new_data = bechdel) %>% 
+  mutate(true_bechdel = bechdel$bechdel) %>% 
+  accuracy(truth = true_bechdel, 
            estimate = .pred_class)
 ```
 
@@ -593,11 +601,11 @@ tree_mod %>%
 
 ```{r}
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz) %>% 
-  predict(new_data = alz_new) %>% #<<
-  mutate(true_class = alz_new$Class) %>% #<<
-  accuracy(truth = true_class, 
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel) %>% 
+  predict(new_data = bechdel_new) %>% #<<
+  mutate(true_bechdel = bechdel_new$bechdel) %>% #<<
+  accuracy(truth = true_bechdel, 
            estimate = .pred_class)
 ```
 
@@ -610,7 +618,7 @@ tree_mod %>%
 Train a model by fitting a model. Returns a parsnip model fit.
 
 ```{r results='hide'}
-fit(tree_mod, Class ~ tau + VEGF, data = alz)
+fit(tree_mod, bechdel ~ metascore + domgross_2013, data = bechdel)
 ```
 
 ---
@@ -620,9 +628,9 @@ fit(tree_mod, Class ~ tau + VEGF, data = alz)
 Train a model by fitting a model. Returns a parsnip model fit.
 
 ```{r results='hide'}
-tree_mod %>%                     # parsnip model
-  fit(Class ~ tau + VEGF,        # a formula
-      data = alz                 # dataframe
+tree_mod %>%                               # parsnip model
+  fit(bechdel ~ metascore + domgross_2013,   # a formula
+      data = bechdel                       # dataframe
   )
 ```
 
@@ -633,9 +641,9 @@ tree_mod %>%                     # parsnip model
 Train a model by fitting a model. Returns a parsnip model fit.
 
 ```{r results='hide'}
-tree_fit <- tree_mod %>%         # parsnip model
-  fit(Class ~ tau + VEGF,        # a formula
-      data = alz                 # dataframe
+tree_fit <- tree_mod %>%                   # parsnip model
+  fit(bechdel ~ metascore + domgross_2013,   # a formula
+      data = bechdel                       # dataframe
   )
 ```
 
@@ -658,14 +666,14 @@ knitr::include_graphics("images/predicting/predicting.003.jpeg")
 Use a fitted model to predict new `y` values from data. Returns a tibble.
 
 ```{r eval=FALSE}
-predict(tree_fit, new_data = alz_new) 
+predict(tree_fit, new_data = bechdel_new) 
 ```
 
 ---
 
 ```{r}
 tree_fit %>% 
-  predict(new_data = alz_new)
+  predict(new_data = bechdel_new)
 ```
 
 ---
@@ -680,7 +688,7 @@ The best way to measure a model's performance at predicting new data is to .disp
 
 ```{r all-split, echo = FALSE, fig.width = 12, fig.height = 3}
 set.seed(16)
-one_split <- slice(alz, 1:30) %>% 
+one_split <- slice(bechdel, 1:30) %>% 
   initial_split() %>% 
   tidy() %>% 
   add_row(Row = 1:30, Data = "Original") %>% 
@@ -736,8 +744,8 @@ initial_split(data, prop = 3/4)
 ---
 
 ```{r}
-alz_split <- initial_split(alz, strata = Class, prop = .9)
-alz_split
+bechdel_split <- initial_split(data = bechdel, strata = bechdel, prop = .9)
+bechdel_split
 ```
 
 ---
@@ -747,8 +755,8 @@ alz_split
 Extract training and testing sets from an `rsplit`
 
 ```{r results='hide'}
-training(alz_split)
-testing(alz_split)
+training(bechdel_split)
+testing(bechdel_split)
 ```
 
 .footnote[`*` from `rsample`]
@@ -756,8 +764,8 @@ testing(alz_split)
 ---
 
 ```{r R.options = list(tibble.max_extra_cols=5, tibble.print_max=5, tibble.width=60)}
-alz_train <- training(alz_split) 
-alz_train
+bechdel_train <- training(bechdel_split) 
+bechdel_train
 ```
 
 ---
@@ -811,11 +819,11 @@ Fill in the blanks.
 
 Use `initial_split()`, `training()`, and `testing()` to:
 
-1. Split **alz** into training and test sets. Save the rsplit!
+1. Split **bechdel** into training and test sets. Save the rsplit!
 
 2. Extract the training data and fit your classification tree model.
 
-3. Predict the testing data, and save the true `Class` values.
+3. Predict the testing data, and save the true `bechdel` values.
 
 4. Measure the accuracy of your model with your test set.  
 
@@ -830,16 +838,16 @@ countdown(minutes = 4)
 ```{r results='hide'}
 set.seed(100) # Important!
 
-alz_split  <- initial_split(alz, strata = Class, prop = .9)
-alz_train  <- training(alz_split)
-alz_test   <- testing(alz_split)
+bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_train  <- training(bechdel_split)
+bechdel_test   <- testing(bechdel_split)
 
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz_train) %>% 
-  predict(new_data = alz_test) %>% 
-  mutate(true_class = alz_test$Class) %>% 
-  accuracy(truth = true_class, estimate = .pred_class)
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel_train) %>% 
+  predict(new_data = bechdel_test) %>% 
+  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  accuracy(truth = true_bechdel, estimate = .pred_class)
 ```
 
 ---
@@ -874,11 +882,11 @@ accuracy(data, truth, estimate)
 
 ```{r}
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz_train) %>% 
-  predict(new_data = alz_test) %>% 
-  mutate(true_class = alz_test$Class) %>% 
-  accuracy(truth = true_class, estimate = .pred_class) #<<
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel_train) %>% 
+  predict(new_data = bechdel_test) %>% 
+  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  accuracy(truth = true_bechdel, estimate = .pred_class) #<<
 ```
 
 ---
@@ -924,16 +932,16 @@ countdown(minutes = 2)
 .pull-left[
 
 ```{r new-split, echo=FALSE, warnings = FALSE, message = FALSE}
-alz_split  <- initial_split(alz, strata = Class, prop = .9)
-alz_train  <- training(alz_split)
-alz_test   <- testing(alz_split)
+bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_train  <- training(bechdel_split)
+bechdel_test   <- testing(bechdel_split)
 
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz_train) %>% 
-  predict(new_data = alz_test) %>% 
-  mutate(true_class = alz_test$Class) %>% 
-  accuracy(truth = true_class, estimate = .pred_class)
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel_train) %>% 
+  predict(new_data = bechdel_test) %>% 
+  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  accuracy(truth = true_bechdel, estimate = .pred_class)
 ```
 
 ```{r include=FALSE}
@@ -989,7 +997,7 @@ Why is the new estimate different?
 ```{r include=FALSE}
 plot_split <- function(seed = 1, arrow = FALSE) {
   set.seed(seed)
-  one_split <- slice(alz, 1:20) %>% 
+  one_split <- slice(bechdel, 1:20) %>% 
     initial_split() %>% 
     tidy() %>% 
     add_row(Row = 1:20, Data = "Original") %>% 
@@ -1129,7 +1137,7 @@ plot_split(seed = 321, arrow = TRUE)
 
 --
 
-.right[Mean RMSE]
+.right[Mean accuracy]
 
 ---
 
@@ -1149,14 +1157,14 @@ set.seed(9)
 ```{r cv-for-loop, include = FALSE}
 acc <- vector(length = 10, mode = "double")
 for (i in 1:10) {
-  new_split <- initial_split(alz)
+  new_split <- initial_split(bechdel)
   new_train <- training(new_split)
   new_test  <- testing(new_split)
   acc[i] <-
     lr_mod %>% 
-      fit(Class ~ tau + VEGF, data = new_train) %>% 
+      fit(bechdel ~ metascore + domgross_2013, data = new_train) %>% 
       predict(new_test) %>% 
-      mutate(truth = new_test$Class) %>% 
+      mutate(truth = new_test$bechdel) %>% 
       accuracy(truth, .pred_class) %>% 
       pull(.estimate)
 }
@@ -1413,8 +1421,8 @@ Run the code below. What does it return?
 
 ```{r make-ames-cv, results='hide'}
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
-alz_folds
+bechdel_folds <- vfold_cv(data = bechdel_train, v = 10, strata = bechdel)
+bechdel_folds
 ```
 
 ```{r echo=FALSE}
@@ -1430,15 +1438,15 @@ countdown(minutes = 1)
 # We need a new way to fit
 
 ```{r eval=FALSE}
-split1       <- alz_folds %>% pluck("splits", 1)
+split1       <- bechdel_folds %>% pluck("splits", 1)
 split1_train <- training(split1)
 split1_test  <- testing(split1)
 
 tree_mod %>% 
-  fit(Class ~ ., data = split1_train) %>% 
+  fit(bechdel ~ ., data = split1_train) %>% 
   predict(split1_test) %>% 
-  mutate(truth = split1_test$Class) %>% 
-  rmse(truth, .pred_class)
+  mutate(truth = split1_test$bechdel) %>% 
+  accuracy(truth, .pred_class)
 
 # rinse and repeat
 split2 <- ...
@@ -1453,8 +1461,8 @@ Trains and tests a resampled model.
 ```{r fit-ames-cv, results='hide'}
 tree_mod %>% 
   fit_resamples(
-    Class ~ tau + VEGF, 
-    resamples = alz_folds
+    bechdel ~ metascore + domgross_2013, 
+    resamples = bechdel_folds
     )
 ```
 
@@ -1483,8 +1491,8 @@ _results %>% collect_metrics(summarize = TRUE)
 ```{r}
 tree_mod %>% 
   fit_resamples(
-    Class ~ tau + VEGF, 
-    resamples = alz_folds
+    bechdel ~ metascore + domgross_2013, 
+    resamples = bechdel_folds
     ) %>% 
   collect_metrics(summarize = FALSE)
 ```
@@ -1508,11 +1516,11 @@ Modify the code below to use `fit_resamples` and `alz_folds` to cross-validate t
 ```{r eval=FALSE}
 set.seed(100)
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, 
-      data = alz_train) %>% 
-  predict(new_data = alz_test) %>% 
-  mutate(true_class = alz_test$Class) %>% 
-  accuracy(truth = true_class, estimate = .pred_class)
+  fit(bechdel ~ metascore + domgross_2013, 
+      data = bechdel_train) %>% 
+  predict(new_data = bechdel_test) %>% 
+  mutate(true_bechdel = bechdel_test$bechdel) %>% 
+  accuracy(truth = true_bechdel, estimate = .pred_class)
 ```
 
 ```{r echo=FALSE}
@@ -1524,8 +1532,8 @@ countdown(minutes = 3)
 ```{r rt-rs, warning=FALSE, message=FALSE}
 set.seed(100)
 lr_mod %>% 
-  fit_resamples(Class ~ tau + VEGF, 
-                resamples = alz_folds) %>% 
+  fit_resamples(bechdel ~ metascore + domgross_2013, 
+                resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
 
@@ -1535,9 +1543,9 @@ lr_mod %>%
 
 ```{r}
 tree_mod %>% 
-  fit(Class ~ tau + VEGF, data = alz_train) %>% 
-  predict(alz_test) %>% 
-  mutate(truth = alz_test$Class) %>% 
+  fit(bechdel ~ metascore + domgross_2013, data = bechdel_train) %>% 
+  predict(bechdel_test) %>% 
+  mutate(truth = bechdel_test$bechdel) %>% 
   accuracy(truth, .pred_class)
 ```
 
