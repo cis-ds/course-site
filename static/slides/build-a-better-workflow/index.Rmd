@@ -30,6 +30,7 @@ library(gganimate)
 library(AmesHousing)
 library(tune)
 library(viridis)
+library(rcfss)
 ames <- make_ames()
 theme_set(theme_minimal(base_size = rcfss::base_size))
 
@@ -51,18 +52,20 @@ data_color  <- viridis(1, option="magma", begin = .1)
 assess_color <- viridis(1, option="magma", begin = 1)
 splits_pal <- c(data_color, train_color, test_color)
 
-data("ad_data")
-alz <- ad_data
+data("bechdel")
+bechdel <- bechdel %>%
+  # remove column - unique to each row, non-informative
+  select(-title)
 
 # data splitting
 set.seed(100) # Important!
-alz_split  <- initial_split(alz, strata = Class, prop = .9)
-alz_train  <- training(alz_split)
-alz_test   <- testing(alz_split)
+bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_train  <- training(bechdel_split)
+bechdel_test   <- testing(bechdel_split)
 
 # data resampling
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
 ```
 
 class: inverse, middle, center
@@ -111,7 +114,7 @@ knitr::include_graphics("images/workflows/workflows.013.jpeg")
 Creates a recipe for a set of variables
 
 ```{r eval=FALSE}
-recipe(Class ~ ., data = alz)
+recipe(bechdel ~ ., data = bechdel)
 ```
 
 ---
@@ -121,7 +124,7 @@ recipe(Class ~ ., data = alz)
 Creates a recipe for a set of variables
 
 ```{r eval=FALSE}
-rec <- recipe(Class ~ ., data = alz)
+rec <- recipe(bechdel ~ ., data = bechdel)
 ```
 
 ---
@@ -131,22 +134,22 @@ rec <- recipe(Class ~ ., data = alz)
 Adds a single transformation to a recipe. Transformations are replayed in order when the recipe is run on data.
 
 ```{r}
-rec <- recipe(Class ~ ., data = alz) %>%
-  step_other(Genotype, threshold = .03)
+rec <- recipe(bechdel ~ ., data = bechdel) %>%
+  step_other(genre, threshold = .05)
 ```
 
 ---
 
 ```{r echo=FALSE}
-alz %>% 
-  count(Genotype) %>% 
-  ggplot(aes(x = fct_reorder(Genotype, n, .desc = TRUE), 
+bechdel %>% 
+  count(genre) %>% 
+  ggplot(aes(x = fct_reorder(genre, n, .desc = TRUE), 
              y = n)) +
   geom_col(fill = "#CA225E", alpha = .7) +
   coord_flip() +
   theme(text = element_text(family = "Lato")) +
   labs(x = "") +
-  geom_hline(yintercept = (nrow(alz_train)*.03), lty = 3)
+  geom_hline(yintercept = (nrow(bechdel_train)*.05), lty = 3)
 ```
 
 ---
@@ -156,8 +159,8 @@ alz %>%
 ## Before recipe
 
 ```{r echo=FALSE}
-alz_train %>% 
-  count(Genotype, sort = TRUE)
+bechdel_train %>% 
+  count(genre, sort = TRUE)
 ```
 
 ]
@@ -170,8 +173,8 @@ alz_train %>%
 ```{r echo=FALSE}
 rec %>% 
   prep() %>% 
-  bake(new_data = alz_train) %>% 
-  count(Genotype, sort = TRUE)
+  bake(new_data = bechdel_train) %>% 
+  count(genre, sort = TRUE)
 ```
 
 ]
@@ -259,8 +262,8 @@ knitr::include_graphics("images/pca.004.jpeg")
 .left-column[
 
 ```{r echo=FALSE, comment = NA}
-alz %>%
-  distinct(Genotype)
+bechdel %>%
+  distinct(rated)
 ```
 
 ]
@@ -268,11 +271,11 @@ alz %>%
 .right-column[
 
 ```{r echo=FALSE, comment = NA}
-alz %>% 
-  select(Genotype) %>% 
+bechdel %>% 
+  select(rated) %>% 
   mutate(val = 1, id = dplyr::row_number()) %>% 
   pivot_wider(id = id, 
-              names_from = Genotype, 
+              names_from = rated, 
               values_from = val, 
               values_fill = list(val = 0)) %>% 
   select(-id)
@@ -285,11 +288,11 @@ alz %>%
 # Dummy Variables
 
 ```{r results='hide'}
-glm(Class ~ Genotype, family = "binomial", data = alz)
+glm(bechdel ~ rated, family = "binomial", data = bechdel)
 ```
 
 ```{r echo=FALSE}
-glm(Class ~ Genotype, family = "binomial", data = alz) %>% 
+glm(bechdel ~ rated, family = "binomial", data = bechdel) %>% 
   broom::tidy()
 ```
 
@@ -300,8 +303,8 @@ glm(Class ~ Genotype, family = "binomial", data = alz) %>%
 Converts nominal data into numeric dummy variables, needed as predictors for models like KNN.
 
 ```{r dummy, results='hide'}
-rec <- recipe(Class ~ ., data = alz) %>%
-  step_other(Genotype, threshold = .03) %>% 
+rec <- recipe(bechdel ~ ., data = bechdel) %>%
+  step_other(genre, threshold = .05) %>% 
   step_dummy(all_nominal_predictors()) #<<
 ```
 
@@ -326,8 +329,8 @@ How does `recipes` know which variables are **numeric** and what is **nominal**?
 
 ```{r eval=FALSE}
 rec <- recipe(
-  Class ~ ., 
-  data = alz  #<<
+  bechdel ~ ., 
+  data = bechdel  #<<
   )
 ```
 
@@ -341,8 +344,8 @@ How does `recipes` know what is a **predictor** and what is an **outcome**?
 
 ```{r eval=FALSE}
 rec <- recipe(
-  Class ~ .,   #<<
-  data = alz
+  bechdel ~ .,   #<<
+  data = bechdel
   )
 ```
 
@@ -388,7 +391,7 @@ gt(all)  %>%
   fmt_markdown(columns = everything()) %>%
   tab_options(
     table.width = pct(10),
-    table.font.size = "200px"
+    table.font.size = "20px"
   )
 ```
 
@@ -396,11 +399,11 @@ gt(all)  %>%
 
 # Let's think about the modeling. 
 
-What if there were no individuals with `Genotype` E2E2 in the training data?
+What if there were no films with `rated` NC-17 in the training data?
 
 --
 
-Will the model have a coefficient for `Genotype` E2E2?
+Will the model have a coefficient for `rated` NC-17?
 
 --
 
@@ -408,7 +411,7 @@ Will the model have a coefficient for `Genotype` E2E2?
 
 --
 
-What will happen if the test data includes a person with `Genotype` E2E2?
+What will happen if the test data includes a film with `rated` NC-17?
 
 --
 
@@ -421,10 +424,10 @@ What will happen if the test data includes a person with `Genotype` E2E2?
 Adds a catch-all level to a factor for any new values not encountered in model training, which lets R intelligently predict new levels in the test set.
 
 ```{r results='hide'}
-rec <- recipe(Class ~ ., data = alz) %>%
-  step_other(Genotype, threshold = .03) %>% 
+rec <- recipe(bechdel ~ ., data = bechdel) %>%
+  step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>% #<<
-  step_dummy(all_nominal_predictors()) 
+  step_dummy(all_nominal_predictors())
 ```
 
 .footnote[Use *before* `step_dummy()` so new level is dummified]
@@ -446,9 +449,9 @@ Error! You'd be dividing by zero!
 Intelligently handles zero variance variables (variables that contain only a single value)
 
 ```{r results='hide'}
-rec <- recipe(Class ~ ., data = alz) %>%
-  step_other(Genotype, threshold = .03) %>% 
-  step_novel(all_nominal_predictors()) %>% 
+rec <- recipe(bechdel ~ ., data = bechdel) %>%
+  step_other(genre, threshold = .05) %>% 
+  step_novel(all_nominal_predictors()) %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors()) #<<
 ```
@@ -460,9 +463,9 @@ rec <- recipe(Class ~ ., data = alz) %>%
 Centers then scales numeric variable (mean = 0, sd = 1)
 
 ```{r results='hide'}
-rec <- recipe(Class ~ ., data = alz) %>%
-  step_other(Genotype, threshold = .03) %>% 
-  step_novel(all_nominal_predictors()) %>% 
+rec <- recipe(bechdel ~ ., data = bechdel) %>%
+  step_other(genre, threshold = .05) %>% 
+  step_novel(all_nominal_predictors()) %>%
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors()) %>% 
   step_normalize(all_numeric()) #<<
@@ -483,11 +486,12 @@ countdown(minutes = 5)
 ---
 
 ```{r}
-knn_rec <- recipe(formula = Class ~ ., data = alz) %>% 
+knn_rec <- recipe(formula = bechdel ~ ., data = bechdel) %>% 
+  step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>% 
   step_dummy(all_nominal_predictors()) %>% 
   step_zv(all_predictors()) %>% 
-  step_normalize(all_predictors(), -all_nominal()) 
+  step_normalize(all_numeric_predictors()) 
 knn_rec
 ```
 
@@ -505,13 +509,13 @@ knitr::include_url("https://tidymodels.github.io/usemodels/")
 
 ```{r}
 library(usemodels)
-use_kknn(Class ~ ., data = alz, verbose = TRUE, tune = FALSE)
+use_kknn(bechdel ~ ., data = bechdel, verbose = TRUE, tune = FALSE)
 ```
 
 ---
 
 ```{r}
-use_glmnet(Class ~ ., data = alz, verbose = TRUE, tune = FALSE)
+use_glmnet(bechdel ~ ., data = bechdel, verbose = TRUE, tune = FALSE)
 ```
 
 ---
@@ -629,7 +633,7 @@ workflow()
 Adds a formula to a workflow `*`
 
 ```{r results='hide'}
-workflow() %>% add_formula(Class ~ tau)
+workflow() %>% add_formula(bechdel ~ metascore)
 ```
 
 .footnote[`*` If you do not plan to do your own preprocessing]
@@ -697,8 +701,8 @@ Nope!
 
 ```{r}
 rec <- recipe(
-  Class ~ ., #<<
-  data = alz
+  bechdel ~ ., #<<
+  data = bechdel
 )
 ```
 
@@ -710,8 +714,8 @@ Fit a workflow that bundles a recipe`*` and a model.
 
 ```{r eval=FALSE}
 _wf %>% 
-  fit(data = alz_train) %>% 
-  predict(alz_test)...
+  fit(data = bechdel_train) %>% 
+  predict(bechdel_test)...
 ```
 
 .footnote[`*` or a formula, if you do not plan to do your own preprocessing]
@@ -722,7 +726,7 @@ _wf %>%
 
 ```{r}
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
 ```
 
 ---
@@ -733,7 +737,7 @@ Fit a workflow that bundles a recipe`*` and a model with resampling.
 
 ```{r eval=FALSE}
 _wf %>% 
-  fit_resamples(resamples = alz_folds)
+  fit_resamples(resamples = bechdel_folds)
 ```
 
 
@@ -743,7 +747,7 @@ _wf %>%
 
 # Your Turn `r (yt_counter <- yt_counter + 1)`
 
-Run the first chunk. Then try our KNN workflow on `alz_folds`. What is the ROC AUC?
+Run the first chunk. Then try our KNN workflow on `bechdel_folds`. What is the ROC AUC?
 
 ```{r echo=FALSE}
 countdown(minutes=3)
@@ -753,10 +757,10 @@ countdown(minutes=3)
 
 ```{r}
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
 
 knn_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+  fit_resamples(resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
 
@@ -826,6 +830,6 @@ glmnet_wf <- knn_wf %>%
   update_model(plr_mod)
 
 glmnet_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+  fit_resamples(resamples = bechdel_folds) %>% 
   collect_metrics() 
 ```
