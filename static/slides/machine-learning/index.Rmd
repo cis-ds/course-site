@@ -20,7 +20,7 @@ class: inverse, center, middle
 ---
 
 ```{r echo=FALSE}
-knitr::include_graphics("https://rejoiner.com/resources/wp-content/uploads/2016/06/recommended-thomas.png")
+knitr::include_graphics("/img/amazon-recommendations.png", error = FALSE)
 ```
 
 ---
@@ -90,7 +90,7 @@ knitr::include_graphics("images/all-of-ml.jpg")
 
 ## Classification
 
-Are you under a stay-at-home order?
+Is your hospital in a state of crisis care?
 
 ]
 
@@ -100,7 +100,8 @@ Are you under a stay-at-home order?
 
 ## Regression
 
-How long has your state had stay-at-home orders in place?
+What percentage of hospital beds are occupied?
+
 ]
 
 ---
@@ -192,21 +193,27 @@ splits_pal <- c(data_color, train_color, test_color)
 
 ---
 
-# Bechdel film test
+# Bechdel Test
+
+```{r echo = FALSE, out.width = "80%", fig.align = "center"}
+knitr::include_graphics(path = "https://fivethirtyeight.com/wp-content/uploads/2014/04/hickey-bechdel-11.png")
+```
+
+.footnote[Source:[FiveThirtyEight](https://fivethirtyeight.com/features/the-dollar-and-cents-case-against-hollywoods-exclusion-of-women/)]
+
+---
+
+# Bechdel Test
 
 1. It has to have at least two [named] women in it
-2. Who talk to each other
-3. About something besides a man
+1. Who talk to each other
+1. About something besides a man
+
+--
 
 ```{r}
 library(rcfss)
 data("bechdel")
-bechdel
-```
-
----
-
-```{r}
 glimpse(bechdel)
 ```
 
@@ -214,26 +221,23 @@ glimpse(bechdel)
 
 # Bechdel test data
 
-+ N = `r nrow(bechdel)`
-
-+ 1 categorical outcome: `bechdel`
-
-+ `r ncol(bechdel) - 1` predictors
+- N = `r nrow(bechdel)`
+- 1 categorical outcome: `bechdel`
+- `r ncol(bechdel) - 1` predictors
 
 ---
 
 ```{r echo=FALSE}
 ggplot(data = bechdel, aes(
   x = metascore,
-  y = domgross_2013,
+  y = imdb_rating,
   color = bechdel
 )) +
   geom_point(alpha = .3, size = 3) +
-  scale_y_log10(labels = scales::dollar) +
   scale_color_manual(values = c("#1a162d", "#CA225E")) +
   labs(
     x = "Metacritic score",
-    y = "Domestic gross (in millions of 2013 dollars)",
+    y = "IMDB rating",
     color = "Bechdel test"
   ) +
   theme(legend.position = "top")
@@ -467,7 +471,7 @@ Many learn model parameters, which *can* be useful as values for inference and i
 
 ```{r}
 lr_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel) %>% 
   broom::tidy()
 ```
@@ -478,15 +482,14 @@ lr_mod %>%
 ```{r echo=FALSE, fig.width = 6}
 ggplot(data = bechdel, aes(
   x = metascore,
-  y = domgross_2013,
+  y = imdb_rating,
   color = bechdel
 )) +
   geom_point(alpha = .3, size = 3) +
-  scale_y_log10(labels = scales::dollar) +
   scale_color_manual(values = c("#1a162d", "#CA225E")) +
   labs(
     x = "Metacritic score",
-    y = "Domestic gross (in millions of 2013 dollars)",
+    y = "IMDB rating",
     color = "Bechdel test"
   ) +
   theme(legend.position = "top")
@@ -499,7 +502,7 @@ ggplot(data = bechdel, aes(
 
 ```{r include=FALSE}
 lr_preds <- lr_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel) %>% 
   predict(new_data = bechdel) %>% 
   bind_cols(bechdel) %>% 
@@ -509,19 +512,18 @@ lr_preds <- lr_mod %>%
 ```{r echo=FALSE}
 ggplot(data = lr_preds, aes(
   x = metascore,
-  y = domgross_2013,
+  y = imdb_rating,
   shape = as.factor(.pred_match),
            colour = bechdel,
            alpha = as.factor(.pred_match))) +
   geom_point(size = 3) +
-  scale_y_log10(labels = scales::dollar) +
   scale_alpha_manual(values = c(1, .2), guide = FALSE) +
   scale_shape_manual(values = c(4, 19), guide = FALSE) +
   scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE) +
-   labs(
-     title = "Logistic regression model",
+  labs(
+    title = "Logistic regression model",
     x = "Metacritic score",
-    y = "Domestic gross (in millions of 2013 dollars)"
+    y = "IMDB rating"
   )
 ```
 
@@ -531,7 +533,7 @@ ggplot(data = lr_preds, aes(
 
 ```{r include=FALSE}
 tree_preds <- tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel) %>% 
   predict(new_data = bechdel) %>% 
   bind_cols(bechdel) %>% 
@@ -541,19 +543,18 @@ tree_preds <- tree_mod %>%
 ```{r echo=FALSE}
 ggplot(data = tree_preds, aes(
   x = metascore,
-  y = domgross_2013,
+  y = imdb_rating,
   shape = as.factor(.pred_match),
            colour = bechdel,
            alpha = as.factor(.pred_match))) +
   geom_point(size = 3) +
-  scale_y_log10(labels = scales::dollar) +
   scale_alpha_manual(values = c(1, .2), guide = FALSE) +
   scale_shape_manual(values = c(4, 19), guide = FALSE) +
   scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE) +
    labs(
      title = "C5.0 classification tree model",
     x = "Metacritic score",
-    y = "Domestic gross (in millions of 2013 dollars)"
+    y = "IMDB rating",
   )
 ```
 
@@ -563,8 +564,8 @@ ggplot(data = tree_preds, aes(
 
 ```{r}
 bechdel_new <- tibble(metascore = c(40, 50, 60), 
-         domgross_2013 = c(5, 5, 5),
-         bechdel = c("Fail", "Fail", "Pass")) %>% 
+                      imdb_rating = c(6, 6, 6),
+                      bechdel = c("Fail", "Fail", "Pass")) %>% 
   mutate(bechdel = factor(bechdel, levels = c("Fail", "Pass")))
 bechdel_new
 ```
@@ -575,7 +576,7 @@ bechdel_new
 
 ```{r predict-old}
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel) %>% 
   predict(new_data = bechdel) %>% 
   mutate(true_bechdel = bechdel$bechdel) %>% 
@@ -601,7 +602,7 @@ tree_mod %>%
 
 ```{r}
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel) %>% 
   predict(new_data = bechdel_new) %>% #<<
   mutate(true_bechdel = bechdel_new$bechdel) %>% #<<
@@ -618,7 +619,7 @@ tree_mod %>%
 Train a model by fitting a model. Returns a parsnip model fit.
 
 ```{r results='hide'}
-fit(tree_mod, bechdel ~ metascore + domgross_2013, data = bechdel)
+fit(tree_mod, bechdel ~ metascore + imdb_rating, data = bechdel)
 ```
 
 ---
@@ -629,7 +630,7 @@ Train a model by fitting a model. Returns a parsnip model fit.
 
 ```{r results='hide'}
 tree_mod %>%                               # parsnip model
-  fit(bechdel ~ metascore + domgross_2013,   # a formula
+  fit(bechdel ~ metascore + imdb_rating, # a formula
       data = bechdel                       # dataframe
   )
 ```
@@ -642,7 +643,7 @@ Train a model by fitting a model. Returns a parsnip model fit.
 
 ```{r results='hide'}
 tree_fit <- tree_mod %>%                   # parsnip model
-  fit(bechdel ~ metascore + domgross_2013,   # a formula
+  fit(bechdel ~ metascore + imdb_rating, # a formula
       data = bechdel                       # dataframe
   )
 ```
@@ -744,7 +745,7 @@ initial_split(data, prop = 3/4)
 ---
 
 ```{r}
-bechdel_split <- initial_split(data = bechdel, strata = bechdel, prop = .9)
+bechdel_split <- initial_split(data = bechdel, strata = bechdel,  prop = 3/4)
 bechdel_split
 ```
 
@@ -838,12 +839,12 @@ countdown(minutes = 4)
 ```{r results='hide'}
 set.seed(100) # Important!
 
-bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = 3/4)
 bechdel_train  <- training(bechdel_split)
 bechdel_test   <- testing(bechdel_split)
 
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel_train) %>% 
   predict(new_data = bechdel_test) %>% 
   mutate(true_bechdel = bechdel_test$bechdel) %>% 
@@ -882,7 +883,7 @@ accuracy(data, truth, estimate)
 
 ```{r}
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel_train) %>% 
   predict(new_data = bechdel_test) %>% 
   mutate(true_bechdel = bechdel_test$bechdel) %>% 
@@ -932,12 +933,12 @@ countdown(minutes = 2)
 .pull-left[
 
 ```{r new-split, echo=FALSE, warnings = FALSE, message = FALSE}
-bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = 3/4)
 bechdel_train  <- training(bechdel_split)
 bechdel_test   <- testing(bechdel_split)
 
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel_train) %>% 
   predict(new_data = bechdel_test) %>% 
   mutate(true_bechdel = bechdel_test$bechdel) %>% 
@@ -1162,7 +1163,7 @@ for (i in 1:10) {
   new_test  <- testing(new_split)
   acc[i] <-
     lr_mod %>% 
-      fit(bechdel ~ metascore + domgross_2013, data = new_train) %>% 
+      fit(bechdel ~ metascore + imdb_rating, data = new_train) %>% 
       predict(new_test) %>% 
       mutate(truth = new_test$bechdel) %>% 
       accuracy(truth, .pred_class) %>% 
@@ -1461,7 +1462,7 @@ Trains and tests a resampled model.
 ```{r fit-ames-cv, results='hide'}
 tree_mod %>% 
   fit_resamples(
-    bechdel ~ metascore + domgross_2013, 
+    bechdel ~ metascore + imdb_rating, 
     resamples = bechdel_folds
     )
 ```
@@ -1491,7 +1492,7 @@ _results %>% collect_metrics(summarize = TRUE)
 ```{r}
 tree_mod %>% 
   fit_resamples(
-    bechdel ~ metascore + domgross_2013, 
+    bechdel ~ metascore + imdb_rating, 
     resamples = bechdel_folds
     ) %>% 
   collect_metrics(summarize = FALSE)
@@ -1516,7 +1517,7 @@ Modify the code below to use `fit_resamples` and `alz_folds` to cross-validate t
 ```{r eval=FALSE}
 set.seed(100)
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, 
+  fit(bechdel ~ metascore + imdb_rating, 
       data = bechdel_train) %>% 
   predict(new_data = bechdel_test) %>% 
   mutate(true_bechdel = bechdel_test$bechdel) %>% 
@@ -1532,7 +1533,7 @@ countdown(minutes = 3)
 ```{r rt-rs, warning=FALSE, message=FALSE}
 set.seed(100)
 lr_mod %>% 
-  fit_resamples(bechdel ~ metascore + domgross_2013, 
+  fit_resamples(bechdel ~ metascore + imdb_rating, 
                 resamples = bechdel_folds) %>% 
   collect_metrics()
 ```
@@ -1543,7 +1544,7 @@ lr_mod %>%
 
 ```{r}
 tree_mod %>% 
-  fit(bechdel ~ metascore + domgross_2013, data = bechdel_train) %>% 
+  fit(bechdel ~ metascore + imdb_rating, data = bechdel_train) %>% 
   predict(bechdel_test) %>% 
   mutate(truth = bechdel_test$bechdel) %>% 
   accuracy(truth, .pred_class)
