@@ -59,17 +59,6 @@ install.packages("rtweet")
 library(rtweet)
 ```
 
-```
-## 
-## Attaching package: 'rtweet'
-```
-
-```
-## The following object is masked from 'package:purrr':
-## 
-##     flatten
-```
-
 ## OAuth authentication
 
 All you need is a **Twitter account** (user name and password) and you can be up in running in minutes!
@@ -97,50 +86,26 @@ rt
 ```
 
 ```
-## # A tibble: 2,998 x 90
-##    user_id status_id created_at          screen_name text  source
-##    <chr>   <chr>     <dttm>              <chr>       <chr> <chr> 
-##  1 120362… 13389047… 2020-12-15 17:52:12 icymi_r     "✍️🖥… OneUp…
-##  2 120362… 13383791… 2020-12-14 07:03:43 icymi_r     "✍️🚲… OneUp…
-##  3 120362… 13375125… 2020-12-11 21:40:15 icymi_r     "✍️ … OneUp…
-##  4 120362… 13381597… 2020-12-13 16:32:07 icymi_r     "📦 \… OneUp…
-##  5 120362… 13378834… 2020-12-12 22:14:06 icymi_r     "✍️📊… OneUp…
-##  6 120362… 13382856… 2020-12-14 00:52:09 icymi_r     "📦🗣️… OneUp…
-##  7 120362… 13379146… 2020-12-13 00:18:08 icymi_r     "📦👥 … OneUp…
-##  8 120362… 13375744… 2020-12-12 01:46:14 icymi_r     "✍️🗺… OneUp…
-##  9 120362… 13380384… 2020-12-13 08:30:10 icymi_r     "✍️\… OneUp…
-## 10 120362… 13376977… 2020-12-12 09:56:07 icymi_r     "✍️ … OneUp…
-## # … with 2,988 more rows, and 84 more variables: display_text_width <dbl>,
+## # A tibble: 3,000 × 90
+##    user_id    status_id           created_at          screen_name text    source
+##    <chr>      <chr>               <dttm>              <chr>       <chr>   <chr> 
+##  1 4263007693 1496929184542867462 2022-02-24 19:25:03 gp_pulipaka "Top 1… Buffer
+##  2 4263007693 1496711514069295107 2022-02-24 05:00:07 gp_pulipaka "6 Fre… Buffer
+##  3 4263007693 1496696497039200256 2022-02-24 04:00:26 gp_pulipaka "A Lis… Buffer
+##  4 4263007693 1496707222461718530 2022-02-24 04:43:03 gp_pulipaka "AI Be… Buffer
+##  5 4263007693 1496695646891483145 2022-02-24 03:57:04 gp_pulipaka "#AI B… Buffer
+##  6 4263007693 1496710741445025796 2022-02-24 04:57:02 gp_pulipaka "#AI B… Buffer
+##  7 4263007693 1496172703681859584 2022-02-22 17:19:04 gp_pulipaka "The C… Buffer
+##  8 4263007693 1496340562055778305 2022-02-23 04:26:05 gp_pulipaka "Autom… Buffer
+##  9 4263007693 1496161379690106894 2022-02-22 16:34:04 gp_pulipaka "The C… Buffer
+## 10 4263007693 1496303058275508228 2022-02-23 01:57:03 gp_pulipaka "#AI B… Buffer
+## # … with 2,990 more rows, and 84 more variables: display_text_width <dbl>,
 ## #   reply_to_status_id <chr>, reply_to_user_id <chr>,
 ## #   reply_to_screen_name <chr>, is_quote <lgl>, is_retweet <lgl>,
 ## #   favorite_count <int>, retweet_count <int>, quote_count <int>,
 ## #   reply_count <int>, hashtags <list>, symbols <list>, urls_url <list>,
 ## #   urls_t.co <list>, urls_expanded_url <list>, media_url <list>,
-## #   media_t.co <list>, media_expanded_url <list>, media_type <list>,
-## #   ext_media_url <list>, ext_media_t.co <list>, ext_media_expanded_url <list>,
-## #   ext_media_type <chr>, mentions_user_id <list>, mentions_screen_name <list>,
-## #   lang <chr>, quoted_status_id <chr>, quoted_text <chr>,
-## #   quoted_created_at <dttm>, quoted_source <chr>, quoted_favorite_count <int>,
-## #   quoted_retweet_count <int>, quoted_user_id <chr>, quoted_screen_name <chr>,
-## #   quoted_name <chr>, quoted_followers_count <int>,
-## #   quoted_friends_count <int>, quoted_statuses_count <int>,
-## #   quoted_location <chr>, quoted_description <chr>, quoted_verified <lgl>,
-## #   retweet_status_id <chr>, retweet_text <chr>, retweet_created_at <dttm>,
-## #   retweet_source <chr>, retweet_favorite_count <int>,
-## #   retweet_retweet_count <int>, retweet_user_id <chr>,
-## #   retweet_screen_name <chr>, retweet_name <chr>,
-## #   retweet_followers_count <int>, retweet_friends_count <int>,
-## #   retweet_statuses_count <int>, retweet_location <chr>,
-## #   retweet_description <chr>, retweet_verified <lgl>, place_url <chr>,
-## #   place_name <chr>, place_full_name <chr>, place_type <chr>, country <chr>,
-## #   country_code <chr>, geo_coords <list>, coords_coords <list>,
-## #   bbox_coords <list>, status_url <chr>, name <chr>, location <chr>,
-## #   description <chr>, url <chr>, protected <lgl>, followers_count <int>,
-## #   friends_count <int>, listed_count <int>, statuses_count <int>,
-## #   favourites_count <int>, account_created_at <dttm>, verified <lgl>,
-## #   profile_url <chr>, profile_expanded_url <chr>, account_lang <lgl>,
-## #   profile_banner_url <chr>, profile_background_url <chr>,
-## #   profile_image_url <chr>
+## #   media_t.co <list>, media_expanded_url <list>, media_type <list>, …
 ```
 
 * `q` - the search query
@@ -162,50 +127,26 @@ countvoncount
 ```
 
 ```
-## # A tibble: 1,000 x 90
-##    user_id status_id created_at          screen_name text  source
-##    <chr>   <chr>     <dttm>              <chr>       <chr> <chr> 
-##  1 555129… 13388802… 2020-12-15 16:14:49 CountVonCo… Two … Count…
-##  2 555129… 13385933… 2020-12-14 21:14:48 CountVonCo… Two … Count…
-##  3 555129… 13382762… 2020-12-14 00:14:46 CountVonCo… Two … Count…
-##  4 555129… 13381101… 2020-12-13 13:14:46 CountVonCo… Two … Count…
-##  5 555129… 13379440… 2020-12-13 02:14:45 CountVonCo… Two … Count…
-##  6 555129… 13377930… 2020-12-12 16:14:44 CountVonCo… Two … Count…
-##  7 555129… 13375514… 2020-12-12 00:14:43 CountVonCo… Two … Count…
-##  8 555129… 13374910… 2020-12-11 20:14:43 CountVonCo… Two … Count…
-##  9 555129… 13373853… 2020-12-11 13:14:42 CountVonCo… Two … Count…
-## 10 555129… 13372041… 2020-12-11 01:14:42 CountVonCo… Two … Count…
+## # A tibble: 1,000 × 90
+##    user_id   status_id           created_at          screen_name   text   source
+##    <chr>     <chr>               <dttm>              <chr>         <chr>  <chr> 
+##  1 555129716 1468700740285874180 2021-12-08 21:55:18 CountVonCount Three… Count…
+##  2 555129716 1468640341196738564 2021-12-08 17:55:18 CountVonCount Three… Count…
+##  3 555129716 1468429755242455040 2021-12-08 03:58:30 CountVonCount Three… Count…
+##  4 555129716 1468339156493426693 2021-12-07 21:58:29 CountVonCount Three… Count…
+##  5 555129716 1468034370204221444 2021-12-07 01:47:23 CountVonCount Three… Count…
+##  6 555129716 1467958871172034568 2021-12-06 20:47:22 CountVonCount Three… Count…
+##  7 555129716 1467613900413992960 2021-12-05 21:56:35 CountVonCount Three… Count…
+##  8 555129716 1467266070788595724 2021-12-04 22:54:26 CountVonCount Three… Count…
+##  9 555129716 1466873476569092105 2021-12-03 20:54:24 CountVonCount Three… Count…
+## 10 555129716 1466552417869312006 2021-12-02 23:38:38 CountVonCount Three… Count…
 ## # … with 990 more rows, and 84 more variables: display_text_width <dbl>,
 ## #   reply_to_status_id <lgl>, reply_to_user_id <lgl>,
 ## #   reply_to_screen_name <lgl>, is_quote <lgl>, is_retweet <lgl>,
 ## #   favorite_count <int>, retweet_count <int>, quote_count <int>,
 ## #   reply_count <int>, hashtags <list>, symbols <list>, urls_url <list>,
 ## #   urls_t.co <list>, urls_expanded_url <list>, media_url <list>,
-## #   media_t.co <list>, media_expanded_url <list>, media_type <list>,
-## #   ext_media_url <list>, ext_media_t.co <list>, ext_media_expanded_url <list>,
-## #   ext_media_type <chr>, mentions_user_id <list>, mentions_screen_name <list>,
-## #   lang <chr>, quoted_status_id <chr>, quoted_text <chr>,
-## #   quoted_created_at <dttm>, quoted_source <chr>, quoted_favorite_count <int>,
-## #   quoted_retweet_count <int>, quoted_user_id <chr>, quoted_screen_name <chr>,
-## #   quoted_name <chr>, quoted_followers_count <int>,
-## #   quoted_friends_count <int>, quoted_statuses_count <int>,
-## #   quoted_location <chr>, quoted_description <chr>, quoted_verified <lgl>,
-## #   retweet_status_id <chr>, retweet_text <chr>, retweet_created_at <dttm>,
-## #   retweet_source <chr>, retweet_favorite_count <int>,
-## #   retweet_retweet_count <int>, retweet_user_id <chr>,
-## #   retweet_screen_name <chr>, retweet_name <chr>,
-## #   retweet_followers_count <int>, retweet_friends_count <int>,
-## #   retweet_statuses_count <int>, retweet_location <chr>,
-## #   retweet_description <chr>, retweet_verified <lgl>, place_url <chr>,
-## #   place_name <chr>, place_full_name <chr>, place_type <chr>, country <chr>,
-## #   country_code <chr>, geo_coords <list>, coords_coords <list>,
-## #   bbox_coords <list>, status_url <chr>, name <chr>, location <chr>,
-## #   description <chr>, url <lgl>, protected <lgl>, followers_count <int>,
-## #   friends_count <int>, listed_count <int>, statuses_count <int>,
-## #   favourites_count <int>, account_created_at <dttm>, verified <lgl>,
-## #   profile_url <chr>, profile_expanded_url <chr>, account_lang <lgl>,
-## #   profile_banner_url <chr>, profile_background_url <chr>,
-## #   profile_image_url <chr>
+## #   media_t.co <list>, media_expanded_url <list>, media_type <list>, …
 ```
 
 With `get_timelines()`, you are not limited to only the most recent 6-9 days of tweets.
@@ -250,7 +191,7 @@ ts_plot(rt, by = "3 hours") +
 
 ## Exercise: Practice using `rtweet`
 
-1. Find the 1000 most recent tweets by [Katy Perry](https://twitter.com/katyperry), [Kim Kardashian West](https://twitter.com/KimKardashian), and [Ariana Grande](https://twitter.com/ArianaGrande).
+1. Find the 1000 most recent tweets by [Katy Perry](https://twitter.com/katyperry), [Kim Kardashian West](https://twitter.com/KimKardashian), and [Rihanna](https://twitter.com/Rihanna).
 1. Visualize their tweet frequency by week. Who posts most often? Who posts least often?
 
     {{< spoiler text="Click for the solution" >}}
@@ -258,7 +199,7 @@ ts_plot(rt, by = "3 hours") +
 
 ```r
 popstars <- get_timelines(
-  user = c("katyperry", "KimKardashian", "ArianaGrande"),
+  user = c("katyperry", "KimKardashian", "rihanna"),
   n = 1000
 )
 
@@ -287,98 +228,111 @@ devtools::session_info()
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.1.0 (2021-05-18)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-09-16                  
+##  setting  value
+##  version  R version 4.1.2 (2021-11-01)
+##  os       macOS Monterey 12.1
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/Chicago
+##  date     2022-02-24
+##  pandoc   2.17.1.1 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
+##  package     * version date (UTC) lib source
+##  askpass       1.1     2019-01-13 [1] CRAN (R 4.1.0)
 ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
-##  blogdown      1.4     2021-07-23 [1] CRAN (R 4.1.0)
-##  bookdown      0.23    2021-08-13 [1] CRAN (R 4.1.0)
-##  broom       * 0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-##  bslib         0.2.5.1 2021-05-18 [1] CRAN (R 4.1.0)
-##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
+##  backports     1.4.1   2021-12-13 [1] CRAN (R 4.1.1)
+##  blogdown      1.7     2021-12-19 [1] CRAN (R 4.1.1)
+##  bookdown      0.24    2021-09-02 [1] CRAN (R 4.1.1)
+##  brio          1.1.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  broom       * 0.7.12  2022-01-28 [1] CRAN (R 4.1.1)
+##  bslib         0.3.1   2021-10-06 [1] CRAN (R 4.1.1)
+##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.1)
 ##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
 ##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  cli           3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
-##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
-##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
+##  cli           3.2.0   2022-02-14 [1] CRAN (R 4.1.1)
+##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.2)
+##  colorspace    2.0-3   2022-02-21 [1] CRAN (R 4.1.1)
+##  crayon        1.5.0   2022-02-14 [1] CRAN (R 4.1.1)
+##  curl          4.3.2   2021-06-23 [1] CRAN (R 4.1.0)
+##  DBI           1.1.2   2021-12-20 [1] CRAN (R 4.1.1)
 ##  dbplyr        2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc          1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
-##  devtools      2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.1.0)
+##  desc          1.4.0   2021-09-28 [1] CRAN (R 4.1.1)
+##  devtools      2.4.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  digest        0.6.29  2021-12-01 [1] CRAN (R 4.1.1)
 ##  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
 ##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.1.0)
-##  fansi         0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
+##  evaluate      0.15    2022-02-18 [1] CRAN (R 4.1.1)
+##  fansi         1.0.2   2022-01-14 [1] CRAN (R 4.1.1)
+##  farver        2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
 ##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
-##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.1.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
-##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
+##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.1)
+##  fs            1.5.2   2021-12-08 [1] CRAN (R 4.1.1)
+##  generics      0.1.2   2022-01-31 [1] CRAN (R 4.1.1)
+##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.1)
+##  glue          1.6.1   2022-01-22 [1] CRAN (R 4.1.1)
+##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.1)
+##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.1)
 ##  here          1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  hms           1.1.0   2021-05-17 [1] CRAN (R 4.1.0)
-##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.1.0)
+##  highr         0.9     2021-04-16 [1] CRAN (R 4.1.0)
+##  hms           1.1.1   2021-09-26 [1] CRAN (R 4.1.1)
+##  htmltools     0.5.2   2021-08-25 [1] CRAN (R 4.1.1)
 ##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
 ##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
-##  knitr         1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.1.0)
-##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
+##  jsonlite      1.7.3   2022-01-17 [1] CRAN (R 4.1.1)
+##  knitr         1.37    2021-12-16 [1] CRAN (R 4.1.1)
+##  labeling      0.4.2   2020-10-20 [1] CRAN (R 4.1.0)
+##  lifecycle     1.0.1   2021-09-24 [1] CRAN (R 4.1.1)
+##  lubridate     1.8.0   2021-10-07 [1] CRAN (R 4.1.1)
+##  magrittr      2.0.2   2022-01-26 [1] CRAN (R 4.1.1)
+##  memoise       2.0.1   2021-11-26 [1] CRAN (R 4.1.1)
 ##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
 ##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  pillar        1.6.2   2021-07-29 [1] CRAN (R 4.1.0)
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
+##  openssl       1.4.6   2021-12-19 [1] CRAN (R 4.1.1)
+##  pillar        1.7.0   2022-02-01 [1] CRAN (R 4.1.1)
+##  pkgbuild      1.3.1   2021-12-20 [1] CRAN (R 4.1.1)
 ##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload       1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
+##  pkgload       1.2.4   2021-11-30 [1] CRAN (R 4.1.1)
 ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
 ##  processx      3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
+##  progress      1.2.2   2019-05-16 [1] CRAN (R 4.1.0)
 ##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  Rcpp          1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
-##  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.1.0)
+##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.1)
+##  Rcpp          1.0.8   2022-01-13 [1] CRAN (R 4.1.1)
+##  readr       * 2.1.1   2021-11-30 [1] CRAN (R 4.1.1)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes       2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
-##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
-##  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-##  rmarkdown     2.10    2021-08-06 [1] CRAN (R 4.1.0)
+##  remotes       2.4.2   2021-11-30 [1] CRAN (R 4.1.1)
+##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.1)
+##  rlang         1.0.1   2022-02-03 [1] CRAN (R 4.1.1)
+##  rmarkdown     2.11    2021-09-14 [1] CRAN (R 4.1.1)
 ##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
 ##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest         1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
+##  rtweet      * 0.7.0   2020-01-08 [1] CRAN (R 4.1.0)
+##  rvest         1.0.2   2021-10-16 [1] CRAN (R 4.1.1)
 ##  sass          0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
 ##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
-##  stringi       1.7.3   2021-07-16 [1] CRAN (R 4.1.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
-##  testthat      3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble      * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
-##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.1.0)
+##  sessioninfo   1.2.2   2021-12-06 [1] CRAN (R 4.1.1)
+##  stringi       1.7.6   2021-11-29 [1] CRAN (R 4.1.1)
+##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.1)
+##  testthat      3.1.2   2022-01-20 [1] CRAN (R 4.1.1)
+##  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.1.1)
+##  tidyr       * 1.1.4   2021-09-27 [1] CRAN (R 4.1.1)
 ##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
 ##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb          0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
-##  usethis       2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
+##  tzdb          0.2.0   2021-10-27 [1] CRAN (R 4.1.1)
+##  usethis       2.1.5   2021-12-09 [1] CRAN (R 4.1.1)
 ##  utf8          1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
 ##  vctrs         0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr         2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
-##  xfun          0.25    2021-08-06 [1] CRAN (R 4.1.0)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
+##  withr         2.4.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  xfun          0.29    2021-12-14 [1] CRAN (R 4.1.1)
+##  xml2          1.3.3   2021-11-30 [1] CRAN (R 4.1.1)
+##  yaml          2.3.5   2022-02-21 [1] CRAN (R 4.1.1)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```
