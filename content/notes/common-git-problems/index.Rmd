@@ -94,6 +94,8 @@ temp/
 
 to exclude that folder from the Git repository.
 
+To create or modify this file, run `usethis::edit_git_ignore(scope = "project")` from the console.
+
 ## Committing large data files
 
 Because of how Git tracks changes in files, GitHub will not allow you to commit and push a file larger than 100mb. If you try to do so, you will get an error message and the commit will not push. Worse yet, you now have to find a way to strip all trace of the data file from the Git repo (including previous commits) before you can sync up your fork. This is a pain in the ass. Avoid it as much as possible. If you follow option 1 and 2, then you do not need to store the data file in the repo because it is automatically downloaded by your script/R Markdown document.
@@ -127,33 +129,17 @@ fatal: unable to access 'https://github.com/hadley/ggplot2.git/': The requested 
 
 I don't have permission to edit the main repo on Hadley Wickham's account.
 
-How do I fix this? I could go back and clone the correct fork, but if I've already made several commits then I'll lose all my work. Instead, I can change the `upstream` url: this changes the location Git tries to push my changes. To do this:
+How do I fix this? I could go back and clone the correct fork, but if I've already made several commits then I'll lose all my work. Instead, I can change the `origin` url: this changes the location Git tries to push my changes. To do this, run the following function in the console:
 
-1. Switch to the "Terminal" tab in RStudio (lower-left panel, in the tab next to "Console").
-1. List your existing remotes in order to get the name of the remote you want to change.
-    ```bash
-    git remote -v
-    ```
-    
-    ```bash
-    origin	https://github.com/hadley/ggplot2.git (fetch)
-    origin	https://github.com/hadley/ggplot2.git (push)
-    ```
-    
-1. Change your remote's URL to the fork with the `git remote set-url` command.
-    ```bash
-    git remote set-url origin https://github.com/bensoltoff/ggplot2.git
-    ```
-    
-1. Verify that the remote URL has changed.
-    ```bash
-    git remote -v
-    ```
-    
-    ```bash
-    origin	https://github.com/bensoltoff/ggplot2 (fetch)
-    origin	https://github.com/bensoltoff/ggplot2 (push)
-    ```
+```r
+usethis::use_git_remote(
+  name = "origin",
+  url = "<YOUR_FORK_URL>",
+  overwrite = TRUE
+)
+```
+
+replacing `url` with the correct URL for your fork (which you can get from your forked repo on GitHub.com).
 
 Now I can push successfully to my fork, then submit a pull request.
 
