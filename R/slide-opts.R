@@ -9,3 +9,5 @@ knitr::opts_chunk$set(
   fig.align = "center",
   out.width = "80%"
 )
+
+library(knitr)
