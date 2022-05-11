@@ -1,14 +1,27 @@
 ---
 title: "Data transformation"
-author: "[MACS 30500](https://cfss.uchicago.edu) <br /> University of Chicago"
-output: rcfss::xaringan
+author: "MACS 30500 <br /> University of Chicago"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
 ---
 
-```{r setup, include=FALSE}
-options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(cache = TRUE, message = FALSE,
-                      fig.retina = 2, fig.width = 12)
+```{r setup, include = FALSE}
+# generate CSS file
+library(xaringanthemer)
+rcfss::xaringan_theme()
 
+source(here::here("R", "slide-opts.R"))
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r pkgs, include = FALSE, cache = FALSE}
 library(tidyverse)
 library(palmerpenguins)
 library(nycflights13)
@@ -20,27 +33,35 @@ set.seed(1234)
 theme_set(theme_gray(base_size = rcfss::base_size))
 ```
 
-class: center
-
-![](/img/xmen_xavier.jpg)
-
----
-
-class: center
-
-[![](/img/xkcd_computer_problems.png)](https://xkcd.com/722/)
-
----
-
-# `penguins`
-
-![Meet the Palmer penguins](/img/lter_penguins.png)
-
----
-
-# `penguins`
+class: middle
 
 ```{r}
+include_graphics(path = "/img/xmen_xavier.jpg", error = FALSE)
+```
+
+---
+
+class: middle
+
+```{r}
+include_graphics(path = "/img/xkcd_computer_problems.png", error = FALSE)
+```
+
+.footnote[Source: [xkcd](https://xkcd.com/722/)]
+
+---
+
+# `penguins`
+
+```{r out.width = "80%"}
+include_graphics(path = "/img/lter_penguins.png", error = FALSE)
+```
+
+---
+
+# `penguins`
+
+```{r echo = TRUE}
 penguins
 ```
 
@@ -60,7 +81,7 @@ penguins
 
 ### What is the average body mass of an Adelie penguin?
 
-```{r avg-mass}
+```{r avg-mass, echo = TRUE}
 data("penguins")
 penguins_adelie <- filter(.data = penguins, species == "Adelie")
 summarize(.data = penguins_adelie, avg_mass = mean(body_mass_g, na.rm = TRUE))
@@ -72,13 +93,13 @@ summarize(.data = penguins_adelie, avg_mass = mean(body_mass_g, na.rm = TRUE))
 
 ### What is the average body mass of a penguin for each species?
 
-```{r echo = FALSE, cache = FALSE}
+```{r cache = FALSE}
 countdown(minutes = 2)
 ```
 
 --
 
-```{r by-species}
+```{r by-species, echo = TRUE}
 data("penguins")
 penguins_species <- group_by(.data = penguins, species)
 summarize(.data = penguins_species, avg_mass = mean(body_mass_g, na.rm = TRUE))
@@ -90,13 +111,13 @@ summarize(.data = penguins_species, avg_mass = mean(body_mass_g, na.rm = TRUE))
 
 ### What is the average bill length and body mass for each Adelie penguin by sex?
 
-```{r echo = FALSE, cache = FALSE}
+```{r cache = FALSE}
 countdown(minutes = 2)
 ```
 
 --
 
-```{r adelie-by-sex}
+```{r adelie-by-sex, echo = TRUE}
 data("penguins")
 penguins_adelie <- filter(.data = penguins, species == "Adelie")
 penguins_adelie_sex <- group_by(.data = penguins_adelie, sex)
@@ -109,9 +130,11 @@ summarize(
 
 ---
 
-class: center
+class: middle
 
-![Data science workflow](/img/data-science/base.png)
+```{r}
+include_graphics(path = "/img/data-science/base.png", error = FALSE)
+```
 
 ---
 
@@ -151,7 +174,7 @@ class: center
 .pull-right[
 
 ```{r swanson, echo = FALSE, fig.width = 6}
-knitr::include_graphics("https://media.giphy.com/media/8KnfG3knLExpu/giphy.gif")
+include_graphics("https://media.giphy.com/media/8KnfG3knLExpu/giphy.gif")
 ```
 
 ]
@@ -166,6 +189,10 @@ knitr::include_graphics("https://media.giphy.com/media/8KnfG3knLExpu/giphy.gif")
 # Saving transformed data (`<-`)
 
 ## Printed, but not saved
+
+```{r knit-change, cache = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
 
 ```{r print}
 filter(diamonds, cut == "Ideal")
@@ -195,17 +222,25 @@ diamonds_ideal <- filter(.data = diamonds, cut == "Ideal")
 
 # Syntactic column names
 
+.pull-left[
+
 ```{r colname-normal}
 count(x = diamonds, color)
 ```
 
+]
+
 --
 
-## Examples of non-syntactic names
+.pull-right[
+
+### Non-syntactic names
 
 * `Social conservative`
 * `7-point ideology`
 * `_id`
+
+]
 
 ---
 
@@ -242,8 +277,12 @@ count(x = diamonds, "color")
 ## No pipes
 
 ```{r no-pipe}
-by_dest <- group_by(.data = flights, dest)
-delay <- summarise(.data = by_dest,
+by_dest <- group_by(
+  .data = flights,
+  dest
+)
+delay <- summarise(
+  .data = by_dest,
   count = n(),
   dist = mean(distance, na.rm = TRUE),
   delay = mean(arr_delay, na.rm = TRUE)
