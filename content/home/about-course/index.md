@@ -17,20 +17,19 @@ design:
 <div class="row">
   <div class="col-sm-11 col-xs-12">
 
-  <div></div>
+ {{% callout note %}}
   
+  All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/43130) (UChicago authentication required).
+  
+  {{% /callout %}}
+   
   * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-  * Teaching Assistants
-      - Neeraj Sharma
-      - Kaitlyn Van Baalen
-  * Meeting day/time: MW 9:30-11:20am
-  - Meeting location: Room 295, [1155 E 60th St](https://goo.gl/maps/iAotTKUvpn27YJrP8)^[Online for the first two weeks. After that? :confused:]
-  * Office hours
-      - Benjamin: Monday/Thursday 12:30-1:30pm (Room 219, 1155 E 60th)
-      - Neeraj: Friday 1:30-3:30pm (Room 303, Regenstein Library or on Zoom)
-      - Kaitlyn: Tuesday 11am-1pm
+  * Teaching Assistants - TBD
+  * Meeting day/time: MuWTh 10-12pm
+  - Meeting location: On Zoom
+  * Office hours - TBD
   * Prerequisites: None
-  * Requirements: Bring your own laptop
+  * Requirements: Internet connection and a computer
 
   </div>
   
