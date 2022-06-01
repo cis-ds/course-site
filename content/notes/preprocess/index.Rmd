@@ -188,7 +188,7 @@ owngun <- train_data %>%
   drop_na()
 
 owngun_dummies <- recipe(colrac ~ owngun, data = train_data) %>%
-  step_dummy(owngun, preserve = TRUE) %>%
+  step_dummy(owngun, keep_original_cols = TRUE) %>%
   prep(training = owngun)
 ```
 
@@ -229,8 +229,8 @@ We need one final step to add to our recipe. Recall that there is substantial mi
 ```{r impute}
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID") %>%
-  step_medianimpute(all_numeric()) %>%
-  step_modeimpute(all_nominal(), -all_outcomes()) %>%
+  step_impute_median(all_numeric()) %>%
+  step_impute_mode(all_nominal(), -all_outcomes()) %>%
   step_cut(cohort, breaks = c(1945, 1964, 1980)) %>%
   step_dummy(all_nominal(), -all_outcomes())
 ```
@@ -272,11 +272,11 @@ gss_fit <- gss_wflow %>%
   fit(data = train_data)
 ```
  
-This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions `pull_workflow_fit()` and `pull_workflow_prepped_recipe()`. For example, here we pull the fitted model object then use the `broom::tidy()` function to get a tidy tibble of model coefficients: 
+This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions `extract_fit_parsnip()` and `extract_recipe()`. For example, here we pull the fitted model object then use the `broom::tidy()` function to get a tidy tibble of model coefficients: 
 
 ```{r fit-glance, R.options = list(tibble.print_min = 5)}
 gss_fit %>%
-  pull_workflow_fit() %>%
+  extract_fit_parsnip() %>%
   tidy()
 ```
 
