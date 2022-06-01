@@ -305,8 +305,11 @@ This is an example of badly documented code.
 ```{r sesame-bad, eval = FALSE}
 library(tidyverse)
 library(rtweet)
-tmls <- get_timeline(c("MeCookieMonster", "Grover", "elmo", "CountVonCount"), 3000)
-ts_plot(group_by(tmls, screen_name), "weeks")
+tml1 <- get_timeline("MeCookieMonster", 3000)
+tml2 <- get_timeline("Grover", 3000)
+tml3 <- get_timeline("elmo", 3000)
+tml4 <- get_timeline("CountVonCount", 3000)
+ts_plot(group_by(bind_rows(select(tml1, created_at), select(tml2, created_at), select(tml3, created_at), select(tml4, created_at), .id = "screen_name"), screen_name), by = "months")
 ```
 
 * What does this program do?
@@ -319,6 +322,13 @@ This program, although it works, is entirely indecipherable unless you are the o
 
 This is a rewritten version of the previous program. Note that it does the exact same thing, but is much more comprehensible.
 
+```{r rtweet-auth, include = FALSE, cache = FALSE}
+library(rtweet)
+
+# retrieve stored bearer token
+auth_as("cfss")
+```
+
 ```{r sesame-good, eval = FALSE}
 # get_to_sesame_street.R
 # Program to retrieve recent tweets from Sesame Street characters
@@ -327,16 +337,37 @@ This is a rewritten version of the previous program. Note that it does the exact
 library(tidyverse)
 library(rtweet)
 
-# retrieve most recent 3000 tweets of Sesame Street characters
-tmls <- get_timeline(
-  user = c("MeCookieMonster", "Grover", "elmo", "CountVonCount"),
+# retrieve most recent 3000 tweets of best Sesame Street residents
+cookie <- get_timeline(
+  user = "MeCookieMonster",
   n = 3000
 )
 
-# group by character and plot weekly tweet frequency
-tmls %>%
+grover <- get_timeline(
+  user = "Grover",
+  n = 3000
+)
+
+elmo <- get_timeline(
+  user = "elmo",
+  n = 3000
+)
+
+count_von_count <- get_timeline(
+  user = "CountVonCount",
+  n = 3000
+)
+
+# combine, group by character, and plot weekly tweet frequency
+bind_rows(
+  `Cookie Monster` = cookie %>% select(created_at),
+  Grover = grover %>% select(created_at),
+  Elmo = elmo %>% select(created_at),
+  `Count von Count` = count_von_count %>% select(created_at),
+  .id = "screen_name"
+) %>%
   group_by(screen_name) %>%
-  ts_plot(by = "weeks")
+  ts_plot(by = "months")
 ```
 
 ```{r sesame-good, echo = FALSE, message = FALSE}

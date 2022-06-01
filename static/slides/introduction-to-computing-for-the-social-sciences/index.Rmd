@@ -427,14 +427,25 @@ include_graphics(path = "/img/vcs-distributed.png", error = FALSE)
 ```{r sesame-bad, eval = FALSE, echo = TRUE}
 library(tidyverse)
 library(rtweet)
-data <- get_timeline(c("MeCookieMonster", "Grover", "elmo", "CountVonCount"), 3000)
-ts_plot(data, "weeks")
+tml1 <- get_timeline("MeCookieMonster", 3000)
+tml2 <- get_timeline("Grover", 3000)
+tml3 <- get_timeline("elmo", 3000)
+tml4 <- get_timeline("CountVonCount", 3000)
+ts_plot(group_by(bind_rows(select(tml1, created_at), select(tml2, created_at), select(tml3, created_at), select(tml4, created_at), .id = "screen_name"), screen_name), by = "months")
 ```
 
 ---
 
 # Good code
 
+```{r rtweet-auth, include = FALSE, cache = FALSE}
+library(rtweet)
+
+# retrieve stored bearer token
+auth_as("cfss")
+```
+
+.tiny[
 ```{r sesame-good, eval = FALSE, echo = TRUE}
 # get_to_sesame_street.R
 # Program to retrieve recent tweets from Sesame Street characters
@@ -443,21 +454,45 @@ ts_plot(data, "weeks")
 library(tidyverse)
 library(rtweet)
 
-# retrieve most recent 3000 tweets of Sesame Street characters
-tmls <- get_timeline(
-  user = c("MeCookieMonster", "Grover", "elmo", "CountVonCount"),
+# retrieve most recent 3000 tweets of best Sesame Street residents
+cookie <- get_timeline(
+  user = "MeCookieMonster",
   n = 3000
 )
 
-# plot weekly tweet frequency
-ts_plot(tmls, by = "weeks")
+grover <- get_timeline(
+  user = "Grover",
+  n = 3000
+)
+
+elmo <- get_timeline(
+  user = "elmo",
+  n = 3000
+)
+
+count_von_count <- get_timeline(
+  user = "CountVonCount",
+  n = 3000
+)
+
+# combine, group by character, and plot weekly tweet frequency
+bind_rows(
+  `Cookie Monster` = cookie %>% select(created_at),
+  Grover = grover %>% select(created_at),
+  Elmo = elmo %>% select(created_at),
+  `Count von Count` = count_von_count %>% select(created_at),
+  .id = "screen_name"
+) %>%
+  group_by(screen_name) %>%
+  ts_plot(by = "months")
 ```
+]
 
 ---
 
 # Good code
 
-```{r sesame-good, echo = FALSE, message = FALSE, cache = TRUE, out.width = "80%"}
+```{r ref.label = "sesame-good", echo = FALSE, message = FALSE, out.width = "80%"}
 ```
 
 ---
