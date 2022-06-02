@@ -68,6 +68,6 @@ math: false
     * [General Homework Rubric](/faq/homework-evaluations/)
     * [Performing peer review](/faq/peer-evaluations/)
     * To find which peers you will evaluate:
-        * Navigate to the [pull request page for `hw01`](https://github.com/cfss-win22/hw01/pulls)
+        * Navigate to the [pull request page for `hw01`](https://github.com/cfss-su22/hw01/pulls)
         * Click **Reviews** > **Awaiting review from you**
         * If you submitted your pull request on-time, you were randomly assigned two other pull requests to evaluate. If you did not submit your pull request on-time, you are still expected to perform two peer evaluations. Select any two pull requests and provide feedback on their submission.
