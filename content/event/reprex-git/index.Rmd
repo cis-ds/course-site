@@ -2,7 +2,7 @@
 title: "Reproducible examples and Git"
 date: 2022-07-05T10:00:00-06:00
 publishDate: 2019-05-01T10:00:00-06:00
-draft: true
+draft: false
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
