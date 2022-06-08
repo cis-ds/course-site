@@ -24,7 +24,9 @@ design:
   {{% /callout %}}
    
   * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-  * Teaching Assistants - TBD
+  * Teaching Assistants
+    - Natalie Ayers
+    - Warren Liow
   * Meeting day/time: MuWTh 10-12pm
   - Meeting location: On Zoom
   * Office hours - TBD
