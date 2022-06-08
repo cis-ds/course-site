@@ -27,7 +27,7 @@ design:
   * Teaching Assistants
     - Natalie Ayers
     - Warren Liow
-  * Meeting day/time: MuWTh 10-12pm
+  * Meeting day/time: MTuWTh 10-12pm
   - Meeting location: On Zoom
   * Office hours - TBD
   * Prerequisites: None
