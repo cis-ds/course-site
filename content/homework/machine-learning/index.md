@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-su22/hw07"
 
 # Overview
 
-Due by 10:30am (Chicago) on February 28th.
+Due by 11:59pm CT (Chicago) on July 11th.
 
 # Fork the `hw07` repository
 

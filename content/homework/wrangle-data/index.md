@@ -15,7 +15,7 @@ url_code: "https://github.com/cfss-su22/hw03"
 
 # Overview
 
-Due by 10:30am (Chicago) on February 7th.
+Due by 11:59pm CT (Chicago) on June 27th.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 
