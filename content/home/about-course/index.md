@@ -58,7 +58,7 @@ By the end of the course, students will:
 * Identify and use external libraries to expand on base functions
 * Apply Git and GitHub workflows for version control
 * Implement best practices for reproducible research
-* Implement statistical learning algorithms
+* Implement machine learning algorithms
 * Visualize information and data using appropriate graphical techniques
 * Import data from files or the internet
 * Munge raw data into a tidy format
