@@ -30,9 +30,9 @@ design:
   * Meeting day/time: MTuWTh 10-12pm
   - Meeting location: On Zoom
   * Office hours (on Zoom)
-    - Benjamin: Tu/Th 12-1pm
+    - Benjamin: MW 12-1pm
     - Natalie: M 5-7pm; W 3-5pm
-    - Warren: Tu/Th 5-7pm
+    - Warren: TuTh 5-7pm
   * Prerequisites: None
   * Requirements: Internet connection and a computer
 
