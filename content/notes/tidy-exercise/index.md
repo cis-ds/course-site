@@ -42,7 +42,7 @@ race
 ```
 
 ```
-## # A tibble: 4 x 8
+## # A tibble: 4 × 8
 ##   Name   `50` `100` `150` `200` `250` `300` `350`
 ##   <chr> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 ## 1 Carla   1.2   1.8   2.2   2.3   3     2.5   1.8
@@ -91,7 +91,7 @@ pivot_longer(
   names_to = "Time",
   values_to = "Score",
   # ensure the Time column is stored as a numeric column
-  names_transform = list(Time = readr::parse_number)
+  names_transform = parse_number
 )
 ```
 
@@ -116,7 +116,7 @@ Except for the `Name` column, the remaining columns are actually one variable sp
 
 {{% callout note %}}
 
-Because the column names are actually numeric values, we use `names_transform = list(Time = readr::parse_number)` to coerce the new `Time` column into a numeric column. `names_transform` allows us to manually specify the column type for the name column. Because (rarely) you may have more than one name column, we store each type separately inside of `list()`. `readr::parse_number()` is a function for converting a character vector to a numeric vector, so `names_transform = list(Time = readr::parse_number)` ensures the `Time` column is stored as a numeric column.
+Because the column names are actually numeric values, we use `names_transform = parse_number` to coerce the new `Time` column into a numeric column. `names_transform` allows us to manually specify the column type for the `names_to` column. `parse_number()` is a function from the `readr` package for converting a character vector to a numeric vector, so `names_transform = parse_number` ensures the `Time` column is stored as a numeric column.
 
 {{% /callout %}}
 
@@ -130,7 +130,7 @@ grades
 ```
 
 ```
-## # A tibble: 12 x 6
+## # A tibble: 12 × 6
 ##       ID Test     Year  Fall Spring Winter
 ##    <dbl> <chr>   <dbl> <dbl>  <dbl>  <dbl>
 ##  1     1 Math     2008    15     16     19
@@ -238,7 +238,7 @@ pivot_longer(
 ```
 
 ```
-## # A tibble: 36 x 5
+## # A tibble: 36 × 5
 ##       ID Test     Year Quarter Score
 ##    <dbl> <chr>   <dbl> <chr>   <dbl>
 ##  1     1 Math     2008 Fall       15
@@ -271,7 +271,7 @@ pivot_longer(
 ```
 
 ```
-## # A tibble: 18 x 5
+## # A tibble: 18 × 5
 ##       ID  Year Quarter  Math Writing
 ##    <dbl> <dbl> <chr>   <dbl>   <dbl>
 ##  1     1  2008 Fall       15      22
@@ -304,7 +304,7 @@ activities
 ```
 
 ```
-## # A tibble: 10 x 8
+## # A tibble: 10 × 8
 ##    id    trt   work.T1 play.T1 talk.T1 work.T2 play.T2 talk.T2
 ##    <chr> <chr>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
 ##  1 x1    cnt    0.652    0.865  0.536   0.275    0.354  0.0319
@@ -327,7 +327,7 @@ This one is also pretty difficult, but if you think it through conceptually it i
 
 
 ```
-## # A tibble: 20 x 6
+## # A tibble: 20 × 6
 ##    id    trt   time    work  play   talk
 ##    <chr> <chr> <chr>  <dbl> <dbl>  <dbl>
 ##  1 x1    cnt   T1    0.652  0.865 0.536 
@@ -369,7 +369,7 @@ pivot_longer(
 ```
 
 ```
-## # A tibble: 60 x 4
+## # A tibble: 60 × 4
 ##    id    trt   variable  value
 ##    <chr> <chr> <chr>     <dbl>
 ##  1 x1    cnt   work.T1  0.652 
@@ -404,7 +404,7 @@ pivot_longer(
 ```
 
 ```
-## # A tibble: 60 x 5
+## # A tibble: 60 × 5
 ##    id    trt   location time   value
 ##    <chr> <chr> <chr>    <chr>  <dbl>
 ##  1 x1    cnt   work     T1    0.652 
@@ -432,7 +432,7 @@ pivot_longer(
 ```
 
 ```
-## # A tibble: 20 x 6
+## # A tibble: 20 × 6
 ##    id    trt   time    work  play   talk
 ##    <chr> <chr> <chr>  <dbl> <dbl>  <dbl>
 ##  1 x1    cnt   T1    0.652  0.865 0.536 
@@ -469,100 +469,107 @@ devtools::session_info()
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.1.0 (2021-05-18)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-10-11                  
+##  setting  value
+##  version  R version 4.2.0 (2022-04-22)
+##  os       macOS Monterey 12.2.1
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/Chicago
+##  date     2022-06-22
+##  pandoc   2.17.1.1 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date       lib source        
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports     1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
-##  blogdown      1.4     2021-07-23 [1] CRAN (R 4.1.0)
-##  bookdown      0.23    2021-08-13 [1] CRAN (R 4.1.0)
-##  broom         0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-##  bslib         0.2.5.1 2021-05-18 [1] CRAN (R 4.1.0)
-##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
-##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  cli           3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
-##  colorspace    2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
-##  crayon        1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
-##  DBI           1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
-##  dbplyr        2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc          1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
-##  devtools      2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
-##  digest        0.6.27  2020-10-24 [1] CRAN (R 4.1.0)
-##  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate      0.14    2019-05-28 [1] CRAN (R 4.1.0)
-##  fansi         0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
-##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
-##  fs            1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  generics      0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
-##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-##  glue          1.4.2   2020-08-27 [1] CRAN (R 4.1.0)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
-##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
-##  here          1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  hms           1.1.0   2021-05-17 [1] CRAN (R 4.1.0)
-##  htmltools     0.5.1.1 2021-01-22 [1] CRAN (R 4.1.0)
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
-##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite      1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
-##  knitr         1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  lifecycle     1.0.0   2021-02-15 [1] CRAN (R 4.1.0)
-##  lubridate     1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
-##  magrittr      2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  memoise       2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  pillar        1.6.2   2021-07-29 [1] CRAN (R 4.1.0)
-##  pkgbuild      1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload       1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
-##  processx      3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
-##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  rcfss       * 0.2.1   2020-12-08 [1] local         
-##  Rcpp          1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
-##  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.1.0)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes       2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
-##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
-##  rlang         0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-##  rmarkdown     2.10    2021-08-06 [1] CRAN (R 4.1.0)
-##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
-##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest         1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
-##  sass          0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
-##  stringi       1.7.3   2021-07-16 [1] CRAN (R 4.1.0)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
-##  testthat      3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble      * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
-##  tidyr       * 1.1.3   2021-03-03 [1] CRAN (R 4.1.0)
-##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
-##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb          0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
-##  usethis       2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
-##  utf8          1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs         0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr         2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
-##  xfun          0.25    2021-08-06 [1] CRAN (R 4.1.0)
-##  xml2          1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
-##  yaml          2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
+##  package        * version date (UTC) lib source
+##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.2.0)
+##  backports        1.4.1   2021-12-13 [1] CRAN (R 4.2.0)
+##  blogdown         1.10    2022-05-10 [1] CRAN (R 4.2.0)
+##  bookdown         0.26    2022-04-15 [1] CRAN (R 4.2.0)
+##  brio             1.1.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  broom            0.8.0   2022-04-13 [1] CRAN (R 4.2.0)
+##  bslib            0.3.1   2021-10-06 [1] CRAN (R 4.2.0)
+##  cachem           1.0.6   2021-08-19 [1] CRAN (R 4.2.0)
+##  callr            3.7.0   2021-04-20 [1] CRAN (R 4.2.0)
+##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.2.0)
+##  cli              3.3.0   2022-04-25 [1] CRAN (R 4.2.0)
+##  codetools        0.2-18  2020-11-04 [1] CRAN (R 4.2.0)
+##  colorspace       2.0-3   2022-02-21 [1] CRAN (R 4.2.0)
+##  crayon           1.5.1   2022-03-26 [1] CRAN (R 4.2.0)
+##  DBI              1.1.2   2021-12-20 [1] CRAN (R 4.2.0)
+##  dbplyr           2.2.0   2022-06-05 [1] CRAN (R 4.2.0)
+##  desc             1.4.1   2022-03-06 [1] CRAN (R 4.2.0)
+##  devtools         2.4.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  digest           0.6.29  2021-12-01 [1] CRAN (R 4.2.0)
+##  dplyr          * 1.0.9   2022-04-28 [1] CRAN (R 4.2.0)
+##  ellipsis         0.3.2   2021-04-29 [1] CRAN (R 4.2.0)
+##  evaluate         0.15    2022-02-18 [1] CRAN (R 4.2.0)
+##  fansi            1.0.3   2022-03-24 [1] CRAN (R 4.2.0)
+##  fastmap          1.1.0   2021-01-25 [1] CRAN (R 4.2.0)
+##  forcats        * 0.5.1   2021-01-27 [1] CRAN (R 4.2.0)
+##  fs               1.5.2   2021-12-08 [1] CRAN (R 4.2.0)
+##  generics         0.1.2   2022-01-31 [1] CRAN (R 4.2.0)
+##  ggplot2        * 3.3.6   2022-05-03 [1] CRAN (R 4.2.0)
+##  glue             1.6.2   2022-02-24 [1] CRAN (R 4.2.0)
+##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.2.0)
+##  haven            2.5.0   2022-04-15 [1] CRAN (R 4.2.0)
+##  here             1.0.1   2020-12-13 [1] CRAN (R 4.2.0)
+##  hms              1.1.1   2021-09-26 [1] CRAN (R 4.2.0)
+##  htmltools        0.5.2   2021-08-25 [1] CRAN (R 4.2.0)
+##  httr             1.4.3   2022-05-04 [1] CRAN (R 4.2.0)
+##  jquerylib        0.1.4   2021-04-26 [1] CRAN (R 4.2.0)
+##  jsonlite         1.8.0   2022-02-22 [1] CRAN (R 4.2.0)
+##  knitr            1.39    2022-04-26 [1] CRAN (R 4.2.0)
+##  lifecycle        1.0.1   2021-09-24 [1] CRAN (R 4.2.0)
+##  lubridate        1.8.0   2021-10-07 [1] CRAN (R 4.2.0)
+##  magrittr         2.0.3   2022-03-30 [1] CRAN (R 4.2.0)
+##  memoise          2.0.1   2021-11-26 [1] CRAN (R 4.2.0)
+##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.2.0)
+##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.2.0)
+##  pillar           1.7.0   2022-02-01 [1] CRAN (R 4.2.0)
+##  pkgbuild         1.3.1   2021-12-20 [1] CRAN (R 4.2.0)
+##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.2.0)
+##  pkgload          1.2.4   2021-11-30 [1] CRAN (R 4.2.0)
+##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.2.0)
+##  processx         3.5.3   2022-03-25 [1] CRAN (R 4.2.0)
+##  ps               1.7.0   2022-04-23 [1] CRAN (R 4.2.0)
+##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.2.0)
+##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
+##  rcfss          * 0.2.4   2022-06-12 [1] local
+##  readr          * 2.1.2   2022-01-30 [1] CRAN (R 4.2.0)
+##  readxl           1.4.0   2022-03-28 [1] CRAN (R 4.2.0)
+##  remotes          2.4.2   2021-11-30 [1] CRAN (R 4.2.0)
+##  reprex           2.0.1   2021-08-05 [1] CRAN (R 4.2.0)
+##  rlang            1.0.2   2022-03-04 [1] CRAN (R 4.2.0)
+##  rmarkdown        2.14    2022-04-25 [1] CRAN (R 4.2.0)
+##  rprojroot        2.0.3   2022-04-02 [1] CRAN (R 4.2.0)
+##  rstudioapi       0.13    2020-11-12 [1] CRAN (R 4.2.0)
+##  rvest            1.0.2   2021-10-16 [1] CRAN (R 4.2.0)
+##  sass             0.4.1   2022-03-23 [1] CRAN (R 4.2.0)
+##  scales           1.2.0   2022-04-13 [1] CRAN (R 4.2.0)
+##  sessioninfo      1.2.2   2021-12-06 [1] CRAN (R 4.2.0)
+##  showtext         0.9-5   2022-02-09 [1] CRAN (R 4.2.0)
+##  showtextdb       3.0     2020-06-04 [1] CRAN (R 4.2.0)
+##  stringi          1.7.6   2021-11-29 [1] CRAN (R 4.2.0)
+##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.2.0)
+##  sysfonts         0.8.8   2022-03-13 [1] CRAN (R 4.2.0)
+##  testthat         3.1.4   2022-04-26 [1] CRAN (R 4.2.0)
+##  tibble         * 3.1.7   2022-05-03 [1] CRAN (R 4.2.0)
+##  tidyr          * 1.2.0   2022-02-01 [1] CRAN (R 4.2.0)
+##  tidyselect       1.1.2   2022-02-21 [1] CRAN (R 4.2.0)
+##  tidyverse      * 1.3.1   2021-04-15 [1] CRAN (R 4.2.0)
+##  tzdb             0.3.0   2022-03-28 [1] CRAN (R 4.2.0)
+##  usethis          2.1.6   2022-05-25 [1] CRAN (R 4.2.0)
+##  utf8             1.2.2   2021-07-24 [1] CRAN (R 4.2.0)
+##  vctrs            0.4.1   2022-04-13 [1] CRAN (R 4.2.0)
+##  withr            2.5.0   2022-03-03 [1] CRAN (R 4.2.0)
+##  xaringanthemer   0.4.1   2021-11-21 [1] CRAN (R 4.2.0)
+##  xfun             0.31    2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2             1.3.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  yaml             2.3.5   2022-02-21 [1] CRAN (R 4.2.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```
