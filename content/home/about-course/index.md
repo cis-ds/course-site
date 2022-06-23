@@ -32,7 +32,7 @@ design:
   * Office hours (on Zoom)
     - Benjamin: MW 12-1pm
     - Natalie: M 5-7pm; W 3-5pm
-    - Warren: TuTh 5-7pm
+    - Warren: TuTh 4-6pm
   * Prerequisites: None
   * Requirements: Internet connection and a computer
 
