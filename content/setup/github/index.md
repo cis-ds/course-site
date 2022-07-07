@@ -73,13 +73,13 @@ benjamin-laptop:myrepo benjamin$ git remote show origin
 * remote origin
   Fetch URL: https://github.com/bensoltoff/myrepo.git
   Push  URL: https://github.com/bensoltoff/myrepo.git
-  HEAD branch: master
+  HEAD branch: main
   Remote branch:
-    master tracked
+    main tracked
   Local branch configured for 'git pull':
-    master merges with remote master
+    main merges with remote main
   Local ref configured for 'git push':
-    master pushes to master (up to date)
+    main pushes to main (up to date)
 ```
 
 ## Make a local change, commit, and push
@@ -95,8 +95,8 @@ git status
 ```
 benjamin-laptop:myrepo benjamin$ echo "A line I wrote on my local computer" >> README.md
 benjamin-laptop:myrepo benjamin$ git status
-On branch master
-Your branch is up-to-date with 'origin/master'.
+On branch main
+Your branch is up-to-date with 'origin/main'.
 Changes not staged for commit:
   (use "git add <file>..." to update what will be committed)
   (use "git checkout -- <file>..." to discard changes in working directory)
@@ -121,7 +121,7 @@ This should look like:
 benjamin-laptop:myrepo benjamin$ git add -A
 
 benjamin-laptop:myrepo benjamin$ git commit -m "A commit from my local computer"
-[master 33bb99f] A commit from my local computer
+[main 33bb99f] A commit from my local computer
  1 file changed, 1 insertion(+), 1 deletion(-)
  
 benjamin-laptop:myrepo benjamin$ git push
@@ -129,7 +129,7 @@ Counting objects: 3, done.
 Writing objects: 100% (3/3), 294 bytes | 0 bytes/s, done.
 Total 3 (delta 0), reused 0 (delta 0)
 To https://github.com/bensoltoff/myrepo.git
-   d72645a..33bb99f  master -> master
+   d72645a..33bb99f  main -> main
 ```
 
 If you have never pushed a commit to GitHub, you will be challenged to enter your username and password. Do this.

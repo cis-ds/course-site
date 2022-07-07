@@ -1,6 +1,6 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
-draft: false
+draft: true
 menu:
   setup:
     parent: Git/GitHub
@@ -44,10 +44,10 @@ origin  https://github.com/bensoltoff/myrepo (fetch)
 origin  https://github.com/bensoltoff/myrepo (push)
 
 benjamin-laptop:Github benjamin $ git branch -vv
-* master b8e03e3 [origin/master] line added locally
+* main b8e03e3 [origin/main] line added locally
 ```
 
-We want to see that fetch and push are set to remote URLs that point to your GitHub repo. We also want to see that your local master branch has your GitHub master branch as upstream remote. Gibberish? Just check that your output looks similar to this.
+We want to see that fetch and push are set to remote URLs that point to your GitHub repo. We also want to see that your local main branch has your GitHub main branch as upstream remote. Gibberish? Just check that your output looks similar to this.
 
 ## Verify Git is up-to-date
 
@@ -82,7 +82,7 @@ git commit -m "A commit from my local computer"
 Now push!
 
 ```
-git push -u origin master
+git push -u origin main
 ```
 
 One last time you will be asked for your username and password, which hopefully will be cached.
