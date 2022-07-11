@@ -2,7 +2,7 @@
 title: "Text analysis: classification and topic modeling"
 date: 2022-07-14T10:00:00-06:00
 publishDate: 2019-06-01T10:00:00-06:00
-draft: false
+draft: true
 
 aliases: ["/cm018.html"]
 

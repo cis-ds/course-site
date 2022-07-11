@@ -2,7 +2,7 @@
 title: "Text analysis: fundamentals and sentiment analysis"
 date: 2022-07-13T10:00:00-06:00
 publishDate: 2019-06-03T10:00:00-06:00
-draft: false
+draft: true
 
 aliases: ["/cm017.html"]
 
