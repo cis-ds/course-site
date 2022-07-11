@@ -19,7 +19,7 @@ menu:
 
 ```r
 library(tidyverse)
-library(broom)
+library(rtweet)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -44,20 +44,22 @@ Popular packages for the Twitter API in R include:
 
 * [`twitteR`](https://cran.rstudio.com/web/packages/twitteR/index.html) is the most popular package for R, but it only allows you to access the REST API. It is also deprecated (not actively updated), in lieu of a new up-and-coming package (identified below)
 * [`streamR`](https://cran.rstudio.com/web/packages/streamR/index.html) is more complicated, but allows you to query the Streaming API from R. It is ancient in computational terms (last updated in January 2014), but does what it needs to do.
-* [`rtweet`](http://rtweet.info/) is a relatively recent addition to the R package universe that allows you to access both the REST and streaming APIs.
+* [`rtweet`](https://docs.ropensci.org/rtweet/) is a relatively recent addition to the R package universe that allows you to access both the REST and streaming APIs.
 
 ## Using `rtweet`
 
-Here, we are going to practice using the `rtweet` package to search Twitter.
+Here, we are going to practice using the `rtweet` package to search Twitter. Use the version on GitHub for the most recent updates.
 
 ```r
-install.packages("rtweet")
+remotes::install_github("ropensci/rtweet")
 ```
 
 
 ```r
 library(rtweet)
 ```
+
+
 
 ## OAuth authentication
 
@@ -118,76 +120,76 @@ Note that the Twitter REST API limits all searches to the past 6-9 days. **You w
 
 ## Searching users
 
-Use `get_timeline()` or `get_timelines()` to retrieve tweets from one or more specified Twitter users. This only works for users with public profiles or those that have authorized your app.
+Use `get_timeline()` to retrieve tweets from one or more specified Twitter users. This only works for users with public profiles or those that have authorized your app.
 
 
 ```r
-countvoncount <- get_timeline(user = "countvoncount", n = 1000)
+countvoncount <- get_timeline(user = "countvoncount", n = 4000)
 countvoncount
 ```
 
 ```
-## # A tibble: 1,000 × 90
-##    user_id   status_id           created_at          screen_name   text   source
-##    <chr>     <chr>               <dttm>              <chr>         <chr>  <chr> 
-##  1 555129716 1468700740285874180 2021-12-08 21:55:18 CountVonCount Three… Count…
-##  2 555129716 1468640341196738564 2021-12-08 17:55:18 CountVonCount Three… Count…
-##  3 555129716 1468429755242455040 2021-12-08 03:58:30 CountVonCount Three… Count…
-##  4 555129716 1468339156493426693 2021-12-07 21:58:29 CountVonCount Three… Count…
-##  5 555129716 1468034370204221444 2021-12-07 01:47:23 CountVonCount Three… Count…
-##  6 555129716 1467958871172034568 2021-12-06 20:47:22 CountVonCount Three… Count…
-##  7 555129716 1467613900413992960 2021-12-05 21:56:35 CountVonCount Three… Count…
-##  8 555129716 1467266070788595724 2021-12-04 22:54:26 CountVonCount Three… Count…
-##  9 555129716 1466873476569092105 2021-12-03 20:54:24 CountVonCount Three… Count…
-## 10 555129716 1466552417869312006 2021-12-02 23:38:38 CountVonCount Three… Count…
-## # … with 990 more rows, and 84 more variables: display_text_width <dbl>,
-## #   reply_to_status_id <lgl>, reply_to_user_id <lgl>,
-## #   reply_to_screen_name <lgl>, is_quote <lgl>, is_retweet <lgl>,
-## #   favorite_count <int>, retweet_count <int>, quote_count <int>,
-## #   reply_count <int>, hashtags <list>, symbols <list>, urls_url <list>,
-## #   urls_t.co <list>, urls_expanded_url <list>, media_url <list>,
-## #   media_t.co <list>, media_expanded_url <list>, media_type <list>, …
+## # A tibble: 3,250 × 43
+##    created_at               id id_str       full_text truncated display_text_ra…
+##    <dttm>                <dbl> <chr>        <chr>     <lgl>                <dbl>
+##  1 2022-07-10 13:21:59 1.55e18 15461980612… Three th… FALSE                   39
+##  2 2022-07-09 13:21:57 1.55e18 15458356669… Three th… FALSE                   50
+##  3 2022-07-08 15:21:56 1.55e18 15455034720… Three th… FALSE                   38
+##  4 2022-07-08 09:21:55 1.55e18 15454128729… Three th… FALSE                   38
+##  5 2022-07-07 15:21:54 1.55e18 15451410766… Three th… FALSE                   34
+##  6 2022-07-06 12:21:52 1.54e18 15447333824… Three th… FALSE                   39
+##  7 2022-07-06 08:21:52 1.54e18 15446729831… Three th… FALSE                   50
+##  8 2022-07-05 17:21:51 1.54e18 15444464861… Three th… FALSE                   40
+##  9 2022-07-05 08:21:50 1.54e18 15443105881… Three th… FALSE                   38
+## 10 2022-07-04 19:21:49 1.54e18 15441142913… Three th… FALSE                   39
+## # … with 3,240 more rows, and 37 more variables: entities <list>, source <chr>,
+## #   in_reply_to_status_id <lgl>, in_reply_to_status_id_str <lgl>,
+## #   in_reply_to_user_id <lgl>, in_reply_to_user_id_str <lgl>,
+## #   in_reply_to_screen_name <lgl>, geo <list>, coordinates <list>,
+## #   place <list>, contributors <lgl>, is_quote_status <lgl>,
+## #   retweet_count <int>, favorite_count <int>, favorited <lgl>,
+## #   retweeted <lgl>, lang <chr>, possibly_sensitive <list>, …
 ```
 
-With `get_timelines()`, you are not limited to only the most recent 6-9 days of tweets.
+With `get_timeline()`, you are not limited to only the most recent 6-9 days of tweets.
 
 ## Visualizing tweets
 
 Because the resulting objects are data frames, you can perform standard data transformation, summarization, and visualization on the underlying data.
 
-`rtweet` includes the `ts_plot()` function which automates some common time series visualization methods. For example, we can quickly visualize the frequency of `#rstats` tweets:
+`rtweet` includes the `ts_plot()` function which automates some common time series visualization methods. For example, we can quickly visualize the frequency of `@countvoncount` tweets:
 
 
 ```r
-ts_plot(rt, by = "3 hours")
+ts_plot(countvoncount, by = "1 week")
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/rstats-freq-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/countvoncount-freq-1.png" width="672" />
 
 The `by` argument allows us to aggregate over different lengths of time.
 
 
 ```r
-ts_plot(rt, by = "1 hours")
+ts_plot(countvoncount, by = "1 month")
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/rstats-freq-day-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/countvoncount-freq-month-1.png" width="672" />
 
 And because `ts_plot()` uses `ggplot2`, we can modify the graphs using familiar `ggplot2` functions:
 
 
 ```r
-ts_plot(rt, by = "3 hours") +
+ts_plot(countvoncount, by = "1 week") +
   theme(plot.title = element_text(face = "bold")) +
   labs(
     x = NULL, y = NULL,
-    title = "Frequency of #rstats Twitter statuses from past 9 days",
-    subtitle = "Twitter status (tweet) counts aggregated using three-hour intervals",
+    title = "Frequency of @countvoncount Twitter posts",
+    subtitle = "Twitter status (tweet) counts aggregated using one week intervals",
     caption = "\nSource: Data collected from Twitter's REST API via rtweet"
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/rstats-freq-clean-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/countvoncount-freq-clean-1.png" width="672" />
 
 ## Exercise: Practice using `rtweet`
 
@@ -198,14 +200,30 @@ ts_plot(rt, by = "3 hours") +
 
 
 ```r
-popstars <- get_timelines(
-  user = c("katyperry", "KimKardashian", "rihanna"),
+katy_perry <- get_timeline(
+  user = "katyperry",
   n = 1000
 )
 
-popstars %>%
+kim_kardashian <- get_timeline(
+  user = "KimKardashian",
+  n = 1000
+)
+
+rihanna <- get_timeline(
+  user = "rihanna",
+  n = 1000
+)
+
+# combine, group by character, and plot weekly tweet frequency
+bind_rows(
+  `Katy Perry` = katy_perry %>% select(created_at),
+  `Kim Kardashian` = kim_kardashian %>% select(created_at),
+  `Rihanna` = rihanna %>% select(created_at),
+  .id = "screen_name"
+) %>%
   group_by(screen_name) %>%
-  ts_plot(by = "week")
+  ts_plot(by = "months")
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/twitter-popstars-1.png" width="672" />
@@ -229,110 +247,101 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value
-##  version  R version 4.1.2 (2021-11-01)
-##  os       macOS Monterey 12.1
+##  version  R version 4.2.0 (2022-04-22)
+##  os       macOS Monterey 12.2.1
 ##  system   aarch64, darwin20
 ##  ui       X11
 ##  language (EN)
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/Chicago
-##  date     2022-02-24
+##  date     2022-07-11
 ##  pandoc   2.17.1.1 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package     * version date (UTC) lib source
-##  askpass       1.1     2019-01-13 [1] CRAN (R 4.1.0)
-##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports     1.4.1   2021-12-13 [1] CRAN (R 4.1.1)
-##  blogdown      1.7     2021-12-19 [1] CRAN (R 4.1.1)
-##  bookdown      0.24    2021-09-02 [1] CRAN (R 4.1.1)
-##  brio          1.1.3   2021-11-30 [1] CRAN (R 4.1.1)
-##  broom       * 0.7.12  2022-01-28 [1] CRAN (R 4.1.1)
-##  bslib         0.3.1   2021-10-06 [1] CRAN (R 4.1.1)
-##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.1.1)
-##  callr         3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
-##  cellranger    1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  cli           3.2.0   2022-02-14 [1] CRAN (R 4.1.1)
-##  codetools     0.2-18  2020-11-04 [1] CRAN (R 4.1.2)
-##  colorspace    2.0-3   2022-02-21 [1] CRAN (R 4.1.1)
-##  crayon        1.5.0   2022-02-14 [1] CRAN (R 4.1.1)
-##  curl          4.3.2   2021-06-23 [1] CRAN (R 4.1.0)
-##  DBI           1.1.2   2021-12-20 [1] CRAN (R 4.1.1)
-##  dbplyr        2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc          1.4.0   2021-09-28 [1] CRAN (R 4.1.1)
-##  devtools      2.4.3   2021-11-30 [1] CRAN (R 4.1.1)
-##  digest        0.6.29  2021-12-01 [1] CRAN (R 4.1.1)
-##  dplyr       * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-##  ellipsis      0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate      0.15    2022-02-18 [1] CRAN (R 4.1.1)
-##  fansi         1.0.2   2022-01-14 [1] CRAN (R 4.1.1)
-##  farver        2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats     * 0.5.1   2021-01-27 [1] CRAN (R 4.1.1)
-##  fs            1.5.2   2021-12-08 [1] CRAN (R 4.1.1)
-##  generics      0.1.2   2022-01-31 [1] CRAN (R 4.1.1)
-##  ggplot2     * 3.3.5   2021-06-25 [1] CRAN (R 4.1.1)
-##  glue          1.6.1   2022-01-22 [1] CRAN (R 4.1.1)
-##  gtable        0.3.0   2019-03-25 [1] CRAN (R 4.1.1)
-##  haven         2.4.3   2021-08-04 [1] CRAN (R 4.1.1)
-##  here          1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  highr         0.9     2021-04-16 [1] CRAN (R 4.1.0)
-##  hms           1.1.1   2021-09-26 [1] CRAN (R 4.1.1)
-##  htmltools     0.5.2   2021-08-25 [1] CRAN (R 4.1.1)
-##  httr          1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
-##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite      1.7.3   2022-01-17 [1] CRAN (R 4.1.1)
-##  knitr         1.37    2021-12-16 [1] CRAN (R 4.1.1)
-##  labeling      0.4.2   2020-10-20 [1] CRAN (R 4.1.0)
-##  lifecycle     1.0.1   2021-09-24 [1] CRAN (R 4.1.1)
-##  lubridate     1.8.0   2021-10-07 [1] CRAN (R 4.1.1)
-##  magrittr      2.0.2   2022-01-26 [1] CRAN (R 4.1.1)
-##  memoise       2.0.1   2021-11-26 [1] CRAN (R 4.1.1)
-##  modelr        0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
-##  munsell       0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  openssl       1.4.6   2021-12-19 [1] CRAN (R 4.1.1)
-##  pillar        1.7.0   2022-02-01 [1] CRAN (R 4.1.1)
-##  pkgbuild      1.3.1   2021-12-20 [1] CRAN (R 4.1.1)
-##  pkgconfig     2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload       1.2.4   2021-11-30 [1] CRAN (R 4.1.1)
-##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
-##  processx      3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
-##  progress      1.2.2   2019-05-16 [1] CRAN (R 4.1.0)
-##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.1)
-##  Rcpp          1.0.8   2022-01-13 [1] CRAN (R 4.1.1)
-##  readr       * 2.1.1   2021-11-30 [1] CRAN (R 4.1.1)
-##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes       2.4.2   2021-11-30 [1] CRAN (R 4.1.1)
-##  reprex        2.0.1   2021-08-05 [1] CRAN (R 4.1.1)
-##  rlang         1.0.1   2022-02-03 [1] CRAN (R 4.1.1)
-##  rmarkdown     2.11    2021-09-14 [1] CRAN (R 4.1.1)
-##  rprojroot     2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
-##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rtweet      * 0.7.0   2020-01-08 [1] CRAN (R 4.1.0)
-##  rvest         1.0.2   2021-10-16 [1] CRAN (R 4.1.1)
-##  sass          0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
-##  scales        1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo   1.2.2   2021-12-06 [1] CRAN (R 4.1.1)
-##  stringi       1.7.6   2021-11-29 [1] CRAN (R 4.1.1)
-##  stringr     * 1.4.0   2019-02-10 [1] CRAN (R 4.1.1)
-##  testthat      3.1.2   2022-01-20 [1] CRAN (R 4.1.1)
-##  tibble      * 3.1.6   2021-11-07 [1] CRAN (R 4.1.1)
-##  tidyr       * 1.1.4   2021-09-27 [1] CRAN (R 4.1.1)
-##  tidyselect    1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
-##  tidyverse   * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb          0.2.0   2021-10-27 [1] CRAN (R 4.1.1)
-##  usethis       2.1.5   2021-12-09 [1] CRAN (R 4.1.1)
-##  utf8          1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs         0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr         2.4.3   2021-11-30 [1] CRAN (R 4.1.1)
-##  xfun          0.29    2021-12-14 [1] CRAN (R 4.1.1)
-##  xml2          1.3.3   2021-11-30 [1] CRAN (R 4.1.1)
-##  yaml          2.3.5   2022-02-21 [1] CRAN (R 4.1.1)
+##  package     * version    date (UTC) lib source
+##  assertthat    0.2.1      2019-03-21 [1] CRAN (R 4.2.0)
+##  backports     1.4.1      2021-12-13 [1] CRAN (R 4.2.0)
+##  blogdown      1.10       2022-05-10 [1] CRAN (R 4.2.0)
+##  bookdown      0.26       2022-04-15 [1] CRAN (R 4.2.0)
+##  brio          1.1.3      2021-11-30 [1] CRAN (R 4.2.0)
+##  broom         0.8.0      2022-04-13 [1] CRAN (R 4.2.0)
+##  bslib         0.3.1      2021-10-06 [1] CRAN (R 4.2.0)
+##  cachem        1.0.6      2021-08-19 [1] CRAN (R 4.2.0)
+##  callr         3.7.0      2021-04-20 [1] CRAN (R 4.2.0)
+##  cellranger    1.1.0      2016-07-27 [1] CRAN (R 4.2.0)
+##  cli           3.3.0      2022-04-25 [1] CRAN (R 4.2.0)
+##  colorspace    2.0-3      2022-02-21 [1] CRAN (R 4.2.0)
+##  crayon        1.5.1      2022-03-26 [1] CRAN (R 4.2.0)
+##  DBI           1.1.2      2021-12-20 [1] CRAN (R 4.2.0)
+##  dbplyr        2.2.0      2022-06-05 [1] CRAN (R 4.2.0)
+##  desc          1.4.1      2022-03-06 [1] CRAN (R 4.2.0)
+##  devtools      2.4.3      2021-11-30 [1] CRAN (R 4.2.0)
+##  digest        0.6.29     2021-12-01 [1] CRAN (R 4.2.0)
+##  dplyr       * 1.0.9      2022-04-28 [1] CRAN (R 4.2.0)
+##  ellipsis      0.3.2      2021-04-29 [1] CRAN (R 4.2.0)
+##  evaluate      0.15       2022-02-18 [1] CRAN (R 4.2.0)
+##  fansi         1.0.3      2022-03-24 [1] CRAN (R 4.2.0)
+##  fastmap       1.1.0      2021-01-25 [1] CRAN (R 4.2.0)
+##  forcats     * 0.5.1      2021-01-27 [1] CRAN (R 4.2.0)
+##  fs            1.5.2      2021-12-08 [1] CRAN (R 4.2.0)
+##  generics      0.1.2      2022-01-31 [1] CRAN (R 4.2.0)
+##  ggplot2     * 3.3.6      2022-05-03 [1] CRAN (R 4.2.0)
+##  glue          1.6.2      2022-02-24 [1] CRAN (R 4.2.0)
+##  gtable        0.3.0      2019-03-25 [1] CRAN (R 4.2.0)
+##  haven         2.5.0      2022-04-15 [1] CRAN (R 4.2.0)
+##  here          1.0.1      2020-12-13 [1] CRAN (R 4.2.0)
+##  hms           1.1.1      2021-09-26 [1] CRAN (R 4.2.0)
+##  htmltools     0.5.2      2021-08-25 [1] CRAN (R 4.2.0)
+##  httr          1.4.3      2022-05-04 [1] CRAN (R 4.2.0)
+##  jquerylib     0.1.4      2021-04-26 [1] CRAN (R 4.2.0)
+##  jsonlite      1.8.0      2022-02-22 [1] CRAN (R 4.2.0)
+##  knitr         1.39       2022-04-26 [1] CRAN (R 4.2.0)
+##  lifecycle     1.0.1      2021-09-24 [1] CRAN (R 4.2.0)
+##  lubridate     1.8.0      2021-10-07 [1] CRAN (R 4.2.0)
+##  magrittr      2.0.3      2022-03-30 [1] CRAN (R 4.2.0)
+##  memoise       2.0.1      2021-11-26 [1] CRAN (R 4.2.0)
+##  modelr        0.1.8      2020-05-19 [1] CRAN (R 4.2.0)
+##  munsell       0.5.0      2018-06-12 [1] CRAN (R 4.2.0)
+##  pillar        1.7.0      2022-02-01 [1] CRAN (R 4.2.0)
+##  pkgbuild      1.3.1      2021-12-20 [1] CRAN (R 4.2.0)
+##  pkgconfig     2.0.3      2019-09-22 [1] CRAN (R 4.2.0)
+##  pkgload       1.2.4      2021-11-30 [1] CRAN (R 4.2.0)
+##  prettyunits   1.1.1      2020-01-24 [1] CRAN (R 4.2.0)
+##  processx      3.5.3      2022-03-25 [1] CRAN (R 4.2.0)
+##  ps            1.7.0      2022-04-23 [1] CRAN (R 4.2.0)
+##  purrr       * 0.3.4      2020-04-17 [1] CRAN (R 4.2.0)
+##  R6            2.5.1      2021-08-19 [1] CRAN (R 4.2.0)
+##  readr       * 2.1.2      2022-01-30 [1] CRAN (R 4.2.0)
+##  readxl        1.4.0      2022-03-28 [1] CRAN (R 4.2.0)
+##  remotes       2.4.2      2021-11-30 [1] CRAN (R 4.2.0)
+##  reprex        2.0.1      2021-08-05 [1] CRAN (R 4.2.0)
+##  rlang         1.0.2      2022-03-04 [1] CRAN (R 4.2.0)
+##  rmarkdown     2.14       2022-04-25 [1] CRAN (R 4.2.0)
+##  rprojroot     2.0.3      2022-04-02 [1] CRAN (R 4.2.0)
+##  rstudioapi    0.13       2020-11-12 [1] CRAN (R 4.2.0)
+##  rtweet      * 0.7.0.9030 2022-06-08 [1] Github (ropensci/rtweet@121f360)
+##  rvest         1.0.2      2021-10-16 [1] CRAN (R 4.2.0)
+##  sass          0.4.1      2022-03-23 [1] CRAN (R 4.2.0)
+##  scales        1.2.0      2022-04-13 [1] CRAN (R 4.2.0)
+##  sessioninfo   1.2.2      2021-12-06 [1] CRAN (R 4.2.0)
+##  stringi       1.7.6      2021-11-29 [1] CRAN (R 4.2.0)
+##  stringr     * 1.4.0      2019-02-10 [1] CRAN (R 4.2.0)
+##  testthat      3.1.4      2022-04-26 [1] CRAN (R 4.2.0)
+##  tibble      * 3.1.7      2022-05-03 [1] CRAN (R 4.2.0)
+##  tidyr       * 1.2.0      2022-02-01 [1] CRAN (R 4.2.0)
+##  tidyselect    1.1.2      2022-02-21 [1] CRAN (R 4.2.0)
+##  tidyverse   * 1.3.1      2021-04-15 [1] CRAN (R 4.2.0)
+##  tzdb          0.3.0      2022-03-28 [1] CRAN (R 4.2.0)
+##  usethis       2.1.6      2022-05-25 [1] CRAN (R 4.2.0)
+##  utf8          1.2.2      2021-07-24 [1] CRAN (R 4.2.0)
+##  vctrs         0.4.1      2022-04-13 [1] CRAN (R 4.2.0)
+##  withr         2.5.0      2022-03-03 [1] CRAN (R 4.2.0)
+##  xfun          0.31       2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2          1.3.3      2021-11-30 [1] CRAN (R 4.2.0)
+##  yaml          2.3.5      2022-02-21 [1] CRAN (R 4.2.0)
 ## 
-##  [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
