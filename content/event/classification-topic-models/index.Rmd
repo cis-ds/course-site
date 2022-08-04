@@ -1,14 +1,14 @@
 ---
 title: "Text analysis: classification and topic modeling"
-date: 2022-07-14T12:25:00-05:00
+date: 2022-11-21T12:25:00-05:00
 publishDate: 2019-06-01T12:25:00-05:00
-draft: true
+draft: false
 
 aliases: ["/cm018.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-07-14T14:20:00-05:00
+time_end: 2022-11-21T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
