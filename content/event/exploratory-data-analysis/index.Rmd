@@ -1,6 +1,6 @@
 ---
 title: "Exploratory data analysis"
-date: 2022-06-16T12:25:00-05:00
+date: 2022-08-31T12:25:00-05:00
 publishDate: 2019-04-10T12:25:00-05:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/cm004.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-06-16T14:20:00-05:00
+time_end: 2022-08-31T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.

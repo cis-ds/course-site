@@ -2,7 +2,7 @@
 title: "Juneteenth (observed)"
 date: 2022-06-20T12:25:00-05:00
 publishDate: 2019-03-01T12:25:00-05:00
-draft: false
+draft: true
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.

@@ -1,6 +1,6 @@
 ---
 title: "Data transformation"
-date: 2022-06-15T12:25:00-05:00
+date: 2022-08-29T12:25:00-05:00
 publishDate: 2019-04-08T12:25:00-05:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/cm003.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-06-15T14:20:00-05:00
+time_end: 2022-08-29T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
