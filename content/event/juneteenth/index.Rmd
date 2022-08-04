@@ -1,12 +1,12 @@
 ---
 title: "Juneteenth (observed)"
-date: 2022-06-20T10:00:00-06:00
-publishDate: 2019-03-01T10:00:00-06:00
+date: 2022-06-20T12:25:00-05:00
+publishDate: 2019-03-01T12:25:00-05:00
 draft: false
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-06-20T12:00:00-06:00
+time_end: 2022-06-20T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -17,7 +17,7 @@ abstract: ""
 summary: "No class."
 
 # Location of event.
-location: "Online (Zoom)"
+location: "Rockefeller Hall 203"
 
 # Is this a selected talk? (true/false)
 selected: false

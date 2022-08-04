@@ -1,14 +1,14 @@
 ---
 title: "A deep dive into R Markdown"
-date: 2022-06-29T10:00:00-06:00
-publishDate: 2019-03-01T10:00:00-06:00
+date: 2022-06-29T12:25:00-05:00
+publishDate: 2019-03-01T12:25:00-05:00
 draft: false
 
 aliases: ["/cm010.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-06-29T12:00:00-06:00
+time_end: 2022-06-29T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -19,7 +19,7 @@ abstract: ""
 summary: "All things related to R Markdown and the `knitr` package."
 
 # Location of event.
-location: "Online (Zoom)"
+location: "Rockefeller Hall 203"
 
 # Is this a selected talk? (true/false)
 selected: false

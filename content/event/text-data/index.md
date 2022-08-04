@@ -1,14 +1,14 @@
 ---
 title: "Text analysis: fundamentals and sentiment analysis"
-date: 2022-07-13T10:00:00-06:00
-publishDate: 2019-06-03T10:00:00-06:00
+date: 2022-07-13T12:25:00-05:00
+publishDate: 2019-06-03T12:25:00-05:00
 draft: true
 
 aliases: ["/cm017.html"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-07-13T12:00:00-06:00
+time_end: 2022-07-13T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -19,7 +19,7 @@ abstract: ""
 summary: "Introduce methods for text data, structuring text data in R, and conducting exploratory analysis."
 
 # Location of event.
-location: "Online (Zoom)"
+location: "Rockefeller Hall 203"
 
 # Is this a selected talk? (true/false)
 selected: false

@@ -1,12 +1,12 @@
 ---
 title: "Build a better workflow"
-date: 2022-07-07T10:00:00-06:00
-publishDate: 2019-05-06T10:00:00-06:00
+date: 2022-07-07T12:25:00-05:00
+publishDate: 2019-05-06T12:25:00-05:00
 draft: false
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-07-07T12:00:00-06:00
+time_end: 2022-07-07T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -17,7 +17,7 @@ abstract: ""
 summary: "Introduce and practice techniques for preprocessing data sets and developing model workflows using the `tidymodels` framework."
 
 # Location of event.
-location: "Online (Zoom)"
+location: "Rockefeller Hall 203"
 
 # Is this a selected talk? (true/false)
 selected: false
