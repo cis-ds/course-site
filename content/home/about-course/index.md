@@ -12,37 +12,15 @@ design:
   columns: "1"
 ---
 
-# MACS 30500^[aka CHDV 30511/ENST 20550/MACS 20500/MAPS 30500/PLSC 30235/PSYC 30510/SOCI 20278/SOCI 40176/SOSC 26032] - Computing for the Social Sciences <img src="img/cfss.svg" align="right" />
+# INFO 5940 - Computing for Information Science <img src="img/cis.svg" align="right" />
 
-<div class="row">
-  <div class="col-sm-11 col-xs-12">
-
- {{% callout note %}}
-  
-  All class meetings and office hours will be held on Zoom. Links to these meetings can be found on the [Canvas site](https://canvas.uchicago.edu/courses/43130) (UChicago authentication required).
-  
-  {{% /callout %}}
-   
-  * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-  * Teaching Assistants
-    - Natalie Ayers
-    - Warren Liow
-  * Meeting day/time: MTuWTh 10-12pm
-  - Meeting location: On Zoom
-  * Office hours (on Zoom)
-    - Benjamin: MW 12-1pm
-    - Natalie: M 5-7pm; W 3-5pm
-    - Warren: TuTh 4-6pm
-  * Prerequisites: None
-  * Requirements: Internet connection and a computer
-
-  </div>
-  
-  <div class="col-sm-1 col-xs-12">
-  
-  </div>
-
-</div>
+* Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
+* Teaching Assistants: TBD
+* Meeting day/time: MW 12:25-2:20
+* Meeting location: [Rockefeller Hall 203](https://www.cornell.edu/about/maps/?q=Rockefeller%20Hall#CUmap)
+* Office hours: TBD
+* Prerequisites: None
+* Requirements: Internet connection and a computer
 
 ## Course Description
 

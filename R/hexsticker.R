@@ -13,8 +13,8 @@ p <- ggplot(data = scorecard,
   theme_void() +
   theme_transparent()
 
-sticker(subplot = p, package = "cfss",
+sticker(subplot = p, package = "CIS",
         h_color = "#767676", h_fill = "#800000", p_color = "#D6D6CE",
         s_x = 1,
         s_width = 1, s_height = .8,
-        filename = here("static", "img", "cfss.svg"))
+        filename = here("static", "img", "cis.svg"))

@@ -1,5 +1,5 @@
 ---
-title: "Introduction to computing for the social sciences"
+title: "Introduction to computing for information science"
 date: 2022-08-22T12:25:00-05:00
 publishDate: 2019-08-01T12:25:00-05:00
 draft: false
@@ -50,7 +50,7 @@ math: false
 
 ## Class materials
 
-* [Introduction to computing for the social sciences](/notes/intro-to-course/)
+* [Introduction to computing for information science](/notes/intro-to-course/)
 
 ### Additional readings
 

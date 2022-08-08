@@ -34,7 +34,7 @@ Rather than installing your own copy of R and RStudio, you can access R and RStu
 
 ## Test it
 
-1. Access the "Computing for the Social Sciences" workspace. There should be an option in the navigation bar on the left side of the screen.
+1. Access the "Computing for Information Science" workspace. There should be an option in the navigation bar on the left side of the screen.
 1. Create a "new project".
 
     {{< figure src="https://rstudio.cloud/images/guide/newProjectGit.png" caption="" >}}
