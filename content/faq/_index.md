@@ -36,7 +36,7 @@ Meet some of the types of students you will find in this class.
 {{< figure src="ryan.jpg" >}}
 
 * General background
-    * Entering the [MAPSS program](https://mapss.uchicago.edu)
+    * Entering the [MPS program](https://infosci.cornell.edu/masters/mps)
     * Undergraduate degree in journalism
     * Enjoys attending [Weird Al Yankovic concerts](https://www.youtube.com/watch?v=qpMvS1Q1sos)
 * Starting points
@@ -53,11 +53,11 @@ Meet some of the types of students you will find in this class.
 {{< figure src="fernando.jpg" >}}
 
 * General background
-    * Third-year student in the College
+    * Third-year undergraduate student
     * Majoring in political science
     * Makes an annual pilgrimage to Comic-Con where he traditionally cosplays as [Spock](https://memory-alpha.fandom.com/wiki/Spock)
 * Starting points
-    * Has taken MATH 15100 and 15200, plus the departmental methods course
+    * Has taken general education math courses, plus the departmental methods course
     * Isn't afraid to tackle a new challenge
     * Possesses some experience writing scripts in Stata to automate statistical analysis
 * Needs
@@ -84,11 +84,11 @@ Meet some of the types of students you will find in this class.
 
 ## General description
 
-This course is open to any graduate (or advanced undergraduate) at UChicago. I anticipate drawing students from a wide range of departments such as Sociology, Psychology, Political Science, Comparative Human Development, and MAPSS. Typically these students are looking to learn basic computational and analytical skills they can apply to master's theses or dissertation research.
+This course is open to any graduate (or advanced undergraduate) at Cornell. I anticipate drawing students from a wide range of departments such as Information Science, Sociology, Psychology, and Political Science. Typically these students are looking to learn basic computational and analytic skills they can apply to master's projects or dissertation research.
 
-If you have never programmed before or don't even know what the [shell](/setup/shell/) is, **prepare for a shock**. This class will prove to be immensely beneficial if you stick with it, but that will require you to commit for the full 9 weeks. I do not presume any prior programming experience, so everyone starts from the same knowledge level. I guarantee that the first few weeks and assignments will be rough - but the good news is that they will be rough for everyone! Your classmates are struggling with you and you can lean on one another to get through the worst part of the learning curve.
+If you have never programmed before or don't even know what the [shell](/setup/shell/) is, **prepare for a shock**. This class will prove to be immensely beneficial if you stick with it, but that will require you to commit for the full semester. I do not presume any prior programming experience, so everyone starts from the same knowledge level. I guarantee that the first few weeks and assignments will be rough - but the good news is that they will be rough for everyone! Your classmates are struggling with you and you can lean on one another to get through the worst part of the learning curve.
 
-A highly selective sampling of feedback from past course evaluations:
+A highly selective sampling of feedback from when I taught [a similar course at the University of Chicago](https://cfss.uchicago.edu):
 
 > I think this class is really well-organized. The homework is craftily designed as a way to solidify the materials learned in class. Dr. Soltoff is wonderful and helpful! He came to class fully prepared and made the lectures enjoyable and productive. I suggest that all Ph.D. students in Political Science (at least in my field), who likes to conduct quantitative research, should choose this class in the first year, because this class can well set students up with a good understanding of programming techniques.
 
@@ -134,7 +134,6 @@ Thanks to [Angela Li](https://angela-li.github.io/) for compiling these recommen
 * [R LGBTQ Twitter](https://twitter.com/r_lgbtq): Affinity group for queer people in the R community -- Twitter often promotes events, panels and talks by and for queer R users. 
 * [Gayta Science Twitter](https://twitter.com/gaytascience): Alliance that uses data science techniques to give LGBTQ+ experiences a voice -- Twitter will often share data-driven work concerning the LGBTQ+ community. 
 * [RLadies Community Slack](http://bit.ly/rladies-slack): A global programming meetup for non-binary, trans, and female R users. 
-* [R Ladies Chicago Slack](https://rladiesinvite.herokuapp.com/): Local Chicago chapter of R Ladies -- hosts events, talks, and projects in the Chicago-land area. 
 * [RLadies Remote Twitter](https://twitter.com/RLadiesRemote): Remote chapter of R Ladies -- has Slack coffee chats to discuss programming topics in a supportive environment. 
 * [People of Color Code Meetup](https://www.meetup.com/People-of-Color-Code/): A meetup for POC software developers -- has events where POC developers can work on personal projects, collaborate, and learn. 
 * [R Forwards](https://forwards.github.io/): A task force set up by the R Foundation to address the under-representation of under-represented groups in the R community -- collects representation data in the R community, produces workshops and teaching materials 
@@ -152,60 +151,22 @@ Comprehensive instructions for downloading and setting up this software can be f
 
 ## How will I be evaluated?
 
-Each week students will complete a series of programming assignments linked to lecture materials. These assignments will generally be due the following week prior to Monday's class. While students are encouraged to assist one another in debugging programs and solving problems in these assignments, it is imperative students also learn how to do this for themselves. That is, **students need to understand, write, and submit their own work.**
+Students will complete a series of (roughly) weekly programming assignments linked to class materials. These assignments will generally be due the following week prior to Monday's class. While students are encouraged to assist one another in debugging programs and solving problems in these assignments, it is imperative students also learn how to do this for themselves. That is, **students need to understand, write, and submit their own work.**
 
-Each homework will be evaluated by either myself or the TA, as well as by **two peer reviewers**. Each of you is required to provide two peer reviews for each assignment; failure to complete these reviews will result in a deduction of your final grade.
+Each homework will be evaluated by either myself or a TA, as well as by **two peer reviewers**. Each of you is required to provide two peer reviews for each assignment; failure to complete these reviews will result in a deduction of your final grade.
 
 * [General guidelines for submitting homework](/faq/homework-guidelines/)
 * [Evaluation criteria for homework](/faq/homework-evaluations/)
 * [How to perform peer review](/faq/peer-evaluations/)
 * [How to properly ask for help](/faq/asking-questions/)
 
-## COVID-19-related policies
-
-### UChicago Health Pact
-
-All students on campus are required to adhere to the guidelines in the UChicago Health Pact in order to promote a safe environment in the classroom.
-
-* Secure face coverings must be worn appropriately at all times at all times while in University buildings
-* Maintain a distance of 6 feet from others
-* Do not attend and in-person class if you feel unwell or are experiencing COVID-19 related symptoms
-
-The complete text of the UChicago Health Pact along with additional information about COVID-19 protocols can be found [here](https://goforward.uchicago.edu/health-requirements/#healthpact).
-
-### Reporting COVID-19 related concerns
-
-Any concerns over inappropriate PPE usage, physical distancing, cleaning/disinfection, or other COVID-19 related public health concerns should be directed to [UCAIR](https://ehs-prd-01.uchicago.edu/ehsa-ucair/InjuryIllnessIndexUOFC-IT.html).
-
-If there is an emergency, call 773-702-8181 or dial 123 on any campus phone.
-
-### Reporting COVID-19 exposure or a confirmed case
-
-If you were potentially exposed to COVID-19 or your COVID-19 test results come back positive, reach out immediately to [C19HealthReport@uchicago.edu](mailto:C19HealthReport@uchicago.edu).
-
-### Recording and deletion policies for academic year 2020-21
-
-The Recording and Deletion Policies for the current academic year can be found in the Student Manual under [Petitions, Audio & Video Recording on Campus](https://studentmanual.uchicago.edu/administrative-policies/additional-administrative-regulations/petitions-audio-video-recording-on-campus/).
-
-* Do not record, share, or disseminate any course sessions, videos, transcripts, audio, or chats.
-* Do not share links for the course to those not currently enrolled.
-* Any Zoom cloud recordings will be automatically deleted 90 days after the completion of the recording.
-
-### Participation if you get COVID-19
-
-Students who have been exposed to or who are experiencing symptoms of COVID-19 should contact [UChicago Student Wellness](https://wellness.uchicago.edu/) immediately to be tested, and reach out to their area Dean of Students to request accommodations for classes until:
-
-* At least 10 days have passed since symptoms first appeared and;
-* At least 3 days (72 hours) have passed since recovery - defined as resolution of fever without the use of fever-reducing medications and improvement in respiratory symptoms (e.g., cough, shortness of breath).
-
 ## Statement on diversity, inclusion, and disability
 
-The University of Chicago is committed to diversity and rigorous inquiry from multiple perspectives. The MAPSS, CIR, and Computation programs share this commitment and seek to foster productive learning environments based upon inclusion, open communication, and mutual respect for a diverse range of identities, experiences, and positions.
+Cornell University (as an institution) and I (as a human being and instructor of this course) am committed to full inclusion in education for all persons. Services and reasonable accommodations are available to persons with temporary and permanent disabilities, to students with DACA or undocumented status, to students facing mental health or other personal challenges, and to students with other kinds of learning challenges. Please feel free to let me know if there are circumstances affecting your ability to participate in class. Some resources that might be of use include:
 
-The University of Chicago is committed to ensuring equitable access to our academic programs and services. Students with disabilities who have been approved for the use of academic accommodations by Student Disability Services (SDS) and need a reasonable accommodation(s) to participate fully in this course should follow the procedures established by SDS for using accommodations. Timely notifications are required in order to ensure that your accommodations can be implemented. Please meet with me to discuss your access needs in this class after you have completed the SDS procedures for requesting accommodations.
-
-* Email: [disabilities@uchicago.edu](mailto:disabilities@uchicago.edu)
-* Phone: 773-702-6000
+- [Office of Student Disability Services](https://sds.cornell.edu)
+- [Cornell Health CAPS (Counseling & Psychological Services)](https://health.cornell.edu/services/counseling-psychiatry)
+- [Undocumented/DACA Student support](https://dos.cornell.edu/undocumented-daca-support/undergraduate-admissions-financial-aid)
 
 ## Acknowledgments
 
