@@ -24,7 +24,7 @@ design:
 
 ## Course Description
 
-This is an applied course for social scientists with little-to-no programming experience who wish to harness growing digital and computational resources. The focus of the course is on generating **reproducible research** through the use of programming languages and version control software. Major emphasis is placed on a pragmatic understanding of core principles of programming and packaged implementations of methods. Students will leave the course with basic computational skills implemented through many computational methods and approaches to social science; while students will not become expert programmers, they will gain the knowledge of how to adapt and expand these skills as they are presented with new questions, methods, and data.
+This is an applied course for data scientists with little-to-no programming experience who wish to harness growing digital and computational resources. The focus of the course is on generating **reproducible research** through the use of programming languages and version control software. Major emphasis is placed on a pragmatic understanding of core principles of programming and packaged implementations of methods. Students will leave the course with basic computational skills implemented through many computational methods and approaches to data science; while students will not become expert programmers, they will gain the knowledge of how to adapt and expand these skills as they are presented with new questions, methods, and data.
 
 ## Course Objectives
 
@@ -35,10 +35,13 @@ By the end of the course, students will:
 * Debug programs for errors
 * Identify and use external libraries to expand on base functions
 * Apply Git and GitHub workflows for version control
+* Publish reproducible documents
 * Implement best practices for reproducible research
 * Implement machine learning algorithms
 * Visualize information and data using appropriate graphical techniques
 * Import data from files or the internet
 * Munge raw data into a tidy format
 * Scrape websites to collect data for analysis
+* Create visualizations using geospatial data
 * Parse and analyze text documents
+* Construct interactive web applications
