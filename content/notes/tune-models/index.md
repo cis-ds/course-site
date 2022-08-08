@@ -38,7 +38,7 @@ In our previous [*Evaluate your model with resampling*](/notes/resampling/) arti
 
 
 ```r
-data("gss", package = "rcfss")
+data("gss", package = "rcis")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%

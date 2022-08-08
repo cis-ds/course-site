@@ -70,6 +70,6 @@ with(pkg_cran, packages[!on_cran]) %>%
 # devtools::install_github(c("dgrtwo/gganimate",
 #                            "bradleyboehmke/harrypotter",
 #                            "hadley/multidplyr",
-#                            "cis-ds/rcfss"))
+#                            "cis-ds/rcis"))
 
 

@@ -25,7 +25,7 @@ Go [here](https://github.com/cfss-su22/hw03) to fork the repo.
 
 # Part 1: Tidying messy data
 
-In the `rcfss` package, there is a data frame called `dadmom`.
+In the `rcis` package, there is a data frame called `dadmom`.
 
 
 ```

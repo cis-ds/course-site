@@ -19,7 +19,7 @@ menu:
 ```r
 library(tidymodels)
 library(tidyverse)
-library(rcfss)
+library(rcis)
 library(rstanarm)
 library(broom.mixed)
 
@@ -37,7 +37,7 @@ There are several different approaches to fitting a linear model in R.^[See [*Ti
 
 ## `scorecard`
 
-As in past exercises, let's use the `rcfss::scorecard` dataset which contains detailed information on all four-year colleges and universities in the United States. Here we will consider the average faculty salary to understand how it is influenced by factors such as the average annual total cost of attendance and whether the university is public, private nonprofit, or private for-profit.
+As in past exercises, let's use the `rcis::scorecard` dataset which contains detailed information on all four-year colleges and universities in the United States. Here we will consider the average faculty salary to understand how it is influenced by factors such as the average annual total cost of attendance and whether the university is public, private nonprofit, or private for-profit.
 
 
 ```r
@@ -547,7 +547,7 @@ devtools::session_info()
 ##  ps             1.6.0      2021-02-28 [1] CRAN (R 4.0.2)
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6             2.5.0      2020-10-28 [1] CRAN (R 4.0.2)
-##  rcfss        * 0.2.1      2020-12-08 [1] local         
+##  rcis        * 0.2.1      2020-12-08 [1] local         
 ##  Rcpp         * 1.0.6      2021-01-15 [1] CRAN (R 4.0.2)
 ##  RcppParallel   5.1.4      2021-05-04 [1] CRAN (R 4.0.2)
 ##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)

@@ -31,17 +31,17 @@ usethis::use_course("cis-ds/data-transformation")
 
 {{% /callout %}}
 
-The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/cis-ds/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("cis-ds/rcfss")` in the console.
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcis`](https://github.com/cis-ds/rcis) library from GitHub. To install the package, run the command `devtools::install_github("cis-ds/rcis")` in the console.
 
 {{% callout warning %}}
 
-If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("cis-ds/rcfss")`.
+If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("cis-ds/rcis")`.
 
 {{% /callout %}}
 
 
 ```r
-library(rcfss)
+library(rcis)
 data("scorecard")
 glimpse(scorecard)
 ```
@@ -366,7 +366,7 @@ devtools::session_info()
 ##  ps               1.7.0   2022-04-23 [1] CRAN (R 4.2.0)
 ##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.2.0)
 ##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
-##  rcfss          * 0.2.4   2022-06-08 [1] local
+##  rcis          * 0.2.4   2022-06-08 [1] local
 ##  readr          * 2.1.2   2022-01-30 [1] CRAN (R 4.2.0)
 ##  readxl           1.4.0   2022-03-28 [1] CRAN (R 4.2.0)
 ##  remotes          2.4.2   2021-11-30 [1] CRAN (R 4.2.0)

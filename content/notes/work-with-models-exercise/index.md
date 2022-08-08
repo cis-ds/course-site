@@ -19,7 +19,7 @@ menu:
 ```r
 library(tidyverse)
 library(tidymodels)
-library(rcfss)
+library(rcis)
 
 set.seed(123)
 
@@ -131,7 +131,7 @@ tidy(scorecard_fit)
 
 Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
-Use the `mental_health` data set in `library(rcfss)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
+Use the `mental_health` data set in `library(rcis)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
 
 
 ```r
@@ -162,7 +162,7 @@ mental_health
 
 ```r
 # convert vote96 to a factor column
-mental_health <- rcfss::mental_health %>%
+mental_health <- rcis::mental_health %>%
   mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
 ```
 
@@ -209,7 +209,7 @@ bind_cols(
 
 ```r
 # recode female
-mental_health <- rcfss::mental_health %>%
+mental_health <- rcis::mental_health %>%
   mutate(
     vote96 = factor(vote96, labels = c("Not voted", "Voted")),
     female = factor(female, labels = c("Male", "Female"))
@@ -360,7 +360,7 @@ devtools::session_info()
 ##  ps             1.6.0      2021-02-28 [1] CRAN (R 4.0.2)
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6             2.5.0      2020-10-28 [1] CRAN (R 4.0.2)
-##  rcfss        * 0.2.1      2020-12-08 [1] local         
+##  rcis        * 0.2.1      2020-12-08 [1] local         
 ##  Rcpp           1.0.6      2021-01-15 [1] CRAN (R 4.0.2)
 ##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.0.0)

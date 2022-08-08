@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 ```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
 library(tidyverse)
 library(tidymodels)
-library(rcfss)
+library(rcis)
 
 library(naniar) # visualize missingness
 library(skimr) # summary statistics tables
@@ -61,7 +61,7 @@ The [General Social Survey](http://gss.norc.org/) is a biannual survey of the Am
 {{% /callout %}}
 
 ```{r load-gss}
-data("gss", package = "rcfss")
+data("gss", package = "rcis")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%
@@ -70,7 +70,7 @@ gss <- gss %>%
 skimr::skim(gss)
 ```
 
-`rcfss::gss` contains a selection of variables from the 2012 GSS. We are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
+`rcis::gss` contains a selection of variables from the 2012 GSS. We are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
 
 The outcome of interest `colrac` is a factor variable coded as either `"ALLOWED"` (respondent believes the person should be allowed to teach) or `"NOT ALLOWED"` (respondent believes the person should not allowed to teach).
 
@@ -229,13 +229,13 @@ We need one final step to add to our recipe. Recall that there is substantial mi
 ```{r impute}
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID") %>%
-  step_impute_median(all_numeric()) %>%
-  step_impute_mode(all_nominal(), -all_outcomes()) %>%
+  step_impute_median(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors()) %>%
   step_cut(cohort, breaks = c(1945, 1964, 1980)) %>%
   step_dummy(all_nominal(), -all_outcomes())
 ```
 
-Note that I added those steps prior to collapsing the `cohort` variable. This allows us to avoid removing any observations from the data set prior to modeling the data. I also exclude the outcome variable from the imputation process (`-all_outcomes()`) as this imputation approach on the outcome of interest would skew our results.
+Note that I added those steps prior to collapsing the `cohort` variable. This allows us to avoid removing any observations from the data set prior to modeling the data. I also exclude the outcome and ID variables from the imputation process (`all_numeric_predictors()`/`all_nominal_predictors()`) as this imputation approach on the outcome of interest would skew our results.
 
 Now we've created a _specification_ of what should be done with the data. How do we use the recipe we made? 
 

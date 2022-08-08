@@ -4,7 +4,7 @@
 
 # load packages
 library(tidyverse)
-library(rcfss)
+library(rcis)
 
 # filter data for under 65
 youth <- gun_deaths %>%

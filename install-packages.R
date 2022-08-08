@@ -94,7 +94,7 @@ with(pkg_cran, packages[on_cran]) %>%
 # install.packages("remotes")   # needed to install packages directly from GitHub
 # remotes::install_github(c(
 #   "bradleyboehmke/harrypotter",
-#   "cis-ds/rcfss",
+#   "cis-ds/rcis",
 #   "ManifestoProject/manifestoR",
 #   "cpsievert/LDAvisData",
 #   "hrbrmstr/albersusa",

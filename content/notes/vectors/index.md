@@ -19,7 +19,7 @@ menu:
 
 ```r
 library(tidyverse)
-library(rcfss)
+library(rcis)
 set.seed(1234)
 ```
 
@@ -771,7 +771,7 @@ devtools::session_info()
 ##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
 ##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  rcfss       * 0.2.1   2020-12-08 [1] local         
+##  rcis       * 0.2.1   2020-12-08 [1] local         
 ##  Rcpp          1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
 ##  readr       * 2.0.1   2021-08-10 [1] CRAN (R 4.1.0)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)

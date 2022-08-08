@@ -19,7 +19,7 @@ menu:
 ```r
 library(tidyverse)
 library(tidymodels)
-library(rcfss)
+library(rcis)
 
 library(naniar) # visualize missingness
 library(skimr) # summary statistics tables
@@ -57,7 +57,7 @@ The [General Social Survey](http://gss.norc.org/) is a biannual survey of the Am
 
 
 ```r
-data("gss", package = "rcfss")
+data("gss", package = "rcis")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%
@@ -104,7 +104,7 @@ Table: Table 1: Data summary
 |cohort        |         5|          1.00| 1963.81|  17.69| 1923.0| 1951.00| 1965.00| 1979.00| 1994.00|▃▆▇▇▇ |
 |egalit_scale  |       690|          0.65|   19.44|  10.87|    1.0|   10.00|   20.00|   29.00|   35.00|▆▃▅▅▇ |
 
-`rcfss::gss` contains a selection of variables from the 2012 GSS. We are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
+`rcis::gss` contains a selection of variables from the 2012 GSS. We are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
 
 The outcome of interest `colrac` is a factor variable coded as either `"ALLOWED"` (respondent believes the person should be allowed to teach) or `"NOT ALLOWED"` (respondent believes the person should not allowed to teach).
 
@@ -319,13 +319,13 @@ We need one final step to add to our recipe. Recall that there is substantial mi
 ```r
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID") %>%
-  step_impute_median(all_numeric()) %>%
-  step_impute_mode(all_nominal(), -all_outcomes()) %>%
+  step_impute_median(all_numeric_predictors()) %>%
+  step_impute_mode(all_nominal_predictors()) %>%
   step_cut(cohort, breaks = c(1945, 1964, 1980)) %>%
   step_dummy(all_nominal(), -all_outcomes())
 ```
 
-Note that I added those steps prior to collapsing the `cohort` variable. This allows us to avoid removing any observations from the data set prior to modeling the data. I also exclude the outcome variable from the imputation process (`-all_outcomes()`) as this imputation approach on the outcome of interest would skew our results.
+Note that I added those steps prior to collapsing the `cohort` variable. This allows us to avoid removing any observations from the data set prior to modeling the data. I also exclude the outcome and ID variables from the imputation process (`all_numeric_predictors()`/`all_nominal_predictors()`) as this imputation approach on the outcome of interest would skew our results.
 
 Now we've created a _specification_ of what should be done with the data. How do we use the recipe we made? 
 
@@ -453,6 +453,7 @@ predict(object = gss_fit, new_data = test_data)
 ##  9 NOT ALLOWED
 ## 10 NOT ALLOWED
 ## # … with 484 more rows
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 Because our outcome variable here is a factor, the output from `predict()` returns the predicted class: `ALLOWED` versus `NOT ALLOWED`. But, let's say we want the predicted class probabilities for each respondent instead. To return those, we can specify `type = "prob"` when we use `predict()`. We'll also bind the output with some variables from the test data and save them together:
@@ -477,6 +478,7 @@ gss_pred
 ## 4         0.602               0.398 ALLOWED    
 ## 5         0.726               0.274 NOT ALLOWED
 ## # … with 489 more rows
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 Now that we have a tibble with our predicted class probabilities, how will we evaluate the performance of our workflow? We can see from these first few rows that our model predicted four of these five respondents correctly because the values of `.pred_ALLOWED` are *p* > .50. But we also know that we have 494 rows total to predict. We would like to calculate a metric that tells how well our model predicted respondents' attitudes, compared to the true status of our outcome variable, `colrac`.
@@ -527,152 +529,157 @@ devtools::session_info()
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value
-##  version  R version 4.1.2 (2021-11-01)
+##  version  R version 4.2.1 (2022-06-23)
 ##  os       macOS Monterey 12.2.1
 ##  system   aarch64, darwin20
 ##  ui       X11
 ##  language (EN)
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
-##  tz       America/Chicago
-##  date     2022-06-01
-##  pandoc   2.17.1.1 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/ (via rmarkdown)
+##  tz       America/New_York
+##  date     2022-08-08
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package        * version    date (UTC) lib source
-##  assertthat       0.2.1      2019-03-21 [1] CRAN (R 4.1.0)
-##  backports        1.4.1      2021-12-13 [1] CRAN (R 4.1.1)
-##  base64enc        0.1-3      2015-07-28 [1] CRAN (R 4.1.0)
-##  blogdown         1.10       2022-05-10 [1] CRAN (R 4.1.1)
-##  bookdown         0.26       2022-04-15 [1] CRAN (R 4.1.1)
-##  brio             1.1.3      2021-11-30 [1] CRAN (R 4.1.1)
-##  broom          * 0.8.0      2022-04-13 [1] CRAN (R 4.1.1)
-##  bslib            0.3.1      2021-10-06 [1] CRAN (R 4.1.1)
-##  cachem           1.0.6      2021-08-19 [1] CRAN (R 4.1.1)
-##  callr            3.7.0      2021-04-20 [1] CRAN (R 4.1.0)
-##  cellranger       1.1.0      2016-07-27 [1] CRAN (R 4.1.0)
-##  class            7.3-20     2022-01-13 [1] CRAN (R 4.1.1)
-##  cli              3.3.0      2022-04-25 [1] CRAN (R 4.1.1)
-##  codetools        0.2-18     2020-11-04 [1] CRAN (R 4.1.2)
-##  colorspace       2.0-3      2022-02-21 [1] CRAN (R 4.1.1)
-##  crayon           1.5.1      2022-03-26 [1] CRAN (R 4.1.2)
-##  DBI              1.1.2      2021-12-20 [1] CRAN (R 4.1.1)
-##  dbplyr           2.1.1      2021-04-06 [1] CRAN (R 4.1.0)
-##  desc             1.4.1      2022-03-06 [1] CRAN (R 4.1.1)
-##  devtools         2.4.3      2021-11-30 [1] CRAN (R 4.1.1)
-##  dials          * 0.1.1      2022-04-06 [1] CRAN (R 4.1.1)
-##  DiceDesign       1.9        2021-02-13 [1] CRAN (R 4.1.0)
-##  digest           0.6.29     2021-12-01 [1] CRAN (R 4.1.1)
-##  dplyr          * 1.0.9      2022-04-28 [1] CRAN (R 4.1.1)
-##  ellipsis         0.3.2      2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate         0.15       2022-02-18 [1] CRAN (R 4.1.1)
-##  fansi            1.0.3      2022-03-24 [1] CRAN (R 4.1.1)
-##  farver           2.1.0      2021-02-28 [1] CRAN (R 4.1.0)
-##  fastmap          1.1.0      2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats        * 0.5.1      2021-01-27 [1] CRAN (R 4.1.1)
-##  foreach          1.5.2      2022-02-02 [1] CRAN (R 4.1.1)
-##  fs               1.5.2      2021-12-08 [1] CRAN (R 4.1.1)
-##  furrr            0.3.0      2022-05-04 [1] CRAN (R 4.1.1)
-##  future           1.25.0     2022-04-24 [1] CRAN (R 4.1.1)
-##  future.apply     1.9.0      2022-04-25 [1] CRAN (R 4.1.1)
-##  generics         0.1.2      2022-01-31 [1] CRAN (R 4.1.1)
-##  ggplot2        * 3.3.6      2022-05-03 [1] CRAN (R 4.1.1)
-##  globals          0.15.0     2022-05-09 [1] CRAN (R 4.1.1)
-##  glue             1.6.2      2022-02-24 [1] CRAN (R 4.1.1)
-##  gower            1.0.0      2022-02-03 [1] CRAN (R 4.1.1)
-##  GPfit            1.0-8      2019-02-08 [1] CRAN (R 4.1.0)
-##  gtable           0.3.0      2019-03-25 [1] CRAN (R 4.1.1)
-##  hardhat          0.2.0      2022-01-24 [1] CRAN (R 4.1.1)
-##  haven            2.5.0      2022-04-15 [1] CRAN (R 4.1.1)
-##  here             1.0.1      2020-12-13 [1] CRAN (R 4.1.0)
-##  highr            0.9        2021-04-16 [1] CRAN (R 4.1.0)
-##  hms              1.1.1      2021-09-26 [1] CRAN (R 4.1.1)
-##  htmltools        0.5.2      2021-08-25 [1] CRAN (R 4.1.1)
-##  httr             1.4.3      2022-05-04 [1] CRAN (R 4.1.1)
-##  infer          * 1.0.0      2021-08-13 [1] CRAN (R 4.1.1)
-##  ipred            0.9-12     2021-09-15 [1] CRAN (R 4.1.1)
-##  iterators        1.0.14     2022-02-05 [1] CRAN (R 4.1.1)
-##  jquerylib        0.1.4      2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite         1.8.0      2022-02-22 [1] CRAN (R 4.1.1)
-##  knitr            1.39       2022-04-26 [1] CRAN (R 4.1.1)
-##  labeling         0.4.2      2020-10-20 [1] CRAN (R 4.1.0)
-##  lattice          0.20-45    2021-09-22 [1] CRAN (R 4.1.2)
-##  lava             1.6.10     2021-09-02 [1] CRAN (R 4.1.1)
-##  lhs              1.1.5      2022-03-22 [1] CRAN (R 4.1.1)
-##  lifecycle        1.0.1      2021-09-24 [1] CRAN (R 4.1.1)
-##  listenv          0.8.0      2019-12-05 [1] CRAN (R 4.1.0)
-##  lubridate        1.8.0      2021-10-07 [1] CRAN (R 4.1.1)
-##  magrittr         2.0.3      2022-03-30 [1] CRAN (R 4.1.1)
-##  MASS             7.3-57     2022-04-22 [1] CRAN (R 4.1.1)
-##  Matrix           1.4-1      2022-03-23 [1] CRAN (R 4.1.1)
-##  memoise          2.0.1      2021-11-26 [1] CRAN (R 4.1.1)
-##  modeldata      * 0.1.1      2021-07-14 [1] CRAN (R 4.1.0)
-##  modelr           0.1.8      2020-05-19 [1] CRAN (R 4.1.0)
-##  munsell          0.5.0      2018-06-12 [1] CRAN (R 4.1.0)
-##  naniar         * 0.6.1      2021-05-14 [1] CRAN (R 4.1.1)
-##  nnet             7.3-17     2022-01-13 [1] CRAN (R 4.1.1)
-##  parallelly       1.31.1     2022-04-22 [1] CRAN (R 4.1.1)
-##  parsnip        * 0.2.1      2022-03-17 [1] CRAN (R 4.1.1)
-##  pillar           1.7.0      2022-02-01 [1] CRAN (R 4.1.1)
-##  pkgbuild         1.3.1      2021-12-20 [1] CRAN (R 4.1.1)
-##  pkgconfig        2.0.3      2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload          1.2.4      2021-11-30 [1] CRAN (R 4.1.1)
-##  plyr             1.8.7      2022-03-24 [1] CRAN (R 4.1.1)
-##  prettyunits      1.1.1      2020-01-24 [1] CRAN (R 4.1.0)
-##  pROC             1.18.0     2021-09-03 [1] CRAN (R 4.1.1)
-##  processx         3.5.3      2022-03-25 [1] CRAN (R 4.1.1)
-##  prodlim          2019.11.13 2019-11-17 [1] CRAN (R 4.1.0)
-##  ps               1.7.0      2022-04-23 [1] CRAN (R 4.1.1)
-##  purrr          * 0.3.4      2020-04-17 [1] CRAN (R 4.1.0)
-##  R6               2.5.1      2021-08-19 [1] CRAN (R 4.1.1)
-##  rcfss          * 0.2.4      2022-04-01 [1] local
-##  Rcpp             1.0.8.3    2022-03-17 [1] CRAN (R 4.1.1)
-##  readr          * 2.1.2      2022-01-30 [1] CRAN (R 4.1.1)
-##  readxl           1.4.0      2022-03-28 [1] CRAN (R 4.1.1)
-##  recipes        * 0.2.0      2022-02-18 [1] CRAN (R 4.1.1)
-##  remotes          2.4.2      2021-11-30 [1] CRAN (R 4.1.1)
-##  repr             1.1.4      2022-01-04 [1] CRAN (R 4.1.2)
-##  reprex           2.0.1      2021-08-05 [1] CRAN (R 4.1.1)
-##  rlang            1.0.2      2022-03-04 [1] CRAN (R 4.1.1)
-##  rmarkdown        2.14       2022-04-25 [1] CRAN (R 4.1.1)
-##  rpart            4.1.16     2022-01-24 [1] CRAN (R 4.1.1)
-##  rprojroot        2.0.3      2022-04-02 [1] CRAN (R 4.1.1)
-##  rsample        * 0.1.1      2021-11-08 [1] CRAN (R 4.1.1)
-##  rstudioapi       0.13       2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest            1.0.2      2021-10-16 [1] CRAN (R 4.1.1)
-##  sass             0.4.1      2022-03-23 [1] CRAN (R 4.1.1)
-##  scales         * 1.2.0      2022-04-13 [1] CRAN (R 4.1.2)
-##  sessioninfo      1.2.2      2021-12-06 [1] CRAN (R 4.1.1)
-##  showtext         0.9-5      2022-02-09 [1] CRAN (R 4.1.1)
-##  showtextdb       3.0        2020-06-04 [1] CRAN (R 4.1.1)
-##  skimr          * 2.1.4      2022-04-15 [1] CRAN (R 4.1.1)
-##  stringi          1.7.6      2021-11-29 [1] CRAN (R 4.1.1)
-##  stringr        * 1.4.0      2019-02-10 [1] CRAN (R 4.1.1)
-##  survival         3.3-1      2022-03-03 [1] CRAN (R 4.1.1)
-##  sysfonts         0.8.8      2022-03-13 [1] CRAN (R 4.1.1)
-##  testthat         3.1.4      2022-04-26 [1] CRAN (R 4.1.1)
-##  tibble         * 3.1.7      2022-05-03 [1] CRAN (R 4.1.1)
-##  tidymodels     * 0.2.0      2022-03-19 [1] CRAN (R 4.1.1)
-##  tidyr          * 1.2.0      2022-02-01 [1] CRAN (R 4.1.1)
-##  tidyselect       1.1.2      2022-02-21 [1] CRAN (R 4.1.1)
-##  tidyverse      * 1.3.1      2021-04-15 [1] CRAN (R 4.1.0)
-##  timeDate         3043.102   2018-02-21 [1] CRAN (R 4.1.0)
-##  tune           * 0.2.0      2022-03-19 [1] CRAN (R 4.1.1)
-##  tzdb             0.3.0      2022-03-28 [1] CRAN (R 4.1.1)
-##  usethis          2.1.5      2021-12-09 [1] CRAN (R 4.1.1)
-##  utf8             1.2.2      2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs            0.4.1      2022-04-13 [1] CRAN (R 4.1.1)
-##  visdat           0.5.3      2019-02-15 [1] CRAN (R 4.1.1)
-##  withr            2.5.0      2022-03-03 [1] CRAN (R 4.1.1)
-##  workflows      * 0.2.6      2022-03-18 [1] CRAN (R 4.1.1)
-##  workflowsets   * 0.2.1      2022-03-15 [1] CRAN (R 4.1.2)
-##  xaringanthemer   0.4.1      2021-11-21 [1] CRAN (R 4.1.1)
-##  xfun             0.31       2022-05-10 [1] CRAN (R 4.1.1)
-##  xml2             1.3.3      2021-11-30 [1] CRAN (R 4.1.1)
-##  yaml             2.3.5      2022-02-21 [1] CRAN (R 4.1.1)
-##  yardstick      * 0.0.9      2021-11-22 [1] CRAN (R 4.1.1)
+##  package       * version    date (UTC) lib source
+##  assertthat      0.2.1      2019-03-21 [1] CRAN (R 4.2.0)
+##  backports       1.4.1      2021-12-13 [1] CRAN (R 4.2.0)
+##  base64enc       0.1-3      2015-07-28 [1] CRAN (R 4.2.0)
+##  blogdown        1.10       2022-05-10 [1] CRAN (R 4.2.0)
+##  bookdown        0.27       2022-06-14 [1] CRAN (R 4.2.0)
+##  broom         * 1.0.0      2022-07-01 [1] CRAN (R 4.2.0)
+##  bslib           0.4.0      2022-07-16 [1] CRAN (R 4.2.0)
+##  cachem          1.0.6      2021-08-19 [1] CRAN (R 4.2.0)
+##  callr           3.7.1      2022-07-13 [1] CRAN (R 4.2.0)
+##  cellranger      1.1.0      2016-07-27 [1] CRAN (R 4.2.0)
+##  class           7.3-20     2022-01-16 [1] CRAN (R 4.2.1)
+##  cli             3.3.0      2022-04-25 [1] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [1] CRAN (R 4.2.1)
+##  colorspace      2.0-3      2022-02-21 [1] CRAN (R 4.2.0)
+##  crayon          1.5.1      2022-03-26 [1] CRAN (R 4.2.0)
+##  DBI             1.1.3      2022-06-18 [1] CRAN (R 4.2.0)
+##  dbplyr          2.2.1      2022-06-27 [1] CRAN (R 4.2.0)
+##  devtools        2.4.4      2022-07-20 [1] CRAN (R 4.2.0)
+##  dials         * 1.0.0      2022-06-14 [1] CRAN (R 4.2.0)
+##  DiceDesign      1.9        2021-02-13 [1] CRAN (R 4.2.0)
+##  digest          0.6.29     2021-12-01 [1] CRAN (R 4.2.0)
+##  dplyr         * 1.0.9      2022-04-28 [1] CRAN (R 4.2.0)
+##  ellipsis        0.3.2      2021-04-29 [1] CRAN (R 4.2.0)
+##  evaluate        0.15       2022-02-18 [1] CRAN (R 4.2.0)
+##  fansi           1.0.3      2022-03-24 [1] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [1] CRAN (R 4.2.0)
+##  fastmap         1.1.0      2021-01-25 [1] CRAN (R 4.2.0)
+##  forcats       * 0.5.1      2021-01-27 [1] CRAN (R 4.2.0)
+##  foreach         1.5.2      2022-02-02 [1] CRAN (R 4.2.0)
+##  fs              1.5.2      2021-12-08 [1] CRAN (R 4.2.0)
+##  furrr           0.3.0      2022-05-04 [1] CRAN (R 4.2.0)
+##  future          1.27.0     2022-07-22 [1] CRAN (R 4.2.0)
+##  future.apply    1.9.0      2022-04-25 [1] CRAN (R 4.2.0)
+##  gargle          1.2.0      2021-07-02 [1] CRAN (R 4.2.0)
+##  generics        0.1.3      2022-07-05 [1] CRAN (R 4.2.0)
+##  ggplot2       * 3.3.6      2022-05-03 [1] CRAN (R 4.2.0)
+##  globals         0.16.0     2022-08-05 [1] CRAN (R 4.2.0)
+##  glue            1.6.2      2022-02-24 [1] CRAN (R 4.2.0)
+##  googledrive     2.0.0      2021-07-08 [1] CRAN (R 4.2.0)
+##  googlesheets4   1.0.0      2021-07-21 [1] CRAN (R 4.2.0)
+##  gower           1.0.0      2022-02-03 [1] CRAN (R 4.2.0)
+##  GPfit           1.0-8      2019-02-08 [1] CRAN (R 4.2.0)
+##  gtable          0.3.0      2019-03-25 [1] CRAN (R 4.2.0)
+##  hardhat         1.2.0      2022-06-30 [1] CRAN (R 4.2.0)
+##  haven           2.5.0      2022-04-15 [1] CRAN (R 4.2.0)
+##  here            1.0.1      2020-12-13 [1] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [1] CRAN (R 4.2.0)
+##  hms             1.1.1      2021-09-26 [1] CRAN (R 4.2.0)
+##  htmltools       0.5.3      2022-07-18 [1] CRAN (R 4.2.0)
+##  htmlwidgets     1.5.4      2021-09-08 [1] CRAN (R 4.2.0)
+##  httpuv          1.6.5      2022-01-05 [1] CRAN (R 4.2.0)
+##  httr            1.4.3      2022-05-04 [1] CRAN (R 4.2.0)
+##  infer         * 1.0.2      2022-06-10 [1] CRAN (R 4.2.0)
+##  ipred           0.9-13     2022-06-02 [1] CRAN (R 4.2.0)
+##  iterators       1.0.14     2022-02-05 [1] CRAN (R 4.2.0)
+##  jquerylib       0.1.4      2021-04-26 [1] CRAN (R 4.2.0)
+##  jsonlite        1.8.0      2022-02-22 [1] CRAN (R 4.2.0)
+##  knitr           1.39       2022-04-26 [1] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [1] CRAN (R 4.2.0)
+##  later           1.3.0      2021-08-18 [1] CRAN (R 4.2.0)
+##  lattice         0.20-45    2021-09-22 [1] CRAN (R 4.2.1)
+##  lava            1.6.10     2021-09-02 [1] CRAN (R 4.2.0)
+##  lhs             1.1.5      2022-03-22 [1] CRAN (R 4.2.0)
+##  lifecycle       1.0.1      2021-09-24 [1] CRAN (R 4.2.0)
+##  listenv         0.8.0      2019-12-05 [1] CRAN (R 4.2.0)
+##  lubridate       1.8.0      2021-10-07 [1] CRAN (R 4.2.0)
+##  magrittr        2.0.3      2022-03-30 [1] CRAN (R 4.2.0)
+##  MASS            7.3-58.1   2022-08-03 [1] CRAN (R 4.2.0)
+##  Matrix          1.4-1      2022-03-23 [1] CRAN (R 4.2.1)
+##  memoise         2.0.1      2021-11-26 [1] CRAN (R 4.2.0)
+##  mime            0.12       2021-09-28 [1] CRAN (R 4.2.0)
+##  miniUI          0.1.1.1    2018-05-18 [1] CRAN (R 4.2.0)
+##  modeldata     * 1.0.0      2022-07-01 [1] CRAN (R 4.2.0)
+##  modelr          0.1.8      2020-05-19 [1] CRAN (R 4.2.0)
+##  munsell         0.5.0      2018-06-12 [1] CRAN (R 4.2.0)
+##  naniar        * 0.6.1      2021-05-14 [1] CRAN (R 4.2.0)
+##  nnet            7.3-17     2022-01-16 [1] CRAN (R 4.2.1)
+##  parallelly      1.32.1     2022-07-21 [1] CRAN (R 4.2.0)
+##  parsnip       * 1.0.0      2022-06-16 [1] CRAN (R 4.2.0)
+##  pillar          1.8.0      2022-07-18 [1] CRAN (R 4.2.0)
+##  pkgbuild        1.3.1      2021-12-20 [1] CRAN (R 4.2.0)
+##  pkgconfig       2.0.3      2019-09-22 [1] CRAN (R 4.2.0)
+##  pkgload         1.3.0      2022-06-27 [1] CRAN (R 4.2.0)
+##  prettyunits     1.1.1      2020-01-24 [1] CRAN (R 4.2.0)
+##  processx        3.7.0      2022-07-07 [1] CRAN (R 4.2.0)
+##  prodlim         2019.11.13 2019-11-17 [1] CRAN (R 4.2.0)
+##  profvis         0.3.7      2020-11-02 [1] CRAN (R 4.2.0)
+##  promises        1.2.0.1    2021-02-11 [1] CRAN (R 4.2.0)
+##  ps              1.7.1      2022-06-18 [1] CRAN (R 4.2.0)
+##  purrr         * 0.3.4      2020-04-17 [1] CRAN (R 4.2.0)
+##  R6              2.5.1      2021-08-19 [1] CRAN (R 4.2.0)
+##  rcfss         * 0.2.5      2022-08-04 [1] local
+##  rcis          * 0.2.5      2022-08-08 [1] local
+##  Rcpp            1.0.9      2022-07-08 [1] CRAN (R 4.2.0)
+##  readr         * 2.1.2      2022-01-30 [1] CRAN (R 4.2.0)
+##  readxl          1.4.0      2022-03-28 [1] CRAN (R 4.2.0)
+##  recipes       * 1.0.1      2022-07-07 [1] CRAN (R 4.2.0)
+##  remotes         2.4.2      2021-11-30 [1] CRAN (R 4.2.0)
+##  repr            1.1.4      2022-01-04 [1] CRAN (R 4.2.0)
+##  reprex          2.0.1      2021-08-05 [1] CRAN (R 4.2.0)
+##  rlang           1.0.4      2022-07-12 [1] CRAN (R 4.2.0)
+##  rmarkdown       2.14       2022-04-25 [1] CRAN (R 4.2.0)
+##  rpart           4.1.16     2022-01-24 [1] CRAN (R 4.2.1)
+##  rprojroot       2.0.3      2022-04-02 [1] CRAN (R 4.2.0)
+##  rsample       * 1.1.0      2022-08-08 [1] CRAN (R 4.2.1)
+##  rstudioapi      0.13       2020-11-12 [1] CRAN (R 4.2.0)
+##  rvest           1.0.2      2021-10-16 [1] CRAN (R 4.2.0)
+##  sass            0.4.2      2022-07-16 [1] CRAN (R 4.2.0)
+##  scales        * 1.2.0      2022-04-13 [1] CRAN (R 4.2.0)
+##  sessioninfo     1.2.2      2021-12-06 [1] CRAN (R 4.2.0)
+##  shiny           1.7.2      2022-07-19 [1] CRAN (R 4.2.0)
+##  skimr         * 2.1.4      2022-04-15 [1] CRAN (R 4.2.0)
+##  stringi         1.7.8      2022-07-11 [1] CRAN (R 4.2.0)
+##  stringr       * 1.4.0      2019-02-10 [1] CRAN (R 4.2.0)
+##  survival        3.3-1      2022-03-03 [1] CRAN (R 4.2.1)
+##  tibble        * 3.1.8      2022-07-22 [1] CRAN (R 4.2.0)
+##  tidymodels    * 1.0.0      2022-07-13 [1] CRAN (R 4.2.0)
+##  tidyr         * 1.2.0      2022-02-01 [1] CRAN (R 4.2.0)
+##  tidyselect      1.1.2      2022-02-21 [1] CRAN (R 4.2.0)
+##  tidyverse     * 1.3.2      2022-07-18 [1] CRAN (R 4.2.0)
+##  timeDate        4021.104   2022-07-19 [1] CRAN (R 4.2.0)
+##  tune          * 1.0.0      2022-07-07 [1] CRAN (R 4.2.0)
+##  tzdb            0.3.0      2022-03-28 [1] CRAN (R 4.2.0)
+##  urlchecker      1.0.1      2021-11-30 [1] CRAN (R 4.2.0)
+##  usethis         2.1.6      2022-05-25 [1] CRAN (R 4.2.0)
+##  utf8            1.2.2      2021-07-24 [1] CRAN (R 4.2.0)
+##  vctrs           0.4.1      2022-04-13 [1] CRAN (R 4.2.0)
+##  visdat          0.5.3      2019-02-15 [1] CRAN (R 4.2.0)
+##  withr           2.5.0      2022-03-03 [1] CRAN (R 4.2.0)
+##  workflows     * 1.0.0      2022-07-05 [1] CRAN (R 4.2.0)
+##  workflowsets  * 1.0.0      2022-07-12 [1] CRAN (R 4.2.0)
+##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2            1.3.3      2021-11-30 [1] CRAN (R 4.2.0)
+##  xtable          1.8-4      2019-04-21 [1] CRAN (R 4.2.0)
+##  yaml            2.3.5      2022-02-21 [1] CRAN (R 4.2.0)
+##  yardstick     * 1.0.0      2022-06-06 [1] CRAN (R 4.2.0)
 ## 
-##  [1] /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```

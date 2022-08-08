@@ -19,7 +19,7 @@ menu:
 
 ```r
 library(tidyverse)
-library(rcfss)
+library(rcis)
 library(palmerpenguins)
 
 set.seed(1234)
@@ -202,6 +202,12 @@ penguins_preall <- bind_rows(penguins_preall)
 
 Let's compare the time it takes to complete each of these loops by replicating each example 100 times and measuring how long it takes for the expression to evaluate.
 
+
+```
+## Warning in microbenchmark(`No preallocation` = {: less accurate nanosecond times
+## to avoid potential integer overflows
+```
+
 <img src="{{< blogdown/postref >}}index_files/figure-html/preallocate-1.png" width="672" />
 
 Here, preallocating space for each data frame prior to binding together cuts the computation time by a factor of 10.
@@ -218,7 +224,7 @@ as_tibble(mtcars)
 ```
 
 ```
-## # A tibble: 32 x 11
+## # A tibble: 32 × 11
 ##      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
 ##    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 ##  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
@@ -277,19 +283,19 @@ diamonds
 ```
 
 ```
-## # A tibble: 53,940 x 10
+## # A tibble: 53,940 × 10
 ##    carat cut       color clarity depth table price     x     y     z
 ##    <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-##  1 0.23  Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
-##  2 0.21  Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
-##  3 0.23  Good      E     VS1      56.9    65   327  4.05  4.07  2.31
-##  4 0.290 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
-##  5 0.31  Good      J     SI2      63.3    58   335  4.34  4.35  2.75
-##  6 0.24  Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
-##  7 0.24  Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
-##  8 0.26  Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
-##  9 0.22  Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
-## 10 0.23  Very Good H     VS1      59.4    61   338  4     4.05  2.39
+##  1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+##  3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+##  4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+##  5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+##  6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+##  7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
+##  8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
+##  9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
+## 10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39
 ## # … with 53,930 more rows
 ```
 
@@ -446,7 +452,7 @@ as_tibble(mtcars)
 ```
 
 ```
-## # A tibble: 32 x 11
+## # A tibble: 32 × 11
 ##      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
 ##    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 ##  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
@@ -488,19 +494,19 @@ diamonds
 ```
 
 ```
-## # A tibble: 53,940 x 10
+## # A tibble: 53,940 × 10
 ##    carat cut       color clarity depth table price     x     y     z
 ##    <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-##  1 0.23  Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
-##  2 0.21  Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
-##  3 0.23  Good      E     VS1      56.9    65   327  4.05  4.07  2.31
-##  4 0.290 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
-##  5 0.31  Good      J     SI2      63.3    58   335  4.34  4.35  2.75
-##  6 0.24  Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
-##  7 0.24  Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
-##  8 0.26  Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
-##  9 0.22  Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
-## 10 0.23  Very Good H     VS1      59.4    61   338  4     4.05  2.39
+##  1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
+##  2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
+##  3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
+##  4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
+##  5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
+##  6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
+##  7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
+##  8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
+##  9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
+## 10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39
 ## # … with 53,930 more rows
 ```
 
@@ -642,11 +648,7 @@ mtcars %>%
 ```
 
 ```
-## `summarise()` ungrouping output (override with `.groups` argument)
-```
-
-```
-## # A tibble: 3 x 11
+## # A tibble: 3 × 11
 ##    gear   mpg   cyl  disp    hp  drat    wt  qsec    vs    am  carb
 ##   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 ## 1     3  16.1  7.47  326. 176.   3.13  3.89  17.7 0.2   0      2.67
@@ -666,7 +668,7 @@ worldbank %>%
 ```
 
 ```
-## # A tibble: 1 x 1
+## # A tibble: 1 × 1
 ##   life_exp
 ##      <dbl>
 ## 1     76.6
@@ -679,7 +681,7 @@ worldbank %>%
 ```
 
 ```
-## # A tibble: 1 x 1
+## # A tibble: 1 × 1
 ##   life_exp
 ##      <dbl>
 ## 1     76.6
@@ -694,7 +696,7 @@ worldbank %>%
 ```
 
 ```
-## # A tibble: 1 x 2
+## # A tibble: 1 × 2
 ##   life_exp_1 life_exp_2
 ##        <dbl>      <dbl>
 ## 1       67.3       82.6
@@ -706,7 +708,7 @@ worldbank %>%
 ```
 
 ```
-## # A tibble: 1 x 2
+## # A tibble: 1 × 2
 ##   life_exp pop_growth
 ##      <dbl>      <dbl>
 ## 1     67.3      0.479
@@ -718,7 +720,7 @@ worldbank %>%
 ```
 
 ```
-## # A tibble: 1 x 26
+## # A tibble: 1 × 26
 ##   iso3c_1 iso3c_2 date_1 date_2 iso2c_1 iso2c_2 country_1 country_2    
 ##   <chr>   <chr>   <chr>  <chr>  <chr>   <chr>   <chr>     <chr>        
 ## 1 ARG     USA     2005   2017   AR      US      Argentina United States
@@ -744,19 +746,15 @@ worldbank %>%
 ```
 
 ```
-## `summarise()` ungrouping output (override with `.groups` argument)
-```
-
-```
-## # A tibble: 6 x 11
-##   country perc_energy_fos… rnd_gdpshare percgni_adj_gro… real_netinc_per…
-##   <chr>              <dbl>        <dbl>            <dbl>            <dbl>
-## 1 Argent…             89.1       0.501              17.5            8560.
-## 2 China               87.6       1.67               48.3            3661.
-## 3 Indone…             65.3       0.0841             30.5            2041.
-## 4 Norway              58.9       1.60               37.2           70775.
-## 5 United…             86.3       1.68               13.5           34542.
-## 6 United…             84.2       2.69               17.6           42824.
+## # A tibble: 6 × 11
+##   country        perc_energy_fos… rnd_gdpshare percgni_adj_gro… real_netinc_per…
+##   <chr>                     <dbl>        <dbl>            <dbl>            <dbl>
+## 1 Argentina                  89.1       0.501              17.5            8560.
+## 2 China                      87.6       1.67               48.3            3661.
+## 3 Indonesia                  65.3       0.0841             30.5            2041.
+## 4 Norway                     58.9       1.60               37.2           70775.
+## 5 United Kingdom             86.3       1.68               13.5           34542.
+## 6 United States              84.2       2.69               17.6           42824.
 ## # … with 6 more variables: gdp_capita <dbl>, top10perc_incshare <dbl>,
 ## #   employment_ratio <dbl>, life_exp <dbl>, pop_growth <dbl>, pop <dbl>
 ```
@@ -859,19 +857,24 @@ worldbank %>%
 ```
 
 ```
-## # A tibble: 42 x 14
-##    iso3c date  iso2c country  perc_energy_fosf… rnd_gdpshare percgni_adj_gross_…
-##    <chr> <chr> <chr> <chr>                <dbl>        <dbl>               <dbl>
-##  1 ARG   2005  AR    Argenti…              89.1        0.379                15.5
-##  2 ARG   2006  AR    Argenti…              88.7        0.400                22.1
-##  3 ARG   2007  AR    Argenti…              89.2        0.402                22.8
-##  4 ARG   2008  AR    Argenti…              90.7        0.421                21.6
-##  5 ARG   2009  AR    Argenti…              89.6        0.519                18.9
-##  6 ARG   2010  AR    Argenti…              89.5        0.518                17.9
-##  7 ARG   2011  AR    Argenti…              88.9        0.537                17.9
-##  8 ARG   2012  AR    Argenti…              89.0        0.609                16.5
-##  9 ARG   2013  AR    Argenti…              89.0        0.612                15.3
-## 10 ARG   2014  AR    Argenti…              87.7        0.613                16.1
+## Warning: Using `across()` in `filter()` is deprecated, use `if_any()` or
+## `if_all()`.
+```
+
+```
+## # A tibble: 42 × 14
+##    iso3c date  iso2c country   perc_energy_fosfuel rnd_gdpshare percgni_adj_gro…
+##    <chr> <chr> <chr> <chr>                   <dbl>        <dbl>            <dbl>
+##  1 ARG   2005  AR    Argentina                89.1        0.379             15.5
+##  2 ARG   2006  AR    Argentina                88.7        0.400             22.1
+##  3 ARG   2007  AR    Argentina                89.2        0.402             22.8
+##  4 ARG   2008  AR    Argentina                90.7        0.421             21.6
+##  5 ARG   2009  AR    Argentina                89.6        0.519             18.9
+##  6 ARG   2010  AR    Argentina                89.5        0.518             17.9
+##  7 ARG   2011  AR    Argentina                88.9        0.537             17.9
+##  8 ARG   2012  AR    Argentina                89.0        0.609             16.5
+##  9 ARG   2013  AR    Argentina                89.0        0.612             15.3
+## 10 ARG   2014  AR    Argentina                87.7        0.613             16.1
 ## # … with 32 more rows, and 7 more variables: real_netinc_percap <dbl>,
 ## #   gdp_capita <dbl>, top10perc_incshare <dbl>, employment_ratio <dbl>,
 ## #   life_exp <dbl>, pop_growth <dbl>, pop <dbl>
@@ -892,104 +895,108 @@ devtools::session_info()
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.1.0 (2021-05-18)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2022-01-06                  
+##  setting  value
+##  version  R version 4.2.1 (2022-06-23)
+##  os       macOS Monterey 12.2.1
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/New_York
+##  date     2022-08-08
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package        * version date       lib source        
-##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports        1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
-##  blogdown         1.7     2021-12-19 [1] CRAN (R 4.1.0)
-##  bookdown         0.23    2021-08-13 [1] CRAN (R 4.1.0)
-##  broom            0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-##  bslib            0.3.1   2021-10-06 [1] CRAN (R 4.1.0)
-##  cachem           1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
-##  callr            3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
-##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  cli              3.1.0   2021-10-27 [1] CRAN (R 4.1.0)
-##  codetools        0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
-##  colorspace       2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
-##  crayon           1.4.2   2021-10-29 [1] CRAN (R 4.1.0)
-##  DBI              1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
-##  dbplyr           2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc             1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
-##  devtools         2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
-##  digest           0.6.28  2021-09-23 [1] CRAN (R 4.1.0)
-##  dplyr          * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-##  ellipsis         0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate         0.14    2019-05-28 [1] CRAN (R 4.1.0)
-##  fansi            0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
-##  farver           2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  fastmap          1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats        * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
-##  fs               1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  generics         0.1.1   2021-10-25 [1] CRAN (R 4.1.0)
-##  ggplot2        * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-##  glue             1.5.0   2021-11-07 [1] CRAN (R 4.1.0)
-##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
-##  haven            2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
-##  here             1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  highr            0.9     2021-04-16 [1] CRAN (R 4.1.0)
-##  hms              1.1.1   2021-09-26 [1] CRAN (R 4.1.0)
-##  htmltools        0.5.2   2021-08-25 [1] CRAN (R 4.1.0)
-##  httr             1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
-##  jquerylib        0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite         1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
-##  knitr            1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  lifecycle        1.0.1   2021-09-24 [1] CRAN (R 4.1.0)
-##  lubridate        1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
-##  magrittr         2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  memoise          2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
-##  microbenchmark * 1.4-7   2019-09-24 [1] CRAN (R 4.1.0)
-##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
-##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  palmerpenguins * 0.1.0   2020-07-23 [1] CRAN (R 4.1.0)
-##  pillar           1.6.4   2021-10-18 [1] CRAN (R 4.1.0)
-##  pkgbuild         1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
-##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload          1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
-##  processx         3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
-##  ps               1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  rcfss          * 0.2.1   2021-11-15 [1] local         
-##  Rcpp             1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
-##  readr          * 2.0.2   2021-09-27 [1] CRAN (R 4.1.0)
-##  readxl           1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes          2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
-##  reprex           2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
-##  rlang            0.4.12  2021-10-18 [1] CRAN (R 4.1.0)
-##  rmarkdown        2.11    2021-09-14 [1] CRAN (R 4.1.0)
-##  rprojroot        2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
-##  rstudioapi       0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest            1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
-##  sass             0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
-##  scales           1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo      1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
-##  stringi          1.7.5   2021-10-04 [1] CRAN (R 4.1.0)
-##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
-##  testthat         3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble         * 3.1.6   2021-11-07 [1] CRAN (R 4.1.0)
-##  tidyr          * 1.1.4   2021-09-27 [1] CRAN (R 4.1.0)
-##  tidyselect       1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
-##  tidyverse      * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb             0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
-##  usethis          2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
-##  utf8             1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs            0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr            2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
-##  xfun             0.29    2021-12-14 [1] CRAN (R 4.1.0)
-##  xml2             1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
-##  yaml             2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
+##  package        * version date (UTC) lib source
+##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.2.0)
+##  backports        1.4.1   2021-12-13 [1] CRAN (R 4.2.0)
+##  blogdown         1.10    2022-05-10 [1] CRAN (R 4.2.0)
+##  bookdown         0.26    2022-04-15 [1] CRAN (R 4.2.0)
+##  brio             1.1.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  broom            0.8.0   2022-04-13 [1] CRAN (R 4.2.0)
+##  bslib            0.3.1   2021-10-06 [1] CRAN (R 4.2.0)
+##  cachem           1.0.6   2021-08-19 [1] CRAN (R 4.2.0)
+##  callr            3.7.0   2021-04-20 [1] CRAN (R 4.2.0)
+##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.2.0)
+##  cli              3.3.0   2022-04-25 [1] CRAN (R 4.2.0)
+##  codetools        0.2-18  2020-11-04 [1] CRAN (R 4.2.1)
+##  colorspace       2.0-3   2022-02-21 [1] CRAN (R 4.2.0)
+##  crayon           1.5.1   2022-03-26 [1] CRAN (R 4.2.0)
+##  DBI              1.1.2   2021-12-20 [1] CRAN (R 4.2.0)
+##  dbplyr           2.2.0   2022-06-05 [1] CRAN (R 4.2.0)
+##  desc             1.4.1   2022-03-06 [1] CRAN (R 4.2.0)
+##  devtools         2.4.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  digest           0.6.29  2021-12-01 [1] CRAN (R 4.2.0)
+##  dplyr          * 1.0.9   2022-04-28 [1] CRAN (R 4.2.0)
+##  ellipsis         0.3.2   2021-04-29 [1] CRAN (R 4.2.0)
+##  evaluate         0.15    2022-02-18 [1] CRAN (R 4.2.0)
+##  fansi            1.0.3   2022-03-24 [1] CRAN (R 4.2.0)
+##  farver           2.1.0   2021-02-28 [1] CRAN (R 4.2.0)
+##  fastmap          1.1.0   2021-01-25 [1] CRAN (R 4.2.0)
+##  forcats        * 0.5.1   2021-01-27 [1] CRAN (R 4.2.0)
+##  fs               1.5.2   2021-12-08 [1] CRAN (R 4.2.0)
+##  generics         0.1.2   2022-01-31 [1] CRAN (R 4.2.0)
+##  ggplot2        * 3.3.6   2022-05-03 [1] CRAN (R 4.2.0)
+##  glue             1.6.2   2022-02-24 [1] CRAN (R 4.2.0)
+##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.2.0)
+##  haven            2.5.0   2022-04-15 [1] CRAN (R 4.2.0)
+##  here             1.0.1   2020-12-13 [1] CRAN (R 4.2.0)
+##  highr            0.9     2021-04-16 [1] CRAN (R 4.2.0)
+##  hms              1.1.1   2021-09-26 [1] CRAN (R 4.2.0)
+##  htmltools        0.5.2   2021-08-25 [1] CRAN (R 4.2.0)
+##  httr             1.4.3   2022-05-04 [1] CRAN (R 4.2.0)
+##  jquerylib        0.1.4   2021-04-26 [1] CRAN (R 4.2.0)
+##  jsonlite         1.8.0   2022-02-22 [1] CRAN (R 4.2.0)
+##  knitr            1.39    2022-04-26 [1] CRAN (R 4.2.0)
+##  lifecycle        1.0.1   2021-09-24 [1] CRAN (R 4.2.0)
+##  lubridate        1.8.0   2021-10-07 [1] CRAN (R 4.2.0)
+##  magrittr         2.0.3   2022-03-30 [1] CRAN (R 4.2.0)
+##  memoise          2.0.1   2021-11-26 [1] CRAN (R 4.2.0)
+##  microbenchmark * 1.4.9   2021-11-09 [1] CRAN (R 4.2.0)
+##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.2.0)
+##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.2.0)
+##  palmerpenguins * 0.1.0   2020-07-23 [1] CRAN (R 4.2.0)
+##  pillar           1.7.0   2022-02-01 [1] CRAN (R 4.2.0)
+##  pkgbuild         1.3.1   2021-12-20 [1] CRAN (R 4.2.0)
+##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.2.0)
+##  pkgload          1.2.4   2021-11-30 [1] CRAN (R 4.2.0)
+##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.2.0)
+##  processx         3.5.3   2022-03-25 [1] CRAN (R 4.2.0)
+##  ps               1.7.0   2022-04-23 [1] CRAN (R 4.2.0)
+##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.2.0)
+##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
+##  rcfss          * 0.2.5   2022-08-04 [1] local
+##  rcis           * 0.2.5   2022-08-08 [1] local
+##  readr          * 2.1.2   2022-01-30 [1] CRAN (R 4.2.0)
+##  readxl           1.4.0   2022-03-28 [1] CRAN (R 4.2.0)
+##  remotes          2.4.2   2021-11-30 [1] CRAN (R 4.2.0)
+##  reprex           2.0.1   2021-08-05 [1] CRAN (R 4.2.0)
+##  rlang            1.0.2   2022-03-04 [1] CRAN (R 4.2.0)
+##  rmarkdown        2.14    2022-04-25 [1] CRAN (R 4.2.0)
+##  rprojroot        2.0.3   2022-04-02 [1] CRAN (R 4.2.0)
+##  rstudioapi       0.13    2020-11-12 [1] CRAN (R 4.2.0)
+##  rvest            1.0.2   2021-10-16 [1] CRAN (R 4.2.0)
+##  sass             0.4.1   2022-03-23 [1] CRAN (R 4.2.0)
+##  scales           1.2.0   2022-04-13 [1] CRAN (R 4.2.0)
+##  sessioninfo      1.2.2   2021-12-06 [1] CRAN (R 4.2.0)
+##  stringi          1.7.6   2021-11-29 [1] CRAN (R 4.2.0)
+##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.2.0)
+##  testthat         3.1.4   2022-04-26 [1] CRAN (R 4.2.0)
+##  tibble         * 3.1.7   2022-05-03 [1] CRAN (R 4.2.0)
+##  tidyr          * 1.2.0   2022-02-01 [1] CRAN (R 4.2.0)
+##  tidyselect       1.1.2   2022-02-21 [1] CRAN (R 4.2.0)
+##  tidyverse      * 1.3.1   2021-04-15 [1] CRAN (R 4.2.0)
+##  tzdb             0.3.0   2022-03-28 [1] CRAN (R 4.2.0)
+##  usethis          2.1.6   2022-05-25 [1] CRAN (R 4.2.0)
+##  utf8             1.2.2   2021-07-24 [1] CRAN (R 4.2.0)
+##  vctrs            0.4.1   2022-04-13 [1] CRAN (R 4.2.0)
+##  withr            2.5.0   2022-03-03 [1] CRAN (R 4.2.0)
+##  xfun             0.31    2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2             1.3.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  yaml             2.3.5   2022-02-21 [1] CRAN (R 4.2.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```

@@ -37,7 +37,7 @@ For each exercise, tidy the data frame. Before you write any code examine the st
 
 
 ```r
-library(rcfss)
+library(rcis)
 race
 ```
 
@@ -536,7 +536,7 @@ devtools::session_info()
 ##  ps               1.7.0   2022-04-23 [1] CRAN (R 4.2.0)
 ##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.2.0)
 ##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
-##  rcfss          * 0.2.4   2022-06-12 [1] local
+##  rcis          * 0.2.4   2022-06-12 [1] local
 ##  readr          * 2.1.2   2022-01-30 [1] CRAN (R 4.2.0)
 ##  readxl           1.4.0   2022-03-28 [1] CRAN (R 4.2.0)
 ##  remotes          2.4.2   2021-11-30 [1] CRAN (R 4.2.0)

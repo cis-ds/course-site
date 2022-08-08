@@ -22,12 +22,12 @@ This data structure requires **relational verbs** to combine data across tables.
 
 ## `superheroes` and `publishers`
 
-Let's review how these different types of joining operations work with relational data on comic books. Load the `rcfss` library. There are two data frames which contain data on comic books.
+Let's review how these different types of joining operations work with relational data on comic books. Load the `rcis` library. There are two data frames which contain data on comic books.
 
 
 ```r
 library(tidyverse)
-library(rcfss)
+library(rcis)
 
 superheroes
 ```
@@ -339,7 +339,7 @@ devtools::session_info()
 ##  ps             1.6.0      2021-02-28 [1]
 ##  purrr        * 0.3.4      2020-04-17 [1]
 ##  R6             2.5.1      2021-08-19 [1]
-##  rcfss        * 0.2.1      2021-11-15 [1]
+##  rcis        * 0.2.1      2021-11-15 [1]
 ##  RColorBrewer   1.1-2      2014-12-07 [1]
 ##  Rcpp           1.0.7      2021-07-07 [1]
 ##  readr        * 2.0.2      2021-09-27 [1]

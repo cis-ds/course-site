@@ -63,7 +63,7 @@ output: html_document
 
 ```{r setup, include = FALSE}
 library(tidyverse)
-library(rcfss)
+library(rcis)
 
 youth <- gun_deaths %>%
   filter(age <= 65)
@@ -461,7 +461,7 @@ A script is a plain-text file with a `.R` file extension. It contains R code. Yo
 
 # load packages
 library(tidyverse)
-library(rcfss)
+library(rcis)
 
 # filter data for under 65
 youth <- gun_deaths %>%
@@ -606,7 +606,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  ps            1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
 ##  purrr       * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
 ##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.1.1)
-##  rcfss       * 0.2.1   2022-01-06 [1] local
+##  rcis       * 0.2.1   2022-01-06 [1] local
 ##  Rcpp          1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
 ##  readr       * 2.1.1   2021-11-30 [1] CRAN (R 4.1.1)
 ##  readxl        1.3.1   2019-03-13 [1] CRAN (R 4.1.0)

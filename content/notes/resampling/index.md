@@ -20,7 +20,7 @@ menu:
 library(tidyverse)
 library(tidymodels)
 library(ranger)
-library(rcfss)
+library(rcis)
 
 set.seed(123)
 
@@ -37,7 +37,7 @@ As for [preprocessing](/notes/preprocess/), let's use the [General Social Survey
 
 
 ```r
-data("gss", package = "rcfss")
+data("gss", package = "rcis")
 
 # select a smaller subset of variables for analysis
 gss <- gss %>%
@@ -90,7 +90,7 @@ Table: Table 1: Data summary
 |age           |         0|             1|   48.57|  16.92| 18.00|  34.00|  48.00|   61.00|   89.00|▆▇▇▆▂ |
 |tolerance     |         0|             1|   10.59|   3.64|  0.00|   8.00|  12.00|   14.00|   15.00|▁▂▃▅▇ |
 
-`rcfss::gss` contains a selection of variables from the 2012 GSS. This time let's consider whether respondents believe Muslim clergymen who express anti-American attitudes should be allowed to teach in a college or university.
+`rcis::gss` contains a selection of variables from the 2012 GSS. This time let's consider whether respondents believe Muslim clergymen who express anti-American attitudes should be allowed to teach in a college or university.
 
 The outcome of interest `colmslm` is a factor variable coded as either ``"Yes, allowed"`` (respondent believes the person should be allowed to teach) or `"Not allowed"` (respondent believes the person should not allowed to teach). The rates of these classes are somewhat imbalanced; the majority of respondents do not believe these individuals should be allowed to teach in college:
 
@@ -588,7 +588,7 @@ devtools::session_info()
 ##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
 ##  R6             2.5.0      2020-10-28 [1] CRAN (R 4.0.2)
 ##  ranger       * 0.12.1     2020-01-10 [1] CRAN (R 4.0.0)
-##  rcfss        * 0.2.1      2020-12-08 [1] local         
+##  rcis        * 0.2.1      2020-12-08 [1] local         
 ##  Rcpp           1.0.6      2021-01-15 [1] CRAN (R 4.0.2)
 ##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
 ##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
