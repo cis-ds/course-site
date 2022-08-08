@@ -158,13 +158,13 @@ bechdel <- bechdel %>%
 
 # data splitting
 set.seed(100) # Important!
-bechdel_split  <- initial_split(bechdel, strata = bechdel, prop = .9)
+bechdel_split  <- initial_split(bechdel, strata = test, prop = .9)
 bechdel_train  <- training(bechdel_split)
 bechdel_test   <- testing(bechdel_split)
 
 # data resampling
 set.seed(100)
-bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
 ```
 
 class: inverse, middle
@@ -213,7 +213,7 @@ knitr::include_graphics("images/workflows/workflows.013.jpeg")
 Creates a recipe for a set of variables
 
 ```{r eval=FALSE}
-recipe(bechdel ~ ., data = bechdel)
+recipe(test ~ ., data = bechdel)
 ```
 
 ---
@@ -223,7 +223,7 @@ recipe(bechdel ~ ., data = bechdel)
 Creates a recipe for a set of variables
 
 ```{r eval=FALSE}
-rec <- recipe(bechdel ~ ., data = bechdel)
+rec <- recipe(test ~ ., data = bechdel)
 ```
 
 ---
@@ -233,7 +233,7 @@ rec <- recipe(bechdel ~ ., data = bechdel)
 Adds a single transformation to a recipe. Transformations are replayed in order when the recipe is run on data.
 
 ```{r}
-rec <- recipe(bechdel ~ ., data = bechdel) %>%
+rec <- recipe(test ~ ., data = bechdel) %>%
   step_other(genre, threshold = .05)
 ```
 
@@ -387,11 +387,11 @@ bechdel %>%
 ## Dummy Variables
 
 ```{r results='hide'}
-glm(bechdel ~ rated, family = "binomial", data = bechdel)
+glm(test ~ rated, family = "binomial", data = bechdel)
 ```
 
 ```{r echo=FALSE}
-glm(bechdel ~ rated, family = "binomial", data = bechdel) %>% 
+glm(test ~ rated, family = "binomial", data = bechdel) %>% 
   broom::tidy()
 ```
 
@@ -402,7 +402,7 @@ glm(bechdel ~ rated, family = "binomial", data = bechdel) %>%
 Converts nominal data into numeric dummy variables, needed as predictors for models like KNN.
 
 ```{r dummy, results='hide'}
-rec <- recipe(bechdel ~ ., data = bechdel) %>%
+rec <- recipe(test ~ ., data = bechdel) %>%
   step_other(genre, threshold = .05) %>% 
   step_dummy(all_nominal_predictors()) #<<
 ```
@@ -419,7 +419,7 @@ How does `recipes` know which variables are **numeric** and what is **nominal**?
 
 ```{r eval=FALSE}
 rec <- recipe(
-  bechdel ~ ., 
+  test ~ ., 
   data = bechdel  #<<
   )
 ```
@@ -434,7 +434,7 @@ How does `recipes` know what is a **predictor** and what is an **outcome**?
 
 ```{r eval=FALSE}
 rec <- recipe(
-  bechdel ~ .,   #<<
+  test ~ .,   #<<
   data = bechdel
   )
 ```
@@ -516,7 +516,7 @@ What will happen if the test data includes a film with `rated` NC-17?
 Adds a catch-all level to a factor for any new values not encountered in model training, which lets R intelligently predict new levels in the test set.
 
 ```{r results='hide'}
-rec <- recipe(bechdel ~ ., data = bechdel) %>%
+rec <- recipe(test ~ ., data = bechdel) %>%
   step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>% #<<
   step_dummy(all_nominal_predictors())
@@ -541,7 +541,7 @@ Error! You'd be dividing by zero!
 Intelligently handles zero variance variables (variables that contain only a single value)
 
 ```{r results='hide'}
-rec <- recipe(bechdel ~ ., data = bechdel) %>%
+rec <- recipe(test ~ ., data = bechdel) %>%
   step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>%
   step_dummy(all_nominal_predictors()) %>% 
@@ -555,7 +555,7 @@ rec <- recipe(bechdel ~ ., data = bechdel) %>%
 Centers then scales numeric variable (mean = 0, sd = 1)
 
 ```{r results='hide'}
-rec <- recipe(bechdel ~ ., data = bechdel) %>%
+rec <- recipe(test ~ ., data = bechdel) %>%
   step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>%
   step_dummy(all_nominal_predictors()) %>% 
@@ -578,7 +578,7 @@ countdown(minutes = 5)
 ---
 
 ```{r}
-knn_rec <- recipe(formula = bechdel ~ ., data = bechdel) %>% 
+knn_rec <- recipe(formula = test ~ ., data = bechdel) %>% 
   step_other(genre, threshold = .05) %>% 
   step_novel(all_nominal_predictors()) %>% 
   step_dummy(all_nominal_predictors()) %>% 
@@ -601,13 +601,13 @@ knitr::include_url("https://tidymodels.github.io/usemodels/")
 
 ```{r}
 library(usemodels)
-use_kknn(bechdel ~ ., data = bechdel, verbose = TRUE, tune = FALSE)
+use_kknn(test ~ ., data = bechdel, verbose = TRUE, tune = FALSE)
 ```
 
 ---
 
 ```{r}
-use_glmnet(bechdel ~ ., data = bechdel, verbose = TRUE, tune = FALSE)
+use_glmnet(test ~ ., data = bechdel, verbose = TRUE, tune = FALSE)
 ```
 
 ---
@@ -725,7 +725,7 @@ workflow()
 Adds a formula to a workflow `*`
 
 ```{r results='hide'}
-workflow() %>% add_formula(bechdel ~ metascore)
+workflow() %>% add_formula(test ~ metascore)
 ```
 
 .footnote[`*` If you do not plan to do your own preprocessing]
@@ -793,7 +793,7 @@ Nope!
 
 ```{r}
 rec <- recipe(
-  bechdel ~ ., #<<
+  test ~ ., #<<
   data = bechdel
 )
 ```
@@ -818,7 +818,7 @@ _wf %>%
 
 ```{r}
 set.seed(100)
-bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
 ```
 
 ---
@@ -849,7 +849,7 @@ countdown(minutes=3)
 
 ```{r}
 set.seed(100)
-bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = bechdel)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
 
 knn_wf %>% 
   fit_resamples(resamples = bechdel_folds) %>% 
