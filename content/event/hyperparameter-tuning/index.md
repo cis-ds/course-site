@@ -51,7 +51,7 @@ math: false
 Run the code below in your console to download the exercises for today.
 
 ```r
-usethis::use_course("uc-cfss/machine-learning")
+usethis::use_course("cis-ds/machine-learning")
 ```
 
 {{% /callout %}}

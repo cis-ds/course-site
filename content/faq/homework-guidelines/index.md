@@ -78,8 +78,8 @@ This method does not work for private repositories on GitHub. So while it does n
 
 Simply visiting an HTML file in a GitHub repo just shows ugly HTML source. You need to do a little extra work to see this rendered as a proper webpage.
 
-  * Navigate to the HTML file on GitHub. Get the URL of the page, which should look something like this: [`https://github.com/uc-cfss/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html`](https://github.com/uc-cfss/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html). Copy that URL!
-  * Create a link to that in the usual Markdown way BUT prepend `http://htmlpreview.github.io/?` to the URL. So the URL in your link should look something like this: [`http://htmlpreview.github.io/?https://github.com/uc-cfss/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html`](http://htmlpreview.github.io/?https://github.com/uc-cfss/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html). You can learn more about this preview facility [here](http://htmlpreview.github.io).
+  * Navigate to the HTML file on GitHub. Get the URL of the page, which should look something like this: [`https://github.com/cis-ds/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html`](https://github.com/cis-ds/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html). Copy that URL!
+  * Create a link to that in the usual Markdown way BUT prepend `http://htmlpreview.github.io/?` to the URL. So the URL in your link should look something like this: [`http://htmlpreview.github.io/?https://github.com/cis-ds/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html`](http://htmlpreview.github.io/?https://github.com/cis-ds/uc-cfss.github.io/blob/master/hw00_homework_guidelines.html). You can learn more about this preview facility [here](http://htmlpreview.github.io).
   * This sort of link would be fabulous to include in `README.md`.
 
 ### Make it easy for others to run your code

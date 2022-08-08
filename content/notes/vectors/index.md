@@ -28,7 +28,7 @@ set.seed(1234)
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("uc-cfss/vectors-and-iteration")
+usethis::use_course("cis-ds/vectors-and-iteration")
 ```
 
 {{% /callout %}}

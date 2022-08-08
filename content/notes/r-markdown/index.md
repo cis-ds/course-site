@@ -23,7 +23,7 @@ menu:
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("uc-cfss/a-deep-dive-into-r-markdown")
+usethis::use_course("cis-ds/a-deep-dive-into-r-markdown")
 ```
 
 {{% /callout %}}
@@ -493,7 +493,7 @@ You edit scripts in the editor panel in R Studio.
 
 {{% callout note %}}
 
-Check out [this example](https://github.com/uc-cfss/pipeline-example) for how one could use a pipeline in this fashion.
+Check out [this example](https://github.com/cis-ds/pipeline-example) for how one could use a pipeline in this fashion.
 
 {{% /callout %}}
 
@@ -505,7 +505,7 @@ You can run sections of your script by highlighting the appropriate code and typ
 
 ## Running scripts programmatically
 
-To run a script saved on your computer, use the `source()` function in the console. As in `source("gun-deaths.R")`. You can also include this command in a second script. By doing this you can execute a sequence of related scripts all in order, rather than having to run each one manually in the console. See [`runfile.R`](https://github.com/uc-cfss/pipeline-example/blob/master/runfile.R) from the `pipeline-example` repo to see this in action. Remember that R scripts (`.R`) are executed via the `source()` function, whereas R Markdown files (`.Rmd`) are executed via the `rmarkdown::render()` function.
+To run a script saved on your computer, use the `source()` function in the console. As in `source("gun-deaths.R")`. You can also include this command in a second script. By doing this you can execute a sequence of related scripts all in order, rather than having to run each one manually in the console. See [`runfile.R`](https://github.com/cis-ds/pipeline-example/blob/master/runfile.R) from the `pipeline-example` repo to see this in action. Remember that R scripts (`.R`) are executed via the `source()` function, whereas R Markdown files (`.Rmd`) are executed via the `rmarkdown::render()` function.
 
 {{% callout note %}}
 

@@ -26,16 +26,16 @@ library(tidyverse)
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("uc-cfss/exploratory-data-analysis")
+usethis::use_course("cis-ds/exploratory-data-analysis")
 ```
 
 {{% /callout %}}
 
-The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/uc-cfss/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("uc-cfss/rcfss")` in the console.
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcfss`](https://github.com/cis-ds/rcfss) library from GitHub. To install the package, run the command `devtools::install_github("cis-ds/rcfss")` in the console.
 
 {{% callout warning %}}
 
-If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("uc-cfss/rcfss")`.
+If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("cis-ds/rcfss")`.
 
 {{% /callout %}}
 

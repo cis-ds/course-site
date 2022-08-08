@@ -13,7 +13,7 @@ This is a work-in-progress answer key for the exercises in Hadley Wickham's [R f
 
 {{% callout note %}}
 
-See an error or want to add an answer? [Submit a pull request.](https://github.com/uc-cfss/course-site/pulls)
+See an error or want to add an answer? [Submit a pull request.](https://github.com/cis-ds/course-site/pulls)
 
 {{% /callout %}}
 

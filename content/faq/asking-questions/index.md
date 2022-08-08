@@ -21,7 +21,7 @@ Once you've spent 15 minutes attempting to troubleshoot a problem, **you must as
 
 {{% /callout %}}
 
-Questions should be posted to [the class discussion repo on GitHub](https://github.com/uc-cfss/Discussion). However, there are good and bad ways to ask questions. Here are some tips you should always follow when posting questions.
+Questions should be posted to [the class discussion repo on GitHub](https://github.com/cis-ds/Discussion). However, there are good and bad ways to ask questions. Here are some tips you should always follow when posting questions.
 
 ## Introduce the problem with an informative title
 

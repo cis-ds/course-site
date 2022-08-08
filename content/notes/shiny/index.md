@@ -49,7 +49,7 @@ runExample("01_hello")
 
 If the example app is running, press *Escape* to close the app, and you are ready to build your first Shiny app!
 
-To follow along with this lesson, fork and clone the [`shiny-demo`](https://github.com/uc-cfss/shiny-demo) Git repository which contains the data files for city employees.
+To follow along with this lesson, fork and clone the [`shiny-demo`](https://github.com/cis-ds/shiny-demo) Git repository which contains the data files for city employees.
 
 ## Shiny app basics 
 

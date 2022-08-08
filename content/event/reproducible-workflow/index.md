@@ -56,7 +56,7 @@ math: false
 Run the code below in your console to download the exercises for today.
 
 ```r
-usethis::use_course("uc-cfss/reproducible-workflow")
+usethis::use_course("cis-ds/reproducible-workflow")
 ```
 
 {{% /callout %}}
