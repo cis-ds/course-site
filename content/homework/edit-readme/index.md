@@ -8,7 +8,6 @@ type: post
 aliases: ["/hw01-edit-README.html"]
 
 summary: "Test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown."
-url_code: "https://github.com/cfss-su22/hw01"
 ---
 
 
@@ -19,13 +18,24 @@ Due by 11:59pm CT (Chicago) on June 16th.
 
 The goal is to test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown.
 
-# Fork the `hw01` repository
+# Accessing the `hw01` repository
 
-Go [here](https://github.com/cfss-su22/hw01) to fork the repo.
+Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the `hw01` repository. It follows the naming convention `hw01-<USERNAME>`. Clone the repository to your computer using the process below.
+
+In RStudio, start a new Project:
+
+* *File > New Project > Version Control > Git*. In the "repository URL" paste the URL of your new GitHub repository.
+* Decide where to store the local directory for the project. Don't scatter everything around your computer - have a central location, or some meaningful structure. For repositories you create in this course, you can setup a `cis` directory and clone all your repos there.
+* I suggest you check "Open in new session", as that's what you'll usually do in real life.
+* Click "Create Project" to create a new sub-directory, which will be all of these things:
+    * a directory on your computer
+    * a Git repository, linked to a remote GitHub repository
+    * an RStudio Project
+* **Whenever possible, this will be the preferred route for setting up your R projects.**
 
 {{% callout note %}}
 
-You need to register your GitHub username with me in order to access the repository, otherwise you will just get an error that says the web page does not exist. Submit your username using [this form](https://forms.gle/iULATYtWT54F9HXC8). Expect to get an email from GitHub in the next 24 hours inviting you to join the `cfss-su22` course organization. Once you accept the invitation, you will be able to fork the repo.
+Make sure you followed the configuration steps [here](/setups/git-configure/) and are able to authenticate yourself before attempting to clone the repository.
 
 {{% /callout %}}
 
@@ -53,17 +63,9 @@ Your `README.md` should contain a brief biography of yourself. To achieve full m
 * Images^[Perhaps add a picture of yourself to your repo and embed it in your readme.]
 * Links
 
-# Report your process
-
-Include a description of how you got the changes into `README.md` on GitHub when you submit your assignment via pull request. You're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
-
 # Submit the assignment
 
 Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
-
-If you find these instructions confusing, watch the video demonstration.
-
-<iframe src="https://uchicago.hosted.panopto.com/Panopto/Pages/Embed.aspx?id=7bd284fa-ceac-400b-a8db-ab9500f8d943&autoplay=false&offerviewer=true&showtitle=true&showbrand=false&start=0&interactivity=all" width=720 height=405 style="border: 1px solid #464646;" allowfullscreen allow="autoplay"></iframe>
 
 # Rubric
 
