@@ -8,7 +8,6 @@ type: post
 aliases: ["/hw05-reproducible-research.html"]
 
 summary: "Synthesize everything we have learned thus far."
-url_code: "https://github.com/cfss-su22/hw06"
 ---
 
 
@@ -17,9 +16,9 @@ url_code: "https://github.com/cfss-su22/hw06"
 
 Due by 11:59pm CT (Chicago) on July 6th.
 
-# Fork the `hw06` repository
+# Accessing the `hw06` repository
 
-Go [here](https://github.com/cfss-su22/hw06) to fork the repo for homework 06.
+Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the `hw06` repository. It follows the naming convention `hw06-<USERNAME>`. Clone the repository to your computer.
 
 # What is my objective?
 
@@ -108,11 +107,7 @@ The final output should be a `github_document` (or alternatively a `pdf_document
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of R scripts, R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
-
-## SPECIAL NOTE
-
-In your reflection, make special note of any significant problems that required debugging. Try to be specific about your process. Did you receive any helpful error or warning message? Did you use `traceback()` to hunt down the source of the bug? How did you resolve it? You don't need to do this for every bug, but keep track of at least one or two major errors you had to resolve.
+Your assignment should be submitted as a set of R scripts, R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 

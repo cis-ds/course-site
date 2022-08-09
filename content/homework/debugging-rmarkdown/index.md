@@ -7,7 +7,6 @@ draft: false
 type: post
 
 summary: "Resolve code errors and generate reproducible R Markdown documents."
-url_code: "https://github.com/cfss-su22/hw05"
 ---
 
 
@@ -16,9 +15,9 @@ url_code: "https://github.com/cfss-su22/hw05"
 
 Due by 11:59pm CT (Chicago) on July 1st.
 
-# Fork the `hw05` repository
+# Accessing the `hw05` repository
 
-Go [here](https://github.com/cfss-su22/hw05) to fork the repo for homework 05.
+Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the `hw05` repository. It follows the naming convention `hw05-<USERNAME>`. Clone the repository to your computer.
 
 # Debugging code
 
@@ -45,7 +44,7 @@ Your assignment should be submitted as several files:
 1. The revised `hiv-profile.Rmd` and the successfully rendered `hiv-profile.md` with associated output files (e.g. images).
 1. An R script that renders all the individual country HIV profiles, as well as rendered HTML files.
 
-Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 

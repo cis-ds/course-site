@@ -8,7 +8,6 @@ type: post
 aliases: ["/hw04-programming.html"]
 
 summary: "Implement elemental programming techniques in both contrieved and real-world scenarios."
-url_code: "https://github.com/cfss-su22/hw04"
 ---
 
 
@@ -17,9 +16,9 @@ url_code: "https://github.com/cfss-su22/hw04"
 
 Due by 11:59pm CT (Chicago) on June 29th.
 
-# Fork the `hw04` repository
+# Accessing the `hw04` repository
 
-Go [here](https://github.com/cfss-su22/hw04) to fork the repo.
+Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the `hw04` repository. It follows the naming convention `hw04-<USERNAME>`. Clone the repository to your computer.
 
 # Part 1: Programming exercises
 
@@ -72,7 +71,7 @@ Once you have written this function, demonstrate that it works by importing the 
 #### Let's recap the requirements for your function
 
 * Give it a meaningful name
-* It should take a single argument - the filepath to the data file. [Chapter 8 of *R for Data Science*](http://r4ds.had.co.nz/workflow-projects.html) explains directory structures and how to access files in a project. **Review this.** You will be marked down if your function requires an absolute file path such as `/Users/soltoffbc/Projects/Computing for Social Sciences/teach/homework/hw04`
+* It should take a single argument - the filepath to the data file. [Chapter 8 of *R for Data Science*](http://r4ds.had.co.nz/workflow-projects.html) explains directory structures and how to access files in a project. **Review this.** You will be marked down if your function requires an absolute file path such as `/Users/soltoffbc/Projects/Computing for Information Science/homework/hw04`
 * Do not try and run the iterative operation inside of the function. Technically this can work, but it is far harder to fix errors and write the body of the function if you are performing both tasks simultaneously.
 * The output of the function should be a **tidy data frame for a single country, pared down to 2-4 substantive variables you will analyze**.
 
@@ -80,7 +79,7 @@ Once you have the data imported, write a brief report exploring and analyzing at
 
 # Submit the assignment
 
-Your assignment should be submitted as two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 
