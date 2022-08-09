@@ -54,7 +54,7 @@ math: false
 
     ```r
     install.packages(c("socviz", "margins"))
-    devtools::install_github("thomasp85/patchwork")
+    remotes::install_github("thomasp85/patchwork")
     ```
     
 ## Class materials

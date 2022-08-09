@@ -439,7 +439,7 @@ To install the necessary packages, run the code below:
 
 ```r
 install.packages("LDAvis")
-devtools::install_github("cpsievert/LDAvisData")
+remotes::install_github("cpsievert/LDAvisData")
 ```
 
 ### Example: This is Jeopardy!

@@ -67,7 +67,7 @@ with(pkg_cran, packages[!on_cran]) %>%
 # install.packages(pkg_cran)
 # 
 # # install packages from GitHub
-# devtools::install_github(c("dgrtwo/gganimate",
+# remotes::install_github(c("dgrtwo/gganimate",
 #                            "bradleyboehmke/harrypotter",
 #                            "hadley/multidplyr",
 #                            "cis-ds/rcis"))

@@ -75,41 +75,29 @@ The relevant bit of GitHub-flavored Markdown is ready to be pasted from your cli
 
 
 ````
----
-author: soltoffbc
-date: 2021-05-25
-output: "reprex::reprex\\_document"
-title: bonny-fox\_reprex.R
----
-
 ``` r
 library(tidyverse)
 count(diamonds, colour)
-#> Error: Must group by variables found in `.data`.
-#> * Column `colour` is not found.
+#> Error in `group_by()`:
+#> ! Must group by variables found in `.data`.
+#> ✖ Column `colour` is not found.
 ```
 
-<sup>Created on 2021-05-25 by the [reprex package](https://reprex.tidyverse.org) (v2.0.0)</sup>
+<sup>Created on 2022-08-09 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
 
 
-
-
-
-
-
-
-
 ``` r
 library(tidyverse)
 count(diamonds, colour)
-#> Error: Must group by variables found in `.data`.
-#> * Column `colour` is not found.
+#> Error in `group_by()`:
+#> ! Must group by variables found in `.data`.
+#> ✖ Column `colour` is not found.
 ```
 
-<sup>Created on 2021-05-25 by the [reprex package](https://reprex.tidyverse.org) (v2.0.0)</sup>
+<sup>Created on 2022-08-09 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 
@@ -123,7 +111,7 @@ To ensure your example is a reproducible example, you need to make sure to load 
 
 ## Include your `session_info()`
 
-Sometimes problems are caused by using older or incompatible versions of packages. The `session_info()` function in the `devtools` library will print a list of all active packages and their respective versions. Include this in your post so we know which versions of packages you are using by setting `si = TRUE` in the `reprex()` function, like this: `reprex(si = TRUE)`.
+Sometimes problems are caused by using older or incompatible versions of packages. The `session_info()` function in the `sessioninfo`` library will print a list of all active packages and their respective versions. Include this in your post so we know which versions of packages you are using by setting `si = TRUE` in the `reprex()` function, like this: `reprex(si = TRUE)`.
 
 ## Post your solution
 

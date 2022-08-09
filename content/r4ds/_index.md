@@ -2009,7 +2009,7 @@ library(tidyverse)
 
     
     ```r
-    devtools::install_github("hadley/lvplot")
+    remotes::install_github("hadley/lvplot")
     ```
     
     

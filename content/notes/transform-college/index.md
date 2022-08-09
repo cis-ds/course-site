@@ -31,17 +31,33 @@ usethis::use_course("cis-ds/data-transformation")
 
 {{% /callout %}}
 
-The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcis`](https://github.com/cis-ds/rcis) library from GitHub. To install the package, run the command `devtools::install_github("cis-ds/rcis")` in the console.
+The Department of Education collects [annual statistics on colleges and universities in the United States](https://collegescorecard.ed.gov/). I have included a subset of this data from 2018-19 in the [`rcis`](https://github.com/cis-ds/rcis) library from GitHub. To install the package, run the command `remotes::install_github("cis-ds/rcis")` in the console.
 
 {{% callout warning %}}
 
-If you don't already have the `devtools` library installed, you will get an error. Go back and install this first using `install.packages("devtools")`, then run `devtools::install_github("cis-ds/rcis")`.
+If you don't already have the `remotes` library installed, you will get an error. Go back and install this first using `install.packages("remotes")`, then run `remotes::install_github("cis-ds/rcis")`.
 
 {{% /callout %}}
 
 
 ```r
 library(rcis)
+```
+
+```
+## 
+## Attaching package: 'rcis'
+```
+
+```
+## The following objects are masked from 'package:rcfss':
+## 
+##     add_ci, bechdel, cfss_notes, cfss_slides, err.rate.rf,
+##     err.rate.tree, logit2prob, mse, mse_vec, plot_ci, prob2logodds,
+##     prob2odds, xaringan, xaringan_wide
+```
+
+```r
 data("scorecard")
 glimpse(scorecard)
 ```
@@ -84,20 +100,21 @@ filter(.data = scorecard, firstgen > .40)
 
 ```
 ## # A tibble: 356 × 14
-##    unitid name        state type  admrate satavg  cost netcost avgfacsal pctpell
-##     <dbl> <chr>       <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>     <dbl>   <dbl>
-##  1 101189 Faulkner U… AL    Priv…   0.783   1066 34317   20715     54009   0.488
-##  2 101365 Herzing Un… AL    Priv…   0.783     NA 30119   26680     54684   0.706
-##  3 101541 Judson Col… AL    Priv…   0.372   1020 32691   16827     52020   0.545
-##  4 101587 University… AL    Publ…   0.349   1041 21657   15514     58329   0.535
-##  5 102270 Stillman C… AL    Priv…   0.330     NA 25413   18352     43605   0.709
-##  6 104717 Grand Cany… AZ    Priv…   0.769     NA 31213   21020     60741   0.454
-##  7 106467 Arkansas T… AR    Publ…   0.947     NA 18358   10772     61812   0.361
-##  8 107983 Southern A… AR    Publ…   0.651   1085 22579   14270     61650   0.487
-##  9 110361 California… CA    Priv…   0.783   1096 46261   24707     88335   0.453
-## 10 110486 California… CA    Publ…   0.807     NA 16660    5318     86760   0.619
-## # … with 346 more rows, and 4 more variables: comprate <dbl>, firstgen <dbl>,
-## #   debt <dbl>, locale <fct>
+##    unitid name  state type  admrate satavg  cost netcost avgfa…¹ pctpell compr…²
+##     <dbl> <chr> <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+##  1 101189 Faul… AL    Priv…   0.783   1066 34317   20715   54009   0.488   0.329
+##  2 101365 Herz… AL    Priv…   0.783     NA 30119   26680   54684   0.706   0.28 
+##  3 101541 Juds… AL    Priv…   0.372   1020 32691   16827   52020   0.545   0.364
+##  4 101587 Univ… AL    Publ…   0.349   1041 21657   15514   58329   0.535   0.350
+##  5 102270 Stil… AL    Priv…   0.330     NA 25413   18352   43605   0.709   0.272
+##  6 104717 Gran… AZ    Priv…   0.769     NA 31213   21020   60741   0.454   0.408
+##  7 106467 Arka… AR    Publ…   0.947     NA 18358   10772   61812   0.361   0.384
+##  8 107983 Sout… AR    Publ…   0.651   1085 22579   14270   61650   0.487   0.436
+##  9 110361 Cali… CA    Priv…   0.783   1096 46261   24707   88335   0.453   0.630
+## 10 110486 Cali… CA    Publ…   0.807     NA 16660    5318   86760   0.619   0.430
+## # … with 346 more rows, 3 more variables: firstgen <dbl>, debt <dbl>,
+## #   locale <fct>, and abbreviated variable names ¹​avgfacsal, ²​comprate
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 {{< /spoiler >}}
@@ -116,20 +133,21 @@ arrange(.data = scorecard, desc(netcost)) %>%
 
 ```
 ## # A tibble: 10 × 14
-##    unitid name        state type  admrate satavg  cost netcost avgfacsal pctpell
-##     <dbl> <chr>       <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>     <dbl>   <dbl>
-##  1 192712 Manhattan … NY    Priv…   0.355     NA 68686   54902     73863   0.129
-##  2 111081 California… CA    Priv…   0.253     NA 71382   50412     86760   0.248
-##  3 136774 Ringling C… FL    Priv…   0.639     NA 67325   49649     78435   0.284
-##  4 164748 Berklee Co… MA    Priv…   0.514     NA 64436   49514     93870   0.166
-##  5 247649 Landmark C… VT    Priv…   0.470     NA 73821   47373     59373   0.219
-##  6 109651 Art Center… CA    Priv…   0.708     NA 64316   47080     71523   0.283
-##  7 135726 University… FL    Priv…   0.271   1371 67249   46949    115353   0.143
-##  8 194578 Pratt Inst… NY    Priv…   0.555   1273 67703   45571    101079   0.198
-##  9 165662 Emerson Co… MA    Priv…   0.334   1318 68350   45365     90747   0.161
-## 10 143048 School of … IL    Priv…   0.570   1238 67058   44815     96102   0.192
-## # … with 4 more variables: comprate <dbl>, firstgen <dbl>, debt <dbl>,
-## #   locale <fct>
+##    unitid name  state type  admrate satavg  cost netcost avgfa…¹ pctpell compr…²
+##     <dbl> <chr> <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+##  1 192712 Manh… NY    Priv…   0.355     NA 68686   54902   73863   0.129   0.876
+##  2 111081 Cali… CA    Priv…   0.253     NA 71382   50412   86760   0.248   0.614
+##  3 136774 Ring… FL    Priv…   0.639     NA 67325   49649   78435   0.284   0.672
+##  4 164748 Berk… MA    Priv…   0.514     NA 64436   49514   93870   0.166   0.652
+##  5 247649 Land… VT    Priv…   0.470     NA 73821   47373   59373   0.219   0.416
+##  6 109651 Art … CA    Priv…   0.708     NA 64316   47080   71523   0.283   0.685
+##  7 135726 Univ… FL    Priv…   0.271   1371 67249   46949  115353   0.143   0.831
+##  8 194578 Prat… NY    Priv…   0.555   1273 67703   45571  101079   0.198   0.704
+##  9 165662 Emer… MA    Priv…   0.334   1318 68350   45365   90747   0.161   0.821
+## 10 143048 Scho… IL    Priv…   0.570   1238 67058   44815   96102   0.192   0.699
+## # … with 3 more variables: firstgen <dbl>, debt <dbl>, locale <fct>, and
+## #   abbreviated variable names ¹​avgfacsal, ²​comprate
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 We can also use the `slice_max()` function in `dplyr` to accomplish the same thing in one line of code.
@@ -141,20 +159,21 @@ slice_max(.data = scorecard, order_by = netcost, n = 10)
 
 ```
 ## # A tibble: 10 × 14
-##    unitid name        state type  admrate satavg  cost netcost avgfacsal pctpell
-##     <dbl> <chr>       <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>     <dbl>   <dbl>
-##  1 192712 Manhattan … NY    Priv…   0.355     NA 68686   54902     73863   0.129
-##  2 111081 California… CA    Priv…   0.253     NA 71382   50412     86760   0.248
-##  3 136774 Ringling C… FL    Priv…   0.639     NA 67325   49649     78435   0.284
-##  4 164748 Berklee Co… MA    Priv…   0.514     NA 64436   49514     93870   0.166
-##  5 247649 Landmark C… VT    Priv…   0.470     NA 73821   47373     59373   0.219
-##  6 109651 Art Center… CA    Priv…   0.708     NA 64316   47080     71523   0.283
-##  7 135726 University… FL    Priv…   0.271   1371 67249   46949    115353   0.143
-##  8 194578 Pratt Inst… NY    Priv…   0.555   1273 67703   45571    101079   0.198
-##  9 165662 Emerson Co… MA    Priv…   0.334   1318 68350   45365     90747   0.161
-## 10 143048 School of … IL    Priv…   0.570   1238 67058   44815     96102   0.192
-## # … with 4 more variables: comprate <dbl>, firstgen <dbl>, debt <dbl>,
-## #   locale <fct>
+##    unitid name  state type  admrate satavg  cost netcost avgfa…¹ pctpell compr…²
+##     <dbl> <chr> <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+##  1 192712 Manh… NY    Priv…   0.355     NA 68686   54902   73863   0.129   0.876
+##  2 111081 Cali… CA    Priv…   0.253     NA 71382   50412   86760   0.248   0.614
+##  3 136774 Ring… FL    Priv…   0.639     NA 67325   49649   78435   0.284   0.672
+##  4 164748 Berk… MA    Priv…   0.514     NA 64436   49514   93870   0.166   0.652
+##  5 247649 Land… VT    Priv…   0.470     NA 73821   47373   59373   0.219   0.416
+##  6 109651 Art … CA    Priv…   0.708     NA 64316   47080   71523   0.283   0.685
+##  7 135726 Univ… FL    Priv…   0.271   1371 67249   46949  115353   0.143   0.831
+##  8 194578 Prat… NY    Priv…   0.555   1273 67703   45571  101079   0.198   0.704
+##  9 165662 Emer… MA    Priv…   0.334   1318 68350   45365   90747   0.161   0.821
+## 10 143048 Scho… IL    Priv…   0.570   1238 67058   44815   96102   0.192   0.699
+## # … with 3 more variables: firstgen <dbl>, debt <dbl>, locale <fct>, and
+## #   abbreviated variable names ¹​avgfacsal, ²​comprate
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 {{< /spoiler >}}
@@ -209,6 +228,7 @@ scorecard %>%
 ##  9 Faulkner University                  2.61
 ## 10 Herzing University-Birmingham        2.05
 ## # … with 1,722 more rows
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 {{< /spoiler >}}
@@ -294,110 +314,94 @@ scorecard %>%
 
 
 ```r
-devtools::session_info()
+sessioninfo::session_info()
 ```
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value
-##  version  R version 4.2.0 (2022-04-22)
+##  version  R version 4.2.1 (2022-06-23)
 ##  os       macOS Monterey 12.2.1
 ##  system   aarch64, darwin20
 ##  ui       X11
 ##  language (EN)
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
-##  tz       America/Chicago
-##  date     2022-06-08
-##  pandoc   2.17.1.1 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/ (via rmarkdown)
+##  tz       America/New_York
+##  date     2022-08-09
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package        * version date (UTC) lib source
-##  assertthat       0.2.1   2019-03-21 [1] CRAN (R 4.2.0)
-##  backports        1.4.1   2021-12-13 [1] CRAN (R 4.2.0)
-##  blogdown         1.10    2022-05-10 [1] CRAN (R 4.2.0)
-##  bookdown         0.26    2022-04-15 [1] CRAN (R 4.2.0)
-##  brio             1.1.3   2021-11-30 [1] CRAN (R 4.2.0)
-##  broom            0.8.0   2022-04-13 [1] CRAN (R 4.2.0)
-##  bslib            0.3.1   2021-10-06 [1] CRAN (R 4.2.0)
-##  cachem           1.0.6   2021-08-19 [1] CRAN (R 4.2.0)
-##  callr            3.7.0   2021-04-20 [1] CRAN (R 4.2.0)
-##  cellranger       1.1.0   2016-07-27 [1] CRAN (R 4.2.0)
-##  cli              3.3.0   2022-04-25 [1] CRAN (R 4.2.0)
-##  codetools        0.2-18  2020-11-04 [1] CRAN (R 4.2.0)
-##  colorspace       2.0-3   2022-02-21 [1] CRAN (R 4.2.0)
-##  crayon           1.5.1   2022-03-26 [1] CRAN (R 4.2.0)
-##  DBI              1.1.2   2021-12-20 [1] CRAN (R 4.2.0)
-##  dbplyr           2.2.0   2022-06-05 [1] CRAN (R 4.2.0)
-##  desc             1.4.1   2022-03-06 [1] CRAN (R 4.2.0)
-##  devtools         2.4.3   2021-11-30 [1] CRAN (R 4.2.0)
-##  digest           0.6.29  2021-12-01 [1] CRAN (R 4.2.0)
-##  dplyr          * 1.0.9   2022-04-28 [1] CRAN (R 4.2.0)
-##  ellipsis         0.3.2   2021-04-29 [1] CRAN (R 4.2.0)
-##  evaluate         0.15    2022-02-18 [1] CRAN (R 4.2.0)
-##  fansi            1.0.3   2022-03-24 [1] CRAN (R 4.2.0)
-##  fastmap          1.1.0   2021-01-25 [1] CRAN (R 4.2.0)
-##  forcats        * 0.5.1   2021-01-27 [1] CRAN (R 4.2.0)
-##  fs               1.5.2   2021-12-08 [1] CRAN (R 4.2.0)
-##  generics         0.1.2   2022-01-31 [1] CRAN (R 4.2.0)
-##  ggplot2        * 3.3.6   2022-05-03 [1] CRAN (R 4.2.0)
-##  glue             1.6.2   2022-02-24 [1] CRAN (R 4.2.0)
-##  gtable           0.3.0   2019-03-25 [1] CRAN (R 4.2.0)
-##  haven            2.5.0   2022-04-15 [1] CRAN (R 4.2.0)
-##  here             1.0.1   2020-12-13 [1] CRAN (R 4.2.0)
-##  hms              1.1.1   2021-09-26 [1] CRAN (R 4.2.0)
-##  htmltools        0.5.2   2021-08-25 [1] CRAN (R 4.2.0)
-##  httr             1.4.3   2022-05-04 [1] CRAN (R 4.2.0)
-##  jquerylib        0.1.4   2021-04-26 [1] CRAN (R 4.2.0)
-##  jsonlite         1.8.0   2022-02-22 [1] CRAN (R 4.2.0)
-##  knitr            1.39    2022-04-26 [1] CRAN (R 4.2.0)
-##  lifecycle        1.0.1   2021-09-24 [1] CRAN (R 4.2.0)
-##  lubridate        1.8.0   2021-10-07 [1] CRAN (R 4.2.0)
-##  magrittr         2.0.3   2022-03-30 [1] CRAN (R 4.2.0)
-##  memoise          2.0.1   2021-11-26 [1] CRAN (R 4.2.0)
-##  modelr           0.1.8   2020-05-19 [1] CRAN (R 4.2.0)
-##  munsell          0.5.0   2018-06-12 [1] CRAN (R 4.2.0)
-##  pillar           1.7.0   2022-02-01 [1] CRAN (R 4.2.0)
-##  pkgbuild         1.3.1   2021-12-20 [1] CRAN (R 4.2.0)
-##  pkgconfig        2.0.3   2019-09-22 [1] CRAN (R 4.2.0)
-##  pkgload          1.2.4   2021-11-30 [1] CRAN (R 4.2.0)
-##  prettyunits      1.1.1   2020-01-24 [1] CRAN (R 4.2.0)
-##  processx         3.5.3   2022-03-25 [1] CRAN (R 4.2.0)
-##  ps               1.7.0   2022-04-23 [1] CRAN (R 4.2.0)
-##  purrr          * 0.3.4   2020-04-17 [1] CRAN (R 4.2.0)
-##  R6               2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
-##  rcis          * 0.2.4   2022-06-08 [1] local
-##  readr          * 2.1.2   2022-01-30 [1] CRAN (R 4.2.0)
-##  readxl           1.4.0   2022-03-28 [1] CRAN (R 4.2.0)
-##  remotes          2.4.2   2021-11-30 [1] CRAN (R 4.2.0)
-##  reprex           2.0.1   2021-08-05 [1] CRAN (R 4.2.0)
-##  rlang            1.0.2   2022-03-04 [1] CRAN (R 4.2.0)
-##  rmarkdown        2.14    2022-04-25 [1] CRAN (R 4.2.0)
-##  rprojroot        2.0.3   2022-04-02 [1] CRAN (R 4.2.0)
-##  rstudioapi       0.13    2020-11-12 [1] CRAN (R 4.2.0)
-##  rvest            1.0.2   2021-10-16 [1] CRAN (R 4.2.0)
-##  sass             0.4.1   2022-03-23 [1] CRAN (R 4.2.0)
-##  scales           1.2.0   2022-04-13 [1] CRAN (R 4.2.0)
-##  sessioninfo      1.2.2   2021-12-06 [1] CRAN (R 4.2.0)
-##  showtext         0.9-5   2022-02-09 [1] CRAN (R 4.2.0)
-##  showtextdb       3.0     2020-06-04 [1] CRAN (R 4.2.0)
-##  stringi          1.7.6   2021-11-29 [1] CRAN (R 4.2.0)
-##  stringr        * 1.4.0   2019-02-10 [1] CRAN (R 4.2.0)
-##  sysfonts         0.8.8   2022-03-13 [1] CRAN (R 4.2.0)
-##  testthat         3.1.4   2022-04-26 [1] CRAN (R 4.2.0)
-##  tibble         * 3.1.7   2022-05-03 [1] CRAN (R 4.2.0)
-##  tidyr          * 1.2.0   2022-02-01 [1] CRAN (R 4.2.0)
-##  tidyselect       1.1.2   2022-02-21 [1] CRAN (R 4.2.0)
-##  tidyverse      * 1.3.1   2021-04-15 [1] CRAN (R 4.2.0)
-##  tzdb             0.3.0   2022-03-28 [1] CRAN (R 4.2.0)
-##  usethis          2.1.6   2022-05-25 [1] CRAN (R 4.2.0)
-##  utf8             1.2.2   2021-07-24 [1] CRAN (R 4.2.0)
-##  vctrs            0.4.1   2022-04-13 [1] CRAN (R 4.2.0)
-##  withr            2.5.0   2022-03-03 [1] CRAN (R 4.2.0)
-##  xaringanthemer   0.4.1   2021-11-21 [1] CRAN (R 4.2.0)
-##  xfun             0.31    2022-05-10 [1] CRAN (R 4.2.0)
-##  xml2             1.3.3   2021-11-30 [1] CRAN (R 4.2.0)
-##  yaml             2.3.5   2022-02-21 [1] CRAN (R 4.2.0)
+##  package       * version date (UTC) lib source
+##  assertthat      0.2.1   2019-03-21 [1] CRAN (R 4.2.0)
+##  backports       1.4.1   2021-12-13 [1] CRAN (R 4.2.0)
+##  blogdown        1.10    2022-05-10 [1] CRAN (R 4.2.0)
+##  bookdown        0.27    2022-06-14 [1] CRAN (R 4.2.0)
+##  broom           1.0.0   2022-07-01 [1] CRAN (R 4.2.0)
+##  bslib           0.4.0   2022-07-16 [1] CRAN (R 4.2.0)
+##  cachem          1.0.6   2021-08-19 [1] CRAN (R 4.2.0)
+##  cellranger      1.1.0   2016-07-27 [1] CRAN (R 4.2.0)
+##  cli             3.3.0   2022-04-25 [1] CRAN (R 4.2.0)
+##  colorspace      2.0-3   2022-02-21 [1] CRAN (R 4.2.0)
+##  crayon          1.5.1   2022-03-26 [1] CRAN (R 4.2.0)
+##  DBI             1.1.3   2022-06-18 [1] CRAN (R 4.2.0)
+##  dbplyr          2.2.1   2022-06-27 [1] CRAN (R 4.2.0)
+##  digest          0.6.29  2021-12-01 [1] CRAN (R 4.2.0)
+##  dplyr         * 1.0.9   2022-04-28 [1] CRAN (R 4.2.0)
+##  ellipsis        0.3.2   2021-04-29 [1] CRAN (R 4.2.0)
+##  evaluate        0.15    2022-02-18 [1] CRAN (R 4.2.0)
+##  fansi           1.0.3   2022-03-24 [1] CRAN (R 4.2.0)
+##  fastmap         1.1.0   2021-01-25 [1] CRAN (R 4.2.0)
+##  forcats       * 0.5.1   2021-01-27 [1] CRAN (R 4.2.0)
+##  fs              1.5.2   2021-12-08 [1] CRAN (R 4.2.0)
+##  gargle          1.2.0   2021-07-02 [1] CRAN (R 4.2.0)
+##  generics        0.1.3   2022-07-05 [1] CRAN (R 4.2.0)
+##  ggplot2       * 3.3.6   2022-05-03 [1] CRAN (R 4.2.0)
+##  glue            1.6.2   2022-02-24 [1] CRAN (R 4.2.0)
+##  googledrive     2.0.0   2021-07-08 [1] CRAN (R 4.2.0)
+##  googlesheets4   1.0.0   2021-07-21 [1] CRAN (R 4.2.0)
+##  gtable          0.3.0   2019-03-25 [1] CRAN (R 4.2.0)
+##  haven           2.5.0   2022-04-15 [1] CRAN (R 4.2.0)
+##  here            1.0.1   2020-12-13 [1] CRAN (R 4.2.0)
+##  hms             1.1.1   2021-09-26 [1] CRAN (R 4.2.0)
+##  htmltools       0.5.3   2022-07-18 [1] CRAN (R 4.2.0)
+##  httr            1.4.3   2022-05-04 [1] CRAN (R 4.2.0)
+##  jquerylib       0.1.4   2021-04-26 [1] CRAN (R 4.2.0)
+##  jsonlite        1.8.0   2022-02-22 [1] CRAN (R 4.2.0)
+##  knitr           1.39    2022-04-26 [1] CRAN (R 4.2.0)
+##  lifecycle       1.0.1   2021-09-24 [1] CRAN (R 4.2.0)
+##  lubridate       1.8.0   2021-10-07 [1] CRAN (R 4.2.0)
+##  magrittr        2.0.3   2022-03-30 [1] CRAN (R 4.2.0)
+##  modelr          0.1.8   2020-05-19 [1] CRAN (R 4.2.0)
+##  munsell         0.5.0   2018-06-12 [1] CRAN (R 4.2.0)
+##  pillar          1.8.0   2022-07-18 [1] CRAN (R 4.2.0)
+##  pkgconfig       2.0.3   2019-09-22 [1] CRAN (R 4.2.0)
+##  purrr         * 0.3.4   2020-04-17 [1] CRAN (R 4.2.0)
+##  R6              2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
+##  readr         * 2.1.2   2022-01-30 [1] CRAN (R 4.2.0)
+##  readxl          1.4.0   2022-03-28 [1] CRAN (R 4.2.0)
+##  reprex          2.0.1   2021-08-05 [1] CRAN (R 4.2.0)
+##  rlang           1.0.4   2022-07-12 [1] CRAN (R 4.2.0)
+##  rmarkdown       2.14    2022-04-25 [1] CRAN (R 4.2.0)
+##  rprojroot       2.0.3   2022-04-02 [1] CRAN (R 4.2.0)
+##  rstudioapi      0.13    2020-11-12 [1] CRAN (R 4.2.0)
+##  rvest           1.0.2   2021-10-16 [1] CRAN (R 4.2.0)
+##  sass            0.4.2   2022-07-16 [1] CRAN (R 4.2.0)
+##  scales          1.2.0   2022-04-13 [1] CRAN (R 4.2.0)
+##  sessioninfo     1.2.2   2021-12-06 [1] CRAN (R 4.2.0)
+##  stringi         1.7.8   2022-07-11 [1] CRAN (R 4.2.0)
+##  stringr       * 1.4.0   2019-02-10 [1] CRAN (R 4.2.0)
+##  tibble        * 3.1.8   2022-07-22 [1] CRAN (R 4.2.0)
+##  tidyr         * 1.2.0   2022-02-01 [1] CRAN (R 4.2.0)
+##  tidyselect      1.1.2   2022-02-21 [1] CRAN (R 4.2.0)
+##  tidyverse     * 1.3.2   2022-07-18 [1] CRAN (R 4.2.0)
+##  tzdb            0.3.0   2022-03-28 [1] CRAN (R 4.2.0)
+##  utf8            1.2.2   2021-07-24 [1] CRAN (R 4.2.0)
+##  vctrs           0.4.1   2022-04-13 [1] CRAN (R 4.2.0)
+##  withr           2.5.0   2022-03-03 [1] CRAN (R 4.2.0)
+##  xfun            0.31    2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2            1.3.3   2021-11-30 [1] CRAN (R 4.2.0)
+##  yaml            2.3.5   2022-02-21 [1] CRAN (R 4.2.0)
 ## 
 ##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
 ## 
