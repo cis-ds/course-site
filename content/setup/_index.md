@@ -34,9 +34,7 @@ If you want to avoid installing anything on your computer and access R and RStud
     * [Accessing RStudio Workbench](/setup/r-server/)
 * Git
     * [What is Git?](/setup/what-is-git/)
-    * [Register a free GitHub account.](https://github.com/) As a university student, also check to see if you are eligible for [GitHub Education offers](https://education.github.com/). Some of these are very useful, such as unlimited [private repositories](https://help.github.com/articles/what-plan-should-i-choose/). Remember that once you create a GitHub account, you are stuck with that username. Choose something professional and start building a positive social media presence.
     * [Configure Git](/setup/git-configure/)
-    * [Using Git within RStudio](/setup/git-with-rstudio/#test-drive-rstudio-and-github)
 
 ## Option 2 - install the software locally
 
@@ -47,9 +45,7 @@ If you want to run R on your own computer, follow these instructions.
 * Git
     * [What is Git?](/setup/what-is-git/)
     * Installation
-        * [Register a free GitHub account.](https://github.com/) As a university student, also check to see if you are eligible for [GitHub Education offers](https://education.github.com/). Some of these are very useful, such as unlimited [private repositories](https://help.github.com/articles/what-plan-should-i-choose/). Remember that once you create a GitHub account, you are stuck with that username. Choose something professional and start building a positive social media presence.
         * [Install Git](/setup/git/)
         * [Install Git client](/setup/git-clients/)
     * [Configure Git](/setup/git-configure/)
-    * [Using Git within RStudio](/setup/git-with-rstudio/)
     * [Complete homework 01](/homework/edit-readme/)
