@@ -46,21 +46,22 @@ scorecard
 ```
 
 ```
-## # A tibble: 1,753 x 15
-##    unitid name  state type  admrate satavg  cost netcost avgfacsal pctpell
-##     <int> <chr> <chr> <fct>   <dbl>  <dbl> <int>   <dbl>     <dbl>   <dbl>
-##  1 420325 Yesh… NY    Priv…  0.531      NA 14874    4018     26253   0.958
-##  2 430485 The … NE    Priv…  0.667      NA 41627   39020     54000   0.529
-##  3 100654 Alab… AL    Publ…  0.899     957 22489   14444     63909   0.707
-##  4 102234 Spri… AL    Priv…  0.658    1130 51969   19718     60048   0.342
-##  5 100724 Alab… AL    Publ…  0.977     972 21476   13043     69786   0.745
-##  6 106467 Arka… AR    Publ…  0.902      NA 18627   12362     61497   0.396
-##  7 106704 Univ… AR    Publ…  0.911    1186 21350   14723     63360   0.430
-##  8 109651 Art … CA    Priv…  0.676      NA 64097   43010     69984   0.307
-##  9 110404 Cali… CA    Priv…  0.0662   1566 68901   23820    179937   0.142
-## 10 112394 Cogs… CA    Priv…  0.579      NA 35351   31537     66636   0.461
-## # … with 1,743 more rows, and 5 more variables: comprate <dbl>, firstgen <dbl>,
-## #   debt <dbl>, locale <fct>, openadmp <fct>
+## # A tibble: 1,732 × 14
+##    unitid name  state type  admrate satavg  cost netcost avgfa…¹ pctpell compr…²
+##     <dbl> <chr> <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+##  1 100654 Alab… AL    Publ…   0.918    939 23053   14990   69381   0.702   0.297
+##  2 100663 Univ… AL    Publ…   0.737   1234 24495   16953   99441   0.351   0.634
+##  3 100706 Univ… AL    Publ…   0.826   1319 23917   15860   87192   0.254   0.577
+##  4 100724 Alab… AL    Publ…   0.969    946 21866   13650   64989   0.763   0.328
+##  5 100751 The … AL    Publ…   0.827   1261 29872   22597   92619   0.177   0.711
+##  6 100830 Aubu… AL    Publ…   0.904   1082 19849   13987   71343   0.464   0.340
+##  7 100858 Aubu… AL    Publ…   0.807   1300 31590   24104   96642   0.146   0.791
+##  8 100937 Birm… AL    Priv…   0.538   1230 32095   22107   56646   0.236   0.691
+##  9 101189 Faul… AL    Priv…   0.783   1066 34317   20715   54009   0.488   0.329
+## 10 101365 Herz… AL    Priv…   0.783     NA 30119   26680   54684   0.706   0.28 
+## # … with 1,722 more rows, 3 more variables: firstgen <dbl>, debt <dbl>,
+## #   locale <fct>, and abbreviated variable names ¹​avgfacsal, ²​comprate
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 Answer the following questions using the statistical modeling tools you have learned.
@@ -93,11 +94,11 @@ tidy(scorecard_fit)
 ```
 
 ```
-## # A tibble: 2 x 5
+## # A tibble: 2 × 5
 ##   term        estimate std.error statistic   p.value
 ##   <chr>          <dbl>     <dbl>     <dbl>     <dbl>
-## 1 (Intercept)   51723.     1242.      41.6 3.74e-262
-## 2 admrate      -22928.     1768.     -13.0 9.32e- 37
+## 1 (Intercept)   54992.     1286.      42.8 7.30e-271
+## 2 admrate      -25872.     1801.     -14.4 3.15e- 44
 ```
    
     {{< /spoiler >}}
@@ -115,21 +116,21 @@ tidy(scorecard_fit)
 ```
 
 ```
-## # A tibble: 5 x 5
+## # A tibble: 5 × 5
 ##   term                    estimate std.error statistic   p.value
 ##   <chr>                      <dbl>     <dbl>     <dbl>     <dbl>
-## 1 (Intercept)               47642.     1010.      47.2 1.94e-311
-## 2 admrate                  -12456.     1145.     -10.9 1.06e- 26
-## 3 typePrivate, nonprofit    20235.      512.      39.5 4.58e-243
-## 4 typePrivate, for-profit   16833.     1203.      14.0 3.50e- 42
-## 5 pctpell                  -43757.     1465.     -29.9 4.02e-158
+## 1 (Intercept)               49319.     1057.      46.6 5.20e-305
+## 2 admrate                  -13792.     1190.     -11.6 6.02e- 30
+## 3 typePrivate, nonprofit    20854.      540.      38.6 1.29e-233
+## 4 typePrivate, for-profit   17390.     1265.      13.7 7.91e- 41
+## 5 pctpell                  -44530.     1545.     -28.8 1.30e-148
 ```
     
     {{< /spoiler >}}
 
 ## Exercise: logistic regression with `mental_health`
 
-Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](http://onlinelibrary.wiley.com.proxy.uchicago.edu/doi/10.1111/ssqu.12173/abstract)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
+Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.^[[Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](https://onlinelibrary.wiley.com/doi/full/10.1111/ssqu.12173)] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
 
 Use the `mental_health` data set in `library(rcis)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
 
@@ -139,7 +140,7 @@ mental_health
 ```
 
 ```
-## # A tibble: 1,317 x 5
+## # A tibble: 1,317 × 5
 ##    vote96   age  educ female mhealth
 ##     <dbl> <dbl> <dbl>  <dbl>   <dbl>
 ##  1      1    60    12      0       0
@@ -153,6 +154,7 @@ mental_health
 ##  9      0    27    11      1       9
 ## 10      0    34     7      1       2
 ## # … with 1,307 more rows
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and a 95% confidence interval, and plot the logistic regression predictions using `ggplot`.
@@ -265,139 +267,142 @@ bind_cols(
 
 
 ```r
-devtools::session_info()
+sessioninfo::session_info()
 ```
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.0.4 (2021-02-15)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-05-25                  
+##  setting  value
+##  version  R version 4.2.1 (2022-06-23)
+##  os       macOS Monterey 12.3
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/New_York
+##  date     2022-08-10
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version    date       lib source        
-##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 4.0.0)
-##  backports      1.2.1      2020-12-09 [1] CRAN (R 4.0.2)
-##  blogdown       1.3        2021-04-14 [1] CRAN (R 4.0.2)
-##  bookdown       0.22       2021-04-22 [1] CRAN (R 4.0.2)
-##  broom        * 0.7.6      2021-04-05 [1] CRAN (R 4.0.4)
-##  bslib          0.2.5      2021-05-12 [1] CRAN (R 4.0.4)
-##  cachem         1.0.5      2021-05-15 [1] CRAN (R 4.0.2)
-##  callr          3.7.0      2021-04-20 [1] CRAN (R 4.0.2)
-##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 4.0.0)
-##  class          7.3-19     2021-05-03 [1] CRAN (R 4.0.2)
-##  cli            2.5.0      2021-04-26 [1] CRAN (R 4.0.2)
-##  codetools      0.2-18     2020-11-04 [1] CRAN (R 4.0.4)
-##  colorspace     2.0-1      2021-05-04 [1] CRAN (R 4.0.2)
-##  crayon         1.4.1      2021-02-08 [1] CRAN (R 4.0.2)
-##  DBI            1.1.1      2021-01-15 [1] CRAN (R 4.0.2)
-##  dbplyr         2.1.1      2021-04-06 [1] CRAN (R 4.0.4)
-##  desc           1.3.0      2021-03-05 [1] CRAN (R 4.0.2)
-##  devtools       2.4.1      2021-05-05 [1] CRAN (R 4.0.2)
-##  dials        * 0.0.9      2020-09-16 [1] CRAN (R 4.0.2)
-##  DiceDesign     1.9        2021-02-13 [1] CRAN (R 4.0.2)
-##  digest         0.6.27     2020-10-24 [1] CRAN (R 4.0.2)
-##  dplyr        * 1.0.6      2021-05-05 [1] CRAN (R 4.0.2)
-##  ellipsis       0.3.2      2021-04-29 [1] CRAN (R 4.0.2)
-##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.0.0)
-##  fansi          0.4.2      2021-01-15 [1] CRAN (R 4.0.2)
-##  fastmap        1.1.0      2021-01-25 [1] CRAN (R 4.0.2)
-##  forcats      * 0.5.1      2021-01-27 [1] CRAN (R 4.0.2)
-##  foreach        1.5.1      2020-10-15 [1] CRAN (R 4.0.2)
-##  fs             1.5.0      2020-07-31 [1] CRAN (R 4.0.2)
-##  furrr          0.2.2      2021-01-29 [1] CRAN (R 4.0.2)
-##  future         1.21.0     2020-12-10 [1] CRAN (R 4.0.2)
-##  generics       0.1.0      2020-10-31 [1] CRAN (R 4.0.2)
-##  ggplot2      * 3.3.3      2020-12-30 [1] CRAN (R 4.0.2)
-##  globals        0.14.0     2020-11-22 [1] CRAN (R 4.0.2)
-##  glue           1.4.2      2020-08-27 [1] CRAN (R 4.0.2)
-##  gower          0.2.2      2020-06-23 [1] CRAN (R 4.0.2)
-##  GPfit          1.0-8      2019-02-08 [1] CRAN (R 4.0.0)
-##  gtable         0.3.0      2019-03-25 [1] CRAN (R 4.0.0)
-##  haven          2.4.1      2021-04-23 [1] CRAN (R 4.0.2)
-##  here           1.0.1      2020-12-13 [1] CRAN (R 4.0.2)
-##  hms            1.1.0      2021-05-17 [1] CRAN (R 4.0.4)
-##  htmltools      0.5.1.1    2021-01-22 [1] CRAN (R 4.0.2)
-##  httr           1.4.2      2020-07-20 [1] CRAN (R 4.0.2)
-##  infer        * 0.5.4      2021-01-13 [1] CRAN (R 4.0.2)
-##  ipred          0.9-11     2021-03-12 [1] CRAN (R 4.0.2)
-##  iterators      1.0.13     2020-10-15 [1] CRAN (R 4.0.2)
-##  jquerylib      0.1.4      2021-04-26 [1] CRAN (R 4.0.2)
-##  jsonlite       1.7.2      2020-12-09 [1] CRAN (R 4.0.2)
-##  knitr          1.33       2021-04-24 [1] CRAN (R 4.0.2)
-##  lattice        0.20-44    2021-05-02 [1] CRAN (R 4.0.2)
-##  lava           1.6.9      2021-03-11 [1] CRAN (R 4.0.2)
-##  lhs            1.1.1      2020-10-05 [1] CRAN (R 4.0.2)
-##  lifecycle      1.0.0      2021-02-15 [1] CRAN (R 4.0.2)
-##  listenv        0.8.0      2019-12-05 [1] CRAN (R 4.0.0)
-##  lubridate      1.7.10     2021-02-26 [1] CRAN (R 4.0.2)
-##  magrittr       2.0.1      2020-11-17 [1] CRAN (R 4.0.2)
-##  MASS           7.3-54     2021-05-03 [1] CRAN (R 4.0.2)
-##  Matrix         1.3-3      2021-05-04 [1] CRAN (R 4.0.2)
-##  memoise        2.0.0      2021-01-26 [1] CRAN (R 4.0.2)
-##  modeldata    * 0.1.0      2020-10-22 [1] CRAN (R 4.0.2)
-##  modelr         0.1.8      2020-05-19 [1] CRAN (R 4.0.0)
-##  munsell        0.5.0      2018-06-12 [1] CRAN (R 4.0.0)
-##  nnet           7.3-16     2021-05-03 [1] CRAN (R 4.0.2)
-##  parallelly     1.25.0     2021-04-30 [1] CRAN (R 4.0.2)
-##  parsnip      * 0.1.5      2021-01-19 [1] CRAN (R 4.0.2)
-##  pillar         1.6.1      2021-05-16 [1] CRAN (R 4.0.4)
-##  pkgbuild       1.2.0      2020-12-15 [1] CRAN (R 4.0.2)
-##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 4.0.0)
-##  pkgload        1.2.1      2021-04-06 [1] CRAN (R 4.0.2)
-##  plyr           1.8.6      2020-03-03 [1] CRAN (R 4.0.0)
-##  prettyunits    1.1.1      2020-01-24 [1] CRAN (R 4.0.0)
-##  pROC           1.17.0.1   2021-01-13 [1] CRAN (R 4.0.2)
-##  processx       3.5.2      2021-04-30 [1] CRAN (R 4.0.2)
-##  prodlim        2019.11.13 2019-11-17 [1] CRAN (R 4.0.0)
-##  ps             1.6.0      2021-02-28 [1] CRAN (R 4.0.2)
-##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.0.0)
-##  R6             2.5.0      2020-10-28 [1] CRAN (R 4.0.2)
-##  rcis        * 0.2.1      2020-12-08 [1] local         
-##  Rcpp           1.0.6      2021-01-15 [1] CRAN (R 4.0.2)
-##  readr        * 1.4.0      2020-10-05 [1] CRAN (R 4.0.2)
-##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.0.0)
-##  recipes      * 0.1.16     2021-04-16 [1] CRAN (R 4.0.2)
-##  remotes        2.3.0      2021-04-01 [1] CRAN (R 4.0.2)
-##  reprex         2.0.0      2021-04-02 [1] CRAN (R 4.0.2)
-##  rlang          0.4.11     2021-04-30 [1] CRAN (R 4.0.2)
-##  rmarkdown      2.8        2021-05-07 [1] CRAN (R 4.0.2)
-##  rpart          4.1-15     2019-04-12 [1] CRAN (R 4.0.4)
-##  rprojroot      2.0.2      2020-11-15 [1] CRAN (R 4.0.2)
-##  rsample      * 0.1.0      2021-05-08 [1] CRAN (R 4.0.2)
-##  rstudioapi     0.13       2020-11-12 [1] CRAN (R 4.0.2)
-##  rvest          1.0.0      2021-03-09 [1] CRAN (R 4.0.2)
-##  sass           0.4.0      2021-05-12 [1] CRAN (R 4.0.2)
-##  scales       * 1.1.1      2020-05-11 [1] CRAN (R 4.0.0)
-##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 4.0.0)
-##  stringi        1.6.1      2021-05-10 [1] CRAN (R 4.0.2)
-##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 4.0.0)
-##  survival       3.2-11     2021-04-26 [1] CRAN (R 4.0.2)
-##  testthat       3.0.2      2021-02-14 [1] CRAN (R 4.0.2)
-##  tibble       * 3.1.1      2021-04-18 [1] CRAN (R 4.0.2)
-##  tidymodels   * 0.1.3      2021-04-19 [1] CRAN (R 4.0.2)
-##  tidyr        * 1.1.3      2021-03-03 [1] CRAN (R 4.0.2)
-##  tidyselect     1.1.1      2021-04-30 [1] CRAN (R 4.0.2)
-##  tidyverse    * 1.3.1      2021-04-15 [1] CRAN (R 4.0.2)
-##  timeDate       3043.102   2018-02-21 [1] CRAN (R 4.0.0)
-##  tune         * 0.1.5      2021-04-23 [1] CRAN (R 4.0.2)
-##  usethis        2.0.1      2021-02-10 [1] CRAN (R 4.0.2)
-##  utf8           1.2.1      2021-03-12 [1] CRAN (R 4.0.2)
-##  vctrs          0.3.8      2021-04-29 [1] CRAN (R 4.0.2)
-##  withr          2.4.2      2021-04-18 [1] CRAN (R 4.0.2)
-##  workflows    * 0.2.2      2021-03-10 [1] CRAN (R 4.0.2)
-##  workflowsets * 0.0.2      2021-04-16 [1] CRAN (R 4.0.2)
-##  xfun           0.23       2021-05-15 [1] CRAN (R 4.0.2)
-##  xml2           1.3.2      2020-04-23 [1] CRAN (R 4.0.0)
-##  yaml           2.2.1      2020-02-01 [1] CRAN (R 4.0.0)
-##  yardstick    * 0.0.8      2021-03-28 [1] CRAN (R 4.0.2)
+##  package       * version    date (UTC) lib source
+##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
+##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
+##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
+##  broom         * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
+##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
+##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
+##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
+##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
+##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
+##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
+##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
+##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
+##  dials         * 1.0.0      2022-06-14 [2] CRAN (R 4.2.0)
+##  DiceDesign      1.9        2021-02-13 [2] CRAN (R 4.2.0)
+##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
+##  dplyr         * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
+##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
+##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
+##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
+##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
+##  foreach         1.5.2      2022-02-02 [2] CRAN (R 4.2.0)
+##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
+##  furrr           0.3.0      2022-05-04 [2] CRAN (R 4.2.0)
+##  future          1.27.0     2022-07-22 [2] CRAN (R 4.2.0)
+##  future.apply    1.9.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
+##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
+##  ggplot2       * 3.3.6      2022-05-03 [2] CRAN (R 4.2.0)
+##  globals         0.16.0     2022-08-05 [2] CRAN (R 4.2.0)
+##  glue            1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
+##  googledrive     2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
+##  googlesheets4   1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
+##  gower           1.0.0      2022-02-03 [2] CRAN (R 4.2.0)
+##  GPfit           1.0-8      2019-02-08 [2] CRAN (R 4.2.0)
+##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
+##  hardhat         1.2.0      2022-06-30 [2] CRAN (R 4.2.0)
+##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
+##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
+##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
+##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
+##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
+##  infer         * 1.0.2      2022-06-10 [2] CRAN (R 4.2.0)
+##  ipred           0.9-13     2022-06-02 [2] CRAN (R 4.2.0)
+##  iterators       1.0.14     2022-02-05 [2] CRAN (R 4.2.0)
+##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
+##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
+##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
+##  lava            1.6.10     2021-09-02 [2] CRAN (R 4.2.0)
+##  lhs             1.1.5      2022-03-22 [2] CRAN (R 4.2.0)
+##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  listenv         0.8.0      2019-12-05 [2] CRAN (R 4.2.0)
+##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
+##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
+##  Matrix          1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
+##  mgcv            1.8-40     2022-03-29 [2] CRAN (R 4.2.1)
+##  modeldata     * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
+##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
+##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
+##  nlme            3.1-158    2022-06-15 [2] CRAN (R 4.2.0)
+##  nnet            7.3-17     2022-01-16 [2] CRAN (R 4.2.1)
+##  parallelly      1.32.1     2022-07-21 [2] CRAN (R 4.2.0)
+##  parsnip       * 1.0.0      2022-06-16 [2] CRAN (R 4.2.0)
+##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
+##  prodlim         2019.11.13 2019-11-17 [2] CRAN (R 4.2.0)
+##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  rcfss         * 0.2.5      2022-08-04 [2] local
+##  rcis          * 0.2.5      2022-08-08 [2] local
+##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
+##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
+##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  recipes       * 1.0.1      2022-07-07 [2] CRAN (R 4.2.0)
+##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
+##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
+##  rpart           4.1.16     2022-01-24 [2] CRAN (R 4.2.1)
+##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
+##  rsample       * 1.1.0      2022-08-08 [2] CRAN (R 4.2.1)
+##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
+##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
+##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
+##  scales        * 1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
+##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
+##  survival        3.3-1      2022-03-03 [2] CRAN (R 4.2.1)
+##  tibble        * 3.1.8      2022-07-22 [2] CRAN (R 4.2.0)
+##  tidymodels    * 1.0.0      2022-07-13 [2] CRAN (R 4.2.0)
+##  tidyr         * 1.2.0      2022-02-01 [2] CRAN (R 4.2.0)
+##  tidyselect      1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
+##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
+##  timeDate        4021.104   2022-07-19 [2] CRAN (R 4.2.0)
+##  tune          * 1.0.0      2022-07-07 [2] CRAN (R 4.2.0)
+##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
+##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  viridisLite     0.4.0      2021-04-13 [2] CRAN (R 4.2.0)
+##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
+##  workflows     * 1.0.0      2022-07-05 [2] CRAN (R 4.2.0)
+##  workflowsets  * 1.0.0      2022-07-12 [2] CRAN (R 4.2.0)
+##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
+##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
+##  yardstick     * 1.0.0      2022-06-06 [2] CRAN (R 4.2.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.0/Resources/library
+##  [1] /Users/soltoffbc/Library/R/arm64/4.2/library
+##  [2] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```

@@ -114,7 +114,7 @@ A highly selective sampling of feedback from when I taught [a similar course at 
 
 ### Additional resources
 
-* [ggplot2: Elegant Graphics for Data Analysis, 2nd Edition](http://link.springer.com.proxy.uchicago.edu/book/10.1007/978-3-319-24277-4) -- Hadley Wickham
+* [ggplot2: Elegant Graphics for Data Analysis, 3rd Edition](https://ggplot2-book.org/) -- Hadley Wickham
     * Excellent resource for the [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/index.html) graphics library.
 * [Advanced R](https://adv-r.hadley.nz/) -- Hadley Wickham
     * A deep dive into R as a programming language, not just a tool for data science.

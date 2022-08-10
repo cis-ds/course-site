@@ -54,7 +54,7 @@ math: false
 
 This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 
-* Chapters 8.1, 8.2.2, and 5.1 in [*An Introduction to Statistical Learning*](http://link.springer.com.proxy.uchicago.edu/book/10.1007%2F978-1-4614-7138-7)
+* Chapters 8.1, 8.2.2, and 5.1 in [*An Introduction to Statistical Learning*](https://www.statlearning.com/)
 
 ## Class materials
 

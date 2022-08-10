@@ -57,7 +57,7 @@ math: false
 
 ## Additional resources
 
-* [Graphical Data Analysis with R](http://proxy.uchicago.edu/login?url=http://search.ebscohost.com/login.aspx?direct=true&db=nlebk&AN=1338290&site=ehost-live&scope=site&ebv=EB&ppid=pp_A) - Antony Unwin. Great coverage of a range of graphical methods for data exploration and analysis. Also draws on packages beyond `ggplot2` for statistical graphics.
+* [Graphical Data Analysis with R](https://newcatalog.library.cornell.edu/catalog/15122517) - Antony Unwin. Great coverage of a range of graphical methods for data exploration and analysis. Also draws on packages beyond `ggplot2` for statistical graphics.
 
 ### Cheat sheets
 

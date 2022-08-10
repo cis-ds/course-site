@@ -193,7 +193,7 @@ Programming is the tool that encompasses all of the previous stages. You can use
 
 ## Basic principles of programming
 
-A **program** is a series of instructions that specifies how to perform a computation.^[[Downey, Allen. 2012. *Think Python*. 2nd ed.](http://proquestcombo.safaribooksonline.com.proxy.uchicago.edu/book/programming/python/9781491939406)]
+A **program** is a series of instructions that specifies how to perform a computation.^[[Downey, Allen. 2012. *Think Python*. 2nd ed.](https://newcatalog.library.cornell.edu/catalog/15086903)]
 
 Major components to programs are:
 
