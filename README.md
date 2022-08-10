@@ -1,5 +1,5 @@
 # uc-cfss.github.io
 
-[![Netlify Status](https://api.netlify.com/api/v1/badges/10736f91-82cc-4e9b-87cc-21ae0f745739/deploy-status)](https://app.netlify.com/sites/stoic-knuth-8eedfa/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/cf692dcf-fe41-405d-abb3-55e1cae03cfe/deploy-status)](https://app.netlify.com/sites/info5940/deploys)
 
-This is the course site for [MACS 30500 - Programming for the Social Sciences](https://cfss.uchicago.edu).
+This is the course site for [INFO 5940 - Computing for Information Science](https://info5940.netlify.app).

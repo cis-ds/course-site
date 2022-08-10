@@ -112,14 +112,6 @@ jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master
 
 jokes <- tibble(jokes = jokes_json) %>%
   unnest_wider(col = jokes)
-```
-
-```
-## Warning in deparse(x, backtick = TRUE): NAs introduced by coercion to integer
-## range
-```
-
-```r
 glimpse(jokes)
 ```
 
@@ -175,47 +167,22 @@ jokes_df %>%
 ```
 
 ```
-## # A tibble: 5 x 2,502
-##   id    score tf_joke_0 tf_joke_1 tf_joke_10 tf_joke_100 tf_joke_1000 tf_joke_11
-##   <fct> <dbl>     <dbl>     <dbl>      <dbl>       <dbl>        <dbl>      <dbl>
-## 1 2tzi…    12         0         0          0           0            0          0
-## 2 4zqp…     0         0         0          0           0            0          0
-## 3 2lgw…    58         0         0          0           0            0          0
-## 4 3qx3…     9         0         0          0           0            0          0
-## 5 2x2z…     0         0         0          0           0            0          0
-## # … with 2,494 more variables: tf_joke_12 <dbl>, tf_joke_13 <dbl>,
-## #   tf_joke_14 <dbl>, tf_joke_15 <dbl>, tf_joke_16 <dbl>, tf_joke_18 <dbl>,
-## #   tf_joke_1st <dbl>, tf_joke_2 <dbl>, tf_joke_20 <dbl>,
-## #   tf_joke_20_years <dbl>, tf_joke_200 <dbl>, tf_joke_2015 <dbl>,
-## #   tf_joke_25 <dbl>, tf_joke_3 <dbl>, tf_joke_30 <dbl>, tf_joke_3rd <dbl>,
-## #   tf_joke_4 <dbl>, tf_joke_40 <dbl>, tf_joke_4th <dbl>, tf_joke_5 <dbl>,
-## #   tf_joke_50 <dbl>, tf_joke_500 <dbl>, tf_joke_5th <dbl>, tf_joke_6 <dbl>,
-## #   tf_joke_69 <dbl>, tf_joke_7 <dbl>, tf_joke_76561198082478987 <dbl>,
-## #   tf_joke_76561198082478987_inventory <dbl>, tf_joke_7c <dbl>,
-## #   tf_joke_8 <dbl>, tf_joke_9 <dbl>, tf_joke_9_11 <dbl>, tf_joke_90 <dbl>,
-## #   tf_joke_99 <dbl>, tf_joke_able <dbl>, tf_joke_absolutely <dbl>,
-## #   tf_joke_accent <dbl>, tf_joke_accept <dbl>, tf_joke_accident <dbl>,
-## #   tf_joke_accidentally <dbl>, tf_joke_across <dbl>,
-## #   tf_joke_across_street <dbl>, tf_joke_act <dbl>, tf_joke_action <dbl>,
-## #   tf_joke_actually <dbl>, tf_joke_adam <dbl>, tf_joke_add <dbl>,
-## #   tf_joke_added <dbl>, tf_joke_advice <dbl>, tf_joke_afford <dbl>,
-## #   tf_joke_afraid <dbl>, tf_joke_africa <dbl>, tf_joke_african <dbl>,
-## #   tf_joke_afternoon <dbl>, tf_joke_age <dbl>, tf_joke_agent <dbl>,
-## #   tf_joke_ago <dbl>, tf_joke_agree <dbl>, tf_joke_agreed <dbl>,
-## #   tf_joke_agreement <dbl>, tf_joke_agrees <dbl>, tf_joke_ah <dbl>,
-## #   tf_joke_ahead <dbl>, tf_joke_ain't <dbl>, tf_joke_air <dbl>,
-## #   tf_joke_airplane <dbl>, tf_joke_airport <dbl>, tf_joke_alcohol <dbl>,
-## #   tf_joke_alien <dbl>, tf_joke_alive <dbl>, tf_joke_alley <dbl>,
-## #   tf_joke_allow <dbl>, tf_joke_allowed <dbl>, tf_joke_almost <dbl>,
-## #   tf_joke_alone <dbl>, tf_joke_along <dbl>, tf_joke_alphabet <dbl>,
-## #   tf_joke_already <dbl>, tf_joke_alright <dbl>, tf_joke_also <dbl>,
-## #   tf_joke_although <dbl>, tf_joke_always <dbl>, tf_joke_amazed <dbl>,
-## #   tf_joke_amazing <dbl>, tf_joke_america <dbl>, tf_joke_american <dbl>,
-## #   tf_joke_americans <dbl>, tf_joke_among <dbl>, tf_joke_amount <dbl>,
-## #   tf_joke_anal <dbl>, tf_joke_angel <dbl>, tf_joke_angry <dbl>,
-## #   tf_joke_animal <dbl>, tf_joke_animals <dbl>, tf_joke_anniversary <dbl>,
-## #   tf_joke_annoyed <dbl>, tf_joke_another <dbl>, tf_joke_another_one <dbl>,
-## #   tf_joke_answer <dbl>, tf_joke_answered <dbl>, …
+## # A tibble: 5 × 2,502
+##   id     score tf_joke_0 tf_jo…¹ tf_jo…² tf_jo…³ tf_jo…⁴ tf_jo…⁵ tf_jo…⁶ tf_jo…⁷
+##   <fct>  <dbl>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+## 1 2tzins    12         0       0       0       0       0       0       0       0
+## 2 4zqp10     0         0       0       0       0       0       0       0       0
+## 3 2lgwkn    58         0       0       0       0       0       0       0       0
+## 4 3qx36q     9         0       0       0       0       0       0       0       0
+## 5 2x2z3q     0         0       0       0       0       0       0       0       0
+## # … with 2,492 more variables: tf_joke_14 <dbl>, tf_joke_15 <dbl>,
+## #   tf_joke_16 <dbl>, tf_joke_18 <dbl>, tf_joke_1st <dbl>, tf_joke_2 <dbl>,
+## #   tf_joke_20 <dbl>, tf_joke_20_years <dbl>, tf_joke_200 <dbl>,
+## #   tf_joke_2015 <dbl>, tf_joke_25 <dbl>, tf_joke_3 <dbl>, tf_joke_30 <dbl>,
+## #   tf_joke_3rd <dbl>, tf_joke_4 <dbl>, tf_joke_40 <dbl>, tf_joke_4th <dbl>,
+## #   tf_joke_5 <dbl>, tf_joke_50 <dbl>, tf_joke_500 <dbl>, tf_joke_5th <dbl>,
+## #   tf_joke_6 <dbl>, tf_joke_69 <dbl>, tf_joke_7 <dbl>, …
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 The resulting data frame is one row per joke and one column per token. To convert it to a `DocumentTermMatrix`, we need to first convert it into a tidytext format (one-row-per-token), remove all rows with a frequency of 0 (that is, the token did not appear in the joke), then convert it to a DTM using `cast_dtm()`.
@@ -355,7 +322,7 @@ perplexity(jokes_lda12)
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
 
-Let's estimate a series of LDA models on the `r/jokes` dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to the [Research Computing Center](https://rcc.uchicago.edu/).]
+Let's estimate a series of LDA models on the `r/jokes` dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to a high-performance computing cluster.]
 
 
 ```r
@@ -554,158 +521,156 @@ Notable topics include:
 
 
 ```r
-devtools::session_info()
+sessioninfo::session_info()
 ```
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.1.0 (2021-05-18)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-09-01                  
+##  setting  value
+##  version  R version 4.2.1 (2022-06-23)
+##  os       macOS Monterey 12.3
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/New_York
+##  date     2022-08-10
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version    date       lib source                               
-##  assertthat     0.2.1      2019-03-21 [1] CRAN (R 4.1.0)                       
-##  backports      1.2.1      2020-12-09 [1] CRAN (R 4.1.0)                       
-##  blogdown       1.4        2021-07-23 [1] CRAN (R 4.1.0)                       
-##  bookdown       0.23       2021-08-13 [1] CRAN (R 4.1.0)                       
-##  broom        * 0.7.9      2021-07-27 [1] CRAN (R 4.1.0)                       
-##  bslib          0.2.5.1    2021-05-18 [1] CRAN (R 4.1.0)                       
-##  cachem         1.0.6      2021-08-19 [1] CRAN (R 4.1.0)                       
-##  callr          3.7.0      2021-04-20 [1] CRAN (R 4.1.0)                       
-##  cellranger     1.1.0      2016-07-27 [1] CRAN (R 4.1.0)                       
-##  class          7.3-19     2021-05-03 [1] CRAN (R 4.1.0)                       
-##  cli            3.0.1      2021-07-17 [1] CRAN (R 4.1.0)                       
-##  codetools      0.2-18     2020-11-04 [1] CRAN (R 4.1.0)                       
-##  colorspace     2.0-2      2021-06-24 [1] CRAN (R 4.1.0)                       
-##  crayon         1.4.1      2021-02-08 [1] CRAN (R 4.1.0)                       
-##  DBI            1.1.1      2021-01-15 [1] CRAN (R 4.1.0)                       
-##  dbplyr         2.1.1      2021-04-06 [1] CRAN (R 4.1.0)                       
-##  desc           1.3.0      2021-03-05 [1] CRAN (R 4.1.0)                       
-##  devtools       2.4.2      2021-06-07 [1] CRAN (R 4.1.0)                       
-##  dials        * 0.0.9      2020-09-16 [1] CRAN (R 4.1.0)                       
-##  DiceDesign     1.9        2021-02-13 [1] CRAN (R 4.1.0)                       
-##  digest         0.6.27     2020-10-24 [1] CRAN (R 4.1.0)                       
-##  dplyr        * 1.0.7      2021-06-18 [1] CRAN (R 4.1.0)                       
-##  ellipsis       0.3.2      2021-04-29 [1] CRAN (R 4.1.0)                       
-##  evaluate       0.14       2019-05-28 [1] CRAN (R 4.1.0)                       
-##  fansi          0.5.0      2021-05-25 [1] CRAN (R 4.1.0)                       
-##  farver         2.1.0      2021-02-28 [1] CRAN (R 4.1.0)                       
-##  fastmap        1.1.0      2021-01-25 [1] CRAN (R 4.1.0)                       
-##  forcats      * 0.5.1      2021-01-27 [1] CRAN (R 4.1.0)                       
-##  foreach        1.5.1      2020-10-15 [1] CRAN (R 4.1.0)                       
-##  fs             1.5.0      2020-07-31 [1] CRAN (R 4.1.0)                       
-##  furrr        * 0.2.3      2021-06-25 [1] CRAN (R 4.1.0)                       
-##  future       * 1.21.0     2020-12-10 [1] CRAN (R 4.1.0)                       
-##  generics       0.1.0      2020-10-31 [1] CRAN (R 4.1.0)                       
-##  ggplot2      * 3.3.5      2021-06-25 [1] CRAN (R 4.1.0)                       
-##  globals        0.14.0     2020-11-22 [1] CRAN (R 4.1.0)                       
-##  glue           1.4.2      2020-08-27 [1] CRAN (R 4.1.0)                       
-##  gower          0.2.2      2020-06-23 [1] CRAN (R 4.1.0)                       
-##  GPfit          1.0-8      2019-02-08 [1] CRAN (R 4.1.0)                       
-##  gtable         0.3.0      2019-03-25 [1] CRAN (R 4.1.0)                       
-##  hardhat        0.1.6      2021-07-14 [1] CRAN (R 4.1.0)                       
-##  haven          2.4.3      2021-08-04 [1] CRAN (R 4.1.0)                       
-##  here         * 1.0.1      2020-12-13 [1] CRAN (R 4.1.0)                       
-##  highr          0.9        2021-04-16 [1] CRAN (R 4.1.0)                       
-##  hms            1.1.0      2021-05-17 [1] CRAN (R 4.1.0)                       
-##  htmltools      0.5.1.1    2021-01-22 [1] CRAN (R 4.1.0)                       
-##  httr           1.4.2      2020-07-20 [1] CRAN (R 4.1.0)                       
-##  infer        * 1.0.0      2021-08-13 [1] CRAN (R 4.1.0)                       
-##  ipred          0.9-11     2021-03-12 [1] CRAN (R 4.1.0)                       
-##  iterators      1.0.13     2020-10-15 [1] CRAN (R 4.1.0)                       
-##  janeaustenr    0.1.5      2017-06-10 [1] CRAN (R 4.1.0)                       
-##  jquerylib      0.1.4      2021-04-26 [1] CRAN (R 4.1.0)                       
-##  jsonlite       1.7.2      2020-12-09 [1] CRAN (R 4.1.0)                       
-##  knitr          1.33       2021-04-24 [1] CRAN (R 4.1.0)                       
-##  labeling       0.4.2      2020-10-20 [1] CRAN (R 4.1.0)                       
-##  lattice        0.20-44    2021-05-02 [1] CRAN (R 4.1.0)                       
-##  lava           1.6.9      2021-03-11 [1] CRAN (R 4.1.0)                       
-##  LDAvis       * 0.3.2      2015-10-24 [1] CRAN (R 4.1.0)                       
-##  LDAvisData   * 0.1        2020-06-08 [1] Github (cpsievert/LDAvisData@43dd263)
-##  lhs            1.1.1      2020-10-05 [1] CRAN (R 4.1.0)                       
-##  lifecycle      1.0.0      2021-02-15 [1] CRAN (R 4.1.0)                       
-##  listenv        0.8.0      2019-12-05 [1] CRAN (R 4.1.0)                       
-##  lubridate      1.7.10     2021-02-26 [1] CRAN (R 4.1.0)                       
-##  magrittr       2.0.1      2020-11-17 [1] CRAN (R 4.1.0)                       
-##  MASS           7.3-54     2021-05-03 [1] CRAN (R 4.1.0)                       
-##  Matrix         1.3-4      2021-06-01 [1] CRAN (R 4.1.0)                       
-##  memoise        2.0.0      2021-01-26 [1] CRAN (R 4.1.0)                       
-##  modeldata    * 0.1.1      2021-07-14 [1] CRAN (R 4.1.0)                       
-##  modelr         0.1.8      2020-05-19 [1] CRAN (R 4.1.0)                       
-##  modeltools     0.2-23     2020-03-05 [1] CRAN (R 4.1.0)                       
-##  munsell        0.5.0      2018-06-12 [1] CRAN (R 4.1.0)                       
-##  NLP          * 0.2-1      2020-10-14 [1] CRAN (R 4.1.0)                       
-##  nnet           7.3-16     2021-05-03 [1] CRAN (R 4.1.0)                       
-##  parallelly     1.27.0     2021-07-19 [1] CRAN (R 4.1.0)                       
-##  parsnip      * 0.1.7      2021-07-21 [1] CRAN (R 4.1.0)                       
-##  pillar         1.6.2      2021-07-29 [1] CRAN (R 4.1.0)                       
-##  pkgbuild       1.2.0      2020-12-15 [1] CRAN (R 4.1.0)                       
-##  pkgconfig      2.0.3      2019-09-22 [1] CRAN (R 4.1.0)                       
-##  pkgload        1.2.1      2021-04-06 [1] CRAN (R 4.1.0)                       
-##  plyr           1.8.6      2020-03-03 [1] CRAN (R 4.1.0)                       
-##  prettyunits    1.1.1      2020-01-24 [1] CRAN (R 4.1.0)                       
-##  pROC           1.17.0.1   2021-01-13 [1] CRAN (R 4.1.0)                       
-##  processx       3.5.2      2021-04-30 [1] CRAN (R 4.1.0)                       
-##  prodlim        2019.11.13 2019-11-17 [1] CRAN (R 4.1.0)                       
-##  ps             1.6.0      2021-02-28 [1] CRAN (R 4.1.0)                       
-##  purrr        * 0.3.4      2020-04-17 [1] CRAN (R 4.1.0)                       
-##  R6             2.5.1      2021-08-19 [1] CRAN (R 4.1.0)                       
-##  Rcpp           1.0.7      2021-07-07 [1] CRAN (R 4.1.0)                       
-##  readr        * 2.0.1      2021-08-10 [1] CRAN (R 4.1.0)                       
-##  readxl         1.3.1      2019-03-13 [1] CRAN (R 4.1.0)                       
-##  recipes      * 0.1.16     2021-04-16 [1] CRAN (R 4.1.0)                       
-##  remotes        2.4.0      2021-06-02 [1] CRAN (R 4.1.0)                       
-##  reprex         2.0.1      2021-08-05 [1] CRAN (R 4.1.0)                       
-##  reshape2       1.4.4      2020-04-09 [1] CRAN (R 4.1.0)                       
-##  rjson        * 0.2.20     2018-06-08 [1] CRAN (R 4.1.0)                       
-##  rlang          0.4.11     2021-04-30 [1] CRAN (R 4.1.0)                       
-##  rmarkdown      2.10       2021-08-06 [1] CRAN (R 4.1.0)                       
-##  rpart          4.1-15     2019-04-12 [1] CRAN (R 4.1.0)                       
-##  rprojroot      2.0.2      2020-11-15 [1] CRAN (R 4.1.0)                       
-##  rsample      * 0.1.0      2021-05-08 [1] CRAN (R 4.1.0)                       
-##  rstudioapi     0.13       2020-11-12 [1] CRAN (R 4.1.0)                       
-##  rvest          1.0.1      2021-07-26 [1] CRAN (R 4.1.0)                       
-##  sass           0.4.0      2021-05-12 [1] CRAN (R 4.1.0)                       
-##  scales       * 1.1.1      2020-05-11 [1] CRAN (R 4.1.0)                       
-##  sessioninfo    1.1.1      2018-11-05 [1] CRAN (R 4.1.0)                       
-##  slam         * 0.1-48     2020-12-03 [1] CRAN (R 4.1.0)                       
-##  SnowballC      0.7.0      2020-04-01 [1] CRAN (R 4.1.0)                       
-##  stringi        1.7.3      2021-07-16 [1] CRAN (R 4.1.0)                       
-##  stringr      * 1.4.0      2019-02-10 [1] CRAN (R 4.1.0)                       
-##  survival       3.2-12     2021-08-13 [1] CRAN (R 4.1.0)                       
-##  testthat       3.0.4      2021-07-01 [1] CRAN (R 4.1.0)                       
-##  textrecipes  * 0.4.1      2021-07-11 [1] CRAN (R 4.1.0)                       
-##  tibble       * 3.1.3      2021-07-23 [1] CRAN (R 4.1.0)                       
-##  tictoc       * 1.0.1      2021-04-19 [1] CRAN (R 4.1.0)                       
-##  tidymodels   * 0.1.3      2021-04-19 [1] CRAN (R 4.1.0)                       
-##  tidyr        * 1.1.3      2021-03-03 [1] CRAN (R 4.1.0)                       
-##  tidyselect     1.1.1      2021-04-30 [1] CRAN (R 4.1.0)                       
-##  tidytext     * 0.3.1      2021-04-10 [1] CRAN (R 4.1.0)                       
-##  tidyverse    * 1.3.1      2021-04-15 [1] CRAN (R 4.1.0)                       
-##  timeDate       3043.102   2018-02-21 [1] CRAN (R 4.1.0)                       
-##  tm           * 0.7-8      2020-11-18 [1] CRAN (R 4.1.0)                       
-##  tokenizers     0.2.1      2018-03-29 [1] CRAN (R 4.1.0)                       
-##  topicmodels  * 0.2-12     2021-01-29 [1] CRAN (R 4.1.0)                       
-##  tune         * 0.1.6      2021-07-21 [1] CRAN (R 4.1.0)                       
-##  tzdb           0.1.2      2021-07-20 [1] CRAN (R 4.1.0)                       
-##  usethis        2.0.1      2021-02-10 [1] CRAN (R 4.1.0)                       
-##  utf8           1.2.2      2021-07-24 [1] CRAN (R 4.1.0)                       
-##  vctrs          0.3.8      2021-04-29 [1] CRAN (R 4.1.0)                       
-##  withr          2.4.2      2021-04-18 [1] CRAN (R 4.1.0)                       
-##  workflows    * 0.2.3      2021-07-16 [1] CRAN (R 4.1.0)                       
-##  workflowsets * 0.1.0      2021-07-22 [1] CRAN (R 4.1.0)                       
-##  xfun           0.25       2021-08-06 [1] CRAN (R 4.1.0)                       
-##  xml2           1.3.2      2020-04-23 [1] CRAN (R 4.1.0)                       
-##  yaml           2.2.1      2020-02-01 [1] CRAN (R 4.1.0)                       
-##  yardstick    * 0.0.8      2021-03-28 [1] CRAN (R 4.1.0)                       
+##  package       * version    date (UTC) lib source
+##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
+##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
+##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
+##  broom         * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
+##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
+##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
+##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
+##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
+##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
+##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
+##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
+##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
+##  dials         * 1.0.0      2022-06-14 [2] CRAN (R 4.2.0)
+##  DiceDesign      1.9        2021-02-13 [2] CRAN (R 4.2.0)
+##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
+##  dplyr         * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
+##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
+##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
+##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
+##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
+##  foreach         1.5.2      2022-02-02 [2] CRAN (R 4.2.0)
+##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
+##  furrr         * 0.3.0      2022-05-04 [2] CRAN (R 4.2.0)
+##  future        * 1.27.0     2022-07-22 [2] CRAN (R 4.2.0)
+##  future.apply    1.9.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
+##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
+##  ggplot2       * 3.3.6      2022-05-03 [2] CRAN (R 4.2.0)
+##  globals         0.16.0     2022-08-05 [2] CRAN (R 4.2.0)
+##  glue            1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
+##  googledrive     2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
+##  googlesheets4   1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
+##  gower           1.0.0      2022-02-03 [2] CRAN (R 4.2.0)
+##  GPfit           1.0-8      2019-02-08 [2] CRAN (R 4.2.0)
+##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
+##  hardhat         1.2.0      2022-06-30 [2] CRAN (R 4.2.0)
+##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
+##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
+##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
+##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
+##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
+##  infer         * 1.0.2      2022-06-10 [2] CRAN (R 4.2.0)
+##  ipred           0.9-13     2022-06-02 [2] CRAN (R 4.2.0)
+##  iterators       1.0.14     2022-02-05 [2] CRAN (R 4.2.0)
+##  janeaustenr     0.1.5      2017-06-10 [2] CRAN (R 4.2.0)
+##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
+##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
+##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
+##  lava            1.6.10     2021-09-02 [2] CRAN (R 4.2.0)
+##  LDAvis        * 0.3.2      2015-10-24 [2] CRAN (R 4.2.0)
+##  LDAvisData    * 0.1        2022-06-08 [2] Github (cpsievert/LDAvisData@43dd263)
+##  lhs             1.1.5      2022-03-22 [2] CRAN (R 4.2.0)
+##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  listenv         0.8.0      2019-12-05 [2] CRAN (R 4.2.0)
+##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
+##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
+##  Matrix          1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
+##  modeldata     * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
+##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
+##  modeltools      0.2-23     2020-03-05 [2] CRAN (R 4.2.0)
+##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
+##  NLP           * 0.2-1      2020-10-14 [2] CRAN (R 4.2.0)
+##  nnet            7.3-17     2022-01-16 [2] CRAN (R 4.2.1)
+##  parallelly      1.32.1     2022-07-21 [2] CRAN (R 4.2.0)
+##  parsnip       * 1.0.0      2022-06-16 [2] CRAN (R 4.2.0)
+##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
+##  plyr            1.8.7      2022-03-24 [2] CRAN (R 4.2.0)
+##  prodlim         2019.11.13 2019-11-17 [2] CRAN (R 4.2.0)
+##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
+##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
+##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
+##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  recipes       * 1.0.1      2022-07-07 [2] CRAN (R 4.2.0)
+##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
+##  reshape2        1.4.4      2020-04-09 [2] CRAN (R 4.2.0)
+##  rjson         * 0.2.21     2022-01-09 [2] CRAN (R 4.2.0)
+##  RJSONIO         1.3-1.6    2021-09-16 [2] CRAN (R 4.2.0)
+##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
+##  rpart           4.1.16     2022-01-24 [2] CRAN (R 4.2.1)
+##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
+##  rsample       * 1.1.0      2022-08-08 [2] CRAN (R 4.2.1)
+##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
+##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
+##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
+##  scales        * 1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  slam          * 0.1-50     2022-01-08 [2] CRAN (R 4.2.0)
+##  SnowballC       0.7.0      2020-04-01 [2] CRAN (R 4.2.0)
+##  stopwords       2.3        2021-10-28 [2] CRAN (R 4.2.0)
+##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
+##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
+##  survival        3.3-1      2022-03-03 [2] CRAN (R 4.2.1)
+##  textrecipes   * 1.0.0      2022-07-02 [2] CRAN (R 4.2.0)
+##  tibble        * 3.1.8      2022-07-22 [2] CRAN (R 4.2.0)
+##  tictoc        * 1.0.1      2021-04-19 [2] CRAN (R 4.2.0)
+##  tidymodels    * 1.0.0      2022-07-13 [2] CRAN (R 4.2.0)
+##  tidyr         * 1.2.0      2022-02-01 [2] CRAN (R 4.2.0)
+##  tidyselect      1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
+##  tidytext      * 0.3.3      2022-05-09 [2] CRAN (R 4.2.0)
+##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
+##  timeDate        4021.104   2022-07-19 [2] CRAN (R 4.2.0)
+##  tm            * 0.7-8      2020-11-18 [2] CRAN (R 4.2.0)
+##  tokenizers      0.2.1      2018-03-29 [2] CRAN (R 4.2.0)
+##  topicmodels   * 0.2-12     2021-01-29 [2] CRAN (R 4.2.0)
+##  tune          * 1.0.0      2022-07-07 [2] CRAN (R 4.2.0)
+##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
+##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
+##  workflows     * 1.0.0      2022-07-05 [2] CRAN (R 4.2.0)
+##  workflowsets  * 1.0.0      2022-07-12 [2] CRAN (R 4.2.0)
+##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
+##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
+##  yardstick     * 1.0.0      2022-06-06 [2] CRAN (R 4.2.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+##  [1] /Users/soltoffbc/Library/R/arm64/4.2/library
+##  [2] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```

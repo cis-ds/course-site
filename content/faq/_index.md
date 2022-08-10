@@ -76,7 +76,6 @@ Meet some of the types of students you will find in this class.
 * Starting points
     * Background in psychology, plans to apply for doctoral programs in marketing
     * Uses a mix of Excel, SPSS, and Matlab
-    * Is pursuing the [graduate certificate in computational social science](https://macss.uchicago.edu/content/certificate-current-students)
 * Needs
     * Is going to run 300 experiments on Amazon MTurk in the next six months
     * Wants to easily share her analysis notebooks with peers in her research lab

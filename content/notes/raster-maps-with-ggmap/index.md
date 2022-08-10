@@ -171,7 +171,7 @@ Now that we can obtain map tiles and draw them using `ggmap()`, let's explore ho
 
 {{% callout note %}}
 
-If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://cfss.uchicago.edu/data/Crimes_-_2017.csv")` to download the file from the course website.
+If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://info5940.netlify.app/data/Crimes_-_2017.csv")` to download the file from the course website.
 
 {{% /callout %}}
 
@@ -185,28 +185,28 @@ glimpse(crimes)
 ```
 ## Rows: 267,345
 ## Columns: 22
-## $ ID                     <dbl> 11094370, 11118031, 11134189, 11156462, 111648…
-## $ `Case Number`          <chr> "JA440032", "JA470589", "JA491697", "JA521389"…
-## $ Date                   <chr> "09/21/2017 12:15:00 AM", "10/12/2017 07:14:00…
-## $ Block                  <chr> "072XX N CALIFORNIA AVE", "055XX W GRAND AVE",…
-## $ IUCR                   <chr> "1122", "1345", "4651", "1110", "0265", "143A"…
-## $ `Primary Type`         <chr> "DECEPTIVE PRACTICE", "CRIMINAL DAMAGE", "OTHE…
-## $ Description            <chr> "COUNTERFEIT CHECK", "TO CITY OF CHICAGO PROPE…
-## $ `Location Description` <chr> "CURRENCY EXCHANGE", "JAIL / LOCK-UP FACILITY"…
-## $ Arrest                 <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE…
-## $ Domestic               <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALS…
-## $ Beat                   <chr> "2411", "2515", "0922", "2514", "1221", "0232"…
-## $ District               <chr> "024", "025", "009", "025", "012", "002", "005…
-## $ Ward                   <dbl> 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, 32, 17,…
-## $ `Community Area`       <dbl> 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, 24, 44,…
-## $ `FBI Code`             <chr> "10", "14", "26", "11", "02", "15", "03", "06"…
-## $ `X Coordinate`         <dbl> 1156443, 1138788, 1159425, 1138653, 1161264, 1…
-## $ `Y Coordinate`         <dbl> 1947707, 1913480, 1875711, 1920720, 1905292, 1…
-## $ Year                   <dbl> 2017, 2017, 2017, 2017, 2017, 2017, 2017, 2017…
-## $ `Updated On`           <chr> "03/01/2018 03:52:35 PM", "03/01/2018 03:52:35…
-## $ Latitude               <dbl> 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41.7, 41.8…
-## $ Longitude              <dbl> -87.7, -87.8, -87.7, -87.8, -87.7, -87.6, -87.…
-## $ Location               <chr> "(42.012293397, -87.699714109)", "(41.91871165…
+## $ ID                     <dbl> 11094370, 11118031, 11134189, 11156462, 1116487…
+## $ `Case Number`          <chr> "JA440032", "JA470589", "JA491697", "JA521389",…
+## $ Date                   <chr> "09/21/2017 12:15:00 AM", "10/12/2017 07:14:00 …
+## $ Block                  <chr> "072XX N CALIFORNIA AVE", "055XX W GRAND AVE", …
+## $ IUCR                   <chr> "1122", "1345", "4651", "1110", "0265", "143A",…
+## $ `Primary Type`         <chr> "DECEPTIVE PRACTICE", "CRIMINAL DAMAGE", "OTHER…
+## $ Description            <chr> "COUNTERFEIT CHECK", "TO CITY OF CHICAGO PROPER…
+## $ `Location Description` <chr> "CURRENCY EXCHANGE", "JAIL / LOCK-UP FACILITY",…
+## $ Arrest                 <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,…
+## $ Domestic               <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
+## $ Beat                   <chr> "2411", "2515", "0922", "2514", "1221", "0232",…
+## $ District               <chr> "024", "025", "009", "025", "012", "002", "005"…
+## $ Ward                   <dbl> 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, 32, 17, …
+## $ `Community Area`       <dbl> 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, 24, 44, …
+## $ `FBI Code`             <chr> "10", "14", "26", "11", "02", "15", "03", "06",…
+## $ `X Coordinate`         <dbl> 1156443, 1138788, 1159425, 1138653, 1161264, 11…
+## $ `Y Coordinate`         <dbl> 1947707, 1913480, 1875711, 1920720, 1905292, 18…
+## $ Year                   <dbl> 2017, 2017, 2017, 2017, 2017, 2017, 2017, 2017,…
+## $ `Updated On`           <chr> "03/01/2018 03:52:35 PM", "03/01/2018 03:52:35 …
+## $ Latitude               <dbl> 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41.7, 41.8,…
+## $ Longitude              <dbl> -87.7, -87.8, -87.7, -87.8, -87.7, -87.6, -87.6…
+## $ Location               <chr> "(42.012293397, -87.699714109)", "(41.918711651…
 ```
 
 Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the `Longitude` and `Latitude` columns respectively.
@@ -388,24 +388,26 @@ While `geom_point()` was not appropriate for graphing a large number of observat
 ```
 
 ```
-## # A tibble: 671 x 22
-##        ID `Case Number` Date  Block IUCR  `Primary Type` Description
-##     <dbl> <chr>         <chr> <chr> <chr> <chr>          <chr>      
-##  1 2.31e4 JA149608      02/1… 001X… 0110  HOMICIDE       FIRST DEGR…
-##  2 2.39e4 JA530946      11/3… 088X… 0110  HOMICIDE       FIRST DEGR…
-##  3 2.34e4 JA302423      06/1… 047X… 0110  HOMICIDE       FIRST DEGR…
-##  4 2.34e4 JA312425      06/1… 006X… 0110  HOMICIDE       FIRST DEGR…
-##  5 2.37e4 JA490016      10/2… 048X… 0110  HOMICIDE       FIRST DEGR…
-##  6 2.32e4 JA210752      04/0… 013X… 0110  HOMICIDE       FIRST DEGR…
-##  7 2.36e4 JA461918      10/0… 018X… 0110  HOMICIDE       FIRST DEGR…
-##  8 2.36e4 JA461918      10/0… 018X… 0110  HOMICIDE       FIRST DEGR…
-##  9 1.08e7 JA138326      02/0… 013X… 0142  HOMICIDE       RECKLESS H…
-## 10 2.35e4 JA364517      07/2… 047X… 0110  HOMICIDE       FIRST DEGR…
-## # … with 661 more rows, and 15 more variables: `Location Description` <chr>,
-## #   Arrest <lgl>, Domestic <lgl>, Beat <chr>, District <chr>, Ward <dbl>,
-## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>, `Y
-## #   Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
-## #   Longitude <dbl>, Location <chr>
+## # A tibble: 671 × 22
+##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
+##     <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
+##  1 2.31e4 JA1496… 02/1… 001X… 0110  HOMICI… FIRST … ALLEY   TRUE   FALSE   1512 
+##  2 2.39e4 JA5309… 11/3… 088X… 0110  HOMICI… FIRST … APARTM… FALSE  FALSE   0424 
+##  3 2.34e4 JA3024… 06/1… 047X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   0931 
+##  4 2.34e4 JA3124… 06/1… 006X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   0631 
+##  5 2.37e4 JA4900… 10/2… 048X… 0110  HOMICI… FIRST … APARTM… TRUE   TRUE    1624 
+##  6 2.32e4 JA2107… 04/0… 013X… 0110  HOMICI… FIRST … APARTM… TRUE   TRUE    1011 
+##  7 2.36e4 JA4619… 10/0… 018X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   1233 
+##  8 2.36e4 JA4619… 10/0… 018X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   1233 
+##  9 1.08e7 JA1383… 02/0… 013X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1022 
+## 10 2.35e4 JA3645… 07/2… 047X… 0110  HOMICI… FIRST … ALLEY   TRUE   FALSE   1113 
+## # … with 661 more rows, 11 more variables: District <chr>, Ward <dbl>,
+## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
+## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
+## #   Longitude <dbl>, Location <chr>, and abbreviated variable names
+## #   ¹​`Case Number`, ²​`Primary Type`, ³​Description, ⁴​`Location Description`,
+## #   ⁵​Domestic
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 We can draw a map of the city with all homicides indicated on the map using `geom_point()`:
@@ -504,24 +506,26 @@ All the other aesthetic customizations of `geom_point()` work with `ggmap`. So w
 ```
 
 ```
-## # A tibble: 14,146 x 22
-##         ID `Case Number` Date      Block     IUCR  `Primary Type` Description   
-##      <dbl> <chr>         <chr>     <chr>     <chr> <chr>          <chr>         
-##  1  1.12e7 JA531910      12/01/20… 022XX W … 0265  CRIM SEXUAL A… AGGRAVATED: O…
-##  2  1.10e7 JA322389      06/25/20… 003XX W … 031A  ROBBERY        ARMED: HANDGUN
-##  3  1.12e7 JA545986      12/11/20… 007XX N … 031A  ROBBERY        ARMED: HANDGUN
-##  4  1.12e7 JA546734      12/12/20… 007XX N … 031A  ROBBERY        ARMED: HANDGUN
-##  5  1.12e7 JB147188      10/08/20… 092XX S … 0281  CRIM SEXUAL A… NON-AGGRAVATED
-##  6  1.12e7 JB147599      08/26/20… 001XX W … 0281  CRIM SEXUAL A… NON-AGGRAVATED
-##  7  2.31e4 JA149608      02/11/20… 001XX N … 0110  HOMICIDE       FIRST DEGREE …
-##  8  1.10e7 JA378592      08/05/20… 038XX W … 0313  ROBBERY        ARMED: OTHER …
-##  9  1.12e7 JA538651      12/06/20… 092XX S … 031A  ROBBERY        ARMED: HANDGUN
-## 10  1.12e7 JB149656      12/24/20… 005XX S … 0330  ROBBERY        AGGRAVATED    
-## # … with 14,136 more rows, and 15 more variables: Location Description <chr>,
-## #   Arrest <lgl>, Domestic <lgl>, Beat <chr>, District <chr>, Ward <dbl>,
-## #   Community Area <dbl>, FBI Code <chr>, X Coordinate <dbl>,
-## #   Y Coordinate <dbl>, Year <dbl>, Updated On <chr>, Latitude <dbl>,
-## #   Longitude <dbl>, Location <chr>
+## # A tibble: 14,146 × 22
+##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
+##     <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
+##  1 1.12e7 JA5319… 12/0… 022X… 0265  CRIM S… AGGRAV… STREET  TRUE   FALSE   1221 
+##  2 1.10e7 JA3223… 06/2… 003X… 031A  ROBBERY ARMED:… SMALL … TRUE   FALSE   0511 
+##  3 1.12e7 JA5459… 12/1… 007X… 031A  ROBBERY ARMED:… SIDEWA… TRUE   FALSE   1221 
+##  4 1.12e7 JA5467… 12/1… 007X… 031A  ROBBERY ARMED:… STREET  TRUE   FALSE   1221 
+##  5 1.12e7 JB1471… 10/0… 092X… 0281  CRIM S… NON-AG… RESIDE… FALSE  FALSE   2222 
+##  6 1.12e7 JB1475… 08/2… 001X… 0281  CRIM S… NON-AG… HOTEL/… FALSE  FALSE   0122 
+##  7 2.31e4 JA1496… 02/1… 001X… 0110  HOMICI… FIRST … ALLEY   TRUE   FALSE   1512 
+##  8 1.10e7 JA3785… 08/0… 038X… 0313  ROBBERY ARMED:… SIDEWA… TRUE   FALSE   1133 
+##  9 1.12e7 JA5386… 12/0… 092X… 031A  ROBBERY ARMED:… SIDEWA… TRUE   FALSE   0633 
+## 10 1.12e7 JB1496… 12/2… 005X… 0330  ROBBERY AGGRAV… CONVEN… FALSE  FALSE   0123 
+## # … with 14,136 more rows, 11 more variables: District <chr>, Ward <dbl>,
+## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
+## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
+## #   Longitude <dbl>, Location <chr>, and abbreviated variable names
+## #   ¹​`Case Number`, ²​`Primary Type`, ³​Description, ⁴​`Location Description`,
+## #   ⁵​Domestic
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 
@@ -562,127 +566,126 @@ ggmap(kenwood) +
 
 
 ```r
-devtools::session_info()
+sessioninfo::session_info()
 ```
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
-##  setting  value                       
-##  version  R version 4.1.0 (2021-05-18)
-##  os       macOS Big Sur 10.16         
-##  system   x86_64, darwin17.0          
-##  ui       X11                         
-##  language (EN)                        
-##  collate  en_US.UTF-8                 
-##  ctype    en_US.UTF-8                 
-##  tz       America/Chicago             
-##  date     2021-09-01                  
+##  setting  value
+##  version  R version 4.2.1 (2022-06-23)
+##  os       macOS Monterey 12.3
+##  system   aarch64, darwin20
+##  ui       X11
+##  language (EN)
+##  collate  en_US.UTF-8
+##  ctype    en_US.UTF-8
+##  tz       America/New_York
+##  date     2022-08-10
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
-##  package      * version date       lib source        
-##  assertthat     0.2.1   2019-03-21 [1] CRAN (R 4.1.0)
-##  backports      1.2.1   2020-12-09 [1] CRAN (R 4.1.0)
-##  bitops         1.0-7   2021-04-24 [1] CRAN (R 4.1.0)
-##  blogdown       1.4     2021-07-23 [1] CRAN (R 4.1.0)
-##  bookdown       0.23    2021-08-13 [1] CRAN (R 4.1.0)
-##  broom          0.7.9   2021-07-27 [1] CRAN (R 4.1.0)
-##  bslib          0.2.5.1 2021-05-18 [1] CRAN (R 4.1.0)
-##  cachem         1.0.6   2021-08-19 [1] CRAN (R 4.1.0)
-##  callr          3.7.0   2021-04-20 [1] CRAN (R 4.1.0)
-##  cellranger     1.1.0   2016-07-27 [1] CRAN (R 4.1.0)
-##  class          7.3-19  2021-05-03 [1] CRAN (R 4.1.0)
-##  classInt       0.4-3   2020-04-07 [1] CRAN (R 4.1.0)
-##  cli            3.0.1   2021-07-17 [1] CRAN (R 4.1.0)
-##  codetools      0.2-18  2020-11-04 [1] CRAN (R 4.1.0)
-##  colorspace     2.0-2   2021-06-24 [1] CRAN (R 4.1.0)
-##  crayon         1.4.1   2021-02-08 [1] CRAN (R 4.1.0)
-##  DBI            1.1.1   2021-01-15 [1] CRAN (R 4.1.0)
-##  dbplyr         2.1.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  desc           1.3.0   2021-03-05 [1] CRAN (R 4.1.0)
-##  devtools       2.4.2   2021-06-07 [1] CRAN (R 4.1.0)
-##  digest         0.6.27  2020-10-24 [1] CRAN (R 4.1.0)
-##  dplyr        * 1.0.7   2021-06-18 [1] CRAN (R 4.1.0)
-##  e1071          1.7-8   2021-07-28 [1] CRAN (R 4.1.0)
-##  ellipsis       0.3.2   2021-04-29 [1] CRAN (R 4.1.0)
-##  evaluate       0.14    2019-05-28 [1] CRAN (R 4.1.0)
-##  fansi          0.5.0   2021-05-25 [1] CRAN (R 4.1.0)
-##  farver         2.1.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  fastmap        1.1.0   2021-01-25 [1] CRAN (R 4.1.0)
-##  forcats      * 0.5.1   2021-01-27 [1] CRAN (R 4.1.0)
-##  fs             1.5.0   2020-07-31 [1] CRAN (R 4.1.0)
-##  generics       0.1.0   2020-10-31 [1] CRAN (R 4.1.0)
-##  ggmap        * 3.0.0   2019-02-05 [1] CRAN (R 4.1.0)
-##  ggplot2      * 3.3.5   2021-06-25 [1] CRAN (R 4.1.0)
-##  glue           1.4.2   2020-08-27 [1] CRAN (R 4.1.0)
-##  gtable         0.3.0   2019-03-25 [1] CRAN (R 4.1.0)
-##  haven          2.4.3   2021-08-04 [1] CRAN (R 4.1.0)
-##  here         * 1.0.1   2020-12-13 [1] CRAN (R 4.1.0)
-##  highr          0.9     2021-04-16 [1] CRAN (R 4.1.0)
-##  hms            1.1.0   2021-05-17 [1] CRAN (R 4.1.0)
-##  htmltools      0.5.1.1 2021-01-22 [1] CRAN (R 4.1.0)
-##  httr           1.4.2   2020-07-20 [1] CRAN (R 4.1.0)
-##  isoband        0.2.5   2021-07-13 [1] CRAN (R 4.1.0)
-##  jpeg           0.1-9   2021-07-24 [1] CRAN (R 4.1.0)
-##  jquerylib      0.1.4   2021-04-26 [1] CRAN (R 4.1.0)
-##  jsonlite       1.7.2   2020-12-09 [1] CRAN (R 4.1.0)
-##  KernSmooth     2.23-20 2021-05-03 [1] CRAN (R 4.1.0)
-##  knitr          1.33    2021-04-24 [1] CRAN (R 4.1.0)
-##  labeling       0.4.2   2020-10-20 [1] CRAN (R 4.1.0)
-##  lattice        0.20-44 2021-05-02 [1] CRAN (R 4.1.0)
-##  lifecycle      1.0.0   2021-02-15 [1] CRAN (R 4.1.0)
-##  lubridate      1.7.10  2021-02-26 [1] CRAN (R 4.1.0)
-##  magrittr       2.0.1   2020-11-17 [1] CRAN (R 4.1.0)
-##  MASS           7.3-54  2021-05-03 [1] CRAN (R 4.1.0)
-##  memoise        2.0.0   2021-01-26 [1] CRAN (R 4.1.0)
-##  modelr         0.1.8   2020-05-19 [1] CRAN (R 4.1.0)
-##  munsell        0.5.0   2018-06-12 [1] CRAN (R 4.1.0)
-##  patchwork    * 1.1.1   2020-12-17 [1] CRAN (R 4.1.0)
-##  pillar         1.6.2   2021-07-29 [1] CRAN (R 4.1.0)
-##  pkgbuild       1.2.0   2020-12-15 [1] CRAN (R 4.1.0)
-##  pkgconfig      2.0.3   2019-09-22 [1] CRAN (R 4.1.0)
-##  pkgload        1.2.1   2021-04-06 [1] CRAN (R 4.1.0)
-##  plyr           1.8.6   2020-03-03 [1] CRAN (R 4.1.0)
-##  png            0.1-7   2013-12-03 [1] CRAN (R 4.1.0)
-##  prettyunits    1.1.1   2020-01-24 [1] CRAN (R 4.1.0)
-##  processx       3.5.2   2021-04-30 [1] CRAN (R 4.1.0)
-##  proxy          0.4-26  2021-06-07 [1] CRAN (R 4.1.0)
-##  ps             1.6.0   2021-02-28 [1] CRAN (R 4.1.0)
-##  purrr        * 0.3.4   2020-04-17 [1] CRAN (R 4.1.0)
-##  R6             2.5.1   2021-08-19 [1] CRAN (R 4.1.0)
-##  RColorBrewer * 1.1-2   2014-12-07 [1] CRAN (R 4.1.0)
-##  Rcpp           1.0.7   2021-07-07 [1] CRAN (R 4.1.0)
-##  readr        * 2.0.1   2021-08-10 [1] CRAN (R 4.1.0)
-##  readxl         1.3.1   2019-03-13 [1] CRAN (R 4.1.0)
-##  remotes        2.4.0   2021-06-02 [1] CRAN (R 4.1.0)
-##  reprex         2.0.1   2021-08-05 [1] CRAN (R 4.1.0)
-##  RgoogleMaps    1.4.5.3 2020-02-12 [1] CRAN (R 4.1.0)
-##  rjson          0.2.20  2018-06-08 [1] CRAN (R 4.1.0)
-##  rlang          0.4.11  2021-04-30 [1] CRAN (R 4.1.0)
-##  rmarkdown      2.10    2021-08-06 [1] CRAN (R 4.1.0)
-##  rprojroot      2.0.2   2020-11-15 [1] CRAN (R 4.1.0)
-##  rstudioapi     0.13    2020-11-12 [1] CRAN (R 4.1.0)
-##  rvest          1.0.1   2021-07-26 [1] CRAN (R 4.1.0)
-##  sass           0.4.0   2021-05-12 [1] CRAN (R 4.1.0)
-##  scales         1.1.1   2020-05-11 [1] CRAN (R 4.1.0)
-##  sessioninfo    1.1.1   2018-11-05 [1] CRAN (R 4.1.0)
-##  sf           * 1.0-2   2021-07-26 [1] CRAN (R 4.1.0)
-##  sp             1.4-5   2021-01-10 [1] CRAN (R 4.1.0)
-##  stringi        1.7.3   2021-07-16 [1] CRAN (R 4.1.0)
-##  stringr      * 1.4.0   2019-02-10 [1] CRAN (R 4.1.0)
-##  testthat       3.0.4   2021-07-01 [1] CRAN (R 4.1.0)
-##  tibble       * 3.1.3   2021-07-23 [1] CRAN (R 4.1.0)
-##  tidyr        * 1.1.3   2021-03-03 [1] CRAN (R 4.1.0)
-##  tidyselect     1.1.1   2021-04-30 [1] CRAN (R 4.1.0)
-##  tidyverse    * 1.3.1   2021-04-15 [1] CRAN (R 4.1.0)
-##  tzdb           0.1.2   2021-07-20 [1] CRAN (R 4.1.0)
-##  units          0.7-2   2021-06-08 [1] CRAN (R 4.1.0)
-##  usethis        2.0.1   2021-02-10 [1] CRAN (R 4.1.0)
-##  utf8           1.2.2   2021-07-24 [1] CRAN (R 4.1.0)
-##  vctrs          0.3.8   2021-04-29 [1] CRAN (R 4.1.0)
-##  withr          2.4.2   2021-04-18 [1] CRAN (R 4.1.0)
-##  xfun           0.25    2021-08-06 [1] CRAN (R 4.1.0)
-##  xml2           1.3.2   2020-04-23 [1] CRAN (R 4.1.0)
-##  yaml           2.2.1   2020-02-01 [1] CRAN (R 4.1.0)
+##  package       * version    date (UTC) lib source
+##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
+##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  bit             4.0.4      2020-08-04 [2] CRAN (R 4.2.0)
+##  bit64           4.0.5      2020-08-30 [2] CRAN (R 4.2.0)
+##  bitops          1.0-7      2021-04-24 [2] CRAN (R 4.2.0)
+##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
+##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
+##  broom           1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
+##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
+##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
+##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
+##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
+##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
+##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
+##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
+##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  curl            4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
+##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
+##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
+##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
+##  dplyr         * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  e1071           1.7-11     2022-06-07 [2] CRAN (R 4.2.0)
+##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
+##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
+##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
+##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
+##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
+##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
+##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
+##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
+##  ggmap         * 3.0.0      2019-02-05 [2] CRAN (R 4.2.0)
+##  ggplot2       * 3.3.6      2022-05-03 [2] CRAN (R 4.2.0)
+##  glue            1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
+##  googledrive     2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
+##  googlesheets4   1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
+##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
+##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
+##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
+##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
+##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
+##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
+##  isoband         0.2.5      2021-07-13 [2] CRAN (R 4.2.0)
+##  jpeg            0.1-9      2021-07-24 [2] CRAN (R 4.2.0)
+##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
+##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
+##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
+##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
+##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
+##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
+##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
+##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
+##  patchwork     * 1.1.1      2020-12-17 [2] CRAN (R 4.2.0)
+##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
+##  plyr            1.8.7      2022-03-24 [2] CRAN (R 4.2.0)
+##  png             0.1-7      2013-12-03 [2] CRAN (R 4.2.0)
+##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
+##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  RColorBrewer  * 1.1-3      2022-04-03 [2] CRAN (R 4.2.0)
+##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
+##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
+##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
+##  RgoogleMaps     1.4.5.3    2020-02-12 [2] CRAN (R 4.2.0)
+##  rjson           0.2.21     2022-01-09 [2] CRAN (R 4.2.0)
+##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
+##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
+##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
+##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
+##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
+##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  sf            * 1.0-8      2022-07-14 [2] CRAN (R 4.2.0)
+##  sp              1.5-0      2022-06-05 [2] CRAN (R 4.2.0)
+##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
+##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
+##  tibble        * 3.1.8      2022-07-22 [2] CRAN (R 4.2.0)
+##  tidyr         * 1.2.0      2022-02-01 [2] CRAN (R 4.2.0)
+##  tidyselect      1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
+##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
+##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  units           0.8-0      2022-02-05 [2] CRAN (R 4.2.0)
+##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
+##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  vroom           1.5.7      2021-11-30 [2] CRAN (R 4.2.0)
+##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
+##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
+##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
+##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
 ## 
-## [1] /Library/Frameworks/R.framework/Versions/4.1/Resources/library
+##  [1] /Users/soltoffbc/Library/R/arm64/4.2/library
+##  [2] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+## 
+## ──────────────────────────────────────────────────────────────────────────────
 ```
