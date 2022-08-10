@@ -17,7 +17,7 @@ abstract: ""
 summary: "No class."
 
 # Location of event.
-location: "Online"
+location: Rockefeller Hall 203
 
 # Is this a selected talk? (true/false)
 selected: false

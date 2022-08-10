@@ -19,7 +19,7 @@ abstract: ""
 summary: "Computational problem-solving, verbs for data manipulation, and practice transforming data frames using dplyr."
 
 # Location of event.
-location: "Online"
+location: Rockefeller Hall 203
 
 # Is this a selected talk? (true/false)
 selected: false
