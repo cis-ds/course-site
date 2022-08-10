@@ -8,7 +8,6 @@ type: post
 aliases: ["/hw06-stat-learn.html", "/homework/statistical-learning"]
 
 summary: "Implement machine learning methods for regression and classification."
-url_code: "https://github.com/cfss-su22/hw07"
 ---
 
 
@@ -17,9 +16,9 @@ url_code: "https://github.com/cfss-su22/hw07"
 
 Due by 11:59pm CT (Chicago) on July 11th.
 
-# Fork the `hw07` repository
+# Accessing the `hw07` repository
 
-Go [here](https://github.com/cfss-su22/hw07) to fork the repo.
+Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the `hw07` repository. It follows the naming convention `hw07-<USERNAME>`. Clone the repository to your computer.
 
 # Part 1: Student debt
 
@@ -98,7 +97,7 @@ Documentation for the other predictors (if the variable is not clearly coded) ca
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as a set of two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 
