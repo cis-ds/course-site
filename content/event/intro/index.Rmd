@@ -4,7 +4,7 @@ date: 2022-08-22T12:25:00-05:00
 publishDate: 2019-08-01T12:25:00-05:00
 draft: false
 
-aliases: ["/cm001.html"]
+aliases: ["/cm001.html", "/syllabus/introduction-to-computing-for-the-social-sciences/"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -16,7 +16,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Overview of programming, applications to social science, reproducible research, and course logistics."
+summary: "Overview of programming, applications to information science, reproducible research, and course logistics."
 
 # Location of event.
 location: "Online"
@@ -30,7 +30,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/introduction-to-computing-for-the-social-sciences/"
+url_slides: "/slides/introduction-to-computing-for-information-science/"
 url_video: ""
 url_code: ""
 

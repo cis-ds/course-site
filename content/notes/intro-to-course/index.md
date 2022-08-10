@@ -20,18 +20,17 @@ menu:
 
 ### Me (Dr. Benjamin Soltoff)
 
-I am Assistant Senior Instructional Professor in Computational Social Science and Associate Director of the [Masters in Computational Social Science](http://macss.uchicago.edu) program. I earned my PhD in political science from [Penn State University](http://polisci.la.psu.edu/). [My research interests](https://www.bensoltoff.com) focus on judicial politics, state courts, and agenda-setting. Methodologically I am interested in statistical learning and text analysis.
+I am Lecturer in Information Science in the [information science department](https://infosci.cornell.edu). Previously I was Assistant Senior Instructional Professor in Computational Social Science and Associate Director of the [Masters in Computational Social Science](http://macss.uchicago.edu) program. I earned my PhD in political science from [Penn State University](http://polisci.la.psu.edu/). [My research interests](https://www.bensoltoff.com) focus on judicial politics, state courts, and agenda-setting. Methodologically I am interested in statistical learning and text analysis.
 
 I was first drawn to programming in grad school, starting out in [Stata](http://www.stata.com/) and eventually making the transition to [R](https://www.r-project.org/) and [Python](https://www.python.org/). I learned these programming languages out of necessity - I needed to process, analyze, and code tens of thousands of judicial opinions and extract key information into a tabular format. I am not a computer scientist. I am a social scientist who uses programming and computational tools to answer my research questions.
 
 ### Teaching assistants
 
-- Natalie Ayers
-- Warren Liow
+- TBD
 
 ## Course objectives
 
-**The goal of this course is to teach you basic computational skills and provide you with the means to learn what you need to know for your own research.** I start from the perspective that you want to analyze data, and *programming is a means to that end*. You will not become an expert programmer - that is a given. But you will learn the basic skills and techniques necessary to conduct computational social science, and gain the confidence necessary to learn new techniques as you encounter them in your research.
+**The goal of this course is to teach you basic computational skills and provide you with the means to learn what you need to know for your own research.** I start from the perspective that you want to analyze data, and *programming is a means to that end*. You will not become an expert programmer - that is a given. But you will learn the basic skills and techniques necessary to conduct data science, and gain the confidence necessary to learn new techniques as you encounter them in your research.
 
 We will cover many different topics in this course, including:
 
@@ -154,11 +153,11 @@ The point is that collaboration in this class is good - **to a point**. You are 
 
 ## Evaluations
 
-Each week you will complete a series of programming assignments linked to lecture materials. These assignments will generally be due the following week prior to Tuesday's class. Assignments will initially come with starter code, or an initial version of the program where you need to fill in the blanks to make it work. As the quarter moves on and your skills become more developed, I will provide less help upfront.
+You will complete a series of programming assignments throughout the semester linked to lecture materials. These assignments will generally be due the following week prior to Monday's class. Assignments will initially come with starter code, or an initial version of the program where you need to fill in the blanks to make it work. As the semester moves on and your skills become more developed, I will provide less help upfront.
 
-Each assignment will be evaluated by myself or the TA, as well as by *two peers*. Peer review is a crucial element to this course, in that by [eating each other's dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food) you will learn to read, debug, and reproduce code and analysis. And while I and the TA are competent users in R, your classmates are not - so make sure your code is [well-documented](#documentation) so that others with basic knowledge of programming and R can follow along and reuse your code. Be sure to read the instructions for [peer review](/faq/peer-evaluations/) so you know how to provide useful feedback.
+Each assignment will be evaluated by myself or a TA, as well as by *two peers*. Peer review is a crucial element to this course, in that by [eating each other's dog food](https://en.wikipedia.org/wiki/Eating_your_own_dog_food) you will learn to read, debug, and reproduce code and analysis. And while I and the TAs are competent users in R, your classmates are not - so make sure your code is [well-documented](#documentation) so that others with basic knowledge of programming and R can follow along and reuse your code. Be sure to read the instructions for [peer review](/faq/peer-evaluations/) so you know how to provide useful feedback.
 
-## The computational social science workflow
+## The data workflow
 
 {{< figure src="data-science.png" caption="Data science workflow. Source: [R for Data Science](http://r4ds.had.co.nz/) by Garrett Grolemund and Hadley Wickham." >}}
 
@@ -226,9 +225,9 @@ Let's demonstrate why you should want to learn to program.^[Example drawn from [
 
 {{< figure src="stata14.png" caption="Stata" >}}
 
-Here is a hypothetical assignment for a UChicago undergrad:
+Here is a hypothetical assignment for a Cornell undergrad:
 
-> Write a report analyzing the relationship between ice cream consumption and crime rates in Chicago.
+> Write a report analyzing the relationship between ice cream consumption and crime rates in New York City.
 
 Let's see how two students (Jane and Sally) would complete this. Jane will use strictly GUI software, whereas Sally will use programming and the data science workflow we outlined above.
 
@@ -264,7 +263,7 @@ Let's see how two students (Jane and Sally) would complete this. Jane will use s
 
 ## The value of automation
 
-The professor is impressed with Jane and Sally's findings, but wants them to verify the results using new data files for ice cream **and frozen yogurt** sales and crime rates for 2011-2015 before he will determine their grade.
+The professor is impressed with Jane and Sally's findings, but wants them to verify the results using new data files for ice cream **and frozen yogurt** sales and crime rates for 2011-2020 before he will determine their grade.
 
 At this point, Jane is greatly hampered by her GUI workflow. She now has to repeat steps 1-5 all over again, but she forgot how she defined violent vs. non-violent crimes. She also no longer has the original frozen yogurt sales data and has to find the original file again somewhere on her computer or online. She has to remember precisely all the menus she entered and all the settings she changed in order to reproduce her findings.
 
@@ -393,116 +392,108 @@ bind_rows(
 
 
 ```r
-devtools::session_info()
+sessioninfo::session_info()
 ```
 
 ```
 ## ─ Session info ───────────────────────────────────────────────────────────────
 ##  setting  value
-##  version  R version 4.2.0 (2022-04-22)
-##  os       macOS Monterey 12.2.1
+##  version  R version 4.2.1 (2022-06-23)
+##  os       macOS Monterey 12.3
 ##  system   aarch64, darwin20
 ##  ui       X11
 ##  language (EN)
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
-##  tz       America/Chicago
-##  date     2022-06-08
-##  pandoc   2.17.1.1 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/ (via rmarkdown)
+##  tz       America/New_York
+##  date     2022-08-10
+##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package        * version    date (UTC) lib source
-##  assertthat       0.2.1      2019-03-21 [1] CRAN (R 4.2.0)
-##  backports        1.4.1      2021-12-13 [1] CRAN (R 4.2.0)
-##  bit              4.0.4      2020-08-04 [1] CRAN (R 4.2.0)
-##  bit64            4.0.5      2020-08-30 [1] CRAN (R 4.2.0)
-##  blogdown         1.10       2022-05-10 [1] CRAN (R 4.2.0)
-##  bookdown         0.26       2022-04-15 [1] CRAN (R 4.2.0)
-##  brio             1.1.3      2021-11-30 [1] CRAN (R 4.2.0)
-##  broom          * 0.8.0      2022-04-13 [1] CRAN (R 4.2.0)
-##  bslib            0.3.1      2021-10-06 [1] CRAN (R 4.2.0)
-##  cachem           1.0.6      2021-08-19 [1] CRAN (R 4.2.0)
-##  callr            3.7.0      2021-04-20 [1] CRAN (R 4.2.0)
-##  cellranger       1.1.0      2016-07-27 [1] CRAN (R 4.2.0)
-##  cli              3.3.0      2022-04-25 [1] CRAN (R 4.2.0)
-##  codetools        0.2-18     2020-11-04 [1] CRAN (R 4.2.0)
-##  colorspace       2.0-3      2022-02-21 [1] CRAN (R 4.2.0)
-##  crayon           1.5.1      2022-03-26 [1] CRAN (R 4.2.0)
-##  curl             4.3.2      2021-06-23 [1] CRAN (R 4.2.0)
-##  DBI              1.1.2      2021-12-20 [1] CRAN (R 4.2.0)
-##  dbplyr           2.2.0      2022-06-05 [1] CRAN (R 4.2.0)
-##  desc             1.4.1      2022-03-06 [1] CRAN (R 4.2.0)
-##  devtools         2.4.3      2021-11-30 [1] CRAN (R 4.2.0)
-##  digest           0.6.29     2021-12-01 [1] CRAN (R 4.2.0)
-##  dplyr          * 1.0.9      2022-04-28 [1] CRAN (R 4.2.0)
-##  ellipsis         0.3.2      2021-04-29 [1] CRAN (R 4.2.0)
-##  evaluate         0.15       2022-02-18 [1] CRAN (R 4.2.0)
-##  fansi            1.0.3      2022-03-24 [1] CRAN (R 4.2.0)
-##  farver           2.1.0      2021-02-28 [1] CRAN (R 4.2.0)
-##  fastmap          1.1.0      2021-01-25 [1] CRAN (R 4.2.0)
-##  forcats        * 0.5.1      2021-01-27 [1] CRAN (R 4.2.0)
-##  fs               1.5.2      2021-12-08 [1] CRAN (R 4.2.0)
-##  generics         0.1.2      2022-01-31 [1] CRAN (R 4.2.0)
-##  ggplot2        * 3.3.6      2022-05-03 [1] CRAN (R 4.2.0)
-##  glue             1.6.2      2022-02-24 [1] CRAN (R 4.2.0)
-##  gtable           0.3.0      2019-03-25 [1] CRAN (R 4.2.0)
-##  haven            2.5.0      2022-04-15 [1] CRAN (R 4.2.0)
-##  here             1.0.1      2020-12-13 [1] CRAN (R 4.2.0)
-##  highr            0.9        2021-04-16 [1] CRAN (R 4.2.0)
-##  hms              1.1.1      2021-09-26 [1] CRAN (R 4.2.0)
-##  htmltools        0.5.2      2021-08-25 [1] CRAN (R 4.2.0)
-##  httr             1.4.3      2022-05-04 [1] CRAN (R 4.2.0)
-##  jquerylib        0.1.4      2021-04-26 [1] CRAN (R 4.2.0)
-##  jsonlite         1.8.0      2022-02-22 [1] CRAN (R 4.2.0)
-##  knitr            1.39       2022-04-26 [1] CRAN (R 4.2.0)
-##  labeling         0.4.2      2020-10-20 [1] CRAN (R 4.2.0)
-##  lifecycle        1.0.1      2021-09-24 [1] CRAN (R 4.2.0)
-##  lubridate        1.8.0      2021-10-07 [1] CRAN (R 4.2.0)
-##  magrittr         2.0.3      2022-03-30 [1] CRAN (R 4.2.0)
-##  memoise          2.0.1      2021-11-26 [1] CRAN (R 4.2.0)
-##  modelr           0.1.8      2020-05-19 [1] CRAN (R 4.2.0)
-##  munsell          0.5.0      2018-06-12 [1] CRAN (R 4.2.0)
-##  palmerpenguins * 0.1.0      2020-07-23 [1] CRAN (R 4.2.0)
-##  pillar           1.7.0      2022-02-01 [1] CRAN (R 4.2.0)
-##  pkgbuild         1.3.1      2021-12-20 [1] CRAN (R 4.2.0)
-##  pkgconfig        2.0.3      2019-09-22 [1] CRAN (R 4.2.0)
-##  pkgload          1.2.4      2021-11-30 [1] CRAN (R 4.2.0)
-##  prettyunits      1.1.1      2020-01-24 [1] CRAN (R 4.2.0)
-##  processx         3.5.3      2022-03-25 [1] CRAN (R 4.2.0)
-##  progress         1.2.2      2019-05-16 [1] CRAN (R 4.2.0)
-##  ps               1.7.0      2022-04-23 [1] CRAN (R 4.2.0)
-##  purrr          * 0.3.4      2020-04-17 [1] CRAN (R 4.2.0)
-##  R6               2.5.1      2021-08-19 [1] CRAN (R 4.2.0)
-##  readr          * 2.1.2      2022-01-30 [1] CRAN (R 4.2.0)
-##  readxl           1.4.0      2022-03-28 [1] CRAN (R 4.2.0)
-##  remotes          2.4.2      2021-11-30 [1] CRAN (R 4.2.0)
-##  reprex           2.0.1      2021-08-05 [1] CRAN (R 4.2.0)
-##  rlang            1.0.2      2022-03-04 [1] CRAN (R 4.2.0)
-##  rmarkdown        2.14       2022-04-25 [1] CRAN (R 4.2.0)
-##  rprojroot        2.0.3      2022-04-02 [1] CRAN (R 4.2.0)
-##  rstudioapi       0.13       2020-11-12 [1] CRAN (R 4.2.0)
-##  rtweet         * 0.7.0.9030 2022-06-08 [1] Github (ropensci/rtweet@121f360)
-##  rvest            1.0.2      2021-10-16 [1] CRAN (R 4.2.0)
-##  sass             0.4.1      2022-03-23 [1] CRAN (R 4.2.0)
-##  scales           1.2.0      2022-04-13 [1] CRAN (R 4.2.0)
-##  sessioninfo      1.2.2      2021-12-06 [1] CRAN (R 4.2.0)
-##  stringi          1.7.6      2021-11-29 [1] CRAN (R 4.2.0)
-##  stringr        * 1.4.0      2019-02-10 [1] CRAN (R 4.2.0)
-##  testthat         3.1.4      2022-04-26 [1] CRAN (R 4.2.0)
-##  tibble         * 3.1.7      2022-05-03 [1] CRAN (R 4.2.0)
-##  tidyr          * 1.2.0      2022-02-01 [1] CRAN (R 4.2.0)
-##  tidyselect       1.1.2      2022-02-21 [1] CRAN (R 4.2.0)
-##  tidyverse      * 1.3.1      2021-04-15 [1] CRAN (R 4.2.0)
-##  tzdb             0.3.0      2022-03-28 [1] CRAN (R 4.2.0)
-##  usethis          2.1.6      2022-05-25 [1] CRAN (R 4.2.0)
-##  utf8             1.2.2      2021-07-24 [1] CRAN (R 4.2.0)
-##  vctrs            0.4.1      2022-04-13 [1] CRAN (R 4.2.0)
-##  withr            2.5.0      2022-03-03 [1] CRAN (R 4.2.0)
+##  assertthat       0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
+##  backports        1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  bit              4.0.4      2020-08-04 [2] CRAN (R 4.2.0)
+##  bit64            4.0.5      2020-08-30 [2] CRAN (R 4.2.0)
+##  blogdown         1.10       2022-05-10 [2] CRAN (R 4.2.0)
+##  bookdown         0.27       2022-06-14 [2] CRAN (R 4.2.0)
+##  broom          * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
+##  bslib            0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
+##  cachem           1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
+##  cellranger       1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
+##  cli              3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools        0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
+##  colorspace       2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
+##  crayon           1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  curl             4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
+##  DBI              1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
+##  dbplyr           2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
+##  digest           0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
+##  dplyr          * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  ellipsis         0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
+##  evaluate         0.16       2022-08-09 [1] CRAN (R 4.2.1)
+##  fansi            1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver           2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
+##  fastmap          1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
+##  forcats        * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
+##  fs               1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
+##  gargle           1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
+##  generics         0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
+##  ggplot2        * 3.3.6      2022-05-03 [2] CRAN (R 4.2.0)
+##  glue             1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
+##  googledrive      2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
+##  googlesheets4    1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
+##  gtable           0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
+##  haven            2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
+##  here             1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr            0.9        2021-04-16 [2] CRAN (R 4.2.0)
+##  hms              1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
+##  htmltools        0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
+##  httr             1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
+##  jquerylib        0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
+##  jsonlite         1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
+##  knitr            1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling         0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lifecycle        1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  lubridate        1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
+##  magrittr         2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  modelr           0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
+##  munsell          0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
+##  palmerpenguins * 0.1.0      2020-07-23 [2] CRAN (R 4.2.0)
+##  pillar           1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pkgconfig        2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
+##  prettyunits      1.1.1      2020-01-24 [2] CRAN (R 4.2.0)
+##  progress         1.2.2      2019-05-16 [2] CRAN (R 4.2.0)
+##  purrr          * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  R6               2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  readr          * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
+##  readxl           1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  reprex           2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
+##  rlang            1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rmarkdown        2.14       2022-04-25 [2] CRAN (R 4.2.0)
+##  rprojroot        2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
+##  rstudioapi       0.13       2020-11-12 [2] CRAN (R 4.2.0)
+##  rtweet         * 1.0.2      2022-08-10 [1] local
+##  rvest            1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
+##  sass             0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
+##  scales           1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  sessioninfo      1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  stringi          1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
+##  stringr        * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
+##  tibble         * 3.1.8      2022-07-22 [2] CRAN (R 4.2.0)
+##  tidyr          * 1.2.0      2022-02-01 [2] CRAN (R 4.2.0)
+##  tidyselect       1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
+##  tidyverse      * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
+##  tzdb             0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  utf8             1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
+##  vctrs            0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  withr            2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
 ##  xfun             0.31       2022-05-10 [1] CRAN (R 4.2.0)
-##  xml2             1.3.3      2021-11-30 [1] CRAN (R 4.2.0)
-##  yaml             2.3.5      2022-02-21 [1] CRAN (R 4.2.0)
+##  xml2             1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
+##  yaml             2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
 ## 
-##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+##  [1] /Users/soltoffbc/Library/R/arm64/4.2/library
+##  [2] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
