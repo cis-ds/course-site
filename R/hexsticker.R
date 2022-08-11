@@ -18,3 +18,9 @@ sticker(subplot = p, package = "CIS",
         s_x = 1,
         s_width = 1, s_height = .8,
         filename = here("static", "img", "cis.svg"))
+
+sticker(subplot = p, package = "CIS",
+        h_color = "#767676", h_fill = "#B31B1B", p_color = "#222222",
+        s_x = 1,
+        s_width = 1, s_height = .8,
+        filename = here("assets", "media", "icon.png"))
