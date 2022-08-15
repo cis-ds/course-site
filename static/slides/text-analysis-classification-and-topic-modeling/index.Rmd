@@ -326,50 +326,49 @@ countdown(minutes = 15)
 
 ---
 
-# `r/jokes`
+# `appa`
 
-<blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
-<script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
+```{r echo = FALSE, out.width = "65%"}
+knitr::include_graphics(path = "/img/appa-avatar.gif", error = FALSE)
+```
 
 ---
 
-# `r/jokes` dataset
+# `appa`
 
-```{r jokes, echo = FALSE}
-# obtain r/jokes and extract values from the JSON file
-jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
+```r
+remotes::install_github("averyrobbins1/appa")
+```
 
-jokes <- tibble(jokes = jokes_json) %>%
-  unnest_wider(col = jokes)
-glimpse(jokes)
+```{r appa}
+library(appa)
+data("appa")
+
+glimpse(appa)
 ```
 
 ---
 
 # Create the recipe
 
-```{r jokes-recipe, dependson = "jokes"}
-set.seed(123) # set seed for random sampling
-
-jokes_rec <- recipe(~., data = jokes) %>%
-  step_sample(size = 1e04) %>%
-  step_tokenize(title, body) %>%
-  step_tokenmerge(title, body, prefix = "joke") %>%
-  step_stopwords(joke) %>%
-  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %>%
-  step_tokenfilter(joke, max_tokens = 2500) %>%
-  step_tf(joke)
+```{r appa-recipe, dependson = "appa"}
+appa_rec <- recipe(~ id + character_words, data = appa) %>%
+  step_tokenize(character_words) %>%
+  step_stopwords(character_words, stopword_source = "smart") %>%
+  step_ngram(character_words, num_tokens = 5, min_num_tokens = 1) %>%
+  step_tokenfilter(character_words, max_tokens = 5000) %>%
+  step_tf(character_words)
 ```
 
 ---
 
 # Bake the recipe
 
-```{r jokes-bake, dependson = "jokes-recipe"}
-jokes_prep <- prep(jokes_rec)
+```{r appa-bake, dependson = "appa-recipe"}
+appa_prep <- prep(appa_rec)
 
-jokes_df <- bake(jokes_prep, new_data = NULL)
-jokes_df %>%
+appa_df <- bake(appa_prep, new_data = NULL)
+appa_df %>%
   slice(1:5)
 ```
 
@@ -377,33 +376,43 @@ jokes_df %>%
 
 # Convert to document-term matrix
 
-```{r jokes-dtm, dependson = "jokes-bake"}
-jokes_dtm <- jokes_df %>%
-  pivot_longer(cols = -c(id, score),
-               names_to = "token",
-               values_to = "n") %>%
+.tiny[
+```{r appa-dtm, dependson = "appa-bake"}
+appa_dtm_prep <- appa_df %>%
+  pivot_longer(
+    cols = -id,
+    names_to = "token",
+    values_to = "n"
+  ) %>%
   filter(n != 0) %>%
   # clean the token column so it just includes the token
-  # drop empty levels from id - this includes jokes which did not
-  # have any tokens retained after step_tokenfilter()
-  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
-         id = fct_drop(f = id)) %>%
-  cast_dtm(document = id, term = token, value = n)
-jokes_dtm
+  mutate(
+    token = str_remove(string = token, pattern = "tf_character_words_")
+  )
+
+# id must be consecutive with no gaps
+appa_new_id <- appa_dtm_prep %>%
+  distinct(id) %>%
+  mutate(new_id = row_number())
+
+appa_dtm <- left_join(x = appa_dtm_prep, y = appa_new_id) %>%
+  cast_dtm(document = new_id, term = token, value = n)
+appa_dtm
 ```
+]
 
 ---
 
 # $k=4$
 
-```{r jokes-topic-4, dependson = "jokes-dtm"}
-jokes_lda4 <- LDA(jokes_dtm, k = 4, control = list(seed = 123))
+```{r appa-topic-4, dependson = "appa-prep"}
+appa_lda4 <- LDA(appa_dtm, k = 4, control = list(seed = 123))
 ```
 
-```{r jokes-4-topn, dependson = "jokes-topic-4", echo = FALSE, out.width = "70%"}
-jokes_lda4_td <- tidy(jokes_lda4)
+```{r appa-4-topn, dependson = "appa-topic-4", echo = FALSE, out.width = "70%"}
+appa_lda4_td <- tidy(appa_lda4)
 
-top_terms <- jokes_lda4_td %>%
+top_terms <- appa_lda4_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -417,22 +426,21 @@ top_terms %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~topic, scales = "free", ncol = 2) +
+  facet_wrap(facets = vars(topic), scales = "free", ncol = 2) +
   coord_flip()
 ```
-
 ---
 
 # $k=12$
 
-```{r jokes-topic-12, dependson = "jokes-dtm", echo = FALSE}
-jokes_lda12 <- LDA(jokes_dtm, k = 12, control = list(seed = 123))
+```{r appa-topic-12, dependson = "appa-dtm", echo = FALSE}
+appa_lda12 <- LDA(appa_dtm, k = 12, control = list(seed = 123))
 ```
 
-```{r jokes-12-topn, dependson = "jokes-topic-12", echo = FALSE}
-jokes_lda12_td <- tidy(jokes_lda12)
+```{r appa-12-topn, dependson = "appa-topic-12", echo = FALSE}
+appa_lda12_td <- tidy(appa_lda12)
 
-top_terms <- jokes_lda12_td %>%
+top_terms <- appa_lda12_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -446,7 +454,7 @@ top_terms %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~topic, scales = "free", ncol = 3) +
+  facet_wrap(facets = vars(topic), scales = "free", ncol = 3) +
   coord_flip() +
   theme_minimal(base_size = 10)
 ```
@@ -458,33 +466,34 @@ top_terms %>%
 * A statistical measure of how well a probability model predicts a sample
 * Given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents
 * Perplexity for LDA model with 12 topics
-    * `r perplexity(jokes_lda12)`
+    * `r perplexity(appa_lda12)`
 
 ---
 
 # Perplexity
 
-```{r jokes-lda-compare, dependson = "jokes-dtm", echo = FALSE}
+```{r appa-lda-compare, dependson = "appa-dtm", echo = FALSE}
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
 # cache the models and only estimate if they don't already exist
-if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
-  load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
+if (file.exists(here("static", "extras", "appa-lda-compare.Rdata"))) {
+  load(file = here("static", "extras", "appa-lda-compare.Rdata"))
 } else {
+  library(furrr)
   plan(multiprocess)
 
   tic()
-  jokes_lda_compare <- n_topics %>%
-    future_map(LDA, x = jokes_dtm, control = list(seed = 123))
+  appa_lda_compare <- n_topics %>%
+    future_map(LDA, x = appa_dtm, control = list(seed = 123), .progress = TRUE)
   toc()
-  save(jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
+  save(appa_dtm, appa_lda_compare, file = here("static", "extras", "appa-lda-compare.Rdata"))
 }
 ```
 
-```{r jokes_lda_compare_viz, dependson="jokes_lda_compare", echo = FALSE} 
+```{r appa_lda_compare_viz, dependson="appa_lda_compare", echo = FALSE} 
 tibble(
   k = n_topics,
-  perplex = map_dbl(jokes_lda_compare, perplexity)
+  perplex = map_dbl(appa_lda_compare, perplexity)
 ) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
@@ -501,10 +510,10 @@ tibble(
 
 # $k=100$
 
-```{r jokes-100-topn, dependson = "jokes-lda-compare", echo = FALSE}
-jokes_lda_td <- tidy(jokes_lda_compare[[6]])
+```{r appa-100-topn, dependson = "appa-lda-compare", echo = FALSE}
+appa_lda_td <- tidy(appa_lda_compare[[6]])
 
-top_terms <- jokes_lda_td %>%
+top_terms <- appa_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -519,7 +528,7 @@ top_terms %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
-  facet_wrap(~topic, scales = "free", ncol = 3) +
+  facet_wrap(facets = vars(topic), scales = "free", ncol = 3) +
   coord_flip() +
   theme_minimal(base_size = 10)
 ```

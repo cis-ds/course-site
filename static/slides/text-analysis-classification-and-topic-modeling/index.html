@@ -187,7 +187,7 @@ tree_cv_metrics
 
 ]
 
-<div class="countdown" id="timer_62f3ec0c" style="right:0;bottom:0;" data-warnwhen="0">
+<div class="countdown" id="timer_62fa8f76" style="right:0;bottom:0;" data-warnwhen="0">
 <code class="countdown-time"><span class="countdown-digits minutes">15</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
 </div>
 
@@ -223,23 +223,38 @@ tree_cv_metrics
 
 ---
 
-# `r/jokes`
+# `appa`
 
-&lt;blockquote class="reddit-card" data-card-created="1552319072"&gt;&lt;a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/"&gt;Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.&lt;/a&gt; from &lt;a href="http://www.reddit.com/r/Jokes"&gt;r/Jokes&lt;/a&gt;&lt;/blockquote&gt;
-&lt;script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"&gt;&lt;/script&gt;
+&lt;img src="../../../../../../../../img/appa-avatar.gif" width="65%" style="display: block; margin: auto;" /&gt;
 
 ---
 
-# `r/jokes` dataset
+# `appa`
 
-
+```r
+remotes::install_github("averyrobbins1/appa")
 ```
-## Rows: 194,553
-## Columns: 4
-## $ body  &lt;chr&gt; "Now I have to say \"Leroy can you please paint the fence?\"", "…
-## $ id    &lt;chr&gt; "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5tz…
-## $ score &lt;dbl&gt; 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0, …
-## $ title &lt;chr&gt; "I hate how you cant even say black paint anymore", "What's the …
+
+
+```r
+library(appa)
+data("appa")
+
+glimpse(appa)
+## Rows: 13,385
+## Columns: 12
+## $ id                &lt;int&gt; 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1…
+## $ book              &lt;fct&gt; Water, Water, Water, Water, Water, Water, Water, Wat…
+## $ book_num          &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ chapter           &lt;fct&gt; "The Boy in the Iceberg", "The Boy in the Iceberg", …
+## $ chapter_num       &lt;int&gt; 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ character         &lt;chr&gt; "Katara", "Scene Description", "Sokka", "Scene Descr…
+## $ full_text         &lt;chr&gt; "Water. Earth. Fire. Air. My grandmother used to tel…
+## $ character_words   &lt;chr&gt; "Water. Earth. Fire. Air. My grandmother used to tel…
+## $ scene_description &lt;list&gt; &lt;&gt;, &lt;&gt;, "[Close-up of the boy as he grins confident…
+## $ writer            &lt;chr&gt; "‎Michael Dante DiMartino, Bryan Konietzko, Aaron Eha…
+## $ director          &lt;chr&gt; "Dave Filoni", "Dave Filoni", "Dave Filoni", "Dave F…
+## $ imdb_rating       &lt;dbl&gt; 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.…
 ```
 
 ---
@@ -248,16 +263,12 @@ tree_cv_metrics
 
 
 ```r
-set.seed(123) # set seed for random sampling
-
-jokes_rec &lt;- recipe(~., data = jokes) %&gt;%
-  step_sample(size = 1e04) %&gt;%
-  step_tokenize(title, body) %&gt;%
-  step_tokenmerge(title, body, prefix = "joke") %&gt;%
-  step_stopwords(joke) %&gt;%
-  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %&gt;%
-  step_tokenfilter(joke, max_tokens = 2500) %&gt;%
-  step_tf(joke)
+appa_rec &lt;- recipe(~ id + character_words, data = appa) %&gt;%
+  step_tokenize(character_words) %&gt;%
+  step_stopwords(character_words, stopword_source = "smart") %&gt;%
+  step_ngram(character_words, num_tokens = 5, min_num_tokens = 1) %&gt;%
+  step_tokenfilter(character_words, max_tokens = 5000) %&gt;%
+  step_tf(character_words)
 ```
 
 ---
@@ -266,52 +277,63 @@ jokes_rec &lt;- recipe(~., data = jokes) %&gt;%
 
 
 ```r
-jokes_prep &lt;- prep(jokes_rec)
+appa_prep &lt;- prep(appa_rec)
 
-jokes_df &lt;- bake(jokes_prep, new_data = NULL)
-jokes_df %&gt;%
+appa_df &lt;- bake(appa_prep, new_data = NULL)
+appa_df %&gt;%
   slice(1:5)
-## # A tibble: 5 × 2,502
-##   id    score tf_joke_0 tf_joke_1 tf_joke_10 tf_joke_100 tf_joke_1000 tf_joke_11
-##   &lt;fct&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;       &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;
-## 1 2tzi…    12         0         0          0           0            0          0
-## 2 4zqp…     0         0         0          0           0            0          0
-## 3 2lgw…    58         0         0          0           0            0          0
-## 4 3qx3…     9         0         0          0           0            0          0
-## 5 2x2z…     0         0         0          0           0            0          0
-## # … with 2,494 more variables: tf_joke_12 &lt;dbl&gt;, tf_joke_13 &lt;dbl&gt;,
-## #   tf_joke_14 &lt;dbl&gt;, tf_joke_15 &lt;dbl&gt;, tf_joke_16 &lt;dbl&gt;, tf_joke_18 &lt;dbl&gt;,
-## #   tf_joke_1st &lt;dbl&gt;, tf_joke_2 &lt;dbl&gt;, tf_joke_20 &lt;dbl&gt;,
-## #   tf_joke_20_years &lt;dbl&gt;, tf_joke_200 &lt;dbl&gt;, tf_joke_2015 &lt;dbl&gt;,
-## #   tf_joke_25 &lt;dbl&gt;, tf_joke_3 &lt;dbl&gt;, tf_joke_30 &lt;dbl&gt;, tf_joke_3rd &lt;dbl&gt;,
-## #   tf_joke_4 &lt;dbl&gt;, tf_joke_40 &lt;dbl&gt;, tf_joke_4th &lt;dbl&gt;, tf_joke_5 &lt;dbl&gt;,
-## #   tf_joke_50 &lt;dbl&gt;, tf_joke_500 &lt;dbl&gt;, tf_joke_5th &lt;dbl&gt;, tf_joke_6 &lt;dbl&gt;, …
+## # A tibble: 5 × 5,000
+##      id tf_cha…¹ tf_ch…² tf_ch…³ tf_ch…⁴ tf_ch…⁵ tf_ch…⁶ tf_ch…⁷ tf_ch…⁸ tf_ch…⁹
+##   &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;
+## 1     1        0       0       0       0       0       0       0       0       0
+## 2     2        0       0       0       0       0       0       0       0       0
+## 3     3        0       0       0       0       0       0       0       0       0
+## 4     4        0       0       0       0       0       0       0       0       0
+## 5     5        0       0       0       0       0       0       0       0       0
+## # … with 4,990 more variables: tf_character_words_aang_aang_aang &lt;dbl&gt;,
+## #   tf_character_words_aang_aang_aang_aang &lt;dbl&gt;,
+## #   tf_character_words_aang_aang_aang_aang_aang &lt;dbl&gt;,
+## #   tf_character_words_aang_airbending &lt;dbl&gt;,
+## #   tf_character_words_aang_avatar &lt;dbl&gt;, tf_character_words_aang_back &lt;dbl&gt;,
+## #   tf_character_words_aang_big &lt;dbl&gt;, tf_character_words_aang_coming &lt;dbl&gt;,
+## #   tf_character_words_aang_dad &lt;dbl&gt;, …
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 ---
 
 # Convert to document-term matrix
 
+.tiny[
 
 ```r
-jokes_dtm &lt;- jokes_df %&gt;%
-  pivot_longer(cols = -c(id, score),
-               names_to = "token",
-               values_to = "n") %&gt;%
+appa_dtm_prep &lt;- appa_df %&gt;%
+  pivot_longer(
+    cols = -id,
+    names_to = "token",
+    values_to = "n"
+  ) %&gt;%
   filter(n != 0) %&gt;%
   # clean the token column so it just includes the token
-  # drop empty levels from id - this includes jokes which did not
-  # have any tokens retained after step_tokenfilter()
-  mutate(token = str_remove(string = token, pattern = "tf_joke_"),
-         id = fct_drop(f = id)) %&gt;%
-  cast_dtm(document = id, term = token, value = n)
-jokes_dtm
-## &lt;&lt;DocumentTermMatrix (documents: 9944, terms: 2500)&gt;&gt;
-## Non-/sparse entries: 140880/24719120
-## Sparsity           : 99%
-## Maximal term length: 60
+  mutate(
+    token = str_remove(string = token, pattern = "tf_character_words_")
+  )
+
+# id must be consecutive with no gaps
+appa_new_id &lt;- appa_dtm_prep %&gt;%
+  distinct(id) %&gt;%
+  mutate(new_id = row_number())
+
+appa_dtm &lt;- left_join(x = appa_dtm_prep, y = appa_new_id) %&gt;%
+  cast_dtm(document = new_id, term = token, value = n)
+appa_dtm
+## &lt;&lt;DocumentTermMatrix (documents: 8822, terms: 4999)&gt;&gt;
+## Non-/sparse entries: 40408/44060770
+## Sparsity           : 100%
+## Maximal term length: 40
 ## Weighting          : term frequency (tf)
 ```
+]
 
 ---
 
@@ -319,18 +341,17 @@ jokes_dtm
 
 
 ```r
-jokes_lda4 &lt;- LDA(jokes_dtm, k = 4, control = list(seed = 123))
+appa_lda4 &lt;- LDA(appa_dtm, k = 4, control = list(seed = 123))
 ```
 
-&lt;img src="index_files/figure-html/jokes-4-topn-1.png" width="70%" style="display: block; margin: auto;" /&gt;
-
+&lt;img src="index_files/figure-html/appa-4-topn-1.png" width="70%" style="display: block; margin: auto;" /&gt;
 ---
 
 # `\(k=12\)`
 
 
 
-&lt;img src="index_files/figure-html/jokes-12-topn-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/appa-12-topn-1.png" width="80%" style="display: block; margin: auto;" /&gt;
 
 ---
 
@@ -339,7 +360,7 @@ jokes_lda4 &lt;- LDA(jokes_dtm, k = 4, control = list(seed = 123))
 * A statistical measure of how well a probability model predicts a sample
 * Given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents
 * Perplexity for LDA model with 12 topics
-    * 994.9666512
+    * 1373.9451929
 
 ---
 
@@ -347,13 +368,13 @@ jokes_lda4 &lt;- LDA(jokes_dtm, k = 4, control = list(seed = 123))
 
 
 
-&lt;img src="index_files/figure-html/jokes_lda_compare_viz-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/appa_lda_compare_viz-1.png" width="80%" style="display: block; margin: auto;" /&gt;
 
 ---
 
 # `\(k=100\)`
 
-&lt;img src="index_files/figure-html/jokes-100-topn-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+&lt;img src="index_files/figure-html/appa-100-topn-1.png" width="80%" style="display: block; margin: auto;" /&gt;
 
 ---
 
