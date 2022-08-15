@@ -27,6 +27,7 @@ library(here)
 library(rjson)
 library(tm)
 library(tictoc)
+library(appa)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -98,30 +99,43 @@ So the document generated under the LDA model will be "broccoli panda adorable c
 
 Frequently when using LDA, you don't actually know the underlying topic structure of the documents. **Generally that is why you are using LDA to analyze the text in the first place**. LDA is useful in these instances, but we have to perform additional tests and analysis to confirm that the topic structure uncovered by LDA is a good structure.
 
-## `r/jokes`
+## `appa`
 
-<blockquote class="reddit-card" data-card-created="1552319072"><a href="https://www.reddit.com/r/Jokes/comments/a593r0/twenty_years_from_now_kids_are_gonna_think_baby/">Twenty years from now, kids are gonna think "Baby it's cold outside" is really weird, and we're gonna have to explain that it has to be understood as a product of its time.</a> from <a href="http://www.reddit.com/r/Jokes">r/Jokes</a></blockquote>
-<script async src="//embed.redditmedia.com/widgets/platform.js" charset="UTF-8"></script>
+![](../../../../../../../../img/appa-avatar.gif)<!-- -->
 
-[`r/jokes`](https://www.reddit.com/r/Jokes/) is a subreddit for text-based jokes. Jokes can be up or down-voted depending on their popularity. [`joke-dataset`](https://github.com/taivop/joke-dataset/) contains a dataset of all joke submissions through February 2, 2017. We can obtain the JSON file storing these jokes and convert them into a document-term matrix.
+[`appa`](https://github.com/averyrobbins1/appa) contains transcripts from every episode of Avatar: The Last Airbender.^[Not that nonsense M. Night Shyamalan movie. Or that other Avatar movie.]
+
+{{< youtube d1EnW4kn1kg >}}
+
+In this example, we want to explore the underlying themes of the television show through the use of topic modeling. First we need to install and load the package.
+
+```r
+remotes::install_github("averyrobbins1/appa")
+```
 
 
 ```r
-# obtain r/jokes and extract values from the JSON file
-jokes_json <- fromJSON(file = "https://github.com/taivop/joke-dataset/raw/master/reddit_jokes.json")
+library(appa)
+data("appa")
 
-jokes <- tibble(jokes = jokes_json) %>%
-  unnest_wider(col = jokes)
-glimpse(jokes)
+glimpse(appa)
 ```
 
 ```
-## Rows: 194,553
-## Columns: 4
-## $ body  <chr> "Now I have to say \"Leroy can you please paint the fence?\"", "…
-## $ id    <chr> "5tz52q", "5tz4dd", "5tz319", "5tz2wj", "5tz1pc", "5tz1o1", "5tz…
-## $ score <dbl> 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15, 0, 0, 3, 1, 0, 3, 2, 2, 3, 0, …
-## $ title <chr> "I hate how you cant even say black paint anymore", "What's the …
+## Rows: 13,385
+## Columns: 12
+## $ id                <int> 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1…
+## $ book              <fct> Water, Water, Water, Water, Water, Water, Water, Wat…
+## $ book_num          <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ chapter           <fct> "The Boy in the Iceberg", "The Boy in the Iceberg", …
+## $ chapter_num       <int> 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1…
+## $ character         <chr> "Katara", "Scene Description", "Sokka", "Scene Descr…
+## $ full_text         <chr> "Water. Earth. Fire. Air. My grandmother used to tel…
+## $ character_words   <chr> "Water. Earth. Fire. Air. My grandmother used to tel…
+## $ scene_description <list> <>, <>, "[Close-up of the boy as he grins confident…
+## $ writer            <chr> "‎Michael Dante DiMartino, Bryan Konietzko, Aaron Eha…
+## $ director          <chr> "Dave Filoni", "Dave Filoni", "Dave Filoni", "Dave F…
+## $ imdb_rating       <dbl> 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.1, 8.…
 ```
 
 Once we import the data, we can prepare it for the estimating the model. Unlike for [supervised text classification](/notes/supervised-text-classification/), we will use `recipes` to prepare the data, then convert it into a `DocumentTermMatrix` to fit the LDA model.
@@ -134,84 +148,89 @@ Within the `tidymodels` framework, unsupervised learning is typically implemente
 
 
 ```r
-set.seed(123) # set seed for random sampling
-
-jokes_rec <- recipe(~., data = jokes) %>%
-  step_sample(size = 1e04) %>%
-  step_tokenize(title, body) %>%
-  step_tokenmerge(title, body, prefix = "joke") %>%
-  step_stopwords(joke) %>%
-  step_ngram(joke, num_tokens = 5, min_num_tokens = 1) %>%
-  step_tokenfilter(joke, max_tokens = 2500) %>%
-  step_tf(joke)
+appa_rec <- recipe(~ id + character_words, data = appa) %>%
+  step_tokenize(character_words) %>%
+  step_stopwords(character_words, stopword_source = "smart") %>%
+  step_ngram(character_words, num_tokens = 5, min_num_tokens = 1) %>%
+  step_tokenfilter(character_words, max_tokens = 5000) %>%
+  step_tf(character_words)
 ```
 
-- `recipe()` - initialize the recipe using the `jokes` data frame
-- `step_sample()` - reduce the size of the dataset to a more manageable number of observations
-- `step_tokenize()` - perform the tokenization of the text data. Note that here the text is stored in two separate columns. By default it tokenizes individual words.
-- `step_tokenmerge()` - combine the two text columns into a single column which allows us to estimate a single LDA model for the entire joke.
+- `recipe()` - initialize the recipe using the `appa` data frame. We only need the `character_words` column which contains the text we are modeling. We will also retain the `id` column for tidying further in the workflow.
+- `step_tokenize()` - perform the tokenization of the text data
 - `step_stopwords()` - remove common stopwords (equivalent to `anti_join(stop_words)`)
 - `step_ngram()` - calculates the $n$-grams based on the remaining tokens. `num_tokens` and `min_num_tokens` allows us to calculate all possible 1-grams, 2-grams, 3-grams, 4-grams, and 5-grams.
 - `step_tokenfilter()` - dedensify the data set and keep only the most commonly used tokens. Here we will retain the top 2500 tokens. If we retained all unique tokens in the dataset, the LDA model could take an extremely long time to estimate even for a relatively small number of topics.
 - `step_tf()` - calculate the term-frequency for each unique token in each document
 
-Now that we created the recipe, we have to prepare it using the `jokes` data set and then convert it into a `DocumentTermMatrix`. `prep()` allows us to prepare the recipe, while `bake()` lets us extract the resulting data frame.
+Now that we created the recipe, we have to prepare it using the `appa` data set and then convert it into a `DocumentTermMatrix`. `prep()` allows us to prepare the recipe, while `bake()` lets us extract the resulting data frame.
 
 
 ```r
-jokes_prep <- prep(jokes_rec)
+appa_prep <- prep(appa_rec)
 
-jokes_df <- bake(jokes_prep, new_data = NULL)
-jokes_df %>%
+appa_df <- bake(appa_prep, new_data = NULL)
+appa_df %>%
   slice(1:5)
 ```
 
 ```
-## # A tibble: 5 × 2,502
-##   id     score tf_joke_0 tf_jo…¹ tf_jo…² tf_jo…³ tf_jo…⁴ tf_jo…⁵ tf_jo…⁶ tf_jo…⁷
-##   <fct>  <dbl>     <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
-## 1 2tzins    12         0       0       0       0       0       0       0       0
-## 2 4zqp10     0         0       0       0       0       0       0       0       0
-## 3 2lgwkn    58         0       0       0       0       0       0       0       0
-## 4 3qx36q     9         0       0       0       0       0       0       0       0
-## 5 2x2z3q     0         0       0       0       0       0       0       0       0
-## # … with 2,492 more variables: tf_joke_14 <dbl>, tf_joke_15 <dbl>,
-## #   tf_joke_16 <dbl>, tf_joke_18 <dbl>, tf_joke_1st <dbl>, tf_joke_2 <dbl>,
-## #   tf_joke_20 <dbl>, tf_joke_20_years <dbl>, tf_joke_200 <dbl>,
-## #   tf_joke_2015 <dbl>, tf_joke_25 <dbl>, tf_joke_3 <dbl>, tf_joke_30 <dbl>,
-## #   tf_joke_3rd <dbl>, tf_joke_4 <dbl>, tf_joke_40 <dbl>, tf_joke_4th <dbl>,
-## #   tf_joke_5 <dbl>, tf_joke_50 <dbl>, tf_joke_500 <dbl>, tf_joke_5th <dbl>,
-## #   tf_joke_6 <dbl>, tf_joke_69 <dbl>, tf_joke_7 <dbl>, …
+## # A tibble: 5 × 5,000
+##      id tf_cha…¹ tf_ch…² tf_ch…³ tf_ch…⁴ tf_ch…⁵ tf_ch…⁶ tf_ch…⁷ tf_ch…⁸ tf_ch…⁹
+##   <int>    <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+## 1     1        0       0       0       0       0       0       0       0       0
+## 2     2        0       0       0       0       0       0       0       0       0
+## 3     3        0       0       0       0       0       0       0       0       0
+## 4     4        0       0       0       0       0       0       0       0       0
+## 5     5        0       0       0       0       0       0       0       0       0
+## # … with 4,990 more variables: tf_character_words_aang_aang_aang <dbl>,
+## #   tf_character_words_aang_aang_aang_aang <dbl>,
+## #   tf_character_words_aang_aang_aang_aang_aang <dbl>,
+## #   tf_character_words_aang_airbending <dbl>,
+## #   tf_character_words_aang_avatar <dbl>, tf_character_words_aang_back <dbl>,
+## #   tf_character_words_aang_big <dbl>, tf_character_words_aang_coming <dbl>,
+## #   tf_character_words_aang_dad <dbl>, …
 ## # ℹ Use `colnames()` to see all variable names
 ```
 
-The resulting data frame is one row per joke and one column per token. To convert it to a `DocumentTermMatrix`, we need to first convert it into a tidytext format (one-row-per-token), remove all rows with a frequency of 0 (that is, the token did not appear in the joke), then convert it to a DTM using `cast_dtm()`.
+The resulting data frame is one row per line of dialogue and one column per token. To convert it to a `DocumentTermMatrix`, we need to first convert it into a tidytext format (one-row-per-token), remove all rows with a frequency of 0 (that is, the token did not appear in the joke), then convert it to a DTM using `cast_dtm()`.
 
 
 ```r
-jokes_dtm <- jokes_df %>%
+appa_dtm_prep <- appa_df %>%
   pivot_longer(
-    cols = -c(id, score),
+    cols = -id,
     names_to = "token",
     values_to = "n"
   ) %>%
   filter(n != 0) %>%
   # clean the token column so it just includes the token
-  # drop empty levels from id - this includes jokes which did not
-  # have any tokens retained after step_tokenfilter()
   mutate(
-    token = str_remove(string = token, pattern = "tf_joke_"),
-    id = fct_drop(f = id)
-  ) %>%
-  cast_dtm(document = id, term = token, value = n)
-jokes_dtm
+    token = str_remove(string = token, pattern = "tf_character_words_")
+  )
+
+# id must be consecutive with no gaps
+appa_new_id <- appa_dtm_prep %>%
+  distinct(id) %>%
+  mutate(new_id = row_number())
+
+appa_dtm <- left_join(x = appa_dtm_prep, y = appa_new_id) %>%
+  cast_dtm(document = new_id, term = token, value = n)
 ```
 
 ```
-## <<DocumentTermMatrix (documents: 9944, terms: 2500)>>
-## Non-/sparse entries: 140880/24719120
-## Sparsity           : 99%
-## Maximal term length: 60
+## Joining, by = "id"
+```
+
+```r
+appa_dtm
+```
+
+```
+## <<DocumentTermMatrix (documents: 8822, terms: 4999)>>
+## Non-/sparse entries: 40408/44060770
+## Sparsity           : 100%
+## Maximal term length: 40
 ## Weighting          : term frequency (tf)
 ```
 
@@ -221,18 +240,12 @@ Remember that for LDA, you need to specify in advance the number of topics in th
 
 ### $k=4$
 
-Let's estimate an LDA model for the `r/jokes` jokes, setting $k=4$.
-
-{{% callout warning %}}
-
-Warning: many jokes on `r/jokes` are NSFW and contain potentially offensive language/content.
-
-{{% /callout %}}
+Let's estimate an LDA model for the transcripts, setting $k=4$.
 
 
 ```r
-jokes_lda4 <- LDA(jokes_dtm, k = 4, control = list(seed = 123))
-jokes_lda4
+appa_lda4 <- LDA(appa_dtm, k = 4, control = list(seed = 123))
+appa_lda4
 ```
 
 ```
@@ -243,9 +256,9 @@ What do the top terms for each of these topics look like?
 
 
 ```r
-jokes_lda4_td <- tidy(jokes_lda4)
+appa_lda4_td <- tidy(appa_lda4)
 
-top_terms <- jokes_lda4_td %>%
+top_terms <- appa_lda4_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -263,7 +276,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/jokes-4-topn-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/appa-4-topn-1.png" width="672" />
 
 ### $k=12$
 
@@ -271,8 +284,8 @@ What happens if we set $k=12$? How do our results change?
 
 
 ```r
-jokes_lda12 <- LDA(jokes_dtm, k = 12, control = list(seed = 123))
-jokes_lda12
+appa_lda12 <- LDA(appa_dtm, k = 12, control = list(seed = 123))
+appa_lda12
 ```
 
 ```
@@ -281,9 +294,9 @@ jokes_lda12
 
 
 ```r
-jokes_lda12_td <- tidy(jokes_lda12)
+appa_lda12_td <- tidy(appa_lda12)
 
-top_terms <- jokes_lda12_td %>%
+top_terms <- appa_lda12_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -301,7 +314,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/jokes-12-topn-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/appa-12-topn-1.png" width="672" />
 
 Alas, this is the problem with LDA. Several different values for $k$ may be plausible, but by increasing $k$ we sacrifice clarity. Is there any statistical measure which will help us determine the optimal number of topics?
 
@@ -313,33 +326,33 @@ Well, sort of. Some aspects of LDA are driven by gut-thinking (or perhaps [truth
 
 
 ```r
-perplexity(jokes_lda12)
+perplexity(appa_lda12)
 ```
 
 ```
-## [1] 994.9667
+## [1] 1373.945
 ```
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
 
-Let's estimate a series of LDA models on the `r/jokes` dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to a high-performance computing cluster.]
+Let's estimate a series of LDA models on the ATLA dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to a high-performance computing cluster.]
 
 
 ```r
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
 # cache the models and only estimate if they don't already exist
-if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
-  load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
+if (file.exists(here("static", "extras", "appa-lda-compare.Rdata"))) {
+  load(file = here("static", "extras", "appa-lda-compare.Rdata"))
 } else {
   library(furrr)
   plan(multiprocess)
 
   tic()
-  jokes_lda_compare <- n_topics %>%
-    future_map(LDA, x = jokes_dtm, control = list(seed = 123))
+  appa_lda_compare <- n_topics %>%
+    future_map(LDA, x = appa_dtm, control = list(seed = 123), .progress = TRUE)
   toc()
-  save(jokes_dtm, jokes_lda_compare, file = here("static", "extras", "jokes_lda_compare.Rdata"))
+  save(appa_dtm, appa_lda_compare, file = here("static", "extras", "appa-lda-compare.Rdata"))
 }
 ```
 
@@ -347,7 +360,7 @@ if (file.exists(here("static", "extras", "jokes_lda_compare.Rdata"))) {
 ```r
 tibble(
   k = n_topics,
-  perplex = map_dbl(jokes_lda_compare, perplexity)
+  perplex = map_dbl(appa_lda_compare, perplexity)
 ) %>%
   ggplot(aes(k, perplex)) +
   geom_point() +
@@ -360,15 +373,15 @@ tibble(
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/jokes_lda_compare_viz-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/appa_lda_compare_viz-1.png" width="672" />
 
 It looks like the 100-topic model has the lowest perplexity score. What kind of topics does this generate? Let's look just at the first 12 topics produced by the model (`ggplot2` has difficulty rendering a graph for 100 separate facets):
 
 
 ```r
-jokes_lda_td <- tidy(jokes_lda_compare[[6]])
+appa_lda_td <- tidy(appa_lda_compare[[6]])
 
-top_terms <- jokes_lda_td %>%
+top_terms <- appa_lda_td %>%
   group_by(topic) %>%
   top_n(5, beta) %>%
   ungroup() %>%
@@ -387,7 +400,7 @@ top_terms %>%
   coord_flip()
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/jokes-100-topn-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/appa-100-topn-1.png" width="672" />
 
 We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at $k=100$ - would $k=200$ generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
 
@@ -416,7 +429,6 @@ Here we draw an example directly from the `LDAvis` package to visualize a $K = 1
 
 ```r
 library(LDAvis)
-library(LDAvisData)
 
 # retrieve LDA model results
 data(Jeopardy, package = "LDAvisData")
@@ -439,13 +451,18 @@ str(Jeopardy)
 ```
 
 ```r
+# define custom function for approximating distance between topics
+library(tsne)
+svd_tsne <- function(x) tsne(svd(x)$u)
+
 # convert to JSON file
 json <- createJSON(
   phi = Jeopardy$phi,
   theta = Jeopardy$theta,
   doc.length = Jeopardy$doc.length,
   vocab = Jeopardy$vocab,
-  term.frequency = Jeopardy$term.frequency
+  term.frequency = Jeopardy$term.frequency,
+  mds.method = svd_tsne
 )
 ```
 
@@ -459,57 +476,25 @@ serVis(json)
 
 ### Importing our own LDA model
 
-To convert the output of `topicmodels::LDA()` to view with `LDAvis`, use [this function](http://datacm.blogspot.com/2017/03/lda-visualization-with-r-topicmodels.html):
+To convert the output of `topicmodels::LDA()` to view with `LDAvis`, use [`sentopics::as.LDA()`](https://github.com/odelmarcelle/sentopics):
+
+{{% callout note %}}
+
+Rather than loading `as.LDA()` with `library(sentopics)` (which introduces conflicts with the `LDA()` function in `topicmodels`), I use `::` notation to access the functions directly.
+
+{{% /callout %}}
 
 
 ```r
-topicmodels_json_ldavis <- function(fitted, doc_term) {
-  require(LDAvis)
-  require(slam)
-
-  # Find required quantities
-  phi <- as.matrix(posterior(fitted)$terms)
-  theta <- as.matrix(posterior(fitted)$topics)
-  vocab <- colnames(phi)
-  term_freq <- slam::col_sums(doc_term)
-
-  # Convert to json
-  json_lda <- LDAvis::createJSON(
-    phi = phi, theta = theta,
-    vocab = vocab,
-    doc.length = as.vector(table(doc_term$i)),
-    term.frequency = term_freq
-  )
-
-  return(json_lda)
-}
+appa_100_viz <- sentopics::as.LDA(appa_lda_compare[[6]], docs = appa_dtm)
+sentopics::LDAvis(appa_100_viz, mds.method = svd_tsne)
 ```
 
-Let's test it using the $k = 100$ LDA topic model for the `r/jokes` dataset.
+{{% callout note %}}
 
+This dataset was previously used as part of the [Tidy Tuesday weekly data project](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-08-11/readme.md). Check out [this gallery](https://www.avery-robbins.com/posts/2020-08-12-tidy-tuesday-avatar/) for a range of exploratory data analyses based on the same data.
 
-```r
-jokes_100_json <- topicmodels_json_ldavis(
-  fitted = jokes_lda_compare[[6]],
-  doc_term = jokes_dtm
-)
-```
-
-
-```r
-serVis(jokes_100_json)
-```
-
-Notable topics include:
-
-- 6 - Guy walks into a bar
-- 23 - Change a lightbulb
-- 28 - Little Johnny/teacher
-- 29 - Die and meet Saint Peter
-- 39 - Genie and 3 wishes
-- 45 - Doctor/knock knock
-- 49 - Chicken crossed the road
-- 97 - Yo mama
+{{% /callout %}}
 
 ## Acknowledgments
 
@@ -535,11 +520,12 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-10
+##  date     2022-08-15
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package       * version    date (UTC) lib source
+##  appa          * 0.0.0.9000 2022-08-11 [1] Github (averyrobbins1/appa@c7ce69d)
 ##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
 ##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
 ##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
@@ -553,6 +539,7 @@ sessioninfo::session_info()
 ##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  data.table      1.14.2     2021-09-27 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  dials         * 1.0.0      2022-06-14 [2] CRAN (R 4.2.0)
@@ -562,8 +549,8 @@ sessioninfo::session_info()
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
-##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
+##  fastmatch       1.1-3      2021-07-23 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  foreach         1.5.2      2022-02-02 [2] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
@@ -583,9 +570,9 @@ sessioninfo::session_info()
 ##  hardhat         1.2.0      2022-06-30 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
-##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
+##  httpuv          1.6.5      2022-01-05 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
 ##  infer         * 1.0.2      2022-06-10 [2] CRAN (R 4.2.0)
 ##  ipred           0.9-13     2022-06-02 [2] CRAN (R 4.2.0)
@@ -594,10 +581,10 @@ sessioninfo::session_info()
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  later           1.3.0      2021-08-18 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lava            1.6.10     2021-09-02 [2] CRAN (R 4.2.0)
-##  LDAvis        * 0.3.2      2015-10-24 [2] CRAN (R 4.2.0)
+##  LDAvis        * 0.3.5      2022-08-11 [1] Github (cpsievert/LDAvis@5067f7b)
 ##  LDAvisData    * 0.1        2022-06-08 [2] Github (cpsievert/LDAvisData@43dd263)
 ##  lhs             1.1.5      2022-03-22 [2] CRAN (R 4.2.0)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
@@ -616,17 +603,17 @@ sessioninfo::session_info()
 ##  parsnip       * 1.0.0      2022-06-16 [2] CRAN (R 4.2.0)
 ##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
-##  plyr            1.8.7      2022-03-24 [2] CRAN (R 4.2.0)
 ##  prodlim         2019.11.13 2019-11-17 [2] CRAN (R 4.2.0)
-##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
+##  promises        1.2.0.1    2021-02-11 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  quanteda        3.2.1      2022-03-01 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
 ##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
+##  RcppParallel    5.1.5      2022-01-05 [2] CRAN (R 4.2.0)
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  recipes       * 1.0.1      2022-07-07 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
-##  reshape2        1.4.4      2020-04-09 [2] CRAN (R 4.2.0)
 ##  rjson         * 0.2.21     2022-01-09 [2] CRAN (R 4.2.0)
 ##  RJSONIO         1.3-1.6    2021-09-16 [2] CRAN (R 4.2.0)
 ##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
@@ -638,6 +625,8 @@ sessioninfo::session_info()
 ##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales        * 1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  sentopics       0.7.1      2022-05-18 [1] CRAN (R 4.2.0)
+##  servr           0.24       2021-11-16 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
 ##  slam          * 0.1-50     2022-01-08 [2] CRAN (R 4.2.0)
 ##  SnowballC       0.7.0      2020-04-01 [2] CRAN (R 4.2.0)
@@ -657,6 +646,7 @@ sessioninfo::session_info()
 ##  tm            * 0.7-8      2020-11-18 [2] CRAN (R 4.2.0)
 ##  tokenizers      0.2.1      2018-03-29 [2] CRAN (R 4.2.0)
 ##  topicmodels   * 0.2-12     2021-01-29 [2] CRAN (R 4.2.0)
+##  tsne          * 0.1-3.1    2022-03-28 [1] CRAN (R 4.2.0)
 ##  tune          * 1.0.0      2022-07-07 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
