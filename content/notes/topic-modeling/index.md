@@ -466,50 +466,6 @@ json <- createJSON(
 )
 ```
 
-```
-## sigma summary: Min. : 0.568154270390152 |1st Qu. : 0.649460339063951 |Median : 0.682903180460662 |Mean : 0.6825972782661 |3rd Qu. : 0.712240095667488 |Max. : 0.781793288596583 |
-```
-
-```
-## Epoch: Iteration #100 error is: 15.3012825417178
-```
-
-```
-## Epoch: Iteration #200 error is: 1.50658393996601
-```
-
-```
-## Epoch: Iteration #300 error is: 1.27636463654976
-```
-
-```
-## Epoch: Iteration #400 error is: 1.18829352584688
-```
-
-```
-## Epoch: Iteration #500 error is: 1.14352170278722
-```
-
-```
-## Epoch: Iteration #600 error is: 1.13157537778726
-```
-
-```
-## Epoch: Iteration #700 error is: 1.12406987097128
-```
-
-```
-## Epoch: Iteration #800 error is: 1.11688914045516
-```
-
-```
-## Epoch: Iteration #900 error is: 1.11557684730887
-```
-
-```
-## Epoch: Iteration #1000 error is: 1.10487547708294
-```
-
 
 ```r
 # view the visualization
@@ -532,50 +488,6 @@ Rather than loading `as.LDA()` with `library(sentopics)` (which introduces confl
 ```r
 appa_100_viz <- sentopics::as.LDA(appa_lda_compare[[6]], docs = appa_dtm)
 sentopics::LDAvis(appa_100_viz, mds.method = svd_tsne)
-```
-
-```
-## sigma summary: Min. : 0.670412097734739 |1st Qu. : 0.71871419561776 |Median : 0.736577407211301 |Mean : 0.744472747729188 |3rd Qu. : 0.772220154391706 |Max. : 0.852075084728102 |
-```
-
-```
-## Epoch: Iteration #100 error is: 15.329416278738
-```
-
-```
-## Epoch: Iteration #200 error is: 1.48015281878584
-```
-
-```
-## Epoch: Iteration #300 error is: 1.29978816740146
-```
-
-```
-## Epoch: Iteration #400 error is: 1.2265562860756
-```
-
-```
-## Epoch: Iteration #500 error is: 1.20926235910106
-```
-
-```
-## Epoch: Iteration #600 error is: 1.19240349410024
-```
-
-```
-## Epoch: Iteration #700 error is: 1.17302984860916
-```
-
-```
-## Epoch: Iteration #800 error is: 1.15941681058204
-```
-
-```
-## Epoch: Iteration #900 error is: 1.1523035830032
-```
-
-```
-## Epoch: Iteration #1000 error is: 1.14459814288086
 ```
 
 {{% callout note %}}
@@ -627,6 +539,7 @@ sessioninfo::session_info()
 ##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  data.table      1.14.2     2021-09-27 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  dials         * 1.0.0      2022-06-14 [2] CRAN (R 4.2.0)
@@ -637,11 +550,12 @@ sessioninfo::session_info()
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
+##  fastmatch       1.1-3      2021-07-23 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  foreach         1.5.2      2022-02-02 [2] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
-##  furrr           0.3.0      2022-05-04 [2] CRAN (R 4.2.0)
-##  future          1.27.0     2022-07-22 [2] CRAN (R 4.2.0)
+##  furrr         * 0.3.0      2022-05-04 [2] CRAN (R 4.2.0)
+##  future        * 1.27.0     2022-07-22 [2] CRAN (R 4.2.0)
 ##  future.apply    1.9.0      2022-04-25 [2] CRAN (R 4.2.0)
 ##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
 ##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
@@ -658,6 +572,7 @@ sessioninfo::session_info()
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
+##  httpuv          1.6.5      2022-01-05 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
 ##  infer         * 1.0.2      2022-06-10 [2] CRAN (R 4.2.0)
 ##  ipred           0.9-13     2022-06-02 [2] CRAN (R 4.2.0)
@@ -666,8 +581,11 @@ sessioninfo::session_info()
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  later           1.3.0      2021-08-18 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lava            1.6.10     2021-09-02 [2] CRAN (R 4.2.0)
+##  LDAvis        * 0.3.5      2022-08-11 [1] Github (cpsievert/LDAvis@5067f7b)
+##  LDAvisData    * 0.1        2022-06-08 [2] Github (cpsievert/LDAvisData@43dd263)
 ##  lhs             1.1.5      2022-03-22 [2] CRAN (R 4.2.0)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  listenv         0.8.0      2019-12-05 [2] CRAN (R 4.2.0)
@@ -686,14 +604,18 @@ sessioninfo::session_info()
 ##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  prodlim         2019.11.13 2019-11-17 [2] CRAN (R 4.2.0)
+##  promises        1.2.0.1    2021-02-11 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  quanteda        3.2.1      2022-03-01 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
 ##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
+##  RcppParallel    5.1.5      2022-01-05 [2] CRAN (R 4.2.0)
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  recipes       * 1.0.1      2022-07-07 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
 ##  rjson         * 0.2.21     2022-01-09 [2] CRAN (R 4.2.0)
+##  RJSONIO         1.3-1.6    2021-09-16 [2] CRAN (R 4.2.0)
 ##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rpart           4.1.16     2022-01-24 [2] CRAN (R 4.2.1)
@@ -703,9 +625,12 @@ sessioninfo::session_info()
 ##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales        * 1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  sentopics       0.7.1      2022-05-18 [1] CRAN (R 4.2.0)
+##  servr           0.24       2021-11-16 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
-##  slam            0.1-50     2022-01-08 [2] CRAN (R 4.2.0)
+##  slam          * 0.1-50     2022-01-08 [2] CRAN (R 4.2.0)
 ##  SnowballC       0.7.0      2020-04-01 [2] CRAN (R 4.2.0)
+##  stopwords       2.3        2021-10-28 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
 ##  survival        3.3-1      2022-03-03 [2] CRAN (R 4.2.1)
@@ -721,6 +646,7 @@ sessioninfo::session_info()
 ##  tm            * 0.7-8      2020-11-18 [2] CRAN (R 4.2.0)
 ##  tokenizers      0.2.1      2018-03-29 [2] CRAN (R 4.2.0)
 ##  topicmodels   * 0.2-12     2021-01-29 [2] CRAN (R 4.2.0)
+##  tsne          * 0.1-3.1    2022-03-28 [1] CRAN (R 4.2.0)
 ##  tune          * 1.0.0      2022-07-07 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
