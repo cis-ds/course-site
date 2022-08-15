@@ -101,7 +101,13 @@ Frequently when using LDA, you don't actually know the underlying topic structur
 
 ## `appa`
 
-{{< figure src="appa-avatar.gif" caption="Appa eating grass." numbered="false" >}}
+![](../../../../../../../../img/appa-avatar.gif)<!-- -->
+
+[`appa`](https://github.com/averyrobbins1/appa) contains transcripts from every episode of Avatar: The Last Airbender.^[Not that nonsense M. Night Shyamalan movie. Or that other Avatar movie.]
+
+{{< youtube d1EnW4kn1kg >}}
+
+In this example, we want to explore the underlying themes of the television show through the use of topic modeling. First we need to install and load the package.
 
 ```r
 remotes::install_github("averyrobbins1/appa")
@@ -572,6 +578,12 @@ sentopics::LDAvis(appa_100_viz, mds.method = svd_tsne)
 ## Epoch: Iteration #1000 error is: 1.14459814288086
 ```
 
+{{% callout note %}}
+
+This dataset was previously used as part of the [Tidy Tuesday weekly data project](https://github.com/rfordatascience/tidytuesday/blob/master/data/2020/2020-08-11/readme.md). Check out [this gallery](https://www.avery-robbins.com/posts/2020-08-12-tidy-tuesday-avatar/) for a range of exploratory data analyses based on the same data.
+
+{{% /callout %}}
+
 ## Acknowledgments
 
 * This page is derived in part from ["Tidy Text Mining with R"](http://tidytextmining.com/) and licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 3.0 United States License](https://creativecommons.org/licenses/by-nc-sa/3.0/us/).
@@ -596,7 +608,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-11
+##  date     2022-08-15
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
