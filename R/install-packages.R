@@ -98,6 +98,8 @@ install.packages(
     "sentopics",
     "doParallel",
     "xaringan",
-    "xaringanthemer"
+    "xaringanthemer",
+    "styler",
+    "datapasta"
   )
 )
