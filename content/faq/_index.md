@@ -159,6 +159,10 @@ Each homework will be evaluated by either myself or a TA, as well as by **two pe
 * [How to perform peer review](/faq/peer-evaluations/)
 * [How to properly ask for help](/faq/asking-questions/)
 
+## Academic integrity
+
+Each student in this course is expected to abide by the [Cornell University Code of Academic Integrity](https://theuniversityfaculty.cornell.edu/dean/academic-integrity/). Under the provisions of the Code, anyone who gives or receives unauthorized assistance in the preparation of work at home or during tests in class will be subject to disciplinary action. A student's name on any piece of work is our assurance that they have neither given nor received any unauthorized help in its preparation. Students may assist each other on assignments by answering questions and explaining various concepts. However, one student should not allow another student to copy their work directly. All University policies with respect to cheating will be enforced. A student who is found to have cheated on an exam, or any other graded assignment, will receive an “F” in the course.
+
 ## Statement on diversity, inclusion, and disability
 
 Cornell University (as an institution) and I (as a human being and instructor of this course) am committed to full inclusion in education for all persons. Services and reasonable accommodations are available to persons with temporary and permanent disabilities, to students with DACA or undocumented status, to students facing mental health or other personal challenges, and to students with other kinds of learning challenges. Please feel free to let me know if there are circumstances affecting your ability to participate in class. Some resources that might be of use include:
@@ -166,6 +170,16 @@ Cornell University (as an institution) and I (as a human being and instructor of
 - [Office of Student Disability Services](https://sds.cornell.edu)
 - [Cornell Health CAPS (Counseling & Psychological Services)](https://health.cornell.edu/services/counseling-psychiatry)
 - [Undocumented/DACA Student support](https://dos.cornell.edu/undocumented-daca-support/undergraduate-admissions-financial-aid)
+
+### Disability accommodations
+
+Your access in this course is important to me. Please request your accommodation letter early in the semester, or as soon as you become registered with Student Disability Services (SDS), so that we have adequate time to arrange your approved academic accommodations.
+ 
+- Once SDS approves your accommodation letter, it will be emailed to both you and me. Please follow up with me to discuss the necessary logistics of your accommodations.
+- If you experience any access barriers in this course, such as with printed content, graphics, online materials, or any communication barriers, reach out to me or SDS right away.
+- If you need immediate accommodation, please speak with me after class or send an email message to me and [SDS](mailto:sds_cu@cornell.edu).
+ 
+If you have, or think you may have a disability, please contact Student Disability Services for a confidential discussion: [SDS](mailto:sds_cu@cornell.edu) or visit [sds.cornell.edu](https://sds.cornell.edu) to learn more. 
 
 ## Acknowledgments
 
