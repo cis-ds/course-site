@@ -17,7 +17,7 @@ design:
 * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
 * Teaching Assistants: TBD
 * Meeting day/time: MW 12:25-2:20
-* Meeting location: [Rockefeller Hall 203](https://www.cornell.edu/about/maps/?q=Rockefeller%20Hall#CUmap)
+* Meeting location: [Kimball Hall B11](https://www.cornell.edu/about/maps/?q=Kimball%20Hall)
 * Office hours: TBD
 * Prerequisites: None
 * Requirements: Internet connection and a computer

@@ -19,7 +19,7 @@ abstract: ""
 summary: "Introduce methods for text data, structuring text data in R, and conducting exploratory analysis."
 
 # Location of event.
-location: "Rockefeller Hall 203"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

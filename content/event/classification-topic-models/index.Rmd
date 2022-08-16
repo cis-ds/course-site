@@ -19,7 +19,7 @@ abstract: ""
 summary: "Implement supervised and unsupervised learning methods for text data."
 
 # Location of event.
-location: "Rockefeller Hall 203"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

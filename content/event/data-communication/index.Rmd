@@ -19,7 +19,7 @@ abstract: ""
 summary: "Identify methods for improving accessibility and interpretability of data visualizations."
 
 # Location of event.
-location: "Rockefeller Hall 203"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

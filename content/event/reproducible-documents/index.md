@@ -19,7 +19,7 @@ abstract: ""
 summary: "Extending Quarto to slide decks, websites, and deploying online."
 
 # Location of event.
-location: "Rockefeller Hall 203"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

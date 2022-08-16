@@ -17,7 +17,7 @@ abstract: ""
 summary: "Methods for implementing a tidy, reproducible workflow."
 
 # Location of event.
-location: "Rockefeller Hall 203"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

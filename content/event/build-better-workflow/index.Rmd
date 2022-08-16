@@ -17,7 +17,7 @@ abstract: ""
 summary: "Introduce and practice techniques for preprocessing data sets and developing model workflows using the `tidymodels` framework."
 
 # Location of event.
-location: "Rockefeller Hall 203"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false
