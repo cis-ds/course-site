@@ -23,7 +23,7 @@ I was first drawn to programming in grad school, starting out in [Stata](http://
 
 ### Teaching assistants
 
-- Tianhong Yu
+- Catherine Yu
 - Andrew Liu
 
 ## Course objectives
