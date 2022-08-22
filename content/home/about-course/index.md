@@ -15,7 +15,9 @@ design:
 # INFO 5940 - Computing for Information Science <img src="img/cis.svg" align="right" />
 
 * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
-* Teaching Assistants: TBD
+* Teaching Assistants:
+    * Tianhong Yu
+    * Andrew Liu
 * Meeting day/time: MW 12:25-2:20
 * Meeting location: [Kimball Hall B11](https://www.cornell.edu/about/maps/?q=Kimball%20Hall)
 * Office hours: TBD

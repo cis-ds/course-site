@@ -26,7 +26,8 @@ I was first drawn to programming in grad school, starting out in [Stata](http://
 
 ### Teaching assistants
 
-- TBD
+- Tianhong Yu
+- Andrew Liu
 
 ## Course objectives
 
@@ -406,7 +407,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-10
+##  date     2022-08-22
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -473,7 +474,7 @@ sessioninfo::session_info()
 ##  rmarkdown        2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot        2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi       0.13       2020-11-12 [2] CRAN (R 4.2.0)
-##  rtweet         * 1.0.2      2022-08-10 [1] local
+##  rtweet         * 1.0.2.9005 2022-08-15 [1] Github (ropensci/rtweet@39eecff)
 ##  rvest            1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
 ##  sass             0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales           1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
