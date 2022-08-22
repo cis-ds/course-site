@@ -1,0 +1,203 @@
+---
+title: "Working with statistical models"
+date: 2019-03-01
+
+type: book
+toc: true
+draft: false
+aliases: ["/notes/work-with-models-exercise/"]
+categories: ["stat-learn"]
+
+weight: 74
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r packages, message = FALSE, warning = FALSE, cache = FALSE}
+library(tidyverse)
+library(tidymodels)
+library(rcis)
+
+set.seed(123)
+
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("cis-ds/statistical-learning")
+```
+
+{{% /callout %}}
+
+## Exercise: linear regression with `scorecard`
+
+Recall the `scorecard` data set which contains information on U.S. institutions of higher learning.
+
+```{r scorecard}
+scorecard
+```
+
+Answer the following questions using the statistical modeling tools you have learned.
+
+1. What is the relationship between admission rate and cost? Report this relationship using a scatterplot and a linear best-fit line.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r scorecard-point}
+ggplot(scorecard, aes(admrate, cost)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+```    
+
+    {{< /spoiler >}}
+
+1. Estimate a linear regression of the relationship between admission rate and cost, and report your results in a tidy table.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r scorecard-mod}
+scorecard_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cost ~ admrate, data = scorecard)
+tidy(scorecard_fit)
+```
+   
+    {{< /spoiler >}}
+
+1. Estimate a linear regression of the relationship between admission rate and cost, while also accounting for type of college and percent of Pell Grant recipients, and report your results in a tidy table.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r scorecard-mult-var}
+scorecard_fit <- linear_reg() %>%
+  set_engine("lm") %>%
+  fit(cost ~ admrate + type + pctpell, data = scorecard)
+tidy(scorecard_fit)
+```    
+    
+    {{< /spoiler >}}
+
+## Exercise: logistic regression with `mental_health`
+
+Why do some people vote in elections while others do not? Typical explanations focus on a resource model of participation -- individuals with greater resources, such as time, money, and civic skills, are more likely to participate in politics. An emerging theory assesses an individual's mental health and its effect on political participation.[^ojeda] Depression increases individuals' feelings of hopelessness and political efficacy, so depressed individuals will have less desire to participate in politics. More importantly to our resource model of participation, individuals with depression suffer physical ailments such as a lack of energy, headaches, and muscle soreness which drain an individual's energy and requires time and money to receive treatment. For these reasons, we should expect that individuals with depression are less likely to participate in election than those without symptoms of depression.
+
+Use the `mental_health` data set in `library(rcis)` and logistic regression to predict whether or not an individual voted in the 1996 presidential election.
+
+```{r mental-health}
+mental_health
+```
+
+1. Estimate a logistic regression model of voter turnout with `mhealth` as the predictor. Estimate predicted probabilities and a 95% confidence interval, and plot the logistic regression predictions using `ggplot`.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r mh-factor}
+# convert vote96 to a factor column
+mental_health <- rcis::mental_health %>%
+  mutate(vote96 = factor(vote96, labels = c("Not voted", "Voted")))
+```
+
+```{r mh-model, dependson = "mh-factor"}
+# estimate model
+mh_mod <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(vote96 ~ mhealth, data = mental_health)
+
+# generate predicted probabilities + confidence intervals
+new_points <- tibble(
+  mhealth = seq(
+    from = min(mental_health$mhealth),
+    to = max(mental_health$mhealth)
+  )
+)
+
+bind_cols(
+  new_points,
+  # predicted probabilities
+  predict(mh_mod, new_data = new_points, type = "prob"),
+  # confidence intervals
+  predict(mh_mod, new_data = new_points, type = "conf_int")
+) %>%
+  # graph the predictions
+  ggplot(mapping = aes(x = mhealth, y = .pred_Voted)) +
+  geom_pointrange(mapping = aes(ymin = .pred_lower_Voted, ymax = .pred_upper_Voted)) +
+  labs(
+    title = "Relationship Between Mental Health and Voter Turnout",
+    x = "Mental health status",
+    y = "Predicted Probability of Voting"
+  )
+```
+    
+    {{< /spoiler >}}
+
+1. Estimate a second logistic regression model of voter turnout using using age and gender (i.e. the `female` column). Extract predicted probabilities and confidence intervals for all possible values of age, and visualize using `ggplot()`.
+
+    {{< spoiler text="Click for the solution" >}}
+
+```{r mh-model-all, dependson="mental-health"}
+# recode female
+mental_health <- rcis::mental_health %>%
+  mutate(
+    vote96 = factor(vote96, labels = c("Not voted", "Voted")),
+    female = factor(female, labels = c("Male", "Female"))
+  )
+
+# estimate model
+mh_int_mod <- logistic_reg() %>%
+  set_engine("glm") %>%
+  fit(vote96 ~ age * female, data = mental_health)
+
+# generate predicted probabilities + confidence intervals
+new_points <- expand.grid(
+  age = seq(
+    from = min(mental_health$age),
+    to = max(mental_health$age)
+  ),
+  female = unique(mental_health$female)
+)
+
+bind_cols(
+  new_points,
+  # predicted probabilities
+  predict(mh_int_mod, new_data = new_points, type = "prob"),
+  # confidence intervals
+  predict(mh_int_mod, new_data = new_points, type = "conf_int")
+) %>%
+  # graph the predictions
+  ggplot(mapping = aes(x = age, y = .pred_Voted, color = female)) +
+  # predicted probability
+  geom_line(linetype = 2) +
+  # confidence interval
+  geom_ribbon(mapping = aes(
+    ymin = .pred_lower_Voted, ymax = .pred_upper_Voted,
+    fill = female
+  ), alpha = .2) +
+  scale_color_viridis_d(
+    end = 0.7, aesthetics = c("color", "fill"),
+    name = NULL
+  ) +
+  labs(
+    title = "Relationship Between Age and Voter Turnout",
+    x = "Age",
+    y = "Predicted Probability of Voting"
+  )
+```
+
+    {{< /spoiler >}}
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
+
+[^ojeda]: [Ojeda, C. (2015). Depression and political participation. *Social Science Quarterly*, 96(5), 1226-1243.](https://onlinelibrary.wiley.com/doi/full/10.1111/ssqu.12173)

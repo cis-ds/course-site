@@ -1,13 +1,10 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
 draft: false
-menu:
-  faq:
-    parent: Overview
-    weight: 2
+weight: 20
 title: "General homework rubric"
 toc: true
-type: docs
+type: book
 aliases: ["/hw00_homework_grading.html", "/hw00_github_rubric.html"]
 ---
 

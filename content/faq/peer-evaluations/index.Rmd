@@ -1,13 +1,10 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
 draft: false
-menu:
-  faq:
-    parent: Overview
-    weight: 3
+weight: 30
 title: "Performing peer evaluations"
 toc: true
-type: docs
+type: book
 aliases: ["/hw00_peer-review.html"]
 ---
 

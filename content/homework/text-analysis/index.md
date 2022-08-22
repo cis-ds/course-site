@@ -1,6 +1,6 @@
 ---
 title: "HW10: Analyzing text data"
-date: 2019-05-27T13:30:00-06:00  # Schedule page publish date
+date: 2022-11-21T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
@@ -58,8 +58,10 @@ Your assignment should be submitted as an R Markdown document using the `github_
 
 # Rubric
 
-Needs improvement: Cannot get code to run or is poorly documented. Severe misinterpretations of the results. No effort is made to pre-process the text for analysis.^[Or you provide no justification for keeping content such as numbers, stop words, etc.]
+Needs improvement: Cannot get code to run or is poorly documented. Severe misinterpretations of the results. No effort is made to pre-process the text for analysis.[^justification]
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
 Excellent: Interpretation is clear and in-depth. Accurately interprets the results, with appropriate caveats for what the technique can and cannot do. Code is reproducible (i.e. if analyzing tweets, you have stored a copy in a local file so I can exactly reproduce your results as well as run it on a new sample of tweets). Uses a sentiment analysis or topic model approach not directly covered in class.
+
+[^justification]: Or you provide no justification for keeping content such as numbers, stop words, etc.

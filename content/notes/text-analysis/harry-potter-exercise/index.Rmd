@@ -1,0 +1,320 @@
+---
+title: "Practicing sentiment analysis with Harry Potter"
+date: 2019-03-01
+
+type: book
+toc: true
+draft: false
+aliases: ["/text003_harry_potter_exercise.html", "/notes/harry-potter-exercise/"]
+categories: ["text"]
+
+weight: 113
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidytext)
+library(harrypotter)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("cis-ds/text-analysis-fundamentals-and-sentiment-analysis")
+```
+
+{{% /callout %}}
+
+## Load Harry Potter text
+
+{{% callout note %}}
+
+Run the following code to download the [`harrypotter`](https://github.com/bradleyboehmke/harrypotter) package:
+
+```r
+remotes::install_github("bradleyboehmke/harrypotter")
+```
+
+Note that there is a different package available on CRAN also called [`harrypotter`](https://cran.r-project.org/web/packages/harrypotter/index.html). This is an entirely different package. If you just run `install.packages("harrypotter")`, you will get an error.
+
+{{% /callout %}}
+
+
+```{r hp}
+library(harrypotter)
+
+# names of each book
+hp_books <- c(
+  "philosophers_stone", "chamber_of_secrets",
+  "prisoner_of_azkaban", "goblet_of_fire",
+  "order_of_the_phoenix", "half_blood_prince",
+  "deathly_hallows"
+)
+
+# combine books into a list
+hp_words <- list(
+  philosophers_stone,
+  chamber_of_secrets,
+  prisoner_of_azkaban,
+  goblet_of_fire,
+  order_of_the_phoenix,
+  half_blood_prince,
+  deathly_hallows
+) %>%
+  # name each list element
+  set_names(hp_books) %>%
+  # convert each book to a data frame and merge into a single data frame
+  map_df(as_tibble, .id = "book") %>%
+  # convert book to a factor
+  mutate(book = factor(book, levels = hp_books)) %>%
+  # remove empty chapters
+  drop_na(value) %>%
+  # create a chapter id column
+  group_by(book) %>%
+  mutate(chapter = row_number(book)) %>%
+  ungroup() %>%
+  # tokenize the data frame
+  unnest_tokens(word, value)
+
+hp_words
+```
+
+## Most frequent words, by book
+
+Remove stop words.
+
+```{r word-freq, dependson = "hp", fig.asp = 1.3}
+hp_words %>%
+  # delete stopwords
+  anti_join(stop_words) %>%
+  # summarize count per word per book
+  count(book, word) %>%
+  # get top 15 words per book
+  group_by(book) %>%
+  slice_max(order_by = n, n = 15) %>%
+  mutate(word = reorder_within(word, n, book)) %>%
+  # create barplot
+  ggplot(aes(x = word, y = n, fill = book)) +
+  geom_col(color = "black") +
+  scale_x_reordered() +
+  labs(
+    title = "Most frequent words in Harry Potter",
+    x = NULL,
+    y = "Word count"
+  ) +
+  facet_wrap(facets = vars(book), scales = "free") +
+  coord_flip() +
+  theme(legend.position = "none")
+```
+
+## Estimate sentiment
+
+## Generate data frame with sentiment derived from the Bing dictionary
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r hp-bing, dependson = "hp"}
+(hp_bing <- hp_words %>%
+  inner_join(get_sentiments("bing")))
+```
+
+{{< /spoiler >}}
+
+## Visualize the most frequent positive/negative words in the entire series using the Bing dictionary, and then separately for each book
+
+{{% callout note %}}
+
+Check out [this blog post](https://juliasilge.com/blog/reorder-within/) which introduces the `reorder_within()` and `scale_x_reordered()` functions for sorting bar charts within each facet.
+
+{{% /callout %}}
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r pos-neg-all-series, dependson = "hp-bing"}
+# all series
+hp_bing %>%
+  # generate frequency count for each word and sentiment
+  group_by(sentiment) %>%
+  count(word) %>%
+  # extract 10 most frequent pos/neg words
+  group_by(sentiment) %>%
+  slice_max(order_by = n, n = 10) %>%
+  # prep data for sorting each word independently by facet
+  mutate(word = reorder_within(word, n, sentiment)) %>%
+  # generate the bar plot
+  ggplot(aes(word, n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  # used with reorder_within() to label the axis tick marks
+  scale_x_reordered() +
+  facet_wrap(facets = vars(sentiment), scales = "free_y") +
+  labs(
+    title = "Sentimental words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences in all seven books"
+  ) +
+  coord_flip()
+
+# per book
+hp_pos_neg_book <- hp_bing %>%
+  # generate frequency count for each book, word, and sentiment
+  group_by(book, sentiment) %>%
+  count(word) %>%
+  # extract 10 most frequent pos/neg words per book
+  group_by(book, sentiment) %>%
+  slice_max(order_by = n, n = 10)
+
+## positive words
+hp_pos_neg_book %>%
+  filter(sentiment == "positive") %>%
+  mutate(word = reorder_within(word, n, book)) %>%
+  ggplot(aes(word, n)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(facets = vars(book), scales = "free_y") +
+  labs(
+    title = "Positive words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences"
+  ) +
+  coord_flip()
+
+## negative words
+hp_pos_neg_book %>%
+  filter(sentiment == "negative") %>%
+  mutate(word = reorder_within(word, n, book)) %>%
+  ggplot(aes(word, n)) +
+  geom_col(show.legend = FALSE) +
+  scale_x_reordered() +
+  facet_wrap(facets = vars(book), scales = "free_y") +
+  labs(
+    title = "Negative words used in the Harry Potter series",
+    x = NULL,
+    y = "Number of occurences"
+  ) +
+  coord_flip()
+```
+
+{{< /spoiler >}}
+
+## Generate data frame with sentiment derived from the AFINN dictionary
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r hp-afinn, dependson = "hp"}
+(hp_afinn <- hp_words %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book, chapter))
+```
+
+{{< /spoiler >}}
+
+## Visualize which words in the AFINN sentiment dictionary appear most frequently
+
+Sometimes words which are defined in a general sentiment dictionary can be outliers in specific contexts. That is, an author may use a word without intending to convey a specific sentiment but the dictionary defines it in a certain way.
+
+We can use a [**wordcloud**](http://tidytextmining.com/sentiment.html#wordclouds) as a quick check to see if there are any outliers in the context of *Harry Potter*, constructed using [`ggwordcloud`](https://lepennec.github.io/ggwordcloud/):
+
+```{r sentiment-outliers, dependson = "hp-afinn"}
+library(ggwordcloud)
+
+set.seed(123) # ensure reproducibility of the wordcloud
+hp_afinn %>%
+  # count word frequency across books
+  ungroup() %>%
+  count(word) %>%
+  # keep only top 100 words for wordcloud
+  slice_max(order_by = n, n = 100) %>%
+  mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
+  ggplot(aes(label = word, size = n, angle = angle)) +
+  geom_text_wordcloud(rm_outside = TRUE) +
+  scale_size_area(max_size = 15) +
+  ggtitle("Most frequent tokens in Harry Potter") +
+  theme_minimal()
+```
+
+As we can see, "moody" appears quite frequently in the books. In the vast majority of appearances, "moody" is used to refer to the character Alastor "Mad-Eye" Moody and is not meant to convey a specific sentiment.
+
+<div style="width:100%;height:0;padding-bottom:38%;position:relative;"><iframe src="https://giphy.com/embed/lirn1IJDukVLq" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+```{r sentiment-moody, dependson = "hp-afinn"}
+hp_afinn %>%
+  filter(word == "moody")
+```
+
+It would be best to remove this word from further sentiment analysis, treating it as if it were another stop word.
+
+```{r sentiment-outlier-remove, dependson = "hp-afinn"}
+hp_afinn <- hp_afinn %>%
+  filter(word != "moody")
+
+# wordcloud without harry
+set.seed(123) # ensure reproducibility of the wordcloud
+hp_afinn %>%
+  # count word frequency across books
+  ungroup() %>%
+  count(word) %>%
+  # keep only top 100 words for wordcloud
+  slice_max(order_by = n, n = 100) %>%
+  mutate(angle = 90 * sample(c(0, 1), n(), replace = TRUE, prob = c(70, 30))) %>%
+  ggplot(aes(label = word, size = n, angle = angle)) +
+  geom_text_wordcloud(rm_outside = TRUE) +
+  scale_size_area(max_size = 15) +
+  ggtitle("Most frequent tokens in Harry Potter") +
+  theme_minimal()
+```
+
+## Visualize the positive/negative sentiment for each book over time using the AFINN dictionary
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r affin-over-time, dependson = "sentiment-outlier-remove"}
+hp_words %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book, chapter) %>%
+  summarize(value = sum(value)) %>%
+  ggplot(mapping = aes(x = chapter, y = value, fill = book)) +
+  geom_col() +
+  facet_wrap(facets = vars(book), scales = "free_x") +
+  labs(
+    title = "Emotional arc of Harry Potter books",
+    subtitle = "AFINN sentiment dictionary",
+    x = "Chapter",
+    y = "Emotional score"
+  ) +
+  theme(legend.position = "none")
+
+# cumulative value
+hp_words %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(book) %>%
+  mutate(cumvalue = cumsum(value)) %>%
+  ggplot(mapping = aes(x = chapter, y = cumvalue, fill = book)) +
+  geom_step() +
+  facet_wrap(facets = vars(book), scales = "free_x") +
+  labs(
+    title = "Emotional arc of Harry Potter books",
+    subtitle = "AFINN sentiment dictionary",
+    x = "Chapter",
+    y = "Cumulative emotional value"
+  )
+```
+
+{{< /spoiler >}}
+
+## Acknowledgments
+
+* This page is derived in part from [Harry Plotter: Celebrating the 20 year anniversary with `tidytext` and the `tidyverse` in R](https://paulvanderlaken.com/2017/08/03/harry-plotter-celebrating-the-20-year-anniversary-with-tidytext-the-tidyverse-and-r/) and licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](https://creativecommons.org/licenses/by-sa/4.0/).
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

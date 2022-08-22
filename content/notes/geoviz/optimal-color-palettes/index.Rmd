@@ -1,0 +1,238 @@
+---
+title: "Selecting optimal color palettes"
+date: 2019-03-01
+
+type: book
+toc: true
+draft: false
+aliases: ["/geoviz_color.html", "/notes/optimal-color-palettes/"]
+categories: ["dataviz", "geospatial"]
+
+weight: 55
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r packages, cache = FALSE, message = FALSE}
+library(tidyverse)
+library(sf)
+library(tidycensus)
+library(RColorBrewer)
+library(patchwork)
+
+# useful on MacOS to speed up rendering of geom_sf() objects
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
+  options(bitmapType = "cairo")
+}
+
+options(digits = 3)
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth. By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):[^hues]
+
+```{r color-wheel, echo = FALSE}
+# generate simulated data points
+sim_points <- tibble(x = factor(1:6))
+
+plots <- purrr::map(1:6, ~ ggplot(sim_points[1:.x, ], aes(x, x, color = x)) +
+  geom_point(size = 5) +
+  ggtitle(paste(.x, "color")) +
+  theme(legend.position = "none"))
+
+wrap_plots(plots)
+```
+
+`ggplot2` gives you many different ways of defining and customizing your `scale_color_` and `scale_fill_` palettes, but will not tell you if they are optimal for your specific usage in the graph.
+
+## Color Brewer
+
+```{r get-maps, include = FALSE}
+# get national median household income
+usa_inc <- get_acs(
+  geography = "us",
+  variables = c(medincome = "B19013_001"),
+  year = 2016
+) %>%
+  .$estimate %>%
+  nth(1)
+
+# get state-level median household income and region
+state_inc <- get_acs(
+  geography = "state",
+  variables = c(medincome = "B19013_001"),
+  year = 2016,
+  geometry = TRUE
+) %>%
+  # remove alaska, hawaii, and puerto rico
+  filter(!(NAME %in% c("Alaska", "Hawaii", "Puerto Rico"))) %>%
+  # calculate diff from national income
+  mutate(estimate_div = estimate - usa_inc)
+
+# get state-level region
+state_region <- get_decennial(
+  geography = "state",
+  variables = c(region = "REGION"),
+  year = 2010,
+  geometry = TRUE
+) %>%
+  # remove alaska, hawaii, and puerto rico
+  filter(!(NAME %in% c("Alaska", "Hawaii", "Puerto Rico"))) %>%
+  mutate(value = factor(value, labels = c("Northeast", "Midwest", "South", "West")))
+```
+
+[Color Brewer](http://colorbrewer2.org/) is a diagnostic tool for selecting optimal color palettes for maps with discrete variables. The authors have generated different color palettes designed to make differentiating between categories easy depending on the scaling of your variable. All you need to do is define the number of categories in the variable, the nature of your data (sequential, diverging, or qualitative), and a color scheme. There are also options to select palettes that are colorblind safe, print friendly, and photocopy safe. Depending on the combination of options, you may not find any color palette that matches your criteria. In such a case, consider reducing the number of data classes.
+
+## Sequential
+
+Sequential palettes work best with ordered data that progresses from a low to high value.
+
+```{r cb-seq}
+display.brewer.all(type = "seq")
+```
+
+```{r cb-seq-map, echo = FALSE}
+cut_interval_format <- function(x, n = NULL, length = NULL, ...) {
+  kimisc::cut_format(x, ggplot2:::breaks(x, "width", n, length),
+    include.lowest = TRUE,
+    ...
+  )
+}
+
+seq_plot <- state_inc %>%
+  mutate(estimate_cut = cut_interval_format(estimate, 6,
+    dig.lab = 5,
+    format_fun = scales::dollar
+  )) %>%
+  ggplot() +
+  geom_sf(aes(fill = estimate_cut)) +
+  labs(
+    title = "Median household income, 2016",
+    caption = "Source: 2016 American Community Survey",
+    fill = NULL
+  )
+
+seq_plot +
+  scale_fill_brewer(palette = "Blues") +
+  labs(subtitle = "Palette: Blues")
+
+seq_plot +
+  scale_fill_brewer(palette = "BuGn") +
+  labs(subtitle = "Palette: BuGn")
+
+seq_plot +
+  scale_fill_brewer(palette = "YlGn") +
+  labs(subtitle = "Palette: YlGn")
+```
+
+## Diverging
+
+Diverging palettes work for variables with meaningful mid-range values, as well as extreme low and high values.
+
+```{r cb-div}
+display.brewer.all(type = "div")
+```
+
+```{r cb-div-map, echo = FALSE}
+div_plot <- state_inc %>%
+  mutate(estimate_div_cut = cut_interval_format(estimate_div, 6,
+    dig.lab = 5,
+    format_fun = scales::dollar
+  )) %>%
+  ggplot() +
+  geom_sf(aes(fill = estimate_div_cut)) +
+  labs(
+    title = "Difference from national median household income, 2016",
+    caption = "Source: 2016 American Community Survey",
+    fill = NULL
+  )
+
+div_plot +
+  scale_fill_brewer(palette = "PiYG") +
+  labs(subtitle = "Palette: PiYG")
+
+div_plot +
+  scale_fill_brewer(palette = "RdBu") +
+  labs(subtitle = "Palette: RdBu")
+
+div_plot +
+  scale_fill_brewer(palette = "Spectral") +
+  labs(subtitle = "Palette: Spectral")
+```
+
+## Qualitative
+
+Qualitative palettes are best used for nominal data where there is no inherent ordering to the categories.
+
+```{r cb-qual}
+display.brewer.all(type = "qual")
+```
+
+```{r cb-qual-map, echo = FALSE}
+qual_plot <- state_region %>%
+  ggplot() +
+  geom_sf(aes(fill = value)) +
+  labs(
+    title = "Census region",
+    caption = "Source: 2010 US decennial census",
+    fill = NULL
+  )
+
+qual_plot +
+  scale_fill_brewer(palette = "Accent") +
+  labs(subtitle = "Palette: Accent")
+
+qual_plot +
+  scale_fill_brewer(palette = "Paired") +
+  labs(subtitle = "Palette: Paired")
+
+qual_plot +
+  scale_fill_brewer(palette = "Set1") +
+  labs(subtitle = "Palette: Set1")
+```
+
+## Viridis
+
+The [`viridis`](https://cran.r-project.org/web/packages/viridis/) package imports several color palettes for continuous variables from the `matplotlib` package in Python. These palettes have been tested to be colorful, perceptually uniform, robust to colorblindness, and pretty. To use these with `ggplot2`, use `scale_color_viridis()` and `scale_fill_viridis()`:
+
+```{r viridis}
+library(viridis)
+
+viridis_base <- ggplot(state_inc) +
+  geom_sf(aes(fill = estimate)) +
+  labs(
+    title = "Median household income, 2016",
+    subtitle = "Palette: viridis",
+    caption = "Source: 2016 American Community Survey",
+    fill = NULL
+  ) +
+  scale_fill_viridis(labels = scales::dollar)
+
+viridis_base
+
+viridis_base +
+  scale_fill_viridis(option = "cividis", labels = scales::dollar) +
+  labs(subtitle = "Palette: cividis")
+
+viridis_base +
+  scale_fill_viridis(option = "inferno", labels = scales::dollar) +
+  labs(subtitle = "Palette: inferno")
+
+viridis_base +
+  scale_fill_viridis(option = "magma", labels = scales::dollar) +
+  labs(subtitle = "Palette: magma")
+
+viridis_base +
+  scale_fill_viridis(option = "plasma", labels = scales::dollar) +
+  labs(subtitle = "Palette: plasma")
+```
+
+### Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
+
+[^hues]: Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process.

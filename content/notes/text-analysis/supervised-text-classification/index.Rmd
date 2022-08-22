@@ -1,0 +1,288 @@
+---
+title: "Supervised classification with text data"
+date: 2019-03-01
+
+type: book
+toc: true
+draft: false
+aliases: ["/text_classification.html", "/notes/supervised-text-classification/"]
+categories: ["text"]
+
+weight: 114
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(cache = TRUE)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidymodels)
+library(tidytext)
+
+set.seed(1234)
+theme_set(theme_minimal())
+```
+
+A common task in social science involves hand-labeling sets of documents for specific variables (e.g. manual coding). In previous years, this required hiring a set of research assistants and training them to read and evaluate text by hand. It was expensive, prone to error, required extensive data quality checks, and was infeasible if you had an extremely large corpus of text that required classification.
+
+Alternatively, we can now use machine learning models to classify text into specific sets of categories. This is known as **supervised learning**. The basic process is:
+
+1. Hand-code a small set of documents (say $N = `r scales::comma(1e03)`$) for whatever variable(s) you care about
+1. Train a machine learning model on the hand-coded data, using the variable as the outcome of interest and the text features of the documents as the predictors
+1. Evaluate the effectiveness of the machine learning model via [cross-validation](/notes/resampling/)
+1. Once you have trained a model with sufficient predictive accuracy, apply the model to the remaining set of documents that have never been hand-coded (say $N = `r scales::comma(1e06)`$)
+
+## Sample set of documents: `USCongress`
+
+```{r get-docs}
+# get USCongress data
+data(USCongress, package = "rcis")
+
+# topic labels
+major_topics <- tibble(
+  major = c(1:10, 12:21, 99),
+  label = c(
+    "Macroeconomics", "Civil rights, minority issues, civil liberties",
+    "Health", "Agriculture", "Labor and employment", "Education", "Environment",
+    "Energy", "Immigration", "Transportation", "Law, crime, family issues",
+    "Social welfare", "Community development and housing issues",
+    "Banking, finance, and domestic commerce", "Defense",
+    "Space, technology, and communications", "Foreign trade",
+    "International affairs and foreign aid", "Government operations",
+    "Public lands and water management", "Other, miscellaneous"
+  )
+)
+
+(congress <- as_tibble(USCongress) %>%
+  mutate(text = as.character(text)) %>%
+  left_join(major_topics))
+```
+
+`USCongress` contains a sample of hand-labeled bills from the United States Congress. For each bill we have a text description of the bill's purpose (e.g. "To amend the Immigration and Nationality Act in regard to Caribbean-born immigrants.") as well as the bill's [major policy topic code corresponding to the subject of the bill](http://www.comparativeagendas.net/pages/master-codebook). There are 20 major policy topics according to this coding scheme (e.g. Macroeconomics, Civil Rights, Health). These topic codes have been labeled by hand. The current dataset only contains a sample of bills from the 107th Congress (2001-03). If we wanted to obtain policy topic codes for all bills introduced over a longer period, we would have to manually code tens of thousands if not millions of bill descriptions. Clearly a task outside of our capabilities.
+
+Instead, we can build a machine learning model which predicts the major topic code of a bill given its text description. These notes outline a potential `tidymodels`/`tidytext` workflow for such an approach.
+
+## Split the data set
+
+First we need to convert `major` to a factor variable based on the levels defined in `label`. Then we can split the data into [training and testing datasets](/notes/resampling/) using `initial_split()` from `rsample`.
+
+```{r split, dependson = "get-docs"}
+set.seed(123)
+
+congress <- congress %>%
+  mutate(major = factor(x = major, levels = major, labels = label))
+
+congress_split <- initial_split(data = congress, strata = major, prop = .8)
+congress_split
+
+congress_train <- training(congress_split)
+congress_test <- testing(congress_split)
+```
+
+## Preprocessing the data frame
+
+Next we need to preprocess the data in preparation for modeling. Currently we have text data, and we need to construct numeric, quantitative features for machine learning based on that text. As before, we can use `recipes` to construct the set of preprocessing steps we want to perform. This time, we only use the `text` column for the model.
+
+```{r recipe, dependson = "split"}
+congress_rec <- recipe(major ~ text, data = congress_train)
+```
+
+Now we add steps to process the text of the legislation summaries. We use `textrecipes` to handle the `text` variable. First we **tokenize** the text to words with `step_tokenize()`. By default this uses `tokenizers::tokenize_words()`. Next we remove stop words with `step_stopwords()`; the default choice is the Snowball stop word list, but custom lists can be provided too. Before we calculate tf-idf we use `step_tokenfilter()` to only keep the 500 most frequent tokens, to avoid creating too many variables in our first model. To finish, we use `step_tfidf()` to compute tf-idf.
+
+```{r recipe-steps, dependson = "recipe"}
+library(textrecipes)
+
+congress_rec <- congress_rec %>%
+  step_tokenize(text) %>%
+  step_stopwords(text) %>%
+  step_tokenfilter(text, max_tokens = 500) %>%
+  step_tfidf(text)
+```
+
+## Train a model
+
+Using our existing `workflow()` approach to fitting a model, we can establish a workflow using a relatively straightforward type of classification model: naive Bayes. Naive Bayes is particularly useful as it can handle a large number of features.
+
+```{r nb-model}
+library(discrim)
+nb_spec <- naive_Bayes() %>%
+  set_mode("classification") %>%
+  set_engine("naivebayes")
+
+nb_spec
+```
+
+```{r nb-fit, dependson = c("recipe-steps", "nb-model")}
+nb_wf <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(nb_spec)
+nb_wf
+
+nb_wf %>%
+  fit(data = congress_train)
+```
+
+## Evaluation
+
+As we have already seen, we should not use the test set to compare models or different parameters. Instead, we can use **cross-validation** to evaluate our model.
+
+Here, let's reformulate this to use naive Bayes classification with 10-fold cross-validation sets.
+
+```{r congress-cv, dependson = "split"}
+set.seed(123)
+
+congress_folds <- vfold_cv(data = congress_train, strata = major)
+congress_folds
+```
+
+```{r nb-cv, dependson = c("congress-cv", "nb-fit")}
+nb_cv <- nb_wf %>%
+  fit_resamples(
+    congress_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+```
+
+We can extract relevant information using `collect_metrics()` and `collect_predictions()`.
+
+```{r nb-cv-info, dependson = "nb-cv"}
+nb_cv_metrics <- collect_metrics(nb_cv)
+nb_cv_predictions <- collect_predictions(nb_cv)
+
+nb_cv_metrics
+```
+
+The default performance parameters for multiclass classification are accuracy and ROC AUC (area under the receiver operator curve). The accuracy is the percentage of accurate predictions. For both metrics, values closer to 1 are better. These results suggest the naive Bayes model is performing quite poorly.
+
+The [receiver operator curve](https://en.wikipedia.org/wiki/Receiver_operating_characteristic) is a plot that shows the sensitivity at different thresholds. It demonstrates how well a classification model can distinguish between classes.
+
+```{r nb-roc-curve, dependson = "nb-cv-info"}
+nb_cv_predictions %>%
+  group_by(id) %>%
+  roc_curve(truth = major, c(starts_with(".pred"), -.pred_class)) %>%
+  autoplot() +
+  labs(
+    color = NULL,
+    title = "Receiver operator curve for Congressional bills",
+    subtitle = "Each resample fold is shown in a different color"
+  )
+```
+
+Another way to evaluate our model is to evaluate the [confusion matrix](https://en.wikipedia.org/wiki/Confusion_matrix). A confusion matrix visualizes a model's false positives and false negatives for each class. Because we implemented 10-fold cross-validation, we actually have 10 confusion matricies. `conf_mat_resampled()` averages the results from each validation fold to generate the summarized confusion matrix.
+
+```{r nb-confusion, dependson = "nb-cv-info"}
+conf_mat_resampled(x = nb_cv, tidy = FALSE) %>%
+  autoplot(type = "heatmap") +
+  scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 20))
+```
+
+Ideally all observations would fall on the diagonal. However here we can see that all predictions all under "Health" no matter what the true category.
+
+## Compare to the null model
+
+We can assess this model by comparing its performance to a "null model", or a baseline model. This baseline is a simple, non-informative model that always predicts the largest class for classification. In the absence of any information about the individual observations, this is the best strategy we can follow to generate predictions.
+
+```{r null-mod, dependson = c("recipe-steps", "congress-cv")}
+null_classification <- null_model() %>%
+  set_engine("parsnip") %>%
+  set_mode("classification")
+
+null_cv <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(null_classification) %>%
+  fit_resamples(
+    congress_folds
+  )
+
+null_cv %>%
+  collect_metrics()
+```
+
+Notice the accuracy is the same as for the naive Bayes model. This is because naive Bayes still leads to every observation predicted as "Health", **which is the exact same result as the null model**. Clearly we need a better modeling strategy.
+
+## Concerns regarding multiclass classification
+
+Remember that each bill could fall under one of 20 major policy topics. Compared to binary classification, this is a much harder challenge. For one, the classes are **imbalanced**. That is, there are far more healthcare related bills than other areas.
+
+```{r major-topic-dist, dependson = "get-docs"}
+ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
+  geom_bar() +
+  coord_flip() +
+  labs(
+    title = "Distribution of legislation",
+    subtitle = "By major policy topic",
+    x = NULL,
+    y = "Number of bills"
+  )
+```
+
+Many machine learning algorithms (such as naive Bayes) do not handle imbalanced data well, while other algorithms may not even be capable of performing multiclass classification.
+
+There are many different ways to deal with imbalanced data. Here we will take a simple approach, **downsampling**, where observations from the majority classes are removed during training to achieve a balanced class distribution. We rely on the `themis` package for recipes which includes the `step_downsample()` function to perform downsampling.
+
+```{r recipe-downsample, dependson = "recipe-steps"}
+library(themis)
+
+# build on existing recipe
+congress_rec <- congress_rec %>%
+  step_downsample(major)
+congress_rec
+```
+
+Let's also switch to an alternative modeling approach which handles multiclass problems better, decision trees.
+
+```{r tree-spec}
+tree_spec <- decision_tree() %>%
+  set_mode("classification") %>%
+  set_engine("C5.0")
+
+tree_spec
+```
+
+```{r tree-wf, dependson = c("recipe-steps", "tree-spec")}
+tree_wf <- workflow() %>%
+  add_recipe(congress_rec) %>%
+  add_model(tree_spec)
+
+tree_wf
+```
+
+```{r tree-fit, dependson = "tree-wf"}
+set.seed(123)
+
+tree_cv <- fit_resamples(
+  tree_wf,
+  congress_folds,
+  control = control_resamples(save_pred = TRUE)
+)
+tree_cv
+```
+
+```{r tree-metrics, dependson = "tree-fit"}
+tree_cv_metrics <- collect_metrics(tree_cv)
+tree_cv_predictions <- collect_predictions(tree_cv)
+
+tree_cv_metrics
+```
+
+While still low, the accuracy has risen substantially compared to the naive Bayes model. This is typical for multiclass models since the classification task is harder than for binary classification - rather than having one right answer and one wrong answer, there is one right answer and nineteen wrong answers.
+
+```{r tree-confusion, dependson = "tree-metrics"}
+conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
+  autoplot(type = "heatmap") +
+  scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
+  scale_x_discrete(labels = function(x) str_wrap(x, 20))
+```
+
+Now there are still prediction errors, but they same more evenly distributed across the matrix.
+
+## Acknowledgments
+
+- For more detail on machine learning for text classification, see [*Supervised Machine Learning for Text Analysis in R*](https://smltar.com/mlclassification.html) by Emil Hvitfeldt and Julia Silge
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```

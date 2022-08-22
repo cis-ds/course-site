@@ -1,6 +1,6 @@
 ---
 title: "HW03: Wrangling and visualizing data"
-date: 2019-04-15T13:30:00-06:00  # Schedule page publish date
+date: 2022-09-12T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-03-01
 
 draft: false
@@ -82,7 +82,7 @@ The data is structured in a tidy fashion.
 * `scdb-case.csv` contains one row for every case and one column for every variable
 * `scdb-vote.csv` contains one row for every vote by a justice in every case and one column for every variable
 
-The current dataset contains information on every case decided from the 1791-2020 terms.^[Terms run from October through June, so the 2020 term contains cases decided from October 2020 - June 2021] There are several ID variables which are useful for other types of research: for our purposes, the only ID variable you need to concern yourself with is `caseIssuesId`. Variables you will want to familiarize yourself with include:
+The current dataset contains information on every case decided from the 1791-2020 terms.[^terms] There are several ID variables which are useful for other types of research: for our purposes, the only ID variable you need to concern yourself with is `caseIssuesId`. Variables you will want to familiarize yourself with include:
 
 * `chief`
 * `dateDecision`
@@ -138,3 +138,5 @@ Needs improvement: Displays minimal effort. Doesn't complete all components. Cod
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
 Excellent: Finished all components of the assignment correctly and used efficient code to complete the exercises. Code is well-documented (both self-documented and with additional comments as necessary). Graphs and tables are properly labeled. Use multiple commits to back up and show a progression in the work. Analysis is clear and easy to follow, either because graphs are labeled clearly or you've written additional text to describe how you interpret the output.
+
+[^terms]: Terms run from October through June, so the 2020 term contains cases decided from October 2020 - June 2021.

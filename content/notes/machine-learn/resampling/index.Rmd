@@ -1,0 +1,311 @@
+---
+title: "Evaluate your model with resampling"
+date: 2020-11-01
+
+type: book
+toc: true
+draft: false
+aliases: ["/notes/resampling/"]
+categories: ["stat-learn"]
+
+weight: 76
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  cache = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+library(tidyverse)
+library(tidymodels)
+library(ranger)
+library(rcis)
+
+set.seed(123)
+
+theme_set(theme_minimal())
+```
+
+## Introduction {#intro}
+
+So far, we have [built a model](/notes/start-with-models/) and [preprocessed data with a recipe](/notes/preprocess/). We also introduced [workflows](/notes/preprocess/#fit-workflow) as a way to bundle a [`parsnip` model](https://tidymodels.github.io/parsnip/) and [`recipe`](https://tidymodels.github.io/recipes/) together. Once we have a model trained, we need a way to measure how well that model predicts new data. This tutorial explains how to characterize model performance based on **resampling** statistics. 
+
+## General Social Survey {#gss}
+
+As for [preprocessing](/notes/preprocess/), let's use the [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.
+
+```{r load-gss}
+data("gss", package = "rcis")
+
+# select a smaller subset of variables for analysis
+gss <- gss %>%
+  select(
+    id, wtss, colmslm, age, black, degree,
+    hispanic_2, polviews, pray, sex, south, tolerance
+  ) %>%
+  # drop observations with missing values - could always use imputation instead
+  drop_na()
+
+skimr::skim(gss)
+```
+
+`rcis::gss` contains a selection of variables from the 2012 GSS. This time let's consider whether respondents believe Muslim clergymen who express anti-American attitudes should be allowed to teach in a college or university.
+
+The outcome of interest `colmslm` is a factor variable coded as either ``"Yes, allowed"`` (respondent believes the person should be allowed to teach) or `"Not allowed"` (respondent believes the person should not allowed to teach). The rates of these classes are somewhat imbalanced; the majority of respondents do not believe these individuals should be allowed to teach in college:
+
+```{r rates, dependson = "load-gss"}
+gss %>%
+  count(colmslm) %>%
+  mutate(prop = n / sum(n))
+```
+
+## Data splitting {#data-split}
+
+In our previous [*Preprocess your data with `recipes`*](/notes/preprocess/#data-split), we started by splitting our data. It is common when beginning a modeling project to [separate the data set](https://bookdown.org/max/FES/data-splitting.html) into two partitions: 
+
+ * The _training set_ is used to estimate parameters, compare models and feature engineering techniques, tune models, etc.
+
+ * The _test set_ is held in reserve until the end of the project, at which point there should only be one or two models under serious consideration. It is used as an unbiased source for measuring final model performance. 
+
+There are different ways to create these partitions of the data. The most common approach is to use a random sample. Suppose that one quarter of the data were reserved for the test set. Random sampling would randomly select 25% for the test set and use the remainder for the training set. We can use the [`rsample`](https://tidymodels.github.io/rsample/) package for this purpose. 
+
+Since random sampling uses random numbers, it is important to set the random number seed. This ensures that the random numbers can be reproduced at a later time (if needed). 
+
+The function `rsample::initial_split()` takes the original data and saves the information on how to make the partitions.
+
+```{r split-gss, dependson = "load-gss"}
+set.seed(123)
+
+gss_split <- initial_split(gss, strata = colmslm)
+```
+
+Here we used the [`strata` argument](https://tidymodels.github.io/rsample/reference/initial_split.html), which conducts a stratified split. This ensures that, despite the imbalance we noticed in our `colmslm` variable, our training and test data sets will keep roughly the same proportions of `"Yes, allowed"` and `Not allowed"` as in the original data. After the `initial_split`, the `training()` and `testing()` functions return the actual data sets. 
+
+```{r gss-train-test, dependson = "split-gss"}
+gss_train <- training(gss_split)
+gss_test <- testing(gss_split)
+
+nrow(gss_train)
+nrow(gss_train) / nrow(gss)
+
+# training set proportions by class
+gss_train %>%
+  count(colmslm) %>%
+  mutate(prop = n / sum(n))
+
+# test set proportions by class
+gss_test %>%
+  count(colmslm) %>%
+  mutate(prop = n / sum(n))
+```
+
+The majority of the modeling work is then conducted on the training set data.
+
+## Modeling
+
+[Random forest models](https://en.wikipedia.org/wiki/Random_forest) are [ensembles](https://en.wikipedia.org/wiki/Ensemble_learning) of [decision trees](https://en.wikipedia.org/wiki/Decision_tree). A large number of decision tree models are created for the ensemble based on slightly different versions of the training set. When creating the individual decision trees, the fitting process encourages them to be as diverse as possible. The collection of trees are combined into the random forest model and, when a new sample is predicted, the votes from each tree are used to calculate the final predicted value for the new sample. For categorical outcome variables like `colmslm` in our `gss` data example, the majority vote across all the trees in the random forest determines the predicted class for the new sample.
+
+One of the benefits of a random forest model is that it is very low maintenance;  it requires very little preprocessing of the data and the default parameters tend to give reasonable results. For that reason, we won't create a recipe for the `gss` data.
+
+At the same time, the number of trees in the ensemble should be large (in the thousands) and this makes the model moderately expensive to compute. 
+
+To fit a random forest model on the training set, let's use the [`parsnip`](https://tidymodels.github.io/parsnip/) package with the [`ranger`](https://cran.r-project.org/web/packages/ranger/index.html) engine. We first define the model that we want to create:
+
+```{r rf-def}
+rf_mod <- rand_forest(trees = 1000) %>%
+  set_engine("ranger") %>%
+  set_mode("classification")
+```
+
+Starting with this parsnip model object, the `fit()` function can be used with a model formula. Since random forest models use random numbers, we again set the seed prior to computing: 
+
+```{r rf-fit, dependson = c("split-gss", "rf-def")}
+set.seed(234)
+rf_fit <- rf_mod %>%
+  fit(colmslm ~ ., data = gss_train)
+rf_fit
+```
+
+This new `rf_fit` object is our fitted model, trained on our training data set. 
+
+## Estimating performance {#performance}
+
+During a modeling project, we might create a variety of different models. To choose between them, we need to consider how well these models do, as measured by some performance statistics. In our example in this article, some options we could use are: 
+
+ * the area under the Receiver Operating Characteristic (ROC) curve, and
+ 
+ * overall classification accuracy.
+ 
+The ROC curve uses the class probability estimates to give us a sense of performance across the entire set of potential probability cutoffs. Overall accuracy uses the hard class predictions to measure performance. The hard class predictions tell us whether our model predicted `Yes, allowed` or `Not allowed` for each respondent But, behind those predictions, the model is actually estimating a probability. A simple 50% probability cutoff is used to categorize a respondent.
+
+The [`yardstick` package](https://tidymodels.github.io/yardstick/) has functions for computing both of these measures called `roc_auc()` and `accuracy()`. 
+
+At first glance, it might seem like a good idea to use the training set data to compute these statistics. (This is actually a very bad idea.) Let's see what happens if we try this. To evaluate performance based on the training set, we call the `predict()` method to get both types of predictions (i.e. probabilities and hard class predictions).
+
+```{r rf-train-pred, dependson = "rf-fit"}
+rf_training_pred <- predict(rf_fit, gss_train) %>%
+  bind_cols(predict(rf_fit, gss_train, type = "prob")) %>%
+  # Add the true outcome data back in
+  bind_cols(gss_train %>%
+    select(colmslm))
+```
+
+Using the `yardstick` functions, this model has spectacular results, so spectacular that you might be starting to get suspicious: 
+
+```{r rf-train-perf, dependson = "rf-train"}
+rf_training_pred %>% # training set predictions
+  roc_auc(truth = colmslm, `.pred_Yes, allowed`)
+rf_training_pred %>% # training set predictions
+  accuracy(truth = colmslm, .pred_class)
+```
+
+Now that we have this model with exceptional performance, we proceed to the test set. Unfortunately, we discover that, although our results aren't bad, they are certainly worse than what we initially thought based on predicting the training set: 
+
+```{r rf-test, dependson = "rf-fit"}
+rf_testing_pred <- predict(rf_fit, gss_test) %>%
+  bind_cols(predict(rf_fit, gss_test, type = "prob")) %>%
+  # Add the true outcome data back in
+  bind_cols(gss_test %>%
+    select(colmslm))
+```
+
+```{r rf-test-perf, dependson = "rf-test"}
+rf_testing_pred %>% # test set predictions
+  roc_auc(truth = colmslm, `.pred_Yes, allowed`)
+rf_testing_pred %>% # test set predictions
+  accuracy(truth = colmslm, .pred_class)
+```
+
+### What happened here?
+
+There are several reasons why training set statistics like the ones shown in this section can be unrealistically optimistic: 
+
+ * Models like random forests, neural networks, and other black-box methods can essentially memorize the training set. Re-predicting that same set should always result in nearly perfect results.
+
+* The training set does not have the capacity to be a good arbiter of performance. It is not an independent piece of information; predicting the training set can only reflect what the model already knows. 
+
+To understand that second point better, think about an analogy from teaching. Suppose you give a class a test, then give them the answers, then provide the same test. The student scores on the _second_ test do not accurately reflect what they know about the subject; these scores would probably be higher than their results on the first test. 
+
+## Resampling to the rescue {#resampling}
+
+**Resampling methods**, such as cross-validation and the bootstrap, are empirical simulation systems. They create a series of data sets similar to the training/testing split discussed previously; a subset of the data are used for creating the model and a different subset is used to measure performance. Resampling is always used with the _training set_. This schematic from [Kuhn and Johnson (2019)](https://bookdown.org/max/FES/resampling.html) illustrates data usage for resampling methods:
+
+
+```{r resampling-fig, echo = FALSE, fig.align='center', out.width="85%"}
+knitr::include_graphics("/media/resampling.svg", error = FALSE)
+```
+
+In the first level of this diagram, you see what happens when you use `rsample::initial_split()`, which splits the original data into training and test sets. Then, the training set is chosen for resampling, and the test set is held out.
+
+Let's use 10-fold cross-validation (CV) in this example. This method randomly allocates the `r nrow(gss_train)` respondents in the training set to 10 groups of roughly equal size, called "folds". For the first iteration of resampling, the first fold of about `r floor(nrow(gss_train)/10)` respondens are held out for the purpose of measuring performance. This is similar to a test set but, to avoid confusion, we call these data the _assessment set_ in the `tidymodels` framework. 
+
+The other 90% of the data (about `r floor(nrow(gss_train) * .9)` respondents) are used to fit the model. Again, this sounds similar to a training set, so in `tidymodels` we call this data the _analysis set_. This model, trained on the analysis set, is applied to the assessment set to generate predictions, and performance statistics are computed based on those predictions. 
+
+In this example, 10-fold CV moves iteratively through the folds and leaves a different 10% out each time for model assessment. At the end of this process, there are 10 sets of performance statistics that were created on 10 data sets that were not used in the modeling process. For the GSS example, this means 10 accuracies and 10 areas under the ROC curve. While 10 models were created, these are not used further; we do not keep the models themselves trained on these folds because their only purpose is calculating performance metrics. 
+
+```{r rf-rs, dependson = "split-gss", include = FALSE}
+set.seed(345)
+folds <- vfold_cv(gss_train)
+
+rf_wf <- workflow() %>%
+  add_model(rf_mod) %>%
+  add_formula(colmslm ~ .)
+
+set.seed(456)
+rf_fit_rs <- fit_resamples(rf_wf, folds)
+
+assessment_size <-
+  folds %>%
+  tidy() %>%
+  group_by(Fold, Data) %>%
+  count() %>%
+  ungroup() %>%
+  filter(Data == "Assessment") %>%
+  select(`assessment size` = n, id = Fold)
+
+assessment_stats <-
+  collect_metrics(rf_fit_rs, summarize = FALSE) %>%
+  select(id, .estimate, .metric) %>%
+  pivot_wider(
+    id_cols = c(id),
+    names_from = c(.metric),
+    values_from = c(.estimate)
+  ) %>%
+  full_join(assessment_size, by = "id") %>%
+  dplyr::rename(resample = id)
+
+rs_stats <- collect_metrics(rf_fit_rs)
+```
+
+The final resampling estimates for the model are the **averages** of the performance statistics replicates. For example, suppose for our data the results were: 
+
+```{r rs-table, dependson = "rf-rs", echo = FALSE}
+assessment_stats %>%
+  knitr::kable(col.names = c("Resample", "Accuracy", "ROC_AUC", "Assessment Size"))
+```
+
+From these resampling statistics, the final estimate of performance for this random forest model would be `r round(rs_stats$mean[rs_stats$.metric == "roc_auc"], 3)` for the area under the ROC curve and `r round(rs_stats$mean[rs_stats$.metric == "accuracy"], 3)` for accuracy. 
+
+These resampling statistics are an effective method for measuring model performance _without_ predicting the training set directly as a whole. 
+
+## Fit a model with resampling {#fit-resamples}
+
+To generate these results, the first step is to create a resampling object using rsample. There are [several resampling methods](https://tidymodels.github.io/rsample/reference/index.html#section-resampling-methods) implemented in rsample; cross-validation folds can be created using `vfold_cv()`: 
+
+```{r folds, dependson = "split-gss"}
+set.seed(345)
+
+folds <- vfold_cv(gss_train, v = 10)
+folds
+```
+
+The list column for `splits` contains the information on which rows belong in the analysis and assessment sets. There are functions that can be used to extract the individual resampled data called `analysis()` and `assessment()`. 
+
+However, the `tune` package contains high-level functions that can do the required computations to resample a model for the purpose of measuring performance. You have several options for building an object for resampling:
+
++ Resample a model specification preprocessed with a formula or [`recipe`](/notes/preprocess/), or 
+
++ Resample a [`workflow()`](https://tidymodels.github.io/workflows/) that bundles together a model specification and formula/recipe. 
+
+For this example, let's use a `workflow()` that bundles together the random forest model and a formula, since we are not using a recipe. Whichever of these options you use, the syntax to `fit_resamples()` is very similar to `fit()`: 
+
+```{r rs, eval = FALSE}
+rf_wf <- workflow() %>%
+  add_model(rf_mod) %>%
+  add_formula(colmslm ~ .)
+
+set.seed(456)
+rf_fit_rs <- rf_wf %>%
+  fit_resamples(folds)
+```
+
+```{r rs-show, dependson = "rf-rs"}
+rf_fit_rs
+```
+
+The results are similar to the `folds` results with some extra columns. The column `.metrics` contains the performance statistics created from the 10 assessment sets. These can be manually unnested but the `tune` package contains a number of simple functions that can extract these data: 
+ 
+```{r metrics, dependson = "rf-rs"}
+collect_metrics(rf_fit_rs)
+```
+
+Think about these values we now have for accuracy and AUC. These performance metrics are now more realistic (i.e. lower) than our ill-advised first attempt at computing performance metrics in the section above. If we wanted to try different model types for this data set, we could more confidently compare performance metrics computed using resampling to choose between models. Also, remember that at the end of our project, we return to our test set to estimate final model performance. We have looked at this once already before we started using resampling, but let's remind ourselves of the results:
+
+```{r ref.label='rf-test-perf'}
+
+```
+
+The performance metrics from the test set are much closer to the performance metrics computed using resampling than our first ("bad idea") attempt. Resampling allows us to simulate how well our model will perform on new data, and the test set acts as the final, unbiased check for our model's performance.
+
+## Acknowledgments
+
+Example drawn from [Get Started - Preprocess your data with `recipes`](https://www.tidymodels.org/start/recipes/) and licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
+## Session Info
+
+```{r child = here::here("R", "_session-info.Rmd")}
+```
