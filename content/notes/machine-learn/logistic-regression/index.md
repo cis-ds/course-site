@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/stat003_logistic_regression.html"]
+aliases: ["/stat003_logistic_regression.html", "/notes/logistic-regression/"]
 categories: ["stat-learn"]
 
 weight: 73

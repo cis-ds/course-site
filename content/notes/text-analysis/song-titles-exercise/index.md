@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/text002_song_titles_exercise.html"]
+aliases: ["/text002_song_titles_exercise.html", "/notes/song-titles-exercise/"]
 categories: ["text"]
 
 weight: 112

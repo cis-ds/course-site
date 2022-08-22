@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/program_style.html"]
+aliases: ["/program_style.html", "/notes/style-guide/"]
 categories: ["programming"]
 
 weight: 86

@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: []
+aliases: ["/notes/hamilton/"]
 categories: ["text"]
 
 weight: 113
@@ -541,7 +541,6 @@ sessioninfo::session_info()
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
-##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  curl            4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
@@ -573,7 +572,6 @@ sessioninfo::session_info()
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
-##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -582,12 +580,10 @@ sessioninfo::session_info()
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
-##  markdown        1.1        2019-08-07 [2] CRAN (R 4.2.0)
 ##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
 ##  Matrix          1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
@@ -611,7 +607,6 @@ sessioninfo::session_info()
 ##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
 ##  SnowballC       0.7.0      2020-04-01 [2] CRAN (R 4.2.0)
-##  stopwords       2.3        2021-10-28 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
 ##  textdata        0.4.2      2022-05-02 [2] CRAN (R 4.2.0)

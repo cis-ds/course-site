@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/git_more.html"]
+aliases: ["/git_more.html", "/notes/common-git-problems/"]
 categories: ["git", "project-management"]
 
 weight: 97

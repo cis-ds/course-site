@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/program_iteration.html"]
+aliases: ["/program_iteration.html", "/notes/iteration/"]
 categories: ["programming"]
 
 weight: 85

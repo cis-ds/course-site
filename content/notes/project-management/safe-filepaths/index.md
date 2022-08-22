@@ -5,6 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
+aliases: ["/notes/safe-filepaths/"]
 categories: ["project-management"]
 
 weight: 93
@@ -164,7 +165,6 @@ sessioninfo::session_info()
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
-##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -185,7 +185,7 @@ sessioninfo::session_info()
 ##  googlesheets4   1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
-##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)

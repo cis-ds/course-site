@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/program_pipes_exercise.html"]
+aliases: ["/program_pipes_exercise.html", "/notes/pipes-exercise/"]
 categories: ["programming"]
 
 weight: 82

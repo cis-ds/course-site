@@ -5,6 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
+aliases: ["/notes/predicting-song-artist"]
 categories: ["text"]
 
 weight: 115

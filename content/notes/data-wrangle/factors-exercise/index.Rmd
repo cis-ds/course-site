@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/datawrangle_factors_exercise.html"]
+aliases: ["/datawrangle_factors_exercise.html", "/notes/factors-exercise/"]
 categories: ["datawrangle"]
 
 weight: 36

@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/program_functions.html"]
+aliases: ["/program_functions.html", "/notes/functions/"]
 categories: ["programming"]
 
 weight: 83

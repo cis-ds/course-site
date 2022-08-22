@@ -5,6 +5,7 @@ date: 2020-11-01
 type: book
 toc: true
 draft: false
+aliases: ["/notes/resampling/"]
 categories: ["stat-learn"]
 
 weight: 76
@@ -509,7 +510,6 @@ sessioninfo::session_info()
 ##  package       * version    date (UTC) lib source
 ##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
 ##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
-##  base64enc       0.1-3      2015-07-28 [2] CRAN (R 4.2.0)
 ##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
 ##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
 ##  broom         * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
@@ -550,7 +550,6 @@ sessioninfo::session_info()
 ##  hardhat         1.2.0      2022-06-30 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
-##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -581,15 +580,13 @@ sessioninfo::session_info()
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
 ##  ranger        * 0.14.1     2022-06-18 [2] CRAN (R 4.2.0)
-##  rcfss         * 0.2.5      2022-08-04 [2] local
 ##  rcis          * 0.2.5      2022-08-08 [2] local
 ##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  recipes       * 1.0.1      2022-07-07 [2] CRAN (R 4.2.0)
-##  repr            1.1.4      2022-01-04 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
-##  rlang         * 1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rpart           4.1.16     2022-01-24 [2] CRAN (R 4.2.1)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
@@ -599,7 +596,6 @@ sessioninfo::session_info()
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales        * 1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
-##  skimr           2.1.4      2022-04-15 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
 ##  survival        3.3-1      2022-03-03 [2] CRAN (R 4.2.1)
@@ -612,7 +608,7 @@ sessioninfo::session_info()
 ##  tune          * 1.0.0      2022-07-07 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
-##  vctrs         * 0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
 ##  workflows     * 1.0.0      2022-07-05 [2] CRAN (R 4.2.0)
 ##  workflowsets  * 1.0.0      2022-07-12 [2] CRAN (R 4.2.0)

@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/geoviz_ggmap.html"]
+aliases: ["/geoviz_ggmap.html", "/notes/raster-maps-with-ggmap/"]
 categories: ["dataviz", "geospatial"]
 
 weight: 52

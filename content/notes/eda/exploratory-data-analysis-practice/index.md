@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/eda_college.html"]
+aliases: ["/eda_college.html", "/notes/exploratory-data-analysis-practice/"]
 categories: ["eda"]
 
 weight: 42

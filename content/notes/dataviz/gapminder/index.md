@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/dataviz_gapminder.html"]
+aliases: ["/dataviz_gapminder.html", "/notes/gapminder/"]
 categories: ["dataviz"]
 
 weight: 24

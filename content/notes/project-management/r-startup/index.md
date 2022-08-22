@@ -5,6 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
+aliases: ["/notes/r-startup/"]
 categories: ["project-management"]
 
 weight: 95

@@ -5,6 +5,7 @@ date: 2020-11-01
 type: book
 toc: true
 draft: false
+aliases: ["/notes/preprocess/"]
 categories: ["stat-learn"]
 
 weight: 75

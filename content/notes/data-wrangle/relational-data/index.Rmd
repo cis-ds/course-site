@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/datawrangle_relational_data.html"]
+aliases: ["/datawrangle_relational_data.html", "/notes/relational-data/"]
 categories: ["datawrangle"]
 
 weight: 34

@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/webdata002_twitter_exercise.html"]
+aliases: ["/webdata002_twitter_exercise.html", "/notes/twitter-api-practice/"]
 categories: ["webdata"]
 
 weight: 62

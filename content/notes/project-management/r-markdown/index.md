@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/program_rmarkdown.html"]
+aliases: ["/program_rmarkdown.html", "/notes/r-markdown/"]
 categories: ["programming", "project-management"]
 
 weight: 94

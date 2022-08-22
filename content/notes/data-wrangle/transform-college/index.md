@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/datawrangle_transform_college.html"]
+aliases: ["/datawrangle_transform_college.html", "/notes/transform-college/"]
 categories: ["datawrangle"]
 
 weight: 33

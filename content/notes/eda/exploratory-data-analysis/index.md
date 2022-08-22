@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/eda_defined.html"]
+aliases: ["/eda_defined.html", "/notes/exploratory-data-analysis/"]
 categories: ["eda"]
 
 weight: 41

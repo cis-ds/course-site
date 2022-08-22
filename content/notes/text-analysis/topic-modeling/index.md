@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/text_topicmodels.html"]
+aliases: ["/text_topicmodels.html", "/notes/topic-modeling/"]
 categories: ["text"]
 
 weight: 115

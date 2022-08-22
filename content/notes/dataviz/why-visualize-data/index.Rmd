@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: false
 draft: false
-aliases: ["/dataviz_why.html"]
+aliases: ["/dataviz_why.html", "/notes/why-visualize-data/"]
 categories: ["dataviz"]
 
 weight: 21

@@ -5,6 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
+aliases: ["/notes/project-oriented-workflow/"]
 categories: ["project-management"]
 
 weight: 92

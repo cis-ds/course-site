@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/dataviz_grammar-of-graphics.html"]
+aliases: ["/dataviz_grammar-of-graphics.html", "/notes/grammar-of-graphics"]
 categories: ["dataviz"]
 
 weight: 22

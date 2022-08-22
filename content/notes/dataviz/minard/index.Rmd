@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/dataviz_minard.html"]
+aliases: ["/dataviz_minard.html", "/notes/minard/"]
 categories: ["dataviz"]
 
 weight: 23

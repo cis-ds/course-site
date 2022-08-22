@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/program_condition_handle.html"]
+aliases: ["/program_condition_handle.html", "/notes/condition-handling/"]
 categories: ["programming"]
 
 weight: 87

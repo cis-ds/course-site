@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/text001_workflow.html"]
+aliases: ["/text001_workflow.html", "/notes/text-analysis-workflow/"]
 categories: ["text"]
 
 weight: 111

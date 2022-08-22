@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/intro.html"]
+aliases: ["/intro.html", "/notes/intro-to-course/"]
 categories: []
 
 weight: 10
@@ -466,15 +466,11 @@ sessioninfo::session_info()
 ##  jsonlite         1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr            1.39       2022-04-26 [2] CRAN (R 4.2.0)
 ##  labeling         0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
-##  lattice          0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle        1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate        1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr         2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
-##  Matrix           1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
-##  mgcv             1.8-40     2022-03-29 [2] CRAN (R 4.2.1)
 ##  modelr           0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell          0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
-##  nlme             3.1-158    2022-06-15 [2] CRAN (R 4.2.0)
 ##  palmerpenguins * 0.1.0      2020-07-23 [2] CRAN (R 4.2.0)
 ##  pillar           1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  pkgconfig        2.0.3      2019-09-22 [2] CRAN (R 4.2.0)

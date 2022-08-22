@@ -5,7 +5,7 @@ date: 2019-03-01
 type: book
 toc: true
 draft: false
-aliases: ["/datawrangle_tidy_exercise.html"]
+aliases: ["/datawrangle_tidy_exercise.html", "/notes/tidy-exercise/"]
 categories: ["datawrangle"]
 
 weight: 38
