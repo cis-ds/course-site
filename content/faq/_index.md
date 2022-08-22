@@ -1,13 +1,10 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
 draft: false
-menu:
-  faq:
-    name: Overview
-    weight: 1
 title: "FAQ"
 toc: true
-type: docs
+type: book
+weight: 1
 ---
 
 ## Should I take this course?

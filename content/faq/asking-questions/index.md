@@ -1,13 +1,10 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
 draft: false
-menu:
-  faq:
-    parent: Overview
-    weight: 4
+weight: 40
 title: "How to properly ask for help"
 toc: true
-type: docs
+type: book
 aliases: "/hw00_asking_questions.html"
 ---
 
@@ -81,9 +78,18 @@ count(diamonds, colour)
 #> Error in `group_by()`:
 #> ! Must group by variables found in `.data`.
 #> ✖ Column `colour` is not found.
+
+#> Backtrace:
+#>     ▆
+#>  1. ├─dplyr::count(diamonds, colour)
+#>  2. └─dplyr:::count.data.frame(diamonds, colour)
+#>  3.   ├─dplyr::group_by(x, ..., .add = TRUE, .drop = .drop)
+#>  4.   └─dplyr:::group_by.data.frame(x, ..., .add = TRUE, .drop = .drop)
+#>  5.     └─dplyr::group_by_prepare(.data, ..., .add = .add, caller_env = caller_env())
+#>  6.       └─rlang::abort(bullets, call = error_call)
 ```
 
-<sup>Created on 2022-08-09 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1)</sup>
+<sup>Created on 2022-08-22 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1.9000)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
@@ -95,9 +101,18 @@ count(diamonds, colour)
 #> Error in `group_by()`:
 #> ! Must group by variables found in `.data`.
 #> ✖ Column `colour` is not found.
+
+#> Backtrace:
+#>     ▆
+#>  1. ├─dplyr::count(diamonds, colour)
+#>  2. └─dplyr:::count.data.frame(diamonds, colour)
+#>  3.   ├─dplyr::group_by(x, ..., .add = TRUE, .drop = .drop)
+#>  4.   └─dplyr:::group_by.data.frame(x, ..., .add = TRUE, .drop = .drop)
+#>  5.     └─dplyr::group_by_prepare(.data, ..., .add = .add, caller_env = caller_env())
+#>  6.       └─rlang::abort(bullets, call = error_call)
 ```
 
-<sup>Created on 2022-08-09 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1)</sup>
+<sup>Created on 2022-08-22 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1.9000)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 

@@ -1,13 +1,9 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
-draft: false
-menu:
-  faq:
-    parent: Overview
-    weight: 1
+weight: 10
 title: "General homework guidelines"
 toc: true
-type: docs
+type: book
 aliases: ["/hw00_homework_guidelines"]
 ---
 
@@ -75,43 +71,44 @@ Reduce the friction for graders to get the hard-working source code (the `.R` or
     ## ─ Session info ───────────────────────────────────────────────────────────────
     ##  setting  value
     ##  version  R version 4.2.1 (2022-06-23)
-    ##  os       macOS Monterey 12.2.1
+    ##  os       macOS Monterey 12.3
     ##  system   aarch64, darwin20
     ##  ui       X11
     ##  language (EN)
     ##  collate  en_US.UTF-8
     ##  ctype    en_US.UTF-8
     ##  tz       America/New_York
-    ##  date     2022-08-09
+    ##  date     2022-08-22
     ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
     ## 
     ## ─ Packages ───────────────────────────────────────────────────────────────────
     ##  package     * version date (UTC) lib source
-    ##  blogdown      1.10    2022-05-10 [1] CRAN (R 4.2.0)
-    ##  bookdown      0.27    2022-06-14 [1] CRAN (R 4.2.0)
-    ##  bslib         0.4.0   2022-07-16 [1] CRAN (R 4.2.0)
-    ##  cachem        1.0.6   2021-08-19 [1] CRAN (R 4.2.0)
-    ##  cli           3.3.0   2022-04-25 [1] CRAN (R 4.2.0)
-    ##  digest        0.6.29  2021-12-01 [1] CRAN (R 4.2.0)
-    ##  evaluate      0.15    2022-02-18 [1] CRAN (R 4.2.0)
-    ##  fastmap       1.1.0   2021-01-25 [1] CRAN (R 4.2.0)
-    ##  htmltools     0.5.3   2022-07-18 [1] CRAN (R 4.2.0)
-    ##  jquerylib     0.1.4   2021-04-26 [1] CRAN (R 4.2.0)
-    ##  jsonlite      1.8.0   2022-02-22 [1] CRAN (R 4.2.0)
-    ##  knitr         1.39    2022-04-26 [1] CRAN (R 4.2.0)
-    ##  magrittr      2.0.3   2022-03-30 [1] CRAN (R 4.2.0)
-    ##  R6            2.5.1   2021-08-19 [1] CRAN (R 4.2.0)
-    ##  rlang         1.0.4   2022-07-12 [1] CRAN (R 4.2.0)
-    ##  rmarkdown     2.14    2022-04-25 [1] CRAN (R 4.2.0)
-    ##  rstudioapi    0.13    2020-11-12 [1] CRAN (R 4.2.0)
-    ##  sass          0.4.2   2022-07-16 [1] CRAN (R 4.2.0)
-    ##  sessioninfo   1.2.2   2021-12-06 [1] CRAN (R 4.2.0)
-    ##  stringi       1.7.8   2022-07-11 [1] CRAN (R 4.2.0)
-    ##  stringr       1.4.0   2019-02-10 [1] CRAN (R 4.2.0)
+    ##  blogdown      1.10    2022-05-10 [2] CRAN (R 4.2.0)
+    ##  bookdown      0.27    2022-06-14 [2] CRAN (R 4.2.0)
+    ##  bslib         0.4.0   2022-07-16 [2] CRAN (R 4.2.0)
+    ##  cachem        1.0.6   2021-08-19 [2] CRAN (R 4.2.0)
+    ##  cli           3.3.0   2022-04-25 [2] CRAN (R 4.2.0)
+    ##  digest        0.6.29  2021-12-01 [2] CRAN (R 4.2.0)
+    ##  evaluate      0.16    2022-08-09 [1] CRAN (R 4.2.1)
+    ##  fastmap       1.1.0   2021-01-25 [2] CRAN (R 4.2.0)
+    ##  htmltools     0.5.3   2022-07-18 [2] CRAN (R 4.2.0)
+    ##  jquerylib     0.1.4   2021-04-26 [2] CRAN (R 4.2.0)
+    ##  jsonlite      1.8.0   2022-02-22 [2] CRAN (R 4.2.0)
+    ##  knitr         1.39    2022-04-26 [2] CRAN (R 4.2.0)
+    ##  magrittr      2.0.3   2022-03-30 [2] CRAN (R 4.2.0)
+    ##  R6            2.5.1   2021-08-19 [2] CRAN (R 4.2.0)
+    ##  rlang         1.0.4   2022-07-12 [2] CRAN (R 4.2.0)
+    ##  rmarkdown     2.14    2022-04-25 [2] CRAN (R 4.2.0)
+    ##  rstudioapi    0.13    2020-11-12 [2] CRAN (R 4.2.0)
+    ##  sass          0.4.2   2022-07-16 [2] CRAN (R 4.2.0)
+    ##  sessioninfo   1.2.2   2021-12-06 [2] CRAN (R 4.2.0)
+    ##  stringi       1.7.8   2022-07-11 [2] CRAN (R 4.2.0)
+    ##  stringr       1.4.0   2019-02-10 [2] CRAN (R 4.2.0)
     ##  xfun          0.31    2022-05-10 [1] CRAN (R 4.2.0)
-    ##  yaml          2.3.5   2022-02-21 [1] CRAN (R 4.2.0)
+    ##  yaml          2.3.5   2022-02-21 [2] CRAN (R 4.2.0)
     ## 
-    ##  [1] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
+    ##  [1] /Users/soltoffbc/Library/R/arm64/4.2/library
+    ##  [2] /Library/Frameworks/R.framework/Versions/4.2-arm64/Resources/library
     ## 
     ## ──────────────────────────────────────────────────────────────────────────────
     ```
