@@ -2,16 +2,13 @@
 title: "The grammar of graphics"
 date: 2019-03-01
 
-type: docs
+type: book
 toc: true
 draft: false
 aliases: ["/dataviz_grammar-of-graphics.html"]
 categories: ["dataviz"]
 
-menu:
-  notes:
-    parent: Data visualization
-    weight: 2
+weight: 22
 ---
 
 
@@ -440,7 +437,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-10
+##  date     2022-08-22
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
