@@ -16,7 +16,7 @@ design:
 
 * Instructor: [Benjamin Soltoff](http://www.bensoltoff.com)
 * Teaching Assistants:
-    * Tianhong Yu
+    * Catherine Yu
     * Andrew Liu
 * Meeting day/time: MW 12:25-2:20
 * Meeting location: [Kimball Hall B11](https://www.cornell.edu/about/maps/?q=Kimball%20Hall)
