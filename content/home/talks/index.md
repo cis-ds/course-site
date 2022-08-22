@@ -14,7 +14,7 @@ content:
     tag: ""
   offset: 0
   order: asc
-  page_type: event
+  page_type: syllabus
 design:
   background: {}
   view: 2
