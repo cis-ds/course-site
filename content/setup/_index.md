@@ -1,17 +1,14 @@
 ---
 date: "2018-09-09T00:00:00-05:00"
 draft: false
-menu:
-  setup:
-    name: Overview
-    weight: 1
+weight: 10
 title: "Day 0: Installing Software"
 toc: true
-type: docs
+type: book
 aliases: "/setup00.html"
 ---
 
-This course teaches students how to think programatically and use computational approaches to explore and address social scientific questions. Much of computer programming involves translating what you wish to do into a set of computational instructions. Think of human languages: languages conform to specific sets of grammatical and syntax rules which define how to interpret elements of speech such as nouns, verbs, and adjectives. Some languages have simple rules and are (relatively) easy to learn; others follow more complex rules that require greater effort in order to gain fluency.^[[Language Difficulty Rankings](http://www.effectivelanguagelearning.com/language-guide/language-difficulty)] Some languages derive from a common source and therefore share many similarities that make it easier to learn a second language within the same family of languages. So a native Spanish speaker will find it easier to learn French rather than Chinese, because French and Spanish share many grammatical rules and root derivations of words whereas Chinese and Spanish do not. Regardless, these are all perfectly usable languages humans use to communicate with one another.
+This course teaches students how to think programatically and use computational approaches to explore and address social scientific questions. Much of computer programming involves translating what you wish to do into a set of computational instructions. Think of human languages: languages conform to specific sets of grammatical and syntax rules which define how to interpret elements of speech such as nouns, verbs, and adjectives. Some languages have simple rules and are (relatively) easy to learn; others follow more complex rules that require greater effort in order to gain fluency.[^lang] Some languages derive from a common source and therefore share many similarities that make it easier to learn a second language within the same family of languages. So a native Spanish speaker will find it easier to learn French rather than Chinese, because French and Spanish share many grammatical rules and root derivations of words whereas Chinese and Spanish do not. Regardless, these are all perfectly usable languages humans use to communicate with one another.
 
 In this course, we will learn how to use [R](https://www.r-project.org/) for computational analysis.
 
@@ -49,3 +46,5 @@ If you want to run R on your own computer, follow these instructions.
         * [Install Git client](/setup/git-clients/)
     * [Configure Git](/setup/git-configure/)
     * [Complete homework 01](/homework/edit-readme/)
+
+[^lang]: [Language Difficulty Rankings](http://www.effectivelanguagelearning.com/language-guide/language-difficulty)

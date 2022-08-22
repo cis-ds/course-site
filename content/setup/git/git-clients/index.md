@@ -1,0 +1,44 @@
+---
+date: "2018-09-09T00:00:00-05:00"
+draft: false
+weight: 30
+title: "Git clients"
+toc: true
+type: book
+aliases: ["/git02.html", "/setup/git-clients/"]
+---
+
+
+
+{{< figure src="https://imgs.xkcd.com/comics/git.png" caption="[*Git* by xkcd](https://xkcd.com/1597/)" >}}
+
+Learning how and why to use version control can be rough. Just as those of you transitioning from a graphical user interface (GUI) statistical software like Stata or SPSS will discover, adapting to a command line interface is difficult. Using a GUI interface, rather than the command line, will be extremely helpful when getting started. Essentially, this is a helper client because it helps you interface with Git and GitHub but still uses the same underlying Git commands.
+
+Git and a Git client are not the same thing, just like R and RStudio are not the same thing. A Git client and the RStudio IDE are not necessary to use Git or R, but they make the experience more pleasant by reducing the steep learning curve.
+
+RStudio incorporates a basic Git client. For simple operations such as committing and pushing changes to GitHub, this will be sufficient. Once you start collaborating with other users, managing multiple branches in the same project, and performing complex merges, you will want another, more powerful Git client.
+
+It is helpful, and sometimes still necessary, to know how to use the command line. But the more powerful your Git client, the less often this will happen.
+
+Because all Git clients are just forming and executing Git commands on your behalf, you don't have to pick a specific one. You can literally do one operation from the command line, do another from RStudio, and another from your Git client, one after the other, and it just works. *Very rarely, both clients will scan the repo at the same time and you’ll get an error message about `.git/index.lock`. Try the operation again at least once before doing any further troubleshooting.*
+
+## Recommendations for Git clients
+
+I admit that until recently I relied on the [free GitHub client](https://desktop.github.com/) for Windows and Mac. However in researching recommended Git clients, I have [heard](http://stat545.com/git02_git-clients.html) [negative](https://www.slant.co/topics/2089/~git-clients-for-windows) [reviews](http://softwarerecs.stackexchange.com/questions/1308/what-is-a-good-newbie-friendly-graphical-git-client-for-windows) about this client. Specifically, the GitHub client offers lots of hand-holding. **Perhaps too much**. It also cannot handle complex Git operations, and installation of the GitHub client also includes a version of Git that does not play nicely with default settings. In addition, because it is intended to work with Git repositories hosted on GitHub, if you ever decide to share your repositories using an alternative hoster the GitHub client does not play nicely with outsiders.
+
+If you want to use a Git client, here are a couple of recommendations I've found online.
+
+* [SourceTree](https://www.sourcetreeapp.com/) - the pros are that it is free, multi-platform (Mac and Windows only, sorry Linux), powerful, and has a great GUI design. Some would complain that it is perhaps too powerful and its interface is overly complicated.
+* [GitKraken](https://www.gitkraken.com/) - this is the Git client to which I am transitioning. Like SourceTree, GitKraken is free, powerful, and gets kudos for a great GUI layout. Unlike SourceTree, GitKraken is available across all major operating systems (Windows, Mac, and Linux).
+
+Other Git clients
+
+* [TortoiseGit](https://tortoisegit.org/) (Windows)
+* [SmartGit](http://www.syntevo.com/smartgit/) (Windows, Mac, and Linux - free for non-commercial use only)
+* [GitUp](http://gitup.co/) (Mac only)
+* [Even more choices](https://git-scm.com/downloads/guis)
+
+## Acknowledgments
+
+
+* This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
