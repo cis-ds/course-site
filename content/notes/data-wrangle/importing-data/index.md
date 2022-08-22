@@ -254,11 +254,11 @@ microbenchmark(
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/feather-1.png" width="672" />
 
-`read_feather()` is generally faster than RDS and `read_csv()`.^[Notice that the x-axis is logarithmically scaled.] Furthermore, [it has native support for Python, R, and Julia.](http://arrow.apache.org/blog/2019/08/08/r-package-on-cran/), so if you develop an analytics pipeline that switches between R and Python, you can import/export data files in `.feather` without any loss of information.
+`read_feather()` is generally faster than RDS and `read_csv()`.[^log] Furthermore, [it has native support for Python, R, and Julia.](http://arrow.apache.org/blog/2019/08/08/r-package-on-cran/), so if you develop an analytics pipeline that switches between R and Python, you can import/export data files in `.feather` without any loss of information.
 
 ## `readxl`
 
-[`readxl`](http://readxl.tidyverse.org/) enables you to read (but not write) Excel files (`.xls` and `xlsx`).^[If you need to export data into Excel, use `readr::write_csv_excel()`.]
+[`readxl`](http://readxl.tidyverse.org/) enables you to read (but not write) Excel files (`.xls` and `xlsx`).[^excel]
 
 
 ```r
@@ -536,3 +536,6 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^log]: Notice that the x-axis is logarithmically scaled.
+[^excel]: If you need to export data into Excel, use `readr::write_csv_excel()`.

@@ -13,7 +13,7 @@ weight: 81
 
 
 
-Pipes are an extremely useful tool from the `magrittr` package^[The basic `%>%` pipe is automatically imported as part of the `tidyverse` library. If you wish to use any of the [extra tools from `magrittr` as demonstrated in R for Data Science](http://r4ds.had.co.nz/pipes.html#other-tools-from-magrittr), you need to explicitly load `magrittr`.] that allow you to express a sequence of multiple operations. They can greatly simplify your code and make your operations more intuitive. However they are not the only way to write your code and combine multiple operations. In fact, for many years the pipe did not exist in R. How else did people write their code?
+Pipes are an extremely useful tool from the `magrittr` package[^magrittr] that allow you to express a sequence of multiple operations. They can greatly simplify your code and make your operations more intuitive. However they are not the only way to write your code and combine multiple operations. In fact, for many years the pipe did not exist in R. How else did people write their code?
 
 Suppose we have the following assignment:
 
@@ -251,3 +251,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^magrittr]: The basic `%>%` pipe is automatically imported as part of the `tidyverse` library. If you wish to use any of the [extra tools from `magrittr` as demonstrated in R for Data Science](http://r4ds.had.co.nz/pipes.html#other-tools-from-magrittr), you need to explicitly load `magrittr`.

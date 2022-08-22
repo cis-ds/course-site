@@ -31,7 +31,7 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth. By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):^[Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process]
+Selection of your **color palette** is perhaps the most important decision to make when drawing a choropleth. By default, `ggplot2` picks evenly spaced hues around the [Hue-Chroma-Luminance (HCL) color space](https://en.wikipedia.org/wiki/HCL_color_space):[^hues]
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/color-wheel-1.png" width="672" />
 
@@ -255,3 +255,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^hues]: Check out chapter 6.6.2 in *`ggplot2`: Elegant Graphics for Data Analysis* for a much more thorough explanation of the theory behind this selection process.

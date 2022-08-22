@@ -38,7 +38,7 @@ math: false
 
 
 
-## Overview^[Meeting title courtesy of Jenny Bryan's ["Excuse Me, Do You Have a Moment to Talk About Version Control?"](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+## Overview[^bryan]
 
 * Identify the value of version control software for data science projects
 * Create repositories
@@ -57,3 +57,4 @@ math: false
 
 ## What you need to do after class
 
+[^bryan]: Meeting title courtesy of Jenny Bryan's ["Excuse Me, Do You Have a Moment to Talk About Version Control?"](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)

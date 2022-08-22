@@ -100,7 +100,7 @@ Frequently when using LDA, you don't actually know the underlying topic structur
 
 ![](../../../../../../../../img/appa-avatar.gif)<!-- -->
 
-[`appa`](https://github.com/averyrobbins1/appa) contains transcripts from every episode of Avatar: The Last Airbender.^[Not that nonsense M. Night Shyamalan movie. Or that other Avatar movie.]
+[`appa`](https://github.com/averyrobbins1/appa) contains transcripts from every episode of Avatar: The Last Airbender.[^movie]
 
 {{< youtube d1EnW4kn1kg >}}
 
@@ -332,7 +332,7 @@ perplexity(appa_lda12)
 
 However, the statistic is somewhat meaningless on its own. The benefit of this statistic comes in comparing perplexity across different models with varying $k$s. The model with the lowest perplexity is generally considered the "best".
 
-Let's estimate a series of LDA models on the ATLA dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.^[Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to a high-performance computing cluster.]
+Let's estimate a series of LDA models on the ATLA dataset. Here I make use of `purrr` and the `map()` functions to iteratively generate a series of LDA models for the corpus, using a different number of topics in each model.[^large-scale]
 
 
 ```r
@@ -399,7 +399,7 @@ top_terms %>%
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/appa-100-topn-1.png" width="672" />
 
-We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at $k=100$ - would $k=200$ generate an even lower perplexity score?^[I tried to estimate this model, but my computer was taking too long.]
+We are getting even more specific topics now. The question becomes how would we present these results and use them in an informative way? Not to mention perplexity was still dropping at $k=100$ - would $k=200$ generate an even lower perplexity score?[^perplex]
 
 Again, this is where your intuition and domain knowledge as a researcher is important. You can use perplexity as one data point in your decision process, but a lot of the time it helps to simply look at the topics themselves and the highest probability words associated with each one to determine if the structure makes sense. If you have a known topic structure you can compare it to (such as the books example above), this can also be useful.
 
@@ -647,3 +647,7 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^movie]: Not that nonsense M. Night Shyamalan movie. Or that other Avatar movie.
+[^large-scale]: Note that LDA can quickly become CPU and memory intensive as you scale up the size of the corpus and number of topics. Replicating this analysis on your computer may take a long time (i.e. minutes or even hours). It is very possible you may not be able to replicate this analysis on your machine. If so, you need to reduce the amount of text, the number of models, or offload the analysis to a high-performance computing cluster.
+[^perplex]: I tried to estimate this model, but my computer was taking too long.

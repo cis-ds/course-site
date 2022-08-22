@@ -31,7 +31,7 @@ So far, we have [built a model](/notes/start-with-models/) and [preprocessed dat
 
 ## General Social Survey {#gss}
 
-As for [preprocessing](/notes/preprocess/), let's use the [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.^[Conducted by NORC at the University of Chicago.]
+As for [preprocessing](/notes/preprocess/), let's use the [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.
 
 
 ```r

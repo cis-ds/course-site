@@ -277,7 +277,7 @@ Find the CSS selectors for the following elements in the HTML above:
 
 To demonstrate webscraping in R, we are going to collect records on presidential statements from [The American Presidency Project](https://www.presidency.ucsb.edu/).
 
-Let's say we are interested in how presidents speak about "space exploration." On the website, we punch in this search term, and we get the [following 346 results](https://www.presidency.ucsb.edu/advanced-search?field-keywords=%22space+exploration%22&field-keywords2=&field-keywords3=&from%5Bdate%5D=&to%5Bdate%5D=&person2=&items_per_page=100).^[346 results as of July 13, 2021.]
+Let's say we are interested in how presidents speak about "space exploration." On the website, we punch in this search term, and we get the [following 346 results](https://www.presidency.ucsb.edu/advanced-search?field-keywords=%22space+exploration%22&field-keywords2=&field-keywords3=&from%5Bdate%5D=&to%5Bdate%5D=&person2=&items_per_page=100).[^count]
 
 Our goal is to scrape these records and store pertinent information in a data frame. We will be doing this in two steps:
 
@@ -803,3 +803,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^count]: 372 results as of July 13, 2021.

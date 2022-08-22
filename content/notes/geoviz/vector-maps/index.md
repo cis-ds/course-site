@@ -28,7 +28,7 @@ Unlike [raster image maps](/notes/raster-maps-with-ggmap/), vector maps require 
 
 ## Import USA state boundaries
 
-First we will import a spatial data file containing the boundaries of all 50 states in the United States^[Plus the District of Columbia and Puerto Rico] using `sf::st_read()`:
+First we will import a spatial data file containing the boundaries of all 50 states in the United States[^territories] using `sf::st_read()`:
 
 
 ```r
@@ -66,7 +66,7 @@ Because simple features data frames are standardized with the `geometry` column 
 
 ## Plot a subset of a map
 
-One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.^[Issues of political sovereignty aside, these entities are frequently excluded from maps depending on the data to be incorporated. You can always choose to leave them in the map.] Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use `filter()` from `dplyr` to exclude these four states/territories.
+One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.[^rights] Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use `filter()` from `dplyr` to exclude these four states/territories.
 
 
 ```r
@@ -638,3 +638,6 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^territories]: Plus the District of Columbia and Puerto Rico.
+[^rights]: Issues of political sovereignty aside, these entities are frequently excluded from maps depending on the data to be incorporated. You can always choose to leave them in the map.

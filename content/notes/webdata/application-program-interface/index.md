@@ -164,7 +164,7 @@ glimpse(wb_cachelist$countries)
 
 ### Search available data with `wb_search()`
 
-`wb_search()` searches through the `wb_cachelist$indicators` data frame to find indicators that match the search pattern.^[Alternatively, you can use the [web interface](https://data.worldbank.org/indicator) to determine specific indicators and their IDs.]
+`wb_search()` searches through the `wb_cachelist$indicators` data frame to find indicators that match the search pattern.[^web-interface]
 
 
 ```r
@@ -965,3 +965,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^web-interface]: Alternatively, you can use the [web interface](https://data.worldbank.org/indicator) to determine specific indicators and their IDs.

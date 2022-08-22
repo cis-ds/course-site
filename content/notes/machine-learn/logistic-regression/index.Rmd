@@ -52,7 +52,7 @@ The sinking of [RMS Titanic](https://en.wikipedia.org/wiki/RMS_Titanic) provided
 
 Why did Jack have to die? Why couldn't he have made it onto a lifeboat like Cal? We may never know the answer, but we can generalize the question a bit: why did some people survive the sinking of the Titanic while others did not?
 
-In essence, we have a classification problem. The response is a binary variable, indicating whether a specific passenger survived. If we combine this with predictors that describe each passenger, we might be able to estimate a general model of survival.^[General at least as applied to the Titanic. I'd like to think technology has advanced some since the early 20th century that the same patterns do not apply today. [Not that sinking ships have gone away.](https://en.wikipedia.org/wiki/Costa_Concordia_disaster)]
+In essence, we have a classification problem. The response is a binary variable, indicating whether a specific passenger survived. If we combine this with predictors that describe each passenger, we might be able to estimate a general model of survival.[^concordia]
 
 Kaggle is an online platform for predictive modeling and analytics. They run regular competitions where they provide the public with a question and data, and anyone can estimate a predictive model to answer the question. They've run a popular contest based on a [dataset of passengers from the Titanic](https://www.kaggle.com/c/titanic/data). The datasets have been conveniently stored in a package called `titanic`. Let's load the package and convert the desired data frame to a tibble.
 
@@ -189,7 +189,7 @@ Rather than modeling the response $Y$ directly, logistic regression instead mode
 
 $$\Pr(\text{survival} = \text{Yes} | \text{age})$$
 
-The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $\Pr(\text{survival}) > .5$ will survive the sinking, and anyone else will die.^[The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.]
+The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\text{survival})$) will range between 0 and 1. Given that predicted probability, we could predict anyone with for whom $\Pr(\text{survival}) > .5$ will survive the sinking, and anyone else will die.[^threshold]
 
 Using `tidymodels` and the `parsnip` package, we can estimate this model. Unlike our [previous example](/notes/start-with-models/), we will use `logistic_reg()` since we are working with a binary outcome. Note that we also need to ensure our outcome variable (`Survived`) is stored as a factor column so that `parsnip` recognizes it as a categorical variable.
 
@@ -291,7 +291,7 @@ This graph illustrates a key fact about surviving the sinking of the Titanic - a
 
 ## Interactive terms
 
-Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:^[In mathematical truth, it looks more like $\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex})}}$]
+Another assumption of linear and logistic regression is that the relationships between predictors and responses are independent from one another. So for the age and sex example, we assume our function $f$ looks something like:[^log-func]
 
 $$f = \beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex}$$
 
@@ -299,7 +299,7 @@ However once again, that is an assumption. What if the relationship between age 
 
 $$f = \beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex} + \beta\_{3}(\text{age} \times \text{sex})$$
 
-This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula in `fit()`:^[R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www.cambridge.org/core/journals/political-analysis/article/understanding-interaction-models-improving-empirical-analyses/9BA57B3720A303C61EBEC6DDFA40744B/)]
+This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula in `fit()`:[^int-terms]
 
 ```{r age-woman-cross, dependson = "titanic-factor"}
 int_fit <- log_mod %>%
@@ -336,3 +336,8 @@ You may think then that it makes sense to throw in interaction terms willy-nilly
 
 ```{r child = here::here("R", "_session-info.Rmd")}
 ```
+
+[^concordia]: General at least as applied to the Titanic. I'd like to think technology has advanced some since the early 20th century that the same patterns do not apply today. [Not that sinking ships have gone away.](https://en.wikipedia.org/wiki/Costa_Concordia_disaster)
+[^threshold]: The threshold can be adjusted depending on how conservative or risky of a prediction you wish to make.
+[^log-func]: In mathematical truth, it looks more like $\Pr(\text{survival} = \text{Yes} | \text{age}, \text{sex}) = \frac{1}{1 + e^{-(\beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex})}}$.
+[^int-terms]: R automatically includes constituent terms, so this turns into `Age + Sex + Age * Sex`. [Generally you always want to include constituent terms in a regression model with an interaction.](https://www.cambridge.org/core/journals/political-analysis/article/understanding-interaction-models-improving-empirical-analyses/9BA57B3720A303C61EBEC6DDFA40744B/)

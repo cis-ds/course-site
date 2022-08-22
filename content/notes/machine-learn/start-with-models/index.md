@@ -27,7 +27,7 @@ theme_set(theme_minimal())
 
 ## Introduction {#intro}
 
-There are several different approaches to fitting a linear model in R.^[See [*Tidy Modeling with R*](https://www.tmwr.org/base-r.html) for an overview of how these approaches vary.] Here, we introduce `tidymodels` and demonstrate how to construct a basic linear regression model.
+There are several different approaches to fitting a linear model in R.[^tmwr] Here, we introduce `tidymodels` and demonstrate how to construct a basic linear regression model.
 
 [`tidymodels`](https://www.tidymodels.org/) is a collection of packages for statistical modeling and machine learning using `tidyverse` principles. Given this emphasis, it pairs nicely with the tidy-centric approach we have covered so far for tasks such as data visualization, data wrangling, importation of data files, and publishing results.
 
@@ -600,3 +600,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^tmwr]: See [*Tidy Modeling with R*](https://www.tmwr.org/base-r.html) for an overview of how these approaches vary.

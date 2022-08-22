@@ -69,7 +69,7 @@ How can we create this request in R?
 
 ## `httr::GET()`
 
-`httr` is yet another star in the `tidyverse`, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, most importantly GET. HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there.^[An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/).]
+`httr` is yet another star in the `tidyverse`, this one designed to facilitate all things HTTP from within R. This includes the major HTTP verbs, most importantly GET. HTTP is the foundation for APIs; understanding how it works is the key to interacting with all the diverse APIs out there.[^api-guide]
 
 `httr` contains one function for every HTTP verb. The functions have the same names as the verbs (e.g. `GET()`, `POST()`). They have more informative outputs than simply using `curl`, and come with some nice convenience functions for working with the output.
 
@@ -200,7 +200,7 @@ status_code(sharknado)
 
 Status codes are useful indications of how the query was handled by the server and are important for troubleshooting issues when you do not receive the intended response.
 
-Code^[[HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html)] | Status
+Code[^status] | Status
 -------|--------|
 1xx    | Informational
 2xx    | Success
@@ -416,3 +416,6 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^api-guide]: An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/).
+[^status]: [HTTP Status Codes](http://www.restapitutorial.com/httpstatuscodes.html).

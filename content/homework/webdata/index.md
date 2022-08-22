@@ -63,7 +63,7 @@ If you go either of the last two routes, you need to write your own code or func
 
 **If you use the install and play option, I expect immaculate and thorough analysis since you are choosing a much easier method to obtain your data.** Consider yourself warned.
 
-The end result must be a tidy data frame stored in the repository with some analytical component. This can be exploratory description and visualization or some method of statistical learning. I should be able to run your code and reproduce your data and analysis.^[Obviously if you are scraping from a web page that frequently updates its content, I may not perfectly reproduce your results. That's fine - just make sure you've saved a copy of the data frame in the repo.] ^[Also if you [write your own API function for a site that requires authentication](https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html#authentication), make sure to include instructions about where to store my API key so I can run your code **without sharing your private key**.]
+The end result must be a tidy data frame stored in the repository with some analytical component. This can be exploratory description and visualization or some method of statistical learning. I should be able to run your code and reproduce your data and analysis.[^repro] [^key]
 
 {{% callout note %}}
 
@@ -96,3 +96,6 @@ Excellent: Estimate a statistical model for the `gapminder` question, or do some
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
+
+[^repro]: Obviously if you are scraping from a web page that frequently updates its content, I may not perfectly reproduce your results. That's fine - just make sure you've saved a copy of the data frame in the repo.
+[^key]: Also if you [write your own API function for a site that requires authentication](https://cran.r-project.org/web/packages/httr/vignettes/api-packages.html#authentication), make sure to include instructions about where to store my API key so I can run your code **without sharing your private key**.

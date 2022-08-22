@@ -26,7 +26,7 @@ library(knitr)
 library(palmerpenguins)
 ```
 
-Google defines a **grammar** as "the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics".^[[Google](https://www.google.com/search?q=grammar)] Others consider a grammar to be "the fundamental principles or rules of an art or science".^[[Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](https://www.tandfonline.com/doi/pdf/10.1198/jcgs.2009.07098)] Applied to visualizations, a **grammar of graphics** is a grammar used to describe and create a wide range of statistical graphics.^[[Wilkinson, Leland. (2005). *The Grammar of Graphics*.](https://newcatalog.library.cornell.edu/catalog/15414882)]
+Google defines a **grammar** as "the whole system and structure of a language or of languages in general, usually taken as consisting of syntax and morphology (including inflections) and sometimes also phonology and semantics".[^google] Others consider a grammar to be "the fundamental principles or rules of an art or science".[^hadley] Applied to visualizations, a **grammar of graphics** is a grammar used to describe and create a wide range of statistical graphics.[^wilkinson]
 
 The **layered grammar of graphics** approach is implemented in [`ggplot2`](https://cran.r-project.org/web/packages/ggplot2/index.html), a widely used graphics library for R. All graphics in this library are built using a layered approach, building layers up to create the final graphic.
 
@@ -63,7 +63,7 @@ Layers are typically related to one another and share many common features. For 
 
 **Data** defines the source of the information to be visualized, but is independent from the other elements. So a layered graphic can be built which utilizes different data sources while keeping the other components the same.
 
-For our running example, let's use the `penguins` dataset in the [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/) package.^[Run `?penguins` in the console to get more information about this dataset.]
+For our running example, let's use the `penguins` dataset in the [`palmerpenguins`](https://allisonhorst.github.io/palmerpenguins/) package.[^penguins]
 
 
 ```r
@@ -518,3 +518,8 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^google]: [Google](https://www.google.com/search?q=grammar).
+[^hadley]: [Wickham, Hadley. (2010) "A Layered Grammar of Graphics". *Journal of Computational and Graphical Statistics*, 19(1).](https://www.tandfonline.com/doi/pdf/10.1198/jcgs.2009.07098).
+[^wilkinson]: [Wilkinson, Leland. (2005). *The Grammar of Graphics*.](https://newcatalog.library.cornell.edu/catalog/15414882).
+[^penguins]: Run `?penguins` in the console to get more information about this dataset.

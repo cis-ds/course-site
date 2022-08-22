@@ -42,7 +42,7 @@ Beyoncé and Taylor Swift are two iconic singer/songwriters from the past twenty
 
 ## Import data
 
-Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29) which compiled individual song lyrics from each singer's discography as of September 29, 2020. Here we import the data files and do some light cleaning to standardize each file.^[Importantly, the Beyoncé lyrics are originally stored as one row per line per song whereas we need them stored as one row per song for modeling purposes.]
+Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29) which compiled individual song lyrics from each singer's discography as of September 29, 2020. Here we import the data files and do some light cleaning to standardize each file.[^beyonce]
 
 
 ```r
@@ -661,3 +661,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^beyonce]: Importantly, the Beyoncé lyrics are originally stored as one row per line per song whereas we need them stored as one row per song for modeling purposes.

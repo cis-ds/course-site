@@ -144,7 +144,7 @@ count(x = diamonds, color)
 ## 7 J      2808
 ```
 
-`color` is a column in `diamonds` so I can refer to it directly within `count()`. However this becomes a problem for any column name that is **non-syntactic**.^[See [*Advanced R*](https://adv-r.hadley.nz/names-values.html#non-syntactic) for a more detailed discussion - but note that the book is called * **Advanced** R* for a reason.] A **syntactic** name consists only of letters, digits, and `.` and `_`. Examples of non-syntactic column names include:
+`color` is a column in `diamonds` so I can refer to it directly within `count()`. However this becomes a problem for any column name that is **non-syntactic**.[^adv-r] A **syntactic** name consists only of letters, digits, and `.` and `_`. Examples of non-syntactic column names include:
 
 * `Social conservative`
 * `7-point ideology`
@@ -519,3 +519,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^adv-r]: See [*Advanced R*](https://adv-r.hadley.nz/names-values.html#non-syntactic) for a more detailed discussion - but note that the book is called * **Advanced** R* for a reason.

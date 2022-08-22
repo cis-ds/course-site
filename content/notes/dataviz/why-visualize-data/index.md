@@ -15,7 +15,7 @@ weight: 21
 
 
 
-Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.^[Example drawn from [*The Datasaurus Dozen* by Justin Matejka and George Fitzmaurice](https://www.autodeskresearch.com/publications/samestats).]
+Research methods classes in graduate school generally teach important skills such as probability and statistical theory, regression, analysis of variance (ANOVA), maximum likelihood estimation (MLE), etc. While these are important methods for analyzing data and assessing research questions, sometimes drawing a picture (aka **visualization**) can be more precise than conventional statistical computations.[^dozen]
 
 Consider the following 13 data sets. What are the corresponding relationships between $X$ and $Y$? Using traditional metrics, the relationships appear identical across the samples:
 
@@ -40,7 +40,7 @@ $X$ and $Y$ have the same mean and standard deviation in each dataset, and the c
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/datasaurus-lm-1.png" width="672" />
 
-But what happens if we draw a picture?^[Source code from [Recreating the Datasaurus Dozen Using `tweenr` and `ggplot2`](https://www.wjakethompson.com/post/datasaurus-dozen/) and [Reanimating the Datasaurus](https://r-mageddon.netlify.com/post/reanimating-the-datasaurus/).]
+But what happens if we draw a picture?[^dozen-pic]
 
 ![](index_files/figure-html/datasaurus-graph-1.gif)<!-- -->
 
@@ -151,3 +151,6 @@ Remarkably each of the datasets have the same summary statistics and linear rela
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^dozen]: Example drawn from [*The Datasaurus Dozen* by Justin Matejka and George Fitzmaurice](https://www.autodeskresearch.com/publications/samestats).
+[^dozen-pic]: Source code from [Recreating the Datasaurus Dozen Using `tweenr` and `ggplot2`](https://www.wjakethompson.com/post/datasaurus-dozen/) and [Reanimating the Datasaurus](https://r-mageddon.netlify.com/post/reanimating-the-datasaurus/).

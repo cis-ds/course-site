@@ -235,7 +235,7 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y = lifeExp, color = conti
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/scatter-facet-2.png" width="672" />
 
-Why use `facet_grid()` here instead of `facet_wrap()`? Good question! Let's reframe it and instead ask, what is the difference between `facet_grid()` and `facet_wrap()`?^[Example drawn from [this StackOverflow thread](https://stackoverflow.com/questions/20457905/whats-the-difference-between-facet-wrap-and-facet-grid-in-ggplot2).]
+Why use `facet_grid()` here instead of `facet_wrap()`? Good question! Let's reframe it and instead ask, what is the difference between `facet_grid()` and `facet_wrap()`?[^example]
 
 The answer below refers to the case when you have 2 arguments in `facet_grid()` or `facet_wrap()`. `facet_grid(rows = vars(x), cols = vars(y))` will display $y \times x$ plots even if some plots are empty. For example:
 
@@ -396,3 +396,5 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^example]: Example drawn from [this StackOverflow thread](https://stackoverflow.com/questions/20457905/whats-the-difference-between-facet-wrap-and-facet-grid-in-ggplot2).

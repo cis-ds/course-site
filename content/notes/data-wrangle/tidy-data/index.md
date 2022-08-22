@@ -18,7 +18,7 @@ weight: 37
 library(tidyverse)
 ```
 
-Most data analysts and statisticians analyze data in a spreadsheet or tabular format. This is not the only way to store information,^[Computer scientists and web developers frequently make use of a range of other data types to store information.] however in the social sciences it has been the paradigm for many decades. **Tidy data** is a specific way of organizing data into a consistent format which plugs into the `tidyverse` set of packages for R. It is not the only way to store data and there are reasons why you might not store data in this format, but eventually you will probably need to convert your data to a tidy format in order to efficiently analyze it.
+Most data analysts and statisticians analyze data in a spreadsheet or tabular format. This is not the only way to store information,[^non-tab] however in the social sciences it has been the paradigm for many decades. **Tidy data** is a specific way of organizing data into a consistent format which plugs into the `tidyverse` set of packages for R. It is not the only way to store data and there are reasons why you might not store data in this format, but eventually you will probably need to convert your data to a tidy format in order to efficiently analyze it.
 
 There are three rules which make a dataset **tidy**:
 
@@ -108,7 +108,7 @@ table4a %>%
 ## 6 China       2000  213766
 ```
 
-Since `1999` and `2000` are non-standard names for columns (i.e. they start with a number), we have to wrap the column names in backticks.^[Not quotation marks.] Because `year` and `cases` don't exist in `table4a`, we write them as character strings inside of quotation marks.
+Since `1999` and `2000` are non-standard names for columns (i.e. they start with a number), we have to wrap the column names in backticks.[^no-quotes] Because `year` and `cases` don't exist in `table4a`, we write them as character strings inside of quotation marks.
 
 ## Wider
 
@@ -375,3 +375,6 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^non-tab]: Computer scientists and web developers frequently make use of a range of other data types to store information.
+[^no-quotes]: Not [quotation marks](/notes/data-wrangle/dplyr/#using-backticks-to-refer-to-column-names).

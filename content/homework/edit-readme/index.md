@@ -60,7 +60,7 @@ Your `README.md` should contain a brief biography of yourself. To achieve full m
 * Headers
 * Emphasis (italics or bold)
 * Lists
-* Images^[Perhaps add a picture of yourself to your repo and embed it in your readme.]
+* Images[^image]
 * Links
 
 # Submit the assignment
@@ -79,3 +79,5 @@ Excellent: `README.md` provides a proper introduction of student to the class. I
 
 
 * This page is derived in part from ["UBC STAT 545A and 547M"](http://stat545.com), licensed under the [CC BY-NC 3.0 Creative Commons License](https://creativecommons.org/licenses/by-nc/3.0/).
+
+[^image]: Perhaps add a picture of yourself to your repo and embed it in your readme.

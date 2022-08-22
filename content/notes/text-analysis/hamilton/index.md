@@ -102,7 +102,7 @@ Remember that by default, `unnest_tokens()` automatically converts all text to l
 
 ## Length of songs by words
 
-An initial check reveals the length of each song in terms of the number of words in its lyrics.^[Though lyrics' length is not always [a good measure of a musical's pacing](https://fivethirtyeight.com/features/hamilton-is-the-very-model-of-a-modern-fast-paced-musical/).]
+An initial check reveals the length of each song in terms of the number of words in its lyrics.[^patter]
 
 
 ```r
@@ -150,7 +150,7 @@ hamilton_tidy %>%
 ## # ℹ Use `print(n = ...)` to see more rows
 ```
 
-Not particularly informative. We can identify a list of stopwords using `get_stopwords()` then remove them via `anti_join()`.^[I told you filtering joins would be useful one day, but you didn't believe me!]
+Not particularly informative. We can identify a list of stopwords using `get_stopwords()` then remove them via `anti_join()`.[^filter-join]
 
 
 ```r
@@ -634,3 +634,6 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^patter]: Though lyrics' length is not always [a good measure of a musical's pacing](https://fivethirtyeight.com/features/hamilton-is-the-very-model-of-a-modern-fast-paced-musical/).
+[^filter-join]: I told you filtering joins would be useful one day, but you didn't believe me!

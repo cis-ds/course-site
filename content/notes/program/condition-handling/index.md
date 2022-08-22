@@ -75,7 +75,7 @@ logit(-1)
 ## [1] NaN
 ```
 
-The result of `logit(-1)` is `NaN`.^[`NaN` is distinct from `NA`. `NA` refers to a missing value and can take on different forms depending on the vector type (e.g. `NA_integer_`, `NA_real_`, `NA_complex_` and `NA_character_`). `NaN` stands for ["Not a Number"](https://en.wikipedia.org/wiki/NaN) and represents undefined or unrepresentable values. As in our example, $\frac{-1}{1 - {-1}} = \frac{-1}{0}$ which is indeterminate.] But the message produced is rather opaque. We could add a custom error message to stop the whole function:
+The result of `logit(-1)` is `NaN`.[^nan] But the message produced is rather opaque. We could add a custom error message to stop the whole function:
 
 
 ```r
@@ -135,7 +135,7 @@ Did you see the message?
 ## `geom_smooth()` using method = 'gam'
 ```
 
-This tells us that `geom_smooth()` generated the line using the `gam()` method.^[Run `?geom_smooth` to see the different methods that can be used.] Nothing went wrong, there was no unexpected behavior, that is just the default smoothing method for a dataset of this size. But it is helpful because what if you wanted to use a linear smoothing function instead? Now you know it was not the default method, and if you want to use it you need to explicitly set it.
+This tells us that `geom_smooth()` generated the line using the `gam()` method.[^smooth] Nothing went wrong, there was no unexpected behavior, that is just the default smoothing method for a dataset of this size. But it is helpful because what if you wanted to use a linear smoothing function instead? Now you know it was not the default method, and if you want to use it you need to explicitly set it.
 
 
 ```r
@@ -914,3 +914,6 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^nan]: `NaN` is distinct from `NA`. `NA` refers to a missing value and can take on different forms depending on the vector type (e.g. `NA_integer_`, `NA_real_`, `NA_complex_` and `NA_character_`). `NaN` stands for ["Not a Number"](https://en.wikipedia.org/wiki/NaN) and represents undefined or unrepresentable values. As in our example, $\frac{-1}{1 - {-1}} = \frac{-1}{0}$ which is indeterminate.
+[^smooth]: Run `?geom_smooth` to see the different methods that can be used.

@@ -31,7 +31,7 @@ usethis::use_course("cis-ds/debugging-and-defensive-programming")
 
 {{% /callout %}}
 
-A **software bug** is "an error, flaw, failure or fault in a computer program or system that causes it to produce an incorrect or unexpected result, or to behave in unintended ways."^[Source: [Wikipedia](https://en.wikipedia.org/wiki/Software_bug)] In an ideal world, the computer will warn you when it encounters a bug. R has the ability to do this in some situations (see our discussion below of errors, warnings, and messages). However bugs also arise because you expect the program to do one thing but provide it the ability to perform different from expectations.
+A **software bug** is "an error, flaw, failure or fault in a computer program or system that causes it to produce an incorrect or unexpected result, or to behave in unintended ways."[^wiki] In an ideal world, the computer will warn you when it encounters a bug. R has the ability to do this in some situations (see our discussion below of errors, warnings, and messages). However bugs also arise because you expect the program to do one thing but provide it the ability to perform different from expectations.
 
 As I have repeatedly emphasized in class, **computers are powerful tools that are incredibly stupid**. They will do exactly what you tell them to, nothing more and nothing less. If you write your code in a way that allows it to behave in an unintended way, this is your fault. The first goal of debugging should be to prevent unintended behaviors before they strike. However, when such bugs occur we need the tools and knowledge to track down these unintended behaviors and correct them in our code.
 
@@ -66,7 +66,7 @@ Wait a minute, this doesn't look right. What happened to the punctuation? The ca
 
 {{< youtube Qa7icmqgsow>}}
 
-That makes much more sense. Adhering to standard rules of style make the text more legible and interpretable. This is what we should aim for when writing programs in R.^[And for that matter, in any other programming language as well. Note however that these style rules are specific to R; other languages by necessity may use different rules and conventions.]
+That makes much more sense. Adhering to standard rules of style make the text more legible and interpretable. This is what we should aim for when writing programs in R.[^styler]
 
 ## Style guide
 
@@ -92,7 +92,7 @@ gun deaths.rmd
 
 ### Object names
 
-Variables refer to data objects such as vectors, lists, or data frames. Variable and function names should be lowercase. Use an underscore (`_`) to separate words within a name. Avoid using periods (`.`).^[These are useful for writing functions for [generic methods](http://adv-r.had.co.nz/OO-essentials.html).] Variable names should generally be nouns and function names should be verbs. Try to pick names that are concise and meaningful.
+Variables refer to data objects such as vectors, lists, or data frames. Variable and function names should be lowercase. Use an underscore (`_`) to separate words within a name. Avoid using periods (`.`).[^generics] Variable names should generally be nouns and function names should be verbs. Try to pick names that are concise and meaningful.
 
 ```r
 # Good
@@ -674,3 +674,7 @@ sessioninfo::session_info()
 ## 
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
+
+[^wiki]: Source: [Wikipedia](https://en.wikipedia.org/wiki/Software_bug).
+[^styler]: And for that matter, in any other programming language as well. Note however that these style rules are specific to R; other languages by necessity may use different rules and conventions.
+[^generics]: These are useful for writing functions for [generic methods](http://adv-r.had.co.nz/OO-essentials.html).
