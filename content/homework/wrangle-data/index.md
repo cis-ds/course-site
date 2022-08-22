@@ -1,6 +1,6 @@
 ---
 title: "HW03: Wrangling and visualizing data"
-date: 2019-04-15T13:30:00-06:00  # Schedule page publish date
+date: 2022-09-12T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-03-01
 
 draft: false
