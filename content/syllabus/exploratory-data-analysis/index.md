@@ -61,7 +61,7 @@ math: false
 
 ### Cheat sheets
 
-* [Data Visualization with `ggplot2` Cheat Sheet](https://www.rstudio.com/wp-content/uploads/2015/12/ggplot2-cheatsheet-2.0.pdf)
+* [Data visualization with ggplot2 cheat sheet](https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-visualization.pdf)
 
 ## What you need to do after class
 

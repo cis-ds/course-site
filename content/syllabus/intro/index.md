@@ -60,4 +60,3 @@ math: false
 ## What you need to do after class
 
 * [Install and setup software](/setup/)
-* [Begin homework 1](/homework/edit-readme/)
