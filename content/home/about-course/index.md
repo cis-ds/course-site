@@ -20,7 +20,10 @@ design:
     * Andrew Liu
 * Meeting day/time: MW 12:25-2:20
 * Meeting location: [Kimball Hall B11](https://www.cornell.edu/about/maps/?q=Kimball%20Hall)
-* Office hours: TBD
+* Office hours:
+    * Benjamin: Tu 9-11am (Gates Hall 216)
+    * Catherine: M 5:30-7:30pm
+    * Andrew: F 11-1pm
 * Prerequisites: None
 * Requirements: Internet connection and a computer
 
