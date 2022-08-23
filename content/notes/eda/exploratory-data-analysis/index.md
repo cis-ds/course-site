@@ -87,22 +87,6 @@ The `scorecard` dataset is included as part of the `rcis` library:
 
 ```r
 library(rcis)
-```
-
-```
-## 
-## Attaching package: 'rcis'
-```
-
-```
-## The following objects are masked from 'package:rcfss':
-## 
-##     add_ci, cfss_notes, cfss_slides, err.rate.rf, err.rate.tree,
-##     logit2prob, mse, mse_vec, plot_ci, prob2logodds, prob2odds,
-##     xaringan, xaringan_wide
-```
-
-```r
 data("scorecard")
 
 scorecard
@@ -110,20 +94,21 @@ scorecard
 
 ```
 ## # A tibble: 1,732 × 14
-##    unitid name        state type  admrate satavg  cost netcost avgfacsal pctpell
-##     <dbl> <chr>       <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>     <dbl>   <dbl>
-##  1 100654 Alabama A … AL    Publ…   0.918    939 23053   14990     69381   0.702
-##  2 100663 University… AL    Publ…   0.737   1234 24495   16953     99441   0.351
-##  3 100706 University… AL    Publ…   0.826   1319 23917   15860     87192   0.254
-##  4 100724 Alabama St… AL    Publ…   0.969    946 21866   13650     64989   0.763
-##  5 100751 The Univer… AL    Publ…   0.827   1261 29872   22597     92619   0.177
-##  6 100830 Auburn Uni… AL    Publ…   0.904   1082 19849   13987     71343   0.464
-##  7 100858 Auburn Uni… AL    Publ…   0.807   1300 31590   24104     96642   0.146
-##  8 100937 Birmingham… AL    Priv…   0.538   1230 32095   22107     56646   0.236
-##  9 101189 Faulkner U… AL    Priv…   0.783   1066 34317   20715     54009   0.488
-## 10 101365 Herzing Un… AL    Priv…   0.783     NA 30119   26680     54684   0.706
-## # … with 1,722 more rows, and 4 more variables: comprate <dbl>, firstgen <dbl>,
-## #   debt <dbl>, locale <fct>
+##    unitid name  state type  admrate satavg  cost netcost avgfa…¹ pctpell compr…²
+##     <dbl> <chr> <chr> <fct>   <dbl>  <dbl> <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+##  1 100654 Alab… AL    Publ…   0.918    939 23053   14990   69381   0.702   0.297
+##  2 100663 Univ… AL    Publ…   0.737   1234 24495   16953   99441   0.351   0.634
+##  3 100706 Univ… AL    Publ…   0.826   1319 23917   15860   87192   0.254   0.577
+##  4 100724 Alab… AL    Publ…   0.969    946 21866   13650   64989   0.763   0.328
+##  5 100751 The … AL    Publ…   0.827   1261 29872   22597   92619   0.177   0.711
+##  6 100830 Aubu… AL    Publ…   0.904   1082 19849   13987   71343   0.464   0.340
+##  7 100858 Aubu… AL    Publ…   0.807   1300 31590   24104   96642   0.146   0.791
+##  8 100937 Birm… AL    Priv…   0.538   1230 32095   22107   56646   0.236   0.691
+##  9 101189 Faul… AL    Priv…   0.783   1066 34317   20715   54009   0.488   0.329
+## 10 101365 Herz… AL    Priv…   0.783     NA 30119   26680   54684   0.706   0.28 
+## # … with 1,722 more rows, 3 more variables: firstgen <dbl>, debt <dbl>,
+## #   locale <fct>, and abbreviated variable names ¹​avgfacsal, ²​comprate
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 ```r
@@ -391,7 +376,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-08-23
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -405,6 +390,7 @@ sessioninfo::session_info()
 ##  cachem           1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger       1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
 ##  cli              3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools        0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace       2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon           1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI              1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -414,6 +400,7 @@ sessioninfo::session_info()
 ##  ellipsis         0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate         0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi            1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver           2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap          1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats        * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  fs               1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
@@ -426,22 +413,29 @@ sessioninfo::session_info()
 ##  gtable           0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven            2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here             1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr            0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms              1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools        0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr             1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
 ##  jquerylib        0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite         1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr            1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling         0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lattice          0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle        1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate        1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr         2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  Matrix           1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
+##  mgcv             1.8-40     2022-03-29 [2] CRAN (R 4.2.1)
 ##  modelr           0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell          0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
+##  nlme             3.1-158    2022-06-15 [2] CRAN (R 4.2.0)
 ##  palmerpenguins * 0.1.0      2020-07-23 [2] CRAN (R 4.2.0)
 ##  pillar           1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  pkgconfig        2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  purrr          * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6               2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  rcis           * 0.2.5      2022-08-08 [2] local
 ##  readr          * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl           1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  reprex           2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
