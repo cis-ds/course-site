@@ -22,8 +22,8 @@ design:
 * Meeting location: [Kimball Hall B11](https://www.cornell.edu/about/maps/?q=Kimball%20Hall)
 * Office hours:
     * Benjamin: Tu 9-11am (Gates Hall 216)
-    * Catherine: M 5:30-7:30pm
-    * Andrew: F 11-1pm
+    * Catherine: M 5:30-7:30pm (Rhodes Hall 576)
+    * Andrew: F 11-12pm (Rhodes Hall 406), 12-1pm (Rhodes Hall 400)
 * Prerequisites: None
 * Requirements: Internet connection and a computer
 
