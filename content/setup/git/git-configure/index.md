@@ -42,7 +42,7 @@ In order to push changes to GitHub, you need to **authenticate** yourself. That 
 
 {{% callout note %}}
 
-If you are running R and Git on your personal computer, I recommend this method.
+This method is preferred since it allows for seamless communication between R and Git for all possible applications.
 
 {{% /callout %}}
 
@@ -96,7 +96,7 @@ Now that you have stored your PAT, you should not be asked to provide a username
 
 {{% callout note %}}
 
-If you are using the [R Studio Workbench](/setup/r-server/) for the class, you will need to use SSH. The server does not have the ability to cache your personal access token for HTTPS.
+You can use this approach to authenticate yourself on GitHub. Note that you may find some limitations communicating with Git outside of standard processes (e.g. cloning/pushing/pulling repos directly).
 
 {{% /callout %}}
 
