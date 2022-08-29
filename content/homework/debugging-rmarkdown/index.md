@@ -13,7 +13,7 @@ summary: "Resolve code errors and generate reproducible R Markdown documents."
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on July 1st.
+Due by 11:59pm on October 12th.
 
 # Accessing the `hw05` repository
 

@@ -14,7 +14,7 @@ summary: "Build a map."
 
 # Overview
 
-Due by class on December 3rd.
+Due by 11:59pm on November 15th.
 
 # Accessing the `hw09` repository
 

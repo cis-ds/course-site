@@ -14,7 +14,7 @@ summary: "Collect text data and analyze it."
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on July 18th.
+Due by 11:59pm on November 29th.
 
 # Accessing the `hw10` repository
 

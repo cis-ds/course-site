@@ -14,7 +14,7 @@ summary: "Test your software installation, our GitHub setup, and our homework su
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on June 16th.
+Due by 11:59pm on August 30th.
 
 The goal is to test your software installation, our GitHub setup, and our homework submission process via pull request, as well as demonstrate competency in Markdown.
 
@@ -35,7 +35,7 @@ In RStudio, start a new Project:
 
 {{% callout note %}}
 
-Make sure you followed the configuration steps [here](/setups/git-configure/) and are able to authenticate yourself before attempting to clone the repository.
+Make sure you followed the configuration steps [here](/setup/git-configure/) and are able to authenticate yourself before attempting to clone the repository.
 
 {{% /callout %}}
 

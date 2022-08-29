@@ -14,7 +14,7 @@ summary: "Synthesize everything we have learned thus far."
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on July 6th.
+Due by 11:59pm on October 25th.
 
 # Accessing the `hw06` repository
 

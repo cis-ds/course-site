@@ -14,7 +14,7 @@ summary: "Wrangle and explore messy datasets in practical research environments.
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on June 27th.
+Due by 11:59pm on September 20th.
 
 The goal of this assignment is to practice wrangling and exploring data in a research context.
 

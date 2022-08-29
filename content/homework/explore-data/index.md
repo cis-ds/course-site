@@ -14,7 +14,7 @@ summary: "Transform and explore a cleaned dataset on gun deaths in the United St
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on June 21st.
+Due by 11:59pm on September 6th.
 
 Now that you've demonstrated your software is setup, the goal of this assignment is to practice transforming and exploring data.
 

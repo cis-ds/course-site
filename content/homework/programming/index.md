@@ -14,7 +14,7 @@ summary: "Implement elemental programming techniques in both contrieved and real
 
 # Overview
 
-Due by 11:59pm CT (Chicago) on June 29th.
+Due by 11:59pm on September 27th.
 
 # Accessing the `hw04` repository
 

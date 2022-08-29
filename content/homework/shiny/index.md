@@ -14,7 +14,7 @@ summary: "Build/enhance a Shiny application."
 
 # Overview
 
-Due by 9:30 am CT (Chicago) on July 27th.
+Due by 11:59pm on December 8th.
 
 # Accessing the `hw11` repository
 
