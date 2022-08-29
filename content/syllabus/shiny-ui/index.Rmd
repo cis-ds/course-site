@@ -2,7 +2,7 @@
 title: "Interactive reporting"
 date: 2022-11-28T12:25:00-05:00
 publishDate: 2019-05-20T12:25:00-05:00
-draft: true
+draft: false
 
 aliases: ["/cm019.html"]
 
