@@ -1,5 +1,5 @@
 ---
-title: "Geospatial visualization: vector maps"
+title: "Visualizing spatial data II"
 author: "INFO 5940 <br /> Cornell University"
 output:
   xaringan::moon_reader:
@@ -103,25 +103,24 @@ style_duo_accent(
 )
 
 source(here::here("R", "slide-opts.R"))
-knitr::opts_chunk$set(echo = FALSE)
 
 # enable panelsets and default theme
 xaringanExtra::use_panelset()
 ```
 
 ```{r pkgs, include = FALSE, cache = FALSE}
-library(tidyverse)
-library(sf)
-library(ggmap)
-library(tidycensus)
-library(RColorBrewer)
-library(patchwork)
+library(knitr)
 library(here)
 library(countdown)
+library(patchwork)
 library(flipbookr)
+library(tidyverse)
+library(sf)
+library(rnaturalearth)
+library(colorspace)
 
 # easier to generate tidycensus maps
-if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])){
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
   options(bitmapType = "cairo")
 }
 
@@ -129,7 +128,7 @@ set.seed(123)
 theme_set(theme_minimal(base_size = 16))
 ```
 
-# Map data file formats
+## Map data file formats
 
 * Vector files
     * Raster images
@@ -140,7 +139,7 @@ theme_set(theme_minimal(base_size = 16))
     
 ---
 
-# Shapefile
+## Shapefile
 
 * Encodes points, lines, and polygons
 * Collection of files
@@ -148,9 +147,50 @@ theme_set(theme_minimal(base_size = 16))
     * `.dbf` - data associated with the geographic features
     * `.prj` - projection of the coordinates in the shapefile
 
+--
+
+```{r twee, include = FALSE}
+# source: https://gist.github.com/jennybc/2bf1dbe6eb1f261dfe60
+
+## quick-and-dirty ersatz Unix tree command in R
+## inspired by this one-liner:
+## ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+## found here (among many other places):
+## http://serverfault.com/questions/143954/how-to-generate-an-ascii-representation-of-a-unix-file-hierarchy
+
+twee <- function(path = getwd(), level = Inf) {
+  fad <-
+    list.files(path = path, recursive = TRUE, no.. = TRUE, include.dirs = TRUE)
+
+  fad_split_up <- strsplit(fad, "/")
+
+  too_deep <- lapply(fad_split_up, length) > level
+  fad_split_up[too_deep] <- NULL
+
+  jfun <- function(x) {
+    n <- length(x)
+    if (n > 1) {
+      x[n - 1] <- "|__"
+    }
+    if (n > 2) {
+      x[1:(n - 2)] <- "   "
+    }
+    x <- if (n == 1) c("-- ", x) else c("   ", x)
+    x
+  }
+  fad_subbed_out <- lapply(fad_split_up, jfun)
+
+  cat(unlist(lapply(fad_subbed_out, paste, collapse = "")), sep = "\n")
+}
+```
+
+```{r shapefile-str, echo = FALSE}
+twee(path = here("static", "data", "census_bureau", "cb_2013_us_county_20m"))
+```
+
 ---
 
-# GeoJSON
+## GeoJSON
 
 * Uses **J**ava**S**cript **O**bject **N**otation (JSON) file format
     
@@ -170,7 +210,9 @@ theme_set(theme_minimal(base_size = 16))
 
 ---
 
-```{r echo = FALSE, fig.alt = "Three cute fuzzy monsters adding spatial geometries to an existing table of attributes using glue and tape, while one cuts out the spatial polygons. Title text reads 'sf: spatial data...simplified.' and a caption at the bottom reads 'sticky geometries: for people who love their maps and sanity.'"}
+## Simple Features for R
+
+```{r echo = FALSE, fig.alt = "Three cute fuzzy monsters adding spatial geometries to an existing table of attributes using glue and tape, while one cuts out the spatial polygons. Title text reads 'sf: spatial data...simplified.' and a caption at the bottom reads 'sticky geometries: for people who love their maps and sanity.'", out.width = "60%"}
 include_graphics(path = "/img/sf.png")
 ```
 
@@ -178,18 +220,7 @@ include_graphics(path = "/img/sf.png")
 
 ---
 
-# Simple features
-
-* [Packages in R for spatial data](https://cran.r-project.org/web/views/Spatial.html)
-* Tidy packages for spatial data
-* Simple features and `sf`
-    * Emphasizes spatial geometry
-    * Describes how to store and retrieve objects
-    * Defines geometrical operations
-
----
-
-# What is a feature?
+## What is a feature?
 
 * Thing or an object in the real world
 * Sets of features
@@ -198,34 +229,19 @@ include_graphics(path = "/img/sf.png")
 
 ---
 
-# Dimensions
+## Simple features
 
-* Geometries composed of points
-    * Coordinates in a 2-, 3- or 4-dimensional space
-    * All points in a geometry have the same dimensionality
-* X and Y coordinates
-* Z coordinate
-* M coordinate (measure associated with point rather than the feature)
+```{r echo = FALSE, fig.alt = "Simple features", out.width = "70%"}
+include_graphics("/img/simple-features.png")
+```
 
----
-
-# Simple feature geometry types
-
-| type | description                                             |
-| ---- | ------------------------------------------------------- |
-| `POINT` | zero-dimensional geometry containing a single point |
-| `LINESTRING` | sequence of points connected by straight, non-self intersecting line pieces; one-dimensional geometry |
-| `POLYGON` | geometry with a positive area (two-dimensional); sequence of points form a closed, non-self intersecting ring; the first ring denotes the exterior ring, zero or more subsequent rings denote holes in this exterior ring |
-
---
-
-* `MULTIPOINT`
-* `MULTILINESTRING`
-* `MULTIPOLYGON`
+.footnote[
+Source: [Simple Features for R](https://r-spatial.github.io/sf/articles/sf1.html#sf-objects-with-simple-features-1)
+]
 
 ---
 
-# Simple features in R
+## Simple features in R
 
 * Uses basic R data structures
 * Data frame with one row per feature
@@ -233,50 +249,63 @@ include_graphics(path = "/img/sf.png")
 
 ---
 
-# Importing shapefiles
+## Importing shapefiles
 
-```{r import-usa-shape, echo = TRUE}
+```{r import-usa-shape, include = FALSE}
 usa_shape <- st_read(dsn = here("static", "data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
 ```
 
----
-
-# Importing shapefiles
-
-```{r import-usa-shape-print, echo = TRUE}
-usa_shape
+```{r import-usa-shape-fake,  eval = FALSE}
+usa_shape <- st_read(dsn = here("data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
 ```
 
+.tiny[
+```{r import-usa-shape-print, R.options = list(width = 120)}
+usa_shape
+```
+]
+
 ---
 
-# Importing GeoJSON files
+## Importing GeoJSON files
 
-```{r import-chi-json, echo = TRUE}
+```{r import-chi-json, include = FALSE}
 chi_json <- st_read(dsn = here("static", "data", "community-area-boundaries.geojson"))
 ```
 
----
-
-# Importing GeoJSON files
-
-```{r import-chi-json-print, echo = TRUE}
-chi_json
+```{r import-chi-json-fake, eval = FALSE}
+chi_json <- st_read(dsn = here("data", "community-area-boundaries.geojson"))
 ```
 
+.tiny[
+```{r import-chi-json-print, R.options = list(width = 150)}
+chi_json
+```
+]
+
 ---
 
-# Drawing maps with `sf` objects
+## Drawing maps with `sf` objects
 
-```{r import-usa, echo = TRUE}
+```{r import-usa, include = FALSE}
 usa <- st_read(dsn = here("static", "data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
 ```
 
+```{r import-usa-fake, eval = FALSE}
+usa <- st_read(dsn = here("data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
+```
+
+.tiny[
+```{r import-usa-print, R.options = list(width = 120)}
+usa_shape
+```
+]
 ---
 
-# USA boundaries
+## USA boundaries
 
 .panelset.sideways[
-```{r geom-sf, echo = TRUE, panelset = TRUE}
+```{r}
 ggplot(data = usa) +
   geom_sf() #<<
 ```
@@ -284,10 +313,10 @@ ggplot(data = usa) +
 
 ---
 
-# Plot a subset of a map
+## Plot a subset of a map
 
 .panelset.sideways[
-```{r usa-subset, echo = TRUE, panelset = TRUE}
+```{r}
 usa_48 <- usa %>%
   filter(NAME %in% state.name) %>% #<<
   filter(NAME != "Alaska", NAME != "Hawaii") #<<
@@ -299,10 +328,10 @@ ggplot(data = usa_48) +
 
 ---
 
-# Just another `ggplot()`
+## Just another `ggplot()`
 
 .panelset.sideways[
-```{r usa-fill, echo = TRUE, panelset = TRUE}
+```{r}
 ggplot(data = usa_48) +
   geom_sf(
     fill = "palegreen", #<<
@@ -313,7 +342,7 @@ ggplot(data = usa_48) +
 
 ---
 
-```{r, out.width = "60%"}
+```{r contig-41, echo = FALSE, out.width = "60%"}
 include_graphics(path = "https://imgs.xkcd.com/comics/contiguous_41_states.png")
 ```
 
@@ -321,11 +350,10 @@ include_graphics(path = "https://imgs.xkcd.com/comics/contiguous_41_states.png")
 
 ---
 
-# `urbnmapr`
+## `urbnmapr`
 
 .panelset.sideways[
-```{r urbnmapr, echo = TRUE, panelset = TRUE}
-# remotes::install_github("UrbanInstitute/urbnmapr")
+```{r out.width = "100%"}
 library(urbnmapr)
 
 states_sf <- get_urbn_map("states", sf = TRUE) #<<
@@ -337,7 +365,13 @@ ggplot(data = states_sf) +
 
 ---
 
-# Points
+class: inverse, middle
+
+# Identifying points on a map
+
+---
+
+## Points
 
 ```{r import-crimes, include = FALSE}
 crimes <- here("static", "data", "chicago-crimes.csv") %>%
@@ -345,7 +379,7 @@ crimes <- here("static", "data", "chicago-crimes.csv") %>%
 ```
 
 ```{r import-crimes-fake, eval = FALSE}
-crimes <- here("static", "data", "chicago-crimes.csv") %>%
+crimes <- here("data", "chicago-crimes.csv") %>%
   read_csv()
 ```
 
@@ -356,26 +390,30 @@ crimes_homicide
 
 ---
 
-# Points
+## Points
 
 .panelset.sideways[
-```{r scatter, echo = TRUE, out.width = "100%"}
-ggplot(data = crimes_homicide,
-       mapping = aes(x = Longitude,
-                     y = Latitude)) +
+```{r scatter}
+ggplot(
+  data = crimes_homicide,
+  mapping = aes(
+    x = Longitude,
+    y = Latitude
+  )
+) +
   geom_point() #<<
 ```
 ]
 
 ---
 
-# Points
+## Points
 
 .panelset.sideways[
-```{r chi-crime, echo = TRUE, out.width = "100%"}
+```{r chi-crime}
 ggplot(data = chi_json) +
   geom_sf() + #<<
-  geom_point( #<<
+  geom_point(
     data = crimes_homicide,
     mapping = aes(
       x = Longitude,
@@ -384,14 +422,13 @@ ggplot(data = chi_json) +
     shape = 1
   )
 ```
-
 ]
 
 ---
 
-# Convert tibble to `sf` data frame
+## Converting to `sf` data frame
 
-```{r crimes-sf, echo = TRUE}
+```{r crimes-sf}
 crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("Longitude", "Latitude"))
 st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
 crimes_homicide_sf
@@ -399,56 +436,94 @@ crimes_homicide_sf
 
 ---
 
-# Plotting with two sf data frames
+## Plotting with two sf data frames
 
 .panelset.sideways[
 ```{r crimes-sf-plot, echo = TRUE, out.width = "100%"}
 ggplot() +
   geom_sf(data = chi_json) +
-  geom_sf(data = crimes_homicide_sf, shape = 1)
+  geom_sf(
+    data = crimes_homicide_sf, #<<
+    shape = 1
+  ) #<<
 ```
 ]
 
 ---
 
-# Fill (choropleths)
+class: inverse, middle
 
-```{r import-foreign, echo = TRUE}
+# Choropleths
+
+---
+
+```{r echo = FALSE}
+include_graphics(path = "https://media.giphy.com/media/If7M383oivlYY/giphy.gif")
+```
+
+---
+
+## Fill (choropleths)
+
+```{r import-foreign, include = FALSE}
 fb_state <- read_csv(file = here("static", "data", "foreign-born.csv"))
+```
+
+```{r import-foreign-fake, eval = FALSE}
+fb_state <- read_csv(file = here("data", "foreign-born.csv"))
+```
+
+```{r import-foreign-print}
 fb_state
 ```
 
 ---
 
-# Join the data
+## Join the data
 
-```{r usa-foreign-join, echo = TRUE}
+```{r usa-foreign-join}
 usa_fb <- left_join(x = usa_48, y = fb_state, by = c("STATEFP" = "GEOID", "NAME"))
 usa_fb
 ```
 
 ---
 
-# Draw the map
+## Draw the map
 
 .panelset.sideways[
-```{r geom-map-state, echo = TRUE, out.width = "100%"}
+```{r geom-map-state}
 ggplot(data = usa_fb) +
-  geom_sf(mapping = aes(fill = pct_foreign))
+  geom_sf(mapping = aes(fill = pct_foreign)) #<<
 ```
 ]
 
 ---
 
-# Spatial aggregation
+## Use better colors
 
-```{r crimes-agg, echo = TRUE}
+.panelset.sideways[
+```{r geom-map-state-pal, out.width = "100%"}
+library(colorspace) #<<
+
+ggplot(data = usa_fb) +
+  geom_sf(mapping = aes(
+    fill = pct_foreign
+  )) +
+  scale_fill_continuous_sequential(palette = "mako") #<<
+```
+]
+
+---
+
+## Spatial aggregation
+
+```{r crimes-agg}
 st_join(x = chi_json, y = crimes_homicide_sf)
 ```
 
 ---
 
-```{r crimes-agg-map, include = FALSE, fig.width = 6}
+```{r crimes-agg-map, include = FALSE}
 chi_json %>%
   st_join(y = crimes_homicide_sf) %>%
   group_by(community) %>%
@@ -459,66 +534,153 @@ chi_json %>%
 
 `r chunk_reveal(chunk_name = "crimes-agg-map", break_type = "auto")`
 
+---
+
+## Which is better for comparisons?
+
+```{r crimes-agg-map-2, echo = FALSE, out.width = "95%", fig.width = 12}
+library(patchwork)
+{
+  chi_json %>%
+    st_join(y = crimes_homicide_sf) %>%
+    group_by(community) %>%
+    count() %>%
+    ggplot() +
+    geom_sf(mapping = aes(fill = n)) +
+    scale_fill_continuous_sequential(palette = "viridis") +
+    labs(title = "Choropleth")
+} + {
+  ggplot() +
+    geom_sf(data = chi_json) +
+    stat_density_2d(
+      data = crimes_homicide,
+      mapping = aes(
+        x = Longitude,
+        y = Latitude,
+        fill = stat(level)
+      ),
+      alpha = .2,
+      bins = 25,
+      geom = "polygon"
+    ) +
+    scale_fill_continuous_sequential(palette = "viridis") +
+    labs(title = "Heatmap", x = NULL, y = NULL)
+}
+```
 
 ---
 
-# Exercise using household income
+## Exercise using household income
 
 - American Community Survey
 - [`tidycensus`](https://walker-data.com/tidycensus/)
 
-```{r cache = FALSE}
+```{r cache = FALSE, echo = FALSE}
 countdown(minutes = 10)
 ```
 
 ---
 
-# Bin data to discrete intervals
+## Bin data to discrete intervals
 
 * Continuous vs. discrete variables for color
 * Collapse to a discrete variable
 
 ---
 
-# `cut_interval()`
+## `cut_interval()`
 
-```{r cut-interval, echo = TRUE}
+.panelset.sideways[
+```{r cut-int, panelset = TRUE}
 usa_fb %>%
-  mutate(rate_cut = cut_interval(pct_foreign, n = 6)) %>%
+  mutate(rate_cut = cut_interval(pct_foreign, n = 6)) %>% #<<
   ggplot() +
-  geom_sf(aes(fill = rate_cut))
+  geom_sf(aes(fill = rate_cut)) +
+  scale_fill_discrete_sequential(palette = "inferno")
 ```
-
----
-
-# `cut_number()`
-
-```{r cut-number, echo = TRUE}
-usa_fb %>%
-  mutate(rate_cut = cut_number(pct_foreign, n = 6)) %>%
-  ggplot() +
-  geom_sf(aes(fill = rate_cut))
-```
-
----
-
-# Map projection
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
-
----
-
-# Map projection
-
-.center[
-
-![[Mercator Projection](https://xkcd.com/2082/)](https://imgs.xkcd.com/comics/mercator_projection.png)
-
 ]
 
 ---
 
-# Map projection
+## `cut_number()`
+
+.panelset.sideways[
+```{r cut-num, panelset = TRUE}
+usa_fb %>%
+  mutate(rate_cut = cut_number(pct_foreign, n = 6)) %>% #<<
+  ggplot() +
+  geom_sf(aes(fill = rate_cut)) +
+  scale_fill_discrete_sequential(palette = "inferno")
+```
+]
+
+---
+
+## `ggplot2::binned_scale()`
+
+.panelset.sideways[
+```{r bin-scale, panelset = TRUE}
+usa_fb %>%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(palette = "inferno") #<<
+```
+]
+
+---
+
+## `ggplot2::binned_scale()` with quartiles
+
+.panelset.sideways[
+```{r bin-quartile, panelset = TRUE}
+usa_fb %>%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(
+    palette = "inferno",
+    n.breaks = 3 #<<
+  )
+```
+]
+
+---
+
+## `ggplot2::binned_scale()` with quartiles
+
+.panelset.sideways[
+```{r bin-quartile-not-nice, panelset = TRUE}
+usa_fb %>%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(
+    palette = "inferno",
+    n.breaks = 3, #<<
+    nice.breaks = FALSE #<<
+  )
+```
+]
+
+---
+
+## Map projection
+
+.center[
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
+]
+
+---
+
+## Map projection
+
+```{r echo = FALSE, out.width = "30%"}
+include_graphics(path = "https://imgs.xkcd.com/comics/mercator_projection.png")
+```
+
+.footnote[Source: [xkcd](https://xkcd.com/2082/)]
+
+---
+
+## Map projection
 
 * Coordinate reference system
 * `proj4string`
@@ -527,14 +689,14 @@ usa_fb %>%
 
 ---
 
-# Mercator projection
+## Mercator projection
 
-```{r projections}
+```{r projections, echo = FALSE}
 map_proj_base <- ggplot(data = usa_48) +
   geom_sf()
 ```
 
-```{r mercator-sf, echo = TRUE, fig.height = 6}
+```{r mercator-sf, echo = FALSE}
 map_proj_base +
   coord_sf(crs = 3785) +
   ggtitle("Mercator projection")
@@ -542,15 +704,15 @@ map_proj_base +
 
 ---
 
-# Projection using standard lines
+## Projection using standard lines
 
-```{r projection-rest}
+```{r projection-rest, echo = FALSE, fig.width = 12}
 {
   map_proj_base +
     coord_sf(crs = 4326) +
     labs(
       title = "WGS 84",
-      subtitle = 'coord_sf(crs = 4326)'
+      subtitle = "coord_sf(crs = 4326)"
     )
 } +
   {
@@ -558,7 +720,7 @@ map_proj_base +
       coord_sf(crs = 2163) +
       labs(
         title = "US National Atlas Equal Area",
-        subtitle = 'coord_sf(crs = 2163)'
+        subtitle = "coord_sf(crs = 2163)"
       )
   } +
   {
@@ -566,7 +728,7 @@ map_proj_base +
       coord_sf(crs = 3085) +
       labs(
         title = "Texas Centric Albers Equal Area",
-        subtitle = 'coord_sf(crs = 3085)'
+        subtitle = "coord_sf(crs = 3085)"
       )
   } +
   {
@@ -574,7 +736,7 @@ map_proj_base +
       coord_sf(crs = 3174) +
       labs(
         title = "Great Lakes Albers",
-        subtitle = 'coord_sf(crs = 3174)'
+        subtitle = "coord_sf(crs = 3174)"
       )
   } +
   plot_layout(ncol = 2, nrow = 2) &
@@ -583,9 +745,12 @@ map_proj_base +
 
 ---
 
-# Adjusting color intervals and projections
+## Adjusting color intervals and projections
 
-```{r cache = FALSE}
+```{r cache = FALSE, echo = FALSE}
 countdown(minutes = 8)
 ```
 
+```{r echo = FALSE, out.width = "40%"}
+include_graphics(path = "https://c.tenor.com/aa3KO3VP0dQAAAAC/cj-the-west-wing.gif")
+```
