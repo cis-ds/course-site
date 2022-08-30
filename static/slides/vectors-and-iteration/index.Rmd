@@ -110,6 +110,7 @@ xaringanExtra::use_panelset()
 library(tidyverse)
 library(rcis)
 library(countdown)
+library(modeldata)
 library(here)
 
 set.seed(1234)
@@ -288,7 +289,7 @@ include_graphics(path = "https://media.giphy.com/media/uLUgjrzvQPXV5sTZeY/giphy.
 ```
 
 ```{r cache = FALSE, echo = FALSE}
-countdown(minutes = 15)
+countdown(minutes = 12)
 ```
 
 ---
@@ -316,6 +317,20 @@ median(df$b)
 median(df$c)
 median(df$d)
 ```
+
+---
+
+## Iteration three ways
+
+1. `for` loops
+1. `map_*()` functions
+1. `across()`
+
+---
+
+class: inverse, middle
+
+# Iteration with `for` loops
 
 ---
 
@@ -421,6 +436,24 @@ autoplot(times)
 
 ---
 
+## Exercise on `for()` loops
+
+```{r echo = FALSE}
+include_graphics(path = "https://media.giphy.com/media/DC2YXS4efT0R4wwXoY/giphy.gif")
+```
+
+```{r cache = FALSE, echo = FALSE}
+countdown(minutes = 8)
+```
+
+---
+
+class: inverse, middle
+
+# Iteration with `map_*()` functions
+
+---
+
 ## Map functions
 
 * Why `for` loops are good
@@ -459,12 +492,183 @@ df %>%
 
 ---
 
-## Exercise on writing iterative operations
+## Exercise on writing `map_*()` functions
 
 ```{r echo = FALSE}
-include_graphics(path = "https://media.giphy.com/media/DC2YXS4efT0R4wwXoY/giphy.gif")
+include_graphics(path = "https://media.giphy.com/media/cjbfyJrICOaKIXBWyG/giphy.gif")
 ```
 
 ```{r cache = FALSE, echo = FALSE}
-countdown(minutes = 10)
+countdown(minutes = 8)
+```
+
+---
+
+class: inverse, middle
+
+# Iteration in data frames with `across()`
+
+---
+
+# Single column
+
+```{r cp-mean-single-column}
+car_prices %>%
+  summarize(Price = mean(Price))
+```
+
+---
+
+# Multiple columns
+
+```{r cp-mean-all-columns}
+car_prices %>%
+  summarize(
+    Price = mean(Price),
+    Mileage = mean(Mileage),
+    Cylinder = mean(Cylinder),
+    Doors = mean(Doors),
+    Cruise = mean(Cruise),
+    Sound = mean(Sound),
+    Leather = mean(Leather),
+    Buick = mean(Buick),
+    Cadillac = mean(Cadillac),
+    Chevy = mean(Chevy),
+    Pontiac = mean(Pontiac),
+    Saab = mean(Saab),
+    Saturn = mean(Saturn),
+    convertible = mean(convertible),
+    coupe = mean(coupe),
+    hatchback = mean(hatchback),
+    sedan = mean(sedan),
+    wagon = mean(wagon)
+  )
+```
+
+---
+
+```{r echo = FALSE}
+include_graphics(path = "/img/dplyr_across.png")
+```
+
+---
+
+## `dplyr::across()`
+
+`across()` has two primary arguments:
+
+* `.cols`, selects the columns you want to operate on
+* `.fns`, is a function or list of functions to apply to each column
+
+---
+
+## `summarize()`, `across()`, and `everything()`
+
+.panelset[
+.panel[.panel-name[Single function]
+```{r summarize-across-everything}
+car_prices %>%
+  summarize(across(.cols = everything(), .fns = mean))
+```
+]
+
+.panel[.panel-name[Multiple functions]
+```{r summarize-across-everything-fns}
+car_prices %>%
+  summarize(across(everything(), .fns = list(min, max)))
+```
+]
+
+.panel[.panel-name[Multiple named functions]
+```{r summarize-across-everything-fns-named}
+car_prices %>%
+  summarize(across(everything(), .fns = list(min = min, max = max)))
+```
+]
+
+.panel[.panel-name[Grouped by]
+```{r summarize-across-everything-group-by}
+car_prices %>%
+  group_by(Cylinder) %>%
+  summarize(across(everything(), .fns = mean))
+```
+]
+
+]
+
+---
+
+## `worldbank`
+
+```{r worldbank}
+data("worldbank", package = "rcis")
+worldbank
+```
+
+---
+
+## `summarize()`, `across()`, and `where()`
+
+.panelset[
+.panel[.panel-name[Single condition]
+```{r summarize-across-where}
+worldbank %>%
+  group_by(country) %>%
+  summarize(across(.cols = where(is.numeric), .fns = mean, na.rm = TRUE))
+```
+]
+
+.panel[.panel-name[Compound condition]
+```{r summarize-across-compound}
+worldbank %>%
+  group_by(country) %>%
+  summarize(across(
+    .cols = where(is.numeric) & starts_with("perc"),
+    .fn = mean, na.rm = TRUE
+  ))
+```
+]
+
+]
+
+---
+
+## `across()` and `mutate()`
+
+```{r mutate-across}
+car_prices %>%
+  mutate(across(.cols = Price:Doors, .fns = log10))
+```
+
+---
+
+## ~~`across()`~~ and `filter()`
+
+.panelset[
+.panel[.panel-name[`if_any()`]
+```{r filter-if-any}
+worldbank %>%
+  filter(if_any(everything(), ~ !is.na(.x)))
+```
+]
+
+.panel[.panel-name[`if_all()`]
+```{r filter-if-all}
+worldbank %>%
+  filter(if_all(everything(), ~ !is.na(.x)))
+```
+]
+
+]
+
+---
+
+## Exercise on `across()` iteration
+
+```{r echo = FALSE}
+include_graphics(path = "https://c.tenor.com/W-k3aSz4_r4AAAAC/heart-eyes-hearties.gif")
+```
+
+```{r cache = FALSE, echo = FALSE}
+countdown(minutes = 8)
 ```
