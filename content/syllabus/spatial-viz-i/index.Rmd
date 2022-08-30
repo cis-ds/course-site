@@ -31,7 +31,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/geospatial-visualization-raster-maps/"
+url_slides: "/slides/visualize-spatial-i/"
 url_video: ""
 url_code: ""
 
