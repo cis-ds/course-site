@@ -18,6 +18,7 @@ weight: 85
 library(tidyverse)
 library(rcis)
 library(palmerpenguins)
+library(modeldata)
 
 set.seed(1234)
 theme_set(theme_minimal())
@@ -211,30 +212,34 @@ Here, preallocating space for each data frame prior to binding together cuts the
 
 ## Exercise: write a `for` loop
 
-### Mean of columns in `mtcars`
+### Mean of columns in `car_prices`
 
-Write a `for` loop that calculates the arithmetic mean for every column in `mtcars`.
+Write a `for` loop that calculates the arithmetic mean for every column in `modeldata::car_prices`.
 
 
 ```r
-as_tibble(mtcars)
+data("car_prices", package = "modeldata")
+car_prices
 ```
 
 ```
-## # A tibble: 32 × 11
-##      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
-##    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-##  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
-##  2  21       6  160    110  3.9   2.88  17.0     0     1     4     4
-##  3  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
-##  4  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
-##  5  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
-##  6  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
-##  7  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
-##  8  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
-##  9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
-## 10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
-## # … with 22 more rows
+## # A tibble: 804 × 18
+##     Price Mileage Cylin…¹ Doors Cruise Sound Leather Buick Cadil…² Chevy Pontiac
+##     <dbl>   <int>   <int> <int>  <int> <int>   <int> <int>   <int> <int>   <int>
+##  1 22661.   20105       6     4      1     0       0     1       0     0       0
+##  2 21725.   13457       6     2      1     1       0     0       0     1       0
+##  3 29143.   31655       4     2      1     1       1     0       0     0       0
+##  4 30732.   22479       4     2      1     0       0     0       0     0       0
+##  5 33359.   17590       4     2      1     1       1     0       0     0       0
+##  6 30315.   23635       4     2      1     0       0     0       0     0       0
+##  7 33382.   17381       4     2      1     1       1     0       0     0       0
+##  8 30251.   27558       4     2      1     0       1     0       0     0       0
+##  9 30167.   25049       4     2      1     0       0     0       0     0       0
+## 10 27060.   17319       4     4      1     0       1     0       0     0       0
+## # … with 794 more rows, 7 more variables: Saab <int>, Saturn <int>,
+## #   convertible <int>, coupe <int>, hatchback <int>, sedan <int>, wagon <int>,
+## #   and abbreviated variable names ¹​Cylinder, ²​Cadillac
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 Before you write the `for` loop, identify the three components you need:
@@ -245,56 +250,36 @@ Before you write the `for` loop, identify the three components you need:
 
 {{< spoiler text="Click for the solution" >}}
 
-* Output - a numeric vector of length 11
-* Sequence - `i in seq_along(mtcars)`
+* Output - a numeric vector of length 18
+* Sequence - `i in seq_along(car_prices)`
 * Body - calculate the `mean()` of the $i$th column, store the new value as the $i$th element of the vector `output`
 
 
 ```r
 # preallocate space for the output
-output <- vector("numeric", ncol(mtcars))
+output <- vector("numeric", ncol(car_prices))
 
-# initialize the loop along all the columns of mtcars
-for (i in seq_along(mtcars)) {
+# initialize the loop along all the columns of car_prices
+for (i in seq_along(car_prices)) {
   # calculate the mean value for the i-th column
-  output[[i]] <- mean(mtcars[[i]], na.rm = TRUE)
+  output[[i]] <- mean(car_prices[[i]], na.rm = TRUE)
 }
 
 output
 ```
 
 ```
-##  [1]  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250
-##  [7]  17.848750   0.437500   0.406250   3.687500   2.812500
+##  [1] 2.134314e+04 1.983193e+04 5.268657e+00 3.527363e+00 7.524876e-01
+##  [6] 6.791045e-01 7.238806e-01 9.950249e-02 9.950249e-02 3.980100e-01
+## [11] 1.865672e-01 1.417910e-01 7.462687e-02 6.218905e-02 1.741294e-01
+## [16] 7.462687e-02 6.094527e-01 7.960199e-02
 ```
 
 {{< /spoiler >}}
 
-### Maximum value in each column of `diamonds`
+### Maximum value in each column of `car_prices`
 
-Write a `for` loop that calculates the maximum value in each column of `diamonds`.
-
-
-```r
-diamonds
-```
-
-```
-## # A tibble: 53,940 × 10
-##    carat cut       color clarity depth table price     x     y     z
-##    <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-##  1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
-##  2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
-##  3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
-##  4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
-##  5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
-##  6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
-##  7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
-##  8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
-##  9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
-## 10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39
-## # … with 53,930 more rows
-```
+Write a `for` loop that calculates the maximum value in each column of `car_prices`.
 
 Before you write the `for` loop, identify the three components you need:
 
@@ -304,60 +289,59 @@ Before you write the `for` loop, identify the three components you need:
 
 {{< spoiler text="Click for the solution" >}}
 
-* Output - a vector of length 10
-* Sequence - `i in seq_along(diamonds)`
-* Body - get the maximum value of the $i$th column of the data frame `diamonds`, store the new value as the $i$th element of the list `output`
+* Output - a vector of length 18
+* Sequence - `i in seq_along(car_prices)`
+* Body - get the maximum value of the $i$th column of the data frame `car_prices`, store the new value as the $i$th element of the list `output`
 
 
 ```r
 # preallocate space for the output
-output <- vector("numeric", ncol(diamonds))
+output <- vector("numeric", ncol(car_prices))
 
-# initialize the loop along all the columns of diamonds
-for (i in seq_along(diamonds)) {
+# initialize the loop along all the columns of car_prices
+for (i in seq_along(car_prices)) {
   # calculate the max value for the i-th column
-  output[i] <- max(diamonds[[i]])
+  output[i] <- max(car_prices[[i]])
 }
 
 output
 ```
 
 ```
-##  [1]     5.01     5.00     7.00     8.00    79.00    95.00 18823.00    10.74
-##  [9]    58.90    31.80
+##  [1] 70755.47 50387.00     8.00     4.00     1.00     1.00     1.00     1.00
+##  [9]     1.00     1.00     1.00     1.00     1.00     1.00     1.00     1.00
+## [17]     1.00     1.00
 ```
 
-To preserve the name attributes from `diamonds`, use the `names()` function to extract the names of each column in `diamonds` and apply them as the names to the `output` vector:
+To preserve the name attributes from `car_prices`, use the `names()` function to extract the names of each column in `car_prices` and apply them as the names to the `output` vector:
 
 
 ```r
-# get the names of the columns in diamonds
-names(diamonds)
+# get the names of the columns in car_prices
+names(car_prices)
 ```
 
 ```
-##  [1] "carat"   "cut"     "color"   "clarity" "depth"   "table"   "price"  
-##  [8] "x"       "y"       "z"
+##  [1] "Price"       "Mileage"     "Cylinder"    "Doors"       "Cruise"     
+##  [6] "Sound"       "Leather"     "Buick"       "Cadillac"    "Chevy"      
+## [11] "Pontiac"     "Saab"        "Saturn"      "convertible" "coupe"      
+## [16] "hatchback"   "sedan"       "wagon"
 ```
 
 ```r
-# assign the names of the diamonds columns to output
-names(output) <- names(diamonds)
+# assign the names of the car_prices columns to output
+names(output) <- names(car_prices)
 output
 ```
 
 ```
-##    carat      cut    color  clarity    depth    table    price        x 
-##     5.01     5.00     7.00     8.00    79.00    95.00 18823.00    10.74 
-##        y        z 
-##    58.90    31.80
+##       Price     Mileage    Cylinder       Doors      Cruise       Sound 
+##    70755.47    50387.00        8.00        4.00        1.00        1.00 
+##     Leather       Buick    Cadillac       Chevy     Pontiac        Saab 
+##        1.00        1.00        1.00        1.00        1.00        1.00 
+##      Saturn convertible       coupe   hatchback       sedan       wagon 
+##        1.00        1.00        1.00        1.00        1.00        1.00
 ```
-
-{{% callout note %}}
-
-Notice that all the columns have a maximum value, even the apparently text-based columns. This is because `cut`, `color`, and `clarity` are all stored as factor columns. Remember that [factor vectors are built on top of integers](http://r4ds.had.co.nz/vectors.html#factors-1), so the underlying values are numeric. As a result we can apply `max()` to a factor vector and still retrieve a (partially) meaningful result.
-
-{{% /callout %}}
 
 {{< /spoiler >}}
 
@@ -373,7 +357,7 @@ You will frequently need to iterate over vectors or data frames, perform an oper
 * Do something to each element
 * Save the results
 
-{{< figure src="allison_horst_art/map2_cupcakes.png" caption="Artwork by @allison_horst" >}}
+{{< figure src="allison_horst_art/map_frosting.png" caption="Artwork by @allison_horst" >}}
 
 There is one function for each type of output:
 
@@ -438,148 +422,142 @@ df %>%
 
 ## Exercise: rewrite our `for` loops using a `map()` function
 
-### Mean of columns in `mtcars`
+### Mean of columns in `car_prices`
 
-Write a `map()` function that calculates the arithmetic mean for every column in `mtcars`.
+Write a `map()` function that calculates the arithmetic mean for every column in `car_prices`.
 
 
 ```r
-as_tibble(mtcars)
+car_prices
 ```
 
 ```
-## # A tibble: 32 × 11
-##      mpg   cyl  disp    hp  drat    wt  qsec    vs    am  gear  carb
-##    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-##  1  21       6  160    110  3.9   2.62  16.5     0     1     4     4
-##  2  21       6  160    110  3.9   2.88  17.0     0     1     4     4
-##  3  22.8     4  108     93  3.85  2.32  18.6     1     1     4     1
-##  4  21.4     6  258    110  3.08  3.22  19.4     1     0     3     1
-##  5  18.7     8  360    175  3.15  3.44  17.0     0     0     3     2
-##  6  18.1     6  225    105  2.76  3.46  20.2     1     0     3     1
-##  7  14.3     8  360    245  3.21  3.57  15.8     0     0     3     4
-##  8  24.4     4  147.    62  3.69  3.19  20       1     0     4     2
-##  9  22.8     4  141.    95  3.92  3.15  22.9     1     0     4     2
-## 10  19.2     6  168.   123  3.92  3.44  18.3     1     0     4     4
-## # … with 22 more rows
+## # A tibble: 804 × 18
+##     Price Mileage Cylin…¹ Doors Cruise Sound Leather Buick Cadil…² Chevy Pontiac
+##     <dbl>   <int>   <int> <int>  <int> <int>   <int> <int>   <int> <int>   <int>
+##  1 22661.   20105       6     4      1     0       0     1       0     0       0
+##  2 21725.   13457       6     2      1     1       0     0       0     1       0
+##  3 29143.   31655       4     2      1     1       1     0       0     0       0
+##  4 30732.   22479       4     2      1     0       0     0       0     0       0
+##  5 33359.   17590       4     2      1     1       1     0       0     0       0
+##  6 30315.   23635       4     2      1     0       0     0       0     0       0
+##  7 33382.   17381       4     2      1     1       1     0       0     0       0
+##  8 30251.   27558       4     2      1     0       1     0       0     0       0
+##  9 30167.   25049       4     2      1     0       0     0       0     0       0
+## 10 27060.   17319       4     4      1     0       1     0       0     0       0
+## # … with 794 more rows, 7 more variables: Saab <int>, Saturn <int>,
+## #   convertible <int>, coupe <int>, hatchback <int>, sedan <int>, wagon <int>,
+## #   and abbreviated variable names ¹​Cylinder, ²​Cadillac
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 {{< spoiler text="Click for the solution" >}}
 
 
 ```r
-map_dbl(mtcars, mean)
+map_dbl(car_prices, mean)
 ```
 
 ```
-##        mpg        cyl       disp         hp       drat         wt       qsec 
-##  20.090625   6.187500 230.721875 146.687500   3.596563   3.217250  17.848750 
-##         vs         am       gear       carb 
-##   0.437500   0.406250   3.687500   2.812500
+##        Price      Mileage     Cylinder        Doors       Cruise        Sound 
+## 2.134314e+04 1.983193e+04 5.268657e+00 3.527363e+00 7.524876e-01 6.791045e-01 
+##      Leather        Buick     Cadillac        Chevy      Pontiac         Saab 
+## 7.238806e-01 9.950249e-02 9.950249e-02 3.980100e-01 1.865672e-01 1.417910e-01 
+##       Saturn  convertible        coupe    hatchback        sedan        wagon 
+## 7.462687e-02 6.218905e-02 1.741294e-01 7.462687e-02 6.094527e-01 7.960199e-02
 ```
 
 {{< /spoiler >}}
 
-### Maximum value in each column of `diamonds`
+### Maximum value in each column of `car_prices`
 
-Write a `map()` function that calculates the maximum value in each column of `diamonds`.
-
-
-```r
-diamonds
-```
-
-```
-## # A tibble: 53,940 × 10
-##    carat cut       color clarity depth table price     x     y     z
-##    <dbl> <ord>     <ord> <ord>   <dbl> <dbl> <int> <dbl> <dbl> <dbl>
-##  1  0.23 Ideal     E     SI2      61.5    55   326  3.95  3.98  2.43
-##  2  0.21 Premium   E     SI1      59.8    61   326  3.89  3.84  2.31
-##  3  0.23 Good      E     VS1      56.9    65   327  4.05  4.07  2.31
-##  4  0.29 Premium   I     VS2      62.4    58   334  4.2   4.23  2.63
-##  5  0.31 Good      J     SI2      63.3    58   335  4.34  4.35  2.75
-##  6  0.24 Very Good J     VVS2     62.8    57   336  3.94  3.96  2.48
-##  7  0.24 Very Good I     VVS1     62.3    57   336  3.95  3.98  2.47
-##  8  0.26 Very Good H     SI1      61.9    55   337  4.07  4.11  2.53
-##  9  0.22 Fair      E     VS2      65.1    61   337  3.87  3.78  2.49
-## 10  0.23 Very Good H     VS1      59.4    61   338  4     4.05  2.39
-## # … with 53,930 more rows
-```
+Write a `map()` function that calculates the maximum value in each column of `car_prices`.
 
 {{< spoiler text="Click for the solution" >}}
 
 
 ```r
-map_dbl(diamonds, max)
+map_dbl(car_prices, max)
 ```
 
 ```
-##    carat      cut    color  clarity    depth    table    price        x 
-##     5.01     5.00     7.00     8.00    79.00    95.00 18823.00    10.74 
-##        y        z 
-##    58.90    31.80
+##       Price     Mileage    Cylinder       Doors      Cruise       Sound 
+##    70755.47    50387.00        8.00        4.00        1.00        1.00 
+##     Leather       Buick    Cadillac       Chevy     Pontiac        Saab 
+##        1.00        1.00        1.00        1.00        1.00        1.00 
+##      Saturn convertible       coupe   hatchback       sedan       wagon 
+##        1.00        1.00        1.00        1.00        1.00        1.00
 ```
 
 {{< /spoiler >}}
 
 ## `across()`
 
-When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `mtcars`. If we want to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
+When working with data frames, it’s often useful to perform the same operation on multiple columns. For instance, calculating the average value of each column in `car_prices`. If we want to calculate the average of a single column, it would be pretty simple to do so just by using `tidyverse` functions:
 
 
 ```r
-mtcars %>%
-  summarize(mpg = mean(mpg))
+car_prices %>%
+  summarize(Price = mean(Price))
 ```
 
 ```
-##        mpg
-## 1 20.09062
+## # A tibble: 1 × 1
+##    Price
+##    <dbl>
+## 1 21343.
 ```
 
 If we want to calculate the mean for all of the columns, we would have to duplicate this code many times over:
 
 
 ```r
-mtcars %>%
+car_prices %>%
   summarize(
-    mpg = mean(mpg),
-    cyl = mean(cyl),
-    disp = mean(disp),
-    hp = mean(hp),
-    drat = mean(drat),
-    wt = mean(wt),
-    qsec = mean(qsec),
-    vs = mean(vs),
-    am = mean(am),
-    gear = mean(gear),
-    carb = mean(carb)
+    Price = mean(Price),
+    Mileage = mean(Mileage),
+    Cylinder = mean(Cylinder),
+    Doors = mean(Doors),
+    Cruise = mean(Cruise),
+    Sound = mean(Sound),
+    Leather = mean(Leather),
+    Buick = mean(Buick),
+    Cadillac = mean(Cadillac),
+    Chevy = mean(Chevy),
+    Pontiac = mean(Pontiac),
+    Saab = mean(Saab),
+    Saturn = mean(Saturn),
+    convertible = mean(convertible),
+    coupe = mean(coupe),
+    hatchback = mean(hatchback),
+    sedan = mean(sedan),
+    wagon = mean(wagon)
   )
 ```
 
 ```
-##        mpg    cyl     disp       hp     drat      wt     qsec     vs      am
-## 1 20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375 0.40625
-##     gear   carb
-## 1 3.6875 2.8125
+## # A tibble: 1 × 18
+##    Price Mileage Cylin…¹ Doors Cruise Sound Leather  Buick Cadil…² Chevy Pontiac
+##    <dbl>   <dbl>   <dbl> <dbl>  <dbl> <dbl>   <dbl>  <dbl>   <dbl> <dbl>   <dbl>
+## 1 21343.  19832.    5.27  3.53  0.752 0.679   0.724 0.0995  0.0995 0.398   0.187
+## # … with 7 more variables: Saab <dbl>, Saturn <dbl>, convertible <dbl>,
+## #   coupe <dbl>, hatchback <dbl>, sedan <dbl>, wagon <dbl>, and abbreviated
+## #   variable names ¹​Cylinder, ²​Cadillac
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 But this process is very repetitive and prone to mistakes - I cannot tell you how many typos I originally had in this code when I first wrote it.
 
 We've seen how to use loops and `map()` functions to solve this task - let's check out one final method: **the `across()` function**.
 
+{{< figure src="allison_horst_art/dplyr_across.png" caption="Artwork by @allison_horst" >}}
+
 `across()` makes it easy to apply the same transformation to multiple columns, allowing you to use `select()` semantics inside `summarize()` and `mutate()`, and other `dplyr` verbs (or functions).
 
-`across()` has two primary arguments:  
+`across()` has two primary arguments:
 
 * The first argument, `.cols`, selects the columns you want to operate on. It uses tidy selection (like `select()`) so you can pick variables by position, name, and type. 
-* The second argument, `.fns`, is a function or list of functions to apply to each column. This can also be a purrr style formula (or list of formulas) like `~ .x / 2`.
-
-{{% callout note %}}
-
-`across()` supersedes the family of "scoped variants" ending in `_if()`, `_at()`, and `_all()`. You need at least version 1.0.0 of `dplyr` to access this function.
-
-{{% /callout %}}
+* The second argument, `.fns`, is a function or list of functions to apply to each column. This can also be a `purrr` style formula (or list of formulas) like `~ .x / 2`.
 
 Here are a couple of examples of `across()` in conjunction with its favorite verb, `summarize()`:
 
@@ -587,69 +565,91 @@ Here are a couple of examples of `across()` in conjunction with its favorite ver
 
 ### `summarize()`, `across()`, and `everything()`
 
-To apply a function to each column in a tibble, use `across()` in conjunction with `everything()`. `everything()` is a selection helper that selects all the variables in a data frame. It should be the first argument in `across()`.
+To apply a function to each column in a tibble, use `across()` in conjunction with `everything()`. `everything()` is a **selection helper** that selects all the variables in a data frame. It should be the first argument in `across()`.
 
 
 ```r
-mtcars %>%
+car_prices %>%
   summarize(across(.cols = everything(), .fns = mean))
 ```
 
 ```
-##        mpg    cyl     disp       hp     drat      wt     qsec     vs      am
-## 1 20.09062 6.1875 230.7219 146.6875 3.596563 3.21725 17.84875 0.4375 0.40625
-##     gear   carb
-## 1 3.6875 2.8125
+## # A tibble: 1 × 18
+##    Price Mileage Cylin…¹ Doors Cruise Sound Leather  Buick Cadil…² Chevy Pontiac
+##    <dbl>   <dbl>   <dbl> <dbl>  <dbl> <dbl>   <dbl>  <dbl>   <dbl> <dbl>   <dbl>
+## 1 21343.  19832.    5.27  3.53  0.752 0.679   0.724 0.0995  0.0995 0.398   0.187
+## # … with 7 more variables: Saab <dbl>, Saturn <dbl>, convertible <dbl>,
+## #   coupe <dbl>, hatchback <dbl>, sedan <dbl>, wagon <dbl>, and abbreviated
+## #   variable names ¹​Cylinder, ²​Cadillac
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 If you want to apply multiple summaries, you store the functions in a `list()`:
 
 
 ```r
-mtcars %>%
+car_prices %>%
   summarize(across(everything(), .fns = list(min, max)))
 ```
 
 ```
-##   mpg_1 mpg_2 cyl_1 cyl_2 disp_1 disp_2 hp_1 hp_2 drat_1 drat_2  wt_1  wt_2
-## 1  10.4  33.9     4     8   71.1    472   52  335   2.76   4.93 1.513 5.424
-##   qsec_1 qsec_2 vs_1 vs_2 am_1 am_2 gear_1 gear_2 carb_1 carb_2
-## 1   14.5   22.9    0    1    0    1      3      5      1      8
+## # A tibble: 1 × 36
+##   Price_1 Price_2 Mileage_1 Mileage_2 Cylinder_1 Cylin…¹ Doors_1 Doors_2 Cruis…²
+##     <dbl>   <dbl>     <int>     <int>      <int>   <int>   <int>   <int>   <int>
+## 1   8639.  70755.       266     50387          4       8       2       4       0
+## # … with 27 more variables: Cruise_2 <int>, Sound_1 <int>, Sound_2 <int>,
+## #   Leather_1 <int>, Leather_2 <int>, Buick_1 <int>, Buick_2 <int>,
+## #   Cadillac_1 <int>, Cadillac_2 <int>, Chevy_1 <int>, Chevy_2 <int>,
+## #   Pontiac_1 <int>, Pontiac_2 <int>, Saab_1 <int>, Saab_2 <int>,
+## #   Saturn_1 <int>, Saturn_2 <int>, convertible_1 <int>, convertible_2 <int>,
+## #   coupe_1 <int>, coupe_2 <int>, hatchback_1 <int>, hatchback_2 <int>,
+## #   sedan_1 <int>, sedan_2 <int>, wagon_1 <int>, wagon_2 <int>, and …
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 To clearly distinguish each summarized variable, we can name them in the list:
 
 
 ```r
-mtcars %>%
+car_prices %>%
   summarize(across(everything(), .fns = list(min = min, max = max)))
 ```
 
 ```
-##   mpg_min mpg_max cyl_min cyl_max disp_min disp_max hp_min hp_max drat_min
-## 1    10.4    33.9       4       8     71.1      472     52    335     2.76
-##   drat_max wt_min wt_max qsec_min qsec_max vs_min vs_max am_min am_max gear_min
-## 1     4.93  1.513  5.424     14.5     22.9      0      1      0      1        3
-##   gear_max carb_min carb_max
-## 1        5        1        8
+## # A tibble: 1 × 36
+##   Price_min Price_max Mileage_…¹ Milea…² Cylin…³ Cylin…⁴ Doors…⁵ Doors…⁶ Cruis…⁷
+##       <dbl>     <dbl>      <int>   <int>   <int>   <int>   <int>   <int>   <int>
+## 1     8639.    70755.        266   50387       4       8       2       4       0
+## # … with 27 more variables: Cruise_max <int>, Sound_min <int>, Sound_max <int>,
+## #   Leather_min <int>, Leather_max <int>, Buick_min <int>, Buick_max <int>,
+## #   Cadillac_min <int>, Cadillac_max <int>, Chevy_min <int>, Chevy_max <int>,
+## #   Pontiac_min <int>, Pontiac_max <int>, Saab_min <int>, Saab_max <int>,
+## #   Saturn_min <int>, Saturn_max <int>, convertible_min <int>,
+## #   convertible_max <int>, coupe_min <int>, coupe_max <int>,
+## #   hatchback_min <int>, hatchback_max <int>, sedan_min <int>, …
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 Because `across()` is usually used in combination with `summarise()` and `mutate()`, it does not select grouping variables in order to avoid accidentally modifying them:
 
 
 ```r
-mtcars %>%
-  group_by(gear) %>%
+car_prices %>%
+  group_by(Cylinder) %>%
   summarize(across(everything(), .fns = mean))
 ```
 
 ```
-## # A tibble: 3 × 11
-##    gear   mpg   cyl  disp    hp  drat    wt  qsec    vs    am  carb
-##   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-## 1     3  16.1  7.47  326. 176.   3.13  3.89  17.7 0.2   0      2.67
-## 2     4  24.5  4.67  123.  89.5  4.04  2.62  19.0 0.833 0.667  2.33
-## 3     5  21.4  6     202. 196.   3.92  2.63  15.6 0.2   1      4.4
+## # A tibble: 3 × 18
+##   Cylinder  Price Mileage Doors Cruise Sound Leather Buick Cadil…¹ Chevy Pontiac
+##      <int>  <dbl>   <dbl> <dbl>  <dbl> <dbl>   <dbl> <dbl>   <dbl> <dbl>   <dbl>
+## 1        4 17863.  20108.  3.44  0.599 0.698   0.746 0      0      0.457   0.127
+## 2        6 20081.  19564.  3.74  0.868 0.706   0.606 0.258  0.0645 0.387   0.258
+## 3        8 38968.  19575.  3.2   1     0.52    1     0      0.6    0.2     0.2  
+## # … with 7 more variables: Saab <dbl>, Saturn <dbl>, convertible <dbl>,
+## #   coupe <dbl>, hatchback <dbl>, sedan <dbl>, wagon <dbl>, and abbreviated
+## #   variable name ¹​Cadillac
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 ### `summarize()` and `across()`
@@ -738,29 +738,50 @@ To pick variables to summarize based on type, use `across()` in conjunction with
 ```r
 worldbank %>%
   group_by(country) %>%
-  summarize(across(where(is.numeric), .fns = mean, na.rm = TRUE))
+  summarize(across(.cols = where(is.numeric), .fns = mean, na.rm = TRUE))
 ```
 
 ```
 ## # A tibble: 6 × 11
-##   country        perc_energy_fos… rnd_gdpshare percgni_adj_gro… real_netinc_per…
-##   <chr>                     <dbl>        <dbl>            <dbl>            <dbl>
-## 1 Argentina                  89.1       0.501              17.5            8560.
-## 2 China                      87.6       1.67               48.3            3661.
-## 3 Indonesia                  65.3       0.0841             30.5            2041.
-## 4 Norway                     58.9       1.60               37.2           70775.
-## 5 United Kingdom             86.3       1.68               13.5           34542.
-## 6 United States              84.2       2.69               17.6           42824.
-## # … with 6 more variables: gdp_capita <dbl>, top10perc_incshare <dbl>,
-## #   employment_ratio <dbl>, life_exp <dbl>, pop_growth <dbl>, pop <dbl>
+##   country        perc_…¹ rnd_g…² percg…³ real_…⁴ gdp_c…⁵ top10…⁶ emplo…⁷ life_…⁸
+##   <chr>            <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+## 1 Argentina         89.1  0.501     17.5   8560.  10648.    31.6    55.4    75.4
+## 2 China             87.6  1.67      48.3   3661.   5397.    30.8    69.8    74.7
+## 3 Indonesia         65.3  0.0841    30.5   2041.   2881.    31.2    62.5    69.5
+## 4 Norway            58.9  1.60      37.2  70775.  85622.    21.9    67.3    81.3
+## 5 United Kingdom    86.3  1.68      13.5  34542.  43416.    26.2    58.7    80.4
+## 6 United States     84.2  2.69      17.6  42824.  51285.    30.1    60.2    78.4
+## # … with 2 more variables: pop_growth <dbl>, pop <dbl>, and abbreviated
+## #   variable names ¹​perc_energy_fosfuel, ²​rnd_gdpshare,
+## #   ³​percgni_adj_gross_savings, ⁴​real_netinc_percap, ⁵​gdp_capita,
+## #   ⁶​top10perc_incshare, ⁷​employment_ratio, ⁸​life_exp
+## # ℹ Use `colnames()` to see all variable names
 ```
 
 (Note that `na.rm = TRUE` is passed on to `mean()` in the same way as in `purrr::map()`.)
 
-`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with "x":
+`across()` also allows you to create compound selections. For example, you can now transform all numeric columns whose name begins with "perc":
+
 
 ```r
-across(where(is.numeric) & starts_with("x"))
+worldbank %>%
+  group_by(country) %>%
+  summarize(across(
+    .cols = where(is.numeric) & starts_with("perc"),
+    .fn = mean, na.rm = TRUE
+  ))
+```
+
+```
+## # A tibble: 6 × 3
+##   country        perc_energy_fosfuel percgni_adj_gross_savings
+##   <chr>                        <dbl>                     <dbl>
+## 1 Argentina                     89.1                      17.5
+## 2 China                         87.6                      48.3
+## 3 Indonesia                     65.3                      30.5
+## 4 Norway                        58.9                      37.2
+## 5 United Kingdom                86.3                      13.5
+## 6 United States                 84.2                      17.6
 ```
 
 ## Mutate
@@ -769,112 +790,91 @@ Combinations of `mutate()` and `across()` work in a similar way to their summari
 
 
 ```r
-mtcars %>%
-  mutate(across(everything(), .fns = log10))
+car_prices %>%
+  mutate(across(.cols = Price:Doors, .fns = log10))
 ```
 
 ```
-##                          mpg       cyl     disp       hp      drat        wt
-## Mazda RX4           1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4183013
-## Mazda RX4 Wag       1.322219 0.7781513 2.204120 2.041393 0.5910646 0.4586378
-## Datsun 710          1.357935 0.6020600 2.033424 1.968483 0.5854607 0.3654880
-## Hornet 4 Drive      1.330414 0.7781513 2.411620 2.041393 0.4885507 0.5071810
-## Hornet Sportabout   1.271842 0.9030900 2.556303 2.243038 0.4983106 0.5365584
-## Valiant             1.257679 0.7781513 2.352183 2.021189 0.4409091 0.5390761
-## Duster 360          1.155336 0.9030900 2.556303 2.389166 0.5065050 0.5526682
-## Merc 240D           1.387390 0.6020600 2.166430 1.792392 0.5670264 0.5037907
-## Merc 230            1.357935 0.6020600 2.148603 1.977724 0.5932861 0.4983106
-## Merc 280            1.283301 0.7781513 2.224274 2.089905 0.5932861 0.5365584
-## Merc 280C           1.250420 0.7781513 2.224274 2.089905 0.5932861 0.5365584
-## Merc 450SE          1.214844 0.9030900 2.440594 2.255273 0.4871384 0.6095944
-## Merc 450SL          1.238046 0.9030900 2.440594 2.255273 0.4871384 0.5717088
-## Merc 450SLC         1.181844 0.9030900 2.440594 2.255273 0.4871384 0.5774918
-## Cadillac Fleetwood  1.017033 0.9030900 2.673942 2.311754 0.4668676 0.7201593
-## Lincoln Continental 1.017033 0.9030900 2.662758 2.332438 0.4771213 0.7343197
-## Chrysler Imperial   1.167317 0.9030900 2.643453 2.361728 0.5092025 0.7279477
-## Fiat 128            1.510545 0.6020600 1.895975 1.819544 0.6106602 0.3424227
-## Honda Civic         1.482874 0.6020600 1.879096 1.716003 0.6928469 0.2081725
-## Toyota Corolla      1.530200 0.6020600 1.851870 1.812913 0.6253125 0.2636361
-## Toyota Corona       1.332438 0.6020600 2.079543 1.986772 0.5682017 0.3918169
-## Dodge Challenger    1.190332 0.9030900 2.502427 2.176091 0.4409091 0.5465427
-## AMC Javelin         1.181844 0.9030900 2.482874 2.176091 0.4983106 0.5359267
-## Camaro Z28          1.123852 0.9030900 2.544068 2.389166 0.5717088 0.5843312
-## Pontiac Firebird    1.283301 0.9030900 2.602060 2.243038 0.4885507 0.5848963
-## Fiat X1-9           1.436163 0.6020600 1.897627 1.819544 0.6106602 0.2866810
-## Porsche 914-2       1.414973 0.6020600 2.080266 1.959041 0.6464037 0.3304138
-## Lotus Europa        1.482874 0.6020600 1.978181 2.053078 0.5763414 0.1798389
-## Ford Pantera L      1.198657 0.9030900 2.545307 2.421604 0.6253125 0.5010593
-## Ferrari Dino        1.294466 0.7781513 2.161368 2.243038 0.5587086 0.4424798
-## Maserati Bora       1.176091 0.9030900 2.478566 2.525045 0.5490033 0.5526682
-## Volvo 142E          1.330414 0.6020600 2.082785 2.037426 0.6138418 0.4440448
-##                         qsec   vs   am      gear      carb
-## Mazda RX4           1.216430 -Inf    0 0.6020600 0.6020600
-## Mazda RX4 Wag       1.230960 -Inf    0 0.6020600 0.6020600
-## Datsun 710          1.269746    0    0 0.6020600 0.0000000
-## Hornet 4 Drive      1.288696    0 -Inf 0.4771213 0.0000000
-## Hornet Sportabout   1.230960 -Inf -Inf 0.4771213 0.3010300
-## Valiant             1.305781    0 -Inf 0.4771213 0.0000000
-## Duster 360          1.199755 -Inf -Inf 0.4771213 0.6020600
-## Merc 240D           1.301030    0 -Inf 0.6020600 0.3010300
-## Merc 230            1.359835    0 -Inf 0.6020600 0.3010300
-## Merc 280            1.262451    0 -Inf 0.6020600 0.6020600
-## Merc 280C           1.276462    0 -Inf 0.6020600 0.6020600
-## Merc 450SE          1.240549 -Inf -Inf 0.4771213 0.4771213
-## Merc 450SL          1.245513 -Inf -Inf 0.4771213 0.4771213
-## Merc 450SLC         1.255273 -Inf -Inf 0.4771213 0.4771213
-## Cadillac Fleetwood  1.254790 -Inf -Inf 0.4771213 0.6020600
-## Lincoln Continental 1.250908 -Inf -Inf 0.4771213 0.6020600
-## Chrysler Imperial   1.241048 -Inf -Inf 0.4771213 0.6020600
-## Fiat 128            1.289366    0    0 0.6020600 0.0000000
-## Honda Civic         1.267641    0    0 0.6020600 0.3010300
-## Toyota Corolla      1.298853    0    0 0.6020600 0.0000000
-## Toyota Corona       1.301247    0 -Inf 0.4771213 0.0000000
-## Dodge Challenger    1.227115 -Inf -Inf 0.4771213 0.3010300
-## AMC Javelin         1.238046 -Inf -Inf 0.4771213 0.3010300
-## Camaro Z28          1.187803 -Inf -Inf 0.4771213 0.6020600
-## Pontiac Firebird    1.231724 -Inf -Inf 0.4771213 0.3010300
-## Fiat X1-9           1.276462    0    0 0.6020600 0.0000000
-## Porsche 914-2       1.222716 -Inf    0 0.6989700 0.3010300
-## Lotus Europa        1.227887    0    0 0.6989700 0.3010300
-## Ford Pantera L      1.161368 -Inf    0 0.6989700 0.6020600
-## Ferrari Dino        1.190332 -Inf    0 0.6989700 0.7781513
-## Maserati Bora       1.164353 -Inf    0 0.6989700 0.9030900
-## Volvo 142E          1.269513    0    0 0.6020600 0.3010300
+## # A tibble: 804 × 18
+##    Price Mileage Cylinder Doors Cruise Sound Leather Buick Cadil…¹ Chevy Pontiac
+##    <dbl>   <dbl>    <dbl> <dbl>  <int> <int>   <int> <int>   <int> <int>   <int>
+##  1  4.36    4.30    0.778 0.602      1     0       0     1       0     0       0
+##  2  4.34    4.13    0.778 0.301      1     1       0     0       0     1       0
+##  3  4.46    4.50    0.602 0.301      1     1       1     0       0     0       0
+##  4  4.49    4.35    0.602 0.301      1     0       0     0       0     0       0
+##  5  4.52    4.25    0.602 0.301      1     1       1     0       0     0       0
+##  6  4.48    4.37    0.602 0.301      1     0       0     0       0     0       0
+##  7  4.52    4.24    0.602 0.301      1     1       1     0       0     0       0
+##  8  4.48    4.44    0.602 0.301      1     0       1     0       0     0       0
+##  9  4.48    4.40    0.602 0.301      1     0       0     0       0     0       0
+## 10  4.43    4.24    0.602 0.602      1     0       1     0       0     0       0
+## # … with 794 more rows, 7 more variables: Saab <int>, Saturn <int>,
+## #   convertible <int>, coupe <int>, hatchback <int>, sedan <int>, wagon <int>,
+## #   and abbreviated variable name ¹​Cadillac
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
 ## Filter
 
-`across()` can also be useful when used in conjunction with `filter()`. For example, we can find all rows where no variable has missing values:
+We cannot directly use `across()` in `filter()` because we need an extra step to combine the results. To that end, `filter()` has two special purpose companion functions:
 
+- `if_any()` keeps the rows where the predicate is true for **at least one** selected column:
 
-```r
-worldbank %>%
-  filter(across(everything(), ~ !is.na(.x)))
-```
+    
+    ```r
+    worldbank %>%
+      filter(if_any(everything(), ~ !is.na(.x)))
+    ```
+    
+    ```
+    ## # A tibble: 78 × 14
+    ##    iso3c date  iso2c country   perc_en…¹ rnd_g…² percg…³ real_…⁴ gdp_c…⁵ top10…⁶
+    ##    <chr> <chr> <chr> <chr>         <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+    ##  1 ARG   2005  AR    Argentina      89.1   0.379    15.5   6198.   5110.    35  
+    ##  2 ARG   2006  AR    Argentina      88.7   0.400    22.1   7388.   5919.    33.9
+    ##  3 ARG   2007  AR    Argentina      89.2   0.402    22.8   8182.   7245.    33.8
+    ##  4 ARG   2008  AR    Argentina      90.7   0.421    21.6   8576.   9021.    32.5
+    ##  5 ARG   2009  AR    Argentina      89.6   0.519    18.9   7904.   8225.    31.4
+    ##  6 ARG   2010  AR    Argentina      89.5   0.518    17.9   8803.  10386.    32  
+    ##  7 ARG   2011  AR    Argentina      88.9   0.537    17.9   9528.  12849.    31  
+    ##  8 ARG   2012  AR    Argentina      89.0   0.609    16.5   9301.  13083.    29.7
+    ##  9 ARG   2013  AR    Argentina      89.0   0.612    15.3   9367.  13080.    29.4
+    ## 10 ARG   2014  AR    Argentina      87.7   0.613    16.1   8903.  12335.    29.9
+    ## # … with 68 more rows, 4 more variables: employment_ratio <dbl>,
+    ## #   life_exp <dbl>, pop_growth <dbl>, pop <dbl>, and abbreviated variable names
+    ## #   ¹​perc_energy_fosfuel, ²​rnd_gdpshare, ³​percgni_adj_gross_savings,
+    ## #   ⁴​real_netinc_percap, ⁵​gdp_capita, ⁶​top10perc_incshare
+    ## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+    ```
 
-```
-## Warning: Using `across()` in `filter()` is deprecated, use `if_any()` or
-## `if_all()`.
-```
+- `if_all()` keeps the rows where the predicate is true for **all** selected columns:
 
-```
-## # A tibble: 42 × 14
-##    iso3c date  iso2c country   perc_energy_fosfuel rnd_gdpshare percgni_adj_gro…
-##    <chr> <chr> <chr> <chr>                   <dbl>        <dbl>            <dbl>
-##  1 ARG   2005  AR    Argentina                89.1        0.379             15.5
-##  2 ARG   2006  AR    Argentina                88.7        0.400             22.1
-##  3 ARG   2007  AR    Argentina                89.2        0.402             22.8
-##  4 ARG   2008  AR    Argentina                90.7        0.421             21.6
-##  5 ARG   2009  AR    Argentina                89.6        0.519             18.9
-##  6 ARG   2010  AR    Argentina                89.5        0.518             17.9
-##  7 ARG   2011  AR    Argentina                88.9        0.537             17.9
-##  8 ARG   2012  AR    Argentina                89.0        0.609             16.5
-##  9 ARG   2013  AR    Argentina                89.0        0.612             15.3
-## 10 ARG   2014  AR    Argentina                87.7        0.613             16.1
-## # … with 32 more rows, and 7 more variables: real_netinc_percap <dbl>,
-## #   gdp_capita <dbl>, top10perc_incshare <dbl>, employment_ratio <dbl>,
-## #   life_exp <dbl>, pop_growth <dbl>, pop <dbl>
-```
+    
+    ```r
+    worldbank %>%
+      filter(if_all(everything(), ~ !is.na(.x)))
+    ```
+    
+    ```
+    ## # A tibble: 42 × 14
+    ##    iso3c date  iso2c country   perc_en…¹ rnd_g…² percg…³ real_…⁴ gdp_c…⁵ top10…⁶
+    ##    <chr> <chr> <chr> <chr>         <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+    ##  1 ARG   2005  AR    Argentina      89.1   0.379    15.5   6198.   5110.    35  
+    ##  2 ARG   2006  AR    Argentina      88.7   0.400    22.1   7388.   5919.    33.9
+    ##  3 ARG   2007  AR    Argentina      89.2   0.402    22.8   8182.   7245.    33.8
+    ##  4 ARG   2008  AR    Argentina      90.7   0.421    21.6   8576.   9021.    32.5
+    ##  5 ARG   2009  AR    Argentina      89.6   0.519    18.9   7904.   8225.    31.4
+    ##  6 ARG   2010  AR    Argentina      89.5   0.518    17.9   8803.  10386.    32  
+    ##  7 ARG   2011  AR    Argentina      88.9   0.537    17.9   9528.  12849.    31  
+    ##  8 ARG   2012  AR    Argentina      89.0   0.609    16.5   9301.  13083.    29.7
+    ##  9 ARG   2013  AR    Argentina      89.0   0.612    15.3   9367.  13080.    29.4
+    ## 10 ARG   2014  AR    Argentina      87.7   0.613    16.1   8903.  12335.    29.9
+    ## # … with 32 more rows, 4 more variables: employment_ratio <dbl>,
+    ## #   life_exp <dbl>, pop_growth <dbl>, pop <dbl>, and abbreviated variable names
+    ## #   ¹​perc_energy_fosfuel, ²​rnd_gdpshare, ³​percgni_adj_gross_savings,
+    ## #   ⁴​real_netinc_percap, ⁵​gdp_capita, ⁶​top10perc_incshare
+    ## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+    ```
 
 ## Acknowledgments
 
@@ -900,7 +900,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-08-30
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -944,6 +944,7 @@ sessioninfo::session_info()
 ##  lifecycle        1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate        1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr         2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  modeldata      * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
 ##  modelr           0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell          0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
 ##  palmerpenguins * 0.1.0      2020-07-23 [2] CRAN (R 4.2.0)

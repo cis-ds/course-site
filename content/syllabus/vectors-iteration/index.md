@@ -16,7 +16,7 @@ authors: []
 
 # Abstract and optional shortened version.
 abstract: ""
-summary: "Define a vector, review iterative operations, and practice using loops and map functions."
+summary: "Define a vector, review iterative operations, and implement iteration using a range of techniques."
 
 # Location of event.
 location: "Kimball Hall B11"
@@ -46,8 +46,8 @@ math: false
 * Demonstrate how to subset vectors
 * Demonstrate vector recycling
 * Define lists
-* Demonstrate iterative operations using loops and `map()` functions
-* Practice writing iterative operations using loops and `map()` functions
+* Demonstrate iterative operations using loops, `map()` functions, and `dplyr::across()`
+* Practice writing iterative operations using loops, `map()` functions, and `dplyr::across()`
 
 ## Before class
 
@@ -57,7 +57,6 @@ math: false
 
 * [Data storage types](/notes/vectors/)
 * [Iteration](/notes/iteration/)
-
 * [Column-wise operations](https://dplyr.tidyverse.org/dev/articles/colwise.html)
 
 ## What you need to do after class
