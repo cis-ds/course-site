@@ -1,8 +1,10 @@
 ---
-title: "Geospatial visualization: vector maps"
+title: "Visualizing spatial data II"
 date: 2022-11-14T15:00:00-06:00
 publishDate: 2019-05-22T12:25:00-05:00
 draft: false
+
+aliases: ["/syllabus/geospatial-visualization-vector-maps/"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
