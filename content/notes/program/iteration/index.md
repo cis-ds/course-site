@@ -671,7 +671,7 @@ worldbank %>%
 ```
 
 ```r
-# by postion
+# by position
 worldbank %>%
   summarize(across(.cols = 12, .fns = mean))
 ```
@@ -876,6 +876,51 @@ We cannot directly use `across()` in `filter()` because we need an extra step to
     ## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
     ```
 
+## Exercise: iterate over columns using `across()`
+
+### Rescale numeric variables
+
+Use `across()` to rescale all numeric variables in `rcis::worldbank` to range between 0 and 1. You can reuse the function from [*R for Data Science*](https://r4ds.had.co.nz/functions.html#when-should-you-write-a-function).
+
+
+```r
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+{{< spoiler text="Click for the solution" >}}
+
+
+```r
+worldbank %>%
+  mutate(across(.cols = where(is.numeric), .fns = rescale01))
+```
+
+```
+## # A tibble: 78 × 14
+##    iso3c date  iso2c country   perc_en…¹ rnd_g…² percg…³ real_…⁴ gdp_c…⁵ top10…⁶
+##    <chr> <chr> <chr> <chr>         <dbl>   <dbl>   <dbl>   <dbl>   <dbl>   <dbl>
+##  1 ARG   2005  AR    Argentina     0.955   0.108  0.0944  0.0938  0.0378   1    
+##  2 ARG   2006  AR    Argentina     0.944   0.116  0.262   0.110   0.0458   0.924
+##  3 ARG   2007  AR    Argentina     0.960   0.116  0.279   0.121   0.0589   0.917
+##  4 ARG   2008  AR    Argentina     1       0.124  0.249   0.126   0.0763   0.828
+##  5 ARG   2009  AR    Argentina     0.971   0.159  0.180   0.117   0.0685   0.752
+##  6 ARG   2010  AR    Argentina     0.968   0.159  0.156   0.129   0.0897   0.793
+##  7 ARG   2011  AR    Argentina     0.950   0.166  0.154   0.139   0.114    0.724
+##  8 ARG   2012  AR    Argentina     0.954   0.192  0.120   0.136   0.116    0.634
+##  9 ARG   2013  AR    Argentina     0.953   0.193  0.0907  0.137   0.116    0.614
+## 10 ARG   2014  AR    Argentina     0.918   0.194  0.110   0.130   0.109    0.648
+## # … with 68 more rows, 4 more variables: employment_ratio <dbl>,
+## #   life_exp <dbl>, pop_growth <dbl>, pop <dbl>, and abbreviated variable names
+## #   ¹​perc_energy_fosfuel, ²​rnd_gdpshare, ³​percgni_adj_gross_savings,
+## #   ⁴​real_netinc_percap, ⁵​gdp_capita, ⁶​top10perc_incshare
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+```
+
+{{< /spoiler >}}
+
 ## Acknowledgments
 
 * `across()` based on [Column-wise operation vignette](https://dplyr.tidyverse.org/dev/articles/colwise.html)
@@ -914,6 +959,7 @@ sessioninfo::session_info()
 ##  cachem           1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger       1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
 ##  cli              3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools        0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace       2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon           1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI              1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -944,6 +990,7 @@ sessioninfo::session_info()
 ##  lifecycle        1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate        1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr         2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  microbenchmark * 1.4.9      2021-11-09 [2] CRAN (R 4.2.0)
 ##  modeldata      * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
 ##  modelr           0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell          0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
@@ -952,6 +999,7 @@ sessioninfo::session_info()
 ##  pkgconfig        2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  purrr          * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6               2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  rcfss          * 0.2.5      2022-08-04 [2] local
 ##  rcis           * 0.2.5      2022-08-08 [2] local
 ##  readr          * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl           1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
