@@ -1,27 +1,123 @@
 ---
 title: "Geospatial visualization: raster maps"
-author: "MACS 24000 <br /> University of Chicago"
-output: rcis::xaringan
+author: "INFO 5940 <br /> Cornell University"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
 ---
 
-```{r setup, include=FALSE}
-options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(
-  cache = TRUE,
-  message = FALSE,
-  warning = FALSE,
-  echo = FALSE,
-  fig.retina = 2, fig.width = 12
+```{r setup, include = FALSE}
+# generate CSS file
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#B31B1B",
+  secondary_color = "#F8981D",
+  inverse_header_color = "#222222",
+  black_color = "#222222",
+  header_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  text_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  code_font_google = xaringanthemer::google_font("Source Code Pro"),
+  base_font_size = "24px",
+  code_font_size = "20px",
+  # title_slide_background_image = "https://github.com/uc-dataviz/course-notes/raw/main/images/hexsticker.svg",
+  # title_slide_background_size = "contain",
+  # title_slide_background_position = "top",
+  header_h1_font_size = "2rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.5rem",
+  extra_css = list(
+    "h1" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h2" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h3" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    ".tiny" = list("font-size" = "70%"),
+    ".small" = list("font-size" = "90%"),
+    ".midi" = list("font-size" = "150%"),
+    ".tiny .remark-code" = list("font-size" = "70%"),
+    ".small .remark-code" = list("font-size" = "90%"),
+    ".midi .remark-code" = list("font-size" = "150%"),
+    ".large" = list("font-size" = "200%"),
+    ".xlarge" = list("font-size" = "600%"),
+    ".huge" = list(
+      "font-size" = "400%",
+      "font-family" = "'Montserrat', sans-serif",
+      "font-weight" = "bold"
+    ),
+    ".hand" = list(
+      "font-family" = "'Gochi Hand', cursive",
+      "font-size" = "125%"
+    ),
+    ".task" = list(
+      "padding-right" = "10px",
+      "padding-left" = "10px",
+      "padding-top" = "3px",
+      "padding-bottom" = "3px",
+      "margin-bottom" = "6px",
+      "margin-top" = "6px",
+      "border-left" = "solid 5px #F1DE67",
+      "background-color" = "#F3D03E"
+    ),
+    ".pull-left" = list(
+      "width" = "49%",
+      "float" = "left"
+    ),
+    ".pull-right" = list(
+      "width" = "49%",
+      "float" = "right"
+    ),
+    ".pull-left-wide" = list(
+      "width" = "70%",
+      "float" = "left"
+    ),
+    ".pull-right-narrow" = list(
+      "width" = "27%",
+      "float" = "right"
+    ),
+    ".pull-left-narrow" = list(
+      "width" = "27%",
+      "float" = "left"
+    ),
+    ".pull-right-wide" = list(
+      "width" = "70%",
+      "float" = "right"
+    ),
+    ".blue" = list(color = "#2A9BB7"),
+    ".purple" = list(color = "#a493ba"),
+    ".yellow" = list(color = "#f1de67"),
+    ".gray" = list(color = "#222222")
+  )
 )
 
+source(here::here("R", "slide-opts.R"))
+knitr::opts_chunk$set(echo = FALSE)
+
+# enable panelsets and default theme
+xaringanExtra::use_panelset()
+```
+
+```{r pkgs, include = FALSE, cache = FALSE}
 library(tidyverse)
 library(sf)
 library(ggmap)
-library(tidycensus)
 library(RColorBrewer)
-library(patchwork)
 library(rnaturalearth)
+library(patchwork)
 library(here)
+library(countdown)
 
 # easier to generate tidycensus maps
 if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])){
@@ -29,10 +125,16 @@ if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cair
 }
 
 set.seed(1234)
-theme_set(theme_minimal(base_size = rcis::base_size))
+theme_set(theme_minimal(base_size = 16))
 ```
 
+class: inverse, middle
+
 # Geospatial visualizations
+
+---
+
+## Geospatial visualizations
 
 * Earliest form of information visualizations
 * Geospatial data visualizations
@@ -40,29 +142,17 @@ theme_set(theme_minimal(base_size = rcis::base_size))
 
 ---
 
-# Dr. John Snow
+## Dr. John Snow
 
-.center[
+```{r echo = FALSE, out.width = "45%"}
+include_graphics(path = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Snow-cholera-map-1.jpg/2183px-Snow-cholera-map-1.jpg")
+```
 
-[![:scale 70%](https://upload.wikimedia.org/wikipedia/commons/2/27/Snow-cholera-map-1.jpg)](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)
-
-]
-
----
-
-# Minard's map of Napoleon's march on Russia
-
-[![Charles Minard's 1869 chart showing the number of men in Napoleon’s 1812 Russian campaign army, their movements, as well as the temperature they encountered on the return path. Source: Wikipedia.](https://upload.wikimedia.org/wikipedia/commons/2/29/Minard.png)](https://en.wikipedia.org/wiki/File:Minard.png)
+.footnote[https://en.wikipedia.org/wiki/John_Snow]
 
 ---
 
-# Minard's map of Napoleon's march on Russia
-
-[![English translation of Minard's map](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Minard_Update.png/1280px-Minard_Update.png)](https://commons.wikimedia.org/wiki/File:Minard_Update.png)
-
----
-
-# Designing modern maps
+## Designing modern maps
 
 * Depict spatial features
 * Incorporate additional attributes and information
@@ -73,16 +163,15 @@ theme_set(theme_minimal(base_size = rcis::base_size))
 
 ---
 
-# Scale
+## Scale
 
 * Proportion between distances and sizes on a map and their actual distances and sizes on Earth
 * Small-scale map
 * Large-scale map
 
-
 ---
 
-# Large-scale map
+## Large-scale map
 
 ```{r large-scale}
 # establish bounding box, get map, and plot
@@ -98,7 +187,7 @@ c(
 
 ---
 
-# Small-scale map
+## Small-scale map
 
 ```{r small-scale}
 # establish bounding box, get map, and plot
@@ -114,7 +203,7 @@ c(
 
 ---
 
-# Projection
+## Projection
 
 * Process of taking a three-dimensional object and visualizing it on a two-dimensional surface
 * No 100% perfect method for this
@@ -128,58 +217,45 @@ c(
 
 ---
 
-# Conformal projections
-
 ```{r import-world, include = FALSE}
 world <- ne_countries(returnclass = "sf")
 ```
 
 ```{r mercator, dependson = "import-world"}
-world %>%
-  st_transform("+proj=merc") %>%
-  ggplot() +
-  geom_sf() +
-  ggtitle("Mercator projection")
-```
-
----
-
-# Equal-area projections
-
-```{r equal-area, dependson = "import-world"}
 {
   world %>%
-    st_transform("+proj=laea") %>%
+    st_transform("+proj=gall") %>%
     ggplot() +
     geom_sf() +
-    ggtitle("Lambert equal area") +
-    theme_minimal(base_size = rcis::base_size * .7)
-} + {
-  world %>%
-    st_transform("+proj=cea") %>%
-    ggplot() +
-    geom_sf() +
-    ggtitle("Equal area cylindrical") +
-    theme_minimal(base_size = rcis::base_size * .7)
+    ggtitle("Gall")
 } +
-  plot_layout(ncol = 1, height = c(5, 5))
+  {
+    world %>%
+      st_transform("+proj=adams_ws1") %>%
+      ggplot() +
+      geom_sf() +
+      ggtitle("Adams World in a Square")
+  } +
+  {
+    world %>%
+      st_transform("+proj=laea") %>%
+      ggplot() +
+      geom_sf() +
+      ggtitle("Lambert equal area")
+  } +
+  {
+    world %>%
+      st_transform("+proj=cea") %>%
+      ggplot() +
+      geom_sf() +
+      ggtitle("Equal area cylindrical")
+  } &
+  theme_minimal(base_size = 11)
 ```
 
 ---
 
-# Mollweide
-
-```{r mollweide, dependson = "import-world"}
-world %>%
-  st_transform("+proj=moll") %>%
-  ggplot() +
-  geom_sf() +
-  ggtitle("Mollweide projection")
-```
-
----
-
-# Symbols
+## Symbols
 
 ```{r bb-hydepark-stamen}
 # store bounding box coordinates
@@ -199,33 +275,27 @@ ggmap(hydepark_stamen)
 
 ---
 
-# `ggmap`
+class: inverse, middle
 
-* Package for drawing maps using `ggplot2` and **raster** map tiles
-* Static image files generated by mapping services
-* Focus on incorporating data into existing maps
-* Severely limits ability to change the appearance of the geographic map
+# Raster maps with `ggmap`
 
 ---
 
-# Obtain map images
+## `ggmap`
 
-* [OpenStreetMap](https://www.openstreetmap.org/)
-* [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782)
-* [Google Maps](https://maps.google.com)
-
---
-
-## Method for specifying map regions
-
-1. Bounding box
-1. Center/zoom
+- Package for drawing maps using `ggplot2` and **raster** map tiles
+- Static image files generated by mapping services
+- Focus on incorporating data into existing maps
+- Severely limits ability to change the appearance of the geographic map
+- Specifying map region
 
 ---
 
-# Bounding box
+## Bounding box
 
-```{r bb-chicago-stamen, echo = TRUE}
+.pull-left[
+
+```{r bb-chicago-stamen, eval = FALSE, echo = TRUE}
 # store bounding box coordinates
 chi_bb <- c(
   left = -87.936287,
@@ -234,24 +304,29 @@ chi_bb <- c(
   top = 42.000835
 )
 
-chicago_stamen <- get_stamenmap(
+# get map tiles
+chicago <- get_stamenmap(
   bbox = chi_bb,
   zoom = 11
 )
-chicago_stamen
+
+# draw the map
+ggmap(chicago)
 ```
+
+]
+
+.pull-right[
+
+```{r bb-chicago-stamen-out, ref.label = "bb-chicago-stamen", eval = TRUE, echo = FALSE, fig.width = 6}
+
+```
+
+]
 
 ---
 
-# Bounding box
-
-```{r bb-chicago-stamen-plot, echo = TRUE}
-ggmap(chicago_stamen)
-```
-
----
-
-# Level of detail
+## Level of detail
 
 ```{r bb-chicago-stamen-zoom}
 {
@@ -273,13 +348,13 @@ ggmap(chicago_stamen)
 
 ---
 
-# Identifying bounding box
+## Identifying bounding box
 
 > Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000) to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.
 
 ---
 
-# Types of map tiles
+## Types of map tiles
 
 ```{r stamen-maptype, echo = FALSE}
 stamen_maptype <- tibble(maptype = c(
@@ -294,7 +369,7 @@ stamen_maptype <- tibble(maptype = c(
     bb = map(maptype, ~ get_stamenmap(bbox = chi_bb, zoom = 10, maptype = .x)),
     ggmap = map2(bb, maptype, ~ ggmap(.x) +
       ggtitle(.y) +
-      theme_minimal(base_size = rcis::base_size * 0.4))
+      theme_minimal(base_size = 9))
   )
 
 wrap_plots(stamen_maptype$ggmap)
@@ -302,25 +377,32 @@ wrap_plots(stamen_maptype$ggmap)
 
 ---
 
-# Import crime data
+## Import crime data
 
 * City of Chicago open data portal
 * [Crime data from 2017](https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr)
 
-```{r import-crimes}
-crimes <- here("static", "data", "Crimes_-_2017.csv") %>%
+```{r import-crimes, include = FALSE}
+crimes <- here("static", "data", "chicago-crimes.csv") %>%
   read_csv()
+```
+
+```{r import-crimes-fake, eval = FALSE}
+crimes <- here("static", "data", "chicago-crimes.csv") %>%
+  read_csv()
+```
+
+```{r crimes, dependson = "import-crimes"}
 glimpse(crimes)
 ```
 
 ---
 
-# Plot high-level map of crime
+## Plot high-level map of crime
 
 .pull-left[
 
 ```{r import-chicago, eval = FALSE, echo = TRUE}
-chicago <- chicago_stamen
 ggmap(chicago)
 ```
 
@@ -328,18 +410,18 @@ ggmap(chicago)
 
 .pull-right[
 
-```{r import-chicago-out, ref.label = "import-chicago", eval = TRUE, echo = FALSE}
+```{r import-chicago-out, ref.label = "import-chicago", eval = TRUE, echo = FALSE, fig.width = 6}
 ```
 
 ]
 
 ---
 
-# Using `geom_point()`
+## Using `geom_point()`
 
 .pull-left[
 
-```{r plot-crime-point, dependson = "import-crimes", eval = FALSE, echo = TRUE, fig.height = 6}
+```{r plot-crime-point, dependson = "import-crimes", eval = FALSE, echo = TRUE}
 ggmap(chicago) +
   geom_point(
     data = crimes,
@@ -354,22 +436,22 @@ ggmap(chicago) +
 
 .pull-right[
 
-```{r plot-crime-point-out, ref.label = "plot-crime-point", eval = TRUE, echo = FALSE}
+```{r plot-crime-point-out, ref.label = "plot-crime-point", eval = TRUE, echo = FALSE, fig.width = 6}
 ```
 
 ]
 
 ---
 
-# Using `geom_point()`
+## Using `geom_point()`
 
 .pull-left[
 
-```{r plot-crime-point-alpha, dependson = "import-crimes", eval = FALSE, echo = TRUE, fig.height = 6}
+```{r plot-crime-point-alpha, dependson = "import-crimes", eval = FALSE, echo = TRUE}
 ggmap(chicago) +
   geom_point(
     data = crimes,
-    aes(
+    mapping = aes(
       x = Longitude,
       y = Latitude
     ),
@@ -383,22 +465,22 @@ ggmap(chicago) +
 
 .pull-right[
 
-```{r plot-crime-point-alpha-out, ref.label = "plot-crime-point-alpha", eval = TRUE, echo = FALSE}
+```{r plot-crime-point-alpha-out, ref.label = "plot-crime-point-alpha", eval = TRUE, echo = FALSE, fig.width = 6}
 ```
 
 ]
 
 ---
 
-# Using `stat_density_2d()`
+## Using `stat_density_2d()`
 
 .pull-left[
 
-```{r kde-contour, dependson = "import-crimes", eval = FALSE, echo = TRUE, fig.height = 6}
+```{r kde-contour, dependson = "import-crimes", eval = FALSE, echo = TRUE}
 ggmap(chicago) +
   geom_density_2d(
     data = crimes,
-    aes(
+    mapping = aes(
       x = Longitude,
       y = Latitude
     )
@@ -409,22 +491,22 @@ ggmap(chicago) +
 
 .pull-right[
 
-```{r kde-contour-out, ref.label = "kde-contour", eval = TRUE, echo = FALSE}
+```{r kde-contour-out, ref.label = "kde-contour", eval = TRUE, echo = FALSE, fig.width = 6}
 ```
 
 ]
 
 ---
 
-# Using `stat_density_2d()`
+## Using `stat_density_2d()`
 
 .pull-left[
 
-```{r kde-fill, dependson = "import-crimes", eval = FALSE, echo = TRUE, fig.height = 6}
+```{r kde-fill, dependson = "import-crimes", eval = FALSE, echo = TRUE}
 ggmap(chicago) +
   stat_density_2d(
     data = crimes,
-    aes(
+    mapping = aes(
       x = Longitude,
       y = Latitude,
       fill = stat(level)
@@ -437,22 +519,22 @@ ggmap(chicago) +
 
 .pull-right[
 
-```{r kde-fill-out, ref.label = "kde-fill", eval = TRUE, echo = FALSE}
+```{r kde-fill-out, ref.label = "kde-fill", eval = TRUE, echo = FALSE, fig.width = 6}
 ```
 
 ]
 
-
-
 ---
 
-# Using `stat_density_2d()`
+## Using `stat_density_2d()`
 
-```{r plot-crime-density, dependson = "import-crimes"}
+.pull-left[
+
+```{r plot-crime-density, dependson = "import-crimes", eval = FALSE, echo = TRUE}
 ggmap(chicago) +
   stat_density_2d(
     data = crimes,
-    aes(
+    mapping = aes(
       x = Longitude,
       y = Latitude,
       fill = stat(level)
@@ -460,15 +542,25 @@ ggmap(chicago) +
     alpha = .2,
     bins = 25,
     geom = "polygon"
-  ) +
-  scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd"))
+  )
 ```
+
+]
+
+.pull-right[
+
+```{r plot-crime-density-out, ref.label = "plot-crime-density", eval = TRUE, echo = FALSE, fig.width = 6}
+```
+
+]
 
 ---
 
-# Looking for variation
+## Looking for variation
 
-```{r plot-crime-wday, dependson = "import-crimes"}
+.pull-left[
+
+```{r plot-crime-wday, dependson = "import-crimes", eval = FALSE, echo = TRUE}
 ggmap(chicago) +
   stat_density_2d(
     data = crimes %>%
@@ -476,7 +568,7 @@ ggmap(chicago) +
         "BURGLARY", "MOTOR VEHICLE THEFT",
         "NARCOTICS", "ROBBERY"
       )),
-    aes(
+    mapping = aes(
       x = Longitude,
       y = Latitude,
       fill = stat(level)
@@ -485,167 +577,25 @@ ggmap(chicago) +
     bins = 10,
     geom = "polygon"
   ) +
-  scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd")) +
-  facet_wrap(~`Primary Type`)
+  facet_wrap(facets = vars(`Primary Type`))
 ```
+
+]
+
+.pull-right[
+
+```{r plot-crime-wday-out, ref.label = "plot-crime-wday", eval = TRUE, echo = FALSE, fig.width = 6}
+```
+
+]
 
 ---
 
-# Locations of murders
+## Exercise using `ggmap`
 
-```{r homicide, dependson = "import-crimes"}
-(homicides <- crimes %>%
-  filter(`Primary Type` == "HOMICIDE"))
+- City of Chicago data portal
+- 311 service requests
+
+```{r cache = FALSE}
+countdown(minutes = 15)
 ```
-
----
-
-# Locations of murders
-
-```{r homicide-city, dependson = "homicide"}
-ggmap(chicago) +
-  geom_point(
-    data = homicides,
-    mapping = aes(
-      x = Longitude,
-      y = Latitude
-    ),
-    size = 1
-  )
-```
-
----
-
-# Locations of murders
-
-```{r get-community-areas, include = FALSE}
-library(sf)
-
-# import shapefile with area names and numbers
-areas <- here(
-  "static", "data", "Boundaries - Community Areas (current)",
-  "geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp"
-) %>%
-  st_read()
-
-crimes %>%
-  filter(`Primary Type` == "HOMICIDE") %>%
-  count(`Community Area`, sort = TRUE) %>%
-  left_join(areas %>%
-    select(community, area_numbe) %>%
-    mutate(area_numbe = as.numeric(as.character(area_numbe))),
-  by = c("Community Area" = "area_numbe")
-  )
-```
-
-```{r get-high-low-murder-maps}
-# North Lawndale is the highest homicides in 2017
-# Compare to Kenwood
-north_lawndale_bb <- c(
-  left = -87.749047,
-  bottom = 41.840185,
-  right = -87.687893,
-  top = 41.879850
-)
-north_lawndale <- get_stamenmap(
-  bbox = north_lawndale_bb,
-  zoom = 14
-)
-
-kenwood_bb <- c(
-  left = -87.613113,
-  bottom = 41.799215,
-  right = -87.582536,
-  top = 41.819064
-)
-kenwood <- get_stamenmap(
-  bbox = kenwood_bb,
-  zoom = 15
-)
-
-{
-  ggmap(north_lawndale) +
-    ggtitle("North Lawndale")
-} + {
-  ggmap(kenwood) +
-    ggtitle("Kenwood")
-}
-```
-
----
-
-# Locations of murders
-
-```{r plot-murder, dependson = "homicide"}
-{
-  ggmap(north_lawndale) +
-    geom_point(
-      data = homicides,
-      aes(x = Longitude, y = Latitude)
-    ) +
-    ggtitle("North Lawndale")
-} + {
-  ggmap(kenwood) +
-    geom_point(
-      data = homicides,
-      aes(x = Longitude, y = Latitude)
-    ) +
-    ggtitle("Kenwood")
-}
-```
-
----
-
-# Additional aesthetics
-
-```{r violent, dependson = "import-crimes"}
-violent <- crimes %>%
-  filter(`Primary Type` %in% c(
-    "HOMICIDE",
-    "CRIM SEXUAL ASSAULT",
-    "ROBBERY"
-  ))
-```
-
-```{r plot-violent, dependson = "violent"}
-{
-  ggmap(north_lawndale) +
-    geom_point(
-      data = violent,
-      aes(
-        x = Longitude, y = Latitude,
-        color = `Primary Type`
-      )
-    ) +
-    scale_color_brewer(type = "qual", palette = "Dark2", guide = guide_legend(nrow = 3)) +
-    theme(legend.position = "bottom") +
-    labs(
-      title = "North Lawndale",
-      color = NULL
-    )
-} + {
-  ggmap(kenwood) +
-    geom_point(
-      data = violent,
-      aes(
-        x = Longitude, y = Latitude,
-        color = `Primary Type`
-      )
-    ) +
-    scale_color_brewer(type = "qual", palette = "Dark2", guide = guide_legend(nrow = 3)) +
-    theme(legend.position = "bottom") +
-    labs(
-      title = "Kenwood",
-      color = NULL
-    )
-}
-```
-
-
----
-
-# Exercise using `ggmap`
-
-![](https://pixel.nymag.com/imgs/daily/strategist/2018/09/05/schwinn-recumbent-exercise-bike.w710.h473.2x.jpg)
-
-
