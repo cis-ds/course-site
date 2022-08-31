@@ -19,7 +19,7 @@ abstract: ""
 summary: "All things related to Quarto and the `knitr` package."
 
 # Location of event.
-location: "Kimball Hall B11"
+location: "Hollister Hall 162"
 
 # Is this a selected talk? (true/false)
 selected: false
