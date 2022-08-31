@@ -70,8 +70,10 @@ One solution is to plot just the lower 48 states. That is, exclude Alaska and Ha
 
 
 ```r
-(usa_48 <- usa %>%
-  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico"))))
+usa_48 <- usa %>%
+  filter(NAME %in% state.name) %>%
+  filter(NAME != "Alaska", NAME != "Hawaii")
+usa_48
 ```
 
 ```
@@ -122,64 +124,20 @@ ggplot(data = usa_48) +
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/usa-fill-1.png" width="672" />
 
-## `albersusa`
+## `urbanmapr`
 
-Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`albersusa`](https://github.com/hrbrmstr/albersusa) includes the `usa_sf()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `remotes::install_github("hrbrmstr/albersusa")`.
+Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`urbnmapr`](https://github.com/UrbanInstitute/urbnmapr) includes the `get_urbn_map()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `remotes::install_github("UrbanInstitute/urbnmapr")`.
 
-
-```r
-library(albersusa)
-usa_sf()
-```
-
-```
-## Simple feature collection with 51 features and 13 fields
-## Geometry type: MULTIPOLYGON
-## Dimension:     XY
-## Bounding box:  xmin: -125 ymin: 20.6 xmax: -66.9 ymax: 49.4
-## Geodetic CRS:  WGS 84
-## First 10 features:
-##         geo_id fips_state                 name lsad census_area iso_3166_2
-## 1  0400000US04         04              Arizona           113594         AZ
-## 2  0400000US05         05             Arkansas            52035         AR
-## 3  0400000US06         06           California           155779         CA
-## 4  0400000US08         08             Colorado           103642         CO
-## 5  0400000US09         09          Connecticut             4842         CT
-## 6  0400000US11         11 District of Columbia               61         DC
-## 7  0400000US13         13              Georgia            57513         GA
-## 8  0400000US17         17             Illinois            55519         IL
-## 9  0400000US18         18              Indiana            35826         IN
-## 10 0400000US22         22            Louisiana            43204         LA
-##      census pop_estimataes_base pop_2010 pop_2011 pop_2012 pop_2013 pop_2014
-## 1   6392017             6392310  6411999  6472867  6556236  6634997  6731484
-## 2   2915918             2915958  2922297  2938430  2949300  2958765  2966369
-## 3  37253956            37254503 37336011 37701901 38062780 38431393 38802500
-## 4   5029196             5029324  5048575  5119661  5191709  5272086  5355866
-## 5   3574097             3574096  3579345  3590537  3594362  3599341  3596677
-## 6    601723              601767   605210   620427   635040   649111   658893
-## 7   9687653             9688681  9714464  9813201  9919000  9994759 10097343
-## 8  12830632            12831587 12840097 12858725 12873763 12890552 12880580
-## 9   6483802             6484192  6490308  6516560  6537632  6570713  6596855
-## 10  4533372             4533479  4545581  4575972  4604744  4629284  4649676
-##                          geometry
-## 1  MULTIPOLYGON (((-113 37, -1...
-## 2  MULTIPOLYGON (((-94 33, -94...
-## 3  MULTIPOLYGON (((-120 34, -1...
-## 4  MULTIPOLYGON (((-107 41, -1...
-## 5  MULTIPOLYGON (((-72.4 42, -...
-## 6  MULTIPOLYGON (((-77 38.8, -...
-## 7  MULTIPOLYGON (((-84.8 35, -...
-## 8  MULTIPOLYGON (((-89.4 42.5,...
-## 9  MULTIPOLYGON (((-84.8 40.4,...
-## 10 MULTIPOLYGON (((-88.9 29.8,...
-```
 
 ```r
-ggplot(data = usa_sf()) +
+library(urbnmapr)
+states_sf <- get_urbn_map("states", sf = TRUE)
+
+ggplot(data = states_sf) +
   geom_sf()
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/albersusa-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/urbnmapr-1.png" width="672" />
 
 ## Add data to the map
 
@@ -187,164 +145,144 @@ Region boundaries serve as the background in geospatial data visualization - so 
 
 ## Points
 
-Let's use our `usa_48` map data to add some points. The `airports` data frame in the `nycflights13` package includes geographic info on airports in the United States.
+Let's use our [crimes data from the City of Chicago](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
+
+
 
 
 ```r
-library(nycflights13)
-airports
+crimes <- here("data", "chicago-crimes.csv") %>%
+  read_csv()
 ```
-
-```
-## # A tibble: 1,458 × 8
-##    faa   name                             lat    lon   alt    tz dst   tzone    
-##    <chr> <chr>                          <dbl>  <dbl> <dbl> <dbl> <chr> <chr>    
-##  1 04G   Lansdowne Airport               41.1  -80.6  1044    -5 A     America/…
-##  2 06A   Moton Field Municipal Airport   32.5  -85.7   264    -6 A     America/…
-##  3 06C   Schaumburg Regional             42.0  -88.1   801    -6 A     America/…
-##  4 06N   Randall Airport                 41.4  -74.4   523    -5 A     America/…
-##  5 09J   Jekyll Island Airport           31.1  -81.4    11    -5 A     America/…
-##  6 0A9   Elizabethton Municipal Airport  36.4  -82.2  1593    -5 A     America/…
-##  7 0G6   Williams County Airport         41.5  -84.5   730    -5 A     America/…
-##  8 0G7   Finger Lakes Regional Airport   42.9  -76.8   492    -5 A     America/…
-##  9 0P2   Shoestring Aviation Airfield    39.8  -76.6  1000    -5 U     America/…
-## 10 0S9   Jefferson County Intl           48.1 -123.    108    -8 A     America/…
-## # … with 1,448 more rows
-## # ℹ Use `print(n = ...)` to see more rows
-```
-
-Each airport has it's geographic location encoded through `lat` and `lon`. To draw these points on the map, basically we draw a scatterplot with `x = lon` and `y = lat`. In fact we could simply do that:
 
 
 ```r
-ggplot(airports, aes(lon, lat)) +
+crimes_homicide <- filter(.data = crimes, `Primary Type` == "HOMICIDE")
+crimes_homicide
+```
+
+```
+## # A tibble: 676 × 22
+##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
+##     <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
+##  1 1.08e7 JA1194… 01/1… 023X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   0911 
+##  2 1.08e7 JA1383… 02/0… 013X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1022 
+##  3 1.12e7 JA5493… 12/1… 038X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1112 
+##  4 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … TAVERN  TRUE   FALSE   1914 
+##  5 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1113 
+##  6 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
+##  7 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
+##  8 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
+##  9 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
+## 10 2.31e4 HZ5648… 01/0… 086X… 0110  HOMICI… FIRST … PORCH   FALSE  FALSE   0632 
+## # … with 666 more rows, 11 more variables: District <chr>, Ward <dbl>,
+## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
+## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
+## #   Longitude <dbl>, Location <chr>, and abbreviated variable names
+## #   ¹​`Case Number`, ²​`Primary Type`, ³​Description, ⁴​`Location Description`,
+## #   ⁵​Domestic
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+```
+
+Each crime has it's geographic location encoded through `Latitude` and `Longitude`. To draw these points on the map, basically we draw a scatterplot with `x = Longitude` and `y = Latitude`. In fact we could simply do that:
+
+
+```r
+ggplot(
+  data = crimes_homicide,
+  mapping = aes(
+    x = Longitude,
+    y = Latitude
+  )
+) +
   geom_point()
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/scatter-1.png" width="672" />
 
-Let's overlay it with the mapped state borders:
+Let's overlay it with the mapped community regions:
 
 
 ```r
-ggplot(data = usa_48) +
-  geom_sf() +
-  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+chi_json <- st_read(dsn = here("static", "data", "community-area-boundaries.geojson"))
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/flights-usa-1.png" width="672" />
-
-Slight problem. We have airports listed outside of the continental United States. There are a couple ways to rectify this. Unfortunately `airports` does not include a variable identifying state so the `filter()` operation is not that simple. The easiest solution is to crop the limits of the graph using `coord_sf()` to only show the mainland:
+```
+## Reading layer `community-area-boundaries' from data source 
+##   `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/community-area-boundaries.geojson' 
+##   using driver `GeoJSON'
+## Simple feature collection with 77 features and 9 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## Geodetic CRS:  WGS 84
+```
 
 
 ```r
-ggplot(data = usa_48) +
+ggplot(data = chi_json) +
   geom_sf() +
-  geom_point(data = airports, aes(x = lon, y = lat), shape = 1) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
+  geom_point(
+    data = crimes_homicide,
+    mapping = aes(
+      x = Longitude,
+      y = Latitude
+    ),
+    shape = 1
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/crop-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/chi-crime-1.png" width="672" />
 
-Alternatively, we can use `st_as_sf()` to convert `airports` to a simple features data frame.
+Alternatively, we can use `st_as_sf()` to convert `crimes_homicide` to a simple features data frame.
 
 
 ```r
-airports_sf <- st_as_sf(airports, coords = c("lon", "lat"))
-st_crs(airports_sf) <- 4326 # set the coordinate reference system
-airports_sf
+crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("Longitude", "Latitude"))
+st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
+crimes_homicide_sf
 ```
 
 ```
-## Simple feature collection with 1458 features and 6 fields
+## Simple feature collection with 676 features and 20 fields
 ## Geometry type: POINT
 ## Dimension:     XY
-## Bounding box:  xmin: -177 ymin: 19.7 xmax: 174 ymax: 72.3
+## Bounding box:  xmin: -87.8 ymin: 41.7 xmax: -87.5 ymax: 42
 ## Geodetic CRS:  WGS 84
-## # A tibble: 1,458 × 7
-##    faa   name                    alt    tz dst   tzone     geometry
-##  * <chr> <chr>                 <dbl> <dbl> <chr> <chr>  <POINT [°]>
-##  1 04G   Lansdowne Airport      1044    -5 A     Amer… (-80.6 41.1)
-##  2 06A   Moton Field Municipa…   264    -6 A     Amer… (-85.7 32.5)
-##  3 06C   Schaumburg Regional     801    -6 A     Amer…   (-88.1 42)
-##  4 06N   Randall Airport         523    -5 A     Amer… (-74.4 41.4)
-##  5 09J   Jekyll Island Airport    11    -5 A     Amer… (-81.4 31.1)
-##  6 0A9   Elizabethton Municip…  1593    -5 A     Amer… (-82.2 36.4)
-##  7 0G6   Williams County Airp…   730    -5 A     Amer… (-84.5 41.5)
-##  8 0G7   Finger Lakes Regiona…   492    -5 A     Amer… (-76.8 42.9)
-##  9 0P2   Shoestring Aviation …  1000    -5 U     Amer… (-76.6 39.8)
-## 10 0S9   Jefferson County Intl   108    -8 A     Amer…  (-123 48.1)
-## # … with 1,448 more rows
-## # ℹ Use `print(n = ...)` to see more rows
+## # A tibble: 676 × 21
+##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
+##  *  <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
+##  1 1.08e7 JA1194… 01/1… 023X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   0911 
+##  2 1.08e7 JA1383… 02/0… 013X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1022 
+##  3 1.12e7 JA5493… 12/1… 038X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1112 
+##  4 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … TAVERN  TRUE   FALSE   1914 
+##  5 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1113 
+##  6 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
+##  7 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
+##  8 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
+##  9 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
+## 10 2.31e4 HZ5648… 01/0… 086X… 0110  HOMICI… FIRST … PORCH   FALSE  FALSE   0632 
+## # … with 666 more rows, 10 more variables: District <chr>, Ward <dbl>,
+## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
+## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Location <chr>,
+## #   geometry <POINT [°]>, and abbreviated variable names ¹​`Case Number`,
+## #   ²​`Primary Type`, ³​Description, ⁴​`Location Description`, ⁵​Domestic
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
 ```
 
-`coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`:
+`coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`
 
 
 ```r
 ggplot() +
-  geom_sf(data = usa_48) +
-  geom_sf(data = airports_sf, shape = 1) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
+  geom_sf(data = chi_json) +
+  geom_sf(
+    data = crimes_homicide_sf,
+    shape = 1
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/flights-sf-plot-1.png" width="672" />
-
-## Symbols
-
-We can change the size or type of symbols on the map. For instance, we can draw a **bubble plot** (also known as a **proportional symbol map**) and encode the altitude of the airport through the size channel:
-
-
-```r
-ggplot(data = usa_48) +
-  geom_sf() +
-  geom_point(
-    data = airports, aes(x = lon, y = lat, size = alt),
-    fill = "grey", color = "black", alpha = .2
-  ) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
-  ) +
-  scale_size_area(guide = FALSE)
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/airport-alt-1.png" width="672" />
-
-Circle area is proportional to the airport's altitude (in feet). Or we could scale it based on the number of arriving flights in `flights`:
-
-
-```r
-airports_n <- flights %>%
-  count(dest) %>%
-  left_join(airports, by = c("dest" = "faa"))
-
-ggplot(data = usa_48) +
-  geom_sf() +
-  geom_point(
-    data = airports_n, aes(x = lon, y = lat, size = n),
-    fill = "grey", color = "black", alpha = .2
-  ) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
-  ) +
-  scale_size_area(guide = FALSE)
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/airport-dest-1.png" width="672" />
-
-{{% callout note %}}
-
-`airports` contains a list of virtually all commercial airports in the United States. However `flights` only contains data on flights departing from New York City airports (JFK, LaGuardia, or Newark) and only services a few airports around the country.
-
-{{% /callout %}}
+<img src="{{< blogdown/postref >}}index_files/figure-html/crimes-sf-plot-1.png" width="100%" />
 
 ## Fill (choropleths)
 
@@ -354,30 +292,25 @@ We will continue to use the `usa_48` simple features data frame and draw a choro
 
 
 ```r
-(fb_state <- here(
-  "static", "data", "census_bureau",
-  "ACS_13_5YR_B05012_state", "ACS_13_5YR_B05012.csv"
-) %>%
-  read_csv() %>%
-  mutate(rate = HD01_VD03 / HD01_VD01))
+fb_state <- read_csv(file = here("static", "data", "foreign-born.csv"))
+fb_state
 ```
 
 ```
-## # A tibble: 51 × 10
-##    GEO.id GEO.id2 GEO.d…¹ HD01_…² HD02_…³ HD01_…⁴ HD02_…⁵ HD01_…⁶ HD02_…⁷   rate
-##    <chr>  <chr>   <chr>     <dbl> <lgl>     <dbl>   <dbl>   <dbl>   <dbl>  <dbl>
-##  1 04000… 01      Alabama  4.80e6 NA       4.63e6    2881  1.68e5    2881 0.0351
-##  2 04000… 02      Alaska   7.20e5 NA       6.70e5    1262  5.04e4    1262 0.0699
-##  3 04000… 04      Arizona  6.48e6 NA       5.61e6    7725  8.70e5    7725 0.134 
-##  4 04000… 05      Arkans…  2.93e6 NA       2.80e6    2568  1.33e5    2568 0.0455
-##  5 04000… 06      Califo…  3.77e7 NA       2.75e7   30666  1.02e7   30666 0.270 
-##  6 04000… 08      Colora…  5.12e6 NA       4.62e6    5778  4.96e5    5779 0.0968
-##  7 04000… 09      Connec…  3.58e6 NA       3.10e6    5553  4.87e5    5553 0.136 
-##  8 04000… 10      Delawa…  9.08e5 NA       8.32e5    2039  7.68e4    2039 0.0845
-##  9 04000… 11      Distri…  6.19e5 NA       5.34e5    2017  8.52e4    2017 0.138 
-## 10 04000… 12      Florida  1.91e7 NA       1.54e7   16848  3.70e6   16848 0.194 
-## # … with 41 more rows, and abbreviated variable names ¹​`GEO.display-label`,
-## #   ²​HD01_VD01, ³​HD02_VD01, ⁴​HD01_VD02, ⁵​HD02_VD02, ⁶​HD01_VD03, ⁷​HD02_VD03
+## # A tibble: 52 × 6
+##    GEOID NAME                    total   native  foreign pct_foreign
+##    <chr> <chr>                   <dbl>    <dbl>    <dbl>       <dbl>
+##  1 01    Alabama               4876250  4703303   172947      0.0355
+##  2 02    Alaska                 737068   679401    57667      0.0782
+##  3 04    Arizona               7050299  6109648   940651      0.133 
+##  4 05    Arkansas              2999370  2854323   145047      0.0484
+##  5 06    California           39283497 28736287 10547210      0.268 
+##  6 08    Colorado              5610349  5063836   546513      0.0974
+##  7 10    Delaware               957248   865775    91473      0.0956
+##  8 11    District of Columbia   692683   597618    95065      0.137 
+##  9 09    Connecticut           3575074  3054123   520951      0.146 
+## 10 12    Florida              20901636 16576836  4324800      0.207 
+## # … with 42 more rows
 ## # ℹ Use `print(n = ...)` to see more rows
 ```
 
@@ -387,12 +320,12 @@ Now that we have our data, we want to draw it on the map. `fb_state` contains on
 
 
 ```r
-(usa_fb <- usa_48 %>%
-  left_join(fb_state, by = c("STATEFP" = "GEO.id2")))
+usa_fb <- left_join(x = usa_48, y = fb_state, by = c("STATEFP" = "GEOID", "NAME"))
+usa_fb
 ```
 
 ```
-## Simple feature collection with 48 features and 18 fields
+## Simple feature collection with 48 features and 13 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
 ## Bounding box:  xmin: -125 ymin: 24.5 xmax: -66.9 ymax: 49.4
@@ -409,28 +342,17 @@ Now that we have our data, we want to draw it on the map. `fb_state` contains on
 ## 8       17 01779784 0400000US17    17     IL    Illinois   00 1.44e+11 6.20e+09
 ## 9       18 00448508 0400000US18    18     IN     Indiana   00 9.28e+10 1.54e+09
 ## 10      20 00481813 0400000US20    20     KS      Kansas   00 2.12e+11 1.35e+09
-##         GEO.id GEO.display-label HD01_VD01 HD02_VD01 HD01_VD02 HD02_VD02
-## 1  0400000US01           Alabama   4799277        NA   4631045      2881
-## 2  0400000US05          Arkansas   2933369        NA   2799972      2568
-## 3  0400000US06        California  37659181        NA  27483342     30666
-## 4  0400000US09       Connecticut   3583561        NA   3096374      5553
-## 5  0400000US12           Florida  19091156        NA  15392410     16848
-## 6  0400000US13           Georgia   9810417        NA   8859747      7988
-## 7  0400000US16             Idaho   1583364        NA   1489560      2528
-## 8  0400000US17          Illinois  12848554        NA  11073828     10091
-## 9  0400000US18           Indiana   6514861        NA   6206801      4499
-## 10 0400000US20            Kansas   2868107        NA   2677007      3095
-##    HD01_VD03 HD02_VD03   rate                       geometry
-## 1     168232      2881 0.0351 MULTIPOLYGON (((-88.3 30.2,...
-## 2     133397      2568 0.0455 MULTIPOLYGON (((-94.6 36.5,...
-## 3   10175839     30666 0.2702 MULTIPOLYGON (((-119 33.5, ...
-## 4     487187      5553 0.1360 MULTIPOLYGON (((-73.7 41.1,...
-## 5    3698746     16848 0.1937 MULTIPOLYGON (((-80.7 24.9,...
-## 6     950670      7988 0.0969 MULTIPOLYGON (((-85.6 35, -...
-## 7      93804      2528 0.0592 MULTIPOLYGON (((-117 44.4, ...
-## 8    1774726     10093 0.1381 MULTIPOLYGON (((-91.5 40.2,...
-## 9     308060      4500 0.0473 MULTIPOLYGON (((-88.1 37.9,...
-## 10    191100      3100 0.0666 MULTIPOLYGON (((-102 40, -1...
+##       total   native  foreign pct_foreign                       geometry
+## 1   4876250  4703303   172947      0.0355 MULTIPOLYGON (((-88.3 30.2,...
+## 2   2999370  2854323   145047      0.0484 MULTIPOLYGON (((-94.6 36.5,...
+## 3  39283497 28736287 10547210      0.2685 MULTIPOLYGON (((-119 33.5, ...
+## 4   3575074  3054123   520951      0.1457 MULTIPOLYGON (((-73.7 41.1,...
+## 5  20901636 16576836  4324800      0.2069 MULTIPOLYGON (((-80.7 24.9,...
+## 6  10403847  9349973  1053874      0.1013 MULTIPOLYGON (((-85.6 35, -...
+## 7   1717750  1615307   102443      0.0596 MULTIPOLYGON (((-117 44.4, ...
+## 8  12770631 10973669  1796962      0.1407 MULTIPOLYGON (((-91.5 40.2,...
+## 9   6665703  6315781   349922      0.0525 MULTIPOLYGON (((-88.1 37.9,...
+## 10  2910652  2702807   207845      0.0714 MULTIPOLYGON (((-102 40, -1...
 ```
 
 ### Draw the map
@@ -440,14 +362,14 @@ With the newly combined data frame, use `geom_sf()` and define the `fill` aesthe
 
 ```r
 ggplot(data = usa_fb) +
-  geom_sf(aes(fill = rate))
+  geom_sf(mapping = aes(fill = pct_foreign))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/geom-map-state-1.png" width="672" />
 
 ### Bin data to discrete intervals
 
-When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keep the variable continuous is technically more precise, [the human eye cannot usually distinguish between two colors which are very similar to one another.](https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf) By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While `cut()` is a base R function for converting continuous variables into discrete values, `ggplot2` offers two functions that explicitly define how we want to bin the numeric vector (column).
+When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keeping the variable continuous is technically more precise, [the human eye cannot usually distinguish between two colors which are very similar to one another.](https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf) By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While `cut()` is a base R function for converting continuous variables into discrete values, `ggplot2` offers two functions that explicitly define how we want to bin the numeric vector (column).
 
 `cut_interval()` makes `n` groups with equal range:
 
@@ -472,12 +394,6 @@ usa_fb %>%
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-1.png" width="672" />
-
-{{% callout note %}}
-
-See [this StackOverflow thread](https://gis.stackexchange.com/questions/86668/should-i-use-a-discrete-or-continuous-scale-for-coloring-a-chloropleth) for a more in-depth discussion on the merits of bucketizing a continuous variable and whether to use `cut_interval()` or `cut_number()`.
-
-{{% /callout %}}
 
 ## Changing map projection
 
@@ -550,13 +466,16 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-08-31
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package       * version    date (UTC) lib source
+##  albersusa     * 0.4.1      2022-06-08 [2] Github (hrbrmstr/albersusa@07aa87f)
 ##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
 ##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  bit             4.0.4      2020-08-04 [2] CRAN (R 4.2.0)
+##  bit64           4.0.5      2020-08-30 [2] CRAN (R 4.2.0)
 ##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
 ##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
 ##  broom           1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
@@ -566,6 +485,7 @@ sessioninfo::session_info()
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -576,8 +496,10 @@ sessioninfo::session_info()
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
+##  foreign         0.8-82     2022-01-16 [2] CRAN (R 4.2.1)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
 ##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
 ##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
@@ -588,6 +510,7 @@ sessioninfo::session_info()
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -595,11 +518,15 @@ sessioninfo::session_info()
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  maptools        1.1-4      2022-04-17 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
+##  nycflights13  * 1.0.2      2021-04-12 [2] CRAN (R 4.2.0)
 ##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
@@ -609,15 +536,19 @@ sessioninfo::session_info()
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
+##  rgdal           1.5-32     2022-05-09 [2] CRAN (R 4.2.0)
+##  rgeos           0.5-9      2021-12-15 [2] CRAN (R 4.2.0)
 ##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
 ##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
+##  s2              1.1.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
 ##  sf            * 1.0-8      2022-07-14 [2] CRAN (R 4.2.0)
+##  sp              1.5-0      2022-06-05 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
 ##  tibble        * 3.1.8      2022-07-22 [2] CRAN (R 4.2.0)
@@ -626,9 +557,12 @@ sessioninfo::session_info()
 ##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  units           0.8-0      2022-02-05 [2] CRAN (R 4.2.0)
+##  urbnmapr      * 0.0.0.9002 2022-06-08 [2] Github (UrbanInstitute/urbnmapr@ef9f448)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
 ##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  vroom           1.5.7      2021-11-30 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
+##  wk              0.6.0      2022-01-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
 ##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)

@@ -27,26 +27,11 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
-
-{{% callout note %}}
-
-Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
-
-{{% /callout %}}
+[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Stamen Maps](http://maps.stamen.com/) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
 
 ## Obtain map images
 
-`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782), as well as the proprietary Google Maps. Obtaining map tiles requires use of the `get_map()` function. There are two formats for specifying the mapping region you wish to obtain:
-
-1. Bounding box
-1. Center/zoom
-
-## Specifying map regions
-
-### Bounding box
-
-**Bounding box** requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
+`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782). Obtaining map tiles requires use of the `get_map()` function. To identify which map tiles need to be obtained, you specify the mapping region using a **bounding box**. The bounding box requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
 
 ```{r bb-chicago-stamen}
 # store bounding box coordinates
@@ -99,41 +84,11 @@ Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000)
 
 {{% /callout %}}
 
-### Center/zoom
-
-While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the **center** coordinate of the map (a single longitude/latitude location) and the level of **zoom** or detail. `zoom` is an integer value from `3` (continent) to `21` (building). This means the level of detail is hardcoded to the size of the mapping region. The default `zoom` level is `10`.
-
-```{r center-zoom-chicago, eval = FALSE}
-# store center coordinate
-chi_center <- c(lon = -87.65, lat = 41.855)
-
-chicago_google <- get_googlemap(center = chi_center)
-ggmap(chicago_google)
-
-get_googlemap(
-  center = chi_center,
-  zoom = 12
-) %>%
-  ggmap()
-
-get_googlemap(
-  center = chi_center,
-  zoom = 8
-) %>%
-  ggmap()
-```
-
-{{% callout note %}}
-
-Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
-
-{{% /callout %}}
-
 ## Types of map tiles
 
 Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
 
-```{r stamen-maptype, fig.height = 8, fig.width = 6, echo = FALSE}
+```{r stamen-maptype, fig.asp = 4 / 3, echo = FALSE}
 stamen_maptype <- tibble(maptype = c(
   "terrain", "terrain-background",
   "terrain-labels", "terrain-lines",
@@ -151,27 +106,10 @@ stamen_maptype <- tibble(maptype = c(
 wrap_plots(stamen_maptype$ggmap)
 ```
 
-Google Maps is a bit more limited, but still offers a few major types:
-
-```{r google-maptype, echo = FALSE, eval = FALSE}
-google_maptype <- tibble(maptype = c(
-  "terrain", "satellite",
-  "roadmap", "hybrid"
-)) %>%
-  mutate(
-    bb = map(maptype, ~ get_googlemap(center = chi_center, maptype = .x)),
-    ggmap = map2(bb, maptype, ~ ggmap(.x) +
-      ggtitle(.y))
-  )
-
-wrap_plots(google_maptype$ggmap)
-```
-
-See the documentation for the `get_*map()` function for the exact code necessary to get each type of map.
 
 {{% callout note %}}
 
-`get_map()` is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_googlemap()`, `get_stamenmap()`, and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
+`get_map()` is a wrapper that automatically queries OpenStreetMap or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_stamenmap()` and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
 
 {{% /callout %}}
 
@@ -223,7 +161,7 @@ What went wrong? All we get is a sea of black.
 nrow(crimes)
 ```
 
-Oh yeah. There were `r nrow(crimes)` reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:
+Oh yeah. There were `r scales::comma_format()(nrow(crimes))` reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparency of each data point so dense clusters of crime become apparent:
 
 ```{r plot-crime-point-alpha, dependson = "import-crimes"}
 ggmap(chicago) +

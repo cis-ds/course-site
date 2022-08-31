@@ -26,26 +26,11 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
-
-{{% callout note %}}
-
-Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
-
-{{% /callout %}}
+[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Stamen Maps](http://maps.stamen.com/) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
 
 ## Obtain map images
 
-`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782), as well as the proprietary Google Maps. Obtaining map tiles requires use of the `get_map()` function. There are two formats for specifying the mapping region you wish to obtain:
-
-1. Bounding box
-1. Center/zoom
-
-## Specifying map regions
-
-### Bounding box
-
-**Bounding box** requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
+`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782). Obtaining map tiles requires use of the `get_map()` function. To identify which map tiles need to be obtained, you specify the mapping region using a **bounding box**. The bounding box requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
 
 
 ```r
@@ -113,52 +98,16 @@ Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000)
 
 {{% /callout %}}
 
-### Center/zoom
-
-While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the **center** coordinate of the map (a single longitude/latitude location) and the level of **zoom** or detail. `zoom` is an integer value from `3` (continent) to `21` (building). This means the level of detail is hardcoded to the size of the mapping region. The default `zoom` level is `10`.
-
-
-```r
-# store center coordinate
-chi_center <- c(lon = -87.65, lat = 41.855)
-
-chicago_google <- get_googlemap(center = chi_center)
-ggmap(chicago_google)
-
-get_googlemap(
-  center = chi_center,
-  zoom = 12
-) %>%
-  ggmap()
-
-get_googlemap(
-  center = chi_center,
-  zoom = 8
-) %>%
-  ggmap()
-```
-
-{{% callout note %}}
-
-Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
-
-{{% /callout %}}
-
 ## Types of map tiles
 
 Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/stamen-maptype-1.png" width="576" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/stamen-maptype-1.png" width="672" />
 
-Google Maps is a bit more limited, but still offers a few major types:
-
-
-
-See the documentation for the `get_*map()` function for the exact code necessary to get each type of map.
 
 {{% callout note %}}
 
-`get_map()` is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_googlemap()`, `get_stamenmap()`, and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
+`get_map()` is a wrapper that automatically queries OpenStreetMap or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_stamenmap()` and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
 
 {{% /callout %}}
 
@@ -249,7 +198,7 @@ nrow(crimes)
 ## [1] 267345
 ```
 
-Oh yeah. There were 267345 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:
+Oh yeah. There were 267,345 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparency of each data point so dense clusters of crime become apparent:
 
 
 ```r
@@ -577,7 +526,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-08-31
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -591,16 +540,22 @@ sessioninfo::session_info()
 ##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
+##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
+##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  curl            4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
 ##  dplyr         * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  e1071           1.7-11     2022-06-07 [2] CRAN (R 4.2.0)
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
@@ -614,13 +569,16 @@ sessioninfo::session_info()
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
 ##  jpeg            0.1-9      2021-07-24 [2] CRAN (R 4.2.0)
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
+##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
@@ -632,6 +590,7 @@ sessioninfo::session_info()
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  plyr            1.8.7      2022-03-24 [2] CRAN (R 4.2.0)
 ##  png             0.1-7      2013-12-03 [2] CRAN (R 4.2.0)
+##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
 ##  RColorBrewer  * 1.1-3      2022-04-03 [2] CRAN (R 4.2.0)
@@ -649,6 +608,7 @@ sessioninfo::session_info()
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  sf            * 1.0-8      2022-07-14 [2] CRAN (R 4.2.0)
 ##  sp              1.5-0      2022-06-05 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
@@ -657,6 +617,7 @@ sessioninfo::session_info()
 ##  tidyselect      1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
 ##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  units           0.8-0      2022-02-05 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
 ##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)

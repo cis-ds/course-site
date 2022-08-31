@@ -22,10 +22,10 @@ library(ggmap)
 library(rnaturalearth)
 library(here)
 
-# # useful on MacOS to speed up rendering of geom_sf() objects
-# if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
-#   options(bitmapType = "cairo")
-# }
+# useful on MacOS to speed up rendering of geom_sf() objects
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
+  options(bitmapType = "cairo")
+}
 
 options(digits = 3)
 set.seed(1234)
@@ -36,7 +36,7 @@ theme_set(theme_minimal())
 
 ## John Snow and the Broad Street water pump
 
-{{< figure src="https://upload.wikimedia.org/wikipedia/commons/2/27/Snow-cholera-map-1.jpg" caption="[Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)" >}}
+{{< figure src="Snow-cholera-map-1.jpeg" caption="[Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)" >}}
 
 In the nineteenth century the theory of bacteria was not widely accepted by the medical community or the public.[^snow] A mother washed her baby's diaper in a well in 1854 in London, sparking an outbreak of **cholera**, an intestinal disease that causes vomiting, diarrhea, and eventually death. This disease had presented itself previously in London but its cause was still unknown.
 
@@ -48,7 +48,7 @@ Dr. John Snow lived in Soho, the suburb of London where the disease manifested i
 
 {{< figure src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Minard_Update.png" caption="[English translation of Minard's map](https://commons.wikimedia.org/wiki/File:Minard_Update.png)" >}}
 
-This illustration is identifed in Edward Tufte's **The Visual Display of Quantitative Information** as one of "the best statistical drawings ever created". It also demonstrates a very important rule of warfare: [never invade Russia in the winter](https://en.wikipedia.org/wiki/Russian_Winter).
+This illustration is identified in Edward Tufte's **The Visual Display of Quantitative Information** as one of "the best statistical drawings ever created". It also demonstrates a very important rule of warfare: [never invade Russia in the winter](https://en.wikipedia.org/wiki/Russian_Winter).
 
 In 1812, Napoleon ruled most of Europe. He wanted to seize control of the British islands, but could not overcome the UK defenses. He decided to impose an embargo to weaken the nation in preparation for invasion, but Russia refused to participate. Angered at this decision, Napoleon launched an invasion of Russia with over 400,000 troops in the summer of 1812. Russia was unable to defeat Napoleon in battle, but instead waged a war of attrition. The Russian army was in near constant retreat, burning or destroying anything of value along the way to deny France usable resources. While Napoleon's army maintained the military advantage, his lack of food and the emerging European winter decimated his forces. He left France with an army of approximately 422,000 soldiers; he returned to France with just 10,000.
 
@@ -72,8 +72,6 @@ What makes this such an effective visualization?[^minard]
 ## Designing modern maps
 
 Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).
-
-{{< figure src="allison_horst_art/sf.png" caption="Artwork by @allison_horst" >}}
 
 ## Scale
 
@@ -120,7 +118,7 @@ The smaller the scale, the easier it is to include additional details in the map
 Projection methods typically maximize the accuracy of one or two of these properties, but no more. For instance, **conformal projections** such as the **mercator** projection preserves shape and local angles and is very useful for sea navigation, but distorts the area of landmasses.
 
 ```{r import-world, include = FALSE}
-world <- ne_countries(returnclass = "sf")
+world <- st_read(dsn = "https://github.com/datasets/geo-countries/raw/master/data/countries.geojson")
 ```
 
 ```{r mercator, dependson = "import-world"}
@@ -128,6 +126,8 @@ world %>%
   st_transform("+proj=merc") %>%
   ggplot() +
   geom_sf() +
+  # need to manually clip so Antarctica appears correct(ish)
+  coord_sf(ylim = c(-2e07, NA)) +
   ggtitle("Mercator projection")
 ```
 
