@@ -17,7 +17,7 @@ abstract: ""
 summary: "Introduce tree-based predictive models, define hyperparameters, and implement tuning to optimize model performance."
 
 # Location of event.
-location: "Kimball Hall B11"
+location: "Hollister Hall 162"
 
 # Is this a selected talk? (true/false)
 selected: false

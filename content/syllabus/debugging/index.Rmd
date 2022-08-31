@@ -19,7 +19,7 @@ abstract: ""
 summary: "Define computer bugs, discuss defensive programming tactics, and practice troubleshooting scripts."
 
 # Location of event.
-location: "Kimball Hall B11"
+location: "Hollister Hall 162"
 
 # Is this a selected talk? (true/false)
 selected: false

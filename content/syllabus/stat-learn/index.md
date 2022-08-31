@@ -20,7 +20,7 @@ abstract: ""
 summary: "Review the goals of machine learning, introduce methods for estimating models in R using the `tidymodels` framework, and define a resampling framework for model validation."
 
 # Location of event.
-location: "Kimball Hall B11"
+location: "Hollister Hall 162"
 
 # Is this a selected talk? (true/false)
 selected: false

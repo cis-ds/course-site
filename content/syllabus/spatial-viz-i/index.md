@@ -20,7 +20,7 @@ abstract: ""
 summary: "Identify components of geospatial visualizations, implement raster maps using ggplot2, and introduce geofaceting."
 
 # Location of event.
-location: "Kimball Hall B11"
+location: "Hollister Hall 162"
 
 # Is this a selected talk? (true/false)
 selected: false

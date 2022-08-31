@@ -17,7 +17,7 @@ abstract: ""
 summary: "Define and implement tidy evaluation."
 
 # Location of event.
-location: "Kimball Hall B11"
+location: "Hollister Hall 162"
 
 # Is this a selected talk? (true/false)
 selected: false
