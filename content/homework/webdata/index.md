@@ -82,7 +82,7 @@ Some suggested APIs you could write your own code for in R:
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of two R Markdown documents using the `github_document` format. Whatever is necessary to show your code and present your results. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted as a set of two Quarto documents using the `github_document` format. Whatever is necessary to show your code and present your results. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 

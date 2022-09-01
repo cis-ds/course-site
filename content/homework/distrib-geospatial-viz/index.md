@@ -56,13 +56,13 @@ Once you have your geographic boundaries data (either from an R package or impor
 
 {{% callout note %}}
 
-Remember to make your assignment reproducible. If you get a shapefile from the internet, either include it in your repo or make sure your R Markdown document/R script includes a function to download it from the internet.
+Remember to make your assignment reproducible. If you get a shapefile from the internet, either include it in your repo or make sure your Quarto document/R script includes a function to download it from the internet.
 
 {{% /callout %}}
 
 # Submit the assignment
 
-Your assignment should be submitted as one or more R Markdown documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
+Your assignment should be submitted as one or more Quarto documents, data files, figures, etc. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow). As part of the pull request, you're encouraged to reflect on what was hard/easy, problems you solved, helpful tutorials you read, etc.
 
 # Rubric
 

@@ -76,11 +76,11 @@ Once you have written this function, demonstrate that it works by importing the 
 * Do not try and run the iterative operation inside of the function. Technically this can work, but it is far harder to fix errors and write the body of the function if you are performing both tasks simultaneously.
 * The output of the function should be a **tidy data frame for a single country, pared down to 2-4 substantive variables you will analyze**.
 
-Once you have the data imported, write a brief report exploring and analyzing at least [two variables in the data](http://data.worldbank.org/indicator). Use a combination of descriptive statistics, tables, and figures, and present your results and analysis in a coherent and interpretable manner. The main point is that your report should not just be code and output from R - you also need to include your own written analysis. Submitting the report as an [R Markdown document](http://rmarkdown.rstudio.com/) will make this much easier (and is in fact mandatory).
+Once you have the data imported, write a brief report exploring and analyzing at least [two variables in the data](http://data.worldbank.org/indicator). Use a combination of descriptive statistics, tables, and figures, and present your results and analysis in a coherent and interpretable manner. The main point is that your report should not just be code and output from R - you also need to include your own written analysis. Submitting the report as an [Quarto document](http://rmarkdown.rstudio.com/) will make this much easier (and is in fact mandatory).
 
 # Submit the assignment
 
-Your assignment should be submitted as two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted as two Quarto documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 

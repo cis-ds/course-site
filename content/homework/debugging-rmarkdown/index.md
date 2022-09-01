@@ -1,12 +1,12 @@
 ---
-title: "HW05: Debugging and generating R Markdown documents"
+title: "HW05: Debugging and generating Quarto documents"
 date: 2022-10-03T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
 type: post
 
-summary: "Resolve code errors and generate reproducible R Markdown documents."
+summary: "Resolve code errors and generate reproducible Quarto documents."
 ---
 
 
@@ -23,12 +23,12 @@ Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the 
 
 The repository contains an R script called `babynames.R`. This script includes code to conduct analysis of baby name popularity in the United States using the [`babynames`](http://hadley.github.io/babynames/) package. Alas its author made some mistakes and the script currently does not work. Fix the errors/warnings in the script to generate the desired output.
 
-# Working with R Markdown documents
+# Working with Quarto documents
 
 The homework repository contains a file called `hiv-profile.Rmd`.
 
 1. The file has some problems. Fix the problems so you can successfully knit the document in its existing form.
-1. Create a [parameterized report](https://r4ds.had.co.nz/r-markdown.html#parameters) that allows you generate `hiv-profile.Rmd` for any country in the dataset. Use this parameterized R Markdown document to generate a separate report for each country and save them as HTML documents to a folder called `reports`.
+1. Create a [parameterized report](https://r4ds.had.co.nz/r-markdown.html#parameters) that allows you generate `hiv-profile.Rmd` for any country in the dataset. Use this parameterized Quarto document to generate a separate report for each country and save them as HTML documents to a folder called `reports`.
 
 {{% callout note %}}
 
@@ -48,8 +48,8 @@ Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-wo
 
 # Rubric
 
-Needs improvement: The R script has not been successfully fixed. The broken R Markdown document still does not knit. You manually generated each country's report.
+Needs improvement: The R script has not been successfully fixed. The broken Quarto document still does not knit. You manually generated each country's report.
 
 Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
 
-Excellent: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Broken R Markdown document successfully knits. Used iterative operations to generate each country's HIV profile.
+Excellent: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Broken Quarto document successfully knits. Used iterative operations to generate each country's HIV profile.

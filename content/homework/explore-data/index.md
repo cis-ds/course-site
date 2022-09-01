@@ -105,7 +105,7 @@ Run `?kable` in the console to see how additional options.
 
 # Submit the assignment
 
-Your assignment should be submitted as an R Markdown document using the `github_document` format. **Don't know what an R Markdown document is? [Read this!](http://rmarkdown.rstudio.com/lesson-1.html) Or [this!](http://r4ds.had.co.nz/r-markdown.html)** I have included starter files for you to modify to complete the assignment, so you are not beginning completely from scratch.
+Your assignment should be submitted as an Quarto document using the `github_document` format. **Don't know what an Quarto document is? [Read this!](http://rmarkdown.rstudio.com/lesson-1.html) Or [this!](http://r4ds.had.co.nz/r-markdown.html)** I have included starter files for you to modify to complete the assignment, so you are not beginning completely from scratch.
 
 Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
@@ -115,7 +115,7 @@ Make sure to stage and commit:
 
 * `mass-shootings.Rmd`
 * `mass-shootings.md`
-* `mass-shootings_files/` - this folder contains all the graphs you generated in your R Markdown document
+* `mass-shootings_files/` - this folder contains all the graphs you generated in your Quarto document
 
 {{% /callout %}}
 

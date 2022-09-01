@@ -97,7 +97,7 @@ Documentation for the other predictors (if the variable is not clearly coded) ca
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted as a set of two Quarto documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 
