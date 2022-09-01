@@ -89,50 +89,50 @@ Region boundaries serve as the background in geospatial data visualization - so 
 
 ## Points
 
-Let's use our [crimes data from the City of Chicago](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
+Let's use our [crimes data from New York City](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
 
 ```{r import-crimes, include = FALSE}
-crimes <- here("static", "data", "chicago-crimes.csv") %>%
+crimes <- here("static", "data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
 ```{r import-crimes-fake, eval = FALSE}
-crimes <- here("data", "chicago-crimes.csv") %>%
+crimes <- here("data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
 ```{r chi-crimes, echo = TRUE}
-crimes_homicide <- filter(.data = crimes, `Primary Type` == "HOMICIDE")
+crimes_homicide <- filter(.data = crimes, ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER")
 crimes_homicide
 ```
 
-Each crime has it's geographic location encoded through `Latitude` and `Longitude`. To draw these points on the map, basically we draw a scatterplot with `x = Longitude` and `y = Latitude`. In fact we could simply do that:
+Each crime has it's geographic location encoded through `latitude` and `longitude`. To draw these points on the map, basically we draw a scatterplot with `x = longitude` and `y = latitude`. In fact we could simply do that:
 
 ```{r scatter}
 ggplot(
   data = crimes_homicide,
   mapping = aes(
-    x = Longitude,
-    y = Latitude
+    x = longitude,
+    y = latitude
   )
 ) +
   geom_point()
 ```
 
-Let's overlay it with the mapped community regions:
+Let's overlay it with the mapped boroughs:
 
-```{r import-chi-json}
-chi_json <- st_read(dsn = here("static", "data", "community-area-boundaries.geojson"))
+```{r import-nyc-json}
+nyc_json <- st_read(dsn = here("static", "data", "borough-boundaries.geojson"))
 ```
 
-```{r chi-crime}
-ggplot(data = chi_json) +
+```{r nyc-crime}
+ggplot(data = nyc_json) +
   geom_sf() +
   geom_point(
     data = crimes_homicide,
     mapping = aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     ),
     shape = 1
   )
@@ -141,7 +141,7 @@ ggplot(data = chi_json) +
 Alternatively, we can use `st_as_sf()` to convert `crimes_homicide` to a simple features data frame.
 
 ```{r crimes-sf}
-crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("Longitude", "Latitude"))
+crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("longitude", "latitude"))
 st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
 crimes_homicide_sf
 ```
@@ -150,7 +150,7 @@ crimes_homicide_sf
 
 ```{r crimes-sf-plot, echo = TRUE, out.width = "100%"}
 ggplot() +
-  geom_sf(data = chi_json) +
+  geom_sf(data = nyc_json) +
   geom_sf(
     data = crimes_homicide_sf,
     shape = 1

@@ -145,54 +145,50 @@ Region boundaries serve as the background in geospatial data visualization - so 
 
 ## Points
 
-Let's use our [crimes data from the City of Chicago](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
+Let's use our [crimes data from New York City](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
 
 
 
 
 ```r
-crimes <- here("data", "chicago-crimes.csv") %>%
+crimes <- here("data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
 
 ```r
-crimes_homicide <- filter(.data = crimes, `Primary Type` == "HOMICIDE")
+crimes_homicide <- filter(.data = crimes, ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER")
 crimes_homicide
 ```
 
 ```
-## # A tibble: 676 × 22
-##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
-##     <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
-##  1 1.08e7 JA1194… 01/1… 023X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   0911 
-##  2 1.08e7 JA1383… 02/0… 013X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1022 
-##  3 1.12e7 JA5493… 12/1… 038X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1112 
-##  4 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … TAVERN  TRUE   FALSE   1914 
-##  5 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1113 
-##  6 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
-##  7 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
-##  8 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
-##  9 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
-## 10 2.31e4 HZ5648… 01/0… 086X… 0110  HOMICI… FIRST … PORCH   FALSE  FALSE   0632 
-## # … with 666 more rows, 11 more variables: District <chr>, Ward <dbl>,
-## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
-## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
-## #   Longitude <dbl>, Location <chr>, and abbreviated variable names
-## #   ¹​`Case Number`, ²​`Primary Type`, ³​Description, ⁴​`Location Description`,
-## #   ⁵​Domestic
-## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+## # A tibble: 269 × 7
+##    cmplnt_num    boro_nm   cmplnt_fr_dt        law_cat…¹ ofns_…² latit…³ longi…⁴
+##    <chr>         <chr>     <dttm>              <chr>     <chr>     <dbl>   <dbl>
+##  1 240954923H1   BROOKLYN  1977-12-20 05:00:00 FELONY    MURDER…    40.7   -74.0
+##  2 245958045H1   BROOKLYN  2001-08-13 04:00:00 FELONY    MURDER…    40.7   -73.9
+##  3 8101169H6113  MANHATTAN 2005-03-06 05:00:00 FELONY    MURDER…    40.8   -73.9
+##  4 8101169H6113  MANHATTAN 2005-03-06 05:00:00 FELONY    MURDER…    40.8   -73.9
+##  5 16631466H8909 BROOKLYN  2006-05-24 04:00:00 FELONY    MURDER…    40.7   -73.9
+##  6 246056367H1   QUEENS    2015-05-13 04:00:00 FELONY    MURDER…    40.6   -73.7
+##  7 243507594H1   MANHATTAN 2020-06-19 04:00:00 FELONY    MURDER…    40.8   -74.0
+##  8 243688124H1   BROOKLYN  2021-01-31 05:00:00 FELONY    MURDER…    40.7   -73.9
+##  9 240767513H1   BROOKLYN  2021-02-17 05:00:00 FELONY    MURDER…    40.6   -74.0
+## 10 240767512H1   BROOKLYN  2021-05-24 04:00:00 FELONY    MURDER…    40.6   -74.0
+## # … with 259 more rows, and abbreviated variable names ¹​law_cat_cd, ²​ofns_desc,
+## #   ³​latitude, ⁴​longitude
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
-Each crime has it's geographic location encoded through `Latitude` and `Longitude`. To draw these points on the map, basically we draw a scatterplot with `x = Longitude` and `y = Latitude`. In fact we could simply do that:
+Each crime has it's geographic location encoded through `latitude` and `longitude`. To draw these points on the map, basically we draw a scatterplot with `x = longitude` and `y = latitude`. In fact we could simply do that:
 
 
 ```r
 ggplot(
   data = crimes_homicide,
   mapping = aes(
-    x = Longitude,
-    y = Latitude
+    x = longitude,
+    y = latitude
   )
 ) +
   geom_point()
@@ -200,74 +196,71 @@ ggplot(
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/scatter-1.png" width="672" />
 
-Let's overlay it with the mapped community regions:
+Let's overlay it with the mapped boroughs:
 
 
 ```r
-chi_json <- st_read(dsn = here("static", "data", "community-area-boundaries.geojson"))
+nyc_json <- st_read(dsn = here("static", "data", "borough-boundaries.geojson"))
 ```
 
 ```
-## Reading layer `community-area-boundaries' from data source 
-##   `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/community-area-boundaries.geojson' 
+## Reading layer `borough-boundaries' from data source 
+##   `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/borough-boundaries.geojson' 
 ##   using driver `GeoJSON'
-## Simple feature collection with 77 features and 9 fields
+## Simple feature collection with 5 features and 4 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## Bounding box:  xmin: -74.3 ymin: 40.5 xmax: -73.7 ymax: 40.9
 ## Geodetic CRS:  WGS 84
 ```
 
 
 ```r
-ggplot(data = chi_json) +
+ggplot(data = nyc_json) +
   geom_sf() +
   geom_point(
     data = crimes_homicide,
     mapping = aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     ),
     shape = 1
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/chi-crime-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/nyc-crime-1.png" width="672" />
 
 Alternatively, we can use `st_as_sf()` to convert `crimes_homicide` to a simple features data frame.
 
 
 ```r
-crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("Longitude", "Latitude"))
+crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("longitude", "latitude"))
 st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
 crimes_homicide_sf
 ```
 
 ```
-## Simple feature collection with 676 features and 20 fields
+## Simple feature collection with 269 features and 5 fields
 ## Geometry type: POINT
 ## Dimension:     XY
-## Bounding box:  xmin: -87.8 ymin: 41.7 xmax: -87.5 ymax: 42
+## Bounding box:  xmin: -74.1 ymin: 40.6 xmax: -73.7 ymax: 40.9
 ## Geodetic CRS:  WGS 84
-## # A tibble: 676 × 21
-##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
-##  *  <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
-##  1 1.08e7 JA1194… 01/1… 023X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   0911 
-##  2 1.08e7 JA1383… 02/0… 013X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1022 
-##  3 1.12e7 JA5493… 12/1… 038X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1112 
-##  4 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … TAVERN  TRUE   FALSE   1914 
-##  5 2.31e4 JA1002… 01/0… 046X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1113 
-##  6 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
-##  7 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
-##  8 2.31e4 JA1026… 01/0… 034X… 0110  HOMICI… FIRST … STREET  FALSE  FALSE   1123 
-##  9 2.31e4 JA1034… 01/0… 032X… 0110  HOMICI… FIRST … ALLEY   FALSE  FALSE   1134 
-## 10 2.31e4 HZ5648… 01/0… 086X… 0110  HOMICI… FIRST … PORCH   FALSE  FALSE   0632 
-## # … with 666 more rows, 10 more variables: District <chr>, Ward <dbl>,
-## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
-## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Location <chr>,
-## #   geometry <POINT [°]>, and abbreviated variable names ¹​`Case Number`,
-## #   ²​`Primary Type`, ³​Description, ⁴​`Location Description`, ⁵​Domestic
-## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+## # A tibble: 269 × 6
+##    cmpln…¹ boro_nm cmplnt_fr_dt        law_c…² ofns_…³     geometry
+##  * <chr>   <chr>   <dttm>              <chr>   <chr>    <POINT [°]>
+##  1 240954… BROOKL… 1977-12-20 05:00:00 FELONY  MURDER…   (-74 40.7)
+##  2 245958… BROOKL… 2001-08-13 04:00:00 FELONY  MURDER… (-73.9 40.7)
+##  3 810116… MANHAT… 2005-03-06 05:00:00 FELONY  MURDER… (-73.9 40.8)
+##  4 810116… MANHAT… 2005-03-06 05:00:00 FELONY  MURDER… (-73.9 40.8)
+##  5 166314… BROOKL… 2006-05-24 04:00:00 FELONY  MURDER… (-73.9 40.7)
+##  6 246056… QUEENS  2015-05-13 04:00:00 FELONY  MURDER… (-73.7 40.6)
+##  7 243507… MANHAT… 2020-06-19 04:00:00 FELONY  MURDER…   (-74 40.8)
+##  8 243688… BROOKL… 2021-01-31 05:00:00 FELONY  MURDER… (-73.9 40.7)
+##  9 240767… BROOKL… 2021-02-17 05:00:00 FELONY  MURDER…   (-74 40.6)
+## 10 240767… BROOKL… 2021-05-24 04:00:00 FELONY  MURDER…   (-74 40.6)
+## # … with 259 more rows, and abbreviated variable names ¹​cmplnt_num,
+## #   ²​law_cat_cd, ³​ofns_desc
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 `coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`
@@ -275,7 +268,7 @@ crimes_homicide_sf
 
 ```r
 ggplot() +
-  geom_sf(data = chi_json) +
+  geom_sf(data = nyc_json) +
   geom_sf(
     data = crimes_homicide_sf,
     shape = 1
@@ -466,7 +459,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-31
+##  date     2022-09-01
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────

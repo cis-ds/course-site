@@ -62,7 +62,7 @@ Geometric visualizations are used to depict spatial features, and with the incor
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/large-scale-1.png" width="672" />
 
-Whereas a map of Hyde Park would be small-scale:
+Whereas a map of Ithaca would be small-scale:
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/small-scale-1.png" width="672" />
 
@@ -96,9 +96,9 @@ The downside is that equal-area projections tend to distory shapes heavily, so s
 
 ## Symbols
 
-Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Hyde Park:
+Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Cornell's engineering and biology quads:
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-hydepark-stamen-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-cornell-stamen-1.png" width="672" />
 
 * Line are used to indicate roadways
 * Fill is used to indicate type of land (grassland, water, urban, etc.)
@@ -127,7 +127,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-31
+##  date     2022-09-01
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -147,6 +147,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  curl            4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
@@ -178,6 +179,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
@@ -203,7 +205,6 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
 ##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
-##  s2              1.1.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
@@ -220,7 +221,6 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
 ##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
-##  wk              0.6.0      2022-01-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
 ##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
