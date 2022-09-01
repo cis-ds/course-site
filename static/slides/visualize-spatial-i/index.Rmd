@@ -196,12 +196,12 @@ c(
 ```{r small-scale}
 # establish bounding box, get map, and plot
 c(
-  left = -87.612448,
-  bottom = 41.783393,
-  right = -87.581871,
-  top = 41.803470
+  left = -76.541950,
+  bottom = 42.423368,
+  right = -76.460196,
+  top = 42.465804
 ) %>%
-  get_stamenmap(zoom = 15) %>%
+  get_stamenmap(zoom = 14) %>%
   ggmap()
 ```
 
@@ -302,18 +302,18 @@ world <- ne_countries(returnclass = "sf")
 
 ```{r bb-hydepark-stamen}
 # store bounding box coordinates
-hydepark_bb <- c(
-  left = -87.612448,
-  bottom = 41.783393,
-  right = -87.581871,
-  top = 41.803470
+cornell_bb <- c(
+  left = -76.490550,
+  bottom = 42.440165,
+  right = -76.470112,
+  top = 42.450774
 )
 
-hydepark_stamen <- get_stamenmap(
-  bbox = hydepark_bb,
+cornell_stamen <- get_stamenmap(
+  bbox = cornell_bb,
   zoom = 16
 )
-ggmap(hydepark_stamen)
+ggmap(cornell_stamen)
 ```
 
 ---
@@ -343,18 +343,19 @@ knitr::opts_chunk$set(
 ```
 
 .panelset[
-```{r panelset = c(output = "Plot", source = "Code"), out.width = "70%"}
-chi_bb <- c(
-  left = -87.936287, #<<
-  bottom = 41.679835, #<<
-  right = -87.447052, #<<
-  top = 42.000835 #<<
+```{r panelset = c(output = "Plot", source = "Code"), out.width = "70%", message = FALSE}
+nyc_bb <- c(
+  left = -74.263045, #<<
+  bottom = 40.487652, #<<
+  right = -73.675963, #<<
+  top = 40.934743 #<<
 )
-chicago <- get_stamenmap(
-  bbox = chi_bb,
+
+nyc_stamen <- get_stamenmap(
+  bbox = nyc_bb,
   zoom = 11
 )
-ggmap(chicago)
+ggmap(nyc_stamen)
 ```
 ]
 
@@ -362,17 +363,17 @@ ggmap(chicago)
 
 ## Level of detail
 
-```{r bb-chicago-stamen-zoom, echo = FALSE}
+```{r bb-nyc-stamen-zoom, echo = FALSE}
 {
   get_stamenmap(
-    bbox = chi_bb,
+    bbox = nyc_bb,
     zoom = 12
   ) %>%
     ggmap() +
     ggtitle("Zoom = 12")
 } + {
   get_stamenmap(
-    bbox = chi_bb,
+    bbox = nyc_bb,
     zoom = 10
   ) %>%
     ggmap() +
@@ -400,7 +401,7 @@ stamen_maptype <- tibble(maptype = c(
   "toner-lite", "watercolor"
 )) %>%
   mutate(
-    bb = map(maptype, ~ get_stamenmap(bbox = chi_bb, zoom = 10, maptype = .x)),
+    bb = map(maptype, ~ get_stamenmap(bbox = nyc_bb, zoom = 10, maptype = .x)),
     ggmap = map2(bb, maptype, ~ ggmap(.x) +
       ggtitle(.y) +
       theme_minimal(base_size = 9))
@@ -419,16 +420,16 @@ include_graphics(path = "https://media.giphy.com/media/oOK9AZGnf9b0c/giphy.gif")
 
 ## Import crime data
 
-* City of Chicago open data portal
-* [Crime data from 2017](https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr)
+* New York City open data portal
+* [Crime data from 2022](https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Current-Year-To-Date-/5uac-w243)
 
 ```{r import-crimes, include = FALSE}
-crimes <- here("static", "data", "chicago-crimes.csv") %>%
+crimes <- here("static", "data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
 ```{r import-crimes-fake, eval = FALSE}
-crimes <- here("static", "data", "chicago-crimes.csv") %>%
+crimes <- here("data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
@@ -441,8 +442,9 @@ glimpse(crimes)
 ## Plot high-level map of crime
 
 .panelset.sideways[
-```{r import-chicago, dependson = "import-crimes"}
-ggmap(chicago) #<<
+```{r import-nyc, dependson = "import-crimes"}
+nyc <- nyc_stamen
+ggmap(nyc) #<<
 ```
 ]
 
@@ -452,12 +454,12 @@ ggmap(chicago) #<<
 
 .panelset.sideways[
 ```{r plot-crime-point, dependson = "import-crimes"}
-ggmap(chicago) +
+ggmap(nyc) +
   geom_point( #<<
     data = crimes, #<<
     mapping = aes( #<<
-      x = Longitude, #<<
-      y = Latitude #<<
+      x = longitude, #<<
+      y = latitude #<<
     ) #<<
   ) #<<
 ```
@@ -469,12 +471,12 @@ ggmap(chicago) +
 
 .panelset.sideways[
 ```{r plot-crime-point-alpha, dependson = "import-crimes"}
-ggmap(chicago) +
+ggmap(nyc) +
   geom_point(
     data = crimes,
     mapping = aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     ),
     size = .25, #<<
     alpha = .01 #<<
@@ -488,12 +490,12 @@ ggmap(chicago) +
 
 .panelset.sideways[
 ```{r kde-contour, dependson = "import-crimes"}
-ggmap(chicago) +
+ggmap(nyc) +
   geom_density_2d( #<<
     data = crimes,
     mapping = aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     )
   )
 ```
@@ -505,12 +507,12 @@ ggmap(chicago) +
 
 .panelset.sideways[
 ```{r kde-fill, dependson = "import-crimes"}
-ggmap(chicago) +
+ggmap(nyc) +
   stat_density_2d( #<<
     data = crimes,
     mapping = aes(
-      x = Longitude,
-      y = Latitude,
+      x = longitude,
+      y = latitude,
       fill = stat(level) #<<
     ),
     geom = "polygon" #<<
@@ -524,12 +526,12 @@ ggmap(chicago) +
 
 .panelset.sideways[
 ```{r plot-crime-density, dependson = "import-crimes"}
-ggmap(chicago) +
+ggmap(nyc) +
   stat_density_2d(
     data = crimes,
     mapping = aes(
-      x = Longitude,
-      y = Latitude,
+      x = longitude,
+      y = latitude,
       fill = stat(level)
     ),
     alpha = .2, #<<
@@ -545,23 +547,25 @@ ggmap(chicago) +
 
 .panelset.sideways[
 ```{r plot-crime-wday, dependson = "import-crimes", out.width = "100%"}
-ggmap(chicago) +
+ggmap(nyc) +
   stat_density_2d(
     data = crimes %>%
-      filter(`Primary Type` %in% c(
-        "BURGLARY", "MOTOR VEHICLE THEFT",
-        "NARCOTICS", "ROBBERY"
+      filter(ofns_desc %in% c(
+        "DANGEROUS DRUGS",
+        "GRAND LARCENY OF MOTOR VEHICLE",
+        "ROBBERY",
+        "VEHICLE AND TRAFFIC LAWS"
       )),
-    mapping = aes(
-      x = Longitude,
-      y = Latitude,
+    aes(
+      x = longitude,
+      y = latitude,
       fill = stat(level)
     ),
     alpha = .4,
     bins = 10,
     geom = "polygon"
   ) +
-  facet_wrap(facets = vars(`Primary Type`)) #<<
+  facet_wrap(facets = vars(ofns_desc)) #<<
 ```
 ]
 
@@ -569,7 +573,7 @@ ggmap(chicago) +
 
 ## Exercise using `ggmap`
 
-- City of Chicago data portal
+- New York City data portal
 - 311 service requests
 
 ```{r cache = FALSE, echo = FALSE}
