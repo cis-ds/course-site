@@ -18,7 +18,7 @@ weight: 54
 library(tidyverse)
 library(sf)
 library(tidycensus)
-library(viridis)
+library(colorspace)
 
 # useful on MacOS to speed up rendering of geom_sf() objects
 if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
@@ -26,7 +26,7 @@ if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cair
 }
 
 options(digits = 3)
-set.seed(1234)
+set.seed(123)
 theme_set(theme_minimal())
 ```
 
@@ -42,94 +42,124 @@ If you have not already, [obtain an API key](https://api.census.gov/data/key_sig
 
 ## Exercise: Visualize income data
 
-1. Obtain information on median household income in 2017 for Cook County, IL at the tract-level using the ACS. To retrieve the geographic features for each tract, set `geometry = TRUE` in your function.
+1. Obtain information on median household income in 2020 for Tompkins County, NY at the tract-level using the ACS. To retrieve the geographic features for each tract, set `geometry = TRUE` in your function.
 
-    {{% callout note %}}
-    
-    You can use `load_variables(year = 2017, dataset = "acs5")` to retrieve the list of variables available and search to find the correct variable name.
-    
-    {{% /callout %}}
+{{% callout note %}}
 
-    {{< spoiler text="Click for the solution" >}}
+You can use `load_variables(year = 2020, dataset = "acs5")` to retrieve the list of variables available and search to find the correct variable name.
+
+{{% /callout %}}
+    
+{{< spoiler text="Click for the solution" >}}
     
 
 ```r
-cook_inc <- get_acs(
-  state = "IL",
-  county = "Cook",
+tompkins_inc <- get_acs(
+  state = "NY",
+  county = "Tompkins",
   geography = "tract",
   variables = c(medincome = "B19013_001"),
-  year = 2017,
+  year = 2020,
   geometry = TRUE
 )
 ```
 
 
 ```r
-cook_inc
+tompkins_inc
 ```
 
 ```
-## Simple feature collection with 1319 features and 5 fields (with 1 geometry empty)
+## Simple feature collection with 26 features and 5 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -88.3 ymin: 41.5 xmax: -87.5 ymax: 42.2
+## Bounding box:  xmin: -76.7 ymin: 42.3 xmax: -76.2 ymax: 42.6
 ## Geodetic CRS:  NAD83
 ## First 10 features:
-##          GEOID                                       NAME  variable estimate
-## 1  17031010201 Census Tract 102.01, Cook County, Illinois medincome    40841
-## 2  17031030200    Census Tract 302, Cook County, Illinois medincome    64089
-## 3  17031031700    Census Tract 317, Cook County, Illinois medincome    44555
-## 4  17031031900    Census Tract 319, Cook County, Illinois medincome    61211
-## 5  17031050200    Census Tract 502, Cook County, Illinois medincome    74375
-## 6  17031051300    Census Tract 513, Cook County, Illinois medincome   149271
-## 7  17031061500    Census Tract 615, Cook County, Illinois medincome   117656
-## 8  17031062600    Census Tract 626, Cook County, Illinois medincome   144211
-## 9  17031063400    Census Tract 634, Cook County, Illinois medincome    95488
-## 10 17031070600    Census Tract 706, Cook County, Illinois medincome   151250
+##          GEOID                                         NAME  variable estimate
+## 1  36109000100    Census Tract 1, Tompkins County, New York medincome    36309
+## 2  36109001600   Census Tract 16, Tompkins County, New York medincome    61756
+## 3  36109000300    Census Tract 3, Tompkins County, New York medincome       NA
+## 4  36109000800    Census Tract 8, Tompkins County, New York medincome    52704
+## 5  36109000202 Census Tract 2.02, Tompkins County, New York medincome    20515
+## 6  36109000900    Census Tract 9, Tompkins County, New York medincome    71228
+## 7  36109001200   Census Tract 12, Tompkins County, New York medincome       NA
+## 8  36109000201 Census Tract 2.01, Tompkins County, New York medincome       NA
+## 9  36109001400   Census Tract 14, Tompkins County, New York medincome    73818
+## 10 36109000600    Census Tract 6, Tompkins County, New York medincome    82756
 ##      moe                       geometry
-## 1   7069 MULTIPOLYGON (((-87.7 42, -...
-## 2  12931 MULTIPOLYGON (((-87.7 42, -...
-## 3  12220 MULTIPOLYGON (((-87.7 42, -...
-## 4   6343 MULTIPOLYGON (((-87.7 42, -...
-## 5  18773 MULTIPOLYGON (((-87.7 42, -...
-## 6  26389 MULTIPOLYGON (((-87.7 41.9,...
-## 7  11416 MULTIPOLYGON (((-87.7 41.9,...
-## 8  22537 MULTIPOLYGON (((-87.7 41.9,...
-## 9   4904 MULTIPOLYGON (((-87.6 41.9,...
-## 10 47800 MULTIPOLYGON (((-87.7 41.9,...
+## 1   4335 MULTIPOLYGON (((-76.5 42.4,...
+## 2   8472 MULTIPOLYGON (((-76.7 42.5,...
+## 3     NA MULTIPOLYGON (((-76.5 42.5,...
+## 4   9354 MULTIPOLYGON (((-76.5 42.4,...
+## 5  15240 MULTIPOLYGON (((-76.5 42.4,...
+## 6   9707 MULTIPOLYGON (((-76.6 42.5,...
+## 7     NA MULTIPOLYGON (((-76.5 42.4,...
+## 8     NA MULTIPOLYGON (((-76.5 42.4,...
+## 9  14518 MULTIPOLYGON (((-76.4 42.5,...
+## 10 24036 MULTIPOLYGON (((-76.5 42.5,...
 ```
     
-    {{< /spoiler >}}
+{{< /spoiler >}}
 
-1. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
+2. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
 
-    {{< spoiler text="Click for the solution" >}}
+{{< spoiler text="Click for the solution" >}}
 
 
 ```r
-ggplot(data = cook_inc) +
+ggplot(data = tompkins_inc) +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = estimate, color = estimate)) +
   # increase interpretability of graph
   scale_color_continuous(labels = scales::dollar) +
   scale_fill_continuous(labels = scales::dollar) +
   labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
+    title = "Median household income in Tompkins County, NY",
+    subtitle = "In 2020",
     color = NULL,
     fill = NULL,
     caption = "Source: American Community Survey"
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/income-cook-map-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/income-tompkins-map-1.png" width="672" />
 
-    {{< /spoiler >}}
+{{< /spoiler >}}
 
 ## Exercise: Customize your maps
 
-1. Draw the same choropleth for Cook County, but convert median household income into a discrete variable with 6 levels.
+1. Use the [`viridis` color palette](/notes/optimal-color-palettes/#viridis) for the Tompkins County map drawn using the continuous measure.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+
+```r
+ggplot(data = tompkins_inc) +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = estimate, color = estimate)) +
+  # increase interpretability of graph
+  scale_fill_continuous_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    labels = scales::label_dollar(),
+    name = NULL
+  ) +
+  labs(
+    title = "Median household income in Tompkins County, NY",
+    subtitle = "In 2020",
+    color = NULL,
+    fill = NULL,
+    caption = "Source: American Community Survey"
+  )
+```
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/viridis-1.png" width="672" />
+            
+    {{< /spoiler >}}
+
+2. Draw the same choropleth for Tompkins County, but convert median household income into a discrete variable with 6 levels.
 
     {{< spoiler text="Click for the solution" >}}
 
@@ -137,15 +167,15 @@ ggplot(data = cook_inc) +
 
 
 ```r
-cook_inc %>%
+tompkins_inc %>%
   mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
   labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
+    title = "Median household income in Tompkins County, NY",
+    subtitle = "In 2020",
     color = NULL,
     fill = NULL,
     caption = "Source: American Community Survey"
@@ -158,15 +188,15 @@ cook_inc %>%
 
 
 ```r
-cook_inc %>%
+tompkins_inc %>%
   mutate(inc_cut = cut_number(estimate, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
   labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
+    title = "Median household income in Tompkins County, NY",
+    subtitle = "In 2020",
     color = NULL,
     fill = NULL,
     caption = "Source: American Community Survey"
@@ -175,84 +205,53 @@ cook_inc %>%
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-1.png" width="672" />
 
-    {{< /spoiler >}}
+    - Using `binned_scale()`
 
-1. Draw the same choropleth for Cook County using the discrete variable, but select an appropriate color palette using [Color Brewer](/notes/optimal-color-palettes/#color-brewer).
-
-    {{< spoiler text="Click for the solution" >}}
-
-    * Using `cut_interval()` and the Blue-Green palette:
-    
 
 ```r
-cook_inc %>%
-  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
-  ggplot() +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-  scale_fill_brewer(type = "seq", palette = "BuGn") +
-  scale_color_brewer(type = "seq", palette = "BuGn") +
+# default breaks
+ggplot(data = tompkins_inc) +
+  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  scale_fill_binned_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    labels = scales::label_dollar()
+  ) +
   # increase interpretability of graph
   labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
+    title = "Median household income in Tompkins County, NY",
+    subtitle = "In 2020",
     color = NULL,
     fill = NULL,
     caption = "Source: American Community Survey"
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/cut-interval-optimal-1.png" width="672" />
-        
-    * Using `cut_number()` and the Blue-Green palette:
-
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
 
 ```r
-cook_inc %>%
-  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
-  ggplot() +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-  scale_fill_brewer(type = "seq", palette = "BuGn") +
-  scale_color_brewer(type = "seq", palette = "BuGn") +
+# quintiles
+ggplot(data = tompkins_inc) +
+  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  scale_fill_binned_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    n.breaks = 4, nice.breaks = FALSE,
+    labels = scales::label_dollar()
+  ) +
   # increase interpretability of graph
   labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
+    title = "Median household income in Tompkins County, NY",
+    subtitle = "In 2020",
     color = NULL,
     fill = NULL,
     caption = "Source: American Community Survey"
   )
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-optimal-1.png" width="672" />
-        
-    You can choose any palette that is for sequential data.
-    
-    {{< /spoiler >}}
-
-1. Use the [`viridis` color palette](/notes/optimal-color-palettes/#viridis) for the Cook County map drawn using the continuous measure.
-
-    {{< spoiler text="Click for the solution" >}}
-
-
-```r
-ggplot(data = cook_inc) +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
-  # increase interpretability of graph
-  scale_color_viridis(labels = scales::dollar) +
-  scale_fill_viridis(labels = scales::dollar) +
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
-```
-
-<img src="{{< blogdown/postref >}}index_files/figure-html/income-cook-map-viridis-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-2.png" width="672" />
 
     {{< /spoiler >}}
 
@@ -275,7 +274,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-01
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -291,7 +290,8 @@ sessioninfo::session_info()
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
-##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
+##  colorspace    * 2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
@@ -301,6 +301,7 @@ sessioninfo::session_info()
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  foreign         0.8-82     2022-01-16 [2] CRAN (R 4.2.1)
@@ -315,6 +316,7 @@ sessioninfo::session_info()
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -322,6 +324,7 @@ sessioninfo::session_info()
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
@@ -345,6 +348,7 @@ sessioninfo::session_info()
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
 ##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
+##  s2              1.1.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
@@ -366,6 +370,7 @@ sessioninfo::session_info()
 ##  viridis       * 0.6.2      2021-10-13 [2] CRAN (R 4.2.0)
 ##  viridisLite   * 0.4.0      2021-04-13 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
+##  wk              0.6.0      2022-01-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
 ##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
