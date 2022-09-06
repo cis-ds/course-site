@@ -19,7 +19,7 @@ abstract: ""
 summary: "Define a vector, review iterative operations, and implement iteration using a range of techniques."
 
 # Location of event.
-location: "Hollister Hall 162"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

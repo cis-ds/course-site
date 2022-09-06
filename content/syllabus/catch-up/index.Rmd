@@ -17,7 +17,7 @@ abstract: ""
 summary: "Optional lab/extended office hours to get support on homework 06."
 
 # Location of event.
-location: "Hollister Hall 162"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

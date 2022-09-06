@@ -19,7 +19,7 @@ abstract: ""
 summary: "Introduction to data visualizations, the grammar of graphics, and ggplot2."
 
 # Location of event.
-location: Hollister Hall 162
+location: Kimball Hall B11
 
 # Is this a selected talk? (true/false)
 selected: false
