@@ -14,7 +14,7 @@ summary: "Collect data from the web and analyze it."
 
 # Overview
 
-Due by 11:59pm on July 14th.
+Due by 11:59pm on November 8th.
 
 We learned three ways of collecting data from the internet:
 

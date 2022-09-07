@@ -2,7 +2,7 @@
 title: "Extended Git workflows"
 date: 2022-10-19T12:25:00-05:00
 publishDate: 2019-05-01T12:25:00-05:00
-draft: false
+draft: true
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.

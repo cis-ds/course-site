@@ -14,7 +14,7 @@ summary: "Implement machine learning methods for regression and classification."
 
 # Overview
 
-Due by 11:59pm on November 8th.
+Due by 11:59pm on November 1st.
 
 # Accessing the `hw07` repository
 

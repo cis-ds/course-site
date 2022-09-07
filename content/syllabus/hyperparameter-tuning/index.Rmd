@@ -1,12 +1,12 @@
 ---
 title: "Tune better models"
-date: 2022-10-31T12:25:00-05:00
+date: 2022-10-26T12:25:00-05:00
 publishDate: 2019-05-06T12:25:00-05:00
 draft: false
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-10-31T14:20:00-05:00
+time_end: 2022-10-26T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
