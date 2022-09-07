@@ -1,6 +1,6 @@
 ---
 title: "Visualizing spatial data II"
-date: 2022-11-14T15:00:00-06:00
+date: 2022-11-09T15:00:00-06:00
 publishDate: 2019-05-22T12:25:00-05:00
 draft: false
 
@@ -8,7 +8,7 @@ aliases: ["/syllabus/geospatial-visualization-vector-maps/"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-11-14T16:20:00-06:00
+time_end: 2022-11-09T16:20:00-06:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
@@ -19,7 +19,7 @@ abstract: ""
 summary: "Review methods for storing spatial data, define simple features data frames, and construct vector maps in ggplot2."
 
 # Location of event.
-location: "Hollister Hall 162"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

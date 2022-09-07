@@ -19,7 +19,7 @@ abstract: ""
 summary: "Review the pipe, define a function, and practice writing and debugging functions."
 
 # Location of event.
-location: "Hollister Hall 162"
+location: "Kimball Hall B11"
 
 # Is this a selected talk? (true/false)
 selected: false

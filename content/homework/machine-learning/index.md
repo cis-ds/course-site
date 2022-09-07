@@ -14,7 +14,7 @@ summary: "Implement machine learning methods for regression and classification."
 
 # Overview
 
-Due by 11:59pm on November 8th.
+Due by 11:59pm on November 1st.
 
 # Accessing the `hw07` repository
 
@@ -97,7 +97,7 @@ Documentation for the other predictors (if the variable is not clearly coded) ca
 
 # Submit the assignment
 
-Your assignment should be submitted as a set of two R Markdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted as a set of two Quarto documents using the `gfm` (GitHub Flavored Markdown) format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 

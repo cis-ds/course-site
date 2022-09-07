@@ -14,7 +14,7 @@ summary: "Collect text data and analyze it."
 
 # Overview
 
-Due by 11:59pm on November 29th.
+Due by 11:59pm on November 22nd.
 
 # Accessing the `hw10` repository
 
@@ -54,7 +54,7 @@ Analyze the text for sentiment OR topic. Or build a statistical learning model u
 
 # Submit the assignment
 
-Your assignment should be submitted as an R Markdown document using the `github_document` format. Whatever is necessary to show your code and present your results. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted as an Quarto document using the `gfm` (GitHub Flavored Markdown) format. Whatever is necessary to show your code and present your results. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 
