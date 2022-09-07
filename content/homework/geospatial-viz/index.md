@@ -64,7 +64,7 @@ Remember to make your assignment reproducible. If you get a shapefile from the i
 
 # Submit the assignment
 
-Your assignment should be submitted an Quarto document using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted an Quarto document using the `gfm` (GitHub Flavored Markdown) format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 

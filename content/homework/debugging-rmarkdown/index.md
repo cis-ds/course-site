@@ -25,10 +25,10 @@ The repository contains an R script called `babynames.R`. This script includes c
 
 # Working with Quarto documents
 
-The homework repository contains a file called `hiv-profile.Rmd`.
+The homework repository contains a file called `hiv-profile.qmd`.
 
 1. The file has some problems. Fix the problems so you can successfully knit the document in its existing form.
-1. Create a [parameterized report](https://r4ds.had.co.nz/r-markdown.html#parameters) that allows you generate `hiv-profile.Rmd` for any country in the dataset. Use this parameterized Quarto document to generate a separate report for each country and save them as HTML documents to a folder called `reports`.
+1. Create a [parameterized report](https://quarto.org/docs/computations/parameters.html) that allows you generate `hiv-profile.qmd` for any country in the dataset. Use this parameterized Quarto document to generate a separate report for each country and save them as HTML documents to a folder called `reports`.
 
 {{% callout note %}}
 
@@ -41,7 +41,7 @@ Each file should be named after the country's iso3 code. For example, the report
 Your assignment should be submitted as several files:
 
 1. The revised `babynames.R`.
-1. The revised `hiv-profile.Rmd` and the successfully rendered `hiv-profile.md` with associated output files (e.g. images).
+1. The revised `hiv-profile.qmd` and the successfully rendered `hiv-profile.md` with associated output files (e.g. images).
 1. An R script that renders all the individual country HIV profiles, as well as rendered HTML files.
 
 Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).

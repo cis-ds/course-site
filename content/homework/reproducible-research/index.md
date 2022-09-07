@@ -62,7 +62,7 @@ There are functions in R and programs for the [shell](/setup/shell/) that allow 
 
     ```r
     downloader::download("https://raw.githubusercontent.com/fivethirtyeight/guns-data/master/full_data.csv", "gun_deaths.csv")
-cat(file = "gun_deaths.csv",
+    cat(file = "gun_deaths.csv",
     RCurl::getURL("https://raw.githubusercontent.com/fivethirtyeight/guns-data/master/full_data.csv"))
     ```
 
@@ -88,7 +88,7 @@ If you have to store a large data file in your repo, use [**Git Large File Stora
 * Generate some descriptive plots of the data
 * Summarize the relationships you discover with a written summary. Conjecture as to why they occur and/or why they may be [spurious](https://en.wikipedia.org/wiki/Spurious_relationship).
 
-The final output should be a `github_document` (or alternatively a `pdf_document`, but it must be something you can view directly on GitHub - no `html_document`s).
+The final output should be a `gfm` (GitHub Flavored Markdown) (or alternatively a `pdf_document`, but it must be something you can view directly on GitHub - no `html_document`s).
 
 # Aim higher!
 
@@ -96,10 +96,10 @@ The final output should be a `github_document` (or alternatively a `pdf_document
     * You will probably need to spend time data cleaning and tidying. Could be done in the main Quarto document or in a separate R script. If done in the Quarto document, consider whether it is necessary to include the code and output in the final document.
 * Render an Quarto document with your final analysis.
     * You do not need to stuff everything into the final document. Think of this like a traditional report. You might describe how you obtained and prepared the data, but you won't include all the code and output from that process in the final document. But because it is stored in a separate R script and is part of the repo, everything is still completely reproducible.
-    * To emulate RStudio's "Knit" button from a [shell](/setup/shell/):
-        `Rscript -e "rmarkdown::render('myAwesomeAnalysis.Rmd')"`
+    * To emulate RStudio's "render" button from a [shell](/setup/shell/):
+        `Rscript -e "quarto::quarto_render('input = myAwesomeAnalysis.qmd')"`
     * To emulate RStudio's "Knit" button within an R script:
-        `rmarkdown::render('myAwesomeAnalysis.Rmd)`
+        `quarto::quarto_render('input = myAwesomeAnalysis.qmd')`
 * Make use of code chunk and YAML options to customize the appearance of your final document
 * Use your skills on [project management](/notes/saving-source/) to ensure reproducibility
 * Writing your own functions? Implement [defensive](/notes/style-guide/) [programming](/notes/condition-handling/) to minimize errors (or at least provide informative error messages).

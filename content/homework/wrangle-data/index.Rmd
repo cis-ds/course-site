@@ -129,7 +129,7 @@ Pay careful attention to the unit of analysis required to answer each question. 
 
 # Submit the assignment
 
-Your assignment should be submitted as two RMarkdown documents using the `github_document` format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
+Your assignment should be submitted as two RMarkdown documents using the `gfm` (GitHub Flavored Markdown) format. Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-workflow).
 
 # Rubric
 
