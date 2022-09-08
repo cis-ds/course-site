@@ -19,7 +19,8 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(sf)
 library(tidycensus)
-library(viridis)
+library(colorspace)
+library(scales)
 
 # useful on MacOS to speed up rendering of geom_sf() objects
 if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
@@ -27,9 +28,19 @@ if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cair
 }
 
 options(digits = 3)
-set.seed(1234)
+set.seed(123)
 theme_set(theme_minimal())
 ```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("cis-ds/visualize-spatial-ii")
+```
+
+{{% /callout %}}
 
 ## American Community Survey
 
@@ -43,165 +54,157 @@ If you have not already, [obtain an API key](https://api.census.gov/data/key_sig
 
 ## Exercise: Visualize income data
 
-1. Obtain information on median household income in 2017 for Cook County, IL at the tract-level using the ACS. To retrieve the geographic features for each tract, set `geometry = TRUE` in your function.
+1. Obtain information on median household income in 2020 for Tompkins County, NY at the tract-level using the ACS. To retrieve the geographic features for each tract, set `geometry = TRUE` in your function.
 
-    {{% callout note %}}
-    
-    You can use `load_variables(year = 2017, dataset = "acs5")` to retrieve the list of variables available and search to find the correct variable name.
-    
-    {{% /callout %}}
+{{% callout note %}}
 
-    {{< spoiler text="Click for the solution" >}}
+You can use `load_variables(year = 2020, dataset = "acs5")` to retrieve the list of variables available and search to find the correct variable name.
+
+{{% /callout %}}
     
-```{r income-cook, results = "hide"}
-cook_inc <- get_acs(
-  state = "IL",
-  county = "Cook",
+{{< spoiler text="Click for the solution" >}}
+    
+```{r income-tompkins, results = "hide"}
+tompkins_inc <- get_acs(
+  state = "NY",
+  county = "Tompkins",
   geography = "tract",
   variables = c(medincome = "B19013_001"),
-  year = 2017,
-  geometry = TRUE
+  year = 2020,
+  geometry = TRUE,
+  output = "wide"
 )
 ```
 
-```{r income-cook-print, dependson = "income-cook"}
-cook_inc
+```{r income-tompkins-print, dependson = "income-tompkins"}
+tompkins_inc
 ```
     
-    {{< /spoiler >}}
+{{< /spoiler >}}
 
-1. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
+2. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
 
-    {{< spoiler text="Click for the solution" >}}
+{{% callout note %}}
 
-```{r income-cook-map, dependson = "income-cook"}
-ggplot(data = cook_inc) +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
-  # increase interpretability of graph
-  scale_color_continuous(labels = scales::dollar) +
-  scale_fill_continuous(labels = scales::dollar) +
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+Use the object  below to add informative labels to each plot without having to copy-and-paste.
+
+```{r map-labels}
+# create reusable labels for each plot
+map_labels <- labs(
+  title = "Median household income in Tompkins County, NY",
+  subtitle = "In 2020",
+  color = NULL,
+  fill = NULL,
+  caption = "Source: American Community Survey"
+)
 ```
 
-    {{< /spoiler >}}
+{{% /callout %}}
+
+{{< spoiler text="Click for the solution" >}}
+
+```{r income-tompkins-map, dependson = "income-tompkins"}
+ggplot(data = tompkins_inc) +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = medincomeE, color = medincomeE)) +
+  # increase interpretability of graph
+  scale_color_continuous(labels = label_dollar()) +
+  scale_fill_continuous(labels = label_dollar()) +
+  map_labels
+```
+
+{{< /spoiler >}}
 
 ## Exercise: Customize your maps
 
-1. Draw the same choropleth for Cook County, but convert median household income into a discrete variable with 6 levels.
+1. Use the [`viridis` color palette](/notes/optimal-color-palettes/#viridis) for the Tompkins County map drawn using the continuous measure.
+
+    {{< spoiler text="Click for the solution" >}}
+    
+```{r viridis, dependson = "income-tompkins"}
+ggplot(data = tompkins_inc) +
+  # use fill and color to avoid gray boundary lines
+  geom_sf(aes(fill = medincomeE, color = medincomeE)) +
+  # increase interpretability of graph
+  scale_fill_continuous_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    labels = label_dollar(),
+    name = NULL
+  ) +
+  map_labels
+```
+            
+    {{< /spoiler >}}
+
+2. Draw the same choropleth for Tompkins County, but convert median household income into a discrete variable with 6 levels.
 
     {{< spoiler text="Click for the solution" >}}
 
     * Using `cut_interval()`:
 
-```{r cut-interval, dependson = "income-cook"}
-cook_inc %>%
-  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
+```{r cut-interval, dependson = "income-tompkins"}
+tompkins_inc %>%
+  mutate(inc_cut = cut_interval(medincomeE, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_fill_discrete_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    name = NULL
+  ) +
+  map_labels
 ```
         
     * Using `cut_number()`:
 
-```{r cut-number, dependson = "income-cook"}
-cook_inc %>%
-  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
+```{r cut-number, dependson = "income-tompkins"}
+tompkins_inc %>%
+  mutate(inc_cut = cut_number(medincomeE, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_fill_discrete_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    name = NULL
+  ) +
+  map_labels
 ```
 
-    {{< /spoiler >}}
+    - Using `binned_scale()`
 
-1. Draw the same choropleth for Cook County using the discrete variable, but select an appropriate color palette using [Color Brewer](/notes/optimal-color-palettes/#color-brewer).
-
-    {{< spoiler text="Click for the solution" >}}
-
-    * Using `cut_interval()` and the Blue-Green palette:
-    
-```{r cut-interval-optimal, dependson = "income-cook"}
-cook_inc %>%
-  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
-  ggplot() +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-  scale_fill_brewer(type = "seq", palette = "BuGn") +
-  scale_color_brewer(type = "seq", palette = "BuGn") +
+```{r}
+# default breaks
+ggplot(data = tompkins_inc) +
+  geom_sf(mapping = aes(fill = medincomeE, color = medincomeE)) +
+  scale_fill_binned_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    labels = label_dollar()
+  ) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
-```
-        
-    * Using `cut_number()` and the Blue-Green palette:
+  map_labels
 
-```{r cut-number-optimal, dependson = "income-cook"}
-cook_inc %>%
-  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
-  ggplot() +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = inc_cut, color = inc_cut)) +
-  scale_fill_brewer(type = "seq", palette = "BuGn") +
-  scale_color_brewer(type = "seq", palette = "BuGn") +
+# quintiles
+ggplot(data = tompkins_inc) +
+  geom_sf(mapping = aes(fill = medincomeE, color = medincomeE)) +
+  scale_fill_binned_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    n.breaks = 4, nice.breaks = FALSE,
+    labels = label_dollar()
+  ) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
-```
-        
-    You can choose any palette that is for sequential data.
-    
-    {{< /spoiler >}}
-
-1. Use the [`viridis` color palette](/notes/optimal-color-palettes/#viridis) for the Cook County map drawn using the continuous measure.
-
-    {{< spoiler text="Click for the solution" >}}
-
-```{r income-cook-map-viridis, dependson = "income-cook"}
-ggplot(data = cook_inc) +
-  # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
-  # increase interpretability of graph
-  scale_color_viridis(labels = scales::dollar) +
-  scale_fill_viridis(labels = scales::dollar) +
-  labs(
-    title = "Median household income in Cook County, IL",
-    subtitle = "In 2017",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 ```
 
     {{< /spoiler >}}

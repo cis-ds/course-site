@@ -78,7 +78,11 @@ GeoJSON files are plain text files and can contain many different types of geome
 
 ## Simple features
 
-[There are a crap ton of packages for R that allow you to interact with shapefiles and spatial data.](https://cran.r-project.org/web/views/Spatial.html) Here we will focus on a modern package for reading and transforming spatial data in a tidy format. [Simple features](https://en.wikipedia.org/wiki/Simple_Features) or [**simple feature access**](http://www.opengeospatial.org/standards/sfa) refers to a formal standard that describes how objects in the real world can be represented in computers, with emphasis on the **spatial** geometry of these objects. It also describes how such objects can be stored in and retrieved from databases, and which geometrical operations should be defined for them.
+[There are a crap ton of packages for R that allow you to interact with shapefiles and spatial data.](https://cran.r-project.org/web/views/Spatial.html) Here we will focus on a modern package for reading and transforming spatial data in a tidy format.
+
+{{< figure src="allison_horst_art/sf.png" caption="Artwork by @allisonhorst" >}}
+
+[Simple features](https://en.wikipedia.org/wiki/Simple_Features) or [**simple feature access**](http://www.opengeospatial.org/standards/sfa) refers to a formal standard that describes how objects in the real world can be represented in computers, with emphasis on the **spatial** geometry of these objects. It also describes how such objects can be stored in and retrieved from databases, and which geometrical operations should be defined for them.
 
 The standard is widely implemented in spatial databases (such as PostGIS), commercial GIS (e.g., [ESRI ArcGIS](http://www.esri.com/)) and forms the vector data basis for libraries such as [GDAL](http://www.gdal.org/). A subset of simple features forms the [GeoJSON](http://geojson.org/) standard.
 
@@ -104,6 +108,8 @@ The four possible cases then are:
 
 ### Simple feature geometry types
 
+{{< figure src="simple-features.png" caption="Source: [Simple Features for R](https://r-spatial.github.io/sf/articles/sf1.html#sf-objects-with-simple-features-1)" >}}
+
 The following seven simple feature types are the most common, and are for instance the only ones used for [GeoJSON](https://tools.ietf.org/html/rfc7946):
 
 | type | description                                        |
@@ -126,60 +132,43 @@ Coordinates can only be placed on the Earth's surface when their coordinate refe
 
 ## Importing spatial data using `sf`
 
-`st_read()` imports a spatial data file and converts it to a simple feature data frame. Here we import a shapefile containing the spatial boundaries of each [community area in the city of Chicago](https://data.cityofchicago.org/Facilities-Geographic-Boundaries/Boundaries-Community-Areas-current-/cauq-8yn6).
+`st_read()` imports a spatial data file and converts it to a simple feature data frame. Here we import a shapefile containing the spatial boundaries of each [borough in New York City](https://data.cityofnewyork.us/City-Government/Borough-Boundaries/tqmj-j8zm).
 
 
 ```r
-chi_shape <- here("static/data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp") %>%
+nyc_shape <- here("static", "data", "borough-boundaries") %>%
   st_read()
 ```
 
 ```
-## Reading layer `geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19' from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/Boundaries - Community Areas (current)/geo_export_328cdcbf-33ba-4997-8ce8-90953c6fec19.shp' 
+## Reading layer `geo_export_6fd95df5-1136-4829-8f2d-9cb5d1cc2222' from data source `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/borough-boundaries' 
 ##   using driver `ESRI Shapefile'
-## Simple feature collection with 77 features and 9 fields
+## Simple feature collection with 5 features and 4 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## Bounding box:  xmin: -74.3 ymin: 40.5 xmax: -73.7 ymax: 40.9
 ## Geodetic CRS:  WGS84(DD)
 ```
 
-The short report printed gives the file name, mentions that there are 77 features (records, represented as rows) and 10 fields (attributes, represented as columns), states that the spatial data file is a `MULTIPOLYGON`, provides the bounding box coordinates, and identifies the projection method (which we will discuss later). If we print the first rows of `chi_shape`:
+The short report printed gives the file name, mentions that there are 5 features (records, represented as rows) and 5 fields (attributes, represented as columns), states that the spatial data file is a `MULTIPOLYGON`, provides the bounding box coordinates, and identifies the projection method (which we will discuss later). If we print the first rows of `nyc_shape`:
 
 
 ```r
-chi_shape
+nyc_shape
 ```
 
 ```
-## Simple feature collection with 77 features and 9 fields
+## Simple feature collection with 5 features and 4 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## Bounding box:  xmin: -74.3 ymin: 40.5 xmax: -73.7 ymax: 40.9
 ## Geodetic CRS:  WGS84(DD)
-## First 10 features:
-##    perimeter       community shape_len shape_area area comarea area_numbe
-## 1          0         DOUGLAS     31027   46004621    0       0         35
-## 2          0         OAKLAND     19566   16913961    0       0         36
-## 3          0     FULLER PARK     25339   19916705    0       0         37
-## 4          0 GRAND BOULEVARD     28197   48492503    0       0         38
-## 5          0         KENWOOD     23325   29071742    0       0         39
-## 6          0  LINCOLN SQUARE     36625   71352328    0       0          4
-## 7          0 WASHINGTON PARK     28175   42373881    0       0         40
-## 8          0       HYDE PARK     29747   45105380    0       0         41
-## 9          0        WOODLAWN     46937   57815180    0       0         42
-## 10         0     ROGERS PARK     34052   51259902    0       0          1
-##    area_num_1 comarea_id                       geometry
-## 1          35          0 MULTIPOLYGON (((-87.6 41.8,...
-## 2          36          0 MULTIPOLYGON (((-87.6 41.8,...
-## 3          37          0 MULTIPOLYGON (((-87.6 41.8,...
-## 4          38          0 MULTIPOLYGON (((-87.6 41.8,...
-## 5          39          0 MULTIPOLYGON (((-87.6 41.8,...
-## 6           4          0 MULTIPOLYGON (((-87.7 42, -...
-## 7          40          0 MULTIPOLYGON (((-87.6 41.8,...
-## 8          41          0 MULTIPOLYGON (((-87.6 41.8,...
-## 9          42          0 MULTIPOLYGON (((-87.6 41.8,...
-## 10          1          0 MULTIPOLYGON (((-87.7 42, -...
+##   boro_code     boro_name shape_area shape_leng                       geometry
+## 1         5 Staten Island   1.62e+09     325924 MULTIPOLYGON (((-74.1 40.6,...
+## 2         2         Bronx   1.19e+09     463277 MULTIPOLYGON (((-73.9 40.8,...
+## 3         1     Manhattan   6.37e+08     359103 MULTIPOLYGON (((-74 40.7, -...
+## 4         3      Brooklyn   1.93e+09     728478 MULTIPOLYGON (((-73.9 40.6,...
+## 5         4        Queens   3.04e+09     888239 MULTIPOLYGON (((-73.8 40.6,...
 ```
 
 In the output we see:
@@ -188,60 +177,49 @@ In the output we see:
 * The `geometry` column is a simple feature list-column (an object of class `sfc`, which is a column in the `data.frame`)
 * Each value in `geometry` is a single simple feature geometry (an object of class `sfg`)
 
-We start to recognize the data frame structure. Substantively, `community` defines the name of the community area for each row.
+We start to recognize the data frame structure. Substantively, `boro_name` defines the name of the borough for each row.
 
 `st_read()` also works with GeoJSON files.
 
 
 ```r
-chi_json <- here("static/data/Boundaries - Community Areas (current).geojson") %>%
+nyc_json <- here("static", "data", "borough-boundaries.geojson") %>%
   st_read()
 ```
 
 ```
-## Reading layer `Boundaries - Community Areas (current)' from data source 
-##   `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/Boundaries - Community Areas (current).geojson' 
+## Reading layer `borough-boundaries' from data source 
+##   `/Users/soltoffbc/Projects/Computing for Social Sciences/course-site/static/data/borough-boundaries.geojson' 
 ##   using driver `GeoJSON'
-## Simple feature collection with 77 features and 9 fields
+## Simple feature collection with 5 features and 4 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## Bounding box:  xmin: -74.3 ymin: 40.5 xmax: -73.7 ymax: 40.9
 ## Geodetic CRS:  WGS 84
 ```
 
 ```r
-chi_json
+nyc_json
 ```
 
 ```
-## Simple feature collection with 77 features and 9 fields
+## Simple feature collection with 5 features and 4 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
-## Bounding box:  xmin: -87.9 ymin: 41.6 xmax: -87.5 ymax: 42
+## Bounding box:  xmin: -74.3 ymin: 40.5 xmax: -73.7 ymax: 40.9
 ## Geodetic CRS:  WGS 84
-## First 10 features:
-##          community area    shape_area perimeter area_num_1 area_numbe
-## 1          DOUGLAS    0 46004621.1581         0         35         35
-## 2          OAKLAND    0 16913961.0408         0         36         36
-## 3      FULLER PARK    0 19916704.8692         0         37         37
-## 4  GRAND BOULEVARD    0 48492503.1554         0         38         38
-## 5          KENWOOD    0 29071741.9283         0         39         39
-## 6   LINCOLN SQUARE    0 71352328.2399         0          4          4
-## 7  WASHINGTON PARK    0 42373881.4842         0         40         40
-## 8        HYDE PARK    0 45105380.1732         0         41         41
-## 9         WOODLAWN    0  57815179.512         0         42         42
-## 10     ROGERS PARK    0 51259902.4506         0          1          1
-##    comarea_id comarea     shape_len                       geometry
-## 1           0       0 31027.0545098 MULTIPOLYGON (((-87.6 41.8,...
-## 2           0       0 19565.5061533 MULTIPOLYGON (((-87.6 41.8,...
-## 3           0       0 25339.0897503 MULTIPOLYGON (((-87.6 41.8,...
-## 4           0       0 28196.8371573 MULTIPOLYGON (((-87.6 41.8,...
-## 5           0       0 23325.1679062 MULTIPOLYGON (((-87.6 41.8,...
-## 6           0       0 36624.6030848 MULTIPOLYGON (((-87.7 42, -...
-## 7           0       0 28175.3160866 MULTIPOLYGON (((-87.6 41.8,...
-## 8           0       0 29746.7082016 MULTIPOLYGON (((-87.6 41.8,...
-## 9           0       0 46936.9592443 MULTIPOLYGON (((-87.6 41.8,...
-## 10          0       0 34052.3975757 MULTIPOLYGON (((-87.7 42, -...
+##   boro_code     boro_name    shape_area    shape_leng
+## 1         5 Staten Island 1623631283.36 325924.002076
+## 2         2         Bronx  1187189499.3 463277.240478
+## 3         1     Manhattan 636605816.437 359103.151368
+## 4         3      Brooklyn 1934169228.83 728478.125489
+## 5         4        Queens 3041397430.33 888238.562635
+##                         geometry
+## 1 MULTIPOLYGON (((-74.1 40.6,...
+## 2 MULTIPOLYGON (((-73.9 40.8,...
+## 3 MULTIPOLYGON (((-74 40.7, -...
+## 4 MULTIPOLYGON (((-73.9 40.6,...
+## 5 MULTIPOLYGON (((-73.8 40.6,...
 ```
 
 ## Acknowledgments
@@ -267,7 +245,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-01
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -283,6 +261,7 @@ sessioninfo::session_info()
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)

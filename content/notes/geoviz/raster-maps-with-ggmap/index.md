@@ -26,46 +26,31 @@ set.seed(1234)
 theme_set(theme_minimal())
 ```
 
-[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Google Maps](https://www.google.com/maps) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
-
-{{% callout note %}}
-
-Google has [recently changed its API requirements](https://developers.google.com/maps/documentation/geocoding/usage-and-billing), and **ggmap** users are now required to provide an API key *and* enable billing. I would not recommend trying to use Google Maps to obtain map images. The code below would work for you, but Google now charges you each time you obtain a map image. Stick to the other providers such as Stamen Maps.
-
-{{% /callout %}}
+[`ggmap`](https://github.com/dkahle/ggmap) is a package for R that retrieves raster map tiles from online mapping services like [Stamen Maps](http://maps.stamen.com/) and plots them using the `ggplot2` framework. The map tiles are **raster** because they are static image files generated previously by the mapping service. You do not need any data files containing information on things like scale, projection, boundaries, etc. because that information is already created by the map tile. This severely limits your ability to redraw or change the appearance of the geographic map, however the tradeoff means you can immediately focus on incorporating additional data into the map.
 
 ## Obtain map images
 
-`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782), as well as the proprietary Google Maps. Obtaining map tiles requires use of the `get_map()` function. There are two formats for specifying the mapping region you wish to obtain:
-
-1. Bounding box
-1. Center/zoom
-
-## Specifying map regions
-
-### Bounding box
-
-**Bounding box** requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of Chicago using Stamen Maps:
+`ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782). Obtaining map tiles requires use of the `get_map()` function. To identify which map tiles need to be obtained, you specify the mapping region using a **bounding box**. The bounding box requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of New York City using Stamen Maps:
 
 
 ```r
 # store bounding box coordinates
-chi_bb <- c(
-  left = -87.936287,
-  bottom = 41.679835,
-  right = -87.447052,
-  top = 42.000835
+nyc_bb <- c(
+  left = -74.263045,
+  bottom = 40.487652,
+  right = -73.675963,
+  top = 40.934743
 )
 
-chicago_stamen <- get_stamenmap(
-  bbox = chi_bb,
+nyc_stamen <- get_stamenmap(
+  bbox = nyc_bb,
   zoom = 11
 )
-chicago_stamen
+nyc_stamen
 ```
 
 ```
-## 627x712 terrain map image from Stamen Maps. 
+## 859x854 terrain map image from Stamen Maps. 
 ## See ?ggmap to plot it.
 ```
 
@@ -73,36 +58,36 @@ To view the map, use `ggmap()`:
 
 
 ```r
-ggmap(chicago_stamen)
+ggmap(nyc_stamen)
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-stamen-plot-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-nyc-stamen-plot-1.png" width="672" />
 
 The `zoom` argument in `get_stamenmap()` controls the level of detail in the map. The larger the number, the greater the detail.
 
 
 ```r
 get_stamenmap(
-  bbox = chi_bb,
+  bbox = nyc_bb,
   zoom = 12
 ) %>%
   ggmap()
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-stamen-zoom-in-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-nyc-stamen-zoom-in-1.png" width="672" />
 
 The smaller the number, the lesser the detail.
 
 
 ```r
 get_stamenmap(
-  bbox = chi_bb,
+  bbox = nyc_bb,
   zoom = 10
 ) %>%
   ggmap()
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-stamen-zoom-out-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-nyc-stamen-zoom-out-1.png" width="672" />
 
 
 Trial and error will help you decide on the appropriate level of detail depending on what data you need to visualize on the map.
@@ -113,125 +98,74 @@ Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000)
 
 {{% /callout %}}
 
-### Center/zoom
-
-While Stamen Maps and OpenStreetMap require the bounding box format for obtaining map tiles and allow you to increase or decrease the level of detail within a single bounding box, Google Maps requires specifying the **center** coordinate of the map (a single longitude/latitude location) and the level of **zoom** or detail. `zoom` is an integer value from `3` (continent) to `21` (building). This means the level of detail is hardcoded to the size of the mapping region. The default `zoom` level is `10`.
-
-
-```r
-# store center coordinate
-chi_center <- c(lon = -87.65, lat = 41.855)
-
-chicago_google <- get_googlemap(center = chi_center)
-ggmap(chicago_google)
-
-get_googlemap(
-  center = chi_center,
-  zoom = 12
-) %>%
-  ggmap()
-
-get_googlemap(
-  center = chi_center,
-  zoom = 8
-) %>%
-  ggmap()
-```
-
-{{% callout note %}}
-
-Use [Find Latitude and Longitude](https://www.findlatitudeandlongitude.com/) to get the exact GPS coordinates of the center location.
-
-{{% /callout %}}
-
 ## Types of map tiles
 
 Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/stamen-maptype-1.png" width="576" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/stamen-maptype-1.png" width="672" />
 
-Google Maps is a bit more limited, but still offers a few major types:
-
-
-
-See the documentation for the `get_*map()` function for the exact code necessary to get each type of map.
 
 {{% callout note %}}
 
-`get_map()` is a wrapper that automatically queries Google Maps, OpenStreetMap, or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_googlemap()`, `get_stamenmap()`, and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
+`get_map()` is a wrapper that automatically queries OpenStreetMap or Stamen Maps depending on the function arguments and inputs. While useful, it also combines all the different arguments of `get_stamenmap()` and `getopenstreetmap()` and can become a bit jumbled. Use at your own risk.
 
 {{% /callout %}}
 
 ## Import crime data
 
-Now that we can obtain map tiles and draw them using `ggmap()`, let's explore how to add data to the map. The city of Chicago has [an excellent data portal](https://data.cityofchicago.org/) publishing a large volume of public records. Here we'll look at [crime data from 2017](https://data.cityofchicago.org/Public-Safety/Crimes-2017/d62x-nvdr).[^chi] I previously downloaded a `.csv` file containing all the records, which I import using `read_csv()`:
+Now that we can obtain map tiles and draw them using `ggmap()`, let's explore how to add data to the map. New York City has [an excellent data portal](https://opendata.cityofnewyork.us/) publishing a large volume of public records. Here we'll look at [crime data from 2022](https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Current-Year-To-Date-/5uac-w243). I previously downloaded a `.csv` file containing all the records, which I import using `read_csv()`:
 
 {{% callout note %}}
 
-If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://info5940.infosci.cornell.edu/data/Crimes_-_2017.csv")` to download the file from the course website.
+If you are copying-and-pasting code from this demonstration, change this line of code to `crimes <- read_csv("https://info5940.infosci.cornell.edu/data/nyc-crimes.csv")` to download the file from the course website.
 
 {{% /callout %}}
 
 
 ```r
-crimes <- here("static", "data", "Crimes_-_2017.csv") %>%
+crimes <- here("static", "data", "nyc-crimes.csv") %>%
   read_csv()
 glimpse(crimes)
 ```
 
 ```
-## Rows: 267,345
-## Columns: 22
-## $ ID                     <dbl> 11094370, 11118031, 11134189, 11156462, 1116487…
-## $ `Case Number`          <chr> "JA440032", "JA470589", "JA491697", "JA521389",…
-## $ Date                   <chr> "09/21/2017 12:15:00 AM", "10/12/2017 07:14:00 …
-## $ Block                  <chr> "072XX N CALIFORNIA AVE", "055XX W GRAND AVE", …
-## $ IUCR                   <chr> "1122", "1345", "4651", "1110", "0265", "143A",…
-## $ `Primary Type`         <chr> "DECEPTIVE PRACTICE", "CRIMINAL DAMAGE", "OTHER…
-## $ Description            <chr> "COUNTERFEIT CHECK", "TO CITY OF CHICAGO PROPER…
-## $ `Location Description` <chr> "CURRENCY EXCHANGE", "JAIL / LOCK-UP FACILITY",…
-## $ Arrest                 <lgl> TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,…
-## $ Domestic               <lgl> FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE…
-## $ Beat                   <chr> "2411", "2515", "0922", "2514", "1221", "0232",…
-## $ District               <chr> "024", "025", "009", "025", "012", "002", "005"…
-## $ Ward                   <dbl> 50, 29, 12, 30, 32, 20, 9, 12, 12, 27, 32, 17, …
-## $ `Community Area`       <dbl> 2, 19, 58, 19, 24, 40, 49, 30, 30, 23, 24, 44, …
-## $ `FBI Code`             <chr> "10", "14", "26", "11", "02", "15", "03", "06",…
-## $ `X Coordinate`         <dbl> 1156443, 1138788, 1159425, 1138653, 1161264, 11…
-## $ `Y Coordinate`         <dbl> 1947707, 1913480, 1875711, 1920720, 1905292, 18…
-## $ Year                   <dbl> 2017, 2017, 2017, 2017, 2017, 2017, 2017, 2017,…
-## $ `Updated On`           <chr> "03/01/2018 03:52:35 PM", "03/01/2018 03:52:35 …
-## $ Latitude               <dbl> 42.0, 41.9, 41.8, 41.9, 41.9, 41.8, 41.7, 41.8,…
-## $ Longitude              <dbl> -87.7, -87.8, -87.7, -87.8, -87.7, -87.6, -87.6…
-## $ Location               <chr> "(42.012293397, -87.699714109)", "(41.918711651…
+## Rows: 256,797
+## Columns: 7
+## $ cmplnt_num   <chr> "247350382", "243724728", "246348713", "240025455", "2461…
+## $ boro_nm      <chr> "BROOKLYN", "QUEENS", "QUEENS", "BROOKLYN", "BRONX", "BRO…
+## $ cmplnt_fr_dt <dttm> 1011-05-18 04:56:02, 1022-04-11 04:56:02, 1022-06-08 04:…
+## $ law_cat_cd   <chr> "MISDEMEANOR", "MISDEMEANOR", "MISDEMEANOR", "FELONY", "F…
+## $ ofns_desc    <chr> "CRIMINAL MISCHIEF & RELATED OF", "PETIT LARCENY", "PETIT…
+## $ latitude     <dbl> 40.7, 40.8, 40.7, 40.7, 40.8, 40.7, 40.7, 40.7, 40.8, 40.…
+## $ longitude    <dbl> -73.9, -73.8, -73.8, -74.0, -73.9, -74.0, -73.9, -73.9, -…
 ```
 
-Each row of the data frame is a single reported incident of crime. Geographic location is encoded in several ways, though most importantly for us the exact longitude and latitude of the incident is encoded in the `Longitude` and `Latitude` columns respectively.
+Each row of the data frame is a single reported incident of crime. Geographic location is encoded using the exact `longitude` and `latitude` of the incident.
 
 ## Plot high-level map of crime
 
-Let's start with a simple high-level overview of reported crime in Chicago. First we need a map for the entire city.
+Let's start with a simple high-level overview of reported crime in New York City. First we need a map for the entire city.
 
 
 ```r
-chicago <- chicago_stamen
-ggmap(chicago)
+nyc <- nyc_stamen
+ggmap(nyc)
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/import-chicago-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/import-nyc-1.png" width="672" />
 
 ## Using `geom_point()`
 
-Since each row is a single reported incident of crime, we could use `geom_point()` to map the location of every crime in the dataset. Because `ggmap()` uses the map tiles (here, defined by `chicago`) as the basic input, we specify `data` and `mapping` inside of `geom_point()`, rather than inside `ggplot()`:
+Since each row is a single reported incident of crime, we could use `geom_point()` to map the location of every crime in the dataset. Because `ggmap()` uses the map tiles (here, defined by `nyc`) as the basic input, we specify `data` and `mapping` inside of `geom_point()`, rather than inside `ggplot()`:
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   geom_point(
     data = crimes,
     mapping = aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     )
   )
 ```
@@ -246,19 +180,19 @@ nrow(crimes)
 ```
 
 ```
-## [1] 267345
+## [1] 256797
 ```
 
-Oh yeah. There were 267345 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparancy of each data point so dense clusters of crime become apparent:
+Oh yeah. There were 256,797 reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparency of each data point so dense clusters of crime become apparent:
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   geom_point(
     data = crimes,
     aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     ),
     size = .25,
     alpha = .01
@@ -275,12 +209,12 @@ Instead of relying on `geom_point()` and plotting the raw data, a better approac
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   geom_density_2d(
     data = crimes,
     aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     )
   )
 ```
@@ -295,12 +229,12 @@ Rather than drawing lines, instead we can fill in the graph so that we use the `
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   stat_density_2d(
     data = crimes,
     aes(
-      x = Longitude,
-      y = Latitude,
+      x = longitude,
+      y = latitude,
       fill = stat(level)
     ),
     geom = "polygon"
@@ -322,12 +256,12 @@ This is an improvement, but we can adjust some additional settings to make the g
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   stat_density_2d(
     data = crimes,
     aes(
-      x = Longitude,
-      y = Latitude,
+      x = longitude,
+      y = latitude,
       fill = stat(level)
     ),
     alpha = .2,
@@ -350,16 +284,16 @@ Because `ggmap` is built on `ggplot2`, we can use the core features of `ggplot2`
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   stat_density_2d(
     data = crimes %>%
-      filter(`Primary Type` %in% c(
-        "BURGLARY", "MOTOR VEHICLE THEFT",
-        "NARCOTICS", "ROBBERY"
+      filter(ofns_desc %in% c(
+        "DANGEROUS DRUGS", "GRAND LARCENY OF MOTOR VEHICLE",
+        "ROBBERY", "VEHICLE AND TRAFFIC LAWS"
       )),
     aes(
-      x = Longitude,
-      y = Latitude,
+      x = longitude,
+      y = latitude,
       fill = stat(level)
     ),
     alpha = .4,
@@ -367,56 +301,52 @@ ggmap(chicago) +
     geom = "polygon"
   ) +
   scale_fill_gradientn(colors = brewer.pal(7, "YlOrRd")) +
-  facet_wrap(facets = vars(`Primary Type`))
+  facet_wrap(facets = vars(ofns_desc))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-crime-wday-1.png" width="672" />
 
-There is a large difference in the geographic density of narcotics crimes relative to the other catgories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in the west and south sides of the city.
+There is a substantial difference in the geographic density of drug crimes relative to the other categories. While burglaries, motor vehicle thefts, and robberies are reasonably prevalent all across the city, the vast majority of narcotics crimes occur in Manhattan and the Bronx.
 
 ## Locations of murders
 
-While `geom_point()` was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let's limit our analysis strictly to reported incidents of homicide in 2017.
+While `geom_point()` was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let's limit our analysis strictly to reported incidents of murder.
 
 
 ```r
 (homicides <- crimes %>%
-  filter(`Primary Type` == "HOMICIDE"))
+  filter(ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER"))
 ```
 
 ```
-## # A tibble: 671 × 22
-##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
-##     <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
-##  1 2.31e4 JA1496… 02/1… 001X… 0110  HOMICI… FIRST … ALLEY   TRUE   FALSE   1512 
-##  2 2.39e4 JA5309… 11/3… 088X… 0110  HOMICI… FIRST … APARTM… FALSE  FALSE   0424 
-##  3 2.34e4 JA3024… 06/1… 047X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   0931 
-##  4 2.34e4 JA3124… 06/1… 006X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   0631 
-##  5 2.37e4 JA4900… 10/2… 048X… 0110  HOMICI… FIRST … APARTM… TRUE   TRUE    1624 
-##  6 2.32e4 JA2107… 04/0… 013X… 0110  HOMICI… FIRST … APARTM… TRUE   TRUE    1011 
-##  7 2.36e4 JA4619… 10/0… 018X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   1233 
-##  8 2.36e4 JA4619… 10/0… 018X… 0110  HOMICI… FIRST … STREET  TRUE   FALSE   1233 
-##  9 1.08e7 JA1383… 02/0… 013X… 0142  HOMICI… RECKLE… STREET  TRUE   FALSE   1022 
-## 10 2.35e4 JA3645… 07/2… 047X… 0110  HOMICI… FIRST … ALLEY   TRUE   FALSE   1113 
-## # … with 661 more rows, 11 more variables: District <chr>, Ward <dbl>,
-## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
-## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
-## #   Longitude <dbl>, Location <chr>, and abbreviated variable names
-## #   ¹​`Case Number`, ²​`Primary Type`, ³​Description, ⁴​`Location Description`,
-## #   ⁵​Domestic
-## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+## # A tibble: 269 × 7
+##    cmplnt_num    boro_nm   cmplnt_fr_dt        law_cat…¹ ofns_…² latit…³ longi…⁴
+##    <chr>         <chr>     <dttm>              <chr>     <chr>     <dbl>   <dbl>
+##  1 240954923H1   BROOKLYN  1977-12-20 05:00:00 FELONY    MURDER…    40.7   -74.0
+##  2 245958045H1   BROOKLYN  2001-08-13 04:00:00 FELONY    MURDER…    40.7   -73.9
+##  3 8101169H6113  MANHATTAN 2005-03-06 05:00:00 FELONY    MURDER…    40.8   -73.9
+##  4 8101169H6113  MANHATTAN 2005-03-06 05:00:00 FELONY    MURDER…    40.8   -73.9
+##  5 16631466H8909 BROOKLYN  2006-05-24 04:00:00 FELONY    MURDER…    40.7   -73.9
+##  6 246056367H1   QUEENS    2015-05-13 04:00:00 FELONY    MURDER…    40.6   -73.7
+##  7 243507594H1   MANHATTAN 2020-06-19 04:00:00 FELONY    MURDER…    40.8   -74.0
+##  8 243688124H1   BROOKLYN  2021-01-31 05:00:00 FELONY    MURDER…    40.7   -73.9
+##  9 240767513H1   BROOKLYN  2021-02-17 05:00:00 FELONY    MURDER…    40.6   -74.0
+## 10 240767512H1   BROOKLYN  2021-05-24 04:00:00 FELONY    MURDER…    40.6   -74.0
+## # … with 259 more rows, and abbreviated variable names ¹​law_cat_cd, ²​ofns_desc,
+## #   ³​latitude, ⁴​longitude
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 We can draw a map of the city with all homicides indicated on the map using `geom_point()`:
 
 
 ```r
-ggmap(chicago) +
+ggmap(nyc) +
   geom_point(
     data = homicides,
     mapping = aes(
-      x = Longitude,
-      y = Latitude
+      x = longitude,
+      y = latitude
     ),
     size = 1
   )
@@ -424,116 +354,113 @@ ggmap(chicago) +
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/homicide-city-1.png" width="672" />
 
-Compared to our previous overviews, few if any homicides are reported downtown. We can also narrow down the geographic location to map specific neighborhoods in Chicago. First we obtain map tiles for those specific regions. Here we'll examine North Lawndale and Kenwood.
+Compared to our previous overviews, few if any homicides are reported in downtown Manhattan.
 
-
+We can also narrow down the geographic location to map specific neighborhoods in New York City. First we obtain map tiles for those ares. Here we'll examine Roosevelt Island and Fordham.
 
 
 ```r
-# North Lawndale is the highest homicides in 2017
-# Compare to Kenwood
-north_lawndale_bb <- c(
-  left = -87.749047,
-  bottom = 41.840185,
-  right = -87.687893,
-  top = 41.879850
+# compare Roosevelt Island to Harlem
+roosevelt_bb <- c(
+  left = -73.993958,
+  bottom = 40.737279,
+  right = -73.912204,
+  top = 40.780838
 )
-north_lawndale <- get_stamenmap(
-  bbox = north_lawndale_bb,
+roosevelt <- get_stamenmap(
+  bbox = roosevelt_bb,
   zoom = 14
 )
 
-kenwood_bb <- c(
-  left = -87.613113,
-  bottom = 41.799215,
-  right = -87.582536,
-  top = 41.819064
+fordham_bb <- c(
+  left = -73.939754,
+  bottom = 40.837444,
+  right = -73.858000,
+  top = 40.880937
 )
-kenwood <- get_stamenmap(
-  bbox = kenwood_bb,
-  zoom = 15
+fordham <- get_stamenmap(
+  bbox = fordham_bb,
+  zoom = 14
 )
 
-ggmap(north_lawndale)
+ggmap(roosevelt)
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/get-high-low-murder-maps-1.png" width="672" />
 
 ```r
-ggmap(kenwood)
+ggmap(fordham)
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/get-high-low-murder-maps-2.png" width="672" />
 
-To plot homicides specifically in these neighborhoods, change `ggmap(chicago)` to the appropriate map tile:
+To plot homicides specifically in these neighborhoods, change `ggmap(nyc)` to the appropriate map tile:
 
 
 ```r
-ggmap(north_lawndale) +
+ggmap(roosevelt) +
   geom_point(
     data = homicides,
-    aes(x = Longitude, y = Latitude)
+    aes(x = longitude, y = latitude)
   )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-murder-1.png" width="672" />
 
 ```r
-ggmap(kenwood) +
+ggmap(fordham) +
   geom_point(
     data = homicides,
-    aes(x = Longitude, y = Latitude)
+    aes(x = longitude, y = latitude)
   )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-murder-2.png" width="672" />
 
-North Lawndale had the most reported homicides in 2017, whereas Kenwood had only a handful. And even though `homicides` contained data for homicides across the entire city, `ggmap()` automatically cropped the graph to keep just the homicides that occurred within the bounding box.
+Even though `homicides` contained data for homicides across the entire city, `ggmap()` automatically cropped the graph to keep just the homicides that occurred within the bounding box.
 
-All the other aesthetic customizations of `geom_point()` work with `ggmap`. So we could expand these neighborhood maps to include all violent crime categories[^violent] and distinguish each type by `color`:
+All the other aesthetic customizations of `geom_point()` work with `ggmap`. So we could expand these neighborhood maps to include all violent crimes[^violent] and distinguish each type by `color`:
 
 
 ```r
 (violent <- crimes %>%
-  filter(`Primary Type` %in% c(
-    "HOMICIDE",
-    "CRIM SEXUAL ASSAULT",
-    "ROBBERY"
+  filter(ofns_desc %in% c(
+    "MURDER & NON-NEGL. MANSLAUGHTER",
+    "RAPE",
+    "ROBBERY",
+    "FELONY ASSAULT"
   )))
 ```
 
 ```
-## # A tibble: 14,146 × 22
-##        ID Case …¹ Date  Block IUCR  Prima…² Descr…³ Locat…⁴ Arrest Domes…⁵ Beat 
-##     <dbl> <chr>   <chr> <chr> <chr> <chr>   <chr>   <chr>   <lgl>  <lgl>   <chr>
-##  1 1.12e7 JA5319… 12/0… 022X… 0265  CRIM S… AGGRAV… STREET  TRUE   FALSE   1221 
-##  2 1.10e7 JA3223… 06/2… 003X… 031A  ROBBERY ARMED:… SMALL … TRUE   FALSE   0511 
-##  3 1.12e7 JA5459… 12/1… 007X… 031A  ROBBERY ARMED:… SIDEWA… TRUE   FALSE   1221 
-##  4 1.12e7 JA5467… 12/1… 007X… 031A  ROBBERY ARMED:… STREET  TRUE   FALSE   1221 
-##  5 1.12e7 JB1471… 10/0… 092X… 0281  CRIM S… NON-AG… RESIDE… FALSE  FALSE   2222 
-##  6 1.12e7 JB1475… 08/2… 001X… 0281  CRIM S… NON-AG… HOTEL/… FALSE  FALSE   0122 
-##  7 2.31e4 JA1496… 02/1… 001X… 0110  HOMICI… FIRST … ALLEY   TRUE   FALSE   1512 
-##  8 1.10e7 JA3785… 08/0… 038X… 0313  ROBBERY ARMED:… SIDEWA… TRUE   FALSE   1133 
-##  9 1.12e7 JA5386… 12/0… 092X… 031A  ROBBERY ARMED:… SIDEWA… TRUE   FALSE   0633 
-## 10 1.12e7 JB1496… 12/2… 005X… 0330  ROBBERY AGGRAV… CONVEN… FALSE  FALSE   0123 
-## # … with 14,136 more rows, 11 more variables: District <chr>, Ward <dbl>,
-## #   `Community Area` <dbl>, `FBI Code` <chr>, `X Coordinate` <dbl>,
-## #   `Y Coordinate` <dbl>, Year <dbl>, `Updated On` <chr>, Latitude <dbl>,
-## #   Longitude <dbl>, Location <chr>, and abbreviated variable names
-## #   ¹​`Case Number`, ²​`Primary Type`, ³​Description, ⁴​`Location Description`,
-## #   ⁵​Domestic
-## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+## # A tibble: 21,723 × 7
+##    cmplnt_num  boro_nm   cmplnt_fr_dt        law_cat_cd ofns_d…¹ latit…² longi…³
+##    <chr>       <chr>     <dttm>              <chr>      <chr>      <dbl>   <dbl>
+##  1 240954923H1 BROOKLYN  1977-12-20 05:00:00 FELONY     MURDER …    40.7   -74.0
+##  2 244898507   BROOKLYN  1983-07-01 04:00:00 FELONY     RAPE        40.6   -74.0
+##  3 245625141   QUEENS    1998-01-01 05:00:00 FELONY     RAPE        40.7   -73.8
+##  4 241761571   BRONX     2000-03-08 05:00:00 FELONY     ROBBERY     40.8   -73.9
+##  5 245183845   BROOKLYN  2000-05-16 04:00:00 FELONY     RAPE        40.7   -74.0
+##  6 241162822   QUEENS    2000-09-01 04:00:00 FELONY     RAPE        40.7   -73.8
+##  7 242903456   BRONX     2001-01-01 05:00:00 FELONY     RAPE        40.8   -73.9
+##  8 245958045H1 BROOKLYN  2001-08-13 04:00:00 FELONY     MURDER …    40.7   -73.9
+##  9 247319927   BRONX     2002-06-29 04:00:00 FELONY     ROBBERY     40.9   -73.8
+## 10 239503898   MANHATTAN 2002-12-01 05:00:00 FELONY     RAPE        40.7   -74.0
+## # … with 21,713 more rows, and abbreviated variable names ¹​ofns_desc,
+## #   ²​latitude, ³​longitude
+## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 
 ```r
-ggmap(north_lawndale) +
+ggmap(roosevelt) +
   geom_point(
     data = violent,
     aes(
-      x = Longitude, y = Latitude,
-      color = `Primary Type`
-    )
+      x = longitude, y = latitude,
+      color = ofns_desc
+    ),
+    alpha = 0.5
   ) +
   scale_color_brewer(type = "qual", palette = "Dark2")
 ```
@@ -541,13 +468,14 @@ ggmap(north_lawndale) +
 <img src="{{< blogdown/postref >}}index_files/figure-html/plot-violent-1.png" width="672" />
 
 ```r
-ggmap(kenwood) +
+ggmap(fordham) +
   geom_point(
     data = violent,
     aes(
-      x = Longitude, y = Latitude,
-      color = `Primary Type`
-    )
+      x = longitude, y = latitude,
+      color = ofns_desc
+    ),
+    alpha = 0.5
   ) +
   scale_color_brewer(type = "qual", palette = "Dark2")
 ```
@@ -577,13 +505,15 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-01
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package       * version    date (UTC) lib source
 ##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
 ##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  bit             4.0.4      2020-08-04 [2] CRAN (R 4.2.0)
+##  bit64           4.0.5      2020-08-30 [2] CRAN (R 4.2.0)
 ##  bitops          1.0-7      2021-04-24 [2] CRAN (R 4.2.0)
 ##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
 ##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
@@ -591,16 +521,22 @@ sessioninfo::session_info()
 ##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
+##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
+##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  curl            4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
 ##  dplyr         * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  e1071           1.7-11     2022-06-07 [2] CRAN (R 4.2.0)
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
@@ -614,17 +550,22 @@ sessioninfo::session_info()
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
+##  isoband         0.2.5      2021-07-13 [2] CRAN (R 4.2.0)
 ##  jpeg            0.1-9      2021-07-24 [2] CRAN (R 4.2.0)
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
+##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
+##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
 ##  patchwork     * 1.1.1      2020-12-17 [2] CRAN (R 4.2.0)
@@ -632,6 +573,7 @@ sessioninfo::session_info()
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  plyr            1.8.7      2022-03-24 [2] CRAN (R 4.2.0)
 ##  png             0.1-7      2013-12-03 [2] CRAN (R 4.2.0)
+##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
 ##  RColorBrewer  * 1.1-3      2022-04-03 [2] CRAN (R 4.2.0)
@@ -649,6 +591,7 @@ sessioninfo::session_info()
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  sf            * 1.0-8      2022-07-14 [2] CRAN (R 4.2.0)
 ##  sp              1.5-0      2022-06-05 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
@@ -657,8 +600,10 @@ sessioninfo::session_info()
 ##  tidyselect      1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
 ##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
+##  units           0.8-0      2022-02-05 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
 ##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  vroom           1.5.7      2021-11-30 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
@@ -670,6 +615,5 @@ sessioninfo::session_info()
 ## ──────────────────────────────────────────────────────────────────────────────
 ```
 
-[^chi]: [Full documentation of the data from the larger 2001-present crime dataset.](https://data.cityofchicago.org/Public-Safety/Crimes-2001-to-present/ijzp-q8t2).
-[^types]: Specifically burglary, motor vehicle theft, narcotics, and robbery.
-[^violent]: Specifcally homicides, criminal sexual assault, and robbery. [Aggravated assault and aggravated robbery are also defined as violent crimes by the Chicago Police Departmant](http://gis.chicagopolice.org/clearmap_crime_sums/crime_types.html), but the coding system for this data set does not distinguish between ordinary and aggravated types of assault and robbery.
+[^types]: Specifically drugs, motor vehicle thefts, robbery, and other vehicle/traffic crimes.
+[^violent]: [The FBI defines violent crime](https://ucr.fbi.gov/crime-in-the-u.s/2010/crime-in-the-u.s.-2010/violent-crime) as one of four offenses: murder and nonnegligent manslaughter, forcible rape, robbery, and aggravated assault. In the NYPD database, the comparable categories are murder and nonnegligent manslaughter, rape, robbery, and felony assault.

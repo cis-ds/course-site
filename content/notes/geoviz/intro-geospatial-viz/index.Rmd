@@ -22,10 +22,10 @@ library(ggmap)
 library(rnaturalearth)
 library(here)
 
-# # useful on MacOS to speed up rendering of geom_sf() objects
-# if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
-#   options(bitmapType = "cairo")
-# }
+# useful on MacOS to speed up rendering of geom_sf() objects
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
+  options(bitmapType = "cairo")
+}
 
 options(digits = 3)
 set.seed(1234)
@@ -36,7 +36,7 @@ theme_set(theme_minimal())
 
 ## John Snow and the Broad Street water pump
 
-{{< figure src="https://upload.wikimedia.org/wikipedia/commons/2/27/Snow-cholera-map-1.jpg" caption="[Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)" >}}
+{{< figure src="Snow-cholera-map-1.jpeg" caption="[Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)" >}}
 
 In the nineteenth century the theory of bacteria was not widely accepted by the medical community or the public.[^snow] A mother washed her baby's diaper in a well in 1854 in London, sparking an outbreak of **cholera**, an intestinal disease that causes vomiting, diarrhea, and eventually death. This disease had presented itself previously in London but its cause was still unknown.
 
@@ -48,7 +48,7 @@ Dr. John Snow lived in Soho, the suburb of London where the disease manifested i
 
 {{< figure src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Minard_Update.png" caption="[English translation of Minard's map](https://commons.wikimedia.org/wiki/File:Minard_Update.png)" >}}
 
-This illustration is identifed in Edward Tufte's **The Visual Display of Quantitative Information** as one of "the best statistical drawings ever created". It also demonstrates a very important rule of warfare: [never invade Russia in the winter](https://en.wikipedia.org/wiki/Russian_Winter).
+This illustration is identified in Edward Tufte's **The Visual Display of Quantitative Information** as one of "the best statistical drawings ever created". It also demonstrates a very important rule of warfare: [never invade Russia in the winter](https://en.wikipedia.org/wiki/Russian_Winter).
 
 In 1812, Napoleon ruled most of Europe. He wanted to seize control of the British islands, but could not overcome the UK defenses. He decided to impose an embargo to weaken the nation in preparation for invasion, but Russia refused to participate. Angered at this decision, Napoleon launched an invasion of Russia with over 400,000 troops in the summer of 1812. Russia was unable to defeat Napoleon in battle, but instead waged a war of attrition. The Russian army was in near constant retreat, burning or destroying anything of value along the way to deny France usable resources. While Napoleon's army maintained the military advantage, his lack of food and the emerging European winter decimated his forces. He left France with an army of approximately 422,000 soldiers; he returned to France with just 10,000.
 
@@ -73,8 +73,6 @@ What makes this such an effective visualization?[^minard]
 
 Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).
 
-{{< figure src="allison_horst_art/sf.png" caption="Artwork by @allison_horst" >}}
-
 ## Scale
 
 **Scale** defines the proportion between distances and sizes on a map and their actual distances and sizes on Earth. Depending on the total geographic area for which you have data to visualize, you could create a **small-scale map** or a **large-scale map**. So for instance, a map of the United States would be considered large-scale:
@@ -91,17 +89,17 @@ c(
   ggmap()
 ```
 
-Whereas a map of Hyde Park would be small-scale:
+Whereas a map of Ithaca would be small-scale:
 
 ```{r small-scale}
 # establish bounding box, get map, and plot
 c(
-  left = -87.612448,
-  bottom = 41.783393,
-  right = -87.581871,
-  top = 41.803470
+  left = -76.541950,
+  bottom = 42.423368,
+  right = -76.460196,
+  top = 42.465804
 ) %>%
-  get_stamenmap(zoom = 15) %>%
+  get_stamenmap(zoom = 13) %>%
   ggmap()
 ```
 
@@ -120,7 +118,7 @@ The smaller the scale, the easier it is to include additional details in the map
 Projection methods typically maximize the accuracy of one or two of these properties, but no more. For instance, **conformal projections** such as the **mercator** projection preserves shape and local angles and is very useful for sea navigation, but distorts the area of landmasses.
 
 ```{r import-world, include = FALSE}
-world <- ne_countries(returnclass = "sf")
+world <- st_read(dsn = "https://github.com/datasets/geo-countries/raw/master/data/countries.geojson")
 ```
 
 ```{r mercator, dependson = "import-world"}
@@ -128,6 +126,8 @@ world %>%
   st_transform("+proj=merc") %>%
   ggplot() +
   geom_sf() +
+  # need to manually clip so Antarctica appears correct(ish)
+  coord_sf(ylim = c(-2e07, NA)) +
   ggtitle("Mercator projection")
 ```
 
@@ -161,22 +161,22 @@ world %>%
 
 ## Symbols
 
-Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Hyde Park:
+Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Cornell's engineering and biology quads:
 
-```{r bb-hydepark-stamen}
+```{r bb-cornell-stamen}
 # store bounding box coordinates
-hydepark_bb <- c(
-  left = -87.612448,
-  bottom = 41.783393,
-  right = -87.581871,
-  top = 41.803470
+cornell_bb <- c(
+  left = -76.490550,
+  bottom = 42.440165,
+  right = -76.470112,
+  top = 42.450774
 )
 
-hydepark_stamen <- get_stamenmap(
-  bbox = hydepark_bb,
+cornell_stamen <- get_stamenmap(
+  bbox = cornell_bb,
   zoom = 16
 )
-ggmap(hydepark_stamen)
+ggmap(cornell_stamen)
 ```
 
 * Line are used to indicate roadways

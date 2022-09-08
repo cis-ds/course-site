@@ -55,8 +55,10 @@ Because simple features data frames are standardized with the `geometry` column 
 One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.[^rights] Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use `filter()` from `dplyr` to exclude these four states/territories.
 
 ```{r usa-subset}
-(usa_48 <- usa %>%
-  filter(!(NAME %in% c("Alaska", "District of Columbia", "Hawaii", "Puerto Rico"))))
+usa_48 <- usa %>%
+  filter(NAME %in% state.name) %>%
+  filter(NAME != "Alaska", NAME != "Hawaii")
+usa_48
 
 ggplot(data = usa_48) +
   geom_sf()
@@ -69,15 +71,15 @@ ggplot(data = usa_48) +
   geom_sf(fill = "palegreen", color = "black")
 ```
 
-## `albersusa`
+## `urbanmapr`
 
-Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`albersusa`](https://github.com/hrbrmstr/albersusa) includes the `usa_sf()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `remotes::install_github("hrbrmstr/albersusa")`.
+Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`urbnmapr`](https://github.com/UrbanInstitute/urbnmapr) includes the `get_urbn_map()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `remotes::install_github("UrbanInstitute/urbnmapr")`.
 
-```{r albersusa}
-library(albersusa)
-usa_sf()
+```{r urbnmapr}
+library(urbnmapr)
+states_sf <- get_urbn_map("states", sf = TRUE)
 
-ggplot(data = usa_sf()) +
+ggplot(data = states_sf) +
   geom_sf()
 ```
 
@@ -87,103 +89,73 @@ Region boundaries serve as the background in geospatial data visualization - so 
 
 ## Points
 
-Let's use our `usa_48` map data to add some points. The `airports` data frame in the `nycflights13` package includes geographic info on airports in the United States.
+Let's use our [crimes data from New York City](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
 
-```{r nycflights}
-library(nycflights13)
-airports
+```{r import-crimes, include = FALSE}
+crimes <- here("static", "data", "nyc-crimes.csv") %>%
+  read_csv()
 ```
 
-Each airport has it's geographic location encoded through `lat` and `lon`. To draw these points on the map, basically we draw a scatterplot with `x = lon` and `y = lat`. In fact we could simply do that:
+```{r import-crimes-fake, eval = FALSE}
+crimes <- here("data", "nyc-crimes.csv") %>%
+  read_csv()
+```
+
+```{r chi-crimes, echo = TRUE}
+crimes_homicide <- filter(.data = crimes, ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER")
+crimes_homicide
+```
+
+Each crime has it's geographic location encoded through `latitude` and `longitude`. To draw these points on the map, basically we draw a scatterplot with `x = longitude` and `y = latitude`. In fact we could simply do that:
 
 ```{r scatter}
-ggplot(airports, aes(lon, lat)) +
+ggplot(
+  data = crimes_homicide,
+  mapping = aes(
+    x = longitude,
+    y = latitude
+  )
+) +
   geom_point()
 ```
 
-Let's overlay it with the mapped state borders:
+Let's overlay it with the mapped boroughs:
 
-```{r flights-usa}
-ggplot(data = usa_48) +
-  geom_sf() +
-  geom_point(data = airports, aes(x = lon, y = lat), shape = 1)
+```{r import-nyc-json}
+nyc_json <- st_read(dsn = here("static", "data", "borough-boundaries.geojson"))
 ```
 
-Slight problem. We have airports listed outside of the continental United States. There are a couple ways to rectify this. Unfortunately `airports` does not include a variable identifying state so the `filter()` operation is not that simple. The easiest solution is to crop the limits of the graph using `coord_sf()` to only show the mainland:
-
-```{r crop}
-ggplot(data = usa_48) +
+```{r nyc-crime}
+ggplot(data = nyc_json) +
   geom_sf() +
-  geom_point(data = airports, aes(x = lon, y = lat), shape = 1) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
+  geom_point(
+    data = crimes_homicide,
+    mapping = aes(
+      x = longitude,
+      y = latitude
+    ),
+    shape = 1
   )
 ```
 
-Alternatively, we can use `st_as_sf()` to convert `airports` to a simple features data frame.
+Alternatively, we can use `st_as_sf()` to convert `crimes_homicide` to a simple features data frame.
 
-```{r flights-sf}
-airports_sf <- st_as_sf(airports, coords = c("lon", "lat"))
-st_crs(airports_sf) <- 4326 # set the coordinate reference system
-airports_sf
+```{r crimes-sf}
+crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("longitude", "latitude"))
+st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
+crimes_homicide_sf
 ```
 
-`coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`:
+`coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`
 
-```{r flights-sf-plot}
+```{r crimes-sf-plot, echo = TRUE, out.width = "100%"}
 ggplot() +
-  geom_sf(data = usa_48) +
-  geom_sf(data = airports_sf, shape = 1) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
+  geom_sf(data = nyc_json) +
+  geom_sf(
+    data = crimes_homicide_sf,
+    shape = 1
   )
 ```
-
-## Symbols
-
-We can change the size or type of symbols on the map. For instance, we can draw a **bubble plot** (also known as a **proportional symbol map**) and encode the altitude of the airport through the size channel:
-
-```{r airport-alt}
-ggplot(data = usa_48) +
-  geom_sf() +
-  geom_point(
-    data = airports, aes(x = lon, y = lat, size = alt),
-    fill = "grey", color = "black", alpha = .2
-  ) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
-  ) +
-  scale_size_area(guide = FALSE)
-```
-
-Circle area is proportional to the airport's altitude (in feet). Or we could scale it based on the number of arriving flights in `flights`:
-
-```{r airport-dest}
-airports_n <- flights %>%
-  count(dest) %>%
-  left_join(airports, by = c("dest" = "faa"))
-
-ggplot(data = usa_48) +
-  geom_sf() +
-  geom_point(
-    data = airports_n, aes(x = lon, y = lat, size = n),
-    fill = "grey", color = "black", alpha = .2
-  ) +
-  coord_sf(
-    xlim = c(-130, -60),
-    ylim = c(20, 50)
-  ) +
-  scale_size_area(guide = FALSE)
-```
-
-{{% callout note %}}
-
-`airports` contains a list of virtually all commercial airports in the United States. However `flights` only contains data on flights departing from New York City airports (JFK, LaGuardia, or Newark) and only services a few airports around the country.
-
-{{% /callout %}}
 
 ## Fill (choropleths)
 
@@ -192,12 +164,8 @@ ggplot(data = usa_48) +
 We will continue to use the `usa_48` simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the `census_bureau` folder. Let's also normalize our measure by the total population to get the rate of foreign-born individuals in the population:
 
 ```{r import-foreign}
-(fb_state <- here(
-  "static", "data", "census_bureau",
-  "ACS_13_5YR_B05012_state", "ACS_13_5YR_B05012.csv"
-) %>%
-  read_csv() %>%
-  mutate(rate = HD01_VD03 / HD01_VD01))
+fb_state <- read_csv(file = here("static", "data", "foreign-born.csv"))
+fb_state
 ```
 
 ### Join the data
@@ -205,8 +173,8 @@ We will continue to use the `usa_48` simple features data frame and draw a choro
 Now that we have our data, we want to draw it on the map. `fb_state` contains one row per state, as does `usa_48`. Since there is a one-to-one match between the data frames, we join the data frames together first, then use that single data frame to draw the map. This differs from the approach above for drawing points because a point feature is not the same thing as a polygon feature. That is, there were more airports then there were states. Because the spatial data is stored in a data frame with one row per state, all we need to do is merge the data frames together on a column that uniquely identifies each row in each data frame.
 
 ```{r usa-foreign-join}
-(usa_fb <- usa_48 %>%
-  left_join(fb_state, by = c("STATEFP" = "GEO.id2")))
+usa_fb <- left_join(x = usa_48, y = fb_state, by = c("STATEFP" = "GEOID", "NAME"))
+usa_fb
 ```
 
 ### Draw the map
@@ -215,12 +183,12 @@ With the newly combined data frame, use `geom_sf()` and define the `fill` aesthe
 
 ```{r geom-map-state}
 ggplot(data = usa_fb) +
-  geom_sf(aes(fill = rate))
+  geom_sf(mapping = aes(fill = pct_foreign))
 ```
 
 ### Bin data to discrete intervals
 
-When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keep the variable continuous is technically more precise, [the human eye cannot usually distinguish between two colors which are very similar to one another.](https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf) By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While `cut()` is a base R function for converting continuous variables into discrete values, `ggplot2` offers two functions that explicitly define how we want to bin the numeric vector (column).
+When creating a heatmap with a continuous variable, one must decide whether to keep the variable as continuous or collapse it into a series of bins with discrete colors. While keeping the variable continuous is technically more precise, [the human eye cannot usually distinguish between two colors which are very similar to one another.](https://www.perceptualedge.com/articles/visual_business_intelligence/heatmaps_to_bin_or_not.pdf) By converting the variable to a discrete variable, you easily distinguish between the different levels. If you decide to convert a continuous variable to a discrete variable, you will need to decide how to do this. While `cut()` is a base R function for converting continuous variables into discrete values, `ggplot2` offers two functions that explicitly define how we want to bin the numeric vector (column).
 
 `cut_interval()` makes `n` groups with equal range:
 
@@ -239,12 +207,6 @@ usa_fb %>%
   ggplot() +
   geom_sf(aes(fill = rate_cut))
 ```
-
-{{% callout note %}}
-
-See [this StackOverflow thread](https://gis.stackexchange.com/questions/86668/should-i-use-a-discrete-or-continuous-scale-for-coloring-a-chloropleth) for a more in-depth discussion on the merits of bucketizing a continuous variable and whether to use `cut_interval()` or `cut_number()`.
-
-{{% /callout %}}
 
 ## Changing map projection
 

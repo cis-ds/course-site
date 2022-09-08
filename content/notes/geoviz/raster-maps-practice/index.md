@@ -17,21 +17,30 @@ weight: 52
 ```r
 library(tidyverse)
 library(ggmap)
-library(RColorBrewer)
 library(here)
 
 options(digits = 3)
-set.seed(1234)
+set.seed(123)
 theme_set(theme_minimal())
 ```
 
-## Chicago 311 data
+{{% callout note %}}
 
-The city of Chicago has [an excellent data portal](https://data.cityofchicago.org/) publishing a large volume of public records. Here we'll look at a subset of the [311 service requests](https://data.cityofchicago.org/Service-Requests/311-Service-Requests/v6vf-nfxy). I used `RSocrata` and the data portal's [API](/notes/application-program-interface/) to retrieve a portion of the data set.
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("cis-ds/visualize-spatial-i")
+```
+
+{{% /callout %}}
+
+## New York City 311 data
+
+New York City has [an excellent data portal](https://opendata.cityofnewyork.us/) publishing a large volume of public records. Here we'll look at a subset of the [311 service requests](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9). I used `RSocrata` and the data portal's [API](/notes/application-program-interface/) to retrieve a portion of the data set.
 
 {{% callout note %}}
 
-If you are copying-and-pasting code from this demonstration, use `chi_311 <- read_csv("https://info5940.infosci.cornell.edu/data/chi-311.csv")` to download the file from the course website.
+If you are copying-and-pasting code from this demonstration, use `nyc_311 <- read_csv("https://info5940.infosci.cornell.edu/data/nyc-311.csv")` to download the file from the course website.
 
 {{% /callout %}}
 
@@ -39,64 +48,61 @@ If you are copying-and-pasting code from this demonstration, use `chi_311 <- rea
 
 
 ```r
-glimpse(chi_311)
+glimpse(nyc_311)
 ```
 
 ```
-## Rows: 261,869
-## Columns: 8
-## $ sr_number      <chr> "SR19-01209373", "SR19-01129184", "SR19-01130159", "SR1…
-## $ sr_type        <chr> "Dead Animal Pick-Up Request", "Dead Animal Pick-Up Req…
-## $ sr_short_code  <chr> "SGQ", "SGQ", "SGQ", "SGQ", "SGQ", "SGQ", "SGQ", "SGQ",…
-## $ created_date   <dttm> 2019-03-23 12:13:05, 2019-03-08 19:37:26, 2019-03-09 0…
-## $ community_area <dbl> 58, 40, 40, 67, 59, 59, 2, 59, 59, 64, 59, 25, 25, 59, …
-## $ ward           <dbl> 12, 20, 20, 17, 12, 12, 40, 12, 12, 13, 12, 29, 28, 12,…
-## $ latitude       <dbl> 41.8, 41.8, 41.8, 41.8, 41.8, 41.8, 42.0, 41.8, 41.8, 4…
-## $ longitude      <dbl> -87.7, -87.6, -87.6, -87.7, -87.7, -87.7, -87.7, -87.7,…
+## Rows: 352,992
+## Columns: 6
+## $ unique_key     <dbl> 23013481, 23013484, 23013505, 23013528, 23013557, 23013…
+## $ created_date   <dttm> 2012-04-05 15:52:10, 2012-04-05 16:47:38, 2012-04-05 1…
+## $ complaint_type <chr> "Food Poisoning", "Sidewalk Condition", "Sidewalk Condi…
+## $ borough        <chr> "MANHATTAN", "QUEENS", "BROOKLYN", "MANHATTAN", "BROOKL…
+## $ latitude       <dbl> 40.8, 40.7, 40.6, 40.7, 40.6, 40.6, 40.6, 40.8, 40.5, 4…
+## $ longitude      <dbl> -74.0, -73.9, -74.0, -74.0, -74.0, -74.1, -74.1, -73.9,…
 ```
 
 ## Exercise: Visualize the 311 data
 
-1. Obtain map tiles using `ggmap` for the city of Chicago.
+1. Obtain map tiles using `ggmap` for New York City.
 
     {{< spoiler text="Click for the solution" >}}
 
 
 ```r
 # store bounding box coordinates
-chi_bb <- c(
-  left = -87.936287,
-  bottom = 41.679835,
-  right = -87.447052,
-  top = 42.000835
+nyc_bb <- c(
+  left = -74.263045,
+  bottom = 40.487652,
+  right = -73.675963,
+  top = 40.934743
 )
 
-# retrieve bounding box
-chicago <- get_stamenmap(
-  bbox = chi_bb,
+nyc <- get_stamenmap(
+  bbox = nyc_bb,
   zoom = 11
 )
 
 # plot the raster map
-ggmap(chicago)
+ggmap(nyc)
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-chicago-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-nyc-1.png" width="672" />
 
     {{< /spoiler >}}
 
-1. Generate a scatterplot of complaints about potholes in streets.
+1. Generate a scatterplot of complaints about sidewalk conditions.
 
     {{< spoiler text="Click for the solution" >}}
 
 
 ```r
 # initialize map
-ggmap(chicago) +
+ggmap(nyc) +
   # add layer with scatterplot
   # use alpha to show density of points
   geom_point(
-    data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
+    data = filter(nyc_311, complaint_type == "Sidewalk Condition"),
     mapping = aes(
       x = longitude,
       y = latitude
@@ -110,17 +116,17 @@ ggmap(chicago) +
 
     {{< /spoiler >}}
 
-1. Generate a heatmap of complaints about potholes in streets. Do you see any unusual patterns or clusterings?
+1. Generate a heatmap of complaints about sidewalk conditions. Do you see any unusual patterns or clusterings?
 
     {{< spoiler text="Click for the solution" >}}
 
 
 ```r
 # initialize the map
-ggmap(chicago) +
+ggmap(nyc) +
   # add the heatmap
   stat_density_2d(
-    data = filter(chi_311, sr_type == "Pothole in Street Complaint"),
+    data = filter(nyc_311, complaint_type == "Sidewalk Condition"),
     mapping = aes(
       x = longitude,
       y = latitude,
@@ -129,60 +135,56 @@ ggmap(chicago) +
     alpha = .1,
     bins = 50,
     geom = "polygon"
-  ) +
-  # customize the color gradient
-  scale_fill_gradientn(colors = brewer.pal(9, "YlOrRd"))
+  )
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/potholes-heatmap-1.png" width="672" />
 
-    Seems to be clustered on the north side. Also looks to occur along major arterial routes for commuting traffic. Makes sense because they receive the most wear and tear.
+    Seems to be clustered most dense in Manhattan and Brooklyn. Makes sense because they receive significant pedestrian traffic.
 
     {{< /spoiler >}}
 
-1. Obtain map tiles for Hyde Park.
+1. Obtain map tiles for Roosevelt Island.
 
     {{< spoiler text="Click for the solution" >}}
 
 
 ```r
-# store bounding box coordinates
-hp_bb <- c(
-  left = -87.608221,
-  bottom = 41.783249,
-  right = -87.577643,
-  top = 41.803038
+roosevelt_bb <- c(
+  left = -73.967121,
+  bottom = 40.748700,
+  right = -73.937080,
+  top = 40.774704
 )
-
-# retrieve bounding box
-hyde_park <- get_stamenmap(
-  bbox = hp_bb,
-  zoom = 15
+roosevelt <- get_stamenmap(
+  bbox = roosevelt_bb,
+  zoom = 14
 )
 
 # plot the raster map
-ggmap(hyde_park)
+ggmap(roosevelt)
 ```
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-hyde-park-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-roosevelt-1.png" width="672" />
 
     {{< /spoiler >}}
 
-1. Generate a scatterplot of requests to pick up dead animals in Hyde Park.
+1. Generate a scatterplot of food poisoning complaints.
 
     {{< spoiler text="Click for the solution" >}}
 
 
 ```r
 # initialize the map
-ggmap(hyde_park) +
+ggmap(roosevelt) +
   # add a scatterplot layer
   geom_point(
-    data = filter(chi_311, sr_type == "Dead Animal Pick-Up Request"),
+    data = filter(nyc_311, complaint_type == "Food Poisoning"),
     mapping = aes(
       x = longitude,
       y = latitude
-    )
+    ),
+    alpha = 0.2
   )
 ```
 
@@ -209,7 +211,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-08
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -265,7 +267,6 @@ sessioninfo::session_info()
 ##  png             0.1-7      2013-12-03 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
-##  RColorBrewer  * 1.1-3      2022-04-03 [2] CRAN (R 4.2.0)
 ##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)

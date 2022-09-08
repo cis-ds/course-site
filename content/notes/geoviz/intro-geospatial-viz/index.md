@@ -19,7 +19,7 @@ weight: 51
 
 ## John Snow and the Broad Street water pump
 
-{{< figure src="https://upload.wikimedia.org/wikipedia/commons/2/27/Snow-cholera-map-1.jpg" caption="[Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)" >}}
+{{< figure src="Snow-cholera-map-1.jpeg" caption="[Original map made by John Snow in 1854. Cholera cases are highlighted in black. Source: Wikipedia.](https://commons.wikimedia.org/wiki/File:Snow-cholera-map-1.jpg)" >}}
 
 In the nineteenth century the theory of bacteria was not widely accepted by the medical community or the public.[^snow] A mother washed her baby's diaper in a well in 1854 in London, sparking an outbreak of **cholera**, an intestinal disease that causes vomiting, diarrhea, and eventually death. This disease had presented itself previously in London but its cause was still unknown.
 
@@ -31,7 +31,7 @@ Dr. John Snow lived in Soho, the suburb of London where the disease manifested i
 
 {{< figure src="https://upload.wikimedia.org/wikipedia/commons/e/e2/Minard_Update.png" caption="[English translation of Minard's map](https://commons.wikimedia.org/wiki/File:Minard_Update.png)" >}}
 
-This illustration is identifed in Edward Tufte's **The Visual Display of Quantitative Information** as one of "the best statistical drawings ever created". It also demonstrates a very important rule of warfare: [never invade Russia in the winter](https://en.wikipedia.org/wiki/Russian_Winter).
+This illustration is identified in Edward Tufte's **The Visual Display of Quantitative Information** as one of "the best statistical drawings ever created". It also demonstrates a very important rule of warfare: [never invade Russia in the winter](https://en.wikipedia.org/wiki/Russian_Winter).
 
 In 1812, Napoleon ruled most of Europe. He wanted to seize control of the British islands, but could not overcome the UK defenses. He decided to impose an embargo to weaken the nation in preparation for invasion, but Russia refused to participate. Angered at this decision, Napoleon launched an invasion of Russia with over 400,000 troops in the summer of 1812. Russia was unable to defeat Napoleon in battle, but instead waged a war of attrition. The Russian army was in near constant retreat, burning or destroying anything of value along the way to deny France usable resources. While Napoleon's army maintained the military advantage, his lack of food and the emerging European winter decimated his forces. He left France with an army of approximately 422,000 soldiers; he returned to France with just 10,000.
 
@@ -56,15 +56,13 @@ What makes this such an effective visualization?[^minard]
 
 Geometric visualizations are used to depict spatial features, and with the incorporation of data reveal additional attributes and information. The main features of a map are defined by its **scale** (the proportion between distances and sizes on the map), its **projection** (how the three-dimensional Earth is represented on a two-dimensional surface), and its **symbols** (how data is depicted and visualized on the map).
 
-{{< figure src="allison_horst_art/sf.png" caption="Artwork by @allison_horst" >}}
-
 ## Scale
 
 **Scale** defines the proportion between distances and sizes on a map and their actual distances and sizes on Earth. Depending on the total geographic area for which you have data to visualize, you could create a **small-scale map** or a **large-scale map**. So for instance, a map of the United States would be considered large-scale:
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/large-scale-1.png" width="672" />
 
-Whereas a map of Hyde Park would be small-scale:
+Whereas a map of Ithaca would be small-scale:
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/small-scale-1.png" width="672" />
 
@@ -98,9 +96,9 @@ The downside is that equal-area projections tend to distory shapes heavily, so s
 
 ## Symbols
 
-Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Hyde Park:
+Different types of symbols are used to denote different types of information on a spatial visualization. For instance, consider the following map of Cornell's engineering and biology quads:
 
-<img src="{{< blogdown/postref >}}index_files/figure-html/bb-hydepark-stamen-1.png" width="672" />
+<img src="{{< blogdown/postref >}}index_files/figure-html/bb-cornell-stamen-1.png" width="672" />
 
 * Line are used to indicate roadways
 * Fill is used to indicate type of land (grassland, water, urban, etc.)
@@ -129,7 +127,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-01
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -146,8 +144,10 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  curl            4.3.2      2021-06-23 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
@@ -156,6 +156,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
@@ -169,6 +170,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -177,6 +179,7 @@ Data maps do not just encode geographic features on the visualization. They also
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)

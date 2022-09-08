@@ -1,0 +1,760 @@
+---
+title: "Visualizing spatial data I"
+author: "INFO 5940 <br /> Cornell University"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+# generate CSS file
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#B31B1B",
+  secondary_color = "#F8981D",
+  inverse_header_color = "#222222",
+  black_color = "#222222",
+  header_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  text_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  code_font_google = xaringanthemer::google_font("Source Code Pro"),
+  base_font_size = "24px",
+  code_font_size = "20px",
+  # title_slide_background_image = "https://github.com/uc-dataviz/course-notes/raw/main/images/hexsticker.svg",
+  # title_slide_background_size = "contain",
+  # title_slide_background_position = "top",
+  header_h1_font_size = "2rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.5rem",
+  extra_css = list(
+    "h1" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h2" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h3" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    ".tiny" = list("font-size" = "70%"),
+    ".small" = list("font-size" = "90%"),
+    ".midi" = list("font-size" = "150%"),
+    ".tiny .remark-code" = list("font-size" = "70%"),
+    ".small .remark-code" = list("font-size" = "90%"),
+    ".midi .remark-code" = list("font-size" = "150%"),
+    ".large" = list("font-size" = "200%"),
+    ".xlarge" = list("font-size" = "600%"),
+    ".huge" = list(
+      "font-size" = "400%",
+      "font-family" = "'Montserrat', sans-serif",
+      "font-weight" = "bold"
+    ),
+    ".hand" = list(
+      "font-family" = "'Gochi Hand', cursive",
+      "font-size" = "125%"
+    ),
+    ".task" = list(
+      "padding-right" = "10px",
+      "padding-left" = "10px",
+      "padding-top" = "3px",
+      "padding-bottom" = "3px",
+      "margin-bottom" = "6px",
+      "margin-top" = "6px",
+      "border-left" = "solid 5px #F1DE67",
+      "background-color" = "#F3D03E"
+    ),
+    ".pull-left" = list(
+      "width" = "49%",
+      "float" = "left"
+    ),
+    ".pull-right" = list(
+      "width" = "49%",
+      "float" = "right"
+    ),
+    ".pull-left-wide" = list(
+      "width" = "70%",
+      "float" = "left"
+    ),
+    ".pull-right-narrow" = list(
+      "width" = "27%",
+      "float" = "right"
+    ),
+    ".pull-left-narrow" = list(
+      "width" = "27%",
+      "float" = "left"
+    ),
+    ".pull-right-wide" = list(
+      "width" = "70%",
+      "float" = "right"
+    ),
+    ".blue" = list(color = "#2A9BB7"),
+    ".purple" = list(color = "#a493ba"),
+    ".yellow" = list(color = "#f1de67"),
+    ".gray" = list(color = "#222222")
+  )
+)
+
+source(here::here("R", "slide-opts.R"))
+knitr::opts_chunk$set(echo = FALSE)
+
+# enable panelsets and default theme
+xaringanExtra::use_panelset()
+```
+
+```{r pkgs, include = FALSE, cache = FALSE}
+library(tidyverse)
+library(sf)
+library(ggmap)
+library(geofacet)
+library(rnaturalearth)
+library(lubridate)
+library(knitr)
+library(here)
+library(countdown)
+library(patchwork)
+
+# easier to generate tidycensus maps
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])){
+  options(bitmapType = "cairo")
+}
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = 16))
+```
+
+## Geospatial visualizations
+
+* Earliest form of information visualizations
+* Geospatial data visualizations
+* [Google Maps](https://www.google.com/maps)
+
+---
+
+## Not that Jon Snow
+
+```{r echo = FALSE}
+include_graphics(path = "https://media.giphy.com/media/3ohzdUi5U8LBb4GD4s/giphy.gif")
+```
+
+---
+
+## Dr. John Snow
+
+```{r echo = FALSE, out.width = "50%"}
+include_graphics(path = "https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Snow-cholera-map-1.jpg/2183px-Snow-cholera-map-1.jpg")
+```
+
+.footnote[Source: [Wikipedia](https://en.wikipedia.org/wiki/John_Snow)]
+
+---
+
+## Designing modern maps
+
+* Depict spatial features
+* Incorporate additional attributes and information
+* Major features
+    * Scale
+    * Projection
+    * Symbols
+
+---
+
+## Scale
+
+* Proportion between distances and sizes on a map and their actual distances and sizes on Earth
+* Small-scale map
+* Large-scale map
+
+---
+
+## Large-scale map
+
+```{r large-scale}
+# establish bounding box, get map, and plot
+c(
+  left = -128.364258,
+  bottom = 11.480025,
+  right = -65.742188,
+  top = 55.329144
+) %>%
+  get_stamenmap(zoom = 5) %>%
+  ggmap()
+```
+
+---
+
+## Small-scale map
+
+```{r small-scale}
+# establish bounding box, get map, and plot
+c(
+  left = -76.541950,
+  bottom = 42.423368,
+  right = -76.460196,
+  top = 42.465804
+) %>%
+  get_stamenmap(zoom = 14) %>%
+  ggmap()
+```
+
+---
+
+.pull-left[
+
+## Asgard
+
+
+```{r out.width = "95%"}
+include_graphics(path = "/img/asgard.jpeg")
+```
+
+]
+
+--
+
+.pull-right[
+
+## Midgard
+
+```{r out.width = "95%"}
+include_graphics(path = "/img/midgard.png")
+```
+
+]
+
+---
+
+## Not flat
+
+```{r out.width = "50%"}
+include_graphics(path = "https://images.theconversation.com/files/218823/original/file-20180514-100722-1yxg7ip.jpg")
+```
+
+---
+
+## Projection
+
+* Process of taking a three-dimensional object and visualizing it on a two-dimensional surface
+* No 100% perfect method for this
+* Always introduces distortions
+
+--
+
+
+* Properties of projection methods
+    1. Shape
+    1. Area
+    1. Angles
+    1. Distance
+    1. Direction
+
+---
+
+```{r import-world, include = FALSE}
+world <- ne_countries(returnclass = "sf")
+```
+
+```{r projections, dependson = "import-world"}
+{
+  world %>%
+    st_transform("+proj=merc") %>%
+    ggplot() +
+    geom_sf() +
+    # need to manually clip so Antarctica appears correct(ish)
+    coord_sf(ylim = c(-2e07, NA)) +
+    ggtitle("Mercator projection")
+} +
+  {
+    world %>%
+      st_transform("+proj=adams_ws1") %>%
+      ggplot() +
+      geom_sf() +
+      ggtitle("Adams World in a Square")
+  } +
+  {
+    world %>%
+      st_transform("+proj=laea") %>%
+      ggplot() +
+      geom_sf() +
+      ggtitle("Lambert equal area")
+  } +
+  {
+    world %>%
+      st_transform("+proj=cea") %>%
+      ggplot() +
+      geom_sf() +
+      ggtitle("Equal area cylindrical")
+  } &
+  theme_minimal(base_size = 11)
+```
+
+---
+
+## Symbols
+
+```{r bb-hydepark-stamen}
+# store bounding box coordinates
+cornell_bb <- c(
+  left = -76.490550,
+  bottom = 42.440165,
+  right = -76.470112,
+  top = 42.450774
+)
+
+cornell_stamen <- get_stamenmap(
+  bbox = cornell_bb,
+  zoom = 16
+)
+ggmap(cornell_stamen)
+```
+
+---
+
+class: inverse, middle
+
+# `ggmap` for raster maps
+
+---
+
+## `ggmap`
+
+- Package for drawing maps using `ggplot2` and **raster** map tiles
+- Static image files generated by mapping services
+- Focus on incorporating data into existing maps
+- Severely limits ability to change the appearance of the geographic map
+- Don't have to worry about the maps, just the data to go on top
+
+---
+
+## Bounding box
+
+```{r cache = FALSE, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE
+)
+```
+
+.panelset[
+```{r panelset = c(output = "Plot", source = "Code"), out.width = "70%", message = FALSE}
+nyc_bb <- c(
+  left = -74.263045, #<<
+  bottom = 40.487652, #<<
+  right = -73.675963, #<<
+  top = 40.934743 #<<
+)
+
+nyc_stamen <- get_stamenmap(
+  bbox = nyc_bb,
+  zoom = 11
+)
+ggmap(nyc_stamen)
+```
+]
+
+---
+
+## Level of detail
+
+```{r bb-nyc-stamen-zoom, echo = FALSE}
+{
+  get_stamenmap(
+    bbox = nyc_bb,
+    zoom = 12
+  ) %>%
+    ggmap() +
+    ggtitle("Zoom = 12")
+} + {
+  get_stamenmap(
+    bbox = nyc_bb,
+    zoom = 10
+  ) %>%
+    ggmap() +
+    ggtitle("Zoom = 10")
+}
+```
+
+---
+
+## Identifying bounding box
+
+> Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000) to determine the exact longitude/latitude coordinates for the bounding box you wish to obtain.
+
+---
+
+## Types of map tiles
+
+```{r stamen-maptype, echo = FALSE}
+stamen_maptype <- tibble(maptype = c(
+  "terrain", "terrain-background",
+  "terrain-lines",
+  "toner", "toner-2010", "toner-2011",
+  "toner-background", "toner-hybrid",
+  "toner-labels", "toner-lines",
+  "toner-lite", "watercolor"
+)) %>%
+  mutate(
+    bb = map(maptype, ~ get_stamenmap(bbox = nyc_bb, zoom = 10, maptype = .x)),
+    ggmap = map2(bb, maptype, ~ ggmap(.x) +
+      ggtitle(.y) +
+      theme_minimal(base_size = 9))
+  )
+
+wrap_plots(stamen_maptype$ggmap)
+```
+
+---
+
+```{r echo = FALSE}
+include_graphics(path = "https://media.giphy.com/media/oOK9AZGnf9b0c/giphy.gif")
+```
+
+---
+
+## Import crime data
+
+* New York City open data portal
+* [Crime data from 2022](https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Current-Year-To-Date-/5uac-w243)
+
+```{r import-crimes, include = FALSE}
+crimes <- here("static", "data", "nyc-crimes.csv") %>%
+  read_csv()
+```
+
+```{r import-crimes-fake, eval = FALSE}
+crimes <- here("data", "nyc-crimes.csv") %>%
+  read_csv()
+```
+
+```{r crimes, dependson = "import-crimes"}
+glimpse(crimes)
+```
+
+---
+
+## Plot high-level map of crime
+
+.panelset.sideways[
+```{r import-nyc, dependson = "import-crimes"}
+nyc <- nyc_stamen
+ggmap(nyc) #<<
+```
+]
+
+---
+
+## Using `geom_point()`
+
+.panelset.sideways[
+```{r plot-crime-point, dependson = "import-crimes"}
+ggmap(nyc) +
+  geom_point( #<<
+    data = crimes, #<<
+    mapping = aes( #<<
+      x = longitude, #<<
+      y = latitude #<<
+    ) #<<
+  ) #<<
+```
+]
+
+---
+
+## Using `geom_point()`
+
+.panelset.sideways[
+```{r plot-crime-point-alpha, dependson = "import-crimes"}
+ggmap(nyc) +
+  geom_point(
+    data = crimes,
+    mapping = aes(
+      x = longitude,
+      y = latitude
+    ),
+    size = .25, #<<
+    alpha = .01 #<<
+  )
+```
+]
+
+---
+
+## Using `geom_density_2d()`
+
+.panelset.sideways[
+```{r kde-contour, dependson = "import-crimes"}
+ggmap(nyc) +
+  geom_density_2d( #<<
+    data = crimes,
+    mapping = aes(
+      x = longitude,
+      y = latitude
+    )
+  )
+```
+]
+
+---
+
+## Using `stat_density_2d()`
+
+.panelset.sideways[
+```{r kde-fill, dependson = "import-crimes"}
+ggmap(nyc) +
+  stat_density_2d( #<<
+    data = crimes,
+    mapping = aes(
+      x = longitude,
+      y = latitude,
+      fill = stat(level) #<<
+    ),
+    geom = "polygon" #<<
+  )
+```
+]
+
+---
+
+## Using `stat_density_2d()`
+
+.panelset.sideways[
+```{r plot-crime-density, dependson = "import-crimes"}
+ggmap(nyc) +
+  stat_density_2d(
+    data = crimes,
+    mapping = aes(
+      x = longitude,
+      y = latitude,
+      fill = stat(level)
+    ),
+    alpha = .2, #<<
+    bins = 25, #<<
+    geom = "polygon"
+  )
+```
+]
+
+---
+
+## Looking for variation
+
+.panelset.sideways[
+```{r plot-crime-wday, dependson = "import-crimes", out.width = "100%"}
+ggmap(nyc) +
+  stat_density_2d(
+    data = crimes %>%
+      filter(ofns_desc %in% c(
+        "DANGEROUS DRUGS",
+        "GRAND LARCENY OF MOTOR VEHICLE",
+        "ROBBERY",
+        "VEHICLE AND TRAFFIC LAWS"
+      )),
+    aes(
+      x = longitude,
+      y = latitude,
+      fill = stat(level)
+    ),
+    alpha = .4,
+    bins = 10,
+    geom = "polygon"
+  ) +
+  facet_wrap(facets = vars(ofns_desc)) #<<
+```
+]
+
+---
+
+## Exercise using `ggmap`
+
+```{r echo = FALSE}
+include_graphics(path = "https://c.tenor.com/GopcJIF_Y98AAAAC/lost-kermit.gif")
+```
+
+```{r cache = FALSE, echo = FALSE}
+countdown(minutes = 15)
+```
+
+---
+
+class: middle, inverse
+
+# Geofaceting
+
+---
+
+```{r echo = FALSE, message = FALSE}
+us_state_vaccinations <- read_csv(here::here("static", "data", "us_state_vaccinations.csv"))
+
+us_state_vaccinations <- us_state_vaccinations %>%
+  mutate(location = if_else(location == "New York State", "New York", location)) %>%
+  filter(location %in% c(state.name, "District of Columbia"))
+```
+
+```{r geofacet-state, echo = FALSE, out.width = "90%", fig.width = 12}
+ggplot(us_state_vaccinations, aes(x = date, y = people_fully_vaccinated_per_hundred, group = location)) +
+  geom_area() +
+  facet_geo(facets = vars(location)) +
+  scale_y_continuous( #<<
+    limits = c(0, 100), #<<
+    breaks = c(0, 50, 100), #<<
+    minor_breaks = c(25, 75) #<<
+    ) + #<<
+  scale_x_date(breaks = c(ymd("2021-01-01", "2021-07-01", "2022-01-01")), date_labels = "%b-%y") + #<<
+  labs(
+    x = NULL, y = NULL,
+    title = "Covid-19 vaccination rate in the US",
+    subtitle = "Daily number of people fully vaccinated, per hundred",
+    caption = "Source: Our World in Data"
+  ) +
+  theme(
+    strip.text.x = element_text(size = 7), #<<
+    axis.text = element_text(size = 8), #<<
+    plot.title.position = "plot"
+  )
+```
+
+---
+
+## Daily US vaccine data by state
+
+```{r include = FALSE}
+us_state_vaccinations <- read_csv(here::here("static", "data", "us_state_vaccinations.csv"))
+```
+
+.small[
+```{r eval = FALSE, echo = TRUE}
+us_state_vaccinations <- read_csv(here::here("data", "us_state_vaccinations.csv"))
+```
+
+```{r, echo = TRUE}
+glimpse(us_state_vaccinations)
+```
+
+]
+
+.footnote[
+Source: https://ourworldindata.org/us-states-vaccinations
+]
+
+---
+
+## Facet by location
+
+.panelset.sideways[
+```{r panelset = c(source = "Code", output = "Plot"), out.width = "95%", fig.width = 12}
+ggplot(
+  data = us_state_vaccinations,
+  mapping = aes(x = date, y = people_fully_vaccinated_per_hundred)
+) +
+  geom_area() +
+  facet_wrap(facets = vars(location)) #<<
+```
+]
+
+---
+
+## Data cleaning
+
+```{r}
+us_state_vaccinations <- us_state_vaccinations %>%
+  mutate(location = if_else(location == "New York State", "New York", location)) %>%
+  filter(location %in% c(state.name, "District of Columbia"))
+```
+
+---
+
+## Geofacet by state
+
+Using `geofacet::facet_geo()`:
+
+.panelset.sideways[
+```{r panelset = c(source = "Code", output = "Plot"), out.width = "95%", fig.width = 12}
+ggplot( 
+  data = us_state_vaccinations,
+  mapping = aes(x = date, y = people_fully_vaccinated_per_hundred)
+) +
+  geom_area() +
+  facet_geo(facets = vars(location)) + #<<
+  labs(
+    x = NULL, y = NULL,
+    title = "Covid-19 vaccination rate in the US",
+    subtitle = "Daily number of people fully vaccinated, per hundred",
+    caption = "Source: Our World in Data"
+  )
+```
+]
+
+---
+
+## Geofacet by state, with improvements
+
+.panelset.sideways[
+.panel[.panel-name[Plot]
+```{r ref.label = "geofacet-state", echo = FALSE, out.width = "95%", fig.width = 12}
+```
+]
+.panel[.panel-name[Code]
+.small[
+```{r ref.label = "geofacet-state", fig.show = "hide"}
+```
+]
+]
+]
+
+---
+
+## Bring in 2020 Presidential election results
+
+```{r include = FALSE}
+election_2020 <- read_csv(here::here("static", "data", "us-election-2020.csv"))
+```
+
+```{r eval = FALSE}
+election_2020 <- read_csv(here::here("data", "us-election-2020.csv"))
+```
+
+```{r}
+election_2020
+```
+
+---
+
+## Geofacet by state, color by presidential election result
+
+.tiny[
+.panelset.sideways[
+```{r panelset = c(source = "Code", output = "Plot"), out.width = "100%", fig.width = 12, warning = FALSE}
+us_state_vaccinations %>%
+  left_join(election_2020, by = c("location" = "state")) %>%
+  ggplot(mapping = aes(x = date, y = people_fully_vaccinated_per_hundred)) +
+  geom_area(aes(fill = win)) + #<<
+  facet_geo(facets = vars(location)) +
+  scale_y_continuous(limits = c(0, 100), breaks = c(0, 50, 100), minor_breaks = c(25, 75)) + #<<
+  scale_x_date(breaks = c(ymd("2021-01-01", "2021-07-01", "2022-01-01")), date_labels = "%b") +
+  scale_fill_manual(values = c("#2D69A1", "#BD3028")) + #<<
+  labs(
+    x = NULL, y = NULL,
+    title = "Covid-19 vaccination rate in the US",
+    subtitle = "Daily number of people fully vaccinated, per hundred",
+    caption = "Source: Our World in Data",
+    fill = "2020 Presidential\nElection"
+  ) +
+  theme(
+    strip.text.x = element_text(size = 7),
+    axis.text = element_text(size = 8),
+    plot.title.position = "plot",
+    legend.position = c(0.93, 0.15), #<<
+    legend.text = element_text(size = 9),  #<<
+    legend.title = element_text(size = 11),  #<<
+    legend.background = element_rect(color = "gray", size = 0.5)  #<<
+  )
+```
+]
+]

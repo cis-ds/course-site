@@ -1,0 +1,875 @@
+---
+title: "Visualizing spatial data II"
+author: "INFO 5940 <br /> Cornell University"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+# generate CSS file
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#B31B1B",
+  secondary_color = "#F8981D",
+  inverse_header_color = "#222222",
+  black_color = "#222222",
+  header_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  text_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  code_font_google = xaringanthemer::google_font("Source Code Pro"),
+  base_font_size = "24px",
+  code_font_size = "20px",
+  # title_slide_background_image = "https://github.com/uc-dataviz/course-notes/raw/main/images/hexsticker.svg",
+  # title_slide_background_size = "contain",
+  # title_slide_background_position = "top",
+  header_h1_font_size = "2rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.5rem",
+  extra_css = list(
+    "h1" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h2" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h3" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    ".tiny" = list("font-size" = "70%"),
+    ".small" = list("font-size" = "90%"),
+    ".midi" = list("font-size" = "150%"),
+    ".tiny .remark-code" = list("font-size" = "70%"),
+    ".small .remark-code" = list("font-size" = "90%"),
+    ".midi .remark-code" = list("font-size" = "150%"),
+    ".large" = list("font-size" = "200%"),
+    ".xlarge" = list("font-size" = "600%"),
+    ".huge" = list(
+      "font-size" = "400%",
+      "font-family" = "'Montserrat', sans-serif",
+      "font-weight" = "bold"
+    ),
+    ".hand" = list(
+      "font-family" = "'Gochi Hand', cursive",
+      "font-size" = "125%"
+    ),
+    ".task" = list(
+      "padding-right" = "10px",
+      "padding-left" = "10px",
+      "padding-top" = "3px",
+      "padding-bottom" = "3px",
+      "margin-bottom" = "6px",
+      "margin-top" = "6px",
+      "border-left" = "solid 5px #F1DE67",
+      "background-color" = "#F3D03E"
+    ),
+    ".pull-left" = list(
+      "width" = "49%",
+      "float" = "left"
+    ),
+    ".pull-right" = list(
+      "width" = "49%",
+      "float" = "right"
+    ),
+    ".pull-left-wide" = list(
+      "width" = "70%",
+      "float" = "left"
+    ),
+    ".pull-right-narrow" = list(
+      "width" = "27%",
+      "float" = "right"
+    ),
+    ".pull-left-narrow" = list(
+      "width" = "27%",
+      "float" = "left"
+    ),
+    ".pull-right-wide" = list(
+      "width" = "70%",
+      "float" = "right"
+    ),
+    ".blue" = list(color = "#2A9BB7"),
+    ".purple" = list(color = "#a493ba"),
+    ".yellow" = list(color = "#f1de67"),
+    ".gray" = list(color = "#222222")
+  )
+)
+
+source(here::here("R", "slide-opts.R"))
+
+# enable panelsets and default theme
+xaringanExtra::use_panelset()
+```
+
+```{r pkgs, include = FALSE, cache = FALSE}
+library(knitr)
+library(here)
+library(countdown)
+library(patchwork)
+library(flipbookr)
+library(tidyverse)
+library(sf)
+library(rnaturalearth)
+library(colorspace)
+
+# easier to generate tidycensus maps
+if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
+  options(bitmapType = "cairo")
+}
+
+set.seed(123)
+theme_set(theme_minimal(base_size = 16))
+```
+
+## Map data file formats
+
+* Vector files
+    * Raster images
+    * Numeric data
+* Popular formats
+    * Shapefile
+    * GeoJSON
+    
+---
+
+## Shapefile
+
+* Encodes points, lines, and polygons
+* Collection of files
+    * `.shp` - geographic coordinates
+    * `.dbf` - data associated with the geographic features
+    * `.prj` - projection of the coordinates in the shapefile
+
+--
+
+```{r twee, include = FALSE}
+# source: https://gist.github.com/jennybc/2bf1dbe6eb1f261dfe60
+
+## quick-and-dirty ersatz Unix tree command in R
+## inspired by this one-liner:
+## ls -R | grep ":$" | sed -e 's/:$//' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'
+## found here (among many other places):
+## http://serverfault.com/questions/143954/how-to-generate-an-ascii-representation-of-a-unix-file-hierarchy
+
+twee <- function(path = getwd(), level = Inf) {
+  fad <-
+    list.files(path = path, recursive = TRUE, no.. = TRUE, include.dirs = TRUE)
+
+  fad_split_up <- strsplit(fad, "/")
+
+  too_deep <- lapply(fad_split_up, length) > level
+  fad_split_up[too_deep] <- NULL
+
+  jfun <- function(x) {
+    n <- length(x)
+    if (n > 1) {
+      x[n - 1] <- "|__"
+    }
+    if (n > 2) {
+      x[1:(n - 2)] <- "   "
+    }
+    x <- if (n == 1) c("-- ", x) else c("   ", x)
+    x
+  }
+  fad_subbed_out <- lapply(fad_split_up, jfun)
+
+  cat(unlist(lapply(fad_subbed_out, paste, collapse = "")), sep = "\n")
+}
+```
+
+```{r shapefile-str, echo = FALSE}
+twee(path = here("static", "data", "borough-boundaries"))
+```
+
+---
+
+## GeoJSON
+
+* Uses **J**ava**S**cript **O**bject **N**otation (JSON) file format
+    
+    ```json
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [125.6, 10.1]
+      },
+      "properties": {
+        "name": "Dinagat Islands"
+      }
+    }
+    ```
+* Plain text files
+
+---
+
+## Simple Features for R
+
+```{r echo = FALSE, fig.alt = "Three cute fuzzy monsters adding spatial geometries to an existing table of attributes using glue and tape, while one cuts out the spatial polygons. Title text reads 'sf: spatial data...simplified.' and a caption at the bottom reads 'sticky geometries: for people who love their maps and sanity.'", out.width = "60%"}
+include_graphics(path = "/img/sf.png")
+```
+
+.footnote[Source: [Allison Horst](https://github.com/allisonhorst/stats-illustrations)]
+
+---
+
+## What is a feature?
+
+* Thing or an object in the real world
+* Sets of features
+* Geometry
+* Attributes
+
+---
+
+## Simple features
+
+```{r echo = FALSE, fig.alt = "Simple features", out.width = "70%"}
+include_graphics("/img/simple-features.png")
+```
+
+.footnote[
+Source: [Simple Features for R](https://r-spatial.github.io/sf/articles/sf1.html#sf-objects-with-simple-features-1)
+]
+
+---
+
+## Simple features in R
+
+* Uses basic R data structures
+* Data frame with one row per feature
+* Lots of list columns
+
+---
+
+## Importing shapefiles
+
+```{r import-nyc-shape, include = FALSE}
+nyc_shape <- st_read(dsn = here("static", "data", "borough-boundaries"))
+```
+
+```{r import-nyc-shape-fake,  eval = FALSE}
+nyc_shape <- st_read(dsn = here("data", "borough-boundaries"))
+```
+
+```{r import-nyc-shape-print, R.options = list(width = 120)}
+nyc_shape
+```
+
+---
+
+## Importing GeoJSON files
+
+```{r import-nyc-json, include = FALSE}
+nyc_json <- st_read(dsn = here("static", "data", "borough-boundaries.geojson"))
+```
+
+```{r import-nyc-json-fake, eval = FALSE}
+nyc_json <- st_read(dsn = here("data", "borough-boundaries.geojson"))
+```
+
+```{r import-nyc-json-print, R.options = list(width = 150)}
+nyc_json
+```
+
+---
+
+## Drawing maps with `sf` objects
+
+```{r import-usa, include = FALSE}
+usa <- st_read(dsn = here("static", "data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
+```
+
+```{r import-usa-fake, eval = FALSE}
+usa <- st_read(dsn = here("data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
+```
+
+.tiny[
+```{r import-usa-print, R.options = list(width = 120)}
+usa
+```
+]
+---
+
+## USA boundaries
+
+.panelset.sideways[
+```{r}
+ggplot(data = usa) +
+  geom_sf() #<<
+```
+]
+
+---
+
+## Plot a subset of a map
+
+.panelset.sideways[
+```{r}
+usa_48 <- usa %>%
+  filter(NAME %in% state.name) %>% #<<
+  filter(NAME != "Alaska", NAME != "Hawaii") #<<
+
+ggplot(data = usa_48) +
+  geom_sf()
+```
+]
+
+---
+
+## Just another `ggplot()`
+
+.panelset.sideways[
+```{r}
+ggplot(data = usa_48) +
+  geom_sf(
+    fill = "palegreen", #<<
+    color = "black" #<<
+  )
+```
+]
+
+---
+
+```{r contig-41, echo = FALSE, out.width = "60%"}
+include_graphics(path = "https://imgs.xkcd.com/comics/contiguous_41_states.png")
+```
+
+.footnote[Source: [xkcd](https://xkcd.com/2394/)]
+
+---
+
+## `urbnmapr`
+
+.panelset.sideways[
+```{r out.width = "100%"}
+library(urbnmapr)
+
+states_sf <- get_urbn_map("states", sf = TRUE) #<<
+
+ggplot(data = states_sf) +
+  geom_sf()
+```
+]
+
+---
+
+class: inverse, middle
+
+# Identifying points on a map
+
+---
+
+## Points
+
+```{r import-crimes, include = FALSE}
+crimes <- here("static", "data", "nyc-crimes.csv") %>%
+  read_csv()
+```
+
+```{r import-crimes-fake, eval = FALSE}
+crimes <- here("data", "nyc-crimes.csv") %>%
+  read_csv()
+```
+
+```{r nyc-crimes, echo = TRUE}
+crimes_homicide <- filter(.data = crimes, ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER")
+crimes_homicide
+```
+
+---
+
+## Points
+
+.panelset.sideways[
+```{r scatter}
+ggplot(
+  data = crimes_homicide,
+  mapping = aes(
+    x = longitude,
+    y = latitude
+  )
+) +
+  geom_point() #<<
+```
+]
+
+---
+
+## Points
+
+.panelset.sideways[
+```{r nyc-crime}
+ggplot(data = nyc_json) +
+  geom_sf() + #<<
+  geom_point(
+    data = crimes_homicide,
+    mapping = aes(
+      x = longitude,
+      y = latitude
+    ),
+    shape = 1
+  )
+```
+]
+
+---
+
+## Converting to `sf` data frame
+
+```{r crimes-sf}
+crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("longitude", "latitude"))
+st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
+crimes_homicide_sf
+```
+
+---
+
+## Plotting with two sf data frames
+
+.panelset.sideways[
+```{r crimes-sf-plot, echo = TRUE, out.width = "100%"}
+ggplot() +
+  geom_sf(data = nyc_json) +
+  geom_sf(
+    data = crimes_homicide_sf, #<<
+    shape = 1 #<<
+  )
+```
+]
+
+---
+
+class: inverse, middle
+
+# Choropleths
+
+---
+
+```{r echo = FALSE}
+include_graphics(path = "https://media.giphy.com/media/If7M383oivlYY/giphy.gif")
+```
+
+---
+
+## Fill (choropleths)
+
+```{r import-foreign, include = FALSE}
+fb_state <- read_csv(file = here("static", "data", "foreign-born.csv"))
+```
+
+```{r import-foreign-fake, eval = FALSE}
+fb_state <- read_csv(file = here("data", "foreign-born.csv"))
+```
+
+```{r import-foreign-print}
+fb_state
+```
+
+---
+
+## Join the data
+
+```{r usa-foreign-join}
+usa_fb <- left_join(x = usa_48, y = fb_state, by = c("STATEFP" = "GEOID", "NAME"))
+usa_fb
+```
+
+---
+
+## Draw the map
+
+.panelset.sideways[
+```{r geom-map-state}
+ggplot(data = usa_fb) +
+  geom_sf(mapping = aes(fill = pct_foreign)) #<<
+```
+]
+
+---
+
+class: inverse, middle
+
+# Use better colors
+
+---
+
+## `colorspace`
+
+Scale name: `scale_<aesthetic>_<datatype>_<colorscale>()`
+
+--
+
+- `<aesthetic>`: name of the aesthetic (`fill`, `color`, `colour`)
+- `<datatype>`: type of variable plotted (`discrete`, `continuous`, `binned`)
+- `<colorscale>`: type of the color scale (`qualitative`, `sequential`, `diverging`)
+
+--
+
+Scale function                       | Aesthetic &nbsp;&nbsp;&nbsp; | Data type  | Palette type &nbsp;&nbsp;&nbsp;
+:-----------                         | :--------  | :--------- | :------------
+`scale_color_discrete_qualitative()` | `color`    | discrete   | qualitative
+`scale_fill_continuous_sequential()` | `fill`     | continuous | sequential
+`scale_color_continuous_diverging()` | `color`   | continuous | diverging
+
+---
+
+```{r colorspace-palettes-seq, echo = FALSE}
+colorspace::hcl_palettes(type = "sequential", plot = TRUE) # all sequential palettes
+```
+
+---
+
+```{r colorspace-palettes-div, echo = FALSE}
+colorspace::hcl_palettes(type = "diverging", plot = TRUE, n = 9) # all diverging palettes
+```
+
+---
+
+```{r colorspace-palettes-qual, echo = FALSE}
+colorspace::hcl_palettes(type = "qualitative", plot = TRUE) # all qualitative palettes
+```
+
+---
+
+## Use better colors
+
+.panelset.sideways[
+```{r geom-map-state-pal, out.width = "100%"}
+library(colorspace) #<<
+
+ggplot(data = usa_fb) +
+  geom_sf(mapping = aes(
+    fill = pct_foreign
+  )) +
+  scale_fill_continuous_sequential(palette = "mako") #<<
+```
+]
+
+---
+
+class: inverse, middle
+
+# Spatial aggregation
+
+---
+
+## Spatial aggregation
+
+```{r crimes-agg}
+st_join(x = nyc_json, y = crimes_homicide_sf)
+```
+
+---
+
+```{r crimes-agg-map, include = FALSE}
+nyc_json %>%
+  st_join(y = crimes_homicide_sf) %>%
+  group_by(boro_name) %>%
+  count() %>%
+  ggplot() +
+  geom_sf(mapping = aes(fill = n))
+```
+
+`r chunk_reveal(chunk_name = "crimes-agg-map", break_type = "auto")`
+
+---
+
+## Which is better for comparisons?
+
+```{r crimes-agg-map-2, echo = FALSE, fig.width = 12, fig.asp = 9 / 16, out.width = "90%"}
+library(patchwork)
+{
+  nyc_json %>%
+    st_join(y = crimes_homicide_sf) %>%
+    group_by(boro_name) %>%
+    count() %>%
+    ggplot() +
+    geom_sf(mapping = aes(fill = n)) +
+    scale_fill_continuous_sequential(palette = "viridis") +
+    labs(title = "Choropleth")
+} + {
+  ggplot() +
+    geom_sf(data = nyc_json) +
+    stat_density_2d(
+      data = crimes_homicide,
+      mapping = aes(
+        x = longitude,
+        y = latitude,
+        fill = stat(level)
+      ),
+      alpha = .2,
+      bins = 25,
+      geom = "polygon"
+    ) +
+    scale_fill_continuous_sequential(palette = "viridis") +
+    labs(title = "Heatmap", x = NULL, y = NULL)
+} + {
+  ggplot() +
+    geom_sf(data = nyc_json) +
+    geom_sf(
+      data = crimes_homicide_sf,
+      shape = 1
+    ) +
+    labs(title = "Scatterplot", x = NULL, y = NULL)
+}
+```
+
+---
+
+## Exercise using household income
+
+```{r echo = FALSE, out.width = "50%"}
+include_graphics(path = "https://c.tenor.com/vvktIE0tx9kAAAAd/into-the-map-joe-tribbiani.gif")
+```
+
+```{r cache = FALSE, echo = FALSE}
+countdown(minutes = 12)
+```
+
+---
+
+class: inverse, middle
+
+# Bin continuous data to discrete intervals
+
+---
+
+## Bin data to discrete intervals
+
+* Continuous vs. discrete variables for color
+* Collapse to a discrete variable
+
+---
+
+## `cut_interval()`
+
+.panelset.sideways[
+```{r cut-int, panelset = TRUE}
+usa_fb %>%
+  mutate(rate_cut = cut_interval(pct_foreign, n = 6)) %>% #<<
+  ggplot() +
+  geom_sf(aes(fill = rate_cut)) +
+  scale_fill_discrete_sequential(palette = "inferno")
+```
+]
+
+---
+
+## `cut_number()`
+
+.panelset.sideways[
+```{r cut-num, panelset = TRUE}
+usa_fb %>%
+  mutate(rate_cut = cut_number(pct_foreign, n = 6)) %>% #<<
+  ggplot() +
+  geom_sf(aes(fill = rate_cut)) +
+  scale_fill_discrete_sequential(palette = "inferno")
+```
+]
+
+---
+
+## `ggplot2::binned_scale()`
+
+.panelset.sideways[
+```{r bin-scale, panelset = TRUE}
+usa_fb %>%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(palette = "inferno") #<<
+```
+]
+
+---
+
+## `ggplot2::binned_scale()` with quartiles
+
+.panelset.sideways[
+```{r bin-quartile, panelset = TRUE}
+usa_fb %>%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(
+    palette = "inferno",
+    n.breaks = 3 #<<
+  )
+```
+]
+
+---
+
+## `ggplot2::binned_scale()` with quartiles
+
+.panelset.sideways[
+```{r bin-quartile-not-nice, panelset = TRUE}
+usa_fb %>%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(
+    palette = "inferno",
+    n.breaks = 3, #<<
+    nice.breaks = FALSE #<<
+  )
+```
+]
+
+---
+
+class: inverse, middle
+
+# Map projection
+
+---
+
+## Map projection
+
+.center[
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen></iframe>
+]
+
+---
+
+## Map projection
+
+```{r echo = FALSE, out.width = "30%"}
+include_graphics(path = "https://imgs.xkcd.com/comics/mercator_projection.png")
+```
+
+.footnote[Source: [xkcd](https://xkcd.com/2082/)]
+
+---
+
+## Map projection
+
+* Coordinate reference system
+* proj4string
+* **W**ell **K**nown **T**ext 2 (WKT2) string
+
+> <https://spatialreference.org/ref/epsg/>
+
+---
+
+## US National Atlas Equal Area
+
+.pull-left[
+#### proj4string
+
+```
++proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs
+```
+
+]
+
+.pull-right[
+
+#### WKT2
+
+```
+PROJCS["US National Atlas Equal Area",
+    GEOGCS["Unspecified datum based upon the Clarke 1866 Authalic Sphere",
+        DATUM["Not_specified_based_on_Clarke_1866_Authalic_Sphere",
+            SPHEROID["Clarke 1866 Authalic Sphere",6370997,0,
+                AUTHORITY["EPSG","7052"]],
+            AUTHORITY["EPSG","6052"]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree",0.01745329251994328,
+            AUTHORITY["EPSG","9122"]],
+        AUTHORITY["EPSG","4052"]],
+    UNIT["metre",1,
+        AUTHORITY["EPSG","9001"]],
+    PROJECTION["Lambert_Azimuthal_Equal_Area"],
+    PARAMETER["latitude_of_center",45],
+    PARAMETER["longitude_of_center",-100],
+    PARAMETER["false_easting",0],
+    PARAMETER["false_northing",0],
+    AUTHORITY["EPSG","2163"],
+    AXIS["X",EAST],
+    AXIS["Y",NORTH]]
+```
+
+]
+
+---
+
+## EPSG
+
+- Coordinated registry of CRSs
+- [Spatial Reference](https://spatialreference.org/ref/epsg/)
+- [epsg.io](https://epsg.io/)
+
+---
+
+## Mercator projection
+
+```{r projections, echo = FALSE}
+map_proj_base <- ggplot(data = usa_48) +
+  geom_sf()
+```
+
+```{r mercator-sf, echo = FALSE}
+map_proj_base +
+  coord_sf(crs = 3785) +
+  ggtitle("Mercator projection")
+```
+
+---
+
+## Projection using standard lines
+
+```{r projection-rest, echo = FALSE, fig.width = 12}
+{
+  map_proj_base +
+    coord_sf(crs = 4326) +
+    labs(
+      title = "WGS 84",
+      subtitle = "coord_sf(crs = 4326)"
+    )
+} +
+  {
+    map_proj_base +
+      coord_sf(crs = 2163) +
+      labs(
+        title = "US National Atlas Equal Area",
+        subtitle = "coord_sf(crs = 2163)"
+      )
+  } +
+  {
+    map_proj_base +
+      coord_sf(crs = 3085) +
+      labs(
+        title = "Texas Centric Albers Equal Area",
+        subtitle = "coord_sf(crs = 3085)"
+      )
+  } +
+  {
+    map_proj_base +
+      coord_sf(crs = 3174) +
+      labs(
+        title = "Great Lakes Albers",
+        subtitle = "coord_sf(crs = 3174)"
+      )
+  } +
+  plot_layout(ncol = 2, nrow = 2) &
+  theme_minimal(base_size = rcfss::base_size * .75)
+```
+
+---
+
+## Adjusting color intervals and projections
+
+```{r cache = FALSE, echo = FALSE}
+countdown(minutes = 8)
+```
+
+```{r echo = FALSE}
+include_graphics(path = "https://c.tenor.com/pLC9Wr0DMWsAAAAC/lazy-sunday-google-maps.gif")
+```

@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Visualizing spatial data II</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="INFO 5940   Cornell University" />
+    <script src="index_files/header-attrs/header-attrs.js"></script>
+    <link href="index_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="index_files/panelset/panelset.js"></script>
+    <link href="index_files/countdown/countdown.css" rel="stylesheet" />
+    <script src="index_files/countdown/countdown.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Visualizing spatial data II
+]
+.author[
+### INFO 5940 <br /> Cornell University
+]
+
+---
+
+
+
+
+
+
+## Map data file formats
+
+* Vector files
+    * Raster images
+    * Numeric data
+* Popular formats
+    * Shapefile
+    * GeoJSON
+    
+---
+
+## Shapefile
+
+* Encodes points, lines, and polygons
+* Collection of files
+    * `.shp` - geographic coordinates
+    * `.dbf` - data associated with the geographic features
+    * `.prj` - projection of the coordinates in the shapefile
+
+--
+
+
+
+
+```
+## -- geo_export_6fd95df5-1136-4829-8f2d-9cb5d1cc2222.dbf
+## -- geo_export_6fd95df5-1136-4829-8f2d-9cb5d1cc2222.prj
+## -- geo_export_6fd95df5-1136-4829-8f2d-9cb5d1cc2222.shp
+## -- geo_export_6fd95df5-1136-4829-8f2d-9cb5d1cc2222.shx
+```
+
+---
+
+## GeoJSON
+
+* Uses **J**ava**S**cript **O**bject **N**otation (JSON) file format
+    
+    ```json
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [125.6, 10.1]
+      },
+      "properties": {
+        "name": "Dinagat Islands"
+      }
+    }
+    ```
+* Plain text files
+
+---
+
+## Simple Features for R
+
+&lt;img src="../../../../../../../../img/sf.png" title="Three cute fuzzy monsters adding spatial geometries to an existing table of attributes using glue and tape, while one cuts out the spatial polygons. Title text reads 'sf: spatial data...simplified.' and a caption at the bottom reads 'sticky geometries: for people who love their maps and sanity.'" alt="Three cute fuzzy monsters adding spatial geometries to an existing table of attributes using glue and tape, while one cuts out the spatial polygons. Title text reads 'sf: spatial data...simplified.' and a caption at the bottom reads 'sticky geometries: for people who love their maps and sanity.'" width="60%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Allison Horst](https://github.com/allisonhorst/stats-illustrations)]
+
+---
+
+## What is a feature?
+
+* Thing or an object in the real world
+* Sets of features
+* Geometry
+* Attributes
+
+---
+
+## Simple features
+
+&lt;img src="../../../../../../../../img/simple-features.png" title="Simple features" alt="Simple features" width="70%" style="display: block; margin: auto;" /&gt;
+
+.footnote[
+Source: [Simple Features for R](https://r-spatial.github.io/sf/articles/sf1.html#sf-objects-with-simple-features-1)
+]
+
+---
+
+## Simple features in R
+
+* Uses basic R data structures
+* Data frame with one row per feature
+* Lots of list columns
+
+---
+
+## Importing shapefiles
+
+
+
+
+```r
+nyc_shape &lt;- st_read(dsn = here("data", "borough-boundaries"))
+```
+
+
+```r
+nyc_shape
+```
+
+```
+## Simple feature collection with 5 features and 4 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS84(DD)
+##   boro_code     boro_name shape_area shape_leng                       geometry
+## 1         5 Staten Island 1623631283   325924.0 MULTIPOLYGON (((-74.05051 4...
+## 2         2         Bronx 1187189499   463277.2 MULTIPOLYGON (((-73.89681 4...
+## 3         1     Manhattan  636605816   359103.2 MULTIPOLYGON (((-74.01093 4...
+## 4         3      Brooklyn 1934169229   728478.1 MULTIPOLYGON (((-73.86327 4...
+## 5         4        Queens 3041397430   888238.6 MULTIPOLYGON (((-73.82645 4...
+```
+
+---
+
+## Importing GeoJSON files
+
+
+
+
+```r
+nyc_json &lt;- st_read(dsn = here("data", "borough-boundaries.geojson"))
+```
+
+
+```r
+nyc_json
+```
+
+```
+## Simple feature collection with 5 features and 4 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS 84
+##   boro_code     boro_name    shape_area    shape_leng                       geometry
+## 1         5 Staten Island 1623631283.36 325924.002076 MULTIPOLYGON (((-74.05051 4...
+## 2         2         Bronx  1187189499.3 463277.240478 MULTIPOLYGON (((-73.89681 4...
+## 3         1     Manhattan 636605816.437 359103.151368 MULTIPOLYGON (((-74.01093 4...
+## 4         3      Brooklyn 1934169228.83 728478.125489 MULTIPOLYGON (((-73.86327 4...
+## 5         4        Queens 3041397430.33 888238.562635 MULTIPOLYGON (((-73.82645 4...
+```
+
+---
+
+## Drawing maps with `sf` objects
+
+
+
+
+```r
+usa &lt;- st_read(dsn = here("data", "cb_2020_us_state_5m", "cb_2020_us_state_5m.shp"))
+```
+
+.tiny[
+
+```r
+usa
+```
+
+```
+## Simple feature collection with 56 features and 9 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -179.1473 ymin: -14.55255 xmax: 179.7785 ymax: 71.35256
+## Geodetic CRS:  NAD83
+## First 10 features:
+##    STATEFP  STATENS    AFFGEOID GEOID STUSPS          NAME LSAD        ALAND      AWATER                       geometry
+## 1       55 01779806 0400000US55    55     WI     Wisconsin   00 140292246684 29343721650 MULTIPOLYGON (((-86.9562 45...
+## 2       54 01779805 0400000US54    54     WV West Virginia   00  62266296765   489206049 MULTIPOLYGON (((-82.643 38....
+## 3       16 01779783 0400000US16    16     ID         Idaho   00 214049923496  2391577745 MULTIPOLYGON (((-117.2427 4...
+## 4       27 00662849 0400000US27    27     MN     Minnesota   00 206232157570 18949864226 MULTIPOLYGON (((-97.23921 4...
+## 5       19 01779785 0400000US19    19     IA          Iowa   00 144659688848  1085996889 MULTIPOLYGON (((-96.6397 42...
+## 6       10 01779781 0400000US10    10     DE      Delaware   00   5046731558  1399179670 MULTIPOLYGON (((-75.5708 39...
+## 7       72 01779808 0400000US72    72     PR   Puerto Rico   00   8868948653  4922329963 MULTIPOLYGON (((-65.3375 18...
+## 8       29 01779791 0400000US29    29     MO      Missouri   00 178052563675  2487215790 MULTIPOLYGON (((-95.77355 4...
+## 9       50 01779802 0400000US50    50     VT       Vermont   00  23873081385  1030243281 MULTIPOLYGON (((-73.43774 4...
+## 10      24 01714934 0400000US24    24     MD      Maryland   00  25151895765  6979171386 MULTIPOLYGON (((-76.0494 37...
+```
+]
+---
+
+## USA boundaries
+
+.panelset.sideways[
+
+```r
+ggplot(data = usa) +
+* geom_sf()
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-3-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Plot a subset of a map
+
+.panelset.sideways[
+
+```r
+usa_48 &lt;- usa %&gt;%
+* filter(NAME %in% state.name) %&gt;%
+* filter(NAME != "Alaska", NAME != "Hawaii")
+
+ggplot(data = usa_48) +
+  geom_sf()
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-4-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Just another `ggplot()`
+
+.panelset.sideways[
+
+```r
+ggplot(data = usa_48) +
+  geom_sf(
+*   fill = "palegreen",
+*   color = "black"
+  )
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-5-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+&lt;img src="https://imgs.xkcd.com/comics/contiguous_41_states.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [xkcd](https://xkcd.com/2394/)]
+
+---
+
+## `urbnmapr`
+
+.panelset.sideways[
+
+```r
+library(urbnmapr)
+
+*states_sf &lt;- get_urbn_map("states", sf = TRUE)
+
+ggplot(data = states_sf) +
+  geom_sf()
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-6-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: inverse, middle
+
+# Identifying points on a map
+
+---
+
+## Points
+
+
+
+
+```r
+crimes &lt;- here("data", "nyc-crimes.csv") %&gt;%
+  read_csv()
+```
+
+
+```r
+crimes_homicide &lt;- filter(.data = crimes, ofns_desc == "MURDER &amp; NON-NEGL. MANSLAUGHTER")
+crimes_homicide
+```
+
+```
+## # A tibble: 269 × 7
+##    cmplnt_num    boro_nm   cmplnt_fr_dt        law_cat…¹ ofns_…² latit…³ longi…⁴
+##    &lt;chr&gt;         &lt;chr&gt;     &lt;dttm&gt;              &lt;chr&gt;     &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt;
+##  1 240954923H1   BROOKLYN  1977-12-20 05:00:00 FELONY    MURDER…    40.7   -74.0
+##  2 245958045H1   BROOKLYN  2001-08-13 04:00:00 FELONY    MURDER…    40.7   -73.9
+##  3 8101169H6113  MANHATTAN 2005-03-06 05:00:00 FELONY    MURDER…    40.8   -73.9
+##  4 8101169H6113  MANHATTAN 2005-03-06 05:00:00 FELONY    MURDER…    40.8   -73.9
+##  5 16631466H8909 BROOKLYN  2006-05-24 04:00:00 FELONY    MURDER…    40.7   -73.9
+##  6 246056367H1   QUEENS    2015-05-13 04:00:00 FELONY    MURDER…    40.6   -73.7
+##  7 243507594H1   MANHATTAN 2020-06-19 04:00:00 FELONY    MURDER…    40.8   -74.0
+##  8 243688124H1   BROOKLYN  2021-01-31 05:00:00 FELONY    MURDER…    40.7   -73.9
+##  9 240767513H1   BROOKLYN  2021-02-17 05:00:00 FELONY    MURDER…    40.6   -74.0
+## 10 240767512H1   BROOKLYN  2021-05-24 04:00:00 FELONY    MURDER…    40.6   -74.0
+## # … with 259 more rows, and abbreviated variable names ¹​law_cat_cd, ²​ofns_desc,
+## #   ³​latitude, ⁴​longitude
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
+---
+
+## Points
+
+.panelset.sideways[
+
+```r
+ggplot(
+  data = crimes_homicide,
+  mapping = aes(
+    x = longitude,
+    y = latitude
+  )
+) +
+* geom_point()
+```
+
+&lt;img src="index_files/figure-html/scatter-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Points
+
+.panelset.sideways[
+
+```r
+ggplot(data = nyc_json) +
+* geom_sf() +
+  geom_point(
+    data = crimes_homicide,
+    mapping = aes(
+      x = longitude,
+      y = latitude
+    ),
+    shape = 1
+  )
+```
+
+&lt;img src="index_files/figure-html/nyc-crime-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Converting to `sf` data frame
+
+
+```r
+crimes_homicide_sf &lt;- st_as_sf(x = crimes_homicide, coords = c("longitude", "latitude"))
+st_crs(crimes_homicide_sf) &lt;- 4326 # set the coordinate reference system
+crimes_homicide_sf
+```
+
+```
+## Simple feature collection with 269 features and 5 fields
+## Geometry type: POINT
+## Dimension:     XY
+## Bounding box:  xmin: -74.08578 ymin: 40.59087 xmax: -73.73331 ymax: 40.90316
+## Geodetic CRS:  WGS 84
+## # A tibble: 269 × 6
+##    cmpln…¹ boro_nm cmplnt_fr_dt        law_c…² ofns_…³             geometry
+##  * &lt;chr&gt;   &lt;chr&gt;   &lt;dttm&gt;              &lt;chr&gt;   &lt;chr&gt;            &lt;POINT [°]&gt;
+##  1 240954… BROOKL… 1977-12-20 05:00:00 FELONY  MURDER… (-73.97448 40.68079)
+##  2 245958… BROOKL… 2001-08-13 04:00:00 FELONY  MURDER… (-73.92013 40.69862)
+##  3 810116… MANHAT… 2005-03-06 05:00:00 FELONY  MURDER… (-73.94295 40.81126)
+##  4 810116… MANHAT… 2005-03-06 05:00:00 FELONY  MURDER… (-73.94295 40.81126)
+##  5 166314… BROOKL… 2006-05-24 04:00:00 FELONY  MURDER…  (-73.91796 40.6703)
+##  6 246056… QUEENS  2015-05-13 04:00:00 FELONY  MURDER…  (-73.7491 40.60219)
+##  7 243507… MANHAT… 2020-06-19 04:00:00 FELONY  MURDER… (-73.95732 40.81194)
+##  8 243688… BROOKL… 2021-01-31 05:00:00 FELONY  MURDER…  (-73.8627 40.67093)
+##  9 240767… BROOKL… 2021-02-17 05:00:00 FELONY  MURDER… (-73.97582 40.61046)
+## 10 240767… BROOKL… 2021-05-24 04:00:00 FELONY  MURDER… (-73.97582 40.61046)
+## # … with 259 more rows, and abbreviated variable names ¹​cmplnt_num,
+## #   ²​law_cat_cd, ³​ofns_desc
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
+---
+
+## Plotting with two sf data frames
+
+.panelset.sideways[
+
+```r
+ggplot() +
+  geom_sf(data = nyc_json) +
+  geom_sf(
+*   data = crimes_homicide_sf,
+*   shape = 1
+  )
+```
+
+&lt;img src="index_files/figure-html/crimes-sf-plot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: inverse, middle
+
+# Choropleths
+
+---
+
+&lt;img src="https://media.giphy.com/media/If7M383oivlYY/giphy.gif" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Fill (choropleths)
+
+
+
+
+```r
+fb_state &lt;- read_csv(file = here("data", "foreign-born.csv"))
+```
+
+
+```r
+fb_state
+```
+
+```
+## # A tibble: 52 × 6
+##    GEOID NAME                    total   native  foreign pct_foreign
+##    &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;       &lt;dbl&gt;
+##  1 01    Alabama               4876250  4703303   172947      0.0355
+##  2 02    Alaska                 737068   679401    57667      0.0782
+##  3 04    Arizona               7050299  6109648   940651      0.133 
+##  4 05    Arkansas              2999370  2854323   145047      0.0484
+##  5 06    California           39283497 28736287 10547210      0.268 
+##  6 08    Colorado              5610349  5063836   546513      0.0974
+##  7 10    Delaware               957248   865775    91473      0.0956
+##  8 11    District of Columbia   692683   597618    95065      0.137 
+##  9 09    Connecticut           3575074  3054123   520951      0.146 
+## 10 12    Florida              20901636 16576836  4324800      0.207 
+## # … with 42 more rows
+## # ℹ Use `print(n = ...)` to see more rows
+```
+
+---
+
+## Join the data
+
+
+```r
+usa_fb &lt;- left_join(x = usa_48, y = fb_state, by = c("STATEFP" = "GEOID", "NAME"))
+usa_fb
+```
+
+```
+## Simple feature collection with 48 features and 13 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -124.7332 ymin: 24.51496 xmax: -66.9499 ymax: 49.38436
+## Geodetic CRS:  NAD83
+## First 10 features:
+##    STATEFP  STATENS    AFFGEOID GEOID STUSPS          NAME LSAD        ALAND
+## 1       55 01779806 0400000US55    55     WI     Wisconsin   00 140292246684
+## 2       54 01779805 0400000US54    54     WV West Virginia   00  62266296765
+## 3       16 01779783 0400000US16    16     ID         Idaho   00 214049923496
+## 4       27 00662849 0400000US27    27     MN     Minnesota   00 206232157570
+## 5       19 01779785 0400000US19    19     IA          Iowa   00 144659688848
+## 6       10 01779781 0400000US10    10     DE      Delaware   00   5046731558
+## 7       29 01779791 0400000US29    29     MO      Missouri   00 178052563675
+## 8       50 01779802 0400000US50    50     VT       Vermont   00  23873081385
+## 9       24 01714934 0400000US24    24     MD      Maryland   00  25151895765
+## 10      33 01779794 0400000US33    33     NH New Hampshire   00  23190113978
+##         AWATER   total  native foreign pct_foreign
+## 1  29343721650 5790716 5500994  289722  0.05003215
+## 2    489206049 1817305 1787134   30171  0.01660206
+## 3   2391577745 1717750 1615307  102443  0.05963790
+## 4  18949864226 5563378 5090529  472849  0.08499315
+## 5   1085996889 3139508 2973069  166439  0.05301436
+## 6   1399179670  957248  865775   91473  0.09555831
+## 7   2487215790 6104910 5849191  255719  0.04188743
+## 8   1030243281  624313  594985   29328  0.04697644
+## 9   6979171386 6018848 5105961  912887  0.15167138
+## 10  1025973001 1348124 1265430   82694  0.06134005
+##                          geometry
+## 1  MULTIPOLYGON (((-86.9562 45...
+## 2  MULTIPOLYGON (((-82.643 38....
+## 3  MULTIPOLYGON (((-117.2427 4...
+## 4  MULTIPOLYGON (((-97.23921 4...
+## 5  MULTIPOLYGON (((-96.6397 42...
+## 6  MULTIPOLYGON (((-75.5708 39...
+## 7  MULTIPOLYGON (((-95.77355 4...
+## 8  MULTIPOLYGON (((-73.43774 4...
+## 9  MULTIPOLYGON (((-76.0494 37...
+## 10 MULTIPOLYGON (((-72.55725 4...
+```
+
+---
+
+## Draw the map
+
+.panelset.sideways[
+
+```r
+ggplot(data = usa_fb) +
+* geom_sf(mapping = aes(fill = pct_foreign))
+```
+
+&lt;img src="index_files/figure-html/geom-map-state-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: inverse, middle
+
+# Use better colors
+
+---
+
+## `colorspace`
+
+Scale name: `scale_&lt;aesthetic&gt;_&lt;datatype&gt;_&lt;colorscale&gt;()`
+
+--
+
+- `&lt;aesthetic&gt;`: name of the aesthetic (`fill`, `color`, `colour`)
+- `&lt;datatype&gt;`: type of variable plotted (`discrete`, `continuous`, `binned`)
+- `&lt;colorscale&gt;`: type of the color scale (`qualitative`, `sequential`, `diverging`)
+
+--
+
+Scale function                       | Aesthetic &amp;nbsp;&amp;nbsp;&amp;nbsp; | Data type  | Palette type &amp;nbsp;&amp;nbsp;&amp;nbsp;
+:-----------                         | :--------  | :--------- | :------------
+`scale_color_discrete_qualitative()` | `color`    | discrete   | qualitative
+`scale_fill_continuous_sequential()` | `fill`     | continuous | sequential
+`scale_color_continuous_diverging()` | `color`   | continuous | diverging
+
+---
+
+&lt;img src="index_files/figure-html/colorspace-palettes-seq-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="index_files/figure-html/colorspace-palettes-div-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+&lt;img src="index_files/figure-html/colorspace-palettes-qual-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Use better colors
+
+.panelset.sideways[
+
+```r
+*library(colorspace)
+
+ggplot(data = usa_fb) +
+  geom_sf(mapping = aes(
+    fill = pct_foreign
+  )) +
+* scale_fill_continuous_sequential(palette = "mako")
+```
+
+&lt;img src="index_files/figure-html/geom-map-state-pal-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: inverse, middle
+
+# Spatial aggregation
+
+---
+
+## Spatial aggregation
+
+
+```r
+st_join(x = nyc_json, y = crimes_homicide_sf)
+```
+
+```
+## Simple feature collection with 269 features and 9 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS 84
+## First 10 features:
+##     boro_code     boro_name    shape_area    shape_leng  cmplnt_num
+## 1           5 Staten Island 1623631283.36 325924.002076 239347883H1
+## 1.1         5 Staten Island 1623631283.36 325924.002076 244818447H1
+## 1.2         5 Staten Island 1623631283.36 325924.002076 246985876H1
+## 2           2         Bronx  1187189499.3 463277.240478 242029394H1
+## 2.1         2         Bronx  1187189499.3 463277.240478 242029394H1
+## 2.2         2         Bronx  1187189499.3 463277.240478 243573864H1
+## 2.3         2         Bronx  1187189499.3 463277.240478 244256173H1
+## 2.4         2         Bronx  1187189499.3 463277.240478 240776535H1
+## 2.5         2         Bronx  1187189499.3 463277.240478 240776535H1
+## 2.6         2         Bronx  1187189499.3 463277.240478 240776535H1
+##           boro_nm        cmplnt_fr_dt law_cat_cd
+## 1   STATEN ISLAND 2022-01-18 05:00:00     FELONY
+## 1.1 STATEN ISLAND 2022-05-09 04:00:00     FELONY
+## 1.2 STATEN ISLAND 2022-06-21 04:00:00     FELONY
+## 2           BRONX 2021-06-01 04:00:00     FELONY
+## 2.1         BRONX 2021-06-01 04:00:00     FELONY
+## 2.2         BRONX 2021-10-24 04:00:00     FELONY
+## 2.3         BRONX 2021-12-17 05:00:00     FELONY
+## 2.4         BRONX 2022-01-01 05:00:00     FELONY
+## 2.5         BRONX 2022-01-01 05:00:00     FELONY
+## 2.6         BRONX 2022-01-01 05:00:00     FELONY
+##                           ofns_desc                       geometry
+## 1   MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-74.05051 4...
+## 1.1 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-74.05051 4...
+## 1.2 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-74.05051 4...
+## 2   MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.1 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.2 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.3 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.4 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.5 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.6 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+```
+
+---
+
+
+
+count: false
+ 
+
+.panel1-crimes-agg-map-auto[
+
+```r
+*nyc_json
+```
+]
+ 
+.panel2-crimes-agg-map-auto[
+
+```
+## Simple feature collection with 5 features and 4 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS 84
+##   boro_code     boro_name    shape_area    shape_leng
+## 1         5 Staten Island 1623631283.36 325924.002076
+## 2         2         Bronx  1187189499.3 463277.240478
+## 3         1     Manhattan 636605816.437 359103.151368
+## 4         3      Brooklyn 1934169228.83 728478.125489
+## 5         4        Queens 3041397430.33 888238.562635
+##                         geometry
+## 1 MULTIPOLYGON (((-74.05051 4...
+## 2 MULTIPOLYGON (((-73.89681 4...
+## 3 MULTIPOLYGON (((-74.01093 4...
+## 4 MULTIPOLYGON (((-73.86327 4...
+## 5 MULTIPOLYGON (((-73.82645 4...
+```
+]
+
+---
+count: false
+ 
+
+.panel1-crimes-agg-map-auto[
+
+```r
+nyc_json %&gt;%
+* st_join(y = crimes_homicide_sf)
+```
+]
+ 
+.panel2-crimes-agg-map-auto[
+
+```
+## Simple feature collection with 269 features and 9 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS 84
+## First 10 features:
+##     boro_code     boro_name    shape_area    shape_leng  cmplnt_num
+## 1           5 Staten Island 1623631283.36 325924.002076 239347883H1
+## 1.1         5 Staten Island 1623631283.36 325924.002076 244818447H1
+## 1.2         5 Staten Island 1623631283.36 325924.002076 246985876H1
+## 2           2         Bronx  1187189499.3 463277.240478 242029394H1
+## 2.1         2         Bronx  1187189499.3 463277.240478 242029394H1
+## 2.2         2         Bronx  1187189499.3 463277.240478 243573864H1
+## 2.3         2         Bronx  1187189499.3 463277.240478 244256173H1
+## 2.4         2         Bronx  1187189499.3 463277.240478 240776535H1
+## 2.5         2         Bronx  1187189499.3 463277.240478 240776535H1
+## 2.6         2         Bronx  1187189499.3 463277.240478 240776535H1
+##           boro_nm        cmplnt_fr_dt law_cat_cd
+## 1   STATEN ISLAND 2022-01-18 05:00:00     FELONY
+## 1.1 STATEN ISLAND 2022-05-09 04:00:00     FELONY
+## 1.2 STATEN ISLAND 2022-06-21 04:00:00     FELONY
+## 2           BRONX 2021-06-01 04:00:00     FELONY
+## 2.1         BRONX 2021-06-01 04:00:00     FELONY
+## 2.2         BRONX 2021-10-24 04:00:00     FELONY
+## 2.3         BRONX 2021-12-17 05:00:00     FELONY
+## 2.4         BRONX 2022-01-01 05:00:00     FELONY
+## 2.5         BRONX 2022-01-01 05:00:00     FELONY
+## 2.6         BRONX 2022-01-01 05:00:00     FELONY
+##                           ofns_desc                       geometry
+## 1   MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-74.05051 4...
+## 1.1 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-74.05051 4...
+## 1.2 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-74.05051 4...
+## 2   MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.1 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.2 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.3 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.4 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.5 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+## 2.6 MURDER &amp; NON-NEGL. MANSLAUGHTER MULTIPOLYGON (((-73.89681 4...
+```
+]
+
+---
+count: false
+ 
+
+.panel1-crimes-agg-map-auto[
+
+```r
+nyc_json %&gt;%
+  st_join(y = crimes_homicide_sf) %&gt;%
+* group_by(boro_name)
+```
+]
+ 
+.panel2-crimes-agg-map-auto[
+
+```
+## Simple feature collection with 269 features and 9 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS 84
+## # A tibble: 269 × 10
+## # Groups:   boro_name [5]
+##    boro_code boro_…¹ shape…² shape…³ cmpln…⁴ boro_nm cmplnt_fr_dt        law_c…⁵
+##    &lt;chr&gt;     &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;dttm&gt;              &lt;chr&gt;  
+##  1 5         Staten… 162363… 325924… 239347… STATEN… 2022-01-18 05:00:00 FELONY 
+##  2 5         Staten… 162363… 325924… 244818… STATEN… 2022-05-09 04:00:00 FELONY 
+##  3 5         Staten… 162363… 325924… 246985… STATEN… 2022-06-21 04:00:00 FELONY 
+##  4 2         Bronx   118718… 463277… 242029… BRONX   2021-06-01 04:00:00 FELONY 
+##  5 2         Bronx   118718… 463277… 242029… BRONX   2021-06-01 04:00:00 FELONY 
+##  6 2         Bronx   118718… 463277… 243573… BRONX   2021-10-24 04:00:00 FELONY 
+##  7 2         Bronx   118718… 463277… 244256… BRONX   2021-12-17 05:00:00 FELONY 
+##  8 2         Bronx   118718… 463277… 240776… BRONX   2022-01-01 05:00:00 FELONY 
+##  9 2         Bronx   118718… 463277… 240776… BRONX   2022-01-01 05:00:00 FELONY 
+## 10 2         Bronx   118718… 463277… 240776… BRONX   2022-01-01 05:00:00 FELONY 
+## # … with 259 more rows, 2 more variables: ofns_desc &lt;chr&gt;,
+## #   geometry &lt;MULTIPOLYGON [°]&gt;, and abbreviated variable names ¹​boro_name,
+## #   ²​shape_area, ³​shape_leng, ⁴​cmplnt_num, ⁵​law_cat_cd
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+```
+]
+
+---
+count: false
+ 
+
+.panel1-crimes-agg-map-auto[
+
+```r
+nyc_json %&gt;%
+  st_join(y = crimes_homicide_sf) %&gt;%
+  group_by(boro_name) %&gt;%
+* count()
+```
+]
+ 
+.panel2-crimes-agg-map-auto[
+
+```
+## Simple feature collection with 5 features and 2 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -74.25559 ymin: 40.49613 xmax: -73.70001 ymax: 40.91553
+## Geodetic CRS:  WGS 84
+## # A tibble: 5 × 3
+##   boro_name         n                                                   geometry
+## * &lt;chr&gt;         &lt;int&gt;                                         &lt;MULTIPOLYGON [°]&gt;
+## 1 Bronx           101 (((-73.89679 40.79633, -73.89713 40.7968, -73.89788 40.79…
+## 2 Brooklyn         75 (((-73.86318 40.58406, -73.86283 40.58442, -73.8625 40.58…
+## 3 Manhattan        46 (((-74.0086 40.68591, -74.00851 40.68596, -74.00843 40.68…
+## 4 Queens           44 (((-73.82646 40.59059, -73.82647 40.59065, -73.82648 40.5…
+## 5 Staten Island     3 (((-74.05054 40.56644, -74.05062 40.56651, -74.05067 40.5…
+```
+]
+
+---
+count: false
+ 
+
+.panel1-crimes-agg-map-auto[
+
+```r
+nyc_json %&gt;%
+  st_join(y = crimes_homicide_sf) %&gt;%
+  group_by(boro_name) %&gt;%
+  count() %&gt;%
+* ggplot()
+```
+]
+ 
+.panel2-crimes-agg-map-auto[
+&lt;img src="index_files/figure-html/crimes-agg-map_auto_05_output-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+count: false
+ 
+
+.panel1-crimes-agg-map-auto[
+
+```r
+nyc_json %&gt;%
+  st_join(y = crimes_homicide_sf) %&gt;%
+  group_by(boro_name) %&gt;%
+  count() %&gt;%
+  ggplot() +
+* geom_sf(mapping = aes(fill = n))
+```
+]
+ 
+.panel2-crimes-agg-map-auto[
+&lt;img src="index_files/figure-html/crimes-agg-map_auto_06_output-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+&lt;style&gt;
+.panel1-crimes-agg-map-auto {
+  color: black;
+  width: 38.6060606060606%;
+  hight: 32%;
+  float: left;
+  padding-left: 1%;
+  font-size: 80%
+}
+.panel2-crimes-agg-map-auto {
+  color: black;
+  width: 59.3939393939394%;
+  hight: 32%;
+  float: left;
+  padding-left: 1%;
+  font-size: 80%
+}
+.panel3-crimes-agg-map-auto {
+  color: black;
+  width: NA%;
+  hight: 33%;
+  float: left;
+  padding-left: 1%;
+  font-size: 80%
+}
+&lt;/style&gt;
+
+
+
+---
+
+## Which is better for comparisons?
+
+&lt;img src="index_files/figure-html/crimes-agg-map-2-1.png" width="90%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Exercise using household income
+
+&lt;img src="https://c.tenor.com/vvktIE0tx9kAAAAd/into-the-map-joe-tribbiani.gif" width="50%" style="display: block; margin: auto;" /&gt;
+
+<div class="countdown" id="timer_631a0020" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">12</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+class: inverse, middle
+
+# Bin continuous data to discrete intervals
+
+---
+
+## Bin data to discrete intervals
+
+* Continuous vs. discrete variables for color
+* Collapse to a discrete variable
+
+---
+
+## `cut_interval()`
+
+.panelset.sideways[
+.panel[.panel-name[Code]
+
+```r
+usa_fb %&gt;%
+* mutate(rate_cut = cut_interval(pct_foreign, n = 6)) %&gt;%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut)) +
+  scale_fill_discrete_sequential(palette = "inferno")
+```
+
+
+
+]
+
+.panel[.panel-name[Output]
+
+&lt;img src="index_files/figure-html/cut-int-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+]
+
+---
+
+## `cut_number()`
+
+.panelset.sideways[
+.panel[.panel-name[Code]
+
+```r
+usa_fb %&gt;%
+* mutate(rate_cut = cut_number(pct_foreign, n = 6)) %&gt;%
+  ggplot() +
+  geom_sf(aes(fill = rate_cut)) +
+  scale_fill_discrete_sequential(palette = "inferno")
+```
+
+
+
+]
+
+.panel[.panel-name[Output]
+
+&lt;img src="index_files/figure-html/cut-num-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+]
+
+---
+
+## `ggplot2::binned_scale()`
+
+.panelset.sideways[
+.panel[.panel-name[Code]
+
+```r
+usa_fb %&gt;%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+* scale_fill_binned_sequential(palette = "inferno")
+```
+
+
+
+]
+
+.panel[.panel-name[Output]
+
+&lt;img src="index_files/figure-html/bin-scale-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+]
+
+---
+
+## `ggplot2::binned_scale()` with quartiles
+
+.panelset.sideways[
+.panel[.panel-name[Code]
+
+```r
+usa_fb %&gt;%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(
+    palette = "inferno",
+*   n.breaks = 3
+  )
+```
+
+
+
+]
+
+.panel[.panel-name[Output]
+
+&lt;img src="index_files/figure-html/bin-quartile-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+]
+
+---
+
+## `ggplot2::binned_scale()` with quartiles
+
+.panelset.sideways[
+.panel[.panel-name[Code]
+
+```r
+usa_fb %&gt;%
+  ggplot() +
+  geom_sf(aes(fill = pct_foreign)) +
+  scale_fill_binned_sequential(
+    palette = "inferno",
+*   n.breaks = 3,
+*   nice.breaks = FALSE
+  )
+```
+
+
+
+]
+
+.panel[.panel-name[Output]
+
+&lt;img src="index_files/figure-html/bin-quartile-not-nice-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+]
+
+---
+
+class: inverse, middle
+
+# Map projection
+
+---
+
+## Map projection
+
+.center[
+&lt;iframe width="560" height="315" src="https://www.youtube.com/embed/vVX-PrBRtTY?rel=0" frameborder="0" allowfullscreen&gt;&lt;/iframe&gt;
+]
+
+---
+
+## Map projection
+
+&lt;img src="https://imgs.xkcd.com/comics/mercator_projection.png" width="30%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [xkcd](https://xkcd.com/2082/)]
+
+---
+
+## Map projection
+
+* Coordinate reference system
+* proj4string
+* **W**ell **K**nown **T**ext 2 (WKT2) string
+
+&gt; &lt;https://spatialreference.org/ref/epsg/&gt;
+
+---
+
+## US National Atlas Equal Area
+
+.pull-left[
+#### proj4string
+
+```
++proj=laea +lat_0=45 +lon_0=-100 +x_0=0 +y_0=0 +a=6370997 +b=6370997 +units=m +no_defs
+```
+
+]
+
+.pull-right[
+
+#### WKT2
+
+```
+PROJCS["US National Atlas Equal Area",
+    GEOGCS["Unspecified datum based upon the Clarke 1866 Authalic Sphere",
+        DATUM["Not_specified_based_on_Clarke_1866_Authalic_Sphere",
+            SPHEROID["Clarke 1866 Authalic Sphere",6370997,0,
+                AUTHORITY["EPSG","7052"]],
+            AUTHORITY["EPSG","6052"]],
+        PRIMEM["Greenwich",0,
+            AUTHORITY["EPSG","8901"]],
+        UNIT["degree",0.01745329251994328,
+            AUTHORITY["EPSG","9122"]],
+        AUTHORITY["EPSG","4052"]],
+    UNIT["metre",1,
+        AUTHORITY["EPSG","9001"]],
+    PROJECTION["Lambert_Azimuthal_Equal_Area"],
+    PARAMETER["latitude_of_center",45],
+    PARAMETER["longitude_of_center",-100],
+    PARAMETER["false_easting",0],
+    PARAMETER["false_northing",0],
+    AUTHORITY["EPSG","2163"],
+    AXIS["X",EAST],
+    AXIS["Y",NORTH]]
+```
+
+]
+
+---
+
+## EPSG
+
+- Coordinated registry of CRSs
+- [Spatial Reference](https://spatialreference.org/ref/epsg/)
+- [epsg.io](https://epsg.io/)
+
+---
+
+## Mercator projection
+
+
+
+&lt;img src="index_files/figure-html/mercator-sf-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Projection using standard lines
+
+&lt;img src="index_files/figure-html/projection-rest-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Adjusting color intervals and projections
+
+<div class="countdown" id="timer_631a020c" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">08</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+&lt;img src="https://c.tenor.com/pLC9Wr0DMWsAAAAC/lazy-sunday-google-maps.gif" width="80%" style="display: block; margin: auto;" /&gt;
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "magula",
+"highlightLines": true,
+"highlightLanguage": "r",
+"ratio": "16:9",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
