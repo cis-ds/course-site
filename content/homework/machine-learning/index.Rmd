@@ -1,6 +1,6 @@
 ---
 title: "HW07: Machine learning"
-date: 2022-10-31T13:30:00-06:00  # Schedule page publish date
+date: 2022-10-26T13:30:00-06:00  # Schedule page publish date
 publishdate: 2019-04-01
 
 draft: false
