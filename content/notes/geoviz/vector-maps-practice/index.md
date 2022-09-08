@@ -19,6 +19,7 @@ library(tidyverse)
 library(sf)
 library(tidycensus)
 library(colorspace)
+library(scales)
 
 # useful on MacOS to speed up rendering of geom_sf() objects
 if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
@@ -29,6 +30,16 @@ options(digits = 3)
 set.seed(123)
 theme_set(theme_minimal())
 ```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("cis-ds/visualize-spatial-ii")
+```
+
+{{% /callout %}}
 
 ## American Community Survey
 
@@ -60,7 +71,8 @@ tompkins_inc <- get_acs(
   geography = "tract",
   variables = c(medincome = "B19013_001"),
   year = 2020,
-  geometry = TRUE
+  geometry = TRUE,
+  output = "wide"
 )
 ```
 
@@ -70,39 +82,57 @@ tompkins_inc
 ```
 
 ```
-## Simple feature collection with 26 features and 5 fields
+## Simple feature collection with 26 features and 4 fields
 ## Geometry type: MULTIPOLYGON
 ## Dimension:     XY
 ## Bounding box:  xmin: -76.7 ymin: 42.3 xmax: -76.2 ymax: 42.6
 ## Geodetic CRS:  NAD83
 ## First 10 features:
-##          GEOID                                         NAME  variable estimate
-## 1  36109000100    Census Tract 1, Tompkins County, New York medincome    36309
-## 2  36109001600   Census Tract 16, Tompkins County, New York medincome    61756
-## 3  36109000300    Census Tract 3, Tompkins County, New York medincome       NA
-## 4  36109000800    Census Tract 8, Tompkins County, New York medincome    52704
-## 5  36109000202 Census Tract 2.02, Tompkins County, New York medincome    20515
-## 6  36109000900    Census Tract 9, Tompkins County, New York medincome    71228
-## 7  36109001200   Census Tract 12, Tompkins County, New York medincome       NA
-## 8  36109000201 Census Tract 2.01, Tompkins County, New York medincome       NA
-## 9  36109001400   Census Tract 14, Tompkins County, New York medincome    73818
-## 10 36109000600    Census Tract 6, Tompkins County, New York medincome    82756
-##      moe                       geometry
-## 1   4335 MULTIPOLYGON (((-76.5 42.4,...
-## 2   8472 MULTIPOLYGON (((-76.7 42.5,...
-## 3     NA MULTIPOLYGON (((-76.5 42.5,...
-## 4   9354 MULTIPOLYGON (((-76.5 42.4,...
-## 5  15240 MULTIPOLYGON (((-76.5 42.4,...
-## 6   9707 MULTIPOLYGON (((-76.6 42.5,...
-## 7     NA MULTIPOLYGON (((-76.5 42.4,...
-## 8     NA MULTIPOLYGON (((-76.5 42.4,...
-## 9  14518 MULTIPOLYGON (((-76.4 42.5,...
-## 10 24036 MULTIPOLYGON (((-76.5 42.5,...
+##          GEOID                                         NAME medincomeE
+## 1  36109000100    Census Tract 1, Tompkins County, New York      36309
+## 2  36109001600   Census Tract 16, Tompkins County, New York      61756
+## 3  36109000300    Census Tract 3, Tompkins County, New York         NA
+## 4  36109000800    Census Tract 8, Tompkins County, New York      52704
+## 5  36109000202 Census Tract 2.02, Tompkins County, New York      20515
+## 6  36109000900    Census Tract 9, Tompkins County, New York      71228
+## 7  36109001200   Census Tract 12, Tompkins County, New York         NA
+## 8  36109000201 Census Tract 2.01, Tompkins County, New York         NA
+## 9  36109001400   Census Tract 14, Tompkins County, New York      73818
+## 10 36109000600    Census Tract 6, Tompkins County, New York      82756
+##    medincomeM                       geometry
+## 1        4335 MULTIPOLYGON (((-76.5 42.4,...
+## 2        8472 MULTIPOLYGON (((-76.7 42.5,...
+## 3          NA MULTIPOLYGON (((-76.5 42.5,...
+## 4        9354 MULTIPOLYGON (((-76.5 42.4,...
+## 5       15240 MULTIPOLYGON (((-76.5 42.4,...
+## 6        9707 MULTIPOLYGON (((-76.6 42.5,...
+## 7          NA MULTIPOLYGON (((-76.5 42.4,...
+## 8          NA MULTIPOLYGON (((-76.5 42.4,...
+## 9       14518 MULTIPOLYGON (((-76.4 42.5,...
+## 10      24036 MULTIPOLYGON (((-76.5 42.5,...
 ```
     
 {{< /spoiler >}}
 
 2. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
+
+{{% callout note %}}
+
+Use the object  below to add informative labels to each plot without having to copy-and-paste.
+
+
+```r
+# create reusable labels for each plot
+map_labels <- labs(
+  title = "Median household income in Tompkins County, NY",
+  subtitle = "In 2020",
+  color = NULL,
+  fill = NULL,
+  caption = "Source: American Community Survey"
+)
+```
+
+{{% /callout %}}
 
 {{< spoiler text="Click for the solution" >}}
 
@@ -110,17 +140,11 @@ tompkins_inc
 ```r
 ggplot(data = tompkins_inc) +
   # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
+  geom_sf(aes(fill = medincomeE, color = medincomeE)) +
   # increase interpretability of graph
-  scale_color_continuous(labels = scales::dollar) +
-  scale_fill_continuous(labels = scales::dollar) +
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_color_continuous(labels = label_dollar()) +
+  scale_fill_continuous(labels = label_dollar()) +
+  map_labels
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/income-tompkins-map-1.png" width="672" />
@@ -137,22 +161,16 @@ ggplot(data = tompkins_inc) +
 ```r
 ggplot(data = tompkins_inc) +
   # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
+  geom_sf(aes(fill = medincomeE, color = medincomeE)) +
   # increase interpretability of graph
   scale_fill_continuous_sequential(
     palette = "viridis",
     rev = FALSE,
     aesthetics = c("fill", "color"),
-    labels = scales::label_dollar(),
+    labels = label_dollar(),
     name = NULL
   ) +
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/viridis-1.png" width="672" />
@@ -168,18 +186,18 @@ ggplot(data = tompkins_inc) +
 
 ```r
 tompkins_inc %>%
-  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
+  mutate(inc_cut = cut_interval(medincomeE, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_fill_discrete_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    name = NULL
+  ) +
+  map_labels
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/cut-interval-1.png" width="672" />
@@ -189,18 +207,18 @@ tompkins_inc %>%
 
 ```r
 tompkins_inc %>%
-  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
+  mutate(inc_cut = cut_number(medincomeE, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_fill_discrete_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    name = NULL
+  ) +
+  map_labels
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-1.png" width="672" />
@@ -211,21 +229,15 @@ tompkins_inc %>%
 ```r
 # default breaks
 ggplot(data = tompkins_inc) +
-  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  geom_sf(mapping = aes(fill = medincomeE, color = medincomeE)) +
   scale_fill_binned_sequential(
     palette = "viridis",
     rev = FALSE,
     aesthetics = c("fill", "color"),
-    labels = scales::label_dollar()
+    labels = label_dollar()
   ) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-1.png" width="672" />
@@ -233,22 +245,16 @@ ggplot(data = tompkins_inc) +
 ```r
 # quintiles
 ggplot(data = tompkins_inc) +
-  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  geom_sf(mapping = aes(fill = medincomeE, color = medincomeE)) +
   scale_fill_binned_sequential(
     palette = "viridis",
     rev = FALSE,
     aesthetics = c("fill", "color"),
     n.breaks = 4, nice.breaks = FALSE,
-    labels = scales::label_dollar()
+    labels = label_dollar()
   ) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-1-2.png" width="672" />
@@ -274,7 +280,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-09-01
+##  date     2022-09-08
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -290,7 +296,6 @@ sessioninfo::session_info()
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
 ##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
-##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace    * 2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -301,7 +306,6 @@ sessioninfo::session_info()
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
-##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  foreign         0.8-82     2022-01-16 [2] CRAN (R 4.2.1)
@@ -312,11 +316,9 @@ sessioninfo::session_info()
 ##  glue            1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
 ##  googledrive     2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
 ##  googlesheets4   1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
-##  gridExtra       2.3        2017-09-09 [2] CRAN (R 4.2.0)
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
-##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -324,7 +326,6 @@ sessioninfo::session_info()
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
@@ -348,9 +349,8 @@ sessioninfo::session_info()
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
 ##  rvest           1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
-##  s2              1.1.0      2022-07-18 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
-##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  scales        * 1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
 ##  sf            * 1.0-8      2022-07-14 [2] CRAN (R 4.2.0)
 ##  sp              1.5-0      2022-06-05 [2] CRAN (R 4.2.0)
@@ -367,10 +367,7 @@ sessioninfo::session_info()
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
 ##  uuid            1.1-0      2022-04-19 [2] CRAN (R 4.2.0)
 ##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
-##  viridis       * 0.6.2      2021-10-13 [2] CRAN (R 4.2.0)
-##  viridisLite   * 0.4.0      2021-04-13 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
-##  wk              0.6.0      2022-01-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
 ##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)

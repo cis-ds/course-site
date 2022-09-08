@@ -20,6 +20,7 @@ library(tidyverse)
 library(sf)
 library(tidycensus)
 library(colorspace)
+library(scales)
 
 # useful on MacOS to speed up rendering of geom_sf() objects
 if (!identical(getOption("bitmapType"), "cairo") && isTRUE(capabilities()[["cairo"]])) {
@@ -30,6 +31,16 @@ options(digits = 3)
 set.seed(123)
 theme_set(theme_minimal())
 ```
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise as a set of R scripts.
+
+```r
+usethis::use_course("cis-ds/visualize-spatial-ii")
+```
+
+{{% /callout %}}
 
 ## American Community Survey
 
@@ -60,7 +71,8 @@ tompkins_inc <- get_acs(
   geography = "tract",
   variables = c(medincome = "B19013_001"),
   year = 2020,
-  geometry = TRUE
+  geometry = TRUE,
+  output = "wide"
 )
 ```
 
@@ -72,22 +84,33 @@ tompkins_inc
 
 2. Draw a choropleth using the median household income data. Use a continuous color gradient to identify each tract's median household income.
 
+{{% callout note %}}
+
+Use the object  below to add informative labels to each plot without having to copy-and-paste.
+
+```{r map-labels}
+# create reusable labels for each plot
+map_labels <- labs(
+  title = "Median household income in Tompkins County, NY",
+  subtitle = "In 2020",
+  color = NULL,
+  fill = NULL,
+  caption = "Source: American Community Survey"
+)
+```
+
+{{% /callout %}}
+
 {{< spoiler text="Click for the solution" >}}
 
 ```{r income-tompkins-map, dependson = "income-tompkins"}
 ggplot(data = tompkins_inc) +
   # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
+  geom_sf(aes(fill = medincomeE, color = medincomeE)) +
   # increase interpretability of graph
-  scale_color_continuous(labels = scales::dollar) +
-  scale_fill_continuous(labels = scales::dollar) +
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_color_continuous(labels = label_dollar()) +
+  scale_fill_continuous(labels = label_dollar()) +
+  map_labels
 ```
 
 {{< /spoiler >}}
@@ -101,22 +124,16 @@ ggplot(data = tompkins_inc) +
 ```{r viridis, dependson = "income-tompkins"}
 ggplot(data = tompkins_inc) +
   # use fill and color to avoid gray boundary lines
-  geom_sf(aes(fill = estimate, color = estimate)) +
+  geom_sf(aes(fill = medincomeE, color = medincomeE)) +
   # increase interpretability of graph
   scale_fill_continuous_sequential(
     palette = "viridis",
     rev = FALSE,
     aesthetics = c("fill", "color"),
-    labels = scales::label_dollar(),
+    labels = label_dollar(),
     name = NULL
   ) +
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 ```
             
     {{< /spoiler >}}
@@ -129,36 +146,36 @@ ggplot(data = tompkins_inc) +
 
 ```{r cut-interval, dependson = "income-tompkins"}
 tompkins_inc %>%
-  mutate(inc_cut = cut_interval(estimate, n = 6)) %>%
+  mutate(inc_cut = cut_interval(medincomeE, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_fill_discrete_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    name = NULL
+  ) +
+  map_labels
 ```
         
     * Using `cut_number()`:
 
 ```{r cut-number, dependson = "income-tompkins"}
 tompkins_inc %>%
-  mutate(inc_cut = cut_number(estimate, n = 6)) %>%
+  mutate(inc_cut = cut_number(medincomeE, n = 6)) %>%
   ggplot() +
   # use fill and color to avoid gray boundary lines
   geom_sf(aes(fill = inc_cut, color = inc_cut)) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  scale_fill_discrete_sequential(
+    palette = "viridis",
+    rev = FALSE,
+    aesthetics = c("fill", "color"),
+    name = NULL
+  ) +
+  map_labels
 ```
 
     - Using `binned_scale()`
@@ -166,40 +183,28 @@ tompkins_inc %>%
 ```{r}
 # default breaks
 ggplot(data = tompkins_inc) +
-  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  geom_sf(mapping = aes(fill = medincomeE, color = medincomeE)) +
   scale_fill_binned_sequential(
     palette = "viridis",
     rev = FALSE,
     aesthetics = c("fill", "color"),
-    labels = scales::label_dollar()
+    labels = label_dollar()
   ) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 
 # quintiles
 ggplot(data = tompkins_inc) +
-  geom_sf(mapping = aes(fill = estimate, color = estimate)) +
+  geom_sf(mapping = aes(fill = medincomeE, color = medincomeE)) +
   scale_fill_binned_sequential(
     palette = "viridis",
     rev = FALSE,
     aesthetics = c("fill", "color"),
     n.breaks = 4, nice.breaks = FALSE,
-    labels = scales::label_dollar()
+    labels = label_dollar()
   ) +
   # increase interpretability of graph
-  labs(
-    title = "Median household income in Tompkins County, NY",
-    subtitle = "In 2020",
-    color = NULL,
-    fill = NULL,
-    caption = "Source: American Community Survey"
-  )
+  map_labels
 ```
 
     {{< /spoiler >}}
