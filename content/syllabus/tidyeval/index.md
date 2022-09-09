@@ -28,7 +28,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/tidy-evaluation/"
+url_slides: "/slides/tidy-eval/"
 url_video: ""
 url_code: ""
 
@@ -40,6 +40,10 @@ math: false
 
 ## Overview
 
+- Introduce tidy evaluation (and non-standard evaluation generally)
+- Distinguish data masking from tidy selection
+- Build functions that call `tidyverse` functions, using bare-name arguments
+- Recognize other ways to use tidy eval
 
 ## Before class
 
@@ -47,6 +51,10 @@ math: false
 
 ## Class materials
 
+
+## Acknowledgments
+
+- Lesson drawn from ["Building tidy tools"](https://rstudio-conf-2022.github.io/build-tidy-tools/) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/)
 
 ## What you need to do after class
 
