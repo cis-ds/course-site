@@ -25,6 +25,39 @@ class: center, middle, inverse, title-slide
 
 
 
+&lt;img src="https://media.giphy.com/media/krkrHAEodHgzP72rTI/giphy.gif" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## `starwars`
+
+
+```r
+starwars
+```
+
+```
+## # A tibble: 87 × 14
+##    name        height  mass hair_…¹ skin_…² eye_c…³ birth…⁴ sex   gender homew…⁵
+##    &lt;chr&gt;        &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  
+##  1 Luke Skywa…    172    77 blond   fair    blue       19   male  mascu… Tatooi…
+##  2 C-3PO          167    75 &lt;NA&gt;    gold    yellow    112   none  mascu… Tatooi…
+##  3 R2-D2           96    32 &lt;NA&gt;    white,… red        33   none  mascu… Naboo  
+##  4 Darth Vader    202   136 none    white   yellow     41.9 male  mascu… Tatooi…
+##  5 Leia Organa    150    49 brown   light   brown      19   fema… femin… Aldera…
+##  6 Owen Lars      178   120 brown,… light   blue       52   male  mascu… Tatooi…
+##  7 Beru White…    165    75 brown   light   blue       47   fema… femin… Tatooi…
+##  8 R5-D4           97    32 &lt;NA&gt;    white,… red        NA   none  mascu… Tatooi…
+##  9 Biggs Dark…    183    84 black   light   brown      24   male  mascu… Tatooi…
+## 10 Obi-Wan Ke…    182    77 auburn… fair    blue-g…    57   male  mascu… Stewjon
+## # … with 77 more rows, 4 more variables: species &lt;chr&gt;, films &lt;list&gt;,
+## #   vehicles &lt;list&gt;, starships &lt;list&gt;, and abbreviated variable names
+## #   ¹​hair_color, ²​skin_color, ³​eye_color, ⁴​birth_year, ⁵​homeworld
+## # ℹ Use `print(n = ...)` to see more rows, and `colnames()` to see all variable names
+```
+
+---
+
 class: inverse, middle
 
 # Motivation for tidy eval
@@ -39,12 +72,13 @@ Tidy eval (and non-standard evaluation generally in R) exists so that we can ref
 
 ```r
 # base R with standard evaluation
-penguins[penguins[["species"]] == "Adelie", ]
+starwars[starwars[["species"]] == "Droid", ]
+starwars[starwars$species == "Droid", ]
 ```
 
 ```r
 # dplyr with tidy evaluation
-dplyr::filter(.data = penguins, species == "Adelie")
+dplyr::filter(.data = starwars, species == "Droid")
 ```
 
 --
@@ -61,8 +95,8 @@ There are two families of tidy-eval functions:
 - **data-masking**: evaluate variables in context of data frame
 
     ```r
-    penguins %&gt;%
-      dplyr::mutate(body_mass_kg = body_mass_g / 1000)
+    starwars %&gt;%
+      dplyr::mutate(height_m = height / 100)
     ```
     
 --
@@ -71,29 +105,29 @@ There are two families of tidy-eval functions:
 - **tidy-select**: specify columns within a data frame
  
     ```r
-    penguins %&gt;%
-     dplyr::select(starts_with("bill"))
+    starwars %&gt;%
+     dplyr::select(ends_with("color"))
     ```
 
 ---
 
 ## Ways to express tidy-eval 
 
-- using bare names, what we do in interactive programming:
+- Using bare names, what we do in interactive programming:
 
     ```r
-    penguins %&gt;%
-      dplyr::mutate(body_mass_kg = body_mass_g / 1000)
+    starwars %&gt;%
+      dplyr::mutate(height_m = height / 100)
     ```
 
 --
 
 
-- using strings, useful for Shiny :
+- Using strings, useful for Shiny:
 
     ```r
-    penguins %&gt;%
-      dplyr::mutate("body_mass_kg" := .data[["body_mass_g"]] / 1000)
+    starwars %&gt;%
+      dplyr::mutate("height_m" := .data[["height"]] / 100)
     ```
 
 ---
@@ -115,6 +149,12 @@ Out of scope:
 
 ---
 
+class: inverse, middle
+
+# Pass the dots
+
+---
+
 ## Pass the dots
 
 This is the simplest possible solution. 
@@ -131,6 +171,236 @@ my_select &lt;- function(.data, ...) {
   dplyr::select(.data, ...)
 }
 ```
+
+---
+
+## Pass the dots
+
+### Goal
+
+Write a function `sw_gender()` to use `dplyr::filter()` to filter by gender:
+
+```r
+sw_gender(data = starwars, gender == "feminine")
+```
+
+equivalent to:
+
+```r
+starwars %&gt;%
+  dplyr::filter(gender == "feminine")
+```
+
+---
+
+## Pass the dots
+
+
+```r
+sw_gender &lt;- function(.data, ...){
+  .data %&gt;%
+    dplyr::filter(...)
+}
+
+sw_gender(.data = starwars, gender == "feminine")
+```
+
+```
+## # A tibble: 17 × 14
+##    name        height  mass hair_…¹ skin_…² eye_c…³ birth…⁴ sex   gender homew…⁵
+##    &lt;chr&gt;        &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  
+##  1 Leia Organa    150  49   brown   light   brown        19 fema… femin… Aldera…
+##  2 Beru White…    165  75   brown   light   blue         47 fema… femin… Tatooi…
+##  3 Mon Mothma     150  NA   auburn  fair    blue         48 fema… femin… Chandr…
+##  4 Shmi Skywa…    163  NA   black   fair    brown        72 fema… femin… Tatooi…
+##  5 Ayla Secura    178  55   none    blue    hazel        48 fema… femin… Ryloth 
+##  6 Adi Gallia     184  50   none    dark    blue         NA fema… femin… Corusc…
+##  7 Cordé          157  NA   brown   light   brown        NA fema… femin… Naboo  
+##  8 Luminara U…    170  56.2 black   yellow  blue         58 fema… femin… Mirial 
+##  9 Barriss Of…    166  50   black   yellow  blue         40 fema… femin… Mirial 
+## 10 Dormé          165  NA   brown   light   brown        NA fema… femin… Naboo  
+## 11 Zam Wesell     168  55   blonde  fair, … yellow       NA fema… femin… Zolan  
+## 12 Taun We        213  NA   none    grey    black        NA fema… femin… Kamino 
+## 13 Jocasta Nu     167  NA   white   fair    blue         NA fema… femin… Corusc…
+## 14 R4-P17          96  NA   none    silver… red, b…      NA none  femin… &lt;NA&gt;   
+## 15 Shaak Ti       178  57   none    red, b… black        NA fema… femin… Shili  
+## 16 Rey             NA  NA   brown   light   hazel        NA fema… femin… &lt;NA&gt;   
+## 17 Padmé Amid…    165  45   brown   light   brown        46 fema… femin… Naboo  
+## # … with 4 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;, and abbreviated variable names ¹​hair_color, ²​skin_color,
+## #   ³​eye_color, ⁴​birth_year, ⁵​homeworld
+## # ℹ Use `colnames()` to see all variable names
+```
+
+---
+
+## Pass the dots
+
+`...` has a varying length
+
+
+```r
+sw_filter &lt;- function(.data, ...){
+  .data %&gt;%
+    dplyr::filter(...)
+}
+
+sw_filter(.data = starwars, gender == "feminine", species == "Human")
+```
+
+```
+## # A tibble: 9 × 14
+##   name         height  mass hair_…¹ skin_…² eye_c…³ birth…⁴ sex   gender homew…⁵
+##   &lt;chr&gt;         &lt;int&gt; &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt; &lt;chr&gt;  &lt;chr&gt;  
+## 1 Leia Organa     150    49 brown   light   brown        19 fema… femin… Aldera…
+## 2 Beru Whites…    165    75 brown   light   blue         47 fema… femin… Tatooi…
+## 3 Mon Mothma      150    NA auburn  fair    blue         48 fema… femin… Chandr…
+## 4 Shmi Skywal…    163    NA black   fair    brown        72 fema… femin… Tatooi…
+## 5 Cordé           157    NA brown   light   brown        NA fema… femin… Naboo  
+## 6 Dormé           165    NA brown   light   brown        NA fema… femin… Naboo  
+## 7 Jocasta Nu      167    NA white   fair    blue         NA fema… femin… Corusc…
+## 8 Rey              NA    NA brown   light   hazel        NA fema… femin… &lt;NA&gt;   
+## 9 Padmé Amida…    165    45 brown   light   brown        46 fema… femin… Naboo  
+## # … with 4 more variables: species &lt;chr&gt;, films &lt;list&gt;, vehicles &lt;list&gt;,
+## #   starships &lt;list&gt;, and abbreviated variable names ¹​hair_color, ²​skin_color,
+## #   ³​eye_color, ⁴​birth_year, ⁵​homeworld
+## # ℹ Use `colnames()` to see all variable names
+```
+
+---
+
+class: inverse, middle
+
+# Data masking
+
+---
+
+## Data masking
+
+Makes data manipulation faster by reducing the amount of typing
+
+#### Base R
+
+```r
+starwars[starwars$homeworld == "Naboo" &amp; starwars$species == "Human", ,]
+```
+
+#### Tidy eval
+
+```r
+starwars %&gt;% filter(homeworld == "Naboo", species == "Human")
+```
+
+---
+
+## Environment vs. data variables
+
+- Environment (`.env`) variables - programming variables inside an environment
+
+    - Usually created with `&lt;-`
+    
+- Data (`.data`) variables - "statistical" variables that live in a data frame
+
+--
+
+
+```r
+df &lt;- data.frame(x = runif(3), y = runif(3))
+df$x
+```
+
+```
+## [1] 0.1137034 0.6222994 0.6092747
+```
+
+--
+
+For *data-masking* functions, make explicit how to evaluate variables
+
+---
+
+## Pronouns: `.data`, `.env`
+
+
+```r
+starwars %&gt;% nrow()
+```
+
+```
+## [1] 87
+```
+
+--
+
+
+```r
+starwars %&gt;% filter(gender == "feminine") %&gt;% nrow()
+```
+
+```
+## [1] 17
+```
+
+--
+
+
+```r
+n_mass &lt;- 50
+starwars %&gt;% filter(mass &gt; n_mass) %&gt;% nrow()
+```
+
+```
+## [1] 46
+```
+
+---
+
+## Pronouns: `.data`, `.env` (cont.)
+
+
+```r
+n_mass &lt;- 50
+starwars %&gt;% filter(mass &gt; n_mass) %&gt;% nrow()
+```
+
+```
+## [1] 46
+```
+
+--
+
+
+```r
+mass &lt;- 50
+starwars %&gt;% filter(mass &gt; mass) %&gt;% nrow()
+```
+
+```
+## [1] 0
+```
+
+--
+
+
+```r
+mass &lt;- 50
+starwars %&gt;% filter(.data$mass &gt; .env$mass) %&gt;% nrow()
+```
+
+```
+## [1] 46
+```
+
+
+
+
+
+
+
+
+
+
+
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

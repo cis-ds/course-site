@@ -107,13 +107,26 @@ source(here::here("R", "slide-opts.R"))
 
 ```{r pkgs, include = FALSE, cache = FALSE}
 library(tidyverse)
-library(palmerpenguins)
 library(here)
 library(countdown)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = rcis::base_size))
 ```
+
+```{r star-wars-gif, echo = FALSE}
+include_graphics(path = "https://media.giphy.com/media/krkrHAEodHgzP72rTI/giphy.gif")
+```
+
+---
+
+## `starwars`
+
+```{r starwars}
+starwars
+```
+
+---
 
 class: inverse, middle
 
@@ -129,12 +142,13 @@ Tidy eval (and non-standard evaluation generally in R) exists so that we can ref
 
 ```r
 # base R with standard evaluation
-penguins[penguins[["species"]] == "Adelie", ]
+starwars[starwars[["species"]] == "Droid", ]
+starwars[starwars$species == "Droid", ]
 ```
 
 ```r
 # dplyr with tidy evaluation
-dplyr::filter(.data = penguins, species == "Adelie")
+dplyr::filter(.data = starwars, species == "Droid")
 ```
 
 --
@@ -151,8 +165,8 @@ There are two families of tidy-eval functions:
 - **data-masking**: evaluate variables in context of data frame
 
     ```r
-    penguins %>%
-      dplyr::mutate(body_mass_kg = body_mass_g / 1000)
+    starwars %>%
+      dplyr::mutate(height_m = height / 100)
     ```
     
 --
@@ -161,29 +175,29 @@ There are two families of tidy-eval functions:
 - **tidy-select**: specify columns within a data frame
  
     ```r
-    penguins %>%
-     dplyr::select(starts_with("bill"))
+    starwars %>%
+     dplyr::select(ends_with("color"))
     ```
 
 ---
 
 ## Ways to express tidy-eval 
 
-- using bare names, what we do in interactive programming:
+- Using bare names, what we do in interactive programming:
 
     ```r
-    penguins %>%
-      dplyr::mutate(body_mass_kg = body_mass_g / 1000)
+    starwars %>%
+      dplyr::mutate(height_m = height / 100)
     ```
 
 --
 
 
-- using strings, useful for Shiny :
+- Using strings, useful for Shiny:
 
     ```r
-    penguins %>%
-      dplyr::mutate("body_mass_kg" := .data[["body_mass_g"]] / 1000)
+    starwars %>%
+      dplyr::mutate("height_m" := .data[["height"]] / 100)
     ```
 
 ---
@@ -205,6 +219,12 @@ Out of scope:
 
 ---
 
+class: inverse, middle
+
+# Pass the dots
+
+---
+
 ## Pass the dots
 
 This is the simplest possible solution. 
@@ -221,3 +241,150 @@ my_select <- function(.data, ...) {
   dplyr::select(.data, ...)
 }
 ```
+
+---
+
+## Pass the dots
+
+### Goal
+
+Write a function `sw_gender()` to use `dplyr::filter()` to filter by gender:
+
+```r
+sw_gender(data = starwars, gender == "feminine")
+```
+
+equivalent to:
+
+```r
+starwars %>%
+  dplyr::filter(gender == "feminine")
+```
+
+---
+
+## Pass the dots
+
+```{r filter-dots}
+sw_gender <- function(.data, ...){
+  .data %>%
+    dplyr::filter(...)
+}
+
+sw_gender(.data = starwars, gender == "feminine")
+```
+
+---
+
+## Pass the dots
+
+`...` has a varying length
+
+```{r filter-dots-multiple}
+sw_filter <- function(.data, ...){
+  .data %>%
+    dplyr::filter(...)
+}
+
+sw_filter(.data = starwars, gender == "feminine", species == "Human")
+```
+
+---
+
+class: inverse, middle
+
+# Data masking
+
+---
+
+## Data masking
+
+Makes data manipulation faster by reducing the amount of typing
+
+#### Base R
+
+```r
+starwars[starwars$homeworld == "Naboo" & starwars$species == "Human", ,]
+```
+
+#### Tidy eval
+
+```r
+starwars %>% filter(homeworld == "Naboo", species == "Human")
+```
+
+---
+
+## Environment vs. data variables
+
+- Environment (`.env`) variables - programming variables inside an environment
+
+    - Usually created with `<-`
+    
+- Data (`.data`) variables - "statistical" variables that live in a data frame
+
+--
+
+```{r data-env-vars}
+df <- data.frame(x = runif(3), y = runif(3))
+df$x
+```
+
+--
+
+For *data-masking* functions, make explicit how to evaluate variables
+
+---
+
+## Pronouns: `.data`, `.env`
+
+```{r}
+starwars %>% nrow()
+```
+
+--
+
+```{r}
+starwars %>% filter(gender == "feminine") %>% nrow()
+```
+
+--
+
+```{r}
+n_mass <- 50
+starwars %>% filter(mass > n_mass) %>% nrow()
+```
+
+---
+
+## Pronouns: `.data`, `.env` (cont.)
+
+```{r}
+n_mass <- 50
+starwars %>% filter(mass > n_mass) %>% nrow()
+```
+
+--
+
+```{r}
+mass <- 50
+starwars %>% filter(mass > mass) %>% nrow()
+```
+
+--
+
+```{r}
+mass <- 50
+starwars %>% filter(.data$mass > .env$mass) %>% nrow()
+```
+
+
+
+
+
+
+
+
+
+
+
