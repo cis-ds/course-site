@@ -2,7 +2,7 @@
 title: "Tidy evaluation"
 date: 2022-09-21T12:25:00-05:00
 publishDate: 2019-04-24T12:25:00-05:00
-draft: false
+draft: true
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.

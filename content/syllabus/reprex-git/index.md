@@ -1,12 +1,12 @@
 ---
 title: "Reproducible examples"
-date: 2022-09-28T12:25:00-05:00
+date: 2022-09-26T12:25:00-05:00
 publishDate: 2019-05-01T12:25:00-05:00
 draft: false
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
-time_end: 2022-09-28T14:20:00-05:00
+time_end: 2022-09-26T14:20:00-05:00
 all_day: false
 
 # Authors. Comma separated list, e.g. `["Bob Smith", "David Jones"]`.
