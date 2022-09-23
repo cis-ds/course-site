@@ -82,7 +82,7 @@ The data is structured in a tidy fashion.
 * `scdb-case.csv` contains one row for every case and one column for every variable
 * `scdb-vote.csv` contains one row for every vote by a justice in every case and one column for every variable
 
-The current dataset contains information on every case decided from the 1791-2020 terms.[^terms] There are several ID variables which are useful for other types of research: for our purposes, the only ID variable you need to concern yourself with is `caseIssuesId`. Variables you will want to familiarize yourself with include:
+The current dataset contains information on every case decided from the 1791-2020 terms.[^terms] There are several ID variables which can be used to join the data frames, specifically `caseId`, `docketId`, `caseIssuesId`, and `term`. Substantively all are irrelevant for the tasks below except for `term`. Variables you will want to familiarize yourself with include:
 
 * `chief`
 * `dateDecision`
