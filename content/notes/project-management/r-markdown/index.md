@@ -20,8 +20,14 @@ weight: 94
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("cis-ds/a-deep-dive-into-r-markdown")
+usethis::use_course("cis-ds/a-deep-dive-into-quarto")
 ```
+
+{{% /callout %}}
+
+{{% callout warning %}}
+
+These notes are undergoing revisions to be updated for Quarto documents. They do not match the current course content.
 
 {{% /callout %}}
 
@@ -547,7 +553,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-25
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -560,7 +566,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
-##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  cli             3.4.0      2022-09-08 [1] CRAN (R 4.2.0)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -588,12 +594,12 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  lifecycle       1.0.2      2022-09-09 [1] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
-##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pillar          1.8.1      2022-08-19 [1] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
@@ -601,7 +607,7 @@ This creates a temporary R script which contains the single command `rmarkdown::
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
-##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang           1.0.5      2022-08-31 [1] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)

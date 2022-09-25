@@ -4,7 +4,7 @@ date: 2022-10-03T12:25:00-05:00
 publishDate: 2019-03-01T12:25:00-05:00
 draft: false
 
-aliases: ["/cm010.html"]
+aliases: ["/cm010.html", "/syllabus/r-markdown"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -37,9 +37,7 @@ url_code: ""
 math: false
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
@@ -57,8 +55,17 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Class materials
 
+{{% callout note %}}
+
+Run the code below in your console to download this exercise.
+
+```r
+usethis::use_course("cis-ds/a-deep-dive-into-quarto")
+```
+
+{{% /callout %}}
+
 * [A dive into R Markdown](/notes/r-markdown/)
 
 ## What you need to do after class
 
-* Complete the [debugging homework assignment](/homework/debugging-rmarkdown/)
