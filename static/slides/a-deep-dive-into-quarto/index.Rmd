@@ -1,5 +1,5 @@
 ---
-title: "A deep dive into R Markdown"
+title: "A deep dive into Quarto"
 author: "INFO 5940 <br /> Cornell University"
 output:
   xaringan::moon_reader:
@@ -122,7 +122,7 @@ theme_set(theme_minimal(base_size = rcis::base_size))
 
 class: inverse, middle
 
-# R Markdown
+# Quarto
 
 ---
 
@@ -132,17 +132,18 @@ include_graphics(path = "/img/data-science/base.png")
 
 ---
 
-## R Markdown basics
+## Quarto basics
 
 .tiny[
 ````{verbatim, echo = TRUE}
 ---
 title: "Gun deaths"
 date: "`r lubridate::today()`"
-output: html_document
+format: html
 ---
 
-```{r setup, include = FALSE}
+```{r setup}
+#| include: false
 library(tidyverse)
 library(rcis)
 
@@ -152,9 +153,10 @@ youth <- gun_deaths %>%
 
 # Gun deaths by age
 
-We have data about `r nrow(gun_deaths)` individuals killed by guns. Only `r nrow(gun_deaths) - nrow(youth)` are older than 65. The distribution of the remainder is shown below:
+We have data about `` `r knitr::inline_expr("nrow(gun_deaths)")` individuals killed by guns. Only `` `r knitr::inline_expr("nrow(gun_deaths) - nrow(youth)")` are older than 65. The distribution of the remainder is shown below:
 
-```{r youth-dist, echo = FALSE}
+```{r youth-dist}
+#| echo: false
 youth %>% 
   ggplot(aes(age)) + 
   geom_freqpoly(binwidth = 1)
@@ -169,6 +171,7 @@ youth %>%
   coord_flip() +
   labs(x = "Victim race")
 ```
+
 ````
 
 ]
@@ -178,8 +181,8 @@ youth %>%
 ## Major components
 
 1. A **YAML header** surrounded by `---`s
-1. **Chunks** of R code surounded by ` ``` `
-1. Text mixed with simple text formatting using the [Markdown syntax](../hw01-edit-README.html)
+1. **Chunks** of code surounded by ` ``` `
+1. Text mixed with simple text formatting using the [Markdown syntax](https://quarto.org/docs/authoring/markdown-basics.html)
 
 ---
 
@@ -189,7 +192,7 @@ class: inverse, middle
 
 ---
 
-## Knitting process
+## Rendering process
 
 ```{r echo = FALSE, fig.alt = "A schematic representing rendering of Quarto documents from .qmd, to knitr or jupyter, to plain text markdown, then converted by pandoc into any number of output types including html, PDF, or Word document."}
 include_graphics(path = "/img/qmd_render_schema.png")
@@ -211,7 +214,7 @@ include_graphics(path = "/img/quarto_schematic.png")
 
 ## Stop, collaborate, and listen
 
-* Render `gun-deaths.Rmd` as an HTML document
+* Render `gun-deaths.qmd` as an HTML document
 * Add text describing the frequency polygon
 
 ```{r cache = FALSE, echo = FALSE}
@@ -223,7 +226,11 @@ countdown(minutes = 5)
 ## Code chunks
 
 ````{verbatim, lang = 'markdown', echo = TRUE}
-```{r youth-dist, echo = FALSE, message = FALSE, warning = FALSE}
+```{r youth-dist}
+#| echo: false
+#| message: false
+#| warning: false
+
 # code goes here
 ```
 ````
@@ -241,13 +248,63 @@ countdown(minutes = 5)
 
 ---
 
+## Dependencies
+
+.panelset[
+.panel[
+.panel-name[Incorrect caching]
+
+````{verbatim, echo = TRUE}
+```{r raw_data}
+rawdata <- readr::read_csv("a_very_large_file.csv")
+```
+    
+```{r processed_data}
+#| cache: true
+processed_data <- rawdata %>% 
+  filter(!is.na(import_var)) %>% 
+  mutate(new_variable = complicated_transformation(x, y, z))
+```
+````
+
+]
+
+.panel[
+.panel-name[Caching with dependencies]
+
+````{verbatim, echo = TRUE}
+```{r raw_data}
+rawdata <- readr::read_csv("a_very_large_file.csv")
+```
+
+```{r processed_data}
+#| cache: true
+#| dependson: "raw_data"
+processed_data <- rawdata %>% 
+  filter(!is.na(import_var)) %>% 
+  mutate(new_variable = complicated_transformation(x, y, z))
+```
+````
+
+]
+]
+
+---
+
 ## Global options
 
-```r
-knitr::opts_chunk$set(
-  echo = FALSE
-)
-```
+````verbatim
+---
+title: "My Document"
+format: html
+knitr:
+  opts_chunk: 
+    collapse: true
+    echo: true
+---
+````
+
+- Default document-level chunk options
 
 ---
 
@@ -287,53 +344,62 @@ class: inverse, middle
 
 ## YAML header
 
-```{r yml-default}
-yml_default <- yml() %>%
-  yml_title("Gun deaths") %>%
-  yml_author("Benjamin Soltoff") %>%
-  yml_date(lubridate::today())
-```
-
-```{r yml-basic, comment = "", dependson = "yml-default"}
-yml_default %>%
-  yml_output(github_document())
+```verbatim
+---
+title: Gun deaths
+author: Benjamin Soltoff
+date: '2022-09-25'
+format: gfm
+---
 ```
 
 * **Y**et **A**nother **M**arkup **L**anguage
 * Standardized format for storing hierarchical data in a human-readable syntax
-* Defines how `rmarkdown` renders your `.Rmd` file
+* Defines how `quarto` renders your `.qmd` file
 
 ---
 
 ## HTML document
 
-```{r yml-html, comment = "", dependson = "yml-default"}
-yml_default %>%
-  yml_output(html_document())
+```verbatim
+---
+title: Gun deaths
+author: Benjamin Soltoff
+date: '2022-09-25'
+format: html
+---
 ```
 
 ---
 
 ## Table of contents
 
-```{r yml-toc, comment = "", dependson = "yml-default"}
-yml_default %>%
-  yml_output(html_document(
-    toc = TRUE,
-    toc_depth = 2L
-  ))
+```verbatim
+---
+title: Gun deaths
+author: Benjamin Soltoff
+date: '2022-09-25'
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
 ```
 
 ---
 
 ## Appearance and style
 
-```{r yml-theme, comment = "", dependson = "yml-default"}
-yml_default %>%
-  yml_output(html_document(
-    theme = "readable",
-    highlight = "pygments"
-  ))
+```verbatim
+---
+title: Gun deaths
+author: Benjamin Soltoff
+date: '2022-09-25'
+format:
+  html:
+    theme: superhero
+    highlight: github
+---
 ```
 
 ---
@@ -341,8 +407,8 @@ yml_default %>%
 ## Something grabs a hold of me tightly
 
 * Add a table of contents
-* Use the `"cerulean"` theme
-* Modify the figures so they are 8x6
+* Use the `"minty"` theme
+* Modify the figures so they are 8 inches tall by 6 inches wide
 
 ```{r cache = FALSE, echo = FALSE}
 countdown(minutes = 7)
@@ -352,35 +418,29 @@ countdown(minutes = 7)
 
 ## PDF document
 
-```{r yml-pdf, comment = "", dependson = "yml-default"}
-yml_default %>%
-  yml_output(pdf_document())
-```
-
+```verbatim
 ---
-
-## Presentations
-
-* [ioslides](http://rmarkdown.rstudio.com/ioslides_presentation_format.html)
-* [reveal.js](http://rmarkdown.rstudio.com/revealjs_presentation_format.html)
-* [Slidy](http://rmarkdown.rstudio.com/slidy_presentation_format.html)
-* [Beamer](http://rmarkdown.rstudio.com/beamer_presentation_format.html)
-* [`xaringan`](https://bookdown.org/yihui/rmarkdown/xaringan.html)
+title: Gun deaths
+author: Benjamin Soltoff
+date: '2022-09-25'
+format: pdf
+---
+```
 
 ---
 
 ## `render()`
 
 ```r
-rmarkdown::render("my-document.Rmd", output_format = "html_document")
-rmarkdown::render("my-document.Rmd", output_format = "all")
+quarto::quarto_render("my-document.qmd", output_format = "html")
+quarto::quarto_render("my-document.qmd", output_format = "all")
 ```
 
 ---
 
 ## Flow like a harpoon daily and nightly
 
-* Render `gun-deaths.Rmd` as both an HTML document and a PDF document
+* Render `gun-deaths.qmd` as both an HTML document and a PDF document
     * If you do not have $\LaTeX$ installed, render as an HTML document and a Word document
 
 ```{r cache = FALSE, echo = FALSE}
