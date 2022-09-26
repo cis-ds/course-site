@@ -35,6 +35,6 @@ Follow instructions on [homework workflow](/faq/homework-guidelines/#homework-wo
 
 Needs improvement: The R script has not been successfully fixed.
 
-Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow (both the code and the output). Nothing spectacular, either bad or good.
+Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to follow. Nothing spectacular, either bad or good.
 
-Excellent: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Broken Quarto document successfully knits.
+Excellent: Repository contains a detailed `README.md` explaining how the files in the repo should be executed. Code incorporates appropriate warnings or messages where useful.
