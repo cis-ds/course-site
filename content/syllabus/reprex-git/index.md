@@ -4,6 +4,8 @@ date: 2022-09-26T12:25:00-05:00
 publishDate: 2019-05-01T12:25:00-05:00
 draft: false
 
+aliases: ["/syllabus/reproducible-examples-and-git/"]
+
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
 time_end: 2022-09-26T14:20:00-05:00
@@ -28,7 +30,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/reproducible-examples-and-git/"
+url_slides: "/slides/reproducible-examples/"
 url_video: ""
 url_code: ""
 
@@ -43,14 +45,12 @@ math: false
 * Define a minimal reproducible example
 * Introduce the `reprex` package
 * Practice generating reproducible examples
-* Identify common problems with Git and explain how to resolve these problems
 
 ## Before class
 
 ## Class materials
 
 * [Generating a reproducible example](/notes/reproducible-examples/)
-* [Recovering from common Git predicaments](/notes/common-git-problems/)
 
 ## Additional resources
 
@@ -59,4 +59,3 @@ math: false
 
 ## What you need to do after class
 
-* Complete the [generating reproducible research homework assignment](/homework/reproducible-research/)
