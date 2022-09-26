@@ -18,7 +18,7 @@ weight: 88
 Run the code below in your console to download this exercise as a set of R scripts.
 
 ```r
-usethis::use_course("cis-ds/reproducible-examples-and-git")
+usethis::use_course("cis-ds/reproducible-examples")
 ```
 
 {{% /callout %}}
@@ -169,7 +169,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-09-26
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -178,7 +178,7 @@ sessioninfo::session_info()
 ##  bookdown      0.27    2022-06-14 [2] CRAN (R 4.2.0)
 ##  bslib         0.4.0   2022-07-16 [2] CRAN (R 4.2.0)
 ##  cachem        1.0.6   2021-08-19 [2] CRAN (R 4.2.0)
-##  cli           3.3.0   2022-04-25 [2] CRAN (R 4.2.0)
+##  cli           3.4.0   2022-09-08 [1] CRAN (R 4.2.0)
 ##  digest        0.6.29  2021-12-01 [2] CRAN (R 4.2.0)
 ##  evaluate      0.16    2022-08-09 [1] CRAN (R 4.2.1)
 ##  fastmap       1.1.0   2021-01-25 [2] CRAN (R 4.2.0)
@@ -189,7 +189,7 @@ sessioninfo::session_info()
 ##  knitr         1.39    2022-04-26 [2] CRAN (R 4.2.0)
 ##  magrittr      2.0.3   2022-03-30 [2] CRAN (R 4.2.0)
 ##  R6            2.5.1   2021-08-19 [2] CRAN (R 4.2.0)
-##  rlang         1.0.4   2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang         1.0.5   2022-08-31 [1] CRAN (R 4.2.0)
 ##  rmarkdown     2.14    2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot     2.0.3   2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi    0.13    2020-11-12 [2] CRAN (R 4.2.0)
