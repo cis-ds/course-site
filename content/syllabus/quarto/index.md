@@ -4,7 +4,7 @@ date: 2022-10-03T12:25:00-05:00
 publishDate: 2019-03-01T12:25:00-05:00
 draft: false
 
-aliases: ["/cm010.html"]
+aliases: ["/cm010.html", "/syllabus/r-markdown"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -46,17 +46,26 @@ math: false
 * Define `knitr` chunks
 * Implement chunk options to customize output
 * Practice different Quarto formats
-* Distinguish between R scripts (`.R`) and Quarto documents (`.Qmd`)
+* Distinguish between R scripts (`.R`) and Quarto documents (`.qmd`)
 
 ## Before class
 
-* Read chapters 27-29 in [R for Data Science](http://r4ds.had.co.nz) for more on R Markdown and document formats
+* Read [Tutorial: Hello, Quarto](https://quarto.org/docs/get-started/hello/rstudio.html)
 * Review [chapter 6](http://r4ds.had.co.nz/workflow-scripts.html) in *R for Data Science* for more info on scripts
 
 ## Class materials
+
+{{% callout note %}}
+
+Run the code below in your console to download this exercise.
+
+```r
+usethis::use_course("cis-ds/a-deep-dive-into-quarto")
+```
+
+{{% /callout %}}
 
 * [A dive into R Markdown](/notes/r-markdown/)
 
 ## What you need to do after class
 
-* Complete the [debugging homework assignment](/homework/debugging-rmarkdown/)
