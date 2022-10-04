@@ -1,0 +1,633 @@
+---
+title: "Excuse me, do you have a moment to talk about version control?"
+subtitle: "A dive into Git and GitHub"
+author: "INFO 5940 <br /> Cornell University"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE}
+# generate CSS file
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#B31B1B",
+  secondary_color = "#F8981D",
+  inverse_header_color = "#222222",
+  black_color = "#222222",
+  header_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  text_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  code_font_google = xaringanthemer::google_font("Source Code Pro"),
+  base_font_size = "24px",
+  code_font_size = "20px",
+  # title_slide_background_image = "https://github.com/uc-dataviz/course-notes/raw/main/images/hexsticker.svg",
+  # title_slide_background_size = "contain",
+  # title_slide_background_position = "top",
+  header_h1_font_size = "2rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.5rem",
+  extra_css = list(
+    "h1" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h2" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h3" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    ".tiny" = list("font-size" = "70%"),
+    ".small" = list("font-size" = "90%"),
+    ".midi" = list("font-size" = "150%"),
+    ".tiny .remark-code" = list("font-size" = "70%"),
+    ".small .remark-code" = list("font-size" = "90%"),
+    ".midi .remark-code" = list("font-size" = "150%"),
+    ".large" = list("font-size" = "200%"),
+    ".xlarge" = list("font-size" = "600%"),
+    ".huge" = list(
+      "font-size" = "400%",
+      "font-family" = "'Montserrat', sans-serif",
+      "font-weight" = "bold"
+    ),
+    ".hand" = list(
+      "font-family" = "'Gochi Hand', cursive",
+      "font-size" = "125%"
+    ),
+    ".task" = list(
+      "padding-right" = "10px",
+      "padding-left" = "10px",
+      "padding-top" = "3px",
+      "padding-bottom" = "3px",
+      "margin-bottom" = "6px",
+      "margin-top" = "6px",
+      "border-left" = "solid 5px #F1DE67",
+      "background-color" = "#F3D03E"
+    ),
+    ".pull-left" = list(
+      "width" = "49%",
+      "float" = "left"
+    ),
+    ".pull-right" = list(
+      "width" = "49%",
+      "float" = "right"
+    ),
+    ".pull-left-wide" = list(
+      "width" = "70%",
+      "float" = "left"
+    ),
+    ".pull-right-narrow" = list(
+      "width" = "27%",
+      "float" = "right"
+    ),
+    ".pull-left-narrow" = list(
+      "width" = "27%",
+      "float" = "left"
+    ),
+    ".pull-right-wide" = list(
+      "width" = "70%",
+      "float" = "right"
+    ),
+    ".blue" = list(color = "#2A9BB7"),
+    ".purple" = list(color = "#a493ba"),
+    ".yellow" = list(color = "#f1de67"),
+    ".gray" = list(color = "#222222")
+  )
+)
+
+source(here::here("R", "slide-opts.R"))
+xaringanExtra::use_panelset()
+knitr::opts_chunk$set(
+  echo = FALSE
+)
+```
+
+```{r pkgs, include = FALSE, cache = FALSE}
+library(tidyverse)
+library(here)
+library(countdown)
+
+set.seed(1234)
+theme_set(theme_minimal(base_size = rcis::base_size))
+```
+
+class: inverse, middle
+
+# Git? What?
+
+---
+
+## Why Git?
+
+```{r fig.align = "center", out.width = "50%"}
+include_graphics(path = "/img/bryan-1.jpeg")
+```
+
+.footnote[Source: [Excuse Me, Do You Have a Moment to Talk About Version Control?](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+
+--
+
+- Version control system
+- Repository
+
+---
+
+## Why GitHub?
+
+```{r fig.align = "center", out.width = "50%"}
+include_graphics(path = "https://octodex.github.com/images/original.png")
+```
+
+.footnote[Source: [GitHub](https://www.github.com)]
+
+---
+
+## GitHub vs. GitHub Enterprise
+
+- <https://github.com>
+- <https://github.coecis.cornell.edu/>
+
+--
+
+What's the difference between them?
+
+---
+
+## Why bother?
+
+.pull-left[
+
+### Will it hurt?
+
+**Yes** `r emo::ji("shrug")`
+
+- More complicated workflow
+- Clunky at first
+- Need to break bad habits
+
+### What's the payoff?
+
+- Ease of access
+- Collaboration
+
+]
+
+--
+
+.pull-right[
+
+```{r fig.align = "center"}
+include_graphics(path = "https://media.giphy.com/media/JuWT34QY0AodfuweLa/giphy.gif")
+```
+
+]
+
+---
+
+class: inverse, middle
+
+# Configuring and using Git with `usethis`
+
+---
+
+## Configuring and using Git with `usethis`
+
+.pull-left[
+
+### `usethis`
+
+```r
+library(usethis)
+use_git_config(
+  user.name = "Jane Doe",
+  user.email = "jane@example.org"
+)
+```
+
+```r
+# default branch named 'main'
+git_default_branch_configure()
+```
+
+]
+
+--
+
+.pull-right[
+
+### From the shell
+
+```bash
+git config --global user.name 'Jane Doe'
+git config --global user.email 'jane@example.com'
+
+git config --global init.defaultBranch main
+```
+
+]
+
+---
+
+class: inverse, middle
+
+# New project, RStudio first
+
+---
+
+## `r emo::ji("stopwatch")` Create a local Git repo
+
+- Run `usethis::use_course("css-skills/practice-repo")` in the R console
+- Create Git repo with `use_git()`
+- Practice generating **commits**
+
+---
+
+## `r emo::ji("key")` Key terms
+
+- Stage
+- Commit
+- Push
+
+---
+
+## `.gitignore`
+
+```r
+usethis::edit_git_ignore(scope = "project")
+```
+
+---
+
+## Connect RStudio and GitHub
+
+- Interacting with GitHub
+- Providing **credentials**
+
+--
+
+### Authentication methods
+
+- Personal access token (PAT)
+- SSH key
+
+--
+
+`usethis` requires PAT
+
+---
+
+## `r emo::ji("stopwatch")` Painless authentication with PAT
+
+.panelset[
+
+.panel[
+
+.panel-name[GitHub Enterprise]
+```r
+usethis::create_github_token(
+  scopes = c("repo", "user", "gist", "workflow"),
+  description = "RStudio Workbench",
+  host = "https://github.coecis.cornell.edu/"
+)
+```
+
+```r
+gitcreds::gitcreds_set(url = "https://github.coecis.cornell.edu/")
+
+#> ? Enter password or token: ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#> -> Adding new credentials...
+#> -> Removing credentials from cache...
+#> -> Done.
+```
+
+]
+
+.panel[
+
+.panel-name[GitHub.com]
+
+```r
+usethis::create_github_token(
+  scopes = c("repo", "user", "gist", "workflow"),
+  description = "RStudio Workbench",
+  host = NULL
+)
+```
+
+```r
+gitcreds::gitcreds_set(url = "https://github.coecis.cornell.edu/")
+
+#> ? Enter password or token: ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#> -> Adding new credentials...
+#> -> Removing credentials from cache...
+#> -> Done.
+```
+
+]
+]
+
+---
+
+## `r emo::ji("stopwatch")` Connect project to GitHub
+
+```r
+usethis::use_github(host = "https://github.coecis.cornell.edu/")
+```
+
+--
+
+```{r fig.align = "center", out.width = "55%"}
+include_graphics(path = "https://media.giphy.com/media/vmon3eAOp1WfK/giphy.gif")
+```
+
+---
+
+## Get a sitrep
+
+```r
+usethis::git_sitrep()
+```
+
+---
+
+## Tired of setting `host`?
+
+Change the default GitHub host using `.Renviron`
+
+```r
+usethis::edit_r_environ(scope = "user")
+```
+
+--
+
+Add to the file:
+
+```
+GITHUB_API_URL="https://github.coecis.cornell.edu/"
+```
+
+--
+
+Restart R, then all `usethis` functions involving Git will always use GitHub Enterprise
+
+---
+
+class: inverse, middle
+
+# New project, GitHub first
+
+---
+
+## `r emo::ji("stopwatch")` New project, GitHub first
+
+Create a Git controlled project already connected to GitHub
+
+1. Make a repo on GitHub
+1. New RStudio Project via RStudio \> New Project \> Version Control \> Git
+1. Copy files from the first project to the new project
+    - Stage
+    - Commit
+    - Push
+
+---
+
+class: inverse, middle
+
+# Git for collaboration
+
+---
+
+## Git for collaboration
+
+```{r fig.align = "center", out.width = "50%"}
+include_graphics(path = "/img/bryan-2.jpeg")
+```
+
+.footnote[Source: [Excuse Me, Do You Have a Moment to Talk About Version Control?](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+
+---
+
+## Git for collaboration
+
+```{r fig.align = "center", out.width = "60%"}
+include_graphics(path = "/img/bryan-5.jpeg")
+```
+
+.footnote[Source: [Excuse Me, Do You Have a Moment to Talk About Version Control?](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+
+---
+
+## `r emo::ji("stopwatch")` Incorporating changes from GitHub
+
+1. Make a change on GitHub and commit
+1. **Pull** changes from GitHub locally
+
+---
+
+class: inverse, middle
+
+# Avoid messes with branches
+
+---
+
+## Branching
+
+```{r fig.align = "center"}
+include_graphics(path = "/img/01 Git branch.svg")
+```
+
+.footnote[Source: [Bitbucket tutorials](https://www.atlassian.com/git/tutorials/using-branches)]
+
+---
+
+## `r emo::ji("stopwatch")` Create a branch
+
+1. Create a branch using RStudio
+1. Modify a file in the repo
+1. Stage, commit, and push to GitHub
+1. Check the repo on GitHub - what has changed?
+
+---
+
+## Merging branches
+
+```{r fig.align = "center", out.width = "60%"}
+include_graphics(path = "/img/02 Branch-1 kopiera.png")
+```
+
+.footnote[Source: [Bitbucket tutorials](https://www.atlassian.com/git/tutorials/using-branches)]
+
+--
+
+```bash
+git checkout main
+git merge BRANCH-NAME
+```
+
+---
+
+## Merge conflicts
+
+```{r fig.align = "center"}
+include_graphics(path = "/img/car-merge.gif")
+```
+
+---
+
+## Merge conflicts
+
+```bash
+git merge documentation
+# Auto-merging README.md
+# CONFLICT (content): Merge conflict in README.md
+# Automatic merge failed; fix conflicts and then commit the result.
+```
+
+--
+
+```bash
+<<<<<<< HEAD:README.md
+Contact: ben@bensoltoff.com
+=======
+Please contact me at ben@bensoltoff.com
+>>>>>>> documentation:README.md
+```
+
+--
+
+- Resolving merge conflicts
+
+---
+
+## `r emo::ji("stopwatch")` Practice a merge conflict
+
+- Generate distinct changes in the README file
+    - One form locally
+    - Another form on GitHub
+- Attempt to push to GitHub
+- Pull from GitHub, resolve merge conflicts
+- Stage, commit, and push
+
+---
+
+class: inverse, middle
+
+# Contributing to internal projects
+
+---
+
+```{r fig.align = "center", out.width = "50%"}
+include_graphics(path = "/img/consent.jpg")
+```
+
+.footnote[Source: [Planned Parenthood](https://plannedparenthood.tumblr.com/post/175851570842/national-french-fry-day-is-today-but-you-can-use)]
+
+---
+
+## Pull requests
+
+- Inform others about changes you've pushed
+- Discuss and review potential changes with collaborators
+- Easily add follow-up commits before changes are merged
+
+---
+
+## `r emo::ji("stopwatch")` Create a pull request
+
+1. Open a pull request from your new branch
+1. Merge the pull request on GitHub
+1. Pull the revised `main` branch to your local repo
+
+---
+
+class: inverse, middle
+
+# Contributing to external projects
+
+---
+
+## Forking
+
+```{r fig.align = "center"}
+include_graphics(path = "https://media.giphy.com/media/U4XP86hPyfy29A9tbl/giphy.gif")
+```
+
+---
+
+## Forking
+
+```{r fig.align = "center"}
+include_graphics(path = "/img/fork-and-clone.png")
+```
+
+.footnote[Source: [Happy Git with R](https://happygitwithr.com/fork-and-clone.html)]
+
+---
+
+## Forking
+
+- `usethis`
+    
+    ```r
+    usethis::create_from_github(
+      repo_spec = "OWNER/REPO",
+      host = "https://github.coecis.cornell.edu/"
+    )
+    ```
+
+- Or interactively on GitHub
+
+---
+
+## `r emo::ji("stopwatch")` Forking
+
+1. Create a fork of [`cis/practice-repo`](https://github.coecis.cornell.edu/cis/practice-repo)
+1. Stage, commit, push a change to GitHub
+1. Open a pull request to the original repo
+
+---
+
+## Other useful GitHub features
+
+- Issues
+- Discussion forums
+- Private repos
+- [Free GitHub Pro while you are a student](https://education.github.com/discount_requests/student_application)
+
+---
+
+## Other useful `usethis` functions
+
+- [Pull request helpers](https://usethis.r-lib.org/articles/pr-functions.html)
+- [All the `usethis` git functions](https://usethis.r-lib.org/reference/index.html#git-and-github)
+
+---
+
+## Don't use RStudio much?
+
+Not required for Git!
+
+--
+
+
+- Pick a [Git client](https://git-scm.com/downloads/guis) (or do it all in the shell!)
+- Check if your IDE has Git integration
+- Use a [project-oriented workflow](https://rstats.wtf/project-oriented-workflow.html)
+
+---
+
+## When in doubt...
+
+```{r fig.align = "center", out.width = "30%"}
+include_graphics(path = "https://imgs.xkcd.com/comics/git.png")
+```
+
+.footnote[Source: [xkcd](https://xkcd.com/1597/)]

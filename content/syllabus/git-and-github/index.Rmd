@@ -4,6 +4,8 @@ date: 2022-10-17T12:25:00-05:00
 publishDate: 2019-05-01T12:25:00-05:00
 draft: false
 
+url: "/syllabus/git-and-github/"
+
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
 time_end: 2022-10-17T14:20:00-05:00
@@ -28,7 +30,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/intro-to-git/"
+url_slides: "/slides/git-and-github/"
 url_video: ""
 url_code: ""
 
