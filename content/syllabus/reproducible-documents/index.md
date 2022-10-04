@@ -50,6 +50,12 @@ math: false
 
 ## Class materials
 
+{{% callout note %}}
+
+Materials derived from [Getting Started with Quarto](https://rstudio-conf-2022.github.io/get-started-quarto/) by [Tom Mock](https://themockup.blog/).
+
+{{% /callout %}}
 
 ## What you need to do after class
 
+- Complete [the generating reproducible analysis homework assignment](/homework/reproducible-research/)
