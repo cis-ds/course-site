@@ -4,6 +4,8 @@ date: 2022-10-17T12:25:00-05:00
 publishDate: 2019-05-01T12:25:00-05:00
 draft: false
 
+url: "/syllabus/git-and-github/"
+
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
 time_end: 2022-10-17T14:20:00-05:00
@@ -28,7 +30,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/intro-to-git/"
+url_slides: "/slides/git-and-github/"
 url_video: ""
 url_code: ""
 
@@ -51,9 +53,11 @@ math: false
 
 ## Class materials
 
+See the slides.
 
 ## Additional resources
 
+- [Happy Git and GitHub for the useR](https://happygitwithr.com/index.html) by Jenny Bryan, the STAT 545 TAs, and Jim Hester - a comprehensive guide to "git"-ing started with Git, GitHub, and R/RStudio. Covers more complicated scenarios and workflows than we have time to cover in this class.
 
 ## What you need to do after class
 

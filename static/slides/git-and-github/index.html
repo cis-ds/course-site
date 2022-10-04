@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Excuse me, do you have a moment to talk about version control?</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="INFO 5940   Cornell University" />
+    <script src="index_files/header-attrs/header-attrs.js"></script>
+    <link href="index_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="index_files/panelset/panelset.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Excuse me, do you have a moment to talk about version control?
+]
+.subtitle[
+## A dive into Git and GitHub
+]
+.author[
+### INFO 5940 <br /> Cornell University
+]
+
+---
+
+
+
+
+
+
+class: inverse, middle
+
+# Git? What?
+
+---
+
+## Why Git?
+
+&lt;img src="../../../../../../../../img/bryan-1.jpeg" width="50%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Excuse Me, Do You Have a Moment to Talk About Version Control?](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+
+--
+
+- Version control system
+- Repository
+
+---
+
+## Why GitHub?
+
+&lt;img src="https://octodex.github.com/images/original.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [GitHub](https://www.github.com)]
+
+---
+
+## GitHub vs. GitHub Enterprise
+
+- &lt;https://github.com&gt;
+- &lt;https://github.coecis.cornell.edu/&gt;
+
+--
+
+What's the difference between them?
+
+---
+
+## Why bother?
+
+.pull-left[
+
+### Will it hurt?
+
+**Yes** 🤷
+
+- More complicated workflow
+- Clunky at first
+- Need to break bad habits
+
+### What's the payoff?
+
+- Ease of access
+- Collaboration
+
+]
+
+--
+
+.pull-right[
+
+&lt;img src="https://media.giphy.com/media/JuWT34QY0AodfuweLa/giphy.gif" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+class: inverse, middle
+
+# Configuring and using Git with `usethis`
+
+---
+
+## Configuring and using Git with `usethis`
+
+.pull-left[
+
+### `usethis`
+
+```r
+library(usethis)
+use_git_config(
+  user.name = "Jane Doe",
+  user.email = "jane@example.org"
+)
+```
+
+```r
+# default branch named 'main'
+git_default_branch_configure()
+```
+
+]
+
+--
+
+.pull-right[
+
+### From the shell
+
+```bash
+git config --global user.name 'Jane Doe'
+git config --global user.email 'jane@example.com'
+
+git config --global init.defaultBranch main
+```
+
+]
+
+---
+
+class: inverse, middle
+
+# New project, RStudio first
+
+---
+
+## ⏱ Create a local Git repo
+
+- Run `usethis::use_course("css-skills/practice-repo")` in the R console
+- Create Git repo with `use_git()`
+- Practice generating **commits**
+
+---
+
+## 🔑 Key terms
+
+- Stage
+- Commit
+- Push
+
+---
+
+## `.gitignore`
+
+```r
+usethis::edit_git_ignore(scope = "project")
+```
+
+---
+
+## Connect RStudio and GitHub
+
+- Interacting with GitHub
+- Providing **credentials**
+
+--
+
+### Authentication methods
+
+- Personal access token (PAT)
+- SSH key
+
+--
+
+`usethis` requires PAT
+
+---
+
+## ⏱ Painless authentication with PAT
+
+.panelset[
+
+.panel[
+
+.panel-name[GitHub Enterprise]
+```r
+usethis::create_github_token(
+  scopes = c("repo", "user", "gist", "workflow"),
+  description = "RStudio Workbench",
+  host = "https://github.coecis.cornell.edu/"
+)
+```
+
+```r
+gitcreds::gitcreds_set(url = "https://github.coecis.cornell.edu/")
+
+#&gt; ? Enter password or token: ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#&gt; -&gt; Adding new credentials...
+#&gt; -&gt; Removing credentials from cache...
+#&gt; -&gt; Done.
+```
+
+]
+
+.panel[
+
+.panel-name[GitHub.com]
+
+```r
+usethis::create_github_token(
+  scopes = c("repo", "user", "gist", "workflow"),
+  description = "RStudio Workbench",
+  host = NULL
+)
+```
+
+```r
+gitcreds::gitcreds_set(url = "https://github.coecis.cornell.edu/")
+
+#&gt; ? Enter password or token: ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#&gt; -&gt; Adding new credentials...
+#&gt; -&gt; Removing credentials from cache...
+#&gt; -&gt; Done.
+```
+
+]
+]
+
+---
+
+## ⏱ Connect project to GitHub
+
+```r
+usethis::use_github(host = "https://github.coecis.cornell.edu/")
+```
+
+--
+
+&lt;img src="https://media.giphy.com/media/vmon3eAOp1WfK/giphy.gif" width="55%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Get a sitrep
+
+```r
+usethis::git_sitrep()
+```
+
+---
+
+## Tired of setting `host`?
+
+Change the default GitHub host using `.Renviron`
+
+```r
+usethis::edit_r_environ(scope = "user")
+```
+
+--
+
+Add to the file:
+
+```
+GITHUB_API_URL="https://github.coecis.cornell.edu/"
+```
+
+--
+
+Restart R, then all `usethis` functions involving Git will always use GitHub Enterprise
+
+---
+
+class: inverse, middle
+
+# New project, GitHub first
+
+---
+
+## ⏱ New project, GitHub first
+
+Create a Git controlled project already connected to GitHub
+
+1. Make a repo on GitHub
+1. New RStudio Project via RStudio \&gt; New Project \&gt; Version Control \&gt; Git
+1. Copy files from the first project to the new project
+    - Stage
+    - Commit
+    - Push
+
+---
+
+class: inverse, middle
+
+# Git for collaboration
+
+---
+
+## Git for collaboration
+
+&lt;img src="../../../../../../../../img/bryan-2.jpeg" width="50%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Excuse Me, Do You Have a Moment to Talk About Version Control?](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+
+---
+
+## Git for collaboration
+
+&lt;img src="../../../../../../../../img/bryan-5.jpeg" width="60%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Excuse Me, Do You Have a Moment to Talk About Version Control?](https://www.tandfonline.com/doi/full/10.1080/00031305.2017.1399928)]
+
+---
+
+## ⏱ Incorporating changes from GitHub
+
+1. Make a change on GitHub and commit
+1. **Pull** changes from GitHub locally
+
+---
+
+class: inverse, middle
+
+# Avoid messes with branches
+
+---
+
+## Branching
+
+&lt;img src="../../../../../../../../img/01 Git branch.svg" width="80%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Bitbucket tutorials](https://www.atlassian.com/git/tutorials/using-branches)]
+
+---
+
+## ⏱ Create a branch
+
+1. Create a branch using RStudio
+1. Modify a file in the repo
+1. Stage, commit, and push to GitHub
+1. Check the repo on GitHub - what has changed?
+
+---
+
+## Merging branches
+
+&lt;img src="../../../../../../../../img/02 Branch-1 kopiera.png" width="60%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Bitbucket tutorials](https://www.atlassian.com/git/tutorials/using-branches)]
+
+--
+
+```bash
+git checkout main
+git merge BRANCH-NAME
+```
+
+---
+
+## Merge conflicts
+
+&lt;img src="../../../../../../../../img/car-merge.gif" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Merge conflicts
+
+```bash
+git merge documentation
+# Auto-merging README.md
+# CONFLICT (content): Merge conflict in README.md
+# Automatic merge failed; fix conflicts and then commit the result.
+```
+
+--
+
+```bash
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD:README.md
+Contact: ben@bensoltoff.com
+=======
+Please contact me at ben@bensoltoff.com
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; documentation:README.md
+```
+
+--
+
+- Resolving merge conflicts
+
+---
+
+## ⏱ Practice a merge conflict
+
+- Generate distinct changes in the README file
+    - One form locally
+    - Another form on GitHub
+- Attempt to push to GitHub
+- Pull from GitHub, resolve merge conflicts
+- Stage, commit, and push
+
+---
+
+class: inverse, middle
+
+# Contributing to internal projects
+
+---
+
+&lt;img src="../../../../../../../../img/consent.jpg" width="50%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Planned Parenthood](https://plannedparenthood.tumblr.com/post/175851570842/national-french-fry-day-is-today-but-you-can-use)]
+
+---
+
+## Pull requests
+
+- Inform others about changes you've pushed
+- Discuss and review potential changes with collaborators
+- Easily add follow-up commits before changes are merged
+
+---
+
+## ⏱ Create a pull request
+
+1. Open a pull request from your new branch
+1. Merge the pull request on GitHub
+1. Pull the revised `main` branch to your local repo
+
+---
+
+class: inverse, middle
+
+# Contributing to external projects
+
+---
+
+## Forking
+
+&lt;img src="https://media.giphy.com/media/U4XP86hPyfy29A9tbl/giphy.gif" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Forking
+
+&lt;img src="../../../../../../../../img/fork-and-clone.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [Happy Git with R](https://happygitwithr.com/fork-and-clone.html)]
+
+---
+
+## Forking
+
+- `usethis`
+    
+    ```r
+    usethis::create_from_github(
+      repo_spec = "OWNER/REPO",
+      host = "https://github.coecis.cornell.edu/"
+    )
+    ```
+
+- Or interactively on GitHub
+
+---
+
+## ⏱ Forking
+
+1. Create a fork of [`cis/practice-repo`](https://github.coecis.cornell.edu/cis/practice-repo)
+1. Stage, commit, push a change to GitHub
+1. Open a pull request to the original repo
+
+---
+
+## Other useful GitHub features
+
+- Issues
+- Discussion forums
+- Private repos
+- [Free GitHub Pro while you are a student](https://education.github.com/discount_requests/student_application)
+
+---
+
+## Other useful `usethis` functions
+
+- [Pull request helpers](https://usethis.r-lib.org/articles/pr-functions.html)
+- [All the `usethis` git functions](https://usethis.r-lib.org/reference/index.html#git-and-github)
+
+---
+
+## Don't use RStudio much?
+
+Not required for Git!
+
+--
+
+
+- Pick a [Git client](https://git-scm.com/downloads/guis) (or do it all in the shell!)
+- Check if your IDE has Git integration
+- Use a [project-oriented workflow](https://rstats.wtf/project-oriented-workflow.html)
+
+---
+
+## When in doubt...
+
+&lt;img src="https://imgs.xkcd.com/comics/git.png" width="30%" style="display: block; margin: auto;" /&gt;
+
+.footnote[Source: [xkcd](https://xkcd.com/1597/)]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "magula",
+"highlightLines": true,
+"highlightLanguage": "r",
+"ratio": "16:9",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
