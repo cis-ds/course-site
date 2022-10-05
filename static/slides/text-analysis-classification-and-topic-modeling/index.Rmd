@@ -12,7 +12,9 @@ output:
       countIncrementalSlides: false
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 # generate CSS file
 library(xaringanthemer)
 style_duo_accent(
@@ -106,7 +108,10 @@ source(here::here("R", "slide-opts.R"))
 xaringanExtra::use_panelset()
 ```
 
-```{r pkgs, include = FALSE, cache = FALSE}
+```{r}
+#| label = "pkgs",
+#| include = FALSE,
+#| cache = FALSE
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(
   collapse = TRUE
@@ -138,7 +143,9 @@ theme_set(theme_minimal(base_size = 16))
 
 # `USCongress`
 
-```{r get-docs, echo = FALSE}
+```{r}
+#| label = "get-docs",
+#| echo = FALSE
 # get USCongress data
 data(USCongress, package = "rcis")
 
@@ -164,7 +171,10 @@ congress <- as_tibble(USCongress) %>%
 glimpse(congress)
 ```
 
-```{r docs-example, dependson = "get-docs", echo = FALSE}
+```{r}
+#| label = "docs-example",
+#| dependson = "get-docs",
+#| echo = FALSE
 head(congress$text)
 ```
 
@@ -172,7 +182,9 @@ head(congress$text)
 
 # Split the data set
 
-```{r split, dependson = "get-docs"}
+```{r}
+#| label = "split",
+#| dependson = "get-docs"
 set.seed(123)
 
 # convert response variable to factor
@@ -194,7 +206,10 @@ congress_folds <- vfold_cv(data = congress_train, strata = major)
 
 # Class imbalance
 
-```{r major-topic-dist, dependson = "get-docs", echo = FALSE}
+```{r}
+#| label = "major-topic-dist",
+#| dependson = "get-docs",
+#| echo = FALSE
 ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
   geom_bar() +
   coord_flip() +
@@ -210,11 +225,15 @@ ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
 
 # Preprocessing the data frame
 
-```{r recipe, dependson = "split"}
+```{r}
+#| label = "recipe",
+#| dependson = "split"
 congress_rec <- recipe(major ~ text, data = congress_train)
 ```
 
-```{r recipe-steps, dependson = "recipe"}
+```{r}
+#| label = "recipe-steps",
+#| dependson = "recipe"
 library(textrecipes)
 
 congress_rec <- congress_rec %>%
@@ -229,7 +248,8 @@ congress_rec <- congress_rec %>%
 
 # Define the model
 
-```{r tree-spec}
+```{r}
+#| label = "tree-spec"
 tree_spec <- decision_tree() %>%
   set_mode("classification") %>%
   set_engine("C5.0")
@@ -241,13 +261,17 @@ tree_spec
 
 # Train the model
 
-```{r tree-wf, dependson = c("recipe-steps", "tree-spec")}
+```{r}
+#| label = "tree-wf",
+#| dependson = c("recipe-steps", "tree-spec")
 tree_wf <- workflow() %>%
   add_recipe(congress_rec) %>%
   add_model(tree_spec)
 ```
 
-```{r tree-fit, dependson = "tree-wf"}
+```{r}
+#| label = "tree-fit",
+#| dependson = "tree-wf"
 set.seed(123)
 
 tree_cv <- fit_resamples(
@@ -257,7 +281,9 @@ tree_cv <- fit_resamples(
 )
 ```
 
-```{r tree-metrics, dependson = "tree-fit"}
+```{r}
+#| label = "tree-metrics",
+#| dependson = "tree-fit"
 tree_cv_metrics <- collect_metrics(tree_cv)
 tree_cv_predictions <- collect_predictions(tree_cv)
 tree_cv_metrics
@@ -267,7 +293,10 @@ tree_cv_metrics
 
 # Confusion matrix
 
-```{r tree-confusion, dependson = "tree-metrics", echo = FALSE}
+```{r}
+#| label = "tree-confusion",
+#| dependson = "tree-metrics",
+#| echo = FALSE
 conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap") +
   scale_y_discrete(labels = function(x) str_wrap(x, 20)) +
@@ -290,7 +319,10 @@ conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
 
 ]
 
-```{r countdown, cache = FALSE, echo = FALSE}
+```{r}
+#| label = "countdown",
+#| cache = FALSE,
+#| echo = FALSE
 countdown(minutes = 15)
 ```
 
@@ -328,7 +360,9 @@ countdown(minutes = 15)
 
 # `appa`
 
-```{r echo = FALSE, out.width = "65%"}
+```{r}
+#| echo = FALSE,
+#| out.width = "65%"
 knitr::include_graphics(path = "/img/appa-avatar.gif", error = FALSE)
 ```
 
@@ -340,7 +374,8 @@ knitr::include_graphics(path = "/img/appa-avatar.gif", error = FALSE)
 remotes::install_github("averyrobbins1/appa")
 ```
 
-```{r appa}
+```{r}
+#| label = "appa"
 library(appa)
 data("appa")
 
@@ -351,7 +386,9 @@ glimpse(appa)
 
 # Create the recipe
 
-```{r appa-recipe, dependson = "appa"}
+```{r}
+#| label = "appa-recipe",
+#| dependson = "appa"
 appa_rec <- recipe(~ id + character_words, data = appa) %>%
   step_tokenize(character_words) %>%
   step_stopwords(character_words, stopword_source = "smart") %>%
@@ -364,7 +401,9 @@ appa_rec <- recipe(~ id + character_words, data = appa) %>%
 
 # Bake the recipe
 
-```{r appa-bake, dependson = "appa-recipe"}
+```{r}
+#| label = "appa-bake",
+#| dependson = "appa-recipe"
 appa_prep <- prep(appa_rec)
 
 appa_df <- bake(appa_prep, new_data = NULL)
@@ -377,7 +416,9 @@ appa_df %>%
 # Convert to document-term matrix
 
 .tiny[
-```{r appa-dtm, dependson = "appa-bake"}
+```{r}
+#| label = "appa-dtm",
+#| dependson = "appa-bake"
 appa_dtm_prep <- appa_df %>%
   pivot_longer(
     cols = -id,
@@ -405,11 +446,17 @@ appa_dtm
 
 # $k=4$
 
-```{r appa-topic-4, dependson = "appa-prep"}
+```{r}
+#| label = "appa-topic-4",
+#| dependson = "appa-prep"
 appa_lda4 <- LDA(appa_dtm, k = 4, control = list(seed = 123))
 ```
 
-```{r appa-4-topn, dependson = "appa-topic-4", echo = FALSE, out.width = "70%"}
+```{r}
+#| label = "appa-4-topn",
+#| dependson = "appa-topic-4",
+#| echo = FALSE,
+#| out.width = "70%"
 appa_lda4_td <- tidy(appa_lda4)
 
 top_terms <- appa_lda4_td %>%
@@ -433,11 +480,17 @@ top_terms %>%
 
 # $k=12$
 
-```{r appa-topic-12, dependson = "appa-dtm", echo = FALSE}
+```{r}
+#| label = "appa-topic-12",
+#| dependson = "appa-dtm",
+#| echo = FALSE
 appa_lda12 <- LDA(appa_dtm, k = 12, control = list(seed = 123))
 ```
 
-```{r appa-12-topn, dependson = "appa-topic-12", echo = FALSE}
+```{r}
+#| label = "appa-12-topn",
+#| dependson = "appa-topic-12",
+#| echo = FALSE
 appa_lda12_td <- tidy(appa_lda12)
 
 top_terms <- appa_lda12_td %>%
@@ -472,7 +525,10 @@ top_terms %>%
 
 # Perplexity
 
-```{r appa-lda-compare, dependson = "appa-dtm", echo = FALSE}
+```{r}
+#| label = "appa-lda-compare",
+#| dependson = "appa-dtm",
+#| echo = FALSE
 n_topics <- c(2, 4, 10, 20, 50, 100)
 
 # cache the models and only estimate if they don't already exist
@@ -490,7 +546,10 @@ if (file.exists(here("static", "extras", "appa-lda-compare.Rdata"))) {
 }
 ```
 
-```{r appa_lda_compare_viz, dependson="appa_lda_compare", echo = FALSE} 
+```{r} 
+#| label = "appa_lda_compare_viz",
+#| dependson = "appa_lda_compare",
+#| echo = FALSE
 tibble(
   k = n_topics,
   perplex = map_dbl(appa_lda_compare, perplexity)
@@ -510,7 +569,10 @@ tibble(
 
 # $k=100$
 
-```{r appa-100-topn, dependson = "appa-lda-compare", echo = FALSE}
+```{r}
+#| label = "appa-100-topn",
+#| dependson = "appa-lda-compare",
+#| echo = FALSE
 appa_lda_td <- tidy(appa_lda_compare[[6]])
 
 top_terms <- appa_lda_td %>%

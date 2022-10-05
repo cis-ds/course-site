@@ -11,11 +11,17 @@ categories: ["webdata"]
 weight: 63
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(stringr)
 library(jsonlite)
@@ -61,7 +67,8 @@ The OMDB API used to be free, however in the past year shifted to a private API 
 
 {{% /callout %}}
 
-```{r omdb-key}
+```{r}
+#| label = "omdb-key"
 omdb_key <- getOption("omdb_key")
 ```
 
@@ -75,7 +82,9 @@ How can we create this request in R?
 
 To construct our query, we provide the **base URL** for the API. This is typically determined by reading the API's documentation. Additional search parameters are passed as a list object to the `query` argument. The name of each parameter is defined by the API. Here, we call these arguments `t`, `y`, and `apikey`.
 
-```{r sharknado, dependson = "omdb-key"}
+```{r}
+#| label = "sharknado",
+#| dependson = "omdb-key"
 sharknado <- GET(
   url = "http://www.omdbapi.com/?",
   query = list(
@@ -90,7 +99,9 @@ sharknado <- GET(
 
 We can read the content of the server's response using the `content()` function:
 
-```{r httr-json, dependson = "sharknado"}
+```{r}
+#| label = "httr-json",
+#| dependson = "sharknado"
 content(sharknado, type = "text") %>%
   # print the contents in a clear structure
   prettify()
@@ -100,7 +111,9 @@ What you can see here is **J**ava**S**cript **O**bject **N**otation and e**X**te
 
 We want to convert the results from JSON format to something easier to work with - notably a data frame. For relatively simple API queries, one can use `as_tibble()` to convert the output to a data frame:
 
-```{r sharknado-content, dependson = "sharknado"}
+```{r}
+#| label = "sharknado-content",
+#| dependson = "sharknado"
 sharknado_df <- content(sharknado) %>%
   as_tibble()
 sharknado_df
@@ -116,17 +129,25 @@ Note there are two rows of observations when we would have expected a single row
 
 In addition, `GET()` gives us access to lots of useful information about the quality of our response. For example, the URL that was constructed to generate the query:
 
-```{r sharknado-url, dependson = "sharknado", eval = FALSE}
+```{r}
+#| label = "sharknado-url",
+#| dependson = "sharknado",
+#| eval = FALSE
 sharknado$url
 ```
 
-```{r sharknado-url-hidden, dependson = "sharknado", echo = FALSE}
+```{r}
+#| label = "sharknado-url-hidden",
+#| dependson = "sharknado",
+#| echo = FALSE
 str_replace(string = sharknado$url, pattern = getOption("omdb_key"), replacement = "[apikey]")
 ```
 
 We can also extract the HTTP status code from the query:
 
-```{r sharknado-status, dependson = "sharknado"}
+```{r}
+#| label = "sharknado-status",
+#| dependson = "sharknado"
 status_code(sharknado)
 ```
 
@@ -152,7 +173,8 @@ What if we want to obtain results for multiple movies? Consider the entire Shark
 
 First let's write a function that passes a search term and returns a data frame of the OMDB results:
 
-```{r omdb-function}
+```{r}
+#| label = "omdb-function"
 omdb_api <- function(title, api_key) {
   # send GET request
   response <- GET(
@@ -176,7 +198,8 @@ omdb_api <- function(title, api_key) {
 
 Now we need to construct the list of movies to search over.
 
-```{r sharknados}
+```{r}
+#| label = "sharknados"
 sharknados <- c(
   "Sharknado", "Sharknado 2", "Sharknado 3",
   "Sharknado 4", "Sharknado 5"
@@ -185,7 +208,9 @@ sharknados <- c(
 
 Finally we can apply the function to each film. To avoid overwhelming the server with too many queries, we can slow down the iteration using `slowly()`.
 
-```{r iterate-movies, dependson = c("omdb-function", "sharknados")}
+```{r}
+#| label = "iterate-movies",
+#| dependson = c("omdb-function", "sharknados")
 # modify function to delay by one second
 omdb_api_slow <- slowly(f = omdb_api, rate = rate_delay(1))
 
@@ -196,14 +221,16 @@ sharknados_df
 
 ## Acknowledgments
 
-```{r child = here::here("R", "_ack_stat545.Rmd")}
+```{r}
+#| child = here::here("R", "_ack_stat545.Rmd")
 ```
 
 - Iterative operation drawn from Rochelle Terman's [Collecting Data from the Web](https://plsc-31101.github.io/course/collecting-data-from-the-web.html)
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^api-guide]: An excellent beginning resource for APIs (including HTTP basics) is [this simple guide](https://zapier.com/learn/apis/).

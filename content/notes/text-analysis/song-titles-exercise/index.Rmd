@@ -11,11 +11,17 @@ categories: ["text"]
 weight: 112
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(acs)
 library(tidytext)
@@ -53,7 +59,8 @@ The code below shows how the file was originally constructed.
 
 {{% /callout %}}
 
-```{r acs-pop}
+```{r}
+#| label = "acs-pop"
 # retrieve state populations in 2016 from Census Bureau ACS
 library(tidycensus)
 pop_df <- get_acs(
@@ -88,7 +95,10 @@ song_lyrics <- read_csv("http://info5940.infosci.cornell.edu/data/billboard_lyri
 
 {{% /callout %}}
 
-```{r lyrics-download, include = FALSE, eval = FALSE}
+```{r}
+#| label = "lyrics-download",
+#| include = FALSE,
+#| eval = FALSE
 # download file from GitHub repo
 library(downloader)
 download("https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_1964-2015.csv",
@@ -96,7 +106,9 @@ download("https://github.com/walkerkq/musiclyrics/raw/master/billboard_lyrics_19
 )
 ```
 
-```{r lyrics-import, echo = FALSE}
+```{r}
+#| label = "lyrics-import",
+#| echo = FALSE
 song_lyrics <- here("static", "data", "billboard_lyrics_1964-2015.csv") %>%
   read_csv()
 glimpse(song_lyrics)
@@ -104,7 +116,10 @@ glimpse(song_lyrics)
 
 The lyrics are stored as character vectors, one string for each song. Consider the song [Uptown Funk](https://www.youtube.com/watch?v=OPf0YbXqDm0):
 
-```{r lyrics-example, dependson = "lyrics-import", echo = FALSE}
+```{r}
+#| label = "lyrics-example",
+#| dependson = "lyrics-import",
+#| echo = FALSE
 song_lyrics %>%
   filter(Song == "uptown funk") %$%
   Lyrics %>%
@@ -122,7 +137,8 @@ Hint: To search for matching state names, this data frame should include both **
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r lyrics-tidy}
+```{r}
+#| label = "lyrics-tidy"
 # tokenize
 lyrics_unigrams <- unnest_tokens(
   tbl = song_lyrics,
@@ -151,13 +167,15 @@ First create a data frame that meets this criteria, then save a new data frame t
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r lyrics-state-names}
+```{r}
+#| label = "lyrics-state-names"
 inner_join(tidy_lyrics, pop_df, by = c("word" = "state_name"))
 ```
 
 Let's only count each state once per song that it is mentioned in.
 
-```{r lyrics-state-distinct}
+```{r}
+#| label = "lyrics-state-distinct"
 tidy_lyrics <- inner_join(tidy_lyrics, pop_df, by = c("word" = "state_name")) %>%
   distinct(Rank, Song, Artist, Year, word, .keep_all = TRUE)
 tidy_lyrics
@@ -170,13 +188,15 @@ tidy_lyrics
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r state-counts}
+```{r}
+#| label = "state-counts"
 (state_counts <- tidy_lyrics %>%
   count(word) %>%
   arrange(desc(n)))
 ```
 
-```{r state-counts-poprel}
+```{r}
+#| label = "state-counts-poprel"
 pop_df <- pop_df %>%
   left_join(state_counts, by = c("state_name" = "word")) %>%
   mutate(rate = n / population * 1e6)
@@ -193,7 +213,9 @@ pop_df %>%
 
 The [`statebins` package](https://github.com/hrbrmstr/statebins) is a nifty shortcut for making basic U.S. cartogram maps.
 
-```{r state-map, warning = FALSE}
+```{r}
+#| label = "state-map",
+#| warning = FALSE
 library(statebins)
 
 pop_df %>%
@@ -231,7 +253,8 @@ pop_df %>%
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^size]: For instance, California has a lot more people than Rhode Island so it makes sense that California would be mentioned more often in popular songs. But per capita, are these mentions different?

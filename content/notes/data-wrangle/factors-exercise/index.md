@@ -39,19 +39,19 @@ gun_deaths
 
 ```
 ## # A tibble: 100,798 × 10
-##       id  year month intent       police sex     age race        place education
-##    <dbl> <dbl> <chr> <chr>         <dbl> <chr> <dbl> <chr>       <chr> <fct>    
-##  1     1  2012 Jan   Suicide           0 M        34 Asian/Paci… Home  BA+      
-##  2     2  2012 Jan   Suicide           0 F        21 White       Stre… Some col…
-##  3     3  2012 Jan   Suicide           0 M        60 White       Othe… BA+      
-##  4     4  2012 Feb   Suicide           0 M        64 White       Home  BA+      
-##  5     5  2012 Feb   Suicide           0 M        31 White       Othe… HS/GED   
-##  6     6  2012 Feb   Suicide           0 M        17 Native Ame… Home  Less tha…
-##  7     7  2012 Feb   Undetermined      0 M        48 White       Home  HS/GED   
-##  8     8  2012 Mar   Suicide           0 M        41 Native Ame… Home  HS/GED   
-##  9     9  2012 Feb   Accidental        0 M        50 White       Othe… Some col…
-## 10    10  2012 Feb   Suicide           0 M        NA Black       Home  <NA>     
-## # … with 100,788 more rows
+##       id  year month intent       police sex     age race          place educa…¹
+##    <dbl> <dbl> <chr> <chr>         <dbl> <chr> <dbl> <chr>         <chr> <fct>  
+##  1     1  2012 Jan   Suicide           0 M        34 Asian/Pacifi… Home  BA+    
+##  2     2  2012 Jan   Suicide           0 F        21 White         Stre… Some c…
+##  3     3  2012 Jan   Suicide           0 M        60 White         Othe… BA+    
+##  4     4  2012 Feb   Suicide           0 M        64 White         Home  BA+    
+##  5     5  2012 Feb   Suicide           0 M        31 White         Othe… HS/GED 
+##  6     6  2012 Feb   Suicide           0 M        17 Native Ameri… Home  Less t…
+##  7     7  2012 Feb   Undetermined      0 M        48 White         Home  HS/GED 
+##  8     8  2012 Mar   Suicide           0 M        41 Native Ameri… Home  HS/GED 
+##  9     9  2012 Feb   Accidental        0 M        50 White         Othe… Some c…
+## 10    10  2012 Feb   Suicide           0 M        NA Black         Home  <NA>   
+## # … with 100,788 more rows, and abbreviated variable name ¹​education
 ```
 
 ## Convert `month` into a factor column
@@ -84,19 +84,19 @@ month.abb
 
 ```
 ## # A tibble: 100,798 × 10
-##       id  year month intent       police sex     age race        place education
-##    <dbl> <dbl> <fct> <chr>         <dbl> <chr> <dbl> <chr>       <chr> <fct>    
-##  1     1  2012 Jan   Suicide           0 M        34 Asian/Paci… Home  BA+      
-##  2     2  2012 Jan   Suicide           0 F        21 White       Stre… Some col…
-##  3     3  2012 Jan   Suicide           0 M        60 White       Othe… BA+      
-##  4     4  2012 Feb   Suicide           0 M        64 White       Home  BA+      
-##  5     5  2012 Feb   Suicide           0 M        31 White       Othe… HS/GED   
-##  6     6  2012 Feb   Suicide           0 M        17 Native Ame… Home  Less tha…
-##  7     7  2012 Feb   Undetermined      0 M        48 White       Home  HS/GED   
-##  8     8  2012 Mar   Suicide           0 M        41 Native Ame… Home  HS/GED   
-##  9     9  2012 Feb   Accidental        0 M        50 White       Othe… Some col…
-## 10    10  2012 Feb   Suicide           0 M        NA Black       Home  <NA>     
-## # … with 100,788 more rows
+##       id  year month intent       police sex     age race          place educa…¹
+##    <dbl> <dbl> <fct> <chr>         <dbl> <chr> <dbl> <chr>         <chr> <fct>  
+##  1     1  2012 Jan   Suicide           0 M        34 Asian/Pacifi… Home  BA+    
+##  2     2  2012 Jan   Suicide           0 F        21 White         Stre… Some c…
+##  3     3  2012 Jan   Suicide           0 M        60 White         Othe… BA+    
+##  4     4  2012 Feb   Suicide           0 M        64 White         Home  BA+    
+##  5     5  2012 Feb   Suicide           0 M        31 White         Othe… HS/GED 
+##  6     6  2012 Feb   Suicide           0 M        17 Native Ameri… Home  Less t…
+##  7     7  2012 Feb   Undetermined      0 M        48 White         Home  HS/GED 
+##  8     8  2012 Mar   Suicide           0 M        41 Native Ameri… Home  HS/GED 
+##  9     9  2012 Feb   Accidental        0 M        50 White         Othe… Some c…
+## 10    10  2012 Feb   Suicide           0 M        NA Black         Home  <NA>   
+## # … with 100,788 more rows, and abbreviated variable name ¹​education
 ```
 
 {{< /spoiler >}}
@@ -241,7 +241,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-10-05
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -254,7 +254,8 @@ sessioninfo::session_info()
 ##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
-##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  cli             3.4.0      2022-09-08 [1] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
@@ -264,6 +265,7 @@ sessioninfo::session_info()
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
@@ -276,26 +278,29 @@ sessioninfo::session_info()
 ##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
 ##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
 ##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
-##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  knitr           1.40       2022-08-24 [1] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  lifecycle       1.0.2      2022-09-09 [1] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
-##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pillar          1.8.1      2022-08-19 [1] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  rcfss         * 0.2.5      2022-08-04 [2] local
 ##  rcis          * 0.2.5      2022-08-08 [2] local
 ##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
-##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang           1.0.5      2022-08-31 [1] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)

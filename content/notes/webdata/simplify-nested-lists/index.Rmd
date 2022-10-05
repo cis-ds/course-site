@@ -11,11 +11,17 @@ categories: ["webdata"]
 weight: 64
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(httr)
 library(repurrrsive)
@@ -36,7 +42,10 @@ usethis::use_course("cis-ds/getting-data-from-the-web-api-access")
 
 Not all lists are easily coerced into data frames by simply calling `content() %>% as_tibble()`. Unless your list is perfectly structured, this will not work. Recall the OMDB example:
 
-```{r omdb-recursive, error = TRUE, warning = FALSE}
+```{r}
+#| label = "omdb-recursive",
+#| error = TRUE,
+#| warning = FALSE
 sharknado <- GET(
   url = "http://www.omdbapi.com/?",
   query = list(
@@ -53,7 +62,9 @@ content(sharknado, as = "parsed", type = "application/json") %>%
 
 Wait a minute, what happened? Look at the structure of `content()`:
 
-```{r omdb-str, dependson = "omdb-recursive"}
+```{r}
+#| label = "omdb-str",
+#| dependson = "omdb-recursive"
 content(sharknado) %>%
   str()
 ```
@@ -81,7 +92,9 @@ remotes::install_github("jennybc/repurrrsive")
 install.packages("listviewer")
 ```
 
-```{r packages-lists, cache = FALSE}
+```{r}
+#| label = "packages-lists",
+#| cache = FALSE
 library(purrr)
 library(repurrrsive)
 ```
@@ -100,13 +113,15 @@ Alternatively, you can use [`listviewer::jsonedit()`](https://github.com/timelyp
 
 Let's look at `gh_users` which is a list that contains information about six GitHub users.
 
-```{r gh-users}
+```{r}
+#| label = "gh-users"
 str(gh_users, list.len = 3)
 ```
 
 To begin, we first put `gh_users` into a data frame:
 
-```{r gh-users-df}
+```{r}
+#| label = "gh-users-df"
 (users <- tibble(user = gh_users))
 ```
 
@@ -114,20 +129,26 @@ We've already seen examples of list-columns. By storing the list in a data frame
 
 Each `user` is a named list, where each element represents a column:
 
-```{r gh-users-names, dependson = "gh-users-df"}
+```{r}
+#| label = "gh-users-names",
+#| dependson = "gh-users-df"
 names(users$user[[1]])
 ```
 
 There are two ways to turn the list components into columns. `unnest_wider()` takes every component and makes a new column:
 
-```{r gh-users-unnest-wider, dependson = "gh-users-df"}
+```{r}
+#| label = "gh-users-unnest-wider",
+#| dependson = "gh-users-df"
 users %>%
   unnest_wider(user)
 ```
 
 Extremely easy! However, there are a lot of components in `users`, and we don't necessarily want or need all of them. Instead, we can use `hoist()` to pull out selected components:
 
-```{r gh-users-hoist, dependson = "gh-users-df"}
+```{r}
+#| label = "gh-users-hoist",
+#| dependson = "gh-users-df"
 users %>%
   hoist(user,
     followers = "followers",
@@ -142,13 +163,16 @@ users %>%
 
 We start off `gh_repos` similarly, by putting it in a tibble:
 
-```{r gh-repos}
+```{r}
+#| label = "gh-repos"
 (repos <- tibble(repo = gh_repos))
 ```
 
 This time the elements of `repo` are a list of repositories that belong to that user. These are observations, so should become new rows, so we use `unnest_longer()` rather than `unnest_wider()`:
 
-```{r gh-repos-unnest-longer, dependson = "gh-repos"}
+```{r}
+#| label = "gh-repos-unnest-longer",
+#| dependson = "gh-repos"
 repos <- repos %>%
   unnest_longer(repo)
 repos
@@ -156,7 +180,9 @@ repos
 
 Then we can use `unnest_wider()` or `hoist()`:
 
-```{r gh-repos-hoist, dependson = "gh-repos-unnest-longer"}
+```{r}
+#| label = "gh-repos-hoist",
+#| dependson = "gh-repos-unnest-longer"
 repos %>%
   hoist(repo,
     login = c("owner", "login"),
@@ -168,7 +194,9 @@ repos %>%
 
 Note the use of `c("owner", "login")`: this allows us to reach two levels deep inside of a list. An alternative approach would be to pull out just `owner` and then put each element of it in a column:
 
-```{r gh-repos-hoist-alt, dependson = "gh-repos-unnest-longer"}
+```{r}
+#| label = "gh-repos-hoist-alt",
+#| dependson = "gh-repos-unnest-longer"
 repos %>%
   hoist(repo, owner = "owner") %>%
   unnest_wider(owner)
@@ -176,7 +204,8 @@ repos %>%
 
 Instead of looking at the list and carefully thinking about whether it needs to become rows or columns, you can use `unnest_auto()`. It uses a handful of heuristics to figure out whether `unnest_longer()` or `unnest_wider()` is appropriate, and tells you about its reasoning.
 
-```{r gh-repos-auto}
+```{r}
+#| label = "gh-repos-auto"
 tibble(repo = gh_repos) %>%
   unnest_auto(repo) %>%
   unnest_auto(repo)
@@ -194,7 +223,8 @@ Spoiler alert - if you haven't read the series, you may not want to read too muc
 
 Each element corresponds to one character and contains 18 sub-elements which are named atomic vectors of various lengths and types. We start in the same way, first by creating a data frame and then by unnesting each component into a column:
 
-```{r got}
+```{r}
+#| label = "got"
 chars <- tibble(char = got_chars)
 chars
 
@@ -205,14 +235,18 @@ chars2
 
 This is more complex than `gh_users` because some component of `char` are themselves a list, giving us a collection of list-columns:
 
-```{r got-list-cols, dependson = "got"}
+```{r}
+#| label = "got-list-cols",
+#| dependson = "got"
 chars2 %>%
   select_if(is.list)
 ```
 
 What you do next will depend on the purposes of the analysis. Maybe you want a row for every book and TV series that the character appears in:
 
-```{r got-appearances, dependson = "got"}
+```{r}
+#| label = "got-appearances",
+#| dependson = "got"
 chars2 %>%
   select(name, books, tvSeries) %>%
   pivot_longer(c(books, tvSeries), names_to = "media", values_to = "value") %>%
@@ -221,7 +255,9 @@ chars2 %>%
 
 Or maybe you want to build a table that lets you match title to name:
 
-```{r got-title-name, dependson = "got"}
+```{r}
+#| label = "got-title-name",
+#| dependson = "got"
 chars2 %>%
   select(name, title = titles) %>%
   unnest_longer(title)
@@ -229,7 +265,9 @@ chars2 %>%
 
 Again, we could rewrite using `unnest_auto()`. This is convenient for exploration, but I wouldn't rely on it in the long term - `unnest_auto()` has the undesirable property that it will always succeed. That means if your data structure changes, `unnest_auto()` will continue to work, but might give very different output that causes cryptic failures from downstream functions.
 
-```{r got-auto, dependson = "got"}
+```{r}
+#| label = "got-auto",
+#| dependson = "got"
 tibble(char = got_chars) %>%
   unnest_auto(char) %>%
   select(name, title = titles) %>%
@@ -252,7 +290,8 @@ Use your knowledge of rectangling with `tidyr` to extract relevant data of inter
 
 `sw_species` contains one element for each species in the database, so we should use `unnest_wider()` or `hoist()` to extract the required elements.
     
-```{r sw-avg-height}
+```{r}
+#| label = "sw-avg-height"
 # clean up sw_species so it is one-row-per-species
 sw_height <- tibble(sw_species) %>%
   hoist(sw_species,
@@ -280,7 +319,8 @@ ggplot(data = sw_height, mapping = aes(x = height)) +
 
 Each element of `sw_people` contains one character. The `films` element within each character is a character vector containing one value for each film in which the character appeared. This required two separate `unnest_*()` operations to get the data in the proper form.
     
-```{r sw-film-appearances}
+```{r}
+#| label = "sw-film-appearances"
 # unnest the data
 sw_people_df <- tibble(sw_people) %>%
   unnest_wider(sw_people) %>%
@@ -311,5 +351,6 @@ sw_people_df %>%
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```

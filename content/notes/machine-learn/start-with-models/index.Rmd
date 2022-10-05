@@ -11,11 +11,17 @@ categories: ["stat-learn"]
 weight: 72
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r load, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "load",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidymodels)
 library(tidyverse)
 library(rcis)
@@ -38,14 +44,16 @@ There are several different approaches to fitting a linear model in R.[^tmwr] He
 
 As in past exercises, let's use the `rcis::scorecard` dataset which contains detailed information on all four-year colleges and universities in the United States. Here we will consider the average faculty salary to understand how it is influenced by factors such as the average annual total cost of attendance and whether the university is public, private nonprofit, or private for-profit.
 
-```{r data}
+```{r}
+#| label = "data"
 scorecard
 glimpse(scorecard)
 ```
 
 As a first step in modeling, it's always a good idea to plot the data: 
 
-```{r scorecard-plot}
+```{r}
+#| label = "scorecard-plot"
 ggplot(
   data = scorecard,
   mapping = aes(
@@ -65,7 +73,9 @@ We can see that public and private non-profit schools have the strongest correla
 
 A standard two-way analysis of variance ([ANOVA](https://www.itl.nist.gov/div898/handbook/prc/section4/prc43.htm)) model makes sense for this dataset because we have both a continuous predictor and a categorical predictor. Since the slopes appear to be different for at least two of the college types, let's build a model that allows for two-way interactions. Specifying an R formula with our variables in this way: 
 
-```{r two-way-int, eval = FALSE}
+```{r}
+#| label = "two-way-int",
+#| eval = FALSE
 avgfacsal ~ cost * type
 ```
 
@@ -74,13 +84,15 @@ allows our regression model depending on cost to have separate slopes and interc
 For this kind of model, ordinary least squares is a good initial approach. With `tidymodels`, we start by specifying the _functional form_ of the model that we want using the [`parsnip` package](https://tidymodels.github.io/parsnip/). Since there is a numeric outcome and the model should be linear with slopes and intercepts, the model type is ["linear regression"](https://tidymodels.github.io/parsnip/reference/linear_reg.html). We can declare this with: 
 
 
-```{r lm-tm}
+```{r}
+#| label = "lm-tm"
 linear_reg()
 ```
 
 That is pretty underwhelming since, on its own, it doesn't really do much. However, now that the type of model has been specified, a method for _fitting_ or training the model can be stated using the **engine**. The engine value is often a mash-up of the software that can be used to fit or train the model as well as the estimation method. For example, to use ordinary least squares, we can set the engine to be `lm`:
 
-```{r lm-spec}
+```{r}
+#| label = "lm-spec"
 linear_reg() %>%
   set_engine("lm")
 ```
@@ -89,14 +101,17 @@ The [documentation page for `linear_reg()`](https://tidymodels.github.io/parsnip
 
 {{< figure src="allison_horst_art/parsnip.png" caption="Artwork by @allison_horst" >}}
 
-```{r lm-mod}
+```{r}
+#| label = "lm-mod"
 lm_mod <- linear_reg() %>%
   set_engine("lm")
 ```
 
 From here, the model can be estimated or trained using the [`fit()`](https://tidymodels.github.io/parsnip/reference/fit.html) function:
 
-```{r lm-fit, dependson = "lm-mod"}
+```{r}
+#| label = "lm-fit",
+#| dependson = "lm-mod"
 lm_fit <- lm_mod %>%
   fit(avgfacsal ~ cost * type, data = scorecard)
 lm_fit
@@ -104,7 +119,9 @@ lm_fit
 
 Perhaps our analysis requires a description of the model parameter estimates and their statistical properties. Although the `summary()` function for `lm` objects can provide that, it gives the results back in an unwieldy format. Many models have a `tidy()` method that provides the summary results in a more predictable and useful format (e.g. a data frame with standard column names): 
 
-```{r lm-table, dependson = "lm-fit"}
+```{r}
+#| label = "lm-table",
+#| dependson = "lm-fit"
 tidy(lm_fit)
 ```
 
@@ -114,7 +131,8 @@ This fitted object `lm_fit` has the `lm` model output built-in, which you can ac
 
 Suppose that, for a publication, it would be particularly interesting to make a plot of the expected average faculty salary for colleges with a total cost of attendance of $20,000. To create such a graph, we start with some new example data that we will make predictions for, to show in our graph:
 
-```{r new-points}
+```{r}
+#| label = "new-points"
 new_points <- expand.grid(
   cost = 20000,
   type = c("Public", "Private, nonprofit", "Private, for-profit")
@@ -130,14 +148,18 @@ Instead, with `tidymodels`, the types of predicted values are standardized so th
 
 First, let's generate the expected salary values: 
 
-```{r lm-pred-mean, dependson = c("lm-fit", "new-points")}
+```{r}
+#| label = "lm-pred-mean",
+#| dependson = c("lm-fit", "new-points")
 mean_pred <- predict(lm_fit, new_data = new_points)
 mean_pred
 ```
 
 When making predictions, the `tidymodels` convention is to always produce a tibble of results with standardized column names. This makes it easy to combine the original data and the predictions in a usable format: 
 
-```{r lm-all-pred, dependson = "lm-pred-mean"}
+```{r}
+#| label = "lm-all-pred",
+#| dependson = "lm-pred-mean"
 conf_int_pred <- predict(lm_fit,
   new_data = new_points,
   type = "conf_int"
@@ -168,7 +190,10 @@ Every one on your team is happy with that plot _except_ that one person who just
 
 The [documentation](https://mc-stan.org/rstanarm/articles/priors.html) on the `rstanarm` package shows us that the `stan_glm()` function can be used to estimate this model, and that the function arguments that need to be specified are called `prior` and `prior_intercept`. It turns out that `linear_reg()` has a [`stan` engine](https://tidymodels.github.io/parsnip/reference/linear_reg.html#details). Since these prior distribution arguments are specific to the Stan software, they are passed as arguments to [`parsnip::set_engine()`](https://tidymodels.github.io/parsnip/reference/set_engine.html). After that, the same exact `fit()` call is used:
 
-```{r go-stan, message = FALSE, warning = FALSE}
+```{r}
+#| label = "go-stan",
+#| message = FALSE,
+#| warning = FALSE
 # set the prior distribution
 prior_dist <- rstanarm::student_t(df = 1)
 
@@ -198,13 +223,19 @@ This kind of Bayesian analysis (like many models) involves randomly generated nu
 
 To update the parameter table, the `tidy()` method is once again used: 
 
-```{r tidy-stan, dependson = "go-stan"}
+```{r}
+#| label = "tidy-stan",
+#| dependson = "go-stan"
 tidy(bayes_fit, conf.int = TRUE)
 ```
 
 A goal of the `tidymodels` packages is that the **interfaces to common tasks are standardized** (as seen in the `tidy()` results above). The same is true for getting predictions; we can use the same code even though the underlying packages use very different syntax:
 
-```{r stan-pred, dependson = "go-stan", warning = FALSE, message = FALSE}
+```{r}
+#| label = "stan-pred",
+#| dependson = "go-stan",
+#| warning = FALSE,
+#| message = FALSE
 bayes_plot_data <- new_points %>%
   bind_cols(predict(bayes_fit, new_data = new_points)) %>%
   bind_cols(predict(bayes_fit, new_data = new_points, type = "conf_int"))
@@ -242,7 +273,8 @@ Also, using the `tidymodels` framework, we can do some interesting things by inc
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^tmwr]: See [*Tidy Modeling with R*](https://www.tmwr.org/base-r.html) for an overview of how these approaches vary.

@@ -11,11 +11,16 @@ categories: ["dataviz", "geospatial"]
 weight: 52
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE
 library(tidyverse)
 library(ggmap)
 library(RColorBrewer)
@@ -33,7 +38,8 @@ theme_set(theme_minimal())
 
 `ggmap` supports open-source map providers such as [OpenStreetMap](https://www.openstreetmap.org/) and [Stamen Maps](http://maps.stamen.com/#terrain/12/37.7706/-122.3782). Obtaining map tiles requires use of the `get_map()` function. To identify which map tiles need to be obtained, you specify the mapping region using a **bounding box**. The bounding box requires the user to specify the four corners of the box defining the map region. For instance, to obtain a map of New York City using Stamen Maps:
 
-```{r bb-nyc-stamen}
+```{r}
+#| label = "bb-nyc-stamen"
 # store bounding box coordinates
 nyc_bb <- c(
   left = -74.263045,
@@ -51,13 +57,15 @@ nyc_stamen
 
 To view the map, use `ggmap()`:
 
-```{r bb-nyc-stamen-plot}
+```{r}
+#| label = "bb-nyc-stamen-plot"
 ggmap(nyc_stamen)
 ```
 
 The `zoom` argument in `get_stamenmap()` controls the level of detail in the map. The larger the number, the greater the detail.
 
-```{r bb-nyc-stamen-zoom-in}
+```{r}
+#| label = "bb-nyc-stamen-zoom-in"
 get_stamenmap(
   bbox = nyc_bb,
   zoom = 12
@@ -67,7 +75,8 @@ get_stamenmap(
 
 The smaller the number, the lesser the detail.
 
-```{r bb-nyc-stamen-zoom-out}
+```{r}
+#| label = "bb-nyc-stamen-zoom-out"
 get_stamenmap(
   bbox = nyc_bb,
   zoom = 10
@@ -88,7 +97,10 @@ Use [bboxfinder.com](http://bboxfinder.com/#0.000000,0.000000,0.000000,0.000000)
 
 Each map tile provider offers a range of different types of maps depending on the background you want for the map. Stamen Maps offers several different types:
 
-```{r stamen-maptype, fig.asp = 4 / 3, echo = FALSE}
+```{r}
+#| label = "stamen-maptype",
+#| fig.asp = 4/3,
+#| echo = FALSE
 stamen_maptype <- tibble(maptype = c(
   "terrain", "terrain-background",
   "terrain-labels", "terrain-lines",
@@ -123,7 +135,8 @@ If you are copying-and-pasting code from this demonstration, change this line of
 
 {{% /callout %}}
 
-```{r import-crimes}
+```{r}
+#| label = "import-crimes"
 crimes <- here("static", "data", "nyc-crimes.csv") %>%
   read_csv()
 glimpse(crimes)
@@ -135,7 +148,8 @@ Each row of the data frame is a single reported incident of crime. Geographic lo
 
 Let's start with a simple high-level overview of reported crime in New York City. First we need a map for the entire city.
 
-```{r import-nyc}
+```{r}
+#| label = "import-nyc"
 nyc <- nyc_stamen
 ggmap(nyc)
 ```
@@ -144,7 +158,9 @@ ggmap(nyc)
 
 Since each row is a single reported incident of crime, we could use `geom_point()` to map the location of every crime in the dataset. Because `ggmap()` uses the map tiles (here, defined by `nyc`) as the basic input, we specify `data` and `mapping` inside of `geom_point()`, rather than inside `ggplot()`:
 
-```{r plot-crime-point, dependson = "import-crimes"}
+```{r}
+#| label = "plot-crime-point",
+#| dependson = "import-crimes"
 ggmap(nyc) +
   geom_point(
     data = crimes,
@@ -157,13 +173,17 @@ ggmap(nyc) +
 
 What went wrong? All we get is a sea of black.
 
-```{r num-crimes, dependson = "import-crimes"}
+```{r}
+#| label = "num-crimes",
+#| dependson = "import-crimes"
 nrow(crimes)
 ```
 
 Oh yeah. There were `r scales::comma_format()(nrow(crimes))` reported incidents of crime in the city. Each incident is represented by a dot on the map. How can we make this map more usable? One option is to decrease the size and increase the transparency of each data point so dense clusters of crime become apparent:
 
-```{r plot-crime-point-alpha, dependson = "import-crimes"}
+```{r}
+#| label = "plot-crime-point-alpha",
+#| dependson = "import-crimes"
 ggmap(nyc) +
   geom_point(
     data = crimes,
@@ -182,7 +202,9 @@ Better, but still not quite as useful as it could be.
 
 Instead of relying on `geom_point()` and plotting the raw data, a better approach is to create a **heatmap**. More precisely, this will be a two-dimensional kernel density estimation (KDE). In this context, KDE will take all the raw data (i.e. reported incidents of crime) and convert it into a smoothed plot showing geographic concentrations of crime. The core function in `ggplot2` to generate this kind of plot is `geom_density_2d()`:
 
-```{r kde-contour, dependson = "import-crimes"}
+```{r}
+#| label = "kde-contour",
+#| dependson = "import-crimes"
 ggmap(nyc) +
   geom_density_2d(
     data = crimes,
@@ -199,7 +221,9 @@ By default, `geom_density_2d()` draws a [**contour plot**](https://en.wikipedia.
 
 Rather than drawing lines, instead we can fill in the graph so that we use the `fill` aesthetic to draw bands of crime density. To do that, we use the related function `stat_density_2d()`:
 
-```{r kde-fill, dependson = "import-crimes"}
+```{r}
+#| label = "kde-fill",
+#| dependson = "import-crimes"
 ggmap(nyc) +
   stat_density_2d(
     data = crimes,
@@ -223,7 +247,9 @@ This is an improvement, but we can adjust some additional settings to make the g
 * Make the heatmap semi-transparent using `alpha` so we can still view the underlying map
 * Change the color palette to better distinguish between high and low crime areas. Here I use `brewer.pal()` from the `RColorBrewer` package to create a custom color palette using reds and yellows.
 
-```{r plot-crime-density, dependson = "import-crimes"}
+```{r}
+#| label = "plot-crime-density",
+#| dependson = "import-crimes"
 ggmap(nyc) +
   stat_density_2d(
     data = crimes,
@@ -248,7 +274,9 @@ From this map, a couple trends are noticeable:
 
 Because `ggmap` is built on `ggplot2`, we can use the core features of `ggplot2` to modify the graph. One major feature is faceting. Let's focus our analysis on four types of crimes with similar frequency of reported incidents[^types] and facet by type of crime:
 
-```{r plot-crime-wday, dependson = "import-crimes"}
+```{r}
+#| label = "plot-crime-wday",
+#| dependson = "import-crimes"
 ggmap(nyc) +
   stat_density_2d(
     data = crimes %>%
@@ -275,14 +303,18 @@ There is a substantial difference in the geographic density of drug crimes relat
 
 While `geom_point()` was not appropriate for graphing a large number of observations in a dense geographic location, it does work rather well for less dense areas. Now let's limit our analysis strictly to reported incidents of murder.
 
-```{r homicide, dependson = "import-crimes"}
+```{r}
+#| label = "homicide",
+#| dependson = "import-crimes"
 (homicides <- crimes %>%
   filter(ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER"))
 ```
 
 We can draw a map of the city with all homicides indicated on the map using `geom_point()`:
 
-```{r homicide-city, dependson = "homicide"}
+```{r}
+#| label = "homicide-city",
+#| dependson = "homicide"
 ggmap(nyc) +
   geom_point(
     data = homicides,
@@ -298,7 +330,8 @@ Compared to our previous overviews, few if any homicides are reported in downtow
 
 We can also narrow down the geographic location to map specific neighborhoods in New York City. First we obtain map tiles for those ares. Here we'll examine Roosevelt Island and Fordham.
 
-```{r get-high-low-murder-maps}
+```{r}
+#| label = "get-high-low-murder-maps"
 # compare Roosevelt Island to Harlem
 roosevelt_bb <- c(
   left = -73.993958,
@@ -328,7 +361,9 @@ ggmap(fordham)
 
 To plot homicides specifically in these neighborhoods, change `ggmap(nyc)` to the appropriate map tile:
 
-```{r plot-murder, dependson = "homicide"}
+```{r}
+#| label = "plot-murder",
+#| dependson = "homicide"
 ggmap(roosevelt) +
   geom_point(
     data = homicides,
@@ -346,7 +381,9 @@ Even though `homicides` contained data for homicides across the entire city, `gg
 
 All the other aesthetic customizations of `geom_point()` work with `ggmap`. So we could expand these neighborhood maps to include all violent crimes[^violent] and distinguish each type by `color`:
 
-```{r violent, dependson = "import-crimes"}
+```{r}
+#| label = "violent",
+#| dependson = "import-crimes"
 (violent <- crimes %>%
   filter(ofns_desc %in% c(
     "MURDER & NON-NEGL. MANSLAUGHTER",
@@ -356,7 +393,9 @@ All the other aesthetic customizations of `geom_point()` work with `ggmap`. So w
   )))
 ```
 
-```{r plot-violent, dependson = "violent"}
+```{r}
+#| label = "plot-violent",
+#| dependson = "violent"
 ggmap(roosevelt) +
   geom_point(
     data = violent,
@@ -386,7 +425,8 @@ ggmap(fordham) +
 
 ### Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^types]: Specifically drugs, motor vehicle thefts, robbery, and other vehicle/traffic crimes.

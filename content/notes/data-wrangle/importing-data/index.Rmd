@@ -11,11 +11,16 @@ categories: ["datawrangle"]
 weight: 36
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE
 library(tidyverse)
 library(here)
 theme_set(theme_minimal())
@@ -26,7 +31,9 @@ set.seed(1234)
 
 ## `readr` vs. base R
 
-```{r data-gen, include = FALSE}
+```{r}
+#| label = "data-gen",
+#| include = FALSE
 n_row_s <- 5000
 
 data_small <- tibble(
@@ -56,7 +63,10 @@ data_large <- tibble(
 
 One of the main advantages of `readr` functions over base R functions is that [they are typically much faster](http://r4ds.had.co.nz/data-import.html#compared-to-base-r). For example, let's import a randomly generated CSV file with `r prettyNum(n_row_s, scientific = FALSE, big.mark = ",")` rows and `r ncol(data_small)` columns. How long does it take `read.csv()` to import this file vs. `readr::read_csv()`? To assess the differences, we use the [`microbenchmark`](https://cran.r-project.org/web/packages/microbenchmark/) to run each function 100 times and compare the distributions of the time it takes to complete the data import:
 
-```{r compare-speed-small, dependson = "data-gen", message = FALSE}
+```{r}
+#| label = "compare-speed-small",
+#| dependson = "data-gen",
+#| message = FALSE
 library(microbenchmark)
 
 results_small <- microbenchmark(
@@ -65,7 +75,10 @@ results_small <- microbenchmark(
 )
 ```
 
-```{r compare-speed-small-plot, dependson = "compare-speed-small", message = FALSE}
+```{r}
+#| label = "compare-speed-small-plot",
+#| dependson = "compare-speed-small",
+#| message = FALSE
 autoplot(object = results_small) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged")
@@ -73,7 +86,10 @@ autoplot(object = results_small) +
 
 `read_csv()` is over 5 times faster than `read.csv()`. Of course with relatively small data files, this isn't a large difference in absolute terms (a difference of 100 milliseconds is only .1 second). However, as the data file increases in size the performance savings will be much larger. Consider the same test with a CSV file with `r prettyNum(n_row_l, scientific = FALSE, big.mark = ",")` rows:
 
-```{r compare-speed-large, dependson = "data-gen", message = FALSE}
+```{r}
+#| label = "compare-speed-large",
+#| dependson = "data-gen",
+#| message = FALSE
 library(microbenchmark)
 
 results_large <- microbenchmark(
@@ -82,7 +98,10 @@ results_large <- microbenchmark(
 )
 ```
 
-```{r compare-speed-large-plot, dependson = "compare-speed-large", message = FALSE}
+```{r}
+#| label = "compare-speed-large-plot",
+#| dependson = "compare-speed-large",
+#| message = FALSE
 autoplot(object = results_large) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged")
@@ -94,7 +113,10 @@ Here `read_csv()` is far superior to `read.csv()`.
 
 [`vroom`](https://vroom.r-lib.org/) is a recently developed package designed specifically for **speed**. It contains one of the fastest functions to import plain-text data files. Its syntax is similar to `readr::read_*()` functions, but works much more quickly.
 
-```{r vroom-compare-speed-large, dependson = "data-gen", message = FALSE}
+```{r}
+#| label = "vroom-compare-speed-large",
+#| dependson = "data-gen",
+#| message = FALSE
 results_vroom <- microbenchmark(
   read.csv = read.csv(file = here("static", "data", "sim-data-large.csv")),
   read_csv = read_csv(file = here("static", "data", "sim-data-large.csv")),
@@ -102,7 +124,10 @@ results_vroom <- microbenchmark(
 )
 ```
 
-```{r vroom-compare-speed-large-plot, dependson = "compare-speed-large", message = FALSE}
+```{r}
+#| label = "vroom-compare-speed-large-plot",
+#| dependson = "compare-speed-large",
+#| message = FALSE
 autoplot(object = results_vroom) +
   scale_y_log10() +
   labs(y = "Time [milliseconds], logged")
@@ -112,7 +137,8 @@ autoplot(object = results_vroom) +
 
 CSV files, while common, are not the only type of data storage format you will encounter in the wild. Here is a quick primer on other file formats you may encounter and how to import/export them using R. We'll use the `challenge` dataset in `readr` to demonstrate some of these formats.
 
-```{r challenge}
+```{r}
+#| label = "challenge"
 challenge <- read_csv(
   readr_example(file = "challenge.csv"),
   col_types = cols(
@@ -128,7 +154,10 @@ challenge
 
 **RDS** is a custom binary format used exclusively by R to store data objects.
 
-```{r rds, dependson = "challenge", message = FALSE}
+```{r}
+#| label = "rds",
+#| dependson = "challenge",
+#| message = FALSE
 # write to csv
 write_csv(x = challenge, file = here("static", "data", "challenge.csv"))
 
@@ -164,7 +193,10 @@ By default, `write_rds()` does not compress the `.rds` file; use the `compress` 
 
 The `arrow` package implements a binary file format called `feather` that is cross-compatible with many different programming languages:
 
-```{r feather, dependson = "challenge", message = FALSE}
+```{r}
+#| label = "feather",
+#| dependson = "challenge",
+#| message = FALSE
 library(arrow)
 
 write_feather(x = challenge, sink = here("static", "data", "challenge.feather"))
@@ -193,7 +225,8 @@ microbenchmark(
 
 [`readxl`](http://readxl.tidyverse.org/) enables you to read (but not write) Excel files (`.xls` and `xlsx`).[^excel]
 
-```{r readxl}
+```{r}
+#| label = "readxl"
 library(readxl)
 
 xlsx_example <- readxl_example(path = "datasets.xlsx")
@@ -202,13 +235,17 @@ read_excel(xlsx_example)
 
 The nice thing about `readxl` is that you can access multiple sheets from the workbook. List the sheet names with `excel_sheets()`:
 
-```{r readxl-sheets, dependson = "readxl"}
+```{r}
+#| label = "readxl-sheets",
+#| dependson = "readxl"
 excel_sheets(path = xlsx_example)
 ```
 
 Then specify which worksheet you want by name or number:
 
-```{r readxl-select-sheet, dependson = "readxl"}
+```{r}
+#| label = "readxl-select-sheet",
+#| dependson = "readxl"
 read_excel(path = xlsx_example, sheet = "chickwts")
 read_excel(path = xlsx_example, sheet = 2)
 ```
@@ -217,7 +254,8 @@ read_excel(path = xlsx_example, sheet = 2)
 
 [`haven`](http://haven.tidyverse.org/) allows you to read and write data from other statistical packages such as SAS (`.sas7bdat` + `.sas7bcat`), SPSS (`.sav` + `.por`), and Stata (`.dta`).
 
-```{r haven}
+```{r}
+#| label = "haven"
 library(haven)
 library(palmerpenguins)
 
@@ -244,7 +282,8 @@ Need to import a SAS, SPSS, or Stata data file? Read [the documentation](http://
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^log]: Notice that the x-axis is logarithmically scaled.

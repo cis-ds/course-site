@@ -334,7 +334,6 @@ While `geom_point()` was not appropriate for graphing a large number of observat
 ## 10 240767512H1   BROOKLYN  2021-05-24 04:00:00 FELONY    MURDER…    40.6   -74.0
 ## # … with 259 more rows, and abbreviated variable names ¹​law_cat_cd, ²​ofns_desc,
 ## #   ³​latitude, ⁴​longitude
-## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 We can draw a map of the city with all homicides indicated on the map using `geom_point()`:
@@ -448,7 +447,6 @@ All the other aesthetic customizations of `geom_point()` work with `ggmap`. So w
 ## 10 239503898   MANHATTAN 2002-12-01 05:00:00 FELONY     RAPE        40.7   -74.0
 ## # … with 21,713 more rows, and abbreviated variable names ¹​ofns_desc,
 ## #   ²​latitude, ³​longitude
-## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 
@@ -505,7 +503,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-09-01
+##  date     2022-10-05
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -523,7 +521,7 @@ sessioninfo::session_info()
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
-##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  cli             3.4.0      2022-09-08 [1] CRAN (R 4.2.0)
 ##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
@@ -559,17 +557,17 @@ sessioninfo::session_info()
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
-##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
+##  knitr           1.40       2022-08-24 [1] CRAN (R 4.2.0)
 ##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
-##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  lifecycle       1.0.2      2022-09-09 [1] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
 ##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
 ##  patchwork     * 1.1.1      2020-12-17 [2] CRAN (R 4.2.0)
-##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pillar          1.8.1      2022-08-19 [1] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  plyr            1.8.7      2022-03-24 [2] CRAN (R 4.2.0)
 ##  png             0.1-7      2013-12-03 [2] CRAN (R 4.2.0)
@@ -583,7 +581,7 @@ sessioninfo::session_info()
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
 ##  RgoogleMaps     1.4.5.3    2020-02-12 [2] CRAN (R 4.2.0)
 ##  rjson           0.2.21     2022-01-09 [2] CRAN (R 4.2.0)
-##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang           1.0.5      2022-08-31 [1] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)

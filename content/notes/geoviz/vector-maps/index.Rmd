@@ -11,11 +11,16 @@ categories: ["dataviz", "geospatial"]
 weight: 54
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE
 library(tidyverse)
 library(sf)
 library(here)
@@ -31,7 +36,8 @@ Unlike [raster image maps](/notes/raster-maps-with-ggmap/), vector maps require 
 
 First we will import a spatial data file containing the boundaries of all 50 states in the United States[^territories] using `sf::st_read()`:
 
-```{r import-usa}
+```{r}
+#| label = "import-usa"
 usa <- here(
   "static", "data", "census_bureau",
   "cb_2013_us_state_20m", "cb_2013_us_state_20m.shp"
@@ -43,7 +49,8 @@ usa <- here(
 
 `ggplot2` contains a geometric object specifically for simple feature objects called `geom_sf()`. This works reasonably well when you need to draw **polygons**, like our state boundaries. Support for simple features in `ggplot2` is under active development, so you may not find adequate support for plotting line or point features. To draw the map, we pass the simple features data frame as the `data` argument.
 
-```{r geom-sf}
+```{r}
+#| label = "geom-sf"
 ggplot(data = usa) +
   geom_sf()
 ```
@@ -54,7 +61,8 @@ Because simple features data frames are standardized with the `geometry` column 
 
 One solution is to plot just the lower 48 states. That is, exclude Alaska and Hawaii, as well as DC and Puerto Rico.[^rights] Because simple features data frames contain one row per feature and in this example a feature is defined as a state, we can use `filter()` from `dplyr` to exclude these four states/territories.
 
-```{r usa-subset}
+```{r}
+#| label = "usa-subset"
 usa_48 <- usa %>%
   filter(NAME %in% state.name) %>%
   filter(NAME != "Alaska", NAME != "Hawaii")
@@ -66,7 +74,8 @@ ggplot(data = usa_48) +
 
 Since the map is a `ggplot()` object, it can easily be modified like any other `ggplot()` graph. We could change the color of the map and the borders:
 
-```{r usa-fill}
+```{r}
+#| label = "usa-fill"
 ggplot(data = usa_48) +
   geom_sf(fill = "palegreen", color = "black")
 ```
@@ -75,7 +84,8 @@ ggplot(data = usa_48) +
 
 Rather than excluding them entirely, most maps of the United States place Alaska and Hawaii as **insets** to the south of California. Until recently, in R this was an extremely tedious task that required manually changing the latitude and longitude coordinates for these states to place them in the correct location. Fortunately several packages are now available that have already done the work for you. [`urbnmapr`](https://github.com/UrbanInstitute/urbnmapr) includes the `get_urbn_map()` function which returns a simple features data frame which contains adjusted coordinates for Alaska and Hawaii to plot them with the mainland. It can be installed from GitHub using `remotes::install_github("UrbanInstitute/urbnmapr")`.
 
-```{r urbnmapr}
+```{r}
+#| label = "urbnmapr"
 library(urbnmapr)
 states_sf <- get_urbn_map("states", sf = TRUE)
 
@@ -91,24 +101,31 @@ Region boundaries serve as the background in geospatial data visualization - so 
 
 Let's use our [crimes data from New York City](/notes/geoviz/raster-maps-with-ggmap/#import-crime-data). `crimes` is a data frame with each row representing a reported crime in the city. Specifically we will filter the data frame to only examine reported homicides.
 
-```{r import-crimes, include = FALSE}
+```{r}
+#| label = "import-crimes",
+#| include = FALSE
 crimes <- here("static", "data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
-```{r import-crimes-fake, eval = FALSE}
+```{r}
+#| label = "import-crimes-fake",
+#| eval = FALSE
 crimes <- here("data", "nyc-crimes.csv") %>%
   read_csv()
 ```
 
-```{r chi-crimes, echo = TRUE}
+```{r}
+#| label = "chi-crimes",
+#| echo = TRUE
 crimes_homicide <- filter(.data = crimes, ofns_desc == "MURDER & NON-NEGL. MANSLAUGHTER")
 crimes_homicide
 ```
 
 Each crime has it's geographic location encoded through `latitude` and `longitude`. To draw these points on the map, basically we draw a scatterplot with `x = longitude` and `y = latitude`. In fact we could simply do that:
 
-```{r scatter}
+```{r}
+#| label = "scatter"
 ggplot(
   data = crimes_homicide,
   mapping = aes(
@@ -121,11 +138,13 @@ ggplot(
 
 Let's overlay it with the mapped boroughs:
 
-```{r import-nyc-json}
+```{r}
+#| label = "import-nyc-json"
 nyc_json <- st_read(dsn = here("static", "data", "borough-boundaries.geojson"))
 ```
 
-```{r nyc-crime}
+```{r}
+#| label = "nyc-crime"
 ggplot(data = nyc_json) +
   geom_sf() +
   geom_point(
@@ -140,7 +159,8 @@ ggplot(data = nyc_json) +
 
 Alternatively, we can use `st_as_sf()` to convert `crimes_homicide` to a simple features data frame.
 
-```{r crimes-sf}
+```{r}
+#| label = "crimes-sf"
 crimes_homicide_sf <- st_as_sf(x = crimes_homicide, coords = c("longitude", "latitude"))
 st_crs(crimes_homicide_sf) <- 4326 # set the coordinate reference system
 crimes_homicide_sf
@@ -148,7 +168,10 @@ crimes_homicide_sf
 
 `coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`
 
-```{r crimes-sf-plot, echo = TRUE, out.width = "100%"}
+```{r}
+#| label = "crimes-sf-plot",
+#| echo = TRUE,
+#| out.width = "100%"
 ggplot() +
   geom_sf(data = nyc_json) +
   geom_sf(
@@ -163,7 +186,8 @@ ggplot() +
 
 We will continue to use the `usa_48` simple features data frame and draw a choropleth for the number of foreign-born individuals in each state. We get those files from the `census_bureau` folder. Let's also normalize our measure by the total population to get the rate of foreign-born individuals in the population:
 
-```{r import-foreign}
+```{r}
+#| label = "import-foreign"
 fb_state <- read_csv(file = here("static", "data", "foreign-born.csv"))
 fb_state
 ```
@@ -172,7 +196,8 @@ fb_state
 
 Now that we have our data, we want to draw it on the map. `fb_state` contains one row per state, as does `usa_48`. Since there is a one-to-one match between the data frames, we join the data frames together first, then use that single data frame to draw the map. This differs from the approach above for drawing points because a point feature is not the same thing as a polygon feature. That is, there were more airports then there were states. Because the spatial data is stored in a data frame with one row per state, all we need to do is merge the data frames together on a column that uniquely identifies each row in each data frame.
 
-```{r usa-foreign-join}
+```{r}
+#| label = "usa-foreign-join"
 usa_fb <- left_join(x = usa_48, y = fb_state, by = c("STATEFP" = "GEOID", "NAME"))
 usa_fb
 ```
@@ -181,7 +206,8 @@ usa_fb
 
 With the newly combined data frame, use `geom_sf()` and define the `fill` aesthetic based on the column in `usa_fb` you want to visualize.
 
-```{r geom-map-state}
+```{r}
+#| label = "geom-map-state"
 ggplot(data = usa_fb) +
   geom_sf(mapping = aes(fill = pct_foreign))
 ```
@@ -192,20 +218,22 @@ When creating a heatmap with a continuous variable, one must decide whether to k
 
 `cut_interval()` makes `n` groups with equal range:
 
-```{r cut-interval}
+```{r}
+#| label = "cut-interval"
 usa_fb %>%
-  mutate(rate_cut = cut_interval(rate, n = 6)) %>%
+  mutate(pct_foreign_cut = cut_interval(pct_foreign, n = 6)) %>%
   ggplot() +
-  geom_sf(aes(fill = rate_cut))
+  geom_sf(aes(fill = pct_foreign_cut))
 ```
 
 Whereas `cut_number()` makes `n` groups with (approximately) equal numbers of observations:
 
-```{r cut-number}
+```{r}
+#| label = "cut-number"
 usa_fb %>%
-  mutate(rate_cut = cut_number(rate, n = 6)) %>%
+  mutate(pct_foreign_cut = cut_number(pct_foreign, n = 6)) %>%
   ggplot() +
-  geom_sf(aes(fill = rate_cut))
+  geom_sf(aes(fill = pct_foreign_cut))
 ```
 
 ## Changing map projection
@@ -218,12 +246,14 @@ Representing portions of the globe on a flat surface can be challenging. Dependi
 
 For our purposes here, `proj4string` is a character string in R that defines the coordinate system and includes parameters specific to a given coordinate transformation. PROJ4 includes [some documentation on common projection methods](https://proj4.org/operations/projections/index.html) that can get you started. Some projection methods are relatively simple and require just the name of the projection, like for a [Mercator projection](https://proj4.org/operations/projections/merc.html) (`"+proj=merc"`):
 
-```{r projections}
+```{r}
+#| label = "projections"
 map_proj_base <- ggplot(data = usa_48) +
   geom_sf()
 ```
 
-```{r mercator}
+```{r}
+#| label = "mercator"
 map_proj_base +
   coord_sf(crs = "+proj=merc") +
   ggtitle("Mercator projection")
@@ -231,7 +261,8 @@ map_proj_base +
 
 Other coordinate systems require specification of the **standard lines**, or lines that define areas of the surface of the map that are tangent to the globe. These include [Gall-Peters](http://spatialreference.org/ref/sr-org/gall-peters-orthographic-projection/proj4/), [Albers equal-area](https://proj4.org/operations/projections/aea.html), and [Lambert azimuthal](https://proj4.org/operations/projections/laea.html).
 
-```{r projection-rest}
+```{r}
+#| label = "projection-rest"
 map_proj_base +
   coord_sf(crs = "+proj=cea +lon_0=0 +lat_ts=45") +
   ggtitle("Gall-Peters projection")
@@ -247,7 +278,8 @@ map_proj_base +
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^territories]: Plus the District of Columbia and Puerto Rico.

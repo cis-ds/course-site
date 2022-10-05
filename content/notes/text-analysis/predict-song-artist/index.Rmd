@@ -11,11 +11,17 @@ categories: ["text"]
 weight: 115
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(tidymodels)
 library(stringr)
@@ -45,7 +51,8 @@ Beyoncé and Taylor Swift are two iconic singer/songwriters from the past twenty
 
 Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29) which compiled individual song lyrics from each singer's discography as of September 29, 2020. Here we import the data files and do some light cleaning to standardize each file.[^beyonce]
 
-```{r get-data}
+```{r}
+#| label = "get-data"
 # get beyonce and taylor swift lyrics
 beyonce_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/beyonce_lyrics.csv")
 taylor_swift_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/taylor_swift_lyrics.csv")
@@ -79,7 +86,9 @@ lyrics
 
 [`rsample`](/notes/resampling/) is the go-to package for this resampling.
 
-```{r rsample, dependson = "get-data"}
+```{r}
+#| label = "rsample",
+#| dependson = "get-data"
 # split into training/testing
 set.seed(123)
 lyrics_split <- initial_split(data = lyrics, strata = artist, prop = 0.75)
@@ -117,7 +126,9 @@ lyrics_folds <- vfold_cv(data = lyrics_train, strata = artist)
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r ranger-rec, dependson = "rsample"}
+```{r}
+#| label = "ranger-rec",
+#| dependson = "rsample"
 # define preprocessing recipe
 lyrics_rec <- recipe(artist ~ lyrics, data = lyrics_train) %>%
   step_tokenize(lyrics) %>%
@@ -146,7 +157,9 @@ lyrics_rec
     
 {{< spoiler text="Click for the solution" >}}
 
-```{r ranger-wf, dependson = "ranger-rec"}
+```{r}
+#| label = "ranger-wf",
+#| dependson = "ranger-rec"
 # define the model specification
 ranger_spec <- rand_forest(trees = 1000) %>%
   set_mode("classification") %>%
@@ -175,7 +188,9 @@ ranger_cv <- ranger_workflow %>%
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r ranger-metrics, dependson = "ranger-wf"}
+```{r}
+#| label = "ranger-metrics",
+#| dependson = "ranger-wf"
 # extract metrics and predictions
 ranger_cv_metrics <- collect_metrics(ranger_cv)
 ranger_cv_predictions <- collect_predictions(ranger_cv)
@@ -209,7 +224,9 @@ Define the same feature engineering recipe as before, with two adjustments:
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r glmnet-rec, dependson = "rsample"}
+```{r}
+#| label = "glmnet-rec",
+#| dependson = "rsample"
 # redefine recipe to include multiple n-grams
 glmnet_rec <- recipe(artist ~ lyrics, data = lyrics_train) %>%
   step_tokenize(lyrics) %>%
@@ -239,7 +256,9 @@ glmnet_rec
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r glmnet-tune, dependson = "glmnet-rec"}
+```{r}
+#| label = "glmnet-tune",
+#| dependson = "glmnet-rec"
 # define the penalized regression model specification
 glmnet_spec <- logistic_reg(penalty = tune(), mixture = tune()) %>%
   set_mode("classification") %>%
@@ -264,7 +283,9 @@ glmnet_tune <- tune_grid(
 )
 ```
 
-```{r glmnet-metrics, dependson = "glmnet-tune"}
+```{r}
+#| label = "glmnet-metrics",
+#| dependson = "glmnet-tune"
 # evaluate results
 collect_metrics(x = glmnet_tune)
 autoplot(glmnet_tune)
@@ -284,7 +305,9 @@ Based on the ROC AUC, any penalty parameter with a mixture of `0` provides the o
 
 {{< spoiler text="Click for the solution" >}}
 
-```{r glmnet-best, dependson = "glmnet-tune"}
+```{r}
+#| label = "glmnet-best",
+#| dependson = "glmnet-tune"
 # select the best model's hyperparameters
 glmnet_best <- select_best(glmnet_tune, metric = "roc_auc")
 
@@ -305,7 +328,9 @@ Not surprisingly the test set performance is slightly lower than the cross-valid
 
 Beyond predictive power, we can analyze which n-grams contribute most strongly to the model's predictions. Here we use the [`vip`](https://koalaverse.github.io/vip/index.html) and `vi()` to calculate the importance score for each n-gram, then visualize them using a bar plot.
 
-```{r glmnet-vip, dependson = "glmnet-best"}
+```{r}
+#| label = "glmnet-vip",
+#| dependson = "glmnet-best"
 # extract parnsip model fit
 glmnet_imp <- extract_fit_parsnip(glmnet_final) %>%
   # calculate variable importance for the specific penalty parameter used
@@ -349,7 +374,8 @@ This helps provide facial validity for the model's predictions. Not surprisingly
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 
 ```
 

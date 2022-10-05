@@ -177,7 +177,6 @@ crimes_homicide
 ## 10 240767512H1   BROOKLYN  2021-05-24 04:00:00 FELONY    MURDER…    40.6   -74.0
 ## # … with 259 more rows, and abbreviated variable names ¹​law_cat_cd, ²​ofns_desc,
 ## #   ³​latitude, ⁴​longitude
-## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 Each crime has it's geographic location encoded through `latitude` and `longitude`. To draw these points on the map, basically we draw a scatterplot with `x = longitude` and `y = latitude`. In fact we could simply do that:
@@ -260,7 +259,6 @@ crimes_homicide_sf
 ## 10 240767… BROOKL… 2021-05-24 04:00:00 FELONY  MURDER…   (-74 40.6)
 ## # … with 259 more rows, and abbreviated variable names ¹​cmplnt_num,
 ## #   ²​law_cat_cd, ³​ofns_desc
-## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 `coords` tells `st_as_sf()` which columns contain the geographic coordinates of each airport. To graph the points on the map, we use a second `geom_sf()`
@@ -304,7 +302,6 @@ fb_state
 ##  9 09    Connecticut           3575074  3054123   520951      0.146 
 ## 10 12    Florida              20901636 16576836  4324800      0.207 
 ## # … with 42 more rows
-## # ℹ Use `print(n = ...)` to see more rows
 ```
 
 ### Join the data
@@ -369,9 +366,9 @@ When creating a heatmap with a continuous variable, one must decide whether to k
 
 ```r
 usa_fb %>%
-  mutate(rate_cut = cut_interval(rate, n = 6)) %>%
+  mutate(pct_foreign_cut = cut_interval(pct_foreign, n = 6)) %>%
   ggplot() +
-  geom_sf(aes(fill = rate_cut))
+  geom_sf(aes(fill = pct_foreign_cut))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/cut-interval-1.png" width="672" />
@@ -381,9 +378,9 @@ Whereas `cut_number()` makes `n` groups with (approximately) equal numbers of ob
 
 ```r
 usa_fb %>%
-  mutate(rate_cut = cut_number(rate, n = 6)) %>%
+  mutate(pct_foreign_cut = cut_number(pct_foreign, n = 6)) %>%
   ggplot() +
-  geom_sf(aes(fill = rate_cut))
+  geom_sf(aes(fill = pct_foreign_cut))
 ```
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/cut-number-1.png" width="672" />
@@ -459,7 +456,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-09-01
+##  date     2022-10-05
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -467,8 +464,6 @@ sessioninfo::session_info()
 ##  albersusa     * 0.4.1      2022-06-08 [2] Github (hrbrmstr/albersusa@07aa87f)
 ##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
 ##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
-##  bit             4.0.4      2020-08-04 [2] CRAN (R 4.2.0)
-##  bit64           4.0.5      2020-08-30 [2] CRAN (R 4.2.0)
 ##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
 ##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
 ##  broom           1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
@@ -477,7 +472,7 @@ sessioninfo::session_info()
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
 ##  class           7.3-20     2022-01-16 [2] CRAN (R 4.2.1)
 ##  classInt        0.4-7      2022-06-10 [2] CRAN (R 4.2.0)
-##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  cli             3.4.0      2022-09-08 [1] CRAN (R 4.2.0)
 ##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
@@ -510,17 +505,16 @@ sessioninfo::session_info()
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  KernSmooth      2.23-20    2021-05-03 [2] CRAN (R 4.2.1)
-##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
+##  knitr           1.40       2022-08-24 [1] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
-##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  lifecycle       1.0.2      2022-09-09 [1] CRAN (R 4.2.0)
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
 ##  maptools        1.1-4      2022-04-17 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
 ##  nycflights13  * 1.0.2      2021-04-12 [2] CRAN (R 4.2.0)
-##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pillar          1.8.1      2022-08-19 [1] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
 ##  proxy           0.4-27     2022-06-09 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
@@ -531,7 +525,7 @@ sessioninfo::session_info()
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
 ##  rgdal           1.5-32     2022-05-09 [2] CRAN (R 4.2.0)
 ##  rgeos           0.5-9      2021-12-15 [2] CRAN (R 4.2.0)
-##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang           1.0.5      2022-08-31 [1] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
@@ -553,7 +547,6 @@ sessioninfo::session_info()
 ##  urbnmapr      * 0.0.0.9002 2022-06-08 [2] Github (UrbanInstitute/urbnmapr@ef9f448)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
 ##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
-##  vroom           1.5.7      2021-11-30 [2] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
 ##  wk              0.6.0      2022-01-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)

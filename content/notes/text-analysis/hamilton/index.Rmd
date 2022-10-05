@@ -11,11 +11,17 @@ categories: ["text"]
 weight: 113
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(tidytext)
 library(ggtext)
@@ -35,7 +41,10 @@ I admit, we were quite late to the party. I promise we did like it, but I wanted
 
 One of the nice things about the musical is that it is [sung-through](https://en.wikipedia.org/wiki/Sung-through), so the lyrics contain essentially all of the dialogue. This provides an interesting opportunity to use the `tidytext` package to analyze the lyrics. Here, I use the `geniusr` package to obtain the complete lyrics from [Genius](https://genius.com/albums/Lin-manuel-miranda/Hamilton-an-american-musical-original-broadway-cast-recording).[^lyrics]
 
-```{r get-hamilton, eval = FALSE, include = FALSE}
+```{r}
+#| label = "get-hamilton",
+#| eval = FALSE,
+#| include = FALSE
 library(geniusr)
 
 # Genius album ID number
@@ -66,7 +75,8 @@ hamilton <- hamilton_lyrics %>%
 glimpse(hamilton)
 ```
 
-```{r hamilton}
+```{r}
+#| label = "hamilton"
 hamilton <- read_csv(file = here("static", "data", "hamilton.csv")) %>%
   mutate(song_name = parse_factor(song_name))
 glimpse(hamilton)
@@ -78,7 +88,9 @@ Along with the lyrics, we also know the singer (`speaker`) of each line of dialo
 
 Currently, `hamilton` is stored as one-row-per-line of lyrics. The definition of a single "line" is somewhat arbitrary. For substantial analysis, we will convert the corpus to a tidy-text data frame of one-row-per-token. Initially, we will use `unnest_tokens()` to tokenize all unigrams.
 
-```{r tidy, dependson = "hamilton"}
+```{r}
+#| label = "tidy",
+#| dependson = "hamilton"
 hamilton_tidy <- hamilton %>%
   unnest_tokens(output = word, input = line)
 hamilton_tidy
@@ -90,7 +102,10 @@ Remember that by default, `unnest_tokens()` automatically converts all text to l
 
 An initial check reveals the length of each song in terms of the number of words in its lyrics.[^patter]
 
-```{r song-length, dependson = "hamilton", fig.asp = 1.1}
+```{r}
+#| label = "song-length",
+#| dependson = "hamilton",
+#| fig.asp = 1.1
 ggplot(data = hamilton_tidy, mapping = aes(x = fct_rev(song_name))) +
   geom_bar() +
   coord_flip() +
@@ -108,7 +123,9 @@ As a function of number of words, Non-Stop is the longest song in the musical.
 
 Of course not all words are equally important. Consider the 10 most frequent words in the lyrics:
 
-```{r stopwords, dependson = "tidy"}
+```{r}
+#| label = "stopwords",
+#| dependson = "tidy"
 hamilton_tidy %>%
   count(word) %>%
   arrange(desc(n))
@@ -116,7 +133,9 @@ hamilton_tidy %>%
 
 Not particularly informative. We can identify a list of stopwords using `get_stopwords()` then remove them via `anti_join()`.[^filter-join]
 
-```{r stop-remove, dependson = "tidy"}
+```{r}
+#| label = "stop-remove",
+#| dependson = "tidy"
 # remove stop words
 hamilton_tidy <- hamilton_tidy %>%
   anti_join(get_stopwords(source = "smart"))
@@ -141,7 +160,10 @@ Now the words seem more relevant to the specific story being told in the musical
 
 Since we know which singer performs each line, we can examine the relative significance of different words to different characters. [**Term frequency-inverse document frequency** (tf-idf)](https://www.tidytextmining.com/tfidf.html) is a simple metric for measuring the importance of specific words to a corpus. Here let's calculate the top ten words for each member of the principal cast.
 
-```{r tf-idf, dependson = "stop-remove", fig.asp = 1.1}
+```{r}
+#| label = "tf-idf",
+#| dependson = "stop-remove",
+#| fig.asp = 1.1
 # principal cast via Wikipedia
 principal_cast <- c(
   "Hamilton", "Eliza", "Burr", "Angelica", "Washington",
@@ -190,7 +212,10 @@ Again, some expected results stick out. Hamilton is always singing about not thr
 
 Here we use the `afinn` dictionary which classifies `r nrow(get_sentiments(lexicon = "afinn")) %>% scales::comma()` words on a scale of $[-5, +5]$.
 
-```{r sentiment, dependson = "stop-remove", fig.asp = 1.0}
+```{r}
+#| label = "sentiment",
+#| dependson = "stop-remove",
+#| fig.asp = 1
 # afinn dictionary
 get_sentiments(lexicon = "afinn")
 
@@ -207,7 +232,10 @@ hamilton_afinn
 
 First, we can examine the sentiment of each song individually by calculating the average sentiment of each word in the song.
 
-```{r sentiment-song, dependson = "sentiment", fig.asp = 1.0}
+```{r}
+#| label = "sentiment-song",
+#| dependson = "sentiment",
+#| fig.asp = 1
 # sentiment by song
 hamilton_afinn %>%
   group_by(song_name) %>%
@@ -234,7 +262,9 @@ Again, the general themes of the songs come across in this analysis. "Alexander 
 
 However, this also illustrates some problems with dictionary-based sentiment analysis. Consider the back-to-back songs "Helpless" and "Satisfied". "Helpless" depicts Eliza and Alexander falling in love with one another and getting married, while "Satisfied" recounts these same events from the perspective of Eliza's sister Angelica who suppresses her own feelings for Hamilton out of a sense of duty to her sister. From the perspective of the listener, "Helpless" is the far more positive song of the pair. Why are they reversed based on the textual analysis?
 
-```{r sentiment-outliers, dependson = "sentiment"}
+```{r}
+#| label = "sentiment-outliers",
+#| dependson = "sentiment"
 get_sentiments(lexicon = "afinn") %>%
   filter(word %in% c("helpless", "satisfied"))
 ```
@@ -243,7 +273,9 @@ Herein lies the problem with dictionary-based methods. The AFINN lexicon codes "
 
 We could also examine the general disposition of each speaker based on the sentiment of their lyrics. Consider the principal cast below:
 
-```{r sentiment-by-speaker, dependson = "sentiment"}
+```{r}
+#| label = "sentiment-by-speaker",
+#| dependson = "sentiment"
 hamilton_afinn %>%
   filter(speaker %in% principal_cast) %>%
   # calculate average sentiment by character with standard error
@@ -284,7 +316,10 @@ Also, can we please note Peggy's general pessimism?
 
 Tracking the cumulative sentiment across the entire musical, it's easy to identify the high and low points.
 
-```{r sentiment-cum, dependson = "sentiment", fig.asp = 1.6}
+```{r}
+#| label = "sentiment-cum",
+#| dependson = "sentiment",
+#| fig.asp = 1.6
 ggplot(data = hamilton_afinn, mapping = aes(x = id, y = cum_sent)) +
   geom_line() +
   # label the start of each song
@@ -349,7 +384,11 @@ ggraph(bigram_graph, layout = "fr") +
 
 Finally we can examine the colocation of pairs of words to look for common usage. It's apparent there are several major themes detected through this approach, including the Hamilton/Jefferson relationship, "Aaron Burr, sir", Philip's song with his mother (un, deux, trois, quatre, ...), the rising up of the colonies, and those young, scrappy, and hungry men.
 
-```{r spotify, dependson = "tidy", eval = FALSE, include = FALSE}
+```{r}
+#| label = "spotify",
+#| dependson = "tidy",
+#| eval = FALSE,
+#| include = FALSE
 hamilton_spotify <- spotifyr::get_album_tracks(id = "1kCHru7uhxBUdzkm4gzRQc", limit = 50) %>%
   # fix missing song from spotify info
   mutate(
@@ -369,7 +408,11 @@ hamilton_audio <- hamilton_spotify %>%
   select(spotify_id = id, duration_ms, explicit, name, song_number, danceability:tempo, time_signature)
 ```
 
-```{r length-words-duration, dependson = c("tidy", "spotify"), eval = FALSE, include = FALSE}
+```{r}
+#| label = "length-words-duration",
+#| dependson = c("tidy", "spotify"),
+#| eval = FALSE,
+#| include = FALSE
 hamilton_tidy %>%
   count(song_number, song_name) %>%
   left_join(hamilton_audio) %>%
@@ -393,12 +436,16 @@ hamilton_tidy %>%
 
 [^lyrics]: There are a number of ways to obtain the lyrics for the entire soundtrack. [One approach](https://seankross.com/2016/08/30/A-Sentiment-Analysis-of-Hamilton.html) is to use [`rvest` and web scraping](/notes/web-scraping/) to extract the lyrics from sources online. However here I used the Genius API and [`geniusr`](https://ewenme.github.io/geniusr/) to systematically collect the lyrics from an authoritative (and legal) source. The code below was used to obtain the lyrics for all the songs. Note that you need to [authenticate using an API token](https://ewenme.github.io/geniusr/articles/geniusr.html#auth) in order to use this code.
 
-    ```{r get-hamilton, include = TRUE, eval = FALSE}
+    ```{r}
+    #| label = "get-hamilton",
+    #| include = TRUE,
+    #| eval = FALSE
     ```
     
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^patter]: Though lyrics' length is not always [a good measure of a musical's pacing](https://fivethirtyeight.com/features/hamilton-is-the-very-model-of-a-modern-fast-paced-musical/).

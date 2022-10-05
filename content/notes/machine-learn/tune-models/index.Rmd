@@ -11,7 +11,9 @@ categories: ["stat-learn"]
 weight: 77
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(
   cache = TRUE,
   message = FALSE,
@@ -19,7 +21,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidymodels)
 library(rpart)
 library(modeldata)
@@ -39,7 +45,8 @@ Some model parameters cannot be learned directly from a data set during model tr
 
 In our previous [*Evaluate your model with resampling*](/notes/resampling/) article, we introduced a data set of survey respondents who indicated whether or not they believed Muslim clergymen who express anti-American attitudes should be allowed to teach in a college or university. We trained a [random forest model](/notes/resampling/#modeling) to predict respondents' responses, and used [resampling](/notes/resampling/#resampling) to estimate the performance of our model on this data.
 
-```{r load-gss}
+```{r}
+#| label = "load-gss"
 data("gss", package = "rcis")
 
 # select a smaller subset of variables for analysis
@@ -67,7 +74,9 @@ We will tune the model hyperparameters to avoid overfitting. Tuning the value of
 
 Before we start the tuning process, we split our data into training and testing sets, just like when we trained the model with one default set of hyperparameters. As [before](/notes/resampling/), we can use `strata = class` if we want our training and testing sets to be created using stratified sampling so that both have the same proportion of both kinds of segmentation.
 
-```{r split-gss, dependson = "load-gss"}
+```{r}
+#| label = "split-gss",
+#| dependson = "load-gss"
 set.seed(123)
 gss_split <- initial_split(gss, strata = colmslm)
 
@@ -81,7 +90,8 @@ We use the training data for tuning the model.
 
 Let’s start with the `parsnip` package, using a [`decision_tree()`](https://tidymodels.github.io/parsnip/reference/decision_tree.html) model with the [rpart](https://cran.r-project.org/web/packages/rpart/index.html) engine. To tune the decision tree hyperparameters `cost_complexity` and `tree_depth`, we create a model specification that identifies which hyperparameters we plan to tune. 
 
-```{r tune-spec}
+```{r}
+#| label = "tune-spec"
 tune_spec <-
   decision_tree(
     cost_complexity = tune(),
@@ -97,7 +107,8 @@ Think of `tune()` here as a placeholder. After the tuning process, we will selec
 
 We can't train this specification on a single data set (such as the entire training set) and learn what the hyperparameter values should be, but we _can_ train many models using resampled data and see which models turn out best. We can create a regular grid of values to try using some convenience functions for each hyperparameter:
 
-```{r tree-grid}
+```{r}
+#| label = "tree-grid"
 tree_grid <- grid_regular(cost_complexity(),
   tree_depth(),
   levels = 5
@@ -106,7 +117,8 @@ tree_grid <- grid_regular(cost_complexity(),
 
 The function [`grid_regular()`](https://tidymodels.github.io/dials/reference/grid_regular.html) is from the [dials](https://tidymodels.github.io/dials/) package. It chooses sensible values to try for each hyperparameter; here, we asked for 5 of each. Since we have two to tune, `grid_regular()` returns 5 $\times$ 5 = 25 different possible tuning combinations to try in a tidy tibble format.
 
-```{r tree-grid-tibble}
+```{r}
+#| label = "tree-grid-tibble"
 tree_grid
 ```
 
@@ -119,7 +131,9 @@ tree_grid %>%
 
 Armed with our grid filled with 25 candidate decision tree models, let's create [cross-validation folds](/notes/resampling/) for tuning:
 
-```{r gss-folds, dependson="cell-split"}
+```{r}
+#| label = "gss-folds",
+#| dependson = "cell-split"
 set.seed(234)
 gss_folds <- vfold_cv(gss_train)
 ```
@@ -136,7 +150,9 @@ We are ready to tune! Let's use [`tune_grid()`](https://tidymodels.github.io/tun
 
 Here we use a `workflow()` with a straightforward formula; if this model required more involved data preprocessing, we could use `add_recipe()` instead of `add_formula()`.
 
-```{r tree-res, dependson=c("tune-spec", "gss-folds", "tree-grid")}
+```{r}
+#| label = "tree-res",
+#| dependson = c("tune-spec", "gss-folds", "tree-grid")
 set.seed(345)
 
 tree_wf <- workflow() %>%
@@ -155,14 +171,20 @@ tree_res
 
 Once we have our tuning results, we can both explore them through visualization and then select the best result. The function `collect_metrics()` gives us a tidy tibble with all the results. We had 25 candidate models and two metrics, `accuracy` and `roc_auc`, and we get a row for each `.metric` and model. 
 
-```{r collect-trees, dependson="tree-res"}
+```{r}
+#| label = "collect-trees",
+#| dependson = "tree-res"
 tree_res %>%
   collect_metrics()
 ```
 
 We might get more out of plotting these results:
 
-```{r best-tree, dependson="tree-res", fig.width=8, fig.height=7}
+```{r}
+#| label = "best-tree",
+#| dependson = "tree-res",
+#| fig.width = 8,
+#| fig.height = 7
 tree_res %>%
   collect_metrics() %>%
   mutate(tree_depth = factor(tree_depth)) %>%
@@ -176,14 +198,18 @@ tree_res %>%
 
 We can see that our "stubbiest" tree, with a depth of `r min(tree_grid$tree_depth)`, is the worst model according to `roc_auc` (though surprisingly the most accurate) and across all candidate values of `cost_complexity`. Deeper trees tend to do better for this problem. However, the best tree seems to be between these values with a tree depth of 8. The [`show_best()`](https://tidymodels.github.io/tune/reference/show_best.html) function shows us the top 5 candidate models by default:
 
-```{r show-best-tree, dependson="tree-res"}
+```{r}
+#| label = "show-best-tree",
+#| dependson = "tree-res"
 tree_res %>%
   show_best("roc_auc")
 ```
 
 We can also use the [`select_best()`](https://tidymodels.github.io/tune/reference/show_best.html) function to pull out the single set of hyperparameter values for our best decision tree model:
 
-```{r select-best-tree, dependson="tree-res"}
+```{r}
+#| label = "select-best-tree",
+#| dependson = "tree-res"
 best_tree <- tree_res %>%
   select_best("roc_auc")
 
@@ -196,7 +222,9 @@ These are the values for `tree_depth` and `cost_complexity` that maximize AUC in
 
 We can update (or "finalize") our workflow object `tree_wf` with the values from `select_best()`. 
 
-```{r final-wf, dependson="best-tree"}
+```{r}
+#| label = "final-wf",
+#| dependson = "best-tree"
 final_wf <-
   tree_wf %>%
   finalize_workflow(best_tree)
@@ -210,7 +238,9 @@ Our tuning is done!
 
 Let's fit this final model to the training data. What does the decision tree look like?
 
-```{r final-tree, dependson="final-mod"}
+```{r}
+#| label = "final-tree",
+#| dependson = "final-mod"
 final_tree <-
   final_wf %>%
   fit(data = gss_train)
@@ -222,7 +252,11 @@ This `final_tree` object has the finalized, fitted model object inside. You may 
 
 For example, perhaps we would also like to understand what variables are important in this final model. We can use the [vip](https://koalaverse.github.io/vip/) package to estimate variable importance. 
 
-```{r vip, dependson="final-tree", fig.width=6, fig.height=5}
+```{r}
+#| label = "vip",
+#| dependson = "final-tree",
+#| fig.width = 6,
+#| fig.height = 5
 library(vip)
 
 final_tree %>%
@@ -236,7 +270,9 @@ These are the survey variables that are the most important in driving prediction
 
 Finally, let's return to our test data and estimate the model performance we expect to see with new data. We can use the function [`last_fit()`](https://tidymodels.github.io/tune/reference/last_fit.html) with our finalized model; this function _fits_ the finalized model on the full training data set and _evaluates_ the finalized model on the testing data.
 
-```{r last-fit, dependson=c("final_mod", "gss-split")}
+```{r}
+#| label = "last-fit",
+#| dependson = c("final_mod", "gss-split")
 final_fit <-
   final_wf %>%
   last_fit(gss_split)
@@ -266,5 +302,6 @@ Example drawn from [Get Started - Tune model parameters](https://www.tidymodels.
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```

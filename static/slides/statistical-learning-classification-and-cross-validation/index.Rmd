@@ -4,7 +4,9 @@ author: "[MACS 30500](https://info5940.infosci.cornell.edu) <br /> University of
 output: rcis::xaringan
 ---
 
-```{r setup, include=FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(cache = TRUE,
                       message = FALSE,
@@ -49,13 +51,17 @@ theme_set(theme_minimal(base_size = rcis::base_size))
 
 # Interpreting a decision tree
 
-```{r titanic_data, include = FALSE}
+```{r}
+#| label = "titanic_data",
+#| include = FALSE
 library(titanic)
 titanic <- titanic_train %>%
   as_tibble()
 ```
 
-```{r titanic_tree, echo = FALSE}
+```{r}
+#| label = "titanic_tree",
+#| echo = FALSE
 library(partykit)
 
 titanic_tree_data <- titanic %>%
@@ -80,7 +86,8 @@ plot(titanic_tree,
 
 # A more complex tree
 
-```{r titanic_tree_full}
+```{r}
+#| label = "titanic_tree_full"
 titanic_tree_full_data <- titanic %>%
   mutate(Survived = if_else(Survived == 1, "Survived",
                            if_else(Survived == 0, "Died", NA_character_))) %>%
@@ -104,7 +111,9 @@ plot(titanic_tree_full,
 
 # A more complex-ier tree
 
-```{r titanic_tree_complicated, dependson="titanic_tree_full"}
+```{r}
+#| label = "titanic_tree_complicated",
+#| dependson = "titanic_tree_full"
 titanic_tree_messy <- ctree(Survived ~ Pclass + Sex + Age + SibSp +
                               Parch + Fare + Embarked,
                             data = titanic_tree_full_data,
@@ -144,7 +153,8 @@ plot(titanic_tree_messy,
 
 # Sampling 
 
-```{r sampling}
+```{r}
+#| label = "sampling"
 (numbers <- seq(from = 1, to = 10))
 ```
 
@@ -154,7 +164,9 @@ plot(titanic_tree_messy,
 
 ##### Sampling without replacement
 
-```{r sample-without-replace, dependson = "sampling"}
+```{r}
+#| label = "sample-without-replace",
+#| dependson = "sampling"
 rerun(5, sample(numbers, replace = FALSE))
 ```
 
@@ -166,7 +178,9 @@ rerun(5, sample(numbers, replace = FALSE))
 
 ##### Sampling with replacement
 
-```{r sample-with-replace, dependson = "sampling"}
+```{r}
+#| label = "sample-with-replace",
+#| dependson = "sampling"
 rerun(5, sample(numbers, replace = TRUE))
 ```
 
@@ -195,7 +209,9 @@ rerun(5, sample(numbers, replace = TRUE))
 
 # `train()`
 
-```{r caret_glm, echo = TRUE}
+```{r}
+#| label = "caret_glm",
+#| echo = TRUE
 library(caret)
 
 titanic_clean <- titanic %>%
@@ -212,14 +228,20 @@ summary(caret_glm)
 
 # Estimating a random forest
 
-```{r rf_prep_data, dependson="titanic_tree_full", include = FALSE}
+```{r}
+#| label = "rf_prep_data",
+#| dependson = "titanic_tree_full",
+#| include = FALSE
 titanic_rf_data <- titanic_tree_full_data %>%
   select(Survived, Pclass, Sex, Age, SibSp, Parch, Fare, Embarked) %>%
   drop_na()
 titanic_rf_data
 ```
 
-```{r rf_estimate, dependson="rf_prep_data", echo = TRUE}
+```{r}
+#| label = "rf_estimate",
+#| dependson = "rf_prep_data",
+#| echo = TRUE
 titanic_rf <- train(Survived ~ ., data = titanic_rf_data,
                     method = "rf",
                     ntree = 200,
@@ -231,7 +253,9 @@ titanic_rf
 
 # Structure of `train()` object
 
-```{r rf_str, dependson="rf_estimate"}
+```{r}
+#| label = "rf_str",
+#| dependson = "rf_estimate"
 str(titanic_rf, max.level = 1)
 ```
 
@@ -239,7 +263,10 @@ str(titanic_rf, max.level = 1)
 
 # Model statistics
 
-```{r rf_finalmodel, dependson="rf_estimate", echo = TRUE}
+```{r}
+#| label = "rf_finalmodel",
+#| dependson = "rf_estimate",
+#| echo = TRUE
 titanic_rf$finalModel
 ```
 
@@ -247,7 +274,9 @@ titanic_rf$finalModel
 
 # Results of a single tree
 
-```{r getTree, echo = TRUE}
+```{r}
+#| label = "getTree",
+#| echo = TRUE
 randomForest::getTree(titanic_rf$finalModel, labelVar = TRUE)
 ```
 
@@ -255,7 +284,9 @@ randomForest::getTree(titanic_rf$finalModel, labelVar = TRUE)
 
 # Variable importance
 
-```{r rf_import, dependson="rf_estimate"}
+```{r}
+#| label = "rf_import",
+#| dependson = "rf_estimate"
 randomForest::varImpPlot(titanic_rf$finalModel)
 ```
 
@@ -290,14 +321,18 @@ randomForest::varImpPlot(titanic_rf$finalModel)
 
 # Regression
 
-```{r auto, include = FALSE}
+```{r}
+#| label = "auto",
+#| include = FALSE
 library(ISLR)
 
 Auto <- as_tibble(Auto)
 Auto
 ```
 
-```{r auto_plot_lm, dependson="auto"}
+```{r}
+#| label = "auto_plot_lm",
+#| dependson = "auto"
 ggplot(Auto, aes(horsepower, mpg)) +
   geom_point() +
   geom_smooth(method = "lm", se = FALSE)
@@ -317,7 +352,9 @@ $$MSE = \frac{1}{n} \sum_{i = 1}^{n}{(y_i - \hat{f}(x_i))^2}$$
 
 # Split data
 
-```{r auto_split, echo = TRUE}
+```{r}
+#| label = "auto_split",
+#| echo = TRUE
 set.seed(1234)
 
 auto_split <- initial_split(data = Auto, prop = 0.5)
@@ -333,12 +370,18 @@ dim(auto_test)
 
 # Train model
 
-```{r auto_lm, dependson="auto_split", echo = TRUE}
+```{r}
+#| label = "auto_lm",
+#| dependson = "auto_split",
+#| echo = TRUE
 auto_lm <- glm(mpg ~ horsepower, data = auto_train)
 tidy(auto_lm)
 ```
 
-```{r mse-train, dependson = "auto_lm", echo = TRUE}
+```{r}
+#| label = "mse-train",
+#| dependson = "auto_lm",
+#| echo = TRUE
 (train_mse <- augment(auto_lm, newdata = auto_train) %>%
   mutate(.resid = mpg - .fitted,
          .resid2 = .resid ^ 2) %$%
@@ -349,7 +392,10 @@ tidy(auto_lm)
 
 # Validate model
 
-```{r mse-test, dependson = "auto_lm", echo = TRUE}
+```{r}
+#| label = "mse-test",
+#| dependson = "auto_lm",
+#| echo = TRUE
 (test_mse <- augment(auto_lm, newdata = auto_test) %>%
   mutate(.resid = mpg - .fitted,
          .resid2 = .resid ^ 2) %$%
@@ -360,7 +406,10 @@ tidy(auto_lm)
 
 # Compare models
 
-```{r mse-poly-plot, dependson = "auto_split", echo = FALSE}
+```{r}
+#| label = "mse-poly-plot",
+#| dependson = "auto_split",
+#| echo = FALSE
 # visualize each model
 auto_models <- ggplot(Auto, aes(horsepower, mpg)) +
   geom_point(alpha = .1) +
@@ -391,7 +440,9 @@ auto_models <- ggplot(Auto, aes(horsepower, mpg)) +
   theme(legend.position = "bottom")
 ```
 
-```{r mse-poly, dependson = c("auto_split", "mse-poly-plot")}
+```{r}
+#| label = "mse-poly",
+#| dependson = c("auto_split", "mse-poly-plot")
 # function to estimate model using training set and generate fit statistics
 # using the validation set
 poly_results <- function(train, test, i) {
@@ -433,7 +484,9 @@ auto_models +
 
 # Classification
 
-```{r age_woman_cross, echo = TRUE}
+```{r}
+#| label = "age_woman_cross",
+#| echo = TRUE
 survive_age_woman_x <- glm(Survived ~ Age * Sex, data = titanic,
                            family = binomial)
 tidy(survive_age_woman_x)
@@ -443,7 +496,12 @@ tidy(survive_age_woman_x)
 
 # Test error rate
 
-```{r accuracy_age_sex_x_test_set, dependson="age_woman_cross", message = FALSE, echo = TRUE, collapse=  TRUE}
+```{r}
+#| label = "accuracy_age_sex_x_test_set",
+#| dependson = "age_woman_cross",
+#| message = FALSE,
+#| echo = TRUE,
+#| collapse = TRUE
 # split the data into training and validation sets
 titanic_split <- initial_split(data = titanic, prop = 0.5)
 
@@ -466,7 +524,8 @@ mean(x_test_accuracy$Survived != x_test_accuracy$pred, na.rm = TRUE)
 
 # Drawbacks to validation sets
 
-```{r auto_variable_mse}
+```{r}
+#| label = "auto_variable_mse"
 # function to simulate training/validation set results
 mse_variable <- function(Auto){
   # split data into training and validation sets
@@ -511,7 +570,10 @@ $$CV_{(n)} = \frac{1}{n} \sum_{i = 1}^{n}{MSE_i}$$
 
 # `rsample::loo_cv()`
 
-```{r loocv-data, dependson="Auto", echo = TRUE}
+```{r}
+#| label = "loocv-data",
+#| dependson = "Auto",
+#| echo = TRUE
 loocv_data <- loo_cv(Auto)
 loocv_data
 ```
@@ -520,7 +582,10 @@ loocv_data
 
 # Splits
 
-```{r rsplit, dependson = "loocv-data", echo = TRUE}
+```{r}
+#| label = "rsplit",
+#| dependson = "loocv-data",
+#| echo = TRUE
 first_resample <- loocv_data$splits[[1]]
 first_resample
 ```
@@ -529,7 +594,10 @@ first_resample
 
 # Splits
 
-```{r rsplit-extract, echo = TRUE, collapse = TRUE}
+```{r}
+#| label = "rsplit-extract",
+#| echo = TRUE,
+#| collapse = TRUE
 training(first_resample) %>% glimpse()
 assessment(first_resample) %>% glimpse()
 ```
@@ -545,7 +613,10 @@ assessment(first_resample) %>% glimpse()
 
 --
 
-```{r loocv-function, dependson = "Auto", echo = TRUE}
+```{r}
+#| label = "loocv-function",
+#| dependson = "Auto",
+#| echo = TRUE
 holdout_results <- function(splits) {
   # Fit the model to the n-1
   mod <- glm(mpg ~ horsepower, data = analysis(splits))
@@ -567,7 +638,10 @@ holdout_results <- function(splits) {
 
 # Holdout results
 
-```{r loocv-function-test, dependson = "loocv-function", echo = TRUE}
+```{r}
+#| label = "loocv-function-test",
+#| dependson = "loocv-function",
+#| echo = TRUE
 holdout_results(loocv_data$splits[[1]])
 ```
 
@@ -575,7 +649,10 @@ holdout_results(loocv_data$splits[[1]])
 
 # Holdout results
 
-```{r loocv, dependson = c("Auto", "loocv-function"), echo = TRUE}
+```{r}
+#| label = "loocv",
+#| dependson = c("Auto", "loocv-function"),
+#| echo = TRUE
 loocv_data$results <- map(loocv_data$splits, holdout_results)
 loocv_data$mse <- map_dbl(loocv_data$results, ~ mean(.x$.resid ^ 2))
 loocv_data
@@ -585,7 +662,10 @@ loocv_data
 
 # Holdout results
 
-```{r loocv-test-mse, dependson = c("Auto", "loocv-function"), echo = TRUE}
+```{r}
+#| label = "loocv-test-mse",
+#| dependson = c("Auto", "loocv-function"),
+#| echo = TRUE
 loocv_data %>%
   summarize(mse = mean(mse))
 ```
@@ -594,7 +674,9 @@ loocv_data %>%
 
 # Compare polynomial terms
 
-```{r loocv_poly, dependson="Auto"}
+```{r}
+#| label = "loocv_poly",
+#| dependson = "Auto"
 # modified function to estimate model with varying highest order polynomial
 holdout_results <- function(splits, i) {
   # Fit the model to the n-1
@@ -636,7 +718,9 @@ ggplot(cv_mse, aes(terms, mse_loocv)) +
 
 # LOOCV in classification
 
-```{r titanic-loocv_function, echo = TRUE}
+```{r}
+#| label = "titanic-loocv_function",
+#| echo = TRUE
 # function to generate assessment statistics for titanic model
 holdout_results <- function(splits) {
   # Fit the model to the n-1
@@ -660,7 +744,10 @@ holdout_results <- function(splits) {
 
 # LOOCV in classification
 
-```{r titanic_loocv, dependson = "titanic_loocv_function", echo = TRUE}
+```{r}
+#| label = "titanic_loocv",
+#| dependson = "titanic_loocv_function",
+#| echo = TRUE
 titanic_loocv <- loo_cv(titanic) %>%
   mutate(results = map(splits, holdout_results),
          error_rate = map_dbl(results, ~ mean(.x$Survived != .x$pred,
@@ -692,7 +779,8 @@ $$CV_{(k)} = \frac{1}{k} \sum_{i = 1}^{k}{MSE_i}$$
 
 # $K$-fold CV in linear regression
 
-```{r 10_fold_auto}
+```{r}
+#| label = "10_fold_auto"
 # modified function to estimate model with varying highest order polynomial
 holdout_results <- function(splits, i) {
   # Fit the model to the training set
@@ -726,7 +814,9 @@ cv_mse <- tibble(terms = seq(from = 1, to = 5),
                  mse_vfold = map_dbl(terms, poly_mse, auto_cv10))
 ```
 
-```{r 10_fold_auto_loocv, dependson=c("10_fold_auto","loocv_poly")}
+```{r}
+#| label = "10_fold_auto_loocv",
+#| dependson = c("10_fold_auto", "loocv_poly")
 auto_loocv <- loo_cv(Auto)
 
 tibble(terms = seq(from = 1, to = 5),
@@ -746,7 +836,8 @@ tibble(terms = seq(from = 1, to = 5),
 
 # Computational speed of LOOCV
 
-```{r loocv-kfold-time}
+```{r}
+#| label = "loocv-kfold-time"
 library(microbenchmark)
 
 results_cv <- microbenchmark(
@@ -761,7 +852,9 @@ autoplot(results_cv)
 
 # $K$-fold CV in logistic regression
 
-```{r titanic_kfold_function, echo = TRUE}
+```{r}
+#| label = "titanic_kfold_function",
+#| echo = TRUE
 # function to generate assessment statistics for titanic model
 holdout_results <- function(splits) {
   # Fit the model to the training set
@@ -785,7 +878,10 @@ holdout_results <- function(splits) {
 
 # $K$-fold CV in logistic regression
 
-```{r titanic_kfold, dependson = "titanic_kfold_function", echo = TRUE}
+```{r}
+#| label = "titanic_kfold",
+#| dependson = "titanic_kfold_function",
+#| echo = TRUE
 titanic_cv10 <- vfold_cv(data = titanic, v = 10) %>%
   mutate(results = map(splits, holdout_results),
          error_rate = map_dbl(results, ~ mean(.x$Survived != .x$pred,

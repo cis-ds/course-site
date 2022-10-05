@@ -89,7 +89,7 @@ count(diamonds, colour)
 #>  6.       └─rlang::abort(bullets, call = error_call)
 ```
 
-<sup>Created on 2022-08-22 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1.9000)</sup>
+<sup>Created on 2022-10-05 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1.9000)</sup>
 ````
 
 Here's what that Markdown would look like rendered in a GitHub issue:
@@ -112,7 +112,7 @@ count(diamonds, colour)
 #>  6.       └─rlang::abort(bullets, call = error_call)
 ```
 
-<sup>Created on 2022-08-22 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1.9000)</sup>
+<sup>Created on 2022-10-05 by the [reprex package](https://reprex.tidyverse.org) (v2.0.1.9000)</sup>
 
 Anyone else can copy, paste, and run this immediately. The nice thing is that if your script also produces images or graphs (probably using `ggplot()`) these images are automatically uploaded and included in the issue.
 

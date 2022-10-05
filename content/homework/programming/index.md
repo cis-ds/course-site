@@ -48,9 +48,9 @@ Go [here](https://github.coecis.cornell.edu/cis-fa22) and find your copy of the 
         
     
 
-    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-2-1.png" title="Correct use cases of the function." alt="Correct use cases of the function." width="672" />
+    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-4-1.png" alt="Correct use cases of the function." width="672" />
 
-    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-3-1.png" title="Incorrect use cases of the function." alt="Incorrect use cases of the function." width="672" />
+    <img src="{{< blogdown/postref >}}index_files/figure-html/unnamed-chunk-5-1.png" alt="Incorrect use cases of the function." width="672" />
 
 
 # Part 2: Using programming in data analysis

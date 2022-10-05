@@ -11,7 +11,9 @@ categories: ["programming"]
 weight: 81
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
@@ -23,7 +25,9 @@ Suppose we have the following assignment:
 
 Okay, first let's load our libraries and check out the data frame.
 
-```{r data, message = FALSE}
+```{r}
+#| label = "data",
+#| message = FALSE
 library(tidyverse)
 library(palmerpenguins)
 penguins
@@ -41,7 +45,8 @@ But how do we implement the code?
 
 One option is to save each step as a new object:
 
-```{r intermediate}
+```{r}
+#| label = "intermediate"
 penguins_1 <- filter(penguins, species == "Adelie")
 penguins_2 <- group_by(penguins_1, island)
 (penguins_3 <- summarize(penguins_2, body_mass = mean(body_mass_g, na.rm = TRUE)))
@@ -49,7 +54,9 @@ penguins_2 <- group_by(penguins_1, island)
 
 Why do we not like doing this? **We have to name each intermediate object**. Here I just append a number to the end, but this is not good self-documentation. What should we expect to find in `penguins_2`? It would be nicer to have an informative name, but there isn't a natural one. Then we have to remember how the data exists in each intermediate step and remember to reference the correct one. What happens if we misidentify the data frame?
 
-```{r intermediate-bad, error = TRUE}
+```{r}
+#| label = "intermediate-bad",
+#| error = TRUE
 penguins_1 <- filter(penguins, species == "Adelie")
 penguins_2 <- group_by(penguins_1, island)
 (penguins_3 <- summarize(penguins_1, body_mass = mean(body_mass_g, na.rm = TRUE)))
@@ -61,7 +68,8 @@ We don't get the correct answer. Worse, we don't get an explicit error message b
 
 Instead of creating intermediate objects, let's just replace the original data frame with the modified form.
 
-```{r overwrite}
+```{r}
+#| label = "overwrite"
 penguins <- filter(penguins, species == "Adelie")
 penguins <- group_by(penguins, island)
 (penguins <- summarize(penguins, body_mass = mean(body_mass_g, na.rm = TRUE)))
@@ -73,11 +81,14 @@ This works, but still has a couple of problems. What happens if I make an error 
 
 We could string all the function calls together into a single object and forget assigning it anywhere.
 
-```{r penguins-refresh, include = FALSE}
+```{r}
+#| label = "penguins-refresh",
+#| include = FALSE
 data("penguins")
 ```
 
-```{r function-comp}
+```{r}
+#| label = "function-comp"
 summarize(
   group_by(
     filter(
@@ -92,7 +103,8 @@ summarize(
 
 But now we have to read the function from the inside out. Even worse, what happens if we cram it all into a single line?
 
-```{r function-comp-single}
+```{r}
+#| label = "function-comp-single"
 summarize(group_by(filter(penguins, species == "Adelie"), island), body_mass = mean(body_mass_g, na.rm = TRUE))
 ```
 
@@ -100,7 +112,8 @@ summarize(group_by(filter(penguins, species == "Adelie"), island), body_mass = m
 
 ## Back to the pipe
 
-```{r pipe}
+```{r}
+#| label = "pipe"
 penguins %>%
   filter(species == "Adelie") %>%
   group_by(island) %>%
@@ -124,7 +137,8 @@ This is why `tidyverse` functions always accept a data frame as the first argume
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^magrittr]: The basic `%>%` pipe is automatically imported as part of the `tidyverse` library. If you wish to use any of the [extra tools from `magrittr` as demonstrated in R for Data Science](http://r4ds.had.co.nz/pipes.html#other-tools-from-magrittr), you need to explicitly load `magrittr`.

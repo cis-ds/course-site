@@ -11,7 +11,9 @@ categories: ["stat-learn"]
 weight: 73
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(
   cache = TRUE,
   message = FALSE,
@@ -19,7 +21,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(tidymodels)
 set.seed(123)
@@ -56,7 +62,9 @@ In essence, we have a classification problem. The response is a binary variable,
 
 Kaggle is an online platform for predictive modeling and analytics. They run regular competitions where they provide the public with a question and data, and anyone can estimate a predictive model to answer the question. They've run a popular contest based on a [dataset of passengers from the Titanic](https://www.kaggle.com/c/titanic/data). The datasets have been conveniently stored in a package called `titanic`. Let's load the package and convert the desired data frame to a tibble.
 
-```{r titanic_data, message = FALSE}
+```{r}
+#| label = "titanic_data",
+#| message = FALSE
 library(titanic)
 titanic <- titanic_train %>%
   as_tibble()
@@ -114,7 +122,9 @@ So if this is our data, `Survived` is our **response variable** and the remainin
 
 Let's concentrate first on the relationship between age and survival. Using the methods we previously learned, we could estimate a linear regression model:
 
-```{r titanic-ols, dependson = "titanic"}
+```{r}
+#| label = "titanic-ols",
+#| dependson = "titanic"
 # estimate model
 lin_fit <- linear_reg() %>%
   set_engine("lm") %>%
@@ -139,7 +149,9 @@ Hmm. Not terrible, but you can immediately notice a couple of things. First, the
 
 One possibility is that these values are **predicted probabilities**. That is, the estimated probability a passenger will survive given their age. So someone with a predicted probability of $.4$ has a 40% chance of surviving. Okay, but notice that because the line is linear and continuous, it extends infinitely in both directions of age.
 
-```{r titanic-ols-old, dependson = "titanic-ols"}
+```{r}
+#| label = "titanic-ols-old",
+#| dependson = "titanic-ols"
 # visualize predicted values
 age_vals <- tibble(
   Age = 0:200
@@ -193,7 +205,8 @@ The values of $\Pr(\text{survival} = \text{Yes} | \text{age})$ (or simply $\Pr(\
 
 Using `tidymodels` and the `parsnip` package, we can estimate this model. Unlike our [previous example](/notes/start-with-models/), we will use `logistic_reg()` since we are working with a binary outcome. Note that we also need to ensure our outcome variable (`Survived`) is stored as a factor column so that `parsnip` recognizes it as a categorical variable.
 
-```{r titanic-factor}
+```{r}
+#| label = "titanic-factor"
 titanic <- titanic_train %>%
   as_tibble() %>%
   # convert Survived to factor column
@@ -204,7 +217,9 @@ titanic <- titanic_train %>%
   ))
 ```
 
-```{r titanic-age, dependson = "titanic-factor"}
+```{r}
+#| label = "titanic-age",
+#| dependson = "titanic-factor"
 log_mod <- logistic_reg() %>%
   set_engine("glm")
 
@@ -217,7 +232,9 @@ tidy(log_fit)
 
 Which produces a line that looks like this:
 
-```{r titanic-age-plot, dependson = "titanic-age"}
+```{r}
+#| label = "titanic-age-plot",
+#| dependson = "titanic-age"
 # estimate predicted probabilities
 new_ages <- tibble(Age = 0:80)
 new_ages_pred <- predict(log_fit, new_data = new_ages, type = "prob")
@@ -233,7 +250,9 @@ new_ages %>%
 
 It's hard to tell, but the line is not perfectly linear. Let's expand the range of the x-axis to prove this:
 
-```{r titanic-age-plot-long, dependson = "titanic-age"}
+```{r}
+#| label = "titanic-age-plot-long",
+#| dependson = "titanic-age"
 # estimate predicted probabilities
 new_ages <- tibble(Age = 0:200)
 new_ages_pred <- predict(log_fit, new_data = new_ages, type = "prob")
@@ -253,7 +272,9 @@ No more predictions that a 200 year old has a $-.1$ probability of surviving!
 
 But as the old principle of the sea goes, ["women and children first"](https://en.wikipedia.org/wiki/Women_and_children_first). What if age isn't the only factor effecting survival? Fortunately logistic regression handles multiple predictors:
 
-```{r survive-age-woman, dependson = "titanic-factor"}
+```{r}
+#| label = "survive-age-woman",
+#| dependson = "titanic-factor"
 mult_fit <- log_mod %>%
   fit(Survived ~ Age + Sex, data = titanic)
 tidy(mult_fit)
@@ -263,7 +284,9 @@ The coefficients essentially tell us the relationship between each individual pr
 
 To get a better visualization of this, let's again use `predict()` to generate predicted values for individuals based on their ages and sex:
 
-```{r survive-age-woman-pred, dependson = "survive-age-woman"}
+```{r}
+#| label = "survive-age-woman-pred",
+#| dependson = "survive-age-woman"
 age_sex_vals <- expand.grid(
   Age = 0:80,
   Sex = c("male", "female")
@@ -301,7 +324,9 @@ $$f = \beta\_{0} + \beta\_{1}\text{age} + \beta\_{2}\text{sex} + \beta\_{3}(\tex
 
 This is considered an **interaction** between age and sex. To estimate this in R, we simply specify `Age * Sex` in our formula in `fit()`:[^int-terms]
 
-```{r age-woman-cross, dependson = "titanic-factor"}
+```{r}
+#| label = "age-woman-cross",
+#| dependson = "titanic-factor"
 int_fit <- log_mod %>%
   fit(Survived ~ Age * Sex, data = titanic)
 tidy(int_fit)
@@ -309,7 +334,9 @@ tidy(int_fit)
 
 As before, let's estimate predicted probabilities and plot the interactive effects of age and sex.
 
-```{r age-woman-cross-pred, dependson = "age-woman-cross"}
+```{r}
+#| label = "age-woman-cross-pred",
+#| dependson = "age-woman-cross"
 int_pred <- predict(int_fit, new_data = age_sex_vals, type = "prob")
 
 age_sex_vals %>%
@@ -334,7 +361,8 @@ You may think then that it makes sense to throw in interaction terms willy-nilly
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
 
 [^concordia]: General at least as applied to the Titanic. I'd like to think technology has advanced some since the early 20th century that the same patterns do not apply today. [Not that sinking ships have gone away.](https://en.wikipedia.org/wiki/Costa_Concordia_disaster)

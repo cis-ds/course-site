@@ -11,11 +11,16 @@ categories: ["datawrangle"]
 weight: 35
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(cache = TRUE)
 ```
 
-```{r packages, cache = FALSE, message = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE
 library(tidyverse)
 library(nycflights13)
 theme_set(theme_minimal())
@@ -47,7 +52,8 @@ Hint: all the data is from 2013.
 
 The first step is to calculate the age of each plane. To do that, use `planes` and the `age` variable:
 
-```{r planes-age}
+```{r}
+#| label = "planes-age"
 (plane_ages <- planes %>%
   mutate(age = 2013 - year) %>%
   select(tailnum, age))
@@ -55,7 +61,8 @@ The first step is to calculate the age of each plane. To do that, use `planes` a
 
 The best approach to answering this question is a visualization. There are several different types of visualizations you could implement (e.g. scatterplot with smoothing line, line graph of average delay by age). The important thing is that we need to combine `flights` with `plane_ages` to determine for each flight the age of the plane. This is another mutating join. The best choice is `inner_join()` as this will automatically remove any rows in `flights` where we don't have age data on the plane.
 
-```{r age-delay-solution}
+```{r}
+#| label = "age-delay-solution"
 # smoothing line
 flights %>%
   inner_join(y = plane_ages) %>%
@@ -74,7 +81,8 @@ flights %>%
 
 In this situation, `left_join()` could also be used because `ggplot()` and `mean(na.rm = TRUE)` drop missing values (remember that `left_join()` keeps all rows from `flights`, even if we don't have information on the plane).
 
-```{r age-delay-leftjoin}
+```{r}
+#| label = "age-delay-leftjoin"
 flights %>%
   left_join(y = plane_ages) %>%
   ggplot(mapping = aes(x = age, y = dep_delay)) +
@@ -99,7 +107,8 @@ The important takeaway is that departure delays do not appear to increase with p
 
 This is a mutating join, and the basic function you need to use here is `left_join()`. We have to perform the joining operation twice since we want to create new variables based on both the destination airport and the origin airport. And because the name of the key variable differs between the data frames, we need to explicitly define how to join the data frames using the `by` argument:
 
-```{r lat-lon-simple}
+```{r}
+#| label = "lat-lon-simple"
 flights %>%
   left_join(y = airports, by = c(dest = "faa")) %>%
   left_join(y = airports, by = c(origin = "faa"))
@@ -107,7 +116,8 @@ flights %>%
 
 Notice that with this approach, we are joining **all** of the columns in `airports`. The instructions just asked for latitude and longitude, so we can create a copy of `airports` that only includes the necessary variables (`lat` and `lon`, plus the primary key variable `faa`) and join `flights` to that data frame:
 
-```{r lat-lon-better}
+```{r}
+#| label = "lat-lon-better"
 airports_lite <- airports %>%
   select(faa, lat, lon)
 
@@ -118,7 +128,8 @@ flights %>%
 
 This is better, but now we have two sets of latitude and longitude variables in the data frame: one for the destination airport, and one for the origin airport. When we perform the second `left_join()` operation, to avoid duplicate variable names the function automatically adds generic `.x` and `.y` suffixes to the output to disambiguate them. This is nice, but we might want something more intuitive to explicitly identify which variables are associated with the destination vs. the origin. To do that, we override the default `suffix` argument with custom suffixes:
 
-```{r lat-lon-solution}
+```{r}
+#| label = "lat-lon-solution"
 airports_lite <- airports %>%
   select(faa, lat, lon)
 
@@ -135,5 +146,6 @@ flights %>%
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```

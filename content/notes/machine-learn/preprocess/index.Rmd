@@ -11,7 +11,9 @@ categories: ["stat-learn"]
 weight: 75
 ---
 
-```{r setup, include = FALSE}
+```{r}
+#| label = "setup",
+#| include = FALSE
 knitr::opts_chunk$set(
   cache = TRUE,
   message = FALSE,
@@ -19,7 +21,11 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r packages, cache = FALSE, message = FALSE, warning = FALSE}
+```{r}
+#| label = "packages",
+#| cache = FALSE,
+#| message = FALSE,
+#| warning = FALSE
 library(tidyverse)
 library(tidymodels)
 library(rcis)
@@ -58,7 +64,8 @@ The [General Social Survey](http://gss.norc.org/) is a biannual survey of the Am
 
 {{% /callout %}}
 
-```{r load-gss}
+```{r}
+#| label = "load-gss"
 data("gss", package = "rcis")
 
 # select a smaller subset of variables for analysis
@@ -80,7 +87,8 @@ Documentation for the other predictors (if the variable is not clearly coded) ca
 
 We can see that about `r percent(mean(gss$colrac == "ALLOWED", na.rm = TRUE))` of respondents who answered the question think a person who believes that Blacks are genetically inferior should be allowed to teach in a college or university. 
 
-```{r count-allow}
+```{r}
+#| label = "count-allow"
 gss %>%
   drop_na(colrac) %>%
   count(colrac) %>%
@@ -91,7 +99,8 @@ Before we start building up our recipe, let's take a quick look at a few specifi
 
 First, notice that the variable `colrac` is a factor variable; it is important that our outcome variable for training a logistic regression model is a factor.
 
-```{r gss-glimpse}
+```{r}
+#| label = "gss-glimpse"
 glimpse(gss)
 ```
 
@@ -99,7 +108,8 @@ Second, there are two variables that we don't want to use as predictors in our m
 
 Third, there is a substantial amount of missingness to many of the variables in the dataset. 
 
-```{r gss-missing}
+```{r}
+#| label = "gss-missing"
 vis_miss(x = gss)
 ```
 
@@ -111,7 +121,9 @@ To get started, let's split this single dataset into two: a _training_ set and a
 
 To do this, we can use the [`rsample`](https://tidymodels.github.io/rsample/) package to create an object that contains the information on _how_ to split the data, and then two more `rsample` functions to create data frames for the training and testing sets: 
 
-```{r split, dependson = "load-gss"}
+```{r}
+#| label = "split",
+#| dependson = "load-gss"
 # Fix the random numbers by setting the seed
 # This enables the analysis to be reproducible when random numbers are used
 set.seed(123)
@@ -133,7 +145,8 @@ To get started, let's create a recipe for a simple logistic regression model. Be
 
 Let's initiate a new recipe: 
 
-```{r initial-recipe}
+```{r}
+#| label = "initial-recipe"
 gss_rec <- recipe(colrac ~ ., data = train_data)
 ```
 
@@ -145,7 +158,8 @@ The [`recipe()` function](https://tidymodels.github.io/recipes/reference/recipe.
 
 Now we can add [roles](https://tidymodels.github.io/recipes/reference/roles.html) to this recipe. We can use the [`update_role()` function](https://tidymodels.github.io/recipes/reference/roles.html) to let recipes know that `id` and `wtss` are variables with a custom role that we called `"ID"` (a role can have any character value). Whereas our formula included all variables in the training set other than `colrac` as predictors, this tells the recipe to keep these two variables but not use them as either outcomes or predictors.
 
-```{r recipe-roles}
+```{r}
+#| label = "recipe-roles"
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID")
 ```
@@ -154,7 +168,10 @@ This step of adding roles to a recipe is optional; the purpose of using it here 
 
 To get the current set of variables and roles, use the `summary()` function: 
 
-```{r summary, dependson = "recipe-roles", R.options = list(tibble.print_min = 30)}
+```{r}
+#| label = "summary",
+#| dependson = "recipe-roles",
+#| R.options = list(tibble.print_min = 30)
 summary(gss_rec)
 ```
 
@@ -164,7 +181,8 @@ Now we can start adding steps onto our recipe using the pipe operator. Perhaps i
 
 Let's do this by adding steps to our recipe:
 
-```{r cohort-recipe}
+```{r}
+#| label = "cohort-recipe"
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID") %>%
   step_naomit(cohort) %>%
@@ -180,7 +198,9 @@ Next, we'll turn our attention to the variable types of our predictors. Because 
 
 For factors like `degree` and `owngun`, [standard practice](https://bookdown.org/max/FES/creating-dummy-variables-for-unordered-categories.html) is to convert them into _dummy_ or _indicator_ variables to make them numeric. These are binary values for each level of the factor. For example, our `owngun` variable has values of `"YES"`, `"NO"`, and `"REFUSED"`. The standard dummy variable encoding, shown below, will create _two_ numeric columns of the data that are 1 when the respondent answers `"YES"` or `"NO"` and zero otherwise, respectively.
 
-```{r calc-dummy, include = FALSE}
+```{r}
+#| label = "calc-dummy",
+#| include = FALSE
 owngun <- train_data %>%
   select(owngun, colrac) %>%
   drop_na()
@@ -190,7 +210,9 @@ owngun_dummies <- recipe(colrac ~ owngun, data = train_data) %>%
   prep(training = owngun)
 ```
 
-```{r dummy-table, echo = FALSE}
+```{r}
+#| label = "dummy-table",
+#| echo = FALSE
 # Get a row for each factor level
 juice(owngun_dummies, owngun, starts_with("owngun")) %>%
   distinct() %>%
@@ -200,7 +222,8 @@ juice(owngun_dummies, owngun, starts_with("owngun")) %>%
 
 But, unlike the standard model formula methods in R, a recipe **does not** automatically create these dummy variables for you; you'll need to tell your recipe to add this step. This is for two reasons. First, many models do not require [numeric predictors](https://bookdown.org/max/FES/categorical-trees.html), so dummy variables may not always be preferred. Second, recipes can also be used for purposes outside of modeling, where non-dummy versions of the variables may work better. For example, you may want to make a table or a plot with a variable as a single factor. For those reasons, you need to explicitly tell recipes to create dummy variables using `step_dummy()`: 
 
-```{r dummy}
+```{r}
+#| label = "dummy"
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID") %>%
   step_naomit(cohort) %>%
@@ -224,7 +247,8 @@ We need one final step to add to our recipe. Recall that there is substantial mi
 
 `recipes` supports several different imputation strategies. A simple approach is to fill in the missing values in a column with either the **median** (for numeric columns) or **modal** (for categorical columns) values. We can modify our previous recipe to do this.
 
-```{r impute}
+```{r}
+#| label = "impute"
 gss_rec <- recipe(colrac ~ ., data = train_data) %>%
   update_role(id, wtss, new_role = "ID") %>%
   step_impute_median(all_numeric_predictors()) %>%
@@ -241,7 +265,8 @@ Now we've created a _specification_ of what should be done with the data. How do
 
 Let's use logistic regression to model the GSS data. We start by [building a model specification](/start/models/#build-model) using the `parsnip` package: 
 
-```{r model}
+```{r}
+#| label = "model"
 lr_mod <- logistic_reg() %>%
   set_engine("glm")
 ```
@@ -256,7 +281,9 @@ We will want to use our recipe across several steps as we train and test our mod
  
 To simplify this process, we can use a _model workflow_, which pairs a model and recipe together. This is a straightforward approach because different recipes are often needed for different models, so when a model and recipe are bundled, it becomes easier to train and test _workflows_. We'll use the [workflows package](https://tidymodels.github.io/workflows/) from tidymodels to bundle our parsnip model (`lr_mod`) with our recipe (`gss_rec`).
 
-```{r workflow, dependson = c("impute", "gss")}
+```{r}
+#| label = "workflow",
+#| dependson = c("impute", "gss")
 gss_wflow <- workflow() %>%
   add_model(lr_mod) %>%
   add_recipe(gss_rec)
@@ -265,14 +292,18 @@ gss_wflow
 
 Now, there is a single function that can be used to prepare the recipe and train the model from the resulting predictors: 
 
-```{r fit, dependson = "workflow"}
+```{r}
+#| label = "fit",
+#| dependson = "workflow"
 gss_fit <- gss_wflow %>%
   fit(data = train_data)
 ```
  
 This object has the finalized recipe and fitted model objects inside. You may want to extract the model or recipe objects from the workflow. To do this, you can use the helper functions `extract_fit_parsnip()` and `extract_recipe()`. For example, here we pull the fitted model object then use the `broom::tidy()` function to get a tidy tibble of model coefficients: 
 
-```{r fit-glance, R.options = list(tibble.print_min = 5)}
+```{r}
+#| label = "fit-glance",
+#| R.options = list(tibble.print_min = 5)
 gss_fit %>%
   extract_fit_parsnip() %>%
   tidy()
@@ -292,13 +323,18 @@ Our goal was to predict whether a respondent thinks it is acceptable for a profe
 
 The next step is to use the trained workflow (`gss_fit`) to predict with the unseen test data, which we will do with a single call to `predict()`. The `predict()` method applies the recipe to the new data, then passes them to the fitted model. 
 
-```{r pred-class, dependson = c("split", "fit")}
+```{r}
+#| label = "pred-class",
+#| dependson = c("split", "fit")
 predict(object = gss_fit, new_data = test_data)
 ```
 
 Because our outcome variable here is a factor, the output from `predict()` returns the predicted class: `ALLOWED` versus `NOT ALLOWED`. But, let's say we want the predicted class probabilities for each respondent instead. To return those, we can specify `type = "prob"` when we use `predict()`. We'll also bind the output with some variables from the test data and save them together:
 
-```{r test-pred, dependson = c("split", "fit"), R.options = list(tibble.print_min = 5)}
+```{r}
+#| label = "test-pred",
+#| dependson = c("split", "fit"),
+#| R.options = list(tibble.print_min = 5)
 gss_pred <- predict(gss_fit, test_data, type = "prob") %>%
   bind_cols(test_data %>%
     select(colrac))
@@ -313,7 +349,9 @@ Let's use the area under the [ROC curve](https://bookdown.org/max/FES/measuring-
 
 To generate a ROC curve, we need the predicted class probabilities for `ALLOWED` and `NOT ALLOWED`, which we just calculated in the code chunk above. We can create the ROC curve with these values, using `roc_curve()` and then piping to the `autoplot()` method: 
 
-```{r roc-plot, dependson = "test-pred"}
+```{r}
+#| label = "roc-plot",
+#| dependson = "test-pred"
 gss_pred %>%
   roc_curve(truth = colrac, .pred_ALLOWED) %>%
   autoplot()
@@ -321,7 +359,9 @@ gss_pred %>%
 
 Similarly, `roc_auc()` estimates the area under the curve: 
 
-```{r roc-auc, dependson = "test-pred"}
+```{r}
+#| label = "roc-auc",
+#| dependson = "test-pred"
 gss_pred %>%
   roc_auc(truth = colrac, .pred_ALLOWED)
 ```
@@ -335,5 +375,6 @@ Not too bad! With additional variables, further preprocessing, or an alternative
 
 ## Session Info
 
-```{r child = here::here("R", "_session-info.Rmd")}
+```{r}
+#| child = here::here("R", "_session-info.Rmd")
 ```
