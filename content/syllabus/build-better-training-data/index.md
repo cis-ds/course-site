@@ -1,9 +1,10 @@
 ---
-title: "Build a better workflow"
+title: "Build better training data"
 date: 2022-10-24T12:25:00-05:00
 publishDate: 2019-05-06T12:25:00-05:00
 draft: false
 
+aliases: ["/syllabus/build-a-better-workflow/"]
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
 time_end: 2022-10-24T14:20:00-05:00
@@ -28,7 +29,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/build-a-better-workflow/"
+url_slides: "/slides/build-better-training-data/"
 url_video: ""
 url_code: ""
 
