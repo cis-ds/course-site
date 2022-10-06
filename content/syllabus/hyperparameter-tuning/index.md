@@ -40,9 +40,20 @@ math: false
 
 ## Overview
 
+- Define tree-based inference
+- Identify hyperparameters for machine learning models
+- Fit decision tree and random forest models
+- Tune hyperparameters using a grid search
+- Identify the best model and finalize the workflow
 
 ## Before class
 
+* Read [Tune model parameters](/notes/tune-models/)
+
+This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
+
+* Chapter 8 in [*An Introduction to Statistical Learning*](https://www.statlearning.com/)
+* Chapters 9, 11 in [*Hands-On Machine Learning with R*](https://bradleyboehmke.github.io/HOML/)
 
 ## Class materials
 
@@ -58,12 +69,15 @@ usethis::use_course("cis-ds/machine-learning")
 
 {{% callout note %}}
 
-Materials derived from [Tidymodels, Virtually: An Introduction to Machine Learning with Tidymodels](https://tmv.netlify.app/site/) by [Allison Hill](https://alison.rbind.io/).
+Materials derived from [Tidymodels, Virtually: An Introduction to Machine Learning with Tidymodels](https://apreshill.github.io/tidymodels-it/) by [Allison Hill](https://alison.rbind.io/).
 
 {{% /callout %}}
 
 ### Additional readings
 
+* [`tidymodels`](https://www.tidymodels.org/start/)
+* [*Tidy Modeling with R*](https://www.tmwr.org/) - a book-length introduction to tidy modeling in R
+* [ISLR `tidymodels` Labs](https://emilhvitfeldt.github.io/ISLR-tidymodels-labs/) - complement to the 2nd edition of Introduction to Statistical Learning with translations of the labs into using the `tidymodels` set of packages.
 
 ## What you need to do after class
 
