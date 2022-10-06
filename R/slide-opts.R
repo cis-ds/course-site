@@ -11,3 +11,6 @@ knitr::opts_chunk$set(
 )
 
 library(knitr)
+
+# alternative fig.asp for graphs in columns
+fig.asp.col <- 0.618 * 2
