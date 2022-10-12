@@ -13,8 +13,8 @@ output:
 ---
 
 ```{r}
-#| label = "setup",
-#| include = FALSE
+#| label: "setup"
+#| include: false
 # generate CSS file
 library(xaringanthemer)
 style_duo_accent(
@@ -127,8 +127,8 @@ yt_counter <- 0
 ```
 
 ```{r}
-#| label = "packages",
-#| include = FALSE
+#| label: "packages"
+#| include: false
 library(countdown)
 library(tidyverse)
 library(tidymodels)
@@ -137,6 +137,7 @@ library(scico)
 library(gganimate)
 library(tune)
 library(viridis)
+library(rcis)
 theme_set(theme_minimal(base_size = rcis::base_size))
 
 # for figures
@@ -146,18 +147,20 @@ data_color <- viridis(1, option = "magma", begin = .1)
 assess_color <- viridis(1, option = "magma", begin = 0)
 splits_pal <- c(data_color, train_color, test_color)
 
-data("ad_data")
-alz <- ad_data
+data("bechdel")
+bechdel <- bechdel %>%
+  # remove column - unique to each row, non-informative
+  select(-title)
 
 # data splitting
 set.seed(100) # Important!
-alz_split <- initial_split(alz, strata = Class, prop = .9)
-alz_train <- training(alz_split)
-alz_test <- testing(alz_split)
+bechdel_split <- initial_split(bechdel, strata = test, prop = .9)
+bechdel_train <- training(bechdel_split)
+bechdel_test <- testing(bechdel_split)
 
 # data resampling
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
 ```
 
 class: inverse, middle
@@ -184,7 +187,8 @@ include_graphics(path = "https://media.giphy.com/media/gj4ZruUQUnpug/source.gif"
 
 ---
 
-```{r include=FALSE}
+```{r}
+#| include: false
 library(palmerpenguins)
 rt_spec <- decision_tree(engine = "rpart") %>%
   set_mode("regression")
@@ -214,7 +218,9 @@ splt <- rt_fit$splits %>%
   mutate(order = dplyr::row_number())
 ```
 
-```{r echo = FALSE, fig.align='center'}
+```{r}
+#| echo: false
+#| fig.align: "center"
 ggplot(small_train, aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point(size = 3) +
   geom_vline(
@@ -241,7 +247,11 @@ ggplot(small_train, aes(x = flipper_length_mm, y = body_mass_g)) +
 
 ---
 
-```{r echo = FALSE, fig.align='center', message = FALSE, warning = FALSE}
+```{r}
+#| echo: false
+#| fig.align: "center"
+#| message: false
+#| warning: false
 rt_preds <- rt_fitwf %>%
   collect_predictions() %>%
   left_join(select(small_test, .row, flipper_length_mm))
@@ -278,7 +288,10 @@ RMSE
 
 ---
 
-```{r rt-test-resid, echo = FALSE, fig.align='center'}
+```{r}
+#| label: "rt-test-resid"
+#| echo: false
+#| fig.align: "center"
 rt_pred_plot +
   geom_segment(
     aes(
@@ -294,7 +307,9 @@ rt_pred_plot +
 
 ---
 class: middle, center
-```{r echo=FALSE, out.width = "70%"}
+```{r}
+#| echo: false
+#| out.width: "70%"
 knitr::include_graphics("https://raw.githubusercontent.com/EmilHvitfeldt/blog/master/static/blog/2019-08-09-authorship-classification-with-tidymodels-and-textrecipes_files/figure-html/unnamed-chunk-18-1.png")
 ```
 
@@ -302,7 +317,9 @@ https://www.hvitfeldt.me/blog/authorship-classification-with-tidymodels-and-text
 
 ---
 class: middle, center
-```{r echo=FALSE, out.width = "50%"}
+```{r}
+#| echo: false
+#| out.width: "50%"
 knitr::include_graphics("https://www.kaylinpavlik.com/content/images/2019/12/dt-1.png")
 ```
 
@@ -311,7 +328,9 @@ https://www.kaylinpavlik.com/classifying-songs-genres/
 ---
 class: middle, center
 
-```{r echo=FALSE, out.width='40%'}
+```{r}
+#| echo: false
+#| out.width: "40%"
 knitr::include_graphics("https://a3.typepad.com/6a0105360ba1c6970c01b7c95c61fb970b-pi")
 ```
 
@@ -321,7 +340,8 @@ knitr::include_graphics("https://a3.typepad.com/6a0105360ba1c6970c01b7c95c61fb97
 ---
 
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 knitr::include_graphics("http://www.atarimania.com/8bit/screens/guess_the_animal.gif")
 ```
 
@@ -408,50 +428,50 @@ include_graphics(path = "images/annotated-tree/annotated-tree.005.png")
 
 # To specify a model with `parsnip`
 
-.right-column[
-
 1\. Pick a .display[model] + .display[engine]
 
 2\. Set the .display[mode] (if needed)
-
-]
 
 ---
 
 # To specify a decision tree model with `parsnip`
 
 
-```{r tree-mod}
-tree_mod <-
-  decision_tree(engine = "rpart") %>%
+```{r}
+#| label: "tree-mod"
+tree_mod <- decision_tree(engine = "rpart") %>%
   set_mode("classification")
 ```
 
 ---
 class: middle, center
 
-```{r alz-tree-01, echo=FALSE, out.width='40%'}
+```{r}
+#| label: "bechdel-tree-01"
+#| echo: false
+#| out.width: "40%"
 library(parttree)
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_01 <-
-  decision_tree(engine = "rpart") %>%
+bechdel_tree_01 <- decision_tree(engine = "rpart") %>%
   set_mode("classification") %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_01, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_01, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE))
 ```
 
-```{r echo=FALSE, warning=FALSE, message=FALSE}
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
 library(rpart.plot)
-rpart.rules(alz_tree_01$fit,
+rpart.rules(bechdel_tree_01$fit,
   extra = 4,
   cover = TRUE,
   nn = TRUE,
@@ -463,15 +483,22 @@ rpart.rules(alz_tree_01$fit,
 
 .pull-left[
 
-```{r ref.label='alz-tree-01', echo=FALSE}
+```{r}
+#| ref.label: "bechdel-tree-01"
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
 ```
 
 ]
 
 .pull-right[
-```{r echo=FALSE}
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
 library(rattle)
-fancyRpartPlot(alz_tree_01$fit,
+fancyRpartPlot(bechdel_tree_01$fit,
   sub = NULL,
   palettes = "BuGn"
 )
@@ -486,14 +513,15 @@ class: inverse
 
 Here is our very-vanilla parsnip model specification for a decision tree (also in your qmd)...
 
-```{r ref.label='tree-mod'}
+```{r}
+#| ref.label: "tree-mod"
 ```
 
 And a workflow:
-```{r tree-wf}
-tree_wf <-
-  workflow() %>%
-  add_formula(Class ~ .) %>%
+```{r}
+#| label: "tree-wf"
+tree_wf <- workflow() %>%
+  add_formula(test ~ .) %>%
   add_model(tree_mod)
 ```
 
@@ -508,7 +536,8 @@ class: inverse
 
 Fill in the blanks to return the accuracy and ROC AUC for this model using 10-fold cross-validation.
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 countdown(minutes = 2)
 ```
 
@@ -517,15 +546,16 @@ countdown(minutes = 2)
 ```{r}
 set.seed(100)
 tree_wf %>%
-  fit_resamples(resamples = alz_folds) %>%
+  fit_resamples(resamples = bechdel_folds) %>%
   collect_metrics()
 ```
 
-```{r vt-metrics, include=FALSE}
+```{r}
+#| label: "vt-metrics"
+#| include: false
 set.seed(100)
-vt_metrics <-
-  tree_wf %>%
-  fit_resamples(resamples = alz_folds) %>%
+vt_metrics <- tree_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
   collect_metrics()
 ```
 
@@ -535,7 +565,8 @@ vt_metrics <-
 
 Print the arguments for a **parsnip** model specification.
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 args(decision_tree)
 ```
 
@@ -545,7 +576,8 @@ args(decision_tree)
 
 Specifies a decision tree model
 
-```{r results='hide'}
+```{r}
+#| results: "hide"
 decision_tree(engine = "rpart", tree_depth = 30, min_n = 20, cost_complexity = .01)
 ```
 
@@ -559,7 +591,8 @@ decision_tree(engine = "rpart", tree_depth = 30, min_n = 20, cost_complexity = .
 
 Specifies a decision tree model
 
-```{r results='hide'}
+```{r}
+#| results: "hide"
 decision_tree(
   engine = "rpart", # default computational engine
   tree_depth = 30, # max tree depth
@@ -601,21 +634,21 @@ Cap the maximum tree depth.
 
 A method to stop the tree early. Used to prevent overfitting.
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 tree_mod %>% set_args(tree_depth = 30)
 ```
 
 ---
 
-```{r include=FALSE}
-big_tree_mod <-
-  decision_tree(engine = "rpart", min_n = 1, cost_complexity = 0) %>% #<<
+```{r}
+#| include: false
+big_tree_mod <- decision_tree(engine = "rpart", min_n = 1, cost_complexity = 0) %>% #<<
   set_mode("classification")
 
-big_tree <-
-  big_tree_mod %>%
-  last_fit(Class ~ .,
-    split = alz_split
+big_tree <- big_tree_mod %>%
+  last_fit(test ~ .,
+    split = bechdel_split
   )
 
 get_tree_fit <- function(results = big_tree) {
@@ -634,7 +667,8 @@ big_tree_cp <- get_tree_fit(big_tree)$fit$cptable %>%
   )
 ```
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 big_tree_cp %>%
   filter(error_type == "rel_error") %>%
   ggplot(aes(x = as.factor(nsplit), y = error_val, group = error_type, color = error_type)) +
@@ -651,7 +685,8 @@ big_tree_cp %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ggplot(big_tree_cp, aes(
   x = as.factor(nsplit), y = error_val,
   group = error_type, color = fct_rev(error_type)
@@ -676,7 +711,8 @@ Set minimum `n` to split at any node.
 
 Another early stopping method. Used to prevent overfitting.
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 tree_mod %>% set_args(min_n = 20)
 ```
 
@@ -709,7 +745,8 @@ Adds a cost or penalty to error rates of more complex trees.
 
 A way to prune a tree. Used to prevent overfitting.
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 tree_mod %>% set_args(cost_complexity = .01)
 ```
 
@@ -721,7 +758,9 @@ Higher penalty `r emo::ji("right_arrow")` smaller trees.
 
 ---
 
-```{r echo=FALSE, fig.width=10}
+```{r}
+#| echo: false
+#| fig.width: 10
 ggplot(big_tree_cp, aes(x = rev(as.factor(cp)), y = error_val, group = error_type, color = fct_rev(error_type))) +
   geom_point(size = 3) +
   geom_line() +
@@ -736,7 +775,8 @@ ggplot(big_tree_cp, aes(x = rev(as.factor(cp)), y = error_val, group = error_typ
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 big_tree_cp %>%
   filter(error_type == "rel_error") %>%
   ggplot(aes(
@@ -757,7 +797,8 @@ big_tree_cp %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ggplot(big_tree_cp, aes(
   x = fct_rev(cp_fct), y = error_val,
   group = error_type, color = fct_rev(error_type)
@@ -821,7 +862,8 @@ class: middle, center, frame
 ---
 class: middle, center
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 parsnip::get_model_env() %>%
   pluck("decision_tree_args") %>%
   filter(engine == "rpart") %>%
@@ -835,19 +877,18 @@ parsnip::get_model_env() %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_01 <-
-  tree_mod %>%
+bechdel_tree_01 <- tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 2) %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_01, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_01, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -856,19 +897,18 @@ alz_train %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_02 <-
-  tree_mod %>%
+bechdel_tree_02 <- tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 3) %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_02, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_02, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -877,19 +917,18 @@ alz_train %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_03 <-
-  tree_mod %>%
+bechdel_tree_03 <- tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 4) %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_03, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_03, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -898,19 +937,18 @@ alz_train %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_04 <-
-  tree_mod %>%
+bechdel_tree_04 <- tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 5) %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_04, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_04, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -919,19 +957,18 @@ alz_train %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_10 <-
-  tree_mod %>%
+bechdel_tree_10 <- tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 10) %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_10, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_10, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -940,19 +977,18 @@ alz_train %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 ## Build our tree using parsnip (but with rpart as the model engine)
-alz_tree_15 <-
-  tree_mod %>%
+bechdel_tree_15 <- tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 15) %>%
-  fit(Class ~ tau + VEGF, data = alz_train)
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
 
 ## Plot the data and model partitions
-alz_train %>%
-  ggplot(aes(x = tau, y = VEGF)) +
-  geom_parttree(data = alz_tree_15, aes(fill = Class), alpha = 0.5) +
-  geom_jitter(aes(col = Class), alpha = 0.7) +
-  theme_minimal() +
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_15, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE)) +
@@ -961,9 +997,10 @@ alz_train %>%
 
 ---
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 library(rattle)
-fancyRpartPlot(alz_tree_15$fit,
+fancyRpartPlot(bechdel_tree_15$fit,
   sub = NULL,
   palettes = "RdPu"
 )
@@ -990,7 +1027,8 @@ class: inverse, middle
 Specifies a random forest model
 
 
-```{r results='hide'}
+```{r}
+#| results: "hide"
 rand_forest(mtry = 4, trees = 500, min_n = 1)
 ```
 
@@ -1004,7 +1042,8 @@ rand_forest(mtry = 4, trees = 500, min_n = 1)
 
 Specifies a random forest model
 
-```{r results='hide'}
+```{r}
+#| results: "hide"
 rand_forest(
   engine = "ranger", # default computational engine
   mtry = 4, # predictors seen at each node
@@ -1025,7 +1064,8 @@ Fit your workflow with 10-fold cross-validation and compare the ROC AUC of the r
 
 *Hint: you'll need https://www.tidymodels.org/find/parsnip/*
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 countdown(minutes = 4)
 ```
 
@@ -1042,7 +1082,7 @@ rf_wf <-
 
 set.seed(100)
 rf_wf %>%
-  fit_resamples(resamples = alz_folds) %>%
+  fit_resamples(resamples = bechdel_folds) %>%
   collect_metrics()
 ```
 
@@ -1052,7 +1092,8 @@ rf_wf %>%
 
 The number of predictors that will be randomly sampled at each split when creating the tree models.
 
-```{r results = 'hide'}
+```{r}
+#| results: "hide"
 rand_forest(mtry = 11)
 ```
 
@@ -1068,13 +1109,13 @@ tree_mod <- decision_tree(engine = "rpart") %>%
   set_mode("classification")
 
 tree_wf <- workflow() %>%
-  add_formula(Class ~ .) %>%
+  add_formula(test ~ .) %>%
   add_model(tree_mod)
 
 set.seed(100)
 tree_res <- tree_wf %>%
   fit_resamples(
-    resamples = alz_folds,
+    resamples = bechdel_folds,
     control = control_resamples(save_pred = TRUE)
   )
 
@@ -1099,7 +1140,7 @@ rf_wf <- tree_wf %>%
 set.seed(100)
 rf_res <- rf_wf %>%
   fit_resamples(
-    resamples = alz_folds,
+    resamples = bechdel_folds,
     control = control_resamples(save_pred = TRUE)
   )
 
@@ -1121,7 +1162,7 @@ rf_res %>%
 tree_res %>%
   collect_predictions() %>%
   group_by(id) %>%
-  roc_curve(truth = Class, estimate = .pred_Impaired) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
   ggplot(aes(1 - specificity, sensitivity, color = id)) +
   geom_abline(lty = 2, color = "gray80", size = 1.5) +
   geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
@@ -1142,7 +1183,7 @@ tree_res %>%
 rf_res %>%
   collect_predictions() %>%
   group_by(id) %>%
-  roc_curve(truth = Class, estimate = .pred_Impaired) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
   ggplot(aes(1 - specificity, sensitivity, color = id)) +
   geom_abline(lty = 2, color = "gray80", size = 1.5) +
   geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
@@ -1156,9 +1197,10 @@ class: inverse
 
 # `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
 
-Challenge: Fit 3 more random forest models, each using 3, 8, and 30 variables at each split. Update your `rf_wf` with each new model. Which value maximizes the area under the ROC curve?
+Challenge: Fit 3 more random forest models, each using 3, 5, and 8 variables at each split. Update your `rf_wf` with each new model. Which value maximizes the area under the ROC curve?
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 countdown(minutes = 3)
 ```
 
@@ -1168,11 +1210,11 @@ countdown(minutes = 3)
 rf3_mod <- rf_mod %>%
   set_args(mtry = 3) #<<
 
+rf5_mod <- rf_mod %>%
+  set_args(mtry = 5) #<<
+
 rf8_mod <- rf_mod %>%
   set_args(mtry = 8) #<<
-
-rf30_mod <- rf_mod %>%
-  set_args(mtry = 30) #<<
 ```
 
 ---
@@ -1183,7 +1225,18 @@ rf3_wf <- rf_wf %>%
 
 set.seed(100)
 rf3_wf %>%
-  fit_resamples(resamples = alz_folds) %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+---
+```{r}
+rf5_wf <- rf_wf %>%
+  update_model(rf5_mod)
+
+set.seed(100)
+rf5_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
   collect_metrics()
 ```
 
@@ -1194,18 +1247,7 @@ rf8_wf <- rf_wf %>%
 
 set.seed(100)
 rf8_wf %>%
-  fit_resamples(resamples = alz_folds) %>%
-  collect_metrics()
-```
-
----
-```{r}
-rf30_wf <- rf_wf %>%
-  update_model(rf30_mod)
-
-set.seed(100)
-rf30_wf %>%
-  fit_resamples(resamples = alz_folds) %>%
+  fit_resamples(resamples = bechdel_folds) %>%
   collect_metrics()
 ```
 
@@ -1226,7 +1268,9 @@ Functions for fitting and tuning models
 
 <https://tune.tidymodels.org>
 
-```{r echo=FALSE, out.width="100%"}
+```{r}
+#| echo: false
+#| out.width: "100%"
 knitr::include_url("https://tune.tidymodels.org")
 ```
 
@@ -1236,7 +1280,8 @@ knitr::include_url("https://tune.tidymodels.org")
 
 A placeholder for hyper-parameters to be "tuned"
 
-```{r results='hide'}
+```{r}
+#| results: "hide"
 nearest_neighbor(neighbors = tune())
 ```
 
@@ -1249,7 +1294,9 @@ A version of `fit_resamples()` that performs a grid search for the best combinat
 
 .pull-left[
 
-```{r tune-grid, eval = FALSE}
+```{r}
+#| label: "tune-grid"
+#| eval: false
 tune_grid(
   object,
   resamples,
@@ -1270,7 +1317,8 @@ A version of `fit_resamples()` that performs a grid search for the best combinat
 
 .pull-left[
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 tune_grid(
   object, #<<
   resamples,
@@ -1302,7 +1350,8 @@ A version of `fit_resamples()` that performs a grid search for the best combinat
 
 .pull-left[
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 tune_grid(
   object, #<<
   preprocessor, #<<
@@ -1328,7 +1377,8 @@ A version of `fit_resamples()` that performs a grid search for the best combinat
 
 .pull-left[
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 tune_grid(
   object,
   resamples,
@@ -1358,7 +1408,8 @@ A version of `fit_resamples()` that performs a grid search for the best combinat
 
 .pull-left[
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 tune_grid(
   object,
   resamples,
@@ -1388,7 +1439,7 @@ rf_mod <- rand_forest(engine = "ranger") %>%
   set_mode("classification")
 
 rf_wf <- workflow() %>%
-  add_formula(Class ~ .) %>%
+  add_formula(test ~ .) %>%
   add_model(rf_mod)
 ```
 
@@ -1402,7 +1453,7 @@ Here is the output from `fit_resamples()`...
 ```{r}
 set.seed(100) # Important!
 rf_results <- rf_wf %>%
-  fit_resamples(resamples = alz_folds)
+  fit_resamples(resamples = bechdel_folds)
 
 rf_results %>%
   collect_metrics()
@@ -1422,13 +1473,17 @@ Then use `tune_grid()` to find the best combination of hyper-parameters to maxim
 
 How does it compare to the average ROC AUC across folds from `fit_resamples()`?
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 countdown(minutes = 5)
 ```
 
 ---
 
-```{r results='hide', messages = FALSE, warning = FALSE}
+```{r}
+#| results: "hide"
+#| message: false
+#| warning: false
 rf_tuner <- rand_forest(
     engine = "ranger",
     mtry = tune(),
@@ -1441,7 +1496,7 @@ rf_wf <- rf_wf %>%
 
 set.seed(100) # Important!
 rf_results <- rf_wf %>%
-  tune_grid(resamples = alz_folds)
+  tune_grid(resamples = bechdel_folds)
 ```
 
 ---
@@ -1466,7 +1521,8 @@ A version of `fit_resamples()` that performs a grid search for the best combinat
 
 .pull-left[
 
-```{r eval = FALSE}
+```{r}
+#| eval: false
 tune_grid(
   object,
   resamples,
@@ -1504,14 +1560,18 @@ expand_grid(mtry = c(1, 5), min_n = 1:3)
 
 Shows the .display[n] most optimum combinations of hyper-parameters
 
-```{r show-best, results='hide'}
+```{r}
+#| label: "show-best"
+#| results: "hide"
 rf_results %>%
   show_best(metric = "roc_auc", n = 5)
 ```
 
 ---
 
-```{r ref.label='show-best', echo=FALSE}
+```{r}
+#| ref.label: "show-best"
+#| echo: false
 ```
 
 ---
@@ -1520,13 +1580,17 @@ rf_results %>%
 
 Quickly visualize tuning results
 
-```{r rf-plot, fig.keep='none'}
+```{r}
+#| label: "rf-plot"
+#| fig.keep: "none"
 rf_results %>% autoplot()
 ```
 
 ---
 
-```{r ref.label='rf-plot', echo=FALSE}
+```{r}
+#| ref.label: "rf-plot"
+#| echo: false
 ```
 
 ---
@@ -1535,16 +1599,20 @@ rf_results %>% autoplot()
 
 Shows the .display[top] combination of hyper-parameters.
 
-```{r select-best, results='hide'}
-alz_best <- rf_results %>%
+```{r}
+#| label: "select-best"
+#| results: "hide"
+bechdel_best <- rf_results %>%
   select_best(metric = "roc_auc")
 
-alz_best
+bechdel_best
 ```
 
 ---
 
-```{r ref.label='select-best', echo=FALSE}
+```{r}
+#| ref.label: "select-best"
+#| echo: false
 ```
 
 ---
@@ -1555,7 +1623,7 @@ Replaces `tune()` placeholders in a model/recipe/workflow with a set of hyper-pa
 
 ```{r}
 last_rf_workflow <- rf_wf %>%
-  finalize_workflow(alz_best)
+  finalize_workflow(bechdel_best)
 ```
 
 ---
@@ -1580,7 +1648,7 @@ background-color: #f5f5f5
 
 ```{r}
 last_rf_fit <- last_rf_workflow %>%
-  last_fit(split = alz_split)
+  last_fit(split = bechdel_split)
 ```
 
 ---
@@ -1599,21 +1667,23 @@ Use `select_best()`, `finalize_workflow()`, and `last_fit()` to take the best co
 
 How does our actual test ROC AUC compare to our cross-validated estimate?
 
-```{r echo=FALSE}
+```{r}
+#| echo: false
 countdown(minutes = 5)
 ```
 
 ---
 
-```{r results='hide'}
-alz_best <- rf_results %>%
+```{r}
+#| results: "hide"
+bechdel_best <- rf_results %>%
   select_best(metric = "roc_auc")
 
 last_rf_workflow <- rf_wf %>%
-  finalize_workflow(alz_best)
+  finalize_workflow(bechdel_best)
 
 last_rf_fit <- last_rf_workflow %>%
-  last_fit(split = alz_split)
+  last_fit(split = bechdel_split)
 
 last_rf_fit %>%
   collect_metrics()
@@ -1639,10 +1709,11 @@ last_rf_fit %>%
 
 ---
 
-```{r out.width='70%'}
+```{r}
+#| out.width: "70%"
 roc_values <- last_rf_fit %>%
   collect_predictions() %>%
-  roc_curve(truth = Class, estimate = .pred_Impaired)
+  roc_curve(truth = test, estimate = .pred_Pass)
 autoplot(roc_values)
 ```
 
@@ -1650,17 +1721,18 @@ autoplot(roc_values)
 
 # The set-up
 
-```{r eval=FALSE}
+```{r}
+#| eval: false
 set.seed(100) # Important!
 
 # holdout method
-alz_split <- initial_split(alz, strata = Class, prop = .9)
-alz_train <- training(alz_split)
-alz_test <- testing(alz_split)
+bechdel_split <- initial_split(bechdel, strata = test, prop = .9)
+bechdel_train <- training(bechdel_split)
+bechdel_test <- testing(bechdel_split)
 
 # add cross-validation
 set.seed(100)
-alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
 ```
 
 ---
@@ -1679,12 +1751,12 @@ rf_tuner <- rand_forest(
   set_mode("classification")
 
 rf_wf <- workflow() %>%
-  add_formula(Class ~ .) %>%
+  add_formula(test ~ .) %>%
   add_model(rf_tuner)
 
 rf_results <- rf_wf %>%
   tune_grid(
-    resamples = alz_folds,
+    resamples = bechdel_folds,
     control = control_grid(save_pred = TRUE)
   )
 ```
@@ -1709,10 +1781,10 @@ rf_results %>%
 show_best(rf_results, metric = "roc_auc", n = 5)
 
 # pick final model workflow
-alz_best <- rf_results %>%
+bechdel_best <- rf_results %>%
   select_best(metric = "roc_auc")
 
-alz_best
+bechdel_best
 ```
 ]
 
@@ -1724,7 +1796,7 @@ alz_best
 rf_results %>%
   collect_predictions() %>%
   group_by(id) %>%
-  roc_curve(truth = Class, estimate = .pred_Impaired) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
   ggplot(aes(1 - specificity, sensitivity, color = id)) +
   geom_abline(lty = 2, color = "gray80", size = 1.5) +
   geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
@@ -1740,7 +1812,7 @@ rf_results %>%
 .pull-left[
 ```{r}
 last_rf_workflow <- rf_wf %>%
-  finalize_workflow(alz_best)
+  finalize_workflow(bechdel_best)
 
 last_rf_workflow
 ```
@@ -1749,10 +1821,11 @@ last_rf_workflow
 --
 
 .pull-right[
-```{r fig.show='hide'}
+```{r}
+#| fig.show: "hide"
 # train + test final model
 last_rf_fit <- last_rf_workflow %>%
-  last_fit(split = alz_split)
+  last_fit(split = bechdel_split)
 
 # explore final model
 last_rf_fit %>%
@@ -1760,7 +1833,7 @@ last_rf_fit %>%
 
 last_rf_fit %>%
   collect_predictions() %>%
-  roc_curve(truth = Class, estimate = .pred_Impaired) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
   autoplot()
 ```
 ]
