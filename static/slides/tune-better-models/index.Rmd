@@ -107,16 +107,20 @@ style_duo_accent(
 
 source(here::here("R", "slide-opts.R"))
 xaringanExtra::use_panelset()
-knitr::opts_chunk$set(cache = FALSE,
-                      message = FALSE,
-                      warning = FALSE,
-                      fig.align = 'center',
-                      fig.retina = 2,
-                      fig.width = 12,
-                      collapse = TRUE,
-                      R.options = list(tibble.max_extra_cols = 5, 
-                                       tibble.print_max = 5, 
-                                       tibble.width = 60))
+knitr::opts_chunk$set(
+  cache = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.retina = 2,
+  fig.width = 12,
+  collapse = TRUE,
+  R.options = list(
+    tibble.max_extra_cols = 5,
+    tibble.print_max = 5,
+    tibble.width = 60
+  )
+)
 options("scipen" = 16)
 library(tidymodels)
 yt_counter <- 0
@@ -133,13 +137,13 @@ library(scico)
 library(gganimate)
 library(tune)
 library(viridis)
-theme_set(theme_minimal())
+theme_set(theme_minimal(base_size = rcis::base_size))
 
 # for figures
-train_color <- viridis(1, option="magma", begin = .4)
-test_color  <- viridis(1, option="magma", begin = .7)
-data_color  <- viridis(1, option="magma", begin = .1)
-assess_color <- viridis(1, option="magma", begin = 0)
+train_color <- viridis(1, option = "magma", begin = .4)
+test_color <- viridis(1, option = "magma", begin = .7)
+data_color <- viridis(1, option = "magma", begin = .1)
+assess_color <- viridis(1, option = "magma", begin = 0)
 splits_pal <- c(data_color, train_color, test_color)
 
 data("ad_data")
@@ -147,109 +151,115 @@ alz <- ad_data
 
 # data splitting
 set.seed(100) # Important!
-alz_split  <- initial_split(alz, strata = Class, prop = .9)
-alz_train  <- training(alz_split)
-alz_test   <- testing(alz_split)
+alz_split <- initial_split(alz, strata = Class, prop = .9)
+alz_train <- training(alz_split)
+alz_test <- testing(alz_split)
 
 # data resampling
 set.seed(100)
 alz_folds <- vfold_cv(alz_train, v = 10, strata = Class)
 ```
 
+class: inverse, middle
 
-class: title-slide, center, bottom
-
-# `r rmarkdown::metadata$title`
-
-## `r rmarkdown::metadata$subtitle` &mdash; Session `r stringr::str_pad(rmarkdown::metadata$session, 2, pad = "0")`
-
-### `r rmarkdown::metadata$author` 
-
+# Decision trees
 
 ---
-class: middle, frame, center
 
 # Decision Trees
 
 To predict the outcome of a new data point:
 
-Uses rules learned from splits
-
-Each split maximizes information gain
-
+- Uses rules learned from splits
+- Each split maximizes information gain
 
 ---
-class: middle, center
 
-![](https://media.giphy.com/media/gj4ZruUQUnpug/source.gif)
+```{r}
+#| echo: false
+#| out.width: "50%"
+
+include_graphics(path = "https://media.giphy.com/media/gj4ZruUQUnpug/source.gif")
+```
 
 ---
+
 ```{r include=FALSE}
 library(palmerpenguins)
-rt_spec <- 
-  decision_tree(engine = "rpart") %>% 
+rt_spec <- decision_tree(engine = "rpart") %>%
   set_mode("regression")
 
 set.seed(1)
 
-small_peng <- penguins %>% 
+small_peng <- penguins %>%
   mutate(.row = dplyr::row_number())
 
-small_split  <- initial_split(small_peng)
-small_train  <- training(small_split)
-small_test   <- testing(small_split)
+small_split <- initial_split(small_peng)
+small_train <- training(small_split)
+small_test <- testing(small_split)
 
-rt_fitwf <- 
-  rt_spec %>% 
-  last_fit(body_mass_g ~ flipper_length_mm, 
-           split = small_split)
+rt_fitwf <-
+  rt_spec %>%
+  last_fit(body_mass_g ~ flipper_length_mm,
+    split = small_split
+  )
 
-rt_fit <- rt_fitwf %>% 
-  pluck(".workflow", 1) %>% 
-  extract_fit_parsnip() %>% 
+rt_fit <- rt_fitwf %>%
+  pluck(".workflow", 1) %>%
+  extract_fit_parsnip() %>%
   .$fit
 
-splt <- rt_fit$splits %>% 
-  as_tibble(.) %>% 
-  mutate(order = dplyr::row_number()) 
+splt <- rt_fit$splits %>%
+  as_tibble(.) %>%
+  mutate(order = dplyr::row_number())
 ```
 
-
-
 ```{r echo = FALSE, fig.align='center'}
-ggplot(small_train, aes(x = flipper_length_mm, y = body_mass_g)) + 
+ggplot(small_train, aes(x = flipper_length_mm, y = body_mass_g)) +
   geom_point(size = 3) +
-  geom_vline(data=splt, 
-             aes(xintercept = index, 
-                 colour=factor(order)), 
-             lwd = 5, 
-             alpha = .7) + 
-  geom_text(data=splt, aes(x=index, 
-                           y=min(small_train$body_mass_g), 
-                           label=order)) +
-  scale_x_continuous(breaks=seq(-0.5, 0.5, 0.1)) +
+  geom_vline(
+    data = splt,
+    aes(
+      xintercept = index,
+      colour = factor(order)
+    ),
+    lwd = 5,
+    alpha = .7
+  ) +
+  geom_text(data = splt, aes(
+    x = index,
+    y = min(small_train$body_mass_g),
+    label = order
+  )) +
+  scale_x_continuous(breaks = seq(-0.5, 0.5, 0.1)) +
   scale_colour_scico_d(palette = "buda", end = .8) +
-  theme(legend.position="none", 
-        text = element_text(family = "Lato")) 
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Lato")
+  )
 ```
 
 ---
 
 ```{r echo = FALSE, fig.align='center', message = FALSE, warning = FALSE}
-rt_preds <- rt_fitwf %>% 
-  collect_predictions() %>% 
-  left_join(select(small_test, .row, flipper_length_mm)) 
+rt_preds <- rt_fitwf %>%
+  collect_predictions() %>%
+  left_join(select(small_test, .row, flipper_length_mm))
 
 rt_pred_plot <-
-  ggplot(rt_preds) + 
-  geom_point(aes(x=flipper_length_mm, y=body_mass_g), size = 3) +
-  geom_line(aes(x=flipper_length_mm, y=.pred), colour="#4D8DC9", size=2) +
-  geom_vline(data=splt, aes(xintercept = index, colour=factor(order)), 
-             lwd = 5, 
-             alpha = .7) + 
+  ggplot(rt_preds) +
+  geom_point(aes(x = flipper_length_mm, y = body_mass_g), size = 3) +
+  geom_line(aes(x = flipper_length_mm, y = .pred), colour = "#4D8DC9", size = 2) +
+  geom_vline(
+    data = splt, aes(xintercept = index, colour = factor(order)),
+    lwd = 5,
+    alpha = .7
+  ) +
   scale_colour_scico_d(palette = "buda", end = .8) +
-  theme(legend.position="none", 
-        text = element_text(family = "Lato")) 
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Lato")
+  )
 
 rt_pred_plot
 ```
@@ -270,11 +280,15 @@ RMSE
 
 ```{r rt-test-resid, echo = FALSE, fig.align='center'}
 rt_pred_plot +
-  geom_segment(aes(x = flipper_length_mm, 
-                   xend = flipper_length_mm, 
-                   y = body_mass_g, 
-                   yend = .pred), 
-               colour = "#E7553C") 
+  geom_segment(
+    aes(
+      x = flipper_length_mm,
+      xend = flipper_length_mm,
+      y = body_mass_g,
+      yend = .pred
+    ),
+    colour = "#E7553C"
+  )
 ```
 
 
@@ -305,11 +319,9 @@ knitr::include_graphics("https://a3.typepad.com/6a0105360ba1c6970c01b7c95c61fb97
 
 
 ---
-name: guess-the-animal
-class: middle, center, inverse
 
 
-```{r echo=FALSE, out.width = '100%'}
+```{r echo=FALSE}
 knitr::include_graphics("http://www.atarimania.com/8bit/screens/guess_the_animal.gif")
 ```
 
@@ -333,43 +345,68 @@ Order matters
 
 
 ---
-background-image: url(images/aus-standard-animals.png)
-background-size: cover
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/aus-standard-animals.png")
+```
 
 .footnote[[Australian Computing Academy](https://aca.edu.au/resources/decision-trees-classifying-animals/)]
 
 ---
-background-image: url(images/aus-standard-tree.png)
-background-size: cover
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/aus-standard-tree.png")
+```
 
 .footnote[[Australian Computing Academy](https://aca.edu.au/resources/decision-trees-classifying-animals/)]
 
 ---
-background-image: url(images/annotated-tree/annotated-tree.001.png)
-background-size: cover
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.001.png")
+```
 
 ---
-background-image: url(images/annotated-tree/annotated-tree.002.png)
-background-size: cover
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.002.png")
+```
 
 ---
-background-image: url(images/annotated-tree/annotated-tree.003.png)
-background-size: cover
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.003.png")
+```
 
 ---
-background-image: url(images/annotated-tree/annotated-tree.004.png)
-background-size: cover
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.004.png")
+```
 
 ---
-background-image: url(images/annotated-tree/annotated-tree.005.png)
-background-size: cover
 
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.005.png")
+```
 
 ---
-class: middle, frame
 
-
-# .center[To specify a model with parsnip]
+# To specify a model with `parsnip`
 
 .right-column[
 
@@ -380,20 +417,15 @@ class: middle, frame
 ]
 
 ---
-class: middle, frame
 
-# .center[To specify a decision tree model with parsnip]
+# To specify a decision tree model with `parsnip`
 
 
 ```{r tree-mod}
-tree_mod <- 
-  decision_tree(engine = "rpart") %>% 
+tree_mod <-
+  decision_tree(engine = "rpart") %>%
   set_mode("classification")
 ```
-
-
-
-
 
 ---
 class: middle, center
@@ -408,33 +440,30 @@ alz_tree_01 <-
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_01, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_01, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
   guides(fill = guide_legend(reverse = TRUE))
 ```
 
-
-
 ```{r echo=FALSE, warning=FALSE, message=FALSE}
 library(rpart.plot)
 rpart.rules(alz_tree_01$fit,
-            extra = 4, 
-            cover = TRUE, 
-            nn = TRUE,
-            roundint = FALSE) 
+  extra = 4,
+  cover = TRUE,
+  nn = TRUE,
+  roundint = FALSE
+)
 ```
-
 
 ---
 
 .pull-left[
 
 ```{r ref.label='alz-tree-01', echo=FALSE}
-
 ```
 
 ]
@@ -442,28 +471,29 @@ rpart.rules(alz_tree_01$fit,
 .pull-right[
 ```{r echo=FALSE}
 library(rattle)
-fancyRpartPlot(alz_tree_01$fit, 
-               sub = NULL,
-               palettes = "BuGn")
+fancyRpartPlot(alz_tree_01$fit,
+  sub = NULL,
+  palettes = "BuGn"
+)
 ```
 ]
 
 ---
-class: your-turn
 
-# Your turn `r (yt_counter <- yt_counter + 1)`
+class: inverse
 
-Here is our very-vanilla parsnip model specification for a decision tree (also in your Rmd)...
+# `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
+
+Here is our very-vanilla parsnip model specification for a decision tree (also in your qmd)...
 
 ```{r ref.label='tree-mod'}
-
 ```
 
 And a workflow:
 ```{r tree-wf}
 tree_wf <-
-  workflow() %>% 
-  add_formula(Class ~ .) %>% 
+  workflow() %>%
+  add_formula(Class ~ .) %>%
   add_model(tree_mod)
 ```
 
@@ -471,9 +501,10 @@ tree_wf <-
 For decision trees, no recipe really required `r emo::ji("tada")`
 
 ---
-class: your-turn
 
-# Your turn `r yt_counter`
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r yt_counter`
 
 Fill in the blanks to return the accuracy and ROC AUC for this model using 10-fold cross-validation.
 
@@ -485,21 +516,20 @@ countdown(minutes = 2)
 
 ```{r}
 set.seed(100)
-tree_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+tree_wf %>%
+  fit_resamples(resamples = alz_folds) %>%
   collect_metrics()
 ```
 
 ```{r vt-metrics, include=FALSE}
 set.seed(100)
-vt_metrics <- 
-  tree_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+vt_metrics <-
+  tree_wf %>%
+  fit_resamples(resamples = alz_folds) %>%
   collect_metrics()
 ```
 
 ---
-class: middle, center
 
 # `args()`
 
@@ -510,14 +540,13 @@ args(decision_tree)
 ```
 
 ---
-class: middle, center
 
 # `decision_tree()`
 
 Specifies a decision tree model
 
 ```{r results='hide'}
-decision_tree(engine = "rpart",tree_depth = 30, min_n = 20, cost_complexity = .01)
+decision_tree(engine = "rpart", tree_depth = 30, min_n = 20, cost_complexity = .01)
 ```
 
 --
@@ -525,49 +554,39 @@ decision_tree(engine = "rpart",tree_depth = 30, min_n = 20, cost_complexity = .0
 *either* mode works!
 
 ---
-class: middle
-
-.center[
 
 # `decision_tree()`
 
 Specifies a decision tree model
 
-]
-
-
 ```{r results='hide'}
 decision_tree(
-  engine = "rpart",      # default computational engine
-  tree_depth = 30,       # max tree depth
-  min_n = 20,            # smallest node allowed
-  cost_complexity = .01  # 0 > cp > 0.1
-  )
+  engine = "rpart", # default computational engine
+  tree_depth = 30, # max tree depth
+  min_n = 20, # smallest node allowed
+  cost_complexity = .01 # 0 > cp > 0.1
+)
 ```
 
-
 ---
-class: middle, center
 
 # `set_args()`
 
 Change the arguments for a **parsnip** model specification.
 
-```{r eval=FALSE}
+```r
 _mod %>% set_args(tree_depth = 3)
 ```
 
 ---
-class: middle
 
 ```{r}
-decision_tree(engine = "rpart") %>% 
-  set_mode("classification") %>% 
+decision_tree(engine = "rpart") %>%
+  set_mode("classification") %>%
   set_args(tree_depth = 3) #<<
 ```
 
 ---
-class: middle
 
 ```{r}
 decision_tree(engine = "rpart", tree_depth = 3) %>% #<<
@@ -575,7 +594,6 @@ decision_tree(engine = "rpart", tree_depth = 3) %>% #<<
 ```
 
 ---
-class: middle, center
 
 # `tree_depth`
 
@@ -588,67 +606,69 @@ tree_mod %>% set_args(tree_depth = 30)
 ```
 
 ---
-class: middle, center
-exclude: true
 
 ```{r include=FALSE}
-big_tree_mod <- 
+big_tree_mod <-
   decision_tree(engine = "rpart", min_n = 1, cost_complexity = 0) %>% #<<
   set_mode("classification")
 
 big_tree <-
-  big_tree_mod %>% 
-  last_fit(Class ~ ., 
-           split = alz_split) 
+  big_tree_mod %>%
+  last_fit(Class ~ .,
+    split = alz_split
+  )
 
 get_tree_fit <- function(results = big_tree) {
-  results %>% 
-    pluck(".workflow", 1) %>% 
-    extract_fit_parsnip() 
+  results %>%
+    pluck(".workflow", 1) %>%
+    extract_fit_parsnip()
 }
 
-big_tree_cp <- get_tree_fit(big_tree)$fit$cptable %>% 
-  as_tibble() %>% 
-  janitor::clean_names() %>% 
-  pivot_longer(contains("error"), names_to = "error_type", values_to = "error_val") %>% 
-  mutate(cp_round = round(cp, 4),
-    cp_fct = as_factor(cp_round))
+big_tree_cp <- get_tree_fit(big_tree)$fit$cptable %>%
+  as_tibble() %>%
+  janitor::clean_names() %>%
+  pivot_longer(contains("error"), names_to = "error_type", values_to = "error_val") %>%
+  mutate(
+    cp_round = round(cp, 4),
+    cp_fct = as_factor(cp_round)
+  )
 ```
 
----
-class: middle, center
-
-```{r echo=FALSE, fig.width=12}
-big_tree_cp %>% 
-  filter(error_type == "rel_error") %>% 
-  ggplot(aes(x = as.factor(nsplit), y = error_val, group = error_type, color =error_type)) +
+```{r echo=FALSE}
+big_tree_cp %>%
+  filter(error_type == "rel_error") %>%
+  ggplot(aes(x = as.factor(nsplit), y = error_val, group = error_type, color = error_type)) +
   geom_point(size = 3) +
   geom_line() +
   labs(x = "number of splits", y = "error", color = NULL) +
-  scale_color_manual(values = splits_pal[3], 
-                     labels = "Training") +
+  scale_color_manual(
+    values = splits_pal[3],
+    labels = "Training"
+  ) +
   theme(text = element_text(family = "Lato")) +
   coord_cartesian(ylim = c(0, 1.08), expand = TRUE)
 ```
 
 ---
-class: middle, center
 
-```{r echo=FALSE, fig.width=12}
-ggplot(big_tree_cp, aes(x = as.factor(nsplit), y = error_val, 
-                        group = error_type, color = fct_rev(error_type))) +
+```{r echo=FALSE}
+ggplot(big_tree_cp, aes(
+  x = as.factor(nsplit), y = error_val,
+  group = error_type, color = fct_rev(error_type)
+)) +
   geom_point(size = 3) +
   geom_line() +
   labs(x = "number of splits", y = "error", color = NULL) +
-  scale_color_manual(values = splits_pal[c(1, 3)], 
-                     labels = c("Testing", "Training")) +
+  scale_color_manual(
+    values = splits_pal[c(1, 3)],
+    labels = c("Testing", "Training")
+  ) +
   theme(text = element_text(family = "Lato")) +
   scale_x_discrete() +
   coord_cartesian(ylim = c(0, 1.08), expand = TRUE)
 ```
 
 ---
-class: middle, center
 
 # `min_n`
 
@@ -661,7 +681,6 @@ tree_mod %>% set_args(min_n = 20)
 ```
 
 ---
-class: middle, center
 
 # Quiz
 
@@ -683,7 +702,6 @@ class: middle, center, frame
 
 
 ---
-class: middle, center
 
 # `cost_complexity`
 
@@ -702,50 +720,55 @@ Closer to zero `r emo::ji("right_arrow")` larger trees.
 Higher penalty `r emo::ji("right_arrow")` smaller trees. 
 
 ---
-class: middle, center
 
 ```{r echo=FALSE, fig.width=10}
-ggplot(big_tree_cp, aes(x = rev(as.factor(cp)), y = error_val, group = error_type, color =fct_rev(error_type))) +
+ggplot(big_tree_cp, aes(x = rev(as.factor(cp)), y = error_val, group = error_type, color = fct_rev(error_type))) +
   geom_point(size = 3) +
   geom_line() +
   labs(x = "cost complexity", y = "error", color = NULL) +
-  scale_color_manual(values = splits_pal[c(1, 3)], 
-                     labels = c("Testing", "Training")) +
+  scale_color_manual(
+    values = splits_pal[c(1, 3)],
+    labels = c("Testing", "Training")
+  ) +
   theme(text = element_text(family = "Lato")) +
-  scale_x_discrete(breaks=pretty_breaks())
+  scale_x_discrete(breaks = pretty_breaks())
 ```
 
 ---
-class: middle, center
 
-```{r echo=FALSE, fig.width=12}
-big_tree_cp %>% 
-  filter(error_type == "rel_error") %>% 
-  ggplot(aes(x = fct_rev(cp_fct), y = error_val, 
-                        group = error_type, color = fct_rev(error_type))) +
+```{r echo=FALSE}
+big_tree_cp %>%
+  filter(error_type == "rel_error") %>%
+  ggplot(aes(
+    x = fct_rev(cp_fct), y = error_val,
+    group = error_type, color = fct_rev(error_type)
+  )) +
   geom_point(size = 3) +
   geom_line() +
   labs(x = "cost complexity", y = "error", color = NULL) +
-  scale_color_manual(values = splits_pal[3], 
-                     labels = "Training") +
+  scale_color_manual(
+    values = splits_pal[3],
+    labels = "Training"
+  ) +
   theme(text = element_text(family = "Lato")) +
   scale_x_discrete() +
   coord_cartesian(ylim = c(0, 1.05), expand = TRUE)
 ```
 
-
-
 ---
-class: middle, center
 
-```{r echo=FALSE, fig.width=12}
-ggplot(big_tree_cp, aes(x = fct_rev(cp_fct), y = error_val, 
-                        group = error_type, color = fct_rev(error_type))) +
+```{r echo=FALSE}
+ggplot(big_tree_cp, aes(
+  x = fct_rev(cp_fct), y = error_val,
+  group = error_type, color = fct_rev(error_type)
+)) +
   geom_point(size = 3) +
   geom_line() +
   labs(x = "cost complexity", y = "error", color = NULL) +
-  scale_color_manual(values = splits_pal[c(1, 3)], 
-                     labels = c("Testing", "Training")) +
+  scale_color_manual(
+    values = splits_pal[c(1, 3)],
+    labels = c("Testing", "Training")
+  ) +
   theme(text = element_text(family = "Lato")) +
   scale_x_discrete() +
   coord_cartesian(ylim = c(0, 1.08), expand = TRUE)
@@ -799,11 +822,11 @@ class: middle, center, frame
 class: middle, center
 
 ```{r echo=FALSE}
-parsnip::get_model_env() %>% 
-  pluck("decision_tree_args") %>% 
-  filter(engine == "rpart") %>% 
-  select(engine, parsnip, original) %>% 
-  knitr::kable('html')
+parsnip::get_model_env() %>%
+  pluck("decision_tree_args") %>%
+  filter(engine == "rpart") %>%
+  select(engine, parsnip, original) %>%
+  knitr::kable("html")
 ```
 
 
@@ -811,20 +834,19 @@ parsnip::get_model_env() %>%
 
 
 ---
-class: middle, center
 
 ```{r echo=FALSE}
 ## Build our tree using parsnip (but with rpart as the model engine)
 alz_tree_01 <-
-  tree_mod %>% 
+  tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 2) %>%
   fit(Class ~ tau + VEGF, data = alz_train)
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_01, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_01, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
@@ -837,15 +859,15 @@ alz_train %>%
 ```{r echo=FALSE}
 ## Build our tree using parsnip (but with rpart as the model engine)
 alz_tree_02 <-
-  tree_mod %>% 
+  tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 3) %>%
   fit(Class ~ tau + VEGF, data = alz_train)
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_02, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_02, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
@@ -858,15 +880,15 @@ alz_train %>%
 ```{r echo=FALSE}
 ## Build our tree using parsnip (but with rpart as the model engine)
 alz_tree_03 <-
-  tree_mod %>% 
+  tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 4) %>%
   fit(Class ~ tau + VEGF, data = alz_train)
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_03, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_03, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
@@ -879,15 +901,15 @@ alz_train %>%
 ```{r echo=FALSE}
 ## Build our tree using parsnip (but with rpart as the model engine)
 alz_tree_04 <-
-  tree_mod %>% 
+  tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 5) %>%
   fit(Class ~ tau + VEGF, data = alz_train)
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_04, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_04, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
@@ -896,20 +918,19 @@ alz_train %>%
 ```
 
 ---
-class: middle, center
 
 ```{r echo=FALSE}
 ## Build our tree using parsnip (but with rpart as the model engine)
 alz_tree_10 <-
-  tree_mod %>% 
+  tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 10) %>%
   fit(Class ~ tau + VEGF, data = alz_train)
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_10, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_10, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
@@ -918,20 +939,19 @@ alz_train %>%
 ```
 
 ---
-class: middle, center
 
 ```{r echo=FALSE}
 ## Build our tree using parsnip (but with rpart as the model engine)
 alz_tree_15 <-
-  tree_mod %>% 
+  tree_mod %>%
   set_args(min_n = 1, cost_complexity = 0, tree_depth = 15) %>%
   fit(Class ~ tau + VEGF, data = alz_train)
 
 ## Plot the data and model partitions
 alz_train %>%
-  ggplot(aes(x=tau, y=VEGF)) +
-  geom_parttree(data = alz_tree_15, aes(fill=Class), alpha = 0.5) +
-  geom_jitter(aes(col=Class), alpha=0.7) +
+  ggplot(aes(x = tau, y = VEGF)) +
+  geom_parttree(data = alz_tree_15, aes(fill = Class), alpha = 0.5) +
+  geom_jitter(aes(col = Class), alpha = 0.7) +
   theme_minimal() +
   scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
   scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
@@ -941,30 +961,29 @@ alz_train %>%
 
 ---
 
-
 ```{r echo=FALSE}
-knitr::include_graphics("figs/rmed02-workflows/big-alz-tree-1.png")
-```
-
-
-```{r big-alz-tree, include=FALSE, eval=FALSE}
 library(rattle)
-fancyRpartPlot(alz_tree_02$fit, 
-               sub = NULL,
-               palettes = "RdPu")
+fancyRpartPlot(alz_tree_15$fit,
+  sub = NULL,
+  palettes = "RdPu"
+)
 ```
 
 ---
-class: middle, frame, center
+class: middle, frame
 
 # Axiom
 
 There is an inverse relationship between  
-model *accuracy* and model *interpretability*.
+model .display[accuracy] and model .display[interpretability].
 
 ---
-class: middle, center
 
+class: inverse, middle
+
+# Random forests
+
+---
 
 # `rand_forest()`
 
@@ -980,30 +999,25 @@ rand_forest(mtry = 4, trees = 500, min_n = 1)
 *either* mode works!
 
 ---
-class: middle
-
-.center[
 
 # `rand_forest()`
 
 Specifies a random forest model
 
-]
-
-
 ```{r results='hide'}
 rand_forest(
   engine = "ranger", # default computational engine
-  mtry = 4,          # predictors seen at each node
-  trees = 500,       # trees per forest
-  min_n = 1          # smallest node allowed
-  )
+  mtry = 4, # predictors seen at each node
+  trees = 500, # trees per forest
+  min_n = 1 # smallest node allowed
+)
 ```
 
 ---
-class: your-turn
 
-# Your turn `r (yt_counter <- yt_counter + 1)`
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
 
 Create a new parsnip model called `rf_mod`, which will learn an ensemble of classification trees from our training data using the **ranger** engine. Update your `tree_wf` with this new model.
 
@@ -1016,23 +1030,23 @@ countdown(minutes = 4)
 ```
 
 ---
+
 ```{r}
 rf_mod <-
-  rand_forest(engine = "ranger") %>% 
+  rand_forest(engine = "ranger") %>%
   set_mode("classification")
 
 rf_wf <-
-  tree_wf %>% 
+  tree_wf %>%
   update_model(rf_mod)
 
 set.seed(100)
-rf_wf %>% 
-  fit_resamples(resamples = alz_folds) %>% 
+rf_wf %>%
+  fit_resamples(resamples = alz_folds) %>%
   collect_metrics()
 ```
 
 ---
-class: middle, center
 
 # `mtry` 
 
