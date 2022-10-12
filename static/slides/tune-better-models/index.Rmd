@@ -1057,3 +1057,775 @@ rand_forest(mtry = 11)
 ```
 
 **ranger** default = `floor(sqrt(num_predictors))`
+
+---
+
+
+.pull-left[
+
+### Single decision tree
+```{r}
+tree_mod <- 
+  decision_tree(engine = "rpart") %>% 
+  set_mode("classification")
+
+tree_wf <-
+  workflow() %>% 
+  add_formula(Class ~ .) %>% 
+  add_model(tree_mod)
+
+set.seed(100)
+tree_res <- 
+  tree_wf %>% 
+  fit_resamples(resamples = alz_folds,
+                control = control_resamples(save_pred = TRUE))
+
+tree_res %>% 
+  collect_metrics()
+```
+]
+
+--
+
+.pull-right[
+
+
+### A random forest of trees
+```{r}
+rf_mod <-
+  rand_forest(engine = "ranger") %>% 
+  set_mode("classification")
+
+rf_wf <-
+  tree_wf %>% 
+  update_model(rf_mod)
+
+set.seed(100)
+rf_res <- rf_wf %>% 
+  fit_resamples(resamples = alz_folds,
+                control = control_resamples(save_pred = TRUE)) 
+
+rf_res %>% 
+  collect_metrics()
+```
+]
+
+---
+
+
+.pull-left[
+
+### Single decision tree
+```{r echo=FALSE}
+tree_res  %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  roc_curve(truth = Class, estimate = .pred_Impaired) %>% 
+  ggplot(aes(1 - specificity, sensitivity, color = id)) +
+  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  coord_equal()
+```
+]
+
+--
+
+.pull-right[
+
+
+### A random forest of trees
+```{r echo=FALSE}
+rf_res  %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  roc_curve(truth = Class, estimate = .pred_Impaired) %>% 
+  ggplot(aes(1 - specificity, sensitivity, color = id)) +
+  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  coord_equal()
+```
+]
+
+---
+class: your-turn
+
+# Your turn `r (yt_counter <- yt_counter + 1)`
+
+Challenge: Fit 3 more random forest models, each using 3, 8, and 30 variables at each split. Update your `rf_wf` with each new model. Which value maximizes the area under the ROC curve?
+
+```{r echo=FALSE}
+countdown(minutes = 3)
+```
+
+
+---
+```{r}
+rf3_mod <- rf_mod %>% 
+  set_args(mtry = 3) #<<
+
+rf8_mod <- rf_mod %>% 
+  set_args(mtry = 8) #<<
+
+rf30_mod <- rf_mod %>% 
+  set_args(mtry = 30) #<<
+```
+
+---
+```{r}
+rf3_wf <- rf_wf %>% 
+  update_model(rf3_mod)
+
+set.seed(100)
+rf3_wf %>% 
+  fit_resamples(resamples = alz_folds) %>% 
+  collect_metrics()
+```
+
+---
+```{r}
+rf8_wf <- rf_wf %>% 
+  update_model(rf8_mod)
+
+set.seed(100)
+rf8_wf %>% 
+  fit_resamples(resamples = alz_folds) %>% 
+  collect_metrics()
+```
+
+---
+```{r}
+rf30_wf <- rf_wf %>% 
+  update_model(rf30_mod)
+
+set.seed(100)
+rf30_wf %>% 
+  fit_resamples(resamples = alz_folds) %>% 
+  collect_metrics()
+```
+
+
+---
+class: middle, center, frame
+
+
+# tune 
+
+Functions for fitting and tuning models
+
+<https://tune.tidymodels.org>
+
+```{r echo=FALSE, out.width="100%"}
+knitr::include_url("https://tune.tidymodels.org")
+```
+
+---
+class: middle, center
+
+# `tune()`
+
+A placeholder for hyper-parameters to be "tuned"
+
+```{r results='hide'}
+nearest_neighbor(neighbors = tune())
+```
+
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+```{r tune-grid, eval = FALSE}
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+  grid = 10, 
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+```{r eval = FALSE}
+tune_grid(
+  object, #<<
+  resamples, 
+  ..., 
+  grid = 10, 
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+--
+
+.pull-right[
+One of:
+
++ A parsnip `model` object
+
++ A `workflow`
+
+]
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+```{r eval = FALSE}
+tune_grid(
+  object, #<<
+  preprocessor, #<<
+  resamples, 
+  ..., 
+  grid = 10, 
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+A `model` + `recipe`
+]
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+```{r eval = FALSE}
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+  grid = 10, #<<
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+One of:
+
++ A positive integer. 
+
++ A data frame of tuning combinations.
+
+]
+
+---
+
+.center[
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+]
+
+.pull-left[
+
+```{r eval = FALSE}
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+  grid = 10, #<<
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+Number of candidate parameter sets to be created automatically; `10` is the default.
+]
+
+---
+```{r}
+data("ad_data")
+alz <- ad_data
+
+# data splitting
+set.seed(100) # Important!
+alz_split  <- initial_split(alz, strata = Class, prop = .9)
+alz_train  <- training(alz_split)
+alz_test   <- testing(alz_split)
+
+# data resampling
+set.seed(100)
+alz_folds <- 
+    vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+
+---
+class: your-turn
+
+# Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Here's our random forest model plus workflow to work with.
+
+```{r}
+rf_mod <- 
+  rand_forest(engine = "ranger") %>% 
+  set_mode("classification")
+
+rf_wf <-
+  workflow() %>% 
+  add_formula(Class ~ .) %>% 
+  add_model(rf_mod)
+```
+
+---
+class: your-turn
+
+# Your Turn `r yt_counter`
+
+Here is the output from `fit_resamples()`...
+
+```{r}
+set.seed(100) # Important!
+rf_results <-
+  rf_wf %>% 
+  fit_resamples(resamples = alz_folds)
+
+rf_results %>% 
+  collect_metrics()
+```
+
+
+---
+class: your-turn
+
+# Your Turn `r yt_counter`
+
+Edit the random forest model to tune the `mtry` and `min_n` hyperparameters. 
+
+Update your workflow to use the tuned model.
+
+Then use `tune_grid()` to find the best combination of hyper-parameters to maximize `roc_auc`; let tune set up the grid for you.
+
+How does it compare to the average ROC AUC across folds from `fit_resamples()`?
+
+```{r echo=FALSE}
+countdown(minutes = 5)
+```
+
+---
+
+```{r results='hide', messages = FALSE, warning = FALSE}
+rf_tuner <- 
+  rand_forest(engine = "ranger", 
+              mtry = tune(),
+              min_n = tune()) %>% 
+  set_mode("classification")
+
+rf_wf <-
+  rf_wf %>% 
+  update_model(rf_tuner)
+
+set.seed(100) # Important!
+rf_results <-
+  rf_wf %>% 
+  tune_grid(resamples = alz_folds)
+```
+
+---
+
+```{r}
+rf_results %>% 
+  collect_metrics() 
+```
+
+---
+```{r}
+rf_results %>% 
+  collect_metrics(summarize = FALSE) 
+```
+
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+]
+
+.pull-left[
+
+```{r eval = FALSE}
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+  grid = df, #<<
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+A data frame of tuning combinations.
+]
+
+---
+class: middle, center
+
+# `expand_grid()`
+
+Takes one or more vectors, and returns a data frame holding all combinations of their values.
+
+```{r}
+expand_grid(mtry = c(1, 5), min_n = 1:3)
+```
+
+--
+
+.footnote[tidyr package; see also base `expand.grid()`]
+
+
+---
+class: middle
+name: show-best
+
+.center[
+# `show_best()`
+
+Shows the .display[n] most optimum combinations of hyper-parameters
+]
+
+```{r show-best, results='hide'}
+rf_results %>% 
+  show_best(metric = "roc_auc", n = 5)
+```
+
+---
+template: show-best
+
+```{r ref.label='show-best', echo=FALSE}
+```
+
+
+---
+class: middle, center
+
+# `autoplot()`
+
+Quickly visualize tuning results
+
+
+```{r rf-plot}
+rf_results %>% autoplot()
+```
+
+---
+class: middle, center
+
+```{r ref.label='rf-plot', echo=FALSE}
+
+```
+
+
+
+---
+class: middle
+name: select-best
+
+.center[
+# `select_best()`
+
+Shows the .display[top] combination of hyper-parameters.
+]
+
+```{r select-best, results='hide'}
+alz_best <-
+  rf_results %>% 
+  select_best(metric = "roc_auc")
+
+alz_best
+```
+
+---
+template: select-best
+
+```{r ref.label='select-best', echo=FALSE}
+```
+
+---
+class: middle
+
+.center[
+# `finalize_workflow()`
+
+Replaces `tune()` placeholders in a model/recipe/workflow with a set of hyper-parameter values.
+]
+
+```{r}
+last_rf_workflow <- 
+  rf_wf %>%
+  finalize_workflow(alz_best) 
+```
+
+---
+background-image: url(images/diamonds.jpg)
+background-size: contain
+background-position: left
+class: middle, center
+background-color: #f5f5f5
+
+.pull-right[
+## We are ready to touch the jewels...
+
+## The .display[testing set]!
+
+]
+
+
+---
+class: middle
+
+.center[
+
+# `last_fit()`
+
+]
+
+```{r}
+last_rf_fit <-
+  last_rf_workflow %>% 
+  last_fit(split = alz_split)
+```
+
+---
+
+```{r}
+last_rf_fit
+```
+
+---
+class: your-turn
+
+# Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Use `select_best()`, `finalize_workflow()`, and `last_fit()` to take the best combination of hyper-parameters from `rf_results` and use them to predict the test set.
+
+How does our actual test ROC AUC compare to our cross-validated estimate?
+
+```{r echo=FALSE}
+countdown(minutes = 5)
+```
+
+---
+
+```{r results='hide'}
+alz_best <-
+  rf_results %>% 
+  select_best(metric = "roc_auc")
+
+last_rf_workflow <- 
+  rf_wf%>%
+  finalize_workflow(alz_best) 
+
+last_rf_fit <-
+  last_rf_workflow %>% 
+  last_fit(split = alz_split)
+
+last_rf_fit %>% 
+  collect_metrics()
+```
+
+---
+class: middle, frame
+
+.center[
+# Final metrics
+]
+
+```{r}
+last_rf_fit %>% 
+  collect_metrics()
+```
+
+
+---
+class: middle
+
+.center[
+# Final test predictions
+]
+
+```{r}
+last_rf_fit %>% 
+  collect_predictions()
+```
+
+---
+
+```{r out.width='50%'}
+roc_values <- 
+  last_rf_fit %>% 
+  collect_predictions() %>% 
+  roc_curve(truth = Class, estimate = .pred_Impaired)
+autoplot(roc_values)
+```
+
+---
+
+# The set-up
+
+```{r eval=FALSE}
+set.seed(100) # Important!
+
+# holdout method
+alz_split  <- initial_split(alz, strata = Class, prop = .9)
+alz_train  <- training(alz_split)
+alz_test   <- testing(alz_split)
+
+# add cross-validation
+set.seed(100)
+alz_folds <- 
+    vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+---
+
+# The tune-up
+
+```{r}
+# here comes the actual ML bits…
+
+# pick model to tune
+rf_tuner <- 
+  rand_forest(engine = "ranger", 
+              mtry = tune(),
+              min_n = tune()) %>% 
+  set_mode("classification")
+
+rf_wf <-
+  workflow() %>% 
+  add_formula(Class ~ .) %>% 
+  add_model(rf_tuner)
+
+rf_results <-
+  rf_wf %>% 
+  tune_grid(resamples = alz_folds,
+            control = control_grid(save_pred = TRUE))
+```
+
+---
+
+# Quick check-in...
+
+```{r,}
+rf_results %>%
+  collect_predictions() %>% 
+  group_by(.config, mtry, min_n) %>% 
+  summarize(folds = n_distinct(id))
+```
+
+
+---
+
+# The match up!
+
+.pull-left[
+```{r}
+show_best(rf_results, metric = "roc_auc", n = 5)
+
+# pick final model workflow
+alz_best <-
+  rf_results %>% 
+  select_best(metric = "roc_auc")
+
+alz_best
+```
+]
+
+.pull-right[
+```{r echo=FALSE}
+rf_results %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  roc_curve(truth = Class, estimate = .pred_Impaired) %>% 
+  ggplot(aes(1 - specificity, sensitivity, color = id)) +
+  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  coord_equal()
+```
+
+]
+
+
+---
+
+# The wrap-up
+
+.pull-left[
+```{r}
+last_rf_workflow <- 
+  rf_wf %>%
+  finalize_workflow(alz_best) 
+
+last_rf_workflow
+```
+]
+
+--
+
+.pull-right[
+```{r fig.show='hide'}
+# train + test final model
+last_rf_fit <-
+  last_rf_workflow %>% 
+  last_fit(split = alz_split)
+
+# explore final model
+last_rf_fit %>% 
+  collect_metrics()
+
+last_rf_fit %>% 
+  collect_predictions() %>% 
+  roc_curve(truth = Class, estimate = .pred_Impaired) %>% 
+  autoplot()
+```
+]

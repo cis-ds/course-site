@@ -236,7 +236,7 @@ class: inverse
 
 Fill in the blanks to return the accuracy and ROC AUC for this model using 10-fold cross-validation.
 
-<div class="countdown" id="timer_6346e864" style="right:0;bottom:0;" data-warnwhen="0">
+<div class="countdown" id="timer_6346e9c9" style="right:0;bottom:0;" data-warnwhen="0">
 <code class="countdown-time"><span class="countdown-digits minutes">02</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
 </div>
 
@@ -590,7 +590,7 @@ Fit your workflow with 10-fold cross-validation and compare the ROC AUC of the r
 
 *Hint: you'll need https://www.tidymodels.org/find/parsnip/*
 
-<div class="countdown" id="timer_6346e767" style="right:0;bottom:0;" data-warnwhen="0">
+<div class="countdown" id="timer_6346e8c7" style="right:0;bottom:0;" data-warnwhen="0">
 <code class="countdown-time"><span class="countdown-digits minutes">04</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
 </div>
 
@@ -629,6 +629,943 @@ rand_forest(mtry = 11)
 ```
 
 **ranger** default = `floor(sqrt(num_predictors))`
+
+---
+
+
+.pull-left[
+
+### Single decision tree
+
+```r
+tree_mod &lt;- 
+  decision_tree(engine = "rpart") %&gt;% 
+  set_mode("classification")
+
+tree_wf &lt;-
+  workflow() %&gt;% 
+  add_formula(Class ~ .) %&gt;% 
+  add_model(tree_mod)
+
+set.seed(100)
+tree_res &lt;- 
+  tree_wf %&gt;% 
+  fit_resamples(resamples = alz_folds,
+                control = control_resamples(save_pred = TRUE))
+
+tree_res %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.792    10  0.0361 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.744    10  0.0320 Preprocessor1_Mod…
+```
+]
+
+--
+
+.pull-right[
+
+
+### A random forest of trees
+
+```r
+rf_mod &lt;-
+  rand_forest(engine = "ranger") %&gt;% 
+  set_mode("classification")
+
+rf_wf &lt;-
+  tree_wf %&gt;% 
+  update_model(rf_mod)
+
+set.seed(100)
+rf_res &lt;- rf_wf %&gt;% 
+  fit_resamples(resamples = alz_folds,
+                control = control_resamples(save_pred = TRUE)) 
+
+rf_res %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.833    10  0.0139 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.894    10  0.0186 Preprocessor1_Mod…
+```
+]
+
+---
+
+
+.pull-left[
+
+### Single decision tree
+&lt;img src="index_files/figure-html/unnamed-chunk-53-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+
+
+### A random forest of trees
+&lt;img src="index_files/figure-html/unnamed-chunk-54-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+class: your-turn
+
+# Your turn 3
+
+Challenge: Fit 3 more random forest models, each using 3, 8, and 30 variables at each split. Update your `rf_wf` with each new model. Which value maximizes the area under the ROC curve?
+
+<div class="countdown" id="timer_6346e9a5" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">03</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+
+---
+
+```r
+rf3_mod &lt;- rf_mod %&gt;% 
+* set_args(mtry = 3)
+
+rf8_mod &lt;- rf_mod %&gt;% 
+* set_args(mtry = 8)
+
+rf30_mod &lt;- rf_mod %&gt;% 
+* set_args(mtry = 30)
+```
+
+---
+
+```r
+rf3_wf &lt;- rf_wf %&gt;% 
+  update_model(rf3_mod)
+
+set.seed(100)
+rf3_wf %&gt;% 
+  fit_resamples(resamples = alz_folds) %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.786    10  0.0183 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.861    10  0.0209 Preprocessor1_Mod…
+```
+
+---
+
+```r
+rf8_wf &lt;- rf_wf %&gt;% 
+  update_model(rf8_mod)
+
+set.seed(100)
+rf8_wf %&gt;% 
+  fit_resamples(resamples = alz_folds) %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.816    10  0.0177 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.889    10  0.0183 Preprocessor1_Mod…
+```
+
+---
+
+```r
+rf30_wf &lt;- rf_wf %&gt;% 
+  update_model(rf30_mod)
+
+set.seed(100)
+rf30_wf %&gt;% 
+  fit_resamples(resamples = alz_folds) %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.829    10  0.0108 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.898    10  0.0196 Preprocessor1_Mod…
+```
+
+
+---
+class: middle, center, frame
+
+
+# tune 
+
+Functions for fitting and tuning models
+
+&lt;https://tune.tidymodels.org&gt;
+
+&lt;iframe src="https://tune.tidymodels.org" width="100%" height="400px" data-external="1"&gt;&lt;/iframe&gt;
+
+---
+class: middle, center
+
+# `tune()`
+
+A placeholder for hyper-parameters to be "tuned"
+
+
+```r
+nearest_neighbor(neighbors = tune())
+```
+
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+
+```r
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+  grid = 10, 
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+
+```r
+tune_grid(
+* object,
+  resamples, 
+  ..., 
+  grid = 10, 
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+--
+
+.pull-right[
+One of:
+
++ A parsnip `model` object
+
++ A `workflow`
+
+]
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+
+```r
+tune_grid(
+* object,
+* preprocessor,
+  resamples, 
+  ..., 
+  grid = 10, 
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+A `model` + `recipe`
+]
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+]
+
+.pull-left[
+
+
+```r
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+* grid = 10,
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+One of:
+
++ A positive integer. 
+
++ A data frame of tuning combinations.
+
+]
+
+---
+
+.center[
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+]
+
+.pull-left[
+
+
+```r
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+* grid = 10,
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+Number of candidate parameter sets to be created automatically; `10` is the default.
+]
+
+---
+
+```r
+data("ad_data")
+alz &lt;- ad_data
+
+# data splitting
+set.seed(100) # Important!
+alz_split  &lt;- initial_split(alz, strata = Class, prop = .9)
+alz_train  &lt;- training(alz_split)
+alz_test   &lt;- testing(alz_split)
+
+# data resampling
+set.seed(100)
+alz_folds &lt;- 
+    vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+
+---
+class: your-turn
+
+# Your Turn 4
+
+Here's our random forest model plus workflow to work with.
+
+
+```r
+rf_mod &lt;- 
+  rand_forest(engine = "ranger") %&gt;% 
+  set_mode("classification")
+
+rf_wf &lt;-
+  workflow() %&gt;% 
+  add_formula(Class ~ .) %&gt;% 
+  add_model(rf_mod)
+```
+
+---
+class: your-turn
+
+# Your Turn 4
+
+Here is the output from `fit_resamples()`...
+
+
+```r
+set.seed(100) # Important!
+rf_results &lt;-
+  rf_wf %&gt;% 
+  fit_resamples(resamples = alz_folds)
+
+rf_results %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 6
+##   .metric  .estimator  mean     n std_err .config           
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;             
+## 1 accuracy binary     0.833    10  0.0139 Preprocessor1_Mod…
+## 2 roc_auc  binary     0.894    10  0.0186 Preprocessor1_Mod…
+```
+
+
+---
+class: your-turn
+
+# Your Turn 4
+
+Edit the random forest model to tune the `mtry` and `min_n` hyperparameters. 
+
+Update your workflow to use the tuned model.
+
+Then use `tune_grid()` to find the best combination of hyper-parameters to maximize `roc_auc`; let tune set up the grid for you.
+
+How does it compare to the average ROC AUC across folds from `fit_resamples()`?
+
+<div class="countdown" id="timer_6346eb8b" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+
+```r
+rf_tuner &lt;- 
+  rand_forest(engine = "ranger", 
+              mtry = tune(),
+              min_n = tune()) %&gt;% 
+  set_mode("classification")
+
+rf_wf &lt;-
+  rf_wf %&gt;% 
+  update_model(rf_tuner)
+
+set.seed(100) # Important!
+rf_results &lt;-
+  rf_wf %&gt;% 
+  tune_grid(resamples = alz_folds)
+```
+
+---
+
+
+```r
+rf_results %&gt;% 
+  collect_metrics() 
+## # A tibble: 20 × 8
+##     mtry min_n .metric  .estim…¹  mean     n std_err .config
+##    &lt;int&gt; &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;  
+##  1    53    28 accuracy binary   0.843    10 0.00946 Prepro…
+##  2    53    28 roc_auc  binary   0.894    10 0.0212  Prepro…
+##  3    37    36 accuracy binary   0.843    10 0.0102  Prepro…
+##  4    37    36 roc_auc  binary   0.891    10 0.0188  Prepro…
+##  5    74    21 accuracy binary   0.849    10 0.0111  Prepro…
+##  6    74    21 roc_auc  binary   0.892    10 0.0216  Prepro…
+##  7    10    13 accuracy binary   0.816    10 0.0128  Prepro…
+##  8    10    13 roc_auc  binary   0.886    10 0.0182  Prepro…
+##  9    80     8 accuracy binary   0.839    10 0.0176  Prepro…
+## 10    80     8 roc_auc  binary   0.899    10 0.0217  Prepro…
+## # … with 10 more rows, and abbreviated variable name
+## #   ¹​.estimator
+```
+
+---
+
+```r
+rf_results %&gt;% 
+  collect_metrics(summarize = FALSE) 
+## # A tibble: 200 × 7
+##    id      mtry min_n .metric  .estimator .estimate .config 
+##    &lt;chr&gt;  &lt;int&gt; &lt;int&gt; &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;   
+##  1 Fold01    53    28 accuracy binary         0.806 Preproc…
+##  2 Fold01    53    28 roc_auc  binary         0.879 Preproc…
+##  3 Fold02    53    28 accuracy binary         0.833 Preproc…
+##  4 Fold02    53    28 roc_auc  binary         0.898 Preproc…
+##  5 Fold03    53    28 accuracy binary         0.8   Preproc…
+##  6 Fold03    53    28 roc_auc  binary         0.824 Preproc…
+##  7 Fold04    53    28 accuracy binary         0.867 Preproc…
+##  8 Fold04    53    28 roc_auc  binary         0.972 Preproc…
+##  9 Fold05    53    28 accuracy binary         0.833 Preproc…
+## 10 Fold05    53    28 roc_auc  binary         0.807 Preproc…
+## # … with 190 more rows
+```
+
+
+---
+
+.center[
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+]
+
+.pull-left[
+
+
+```r
+tune_grid(
+  object, 
+  resamples, 
+  ..., 
+* grid = df,
+  metrics = NULL, 
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+A data frame of tuning combinations.
+]
+
+---
+class: middle, center
+
+# `expand_grid()`
+
+Takes one or more vectors, and returns a data frame holding all combinations of their values.
+
+
+```r
+expand_grid(mtry = c(1, 5), min_n = 1:3)
+## # A tibble: 6 × 2
+##    mtry min_n
+##   &lt;dbl&gt; &lt;int&gt;
+## 1     1     1
+## 2     1     2
+## 3     1     3
+## 4     5     1
+## 5     5     2
+## 6     5     3
+```
+
+--
+
+.footnote[tidyr package; see also base `expand.grid()`]
+
+
+---
+class: middle
+name: show-best
+
+.center[
+# `show_best()`
+
+Shows the .display[n] most optimum combinations of hyper-parameters
+]
+
+
+```r
+rf_results %&gt;% 
+  show_best(metric = "roc_auc", n = 5)
+```
+
+---
+template: show-best
+
+
+```
+## # A tibble: 5 × 8
+##    mtry min_n .metric .estimator  mean     n std_err .config
+##   &lt;int&gt; &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;  
+## 1    80     8 roc_auc binary     0.899    10  0.0217 Prepro…
+## 2   113     5 roc_auc binary     0.897    10  0.0222 Prepro…
+## 3    43    20 roc_auc binary     0.896    10  0.0192 Prepro…
+## 4    53    28 roc_auc binary     0.894    10  0.0212 Prepro…
+## 5   100    31 roc_auc binary     0.893    10  0.0223 Prepro…
+```
+
+
+---
+class: middle, center
+
+# `autoplot()`
+
+Quickly visualize tuning results
+
+
+
+```r
+rf_results %&gt;% autoplot()
+```
+
+&lt;img src="index_files/figure-html/rf-plot-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+class: middle, center
+
+&lt;img src="index_files/figure-html/unnamed-chunk-76-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+
+
+---
+class: middle
+name: select-best
+
+.center[
+# `select_best()`
+
+Shows the .display[top] combination of hyper-parameters.
+]
+
+
+```r
+alz_best &lt;-
+  rf_results %&gt;% 
+  select_best(metric = "roc_auc")
+
+alz_best
+```
+
+---
+template: select-best
+
+
+```
+## # A tibble: 1 × 3
+##    mtry min_n .config              
+##   &lt;int&gt; &lt;int&gt; &lt;chr&gt;                
+## 1    80     8 Preprocessor1_Model05
+```
+
+---
+class: middle
+
+.center[
+# `finalize_workflow()`
+
+Replaces `tune()` placeholders in a model/recipe/workflow with a set of hyper-parameter values.
+]
+
+
+```r
+last_rf_workflow &lt;- 
+  rf_wf %&gt;%
+  finalize_workflow(alz_best) 
+```
+
+---
+background-image: url(images/diamonds.jpg)
+background-size: contain
+background-position: left
+class: middle, center
+background-color: #f5f5f5
+
+.pull-right[
+## We are ready to touch the jewels...
+
+## The .display[testing set]!
+
+]
+
+
+---
+class: middle
+
+.center[
+
+# `last_fit()`
+
+]
+
+
+```r
+last_rf_fit &lt;-
+  last_rf_workflow %&gt;% 
+  last_fit(split = alz_split)
+```
+
+---
+
+
+```r
+last_rf_fit
+## # Resampling results
+## # Manual resampling 
+## # A tibble: 1 × 6
+##   splits           id             .metrics .notes   .predi…¹
+##   &lt;list&gt;           &lt;chr&gt;          &lt;list&gt;   &lt;list&gt;   &lt;list&gt;  
+## 1 &lt;split [298/35]&gt; train/test sp… &lt;tibble&gt; &lt;tibble&gt; &lt;tibble&gt;
+## # … with 1 more variable: .workflow &lt;list&gt;, and abbreviated
+## #   variable name ¹​.predictions
+```
+
+---
+class: your-turn
+
+# Your Turn 5
+
+Use `select_best()`, `finalize_workflow()`, and `last_fit()` to take the best combination of hyper-parameters from `rf_results` and use them to predict the test set.
+
+How does our actual test ROC AUC compare to our cross-validated estimate?
+
+<div class="countdown" id="timer_6346ea54" style="right:0;bottom:0;" data-warnwhen="0">
+<code class="countdown-time"><span class="countdown-digits minutes">05</span><span class="countdown-digits colon">:</span><span class="countdown-digits seconds">00</span></code>
+</div>
+
+---
+
+
+```r
+alz_best &lt;-
+  rf_results %&gt;% 
+  select_best(metric = "roc_auc")
+
+last_rf_workflow &lt;- 
+  rf_wf%&gt;%
+  finalize_workflow(alz_best) 
+
+last_rf_fit &lt;-
+  last_rf_workflow %&gt;% 
+  last_fit(split = alz_split)
+
+last_rf_fit %&gt;% 
+  collect_metrics()
+```
+
+---
+class: middle, frame
+
+.center[
+# Final metrics
+]
+
+
+```r
+last_rf_fit %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 4
+##   .metric  .estimator .estimate .config             
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               
+## 1 accuracy binary         0.857 Preprocessor1_Model1
+## 2 roc_auc  binary         0.9   Preprocessor1_Model1
+```
+
+
+---
+class: middle
+
+.center[
+# Final test predictions
+]
+
+
+```r
+last_rf_fit %&gt;% 
+  collect_predictions()
+## # A tibble: 35 × 7
+##    id            .pred…¹ .pred…²  .row .pred…³ Class .config
+##    &lt;chr&gt;           &lt;dbl&gt;   &lt;dbl&gt; &lt;int&gt; &lt;fct&gt;   &lt;fct&gt; &lt;chr&gt;  
+##  1 train/test s…  0.0226   0.977     7 Control Cont… Prepro…
+##  2 train/test s…  0.201    0.799    14 Control Cont… Prepro…
+##  3 train/test s…  0.618    0.382    16 Impair… Impa… Prepro…
+##  4 train/test s…  0.626    0.374    27 Impair… Impa… Prepro…
+##  5 train/test s…  0.692    0.308    28 Impair… Impa… Prepro…
+##  6 train/test s…  0.174    0.826    32 Control Impa… Prepro…
+##  7 train/test s…  0.0117   0.988    54 Control Cont… Prepro…
+##  8 train/test s…  0.188    0.812    58 Control Cont… Prepro…
+##  9 train/test s…  0.0851   0.915    60 Control Cont… Prepro…
+## 10 train/test s…  0.456    0.544    90 Control Cont… Prepro…
+## # … with 25 more rows, and abbreviated variable names
+## #   ¹​.pred_Impaired, ²​.pred_Control, ³​.pred_class
+```
+
+---
+
+
+```r
+roc_values &lt;- 
+  last_rf_fit %&gt;% 
+  collect_predictions() %&gt;% 
+  roc_curve(truth = Class, estimate = .pred_Impaired)
+autoplot(roc_values)
+```
+
+&lt;img src="index_files/figure-html/unnamed-chunk-85-1.png" width="50%" style="display: block; margin: auto;" /&gt;
+
+---
+
+# The set-up
+
+
+```r
+set.seed(100) # Important!
+
+# holdout method
+alz_split  &lt;- initial_split(alz, strata = Class, prop = .9)
+alz_train  &lt;- training(alz_split)
+alz_test   &lt;- testing(alz_split)
+
+# add cross-validation
+set.seed(100)
+alz_folds &lt;- 
+    vfold_cv(alz_train, v = 10, strata = Class)
+```
+
+---
+
+# The tune-up
+
+
+```r
+# here comes the actual ML bits…
+
+# pick model to tune
+rf_tuner &lt;- 
+  rand_forest(engine = "ranger", 
+              mtry = tune(),
+              min_n = tune()) %&gt;% 
+  set_mode("classification")
+
+rf_wf &lt;-
+  workflow() %&gt;% 
+  add_formula(Class ~ .) %&gt;% 
+  add_model(rf_tuner)
+
+rf_results &lt;-
+  rf_wf %&gt;% 
+  tune_grid(resamples = alz_folds,
+            control = control_grid(save_pred = TRUE))
+```
+
+---
+
+# Quick check-in...
+
+
+```r
+rf_results %&gt;%
+  collect_predictions() %&gt;% 
+  group_by(.config, mtry, min_n) %&gt;% 
+  summarize(folds = n_distinct(id))
+## # A tibble: 10 × 4
+## # Groups:   .config, mtry [10]
+##    .config                mtry min_n folds
+##    &lt;chr&gt;                 &lt;int&gt; &lt;int&gt; &lt;int&gt;
+##  1 Preprocessor1_Model01   121    29    10
+##  2 Preprocessor1_Model02    37     7    10
+##  3 Preprocessor1_Model03    87    38    10
+##  4 Preprocessor1_Model04    61    15    10
+##  5 Preprocessor1_Model05     4     6    10
+##  6 Preprocessor1_Model06    24    24    10
+##  7 Preprocessor1_Model07   111    11    10
+##  8 Preprocessor1_Model08    40    28    10
+##  9 Preprocessor1_Model09    68    33    10
+## 10 Preprocessor1_Model10    91    19    10
+```
+
+
+---
+
+# The match up!
+
+.pull-left[
+
+```r
+show_best(rf_results, metric = "roc_auc", n = 5)
+## # A tibble: 5 × 8
+##    mtry min_n .metric .estimator  mean     n std_err .config
+##   &lt;int&gt; &lt;int&gt; &lt;chr&gt;   &lt;chr&gt;      &lt;dbl&gt; &lt;int&gt;   &lt;dbl&gt; &lt;chr&gt;  
+## 1    37     7 roc_auc binary     0.897    10  0.0201 Prepro…
+## 2    24    24 roc_auc binary     0.897    10  0.0173 Prepro…
+## 3    61    15 roc_auc binary     0.895    10  0.0197 Prepro…
+## 4    91    19 roc_auc binary     0.893    10  0.0207 Prepro…
+## 5    87    38 roc_auc binary     0.893    10  0.0223 Prepro…
+
+# pick final model workflow
+alz_best &lt;-
+  rf_results %&gt;% 
+  select_best(metric = "roc_auc")
+
+alz_best
+## # A tibble: 1 × 3
+##    mtry min_n .config              
+##   &lt;int&gt; &lt;int&gt; &lt;chr&gt;                
+## 1    37     7 Preprocessor1_Model02
+```
+]
+
+.pull-right[
+&lt;img src="index_files/figure-html/unnamed-chunk-90-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+]
+
+
+---
+
+# The wrap-up
+
+.pull-left[
+
+```r
+last_rf_workflow &lt;- 
+  rf_wf %&gt;%
+  finalize_workflow(alz_best) 
+
+last_rf_workflow
+## ══ Workflow ════════════════════════════════════════════════════════════════════
+## Preprocessor: Formula
+## Model: rand_forest()
+## 
+## ── Preprocessor ────────────────────────────────────────────────────────────────
+## Class ~ .
+## 
+## ── Model ───────────────────────────────────────────────────────────────────────
+## Random Forest Model Specification (classification)
+## 
+## Main Arguments:
+##   mtry = 37
+##   min_n = 7
+## 
+## Computational engine: ranger
+```
+]
+
+--
+
+.pull-right[
+
+```r
+# train + test final model
+last_rf_fit &lt;-
+  last_rf_workflow %&gt;% 
+  last_fit(split = alz_split)
+
+# explore final model
+last_rf_fit %&gt;% 
+  collect_metrics()
+## # A tibble: 2 × 4
+##   .metric  .estimator .estimate .config             
+##   &lt;chr&gt;    &lt;chr&gt;          &lt;dbl&gt; &lt;chr&gt;               
+## 1 accuracy binary         0.857 Preprocessor1_Model1
+## 2 roc_auc  binary         0.876 Preprocessor1_Model1
+
+last_rf_fit %&gt;% 
+  collect_predictions() %&gt;% 
+  roc_curve(truth = Class, estimate = .pred_Impaired) %&gt;% 
+  autoplot()
+```
+]
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
