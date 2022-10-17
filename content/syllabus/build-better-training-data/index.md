@@ -1,9 +1,10 @@
 ---
-title: "Build a better workflow"
+title: "Build better training data"
 date: 2022-10-24T12:25:00-05:00
 publishDate: 2019-05-06T12:25:00-05:00
 draft: false
 
+aliases: ["/syllabus/build-a-better-workflow/"]
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
 time_end: 2022-10-24T14:20:00-05:00
@@ -28,7 +29,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/build-a-better-workflow/"
+url_slides: "/slides/build-better-training-data/"
 url_video: ""
 url_code: ""
 
@@ -36,11 +37,7 @@ url_code: ""
 math: false
 ---
 
-```{r}
-#| label = "setup",
-#| include = FALSE
-knitr::opts_chunk$set(echo = FALSE)
-```
+
 
 ## Overview
 
@@ -52,7 +49,6 @@ knitr::opts_chunk$set(echo = FALSE)
 ## Before class
 
 * Read [Preprocess your data](/notes/preprocess/)
-* Read [Tune model parameters](/notes/tune-models/)
 
 This is not a math/stats class. In class we will **briefly** summarize how these methods work and spend the bulk of our time on estimating and interpreting these models. That said, you should have some understanding of the mathematical underpinnings of statistical learning methods prior to implementing them yourselves. See below for some recommended readings:
 

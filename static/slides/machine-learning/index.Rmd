@@ -100,7 +100,8 @@ style_duo_accent(
     ".blue" = list(color = "#2A9BB7"),
     ".purple" = list(color = "#a493ba"),
     ".yellow" = list(color = "#f1de67"),
-    ".gray" = list(color = "#222222")
+    ".gray" = list(color = "#222222"),
+    ".display" = list(color = "#D47500")
   )
 )
 
@@ -144,12 +145,6 @@ class: middle
 #| echo = FALSE
 knitr::include_graphics("https://techcrunch.com/wp-content/uploads/2017/12/facebook-facial-recognition-photo-review.png?w=730&crop=1")
 ```
-
----
-
-class: middle, inverse
-
-# What is machine learning?
 
 ---
 
@@ -199,9 +194,9 @@ knitr::include_graphics("images/all-of-ml.jpg")
 
 ## Examples of supervised learning
 
-- Ad click prediction
-- Supreme Court decision making
-- Police misconduct prediction
+- Will a user click on this ad?
+- Will a police officer engage in misconduct in the next six months?
+- How many individuals will become infected with COVID-19 in the next week?
 
 ---
 
@@ -213,7 +208,7 @@ knitr::include_graphics("images/all-of-ml.jpg")
 
 ### Classification
 
-Is your hospital in a state of crisis care?
+Will this home sell in the next 30 days?
 
 ]
 
@@ -223,7 +218,7 @@ Is your hospital in a state of crisis care?
 
 ### Regression
 
-What percentage of hospital beds are occupied?
+What will the sale price be for this home?
 
 ]
 
@@ -240,8 +235,9 @@ What percentage of hospital beds are occupied?
 
 ]
 
-.pull-right[
+--
 
+.pull-right[
 
 ### Machine Learning
 
@@ -274,21 +270,36 @@ class: bottom
 
 ---
 
+class: inverse, middle
+
+# tidymodels
+
+---
+
+background-image: url(images/tm-org.png)
+background-size: contain
+
+---
+
 ## Predictive modeling
 
 ```{r}
-#| message = TRUE,
-#| warning = TRUE
+#| message = FALSE,
+#| warning = FALSE
 library(tidymodels)
 ```
 
 ```{r}
 #| label = "setup2",
 #| include = FALSE
-knitr::opts_chunk$set(collapse = TRUE,
-                      R.options = list(tibble.max_extra_cols = 5, 
-                                       tibble.print_max = 5, 
-                                       tibble.width = 60))
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  R.options = list(
+    tibble.max_extra_cols = 5,
+    tibble.print_max = 5,
+    tibble.width = 60
+  )
+)
 options("scipen" = 16)
 library(tidymodels)
 yt_counter <- 0
@@ -306,20 +317,28 @@ library(gganimate)
 library(AmesHousing)
 library(tune)
 library(viridis)
+library(janitor)
+
 ames <- make_ames()
 theme_set(theme_minimal(base_size = 16))
 
 # for figures
 train_color <- "#1a162d"
-test_color  <- "#84cae1"
-data_color  <- "#CA225E"
+test_color <- "#84cae1"
+data_color <- "#CA225E"
 assess_color <- data_color
 splits_pal <- c(data_color, train_color, test_color)
 ```
 
 ---
 
-## Bechdel Test
+class: inverse, middle
+
+# Bechdel test
+
+---
+
+## Bechdel test
 
 ```{r}
 #| echo = FALSE,
@@ -331,9 +350,9 @@ knitr::include_graphics(path = "https://fivethirtyeight.com/wp-content/uploads/2
 
 ---
 
-## Bechdel Test
+## Bechdel test
 
-1. It has to have at least two [named] women in it
+1. It has to have at least two named women in it
 1. Who talk to each other
 1. About something besides a man
 
@@ -349,16 +368,20 @@ glimpse(bechdel)
 
 ## Bechdel test data
 
+.pull-left[
+
 - N = `r nrow(bechdel)`
 - 1 categorical outcome: `test`
 - `r ncol(bechdel) - 1` predictors
 
----
+]
 
-class: middle
+.pull-right[
 
 ```{r}
-#| echo = FALSE
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
 ggplot(data = bechdel, aes(
   x = metascore,
   y = imdb_rating,
@@ -373,6 +396,9 @@ ggplot(data = bechdel, aes(
   ) +
   theme(legend.position = "top")
 ```
+
+]
+
 
 
 ---
@@ -438,20 +464,11 @@ glm(test ~ metascore, family = binomial, data = bechdel)
 
 ---
 
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.001.jpeg")
-```
-
----
-
 ## To specify a model with `parsnip`
 
-1. Pick a model
-1. Set the engine
-1. Set the mode (if needed)
+1. Pick a **model**
+1. Set the **engine**
+1. Set the **mode** (if needed)
 
 ---
 
@@ -478,9 +495,9 @@ decision_tree() %>%
 ## To specify a model with `parsnip`
 
 ```{r}
-nearest_neighbor() %>%              
-  set_engine("kknn") %>%             
-  set_mode("classification")        
+nearest_neighbor() %>%
+  set_engine("kknn") %>%
+  set_mode("classification")
 ```
 
 ---
@@ -518,9 +535,9 @@ Specifies a model that uses logistic regression
 #| results = "hide"
 logistic_reg(
   mode = "classification", # "default" mode, if exists
-  penalty = NULL,          # model hyper-parameter
-  mixture = NULL           # model hyper-parameter
-  )
+  penalty = NULL, # model hyper-parameter
+  mixture = NULL # model hyper-parameter
+)
 ```
 
 ---
@@ -532,6 +549,15 @@ Adds an engine to power or implement the model.
 ```{r}
 #| eval = FALSE
 logistic_reg() %>% set_engine(engine = "glm")
+```
+
+--
+
+Set the engine when you define the model type.
+
+```{r}
+#| eval = FALSE
+logistic_reg(engine = "glm")
 ```
 
 ---
@@ -546,9 +572,10 @@ logistic_reg() %>% set_mode(mode = "classification")
 ```
 
 ---
-class: your-turn
 
-## Your turn `r (yt_counter <- yt_counter + 1)`
+class: inverse
+
+## `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
 
 Run the chunk in your .Rmd and look at the output. Then, copy/paste the code and edit to create:
 
@@ -569,19 +596,19 @@ countdown(minutes = 3)
 
 ```{r}
 #| include = FALSE
-lr_mod <- logistic_reg() %>% 
-  set_engine(engine = "glm") %>% 
+lr_mod <- logistic_reg() %>%
+  set_engine(engine = "glm") %>%
   set_mode("classification")
 lr_mod
 ```
 
 ```{r}
-lr_mod 
+lr_mod
 
-tree_mod <- decision_tree() %>% 
-  set_engine(engine = "C5.0") %>% 
+tree_mod <- decision_tree() %>%
+  set_engine(engine = "C5.0") %>%
   set_mode("classification")
-tree_mod 
+tree_mod
 ```
 
 ---
@@ -608,14 +635,54 @@ Many learn model parameters, which *can* be useful as values for inference and i
 
 ---
 
+## `fit()`
+
+Train a model by fitting a model. Returns a parsnip model fit.
+
+```{r}
+#| results = "hide"
+fit(tree_mod, test ~ metascore + imdb_rating, data = bechdel)
+```
+
+---
+
+## `fit()`
+
+Train a model by fitting a model. Returns a parsnip model fit.
+
+```{r}
+#| results = "hide"
+tree_mod %>% # parsnip model
+  fit(test ~ metascore + imdb_rating, # a formula
+    data = bechdel # dataframe
+  )
+```
+
+---
+
+## `fit()`
+
+Train a model by fitting a model. Returns a parsnip model fit.
+
+```{r}
+#| results = "hide"
+tree_fit <- tree_mod %>% # parsnip model
+  fit(test ~ metascore + imdb_rating, # a formula
+    data = bechdel # dataframe
+  )
+```
+
+---
+
 ## A fitted model
 
 .pull-left[
 
 ```{r}
-lr_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel) %>% 
+lr_mod %>%
+  fit(test ~ metascore + imdb_rating,
+    data = bechdel
+  ) %>%
   broom::tidy()
 ```
 ]
@@ -623,8 +690,9 @@ lr_mod %>%
 .pull-right[
 
 ```{r}
-#| echo = FALSE,
-#| fig.width = 6
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
 ggplot(data = bechdel, aes(
   x = metascore,
   y = imdb_rating,
@@ -647,26 +715,32 @@ ggplot(data = bechdel, aes(
 
 ```{r}
 #| include = FALSE
-lr_preds <- lr_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel) %>% 
-  predict(new_data = bechdel) %>% 
-  bind_cols(bechdel) %>% 
+lr_preds <- lr_mod %>%
+  fit(test ~ metascore + imdb_rating,
+    data = bechdel
+  ) %>%
+  predict(new_data = bechdel) %>%
+  bind_cols(bechdel) %>%
   mutate(.pred_match = if_else(test == .pred_class, 1, 0))
 ```
 
+.pull-left[
+
 ```{r}
-#| echo = FALSE
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
 ggplot(data = lr_preds, aes(
   x = metascore,
   y = imdb_rating,
   shape = as.factor(.pred_match),
-           color = test,
-           alpha = as.factor(.pred_match))) +
+  color = test,
+  alpha = as.factor(.pred_match)
+)) +
   geom_point(size = 3) +
-  scale_alpha_manual(values = c(1, .2), guide = FALSE) +
-  scale_shape_manual(values = c(4, 19), guide = FALSE) +
-  scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE) +
+  scale_alpha_manual(values = c(1, .2), guide = "none") +
+  scale_shape_manual(values = c(4, 19), guide = "none") +
+  scale_color_manual(values = c("#1a162d", "#cd4173"), guide = "none") +
   labs(
     title = "Logistic regression model",
     x = "Metacritic score",
@@ -674,212 +748,72 @@ ggplot(data = lr_preds, aes(
   )
 ```
 
+]
+
+.pull-right[
+
+```{r echo=FALSE}
+lr_preds %>% 
+  conf_mat(truth = test, estimate = .pred_class)
+```
+
+]
+
 ---
 
 ## "All models are wrong, but some are useful"
 
 ```{r}
 #| include = FALSE
-tree_preds <- tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel) %>% 
-  predict(new_data = bechdel) %>% 
-  bind_cols(bechdel) %>% 
+tree_preds <- tree_mod %>%
+  fit(test ~ metascore + imdb_rating,
+    data = bechdel
+  ) %>%
+  predict(new_data = bechdel) %>%
+  bind_cols(bechdel) %>%
   mutate(.pred_match = if_else(test == .pred_class, 1, 0))
 ```
 
+.pull-left[
+
 ```{r}
-#| echo = FALSE
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
 ggplot(data = tree_preds, aes(
   x = metascore,
   y = imdb_rating,
   shape = as.factor(.pred_match),
-           color = test,
-           alpha = as.factor(.pred_match))) +
+  color = test,
+  alpha = as.factor(.pred_match)
+)) +
   geom_point(size = 3) +
-  scale_alpha_manual(values = c(1, .2), guide = FALSE) +
-  scale_shape_manual(values = c(4, 19), guide = FALSE) +
-  scale_color_manual(values = c("#1a162d", "#cd4173"), guide = FALSE) +
-   labs(
-     title = "C5.0 classification tree model",
+  scale_alpha_manual(values = c(1, .2), guide = "none") +
+  scale_shape_manual(values = c(4, 19), guide = "none") +
+  scale_color_manual(values = c("#1a162d", "#cd4173"), guide = "none") +
+  labs(
+    title = "C5.0 classification tree model",
     x = "Metacritic score",
     y = "IMDB rating",
   )
-```
-
----
-
-## Predict new data
-
-```{r}
-bechdel_new <- tibble(metascore = c(40, 50, 60), 
-                      imdb_rating = c(6, 6, 6),
-                      test = c("Fail", "Fail", "Pass")) %>% 
-  mutate(test = factor(test, levels = c("Fail", "Pass")))
-bechdel_new
-```
-
----
-
-## Predict old data
-
-```{r}
-#| label = "predict-old"
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel) %>% 
-  predict(new_data = bechdel) %>% 
-  mutate(true_bechdel = bechdel$test) %>% 
-  accuracy(truth = true_bechdel, 
-           estimate = .pred_class)
-```
-
----
-
-## Predict new data
-
-.pull-left[
-### out with the old...
-```{r}
-#| ref.label = "predict-old"
-
 ```
 
 ]
 
 .pull-right[
 
-### in with the `r emo::ji("new")`
-
-```{r}
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel) %>% 
-  predict(new_data = bechdel_new) %>% #<<
-  mutate(true_bechdel = bechdel_new$test) %>% #<<
-  accuracy(truth = true_bechdel, 
-           estimate = .pred_class)
+```{r echo=FALSE}
+tree_preds %>% 
+  conf_mat(truth = test, estimate = .pred_class)
 ```
 
 ]
 
 ---
 
-## `fit()`
-
-Train a model by fitting a model. Returns a parsnip model fit.
-
-```{r}
-#| results = "hide"
-fit(tree_mod, test ~ metascore + imdb_rating, data = bechdel)
-```
-
----
-
-## `fit()`
-
-Train a model by fitting a model. Returns a parsnip model fit.
-
-```{r}
-#| results = "hide"
-tree_mod %>%                               # parsnip model
-  fit(test ~ metascore + imdb_rating, # a formula
-      data = bechdel                       # dataframe
-  )
-```
-
----
-
-## `fit()`
-
-Train a model by fitting a model. Returns a parsnip model fit.
-
-```{r}
-#| results = "hide"
-tree_fit <- tree_mod %>%                   # parsnip model
-  fit(test ~ metascore + imdb_rating, # a formula
-      data = bechdel                       # dataframe
-  )
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.001.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.003.jpeg")
-```
-
----
-
-## `predict()`
-
-Use a fitted model to predict new `y` values from data. Returns a tibble.
-
-```{r}
-#| eval = FALSE
-predict(tree_fit, new_data = bechdel_new) 
-```
-
----
-
-```{r}
-tree_fit %>% 
-  predict(new_data = bechdel_new)
-```
-
----
-
 ## Axiom
 
 The best way to measure a model's performance at predicting new data is to .display[predict new data].
-
----
-
-## Data splitting
-
-```{r}
-#| label = "all-split",
-#| echo = FALSE,
-#| fig.width = 12,
-#| fig.height = 3
-set.seed(16)
-one_split <- slice(bechdel, 1:30) %>% 
-  initial_split() %>% 
-  tidy() %>% 
-  add_row(Row = 1:30, Data = "Original") %>% 
-  mutate(Data = case_when(
-    Data == "Analysis" ~ "Training",
-    Data == "Assessment" ~ "Testing",
-    TRUE ~ Data
-  )) %>% 
-  mutate(Data = factor(Data, levels = c("Original", "Training", "Testing")))
-
-all_split <- ggplot(one_split, aes(x = Row, y = fct_rev(Data), fill = Data)) + 
-  geom_tile(color = "white",
-            size = 1) + 
-  scale_fill_manual(values = splits_pal, guide = FALSE) +
-  theme_minimal() +
-  theme(axis.text.y = element_text(size = rel(2)),
-        axis.text.x = element_blank(),
-        legend.position = "top",
-        panel.grid = element_blank(),
-        text = element_text(family = "Lato")) +
-  coord_equal(ratio = 1) +
-  labs(x = NULL, y = NULL)
-
-all_split
-```
 
 ---
 
@@ -899,13 +833,54 @@ knitr::include_url("https://tidymodels.github.io/rsample/")
 
 ---
 
+## The holdout method
+
+```{r}
+#| label = "all-split",
+#| echo = FALSE,
+#| fig.width = 12,
+#| fig.height = 3
+set.seed(16)
+one_split <- slice(bechdel, 1:30) %>%
+  initial_split() %>%
+  tidy() %>%
+  add_row(Row = 1:30, Data = "Original") %>%
+  mutate(Data = case_when(
+    Data == "Analysis" ~ "Training",
+    Data == "Assessment" ~ "Testing",
+    TRUE ~ Data
+  )) %>%
+  mutate(Data = factor(Data, levels = c("Original", "Training", "Testing")))
+
+all_split <- ggplot(one_split, aes(x = Row, y = fct_rev(Data), fill = Data)) +
+  geom_tile(
+    color = "white",
+    size = 1
+  ) +
+  scale_fill_manual(values = splits_pal, guide = "none") +
+  theme_minimal() +
+  theme(
+    axis.text.y = element_text(size = rel(2)),
+    axis.text.x = element_blank(),
+    legend.position = "top",
+    panel.grid = element_blank(),
+    text = element_text(family = "Lato")
+  ) +
+  coord_equal(ratio = 1) +
+  labs(x = NULL, y = NULL)
+
+all_split
+```
+
+---
+
 ## `initial_split()*`
 
 "Splits" data randomly into a single testing and a single training set.
 
 ```{r}
 #| eval = FALSE
-initial_split(data, prop = 3/4)
+initial_split(data, prop = 3 / 4)
 ```
 
 .footnote[`*` from `rsample`]
@@ -913,7 +888,7 @@ initial_split(data, prop = 3/4)
 ---
 
 ```{r}
-bechdel_split <- initial_split(data = bechdel, strata = test,  prop = 3/4)
+bechdel_split <- initial_split(data = bechdel, strata = test, prop = 3 / 4)
 bechdel_split
 ```
 
@@ -935,76 +910,15 @@ testing(bechdel_split)
 
 ```{r}
 #| R.options = list(tibble.max_extra_cols = 5, tibble.print_max = 5, tibble.width = 60)
-bechdel_train <- training(bechdel_split) 
+bechdel_train <- training(bechdel_split)
 bechdel_train
 ```
 
 ---
 
-class: center
+class: inverse
 
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.001.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.003.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.004.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.006.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.007.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.008.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.009.jpeg")
-```
-
----
-
-## Your turn `r (yt_counter <- yt_counter + 1)`
+## `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
 
 Fill in the blanks. 
 
@@ -1014,9 +928,7 @@ Use `initial_split()`, `training()`, and `testing()` to:
 
 2. Extract the training data and fit your classification tree model.
 
-3. Predict the testing data, and save the true `test` values.
-
-4. Measure the accuracy of your model with your test set.  
+3. Check the proportions of the `test` variable in each set.
 
 Keep `set.seed(100)` at the start of your code.
 
@@ -1031,252 +943,69 @@ countdown(minutes = 4)
 #| results = "hide"
 set.seed(100) # Important!
 
-bechdel_split  <- initial_split(bechdel, strata = test, prop = 3/4)
-bechdel_train  <- training(bechdel_split)
-bechdel_test   <- testing(bechdel_split)
-
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel_train) %>% 
-  predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$test) %>% 
-  accuracy(truth = true_bechdel, estimate = .pred_class)
+bechdel_split <- initial_split(bechdel, strata = test, prop = 3 / 4)
+bechdel_train <- training(bechdel_split)
+bechdel_test <- testing(bechdel_split)
 ```
 
 ---
 
-class: inverse, middle
 
-# Goal of Machine Learning
-
-## `r emo::ji("target")` generate accurate predictions
-
----
-
-## Axiom
-
-Better Model = Better Predictions (Lower error rate)
-
----
-
-## `accuracy()*`
-
-Calculates the accuracy based on two columns in a dataframe: 
-
-The .display[truth]: ${y}_i$ 
-
-The predicted .display[estimate]: $\hat{y}_i$ 
-
-```{r}
-#| eval = FALSE
-accuracy(data, truth, estimate)
-```
-
-.footnote[`*` from `yardstick`]
-
----
-
-```{r}
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel_train) %>% 
-  predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$test) %>% 
-  accuracy(truth = true_bechdel, estimate = .pred_class) #<<
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.006.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.007.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.008.jpeg")
-```
-
----
-
-class: center
-
-```{r}
-#| echo = FALSE
-knitr::include_graphics("images/predicting/predicting.009.jpeg")
-```
-
----
-
-## Your Turn `r (yt_counter <- yt_counter + 1)`
-
-What would happen if you repeated this process? Would you get the same answers?
-
-Note your accuracy from above. Then change your seed number and rerun just the last code chunk above. Do you get the same answer? 
-
-Try it a few times with a few different seeds.
-
-```{r}
-#| echo = FALSE
-countdown(minutes = 2)
-```
-
----
-
-.pull-left[
-
-```{r}
-#| label = "new-split",
-#| echo = FALSE,
-#| warnings = FALSE,
-#| message = FALSE
-bechdel_split  <- initial_split(bechdel, strata = test, prop = 3/4)
-bechdel_train  <- training(bechdel_split)
-bechdel_test   <- testing(bechdel_split)
-
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel_train) %>% 
-  predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$test) %>% 
-  accuracy(truth = true_bechdel, estimate = .pred_class)
-```
-
-```{r}
-#| include = FALSE
-set.seed(500) # Important!
-```
-
-
-```{r}
-#| ref.label = "new-split",
-#| echo = FALSE,
-#| warnings = FALSE,
-#| message = FALSE
-```
-
-```{r}
-#| include = FALSE
-set.seed(2020) # Important!
-```
-
-```{r}
-#| ref.label = "new-split",
-#| echo = FALSE,
-#| warnings = FALSE,
-#| message = FALSE
-```
-
-]
-
---
-
-.pull-right[
-
-```{r}
-#| include = FALSE
-set.seed(13) # Important!
-```
-
-```{r}
-#| ref.label = "new-split",
-#| echo = FALSE,
-#| warnings = FALSE,
-#| message = FALSE
-```
-
-```{r}
-#| include = FALSE
-set.seed(1000) # Important!
-```
-
-```{r}
-#| ref.label = "new-split",
-#| echo = FALSE,
-#| warnings = FALSE,
-#| message = FALSE
-```
-
-```{r}
-#| include = FALSE
-set.seed(1980) # Important!
-```
-
-```{r}
-#| ref.label = "new-split",
-#| echo = FALSE,
-#| warnings = FALSE,
-#| message = FALSE
-```
-
-]
-
----
-
-## Quiz
-
-Why is the new estimate different?
+## Data Splitting
 
 ```{r}
 #| include = FALSE
 plot_split <- function(seed = 1, arrow = FALSE) {
   set.seed(seed)
-  one_split <- slice(bechdel, 1:20) %>% 
-    initial_split() %>% 
-    tidy() %>% 
-    add_row(Row = 1:20, Data = "Original") %>% 
+  one_split <- slice(bechdel, 1:20) %>%
+    initial_split() %>%
+    tidy() %>%
+    add_row(Row = 1:20, Data = "Original") %>%
     mutate(Data = case_when(
       Data == "Analysis" ~ "Training",
       Data == "Assessment" ~ "Testing",
       TRUE ~ Data
-    )) %>% 
+    )) %>%
     mutate(Data = factor(Data, levels = c("Original", "Training", "Testing")))
-  
+
   both_split <-
-    one_split %>% 
-    filter(!Data == "Original") %>% 
-    ggplot(aes(x = Row, y = 1, fill = Data)) + 
-    geom_tile(color = "white",
-              size = 1) + 
-    scale_fill_manual(values = splits_pal[2:3],
-                       guide = FALSE) +
+    one_split %>%
+    filter(!Data == "Original") %>%
+    ggplot(aes(x = Row, y = 1, fill = Data)) +
+    geom_tile(
+      color = "white",
+      size = 1
+    ) +
+    scale_fill_manual(
+      values = splits_pal[2:3],
+      guide = "none"
+    ) +
     theme_void() +
-    #theme(plot.margin = unit(c(-1, -1, -1, -1), "mm")) +
-    coord_equal() + {
-    # arrow is TRUE
-    if (arrow == TRUE) 
-      annotate("segment", x = 31, xend = 32, y = 1, yend = 1, 
-               colour = assess_color, size=1, arrow=arrow())
-    } + {
-    # arrow is TRUE
-    if (arrow == TRUE)
-        annotate("text", x = 33.5, y = 1, colour = assess_color, size=8, 
-                 label = "Metric", family="Lato")
+    # theme(plot.margin = unit(c(-1, -1, -1, -1), "mm")) +
+    coord_equal() +
+    {
+      # arrow is TRUE
+      if (arrow == TRUE) {
+        annotate("segment",
+          x = 31, xend = 32, y = 1, yend = 1,
+          colour = assess_color, size = 1, arrow = arrow()
+        )
+      }
+    } +
+    {
+      # arrow is TRUE
+      if (arrow == TRUE) {
+        annotate("text",
+          x = 33.5, y = 1, colour = assess_color, size = 8,
+          label = "Metric", family = "Lato"
+        )
+      }
     }
 
-  
+
   both_split
 }
 ```
-
----
-
-## Data Splitting
 
 --
 
@@ -1456,75 +1185,7 @@ plot_split(seed = 321, arrow = TRUE)
 
 --
 
-.right[Mean accuracy]
-
----
-
-## Resampling
-
-Let's resample 10 times 
-
-then compute the mean of the results...
-
----
-
-```{r}
-#| include = FALSE
-set.seed(9)
-```
-
-
-```{r}
-#| label = "cv-for-loop",
-#| include = FALSE
-acc <- vector(length = 10, mode = "double")
-for (i in 1:10) {
-  new_split <- initial_split(bechdel)
-  new_train <- training(new_split)
-  new_test  <- testing(new_split)
-  acc[i] <-
-    lr_mod %>% 
-      fit(test ~ metascore + imdb_rating, data = new_train) %>% 
-      predict(new_test) %>% 
-      mutate(truth = new_test$test) %>% 
-      accuracy(truth, .pred_class) %>% 
-      pull(.estimate)
-}
-```
-
-```{r}
-acc %>% tibble::enframe(name = "accuracy")
-mean(acc)
-```
-
----
-
-## Guess
-
-Which do you think is a better estimate?
-
-The best result or the mean of the results? Why? 
-
----
-
-## But also...
-
-Fit with .display[training set]
-
-Predict with .display[testing set]
-
---
-
-Rinse and repeat?
-
----
-
-## There has to be a better way...
-
-```{r}
-#| ref.label = "cv-for-loop",
-#| eval = FALSE
-```
+.right[Mean metric]
 
 ---
 background-image: url(images/diamonds.jpg)
@@ -1669,25 +1330,29 @@ exclude: true
 #| fig.height = 4,
 #| echo = FALSE
 set.seed(1)
-folds10 <- slice(ames, 1:20) %>% 
-  vfold_cv() %>% 
-  tidy() %>% 
+folds10 <- slice(ames, 1:20) %>%
+  vfold_cv() %>%
+  tidy() %>%
   mutate(split = str_c("Split", str_pad(parse_number(Fold), width = 2, pad = "0")))
 
-folds <- ggplot(folds10, aes(x = Row, y = fct_rev(split), fill = Data)) + 
-  geom_tile(color = "white",
-            width = 1,
-            size = 1) + 
+folds <- ggplot(folds10, aes(x = Row, y = fct_rev(split), fill = Data)) +
+  geom_tile(
+    color = "white",
+    width = 1,
+    size = 1
+  ) +
   scale_fill_manual(values = c(train_color, assess_color)) +
-  theme(axis.text.y = element_blank(),
-        axis.text.x = element_blank(),
-        legend.position = "top",
-        panel.grid = element_blank(),
-        text = element_text(family = "Lato"),
-        legend.key.size = unit(.4, "cm"),
-        legend.text = element_text(size = rel(.4))) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    legend.position = "top",
+    panel.grid = element_blank(),
+    text = element_text(family = "Lato"),
+    legend.key.size = unit(.4, "cm"),
+    legend.text = element_text(size = rel(.4))
+  ) +
   coord_equal() +
-  labs(x = NULL, y = NULL, fill = NULL) 
+  labs(x = NULL, y = NULL, fill = NULL)
 ```
 
 ---
@@ -1703,9 +1368,11 @@ How many times does an observation/row appear in the assessment set?
 #| fig.width = 12,
 #| fig.align = "center"
 folds +
-    theme(axis.text.y = element_text(size = rel(2)),
-          legend.key.size = unit(.85, "cm"),
-          legend.text = element_text(size = rel(1)))
+  theme(
+    axis.text.y = element_text(size = rel(2)),
+    legend.key.size = unit(.85, "cm"),
+    legend.text = element_text(size = rel(1))
+  )
 ```
 
 ---
@@ -1721,7 +1388,7 @@ test_folds <- tibble(
   Row = seq(1, 20, 1),
   Data = "assessment",
   Fold = rep(1:10, each = 2)
-) 
+)
 
 # i want all 20 rows, for all 10 folds
 all_rows <- tibble(
@@ -1729,28 +1396,32 @@ all_rows <- tibble(
   Fold = rep(1:10, each = 20)
 )
 
-train_folds <- all_rows %>% 
+train_folds <- all_rows %>%
   anti_join(test_folds)
 
-all_folds <- test_folds %>% 
-  full_join(train_folds) %>% 
-  mutate(Fold = as.factor(Fold)) %>% 
+all_folds <- test_folds %>%
+  full_join(train_folds) %>%
+  mutate(Fold = as.factor(Fold)) %>%
   mutate(Data = replace_na(Data, "analysis"))
 
-ggplot(all_folds, aes(x = Row, y = fct_rev(Fold), fill = Data)) + 
-  geom_tile(color = "white",
-            width = 1,
-            size = 1) + 
-  scale_fill_manual(values = c(train_color, assess_color), guide = FALSE) +
-  theme(axis.text.y = element_blank(),
-        axis.text.x = element_blank(),
-        legend.position = "top",
-        panel.grid = element_blank(),
-        text = element_text(family = "Lato"),
-        legend.key.size = unit(.4, "cm"),
-        legend.text = element_text(size = rel(.4))) +
+ggplot(all_folds, aes(x = Row, y = fct_rev(Fold), fill = Data)) +
+  geom_tile(
+    color = "white",
+    width = 1,
+    size = 1
+  ) +
+  scale_fill_manual(values = c(train_color, assess_color), guide = "none") +
+  theme(
+    axis.text.y = element_blank(),
+    axis.text.x = element_blank(),
+    legend.position = "top",
+    panel.grid = element_blank(),
+    text = element_text(family = "Lato"),
+    legend.key.size = unit(.4, "cm"),
+    legend.text = element_text(size = rel(.4))
+  ) +
   coord_equal() +
-  labs(x = NULL, y = NULL, fill = NULL) 
+  labs(x = NULL, y = NULL, fill = NULL)
 ```
 
 ---
@@ -1767,7 +1438,174 @@ If we use 10 folds, which percent of our data will end up in the training set an
 
 ---
 
-## Your Turn `r (yt_counter <- yt_counter + 1)`
+class: middle, inverse
+
+# Stratified sampling
+
+```{r include=FALSE}
+bechdel_rows <- bechdel %>%
+  mutate(.row = dplyr::row_number())
+
+ten_percent <- floor(.1 * nrow(bechdel))
+
+# creating biased testing sets
+maj_fail <- bechdel_rows %>%
+  filter(test == "Fail") %>%
+  slice_sample(n = ten_percent) %>%
+  pull(.row)
+
+maj_pass <- bechdel_rows %>%
+  filter(test == "Pass") %>%
+  slice_sample(n = ten_percent) %>%
+  pull(.row)
+
+tidy_split <- bechdel_split %>%
+  tidy() %>%
+  mutate(Data = case_when(
+    Data == "Analysis" ~ "Training",
+    Data == "Assessment" ~ "Testing",
+    TRUE ~ Data
+  )) %>%
+  mutate(Data = factor(Data, levels = c("Training", "Testing"))) %>%
+  left_join(bechdel_rows, by = c("Row" = ".row")) %>%
+  select(test, metascore, imdb_rating, Data, Row)
+
+split_plots <-
+  ggplot(tidy_split, aes(x = metascore, y = imdb_rating)) +
+  facet_wrap(~test) +
+  geom_point(size = 5, shape = 21, alpha = .3) +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Lato")
+  ) +
+  scale_fill_viridis_d(option = "magma", begin = .2, end = .7) +
+  scale_alpha_manual(values = c(.1, 1))
+```
+
+---
+
+## What if...
+
+The assessment set looked like this?
+
+```{r echo=FALSE, fig.align='center'}
+split_plots +
+  geom_point(
+    data = filter(tidy_split, Row %in% maj_fail),
+    fill = test_color, size = 5, shape = 21
+  )
+```
+
+---
+
+## Or this?
+
+```{r echo=FALSE, fig.align='center'}
+split_plots +
+  geom_point(
+    data = filter(tidy_split, Row %in% maj_pass),
+    fill = test_color, size = 5, shape = 21
+  )
+```
+
+---
+```{r echo = FALSE, fig.align='center'}
+set.seed(100)
+small_strata <- initial_split(bechdel,
+  strata = test
+)
+
+strata_split <- small_strata %>%
+  tidy() %>%
+  left_join(bechdel_rows, by = c("Row" = ".row")) %>%
+  select(test, metascore, imdb_rating, Data, Row) %>%
+  mutate(bucket = ntile(test, n = 2))
+
+strata_plot <- ggplot(strata_split, aes(x = metascore, y = imdb_rating)) +
+  geom_point(size = 5, shape = 21, alpha = .3) +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Lato")
+  ) +
+  scale_fill_viridis_d(option = "magma", begin = .2, end = .7) +
+  facet_wrap(~test)
+
+strata_plot
+```
+
+---
+class: middle
+
+.pull-left[
+
+
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+strata_plot +
+  geom_point(
+    data = filter(strata_split, test == "Fail"),
+    aes(fill = Data), size = 5, shape = 21, alpha = .8
+  )
+```
+]
+
+.pull-right[
+## Original
+```{r og-bechdel, echo=FALSE}
+bechdel %>%
+  tabyl(test) %>%
+  adorn_pct_formatting()
+```
+
+## Resample
+```{r echo=FALSE}
+strata_split %>%
+  filter(test == "Fail") %>%
+  tabyl(test, Data) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+```
+
+]
+
+---
+class: middle
+
+.pull-left[
+```{r echo=FALSE, fig.align='center'}
+strata_plot +
+  geom_point(
+    data = filter(strata_split, test == "Pass"),
+    aes(fill = Data),
+    size = 5, shape = 21, alpha = .8
+  )
+```
+]
+
+
+.pull-right[
+
+## Original
+```{r ref.label='og-bechdel', echo=FALSE}
+```
+
+## Resample
+```{r echo=FALSE}
+strata_split %>%
+  tabyl(test, Data) %>%
+  adorn_percentages("row") %>%
+  adorn_pct_formatting(digits = 2)
+```
+
+]
+
+---
+
+class: inverse
+
+## `r emo::ji("stopwatch")` Your Turn `r (yt_counter <- yt_counter + 1)`
 
 Run the code below. What does it return?
 
@@ -1791,26 +1629,6 @@ countdown(minutes = 1)
 
 ---
 
-## We need a new way to fit
-
-```{r}
-#| eval = FALSE
-split1       <- bechdel_folds %>% pluck("splits", 1)
-split1_train <- training(split1)
-split1_test  <- testing(split1)
-
-tree_mod %>% 
-  fit(test ~ ., data = split1_train) %>% 
-  predict(split1_test) %>% 
-  mutate(truth = split1_test$test) %>% 
-  accuracy(truth, .pred_class)
-
-# rinse and repeat
-split2 <- ...
-```
-
----
-
 ## `fit_resamples()`
 
 Trains and tests a resampled model.
@@ -1818,11 +1636,11 @@ Trains and tests a resampled model.
 ```{r}
 #| label = "fit-ames-cv",
 #| results = "hide"
-tree_mod %>% 
+tree_mod %>%
   fit_resamples(
-    test ~ metascore + imdb_rating, 
+    test ~ metascore + imdb_rating,
     resamples = bechdel_folds
-    )
+  )
 ```
 
 ---
@@ -1831,7 +1649,6 @@ tree_mod %>%
 #| ref.label = "fit-ames-cv",
 #| warning = FALSE,
 #| messages = FALSE
-
 ```
 
 ---
@@ -1840,8 +1657,7 @@ tree_mod %>%
 
 Unnest the metrics column from a tidymodels `fit_resamples()`
 
-```{r}
-#| eval = FALSE
+```r
 _results %>% collect_metrics(summarize = TRUE)
 ```
 
@@ -1851,14 +1667,25 @@ _results %>% collect_metrics(summarize = TRUE)
 
 ---
 
+.pull-left[
 ```{r}
-tree_mod %>% 
+tree_fit <- tree_mod %>% 
   fit_resamples(
     test ~ metascore + imdb_rating, 
     resamples = bechdel_folds
-    ) %>% 
-  collect_metrics(summarize = FALSE)
+  )
+collect_metrics(tree_fit)
 ```
+]
+
+--
+
+.pull-right[
+```{r}
+collect_metrics(tree_fit, summarize = FALSE)
+```
+
+]
 
 ---
 
@@ -1872,54 +1699,145 @@ tree_mod %>%
 
 ---
 
-## Your Turn `r (yt_counter <- yt_counter + 1)`
+class: inverse, middle
 
-Modify the code below to use `fit_resamples` and `bechdel_folds` to cross-validate the classification tree model. What is the ROC AUC that you collect at the end?
+## `r emo::ji("straight_ruler")` Evaluate models with `yardstick`
 
-```{r}
-#| eval = FALSE
-set.seed(100)
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, 
-      data = bechdel_train) %>% 
-  predict(new_data = bechdel_test) %>% 
-  mutate(true_bechdel = bechdel_test$test) %>% 
-  accuracy(truth = true_bechdel, estimate = .pred_class)
+---
+class: middle, center
+
+```{r echo=FALSE}
+knitr::include_url("https://tidymodels.github.io/yardstick/articles/metric-types.html#metrics")
 ```
 
-```{r}
-#| echo = FALSE
-countdown(minutes = 3)
+<https://tidymodels.github.io/yardstick/articles/metric-types.html#metrics>
+
+
+---
+
+# `roc_curve()`
+
+Takes predictions from a special kind of `fit_resamples()`.
+
+Returns a tibble with probabilities.
+
+```{r eval=FALSE}
+roc_curve(data, truth = test, estimate = .pred_Fail)
 ```
+
+Truth = .display[probability] of target response
+
+Estimate = .display[predicted] class
 
 ---
 
 ```{r}
-#| label = "rt-rs",
-#| warning = FALSE,
-#| message = FALSE
-set.seed(100)
-tree_mod %>% 
-  fit_resamples(test ~ metascore + imdb_rating, 
-                resamples = bechdel_folds) %>% 
-  collect_metrics()
+tree_preds <- tree_mod %>% 
+  fit_resamples(
+    test ~ metascore + imdb_rating, 
+    resamples = bechdel_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+tree_preds %>% 
+  collect_predictions() %>% 
+  roc_curve(truth = test, .pred_Fail)
 ```
 
 ---
 
-## How did we do?
+## Area under the curve
 
+
+.pull-left[
 ```{r}
-tree_mod %>% 
-  fit(test ~ metascore + imdb_rating, data = bechdel_train) %>% 
-  predict(bechdel_test) %>% 
-  mutate(truth = bechdel_test$test) %>% 
-  accuracy(truth, .pred_class)
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+fpr <- tibble(
+  fpr = seq(from = 0, to = 1, by = .1)
+)
+
+# good ROC AUC
+roc_plot_example <- fpr %>%
+  mutate(tpr = c(0, .6, .78, .82, .9, .92, .94, .96, .99, .99, 1)) %>%
+  ggplot(mapping = aes(x = fpr, y = tpr)) +
+  geom_abline(linetype = 2) +
+  geom_line(size = 2, color = assess_color) +
+  labs(
+    title = "Good",
+    x = "False positive rate",
+    y = "True positive rate"
+  )
+roc_plot_example
+```
+]
+
+.pull-right[
+* AUC = 0.5: random guessing
+
+* AUC = 1: perfect classifier
+
+* In general AUC of above 0.8 considered "good"
+]
+
+
+---
+
+```{r echo=FALSE}
+roc_plot_example %+%
+  mutate(fpr, tpr = fpr) +
+  ggtitle("Guessing")
 ```
 
-```{r}
-#| ref.label = "rt-rs",
-#| echo = FALSE
+---
 
+```{r echo=FALSE}
+roc_plot_example %+%
+  tibble(fpr = c(0, seq(from = 0, to = 1, by = 0.1)),
+         tpr = c(0, rep(1, times = 11))) +
+  ggtitle("Perfect classifier")
+```
+
+---
+
+```{r echo=FALSE}
+roc_plot_example %+%
+  mutate(fpr, tpr = c(0, .1, .125, .22, .41, .44, .56, .65, .69, .74, 1)) +
+  ggtitle("Bad")
+```
+
+
+
+---
+
+
+```{r echo=FALSE}
+roc_plot_example %+%
+  mutate(fpr, tpr = c(0, .28, .44, .52, .58, .69, .74, .79, .82, .95, 1)) +
+  ggtitle("Okay")
+```
+
+---
+
+```{r echo=FALSE}
+roc_plot_example
+```
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
+
+Add a `autoplot()` to visualize the ROC AUC.
+
+---
+
+```{r out.width = "70%"}
+tree_preds %>% 
+  collect_predictions() %>% 
+  roc_curve(truth = test, estimate = .pred_Fail) %>% 
+  autoplot()
 ```
 

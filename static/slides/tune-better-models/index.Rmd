@@ -1,0 +1,1837 @@
+---
+title: "Tune better models"
+author: "INFO 5940 <br /> Cornell University"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
+---
+
+```{r}
+#| label: "setup"
+#| include: false
+# generate CSS file
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#B31B1B",
+  secondary_color = "#F8981D",
+  inverse_header_color = "#222222",
+  black_color = "#222222",
+  header_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  text_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  code_font_google = xaringanthemer::google_font("Source Code Pro"),
+  base_font_size = "24px",
+  code_font_size = "20px",
+  # title_slide_background_image = "https://github.com/uc-dataviz/course-notes/raw/main/images/hexsticker.svg",
+  # title_slide_background_size = "contain",
+  # title_slide_background_position = "top",
+  header_h1_font_size = "2rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.5rem",
+  extra_css = list(
+    "h1" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h2" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h3" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    ".tiny" = list("font-size" = "70%"),
+    ".small" = list("font-size" = "90%"),
+    ".midi" = list("font-size" = "150%"),
+    ".tiny .remark-code" = list("font-size" = "70%"),
+    ".small .remark-code" = list("font-size" = "90%"),
+    ".midi .remark-code" = list("font-size" = "150%"),
+    ".large" = list("font-size" = "200%"),
+    ".xlarge" = list("font-size" = "600%"),
+    ".huge" = list(
+      "font-size" = "400%",
+      "font-family" = "'Montserrat', sans-serif",
+      "font-weight" = "bold"
+    ),
+    ".hand" = list(
+      "font-family" = "'Gochi Hand', cursive",
+      "font-size" = "125%"
+    ),
+    ".task" = list(
+      "padding-right" = "10px",
+      "padding-left" = "10px",
+      "padding-top" = "3px",
+      "padding-bottom" = "3px",
+      "margin-bottom" = "6px",
+      "margin-top" = "6px",
+      "border-left" = "solid 5px #F1DE67",
+      "background-color" = "#F3D03E"
+    ),
+    ".pull-left" = list(
+      "width" = "49%",
+      "float" = "left"
+    ),
+    ".pull-right" = list(
+      "width" = "49%",
+      "float" = "right"
+    ),
+    ".pull-left-wide" = list(
+      "width" = "70%",
+      "float" = "left"
+    ),
+    ".pull-right-narrow" = list(
+      "width" = "27%",
+      "float" = "right"
+    ),
+    ".pull-left-narrow" = list(
+      "width" = "27%",
+      "float" = "left"
+    ),
+    ".pull-right-wide" = list(
+      "width" = "70%",
+      "float" = "right"
+    ),
+    ".blue" = list(color = "#2A9BB7"),
+    ".purple" = list(color = "#a493ba"),
+    ".yellow" = list(color = "#f1de67"),
+    ".gray" = list(color = "#222222"),
+    ".display" = list(color = "#D47500")
+  )
+)
+
+source(here::here("R", "slide-opts.R"))
+xaringanExtra::use_panelset()
+knitr::opts_chunk$set(
+  cache = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.retina = 2,
+  fig.width = 12,
+  collapse = TRUE,
+  R.options = list(
+    tibble.max_extra_cols = 5,
+    tibble.print_max = 5,
+    tibble.width = 60
+  )
+)
+options("scipen" = 16)
+library(tidymodels)
+yt_counter <- 0
+```
+
+```{r}
+#| label: "packages"
+#| include: false
+library(countdown)
+library(tidyverse)
+library(tidymodels)
+library(workflows)
+library(scico)
+library(gganimate)
+library(tune)
+library(viridis)
+library(rcis)
+theme_set(theme_minimal(base_size = rcis::base_size))
+
+# for figures
+train_color <- viridis(1, option = "magma", begin = .4)
+test_color <- viridis(1, option = "magma", begin = .7)
+data_color <- viridis(1, option = "magma", begin = .1)
+assess_color <- viridis(1, option = "magma", begin = 0)
+splits_pal <- c(data_color, train_color, test_color)
+
+data("bechdel")
+bechdel <- bechdel %>%
+  # remove column - unique to each row, non-informative
+  select(-title)
+
+# data splitting
+set.seed(100) # Important!
+bechdel_split <- initial_split(bechdel, strata = test, prop = .9)
+bechdel_train <- training(bechdel_split)
+bechdel_test <- testing(bechdel_split)
+
+# data resampling
+set.seed(100)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
+```
+
+class: inverse, middle
+
+# Decision trees
+
+---
+
+# Decision Trees
+
+To predict the outcome of a new data point:
+
+- Uses rules learned from splits
+- Each split maximizes information gain
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "50%"
+
+include_graphics(path = "https://media.giphy.com/media/gj4ZruUQUnpug/source.gif")
+```
+
+---
+
+```{r}
+#| include: false
+library(palmerpenguins)
+rt_spec <- decision_tree(engine = "rpart") %>%
+  set_mode("regression")
+
+set.seed(1)
+
+small_peng <- penguins %>%
+  mutate(.row = dplyr::row_number())
+
+small_split <- initial_split(small_peng)
+small_train <- training(small_split)
+small_test <- testing(small_split)
+
+rt_fitwf <-
+  rt_spec %>%
+  last_fit(body_mass_g ~ flipper_length_mm,
+    split = small_split
+  )
+
+rt_fit <- rt_fitwf %>%
+  pluck(".workflow", 1) %>%
+  extract_fit_parsnip() %>%
+  .$fit
+
+splt <- rt_fit$splits %>%
+  as_tibble(.) %>%
+  mutate(order = dplyr::row_number())
+```
+
+```{r}
+#| echo: false
+#| fig.align: "center"
+ggplot(small_train, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(size = 3) +
+  geom_vline(
+    data = splt,
+    aes(
+      xintercept = index,
+      colour = factor(order)
+    ),
+    lwd = 5,
+    alpha = .7
+  ) +
+  geom_text(data = splt, aes(
+    x = index,
+    y = min(small_train$body_mass_g),
+    label = order
+  )) +
+  scale_x_continuous(breaks = seq(-0.5, 0.5, 0.1)) +
+  scale_colour_scico_d(palette = "buda", end = .8) +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Lato")
+  )
+```
+
+---
+
+```{r}
+#| echo: false
+#| fig.align: "center"
+#| message: false
+#| warning: false
+rt_preds <- rt_fitwf %>%
+  collect_predictions() %>%
+  left_join(select(small_test, .row, flipper_length_mm))
+
+rt_pred_plot <-
+  ggplot(rt_preds) +
+  geom_point(aes(x = flipper_length_mm, y = body_mass_g), size = 3) +
+  geom_line(aes(x = flipper_length_mm, y = .pred), colour = "#4D8DC9", size = 2) +
+  geom_vline(
+    data = splt, aes(xintercept = index, colour = factor(order)),
+    lwd = 5,
+    alpha = .7
+  ) +
+  scale_colour_scico_d(palette = "buda", end = .8) +
+  theme(
+    legend.position = "none",
+    text = element_text(family = "Lato")
+  )
+
+rt_pred_plot
+```
+
+
+---
+class: middle, center
+
+# Quiz
+
+How do assess predictions here?
+
+--
+
+RMSE
+
+---
+
+```{r}
+#| label: "rt-test-resid"
+#| echo: false
+#| fig.align: "center"
+rt_pred_plot +
+  geom_segment(
+    aes(
+      x = flipper_length_mm,
+      xend = flipper_length_mm,
+      y = body_mass_g,
+      yend = .pred
+    ),
+    colour = "#E7553C"
+  )
+```
+
+
+---
+class: middle, center
+```{r}
+#| echo: false
+#| out.width: "70%"
+knitr::include_graphics("https://raw.githubusercontent.com/EmilHvitfeldt/blog/master/static/blog/2019-08-09-authorship-classification-with-tidymodels-and-textrecipes_files/figure-html/unnamed-chunk-18-1.png")
+```
+
+https://www.hvitfeldt.me/blog/authorship-classification-with-tidymodels-and-textrecipes/
+
+---
+class: middle, center
+```{r}
+#| echo: false
+#| out.width: "50%"
+knitr::include_graphics("https://www.kaylinpavlik.com/content/images/2019/12/dt-1.png")
+```
+
+https://www.kaylinpavlik.com/classifying-songs-genres/
+
+---
+class: middle, center
+
+```{r}
+#| echo: false
+#| out.width: "40%"
+knitr::include_graphics("https://a3.typepad.com/6a0105360ba1c6970c01b7c95c61fb970b-pi")
+```
+
+.footnote[[tweetbotornot2](https://github.com/mkearney/tweetbotornot2)]
+
+
+---
+
+
+```{r}
+#| echo: false
+knitr::include_graphics("http://www.atarimania.com/8bit/screens/guess_the_animal.gif")
+```
+
+
+---
+class: middle, center
+
+# What makes a good guesser?
+
+--
+
+High information gain per question (can it fly?)
+
+--
+
+Clear features (feathers vs. is it "small"?)
+
+--
+
+Order matters
+
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/aus-standard-animals.png")
+```
+
+.footnote[[Australian Computing Academy](https://aca.edu.au/resources/decision-trees-classifying-animals/)]
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/aus-standard-tree.png")
+```
+
+.footnote[[Australian Computing Academy](https://aca.edu.au/resources/decision-trees-classifying-animals/)]
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.001.png")
+```
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.002.png")
+```
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.003.png")
+```
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.004.png")
+```
+
+---
+
+```{r}
+#| echo: false
+#| out.width: "90%"
+include_graphics(path = "images/annotated-tree/annotated-tree.005.png")
+```
+
+---
+
+# To specify a model with `parsnip`
+
+1\. Pick a .display[model] + .display[engine]
+
+2\. Set the .display[mode] (if needed)
+
+---
+
+# To specify a decision tree model with `parsnip`
+
+
+```{r}
+#| label: "tree-mod"
+tree_mod <- decision_tree(engine = "rpart") %>%
+  set_mode("classification")
+```
+
+---
+class: middle, center
+
+```{r}
+#| label: "bechdel-tree-01"
+#| echo: false
+#| out.width: "40%"
+library(parttree)
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_01 <- decision_tree(engine = "rpart") %>%
+  set_mode("classification") %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_01, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE))
+```
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(rpart.plot)
+rpart.rules(bechdel_tree_01$fit,
+  extra = 4,
+  cover = TRUE,
+  nn = TRUE,
+  roundint = FALSE
+)
+```
+
+---
+
+.pull-left[
+
+```{r}
+#| ref.label: "bechdel-tree-01"
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+```
+
+]
+
+.pull-right[
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+library(rattle)
+fancyRpartPlot(bechdel_tree_01$fit,
+  sub = NULL,
+  palettes = "BuGn"
+)
+```
+]
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
+
+Here is our very-vanilla parsnip model specification for a decision tree (also in your qmd)...
+
+```{r}
+#| ref.label: "tree-mod"
+```
+
+And a workflow:
+```{r}
+#| label: "tree-wf"
+tree_wf <- workflow() %>%
+  add_formula(test ~ .) %>%
+  add_model(tree_mod)
+```
+
+
+For decision trees, no recipe really required `r emo::ji("tada")`
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r yt_counter`
+
+Fill in the blanks to return the accuracy and ROC AUC for this model using 10-fold cross-validation.
+
+```{r}
+#| echo: false
+countdown(minutes = 2)
+```
+
+---
+
+```{r}
+set.seed(100)
+tree_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+```{r}
+#| label: "vt-metrics"
+#| include: false
+set.seed(100)
+vt_metrics <- tree_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+---
+
+# `args()`
+
+Print the arguments for a **parsnip** model specification.
+
+```{r}
+#| eval: false
+args(decision_tree)
+```
+
+---
+
+# `decision_tree()`
+
+Specifies a decision tree model
+
+```{r}
+#| results: "hide"
+decision_tree(engine = "rpart", tree_depth = 30, min_n = 20, cost_complexity = .01)
+```
+
+--
+
+*either* mode works!
+
+---
+
+# `decision_tree()`
+
+Specifies a decision tree model
+
+```{r}
+#| results: "hide"
+decision_tree(
+  engine = "rpart", # default computational engine
+  tree_depth = 30, # max tree depth
+  min_n = 20, # smallest node allowed
+  cost_complexity = .01 # 0 > cp > 0.1
+)
+```
+
+---
+
+# `set_args()`
+
+Change the arguments for a **parsnip** model specification.
+
+```r
+_mod %>% set_args(tree_depth = 3)
+```
+
+---
+
+```{r}
+decision_tree(engine = "rpart") %>%
+  set_mode("classification") %>%
+  set_args(tree_depth = 3) #<<
+```
+
+---
+
+```{r}
+decision_tree(engine = "rpart", tree_depth = 3) %>% #<<
+  set_mode("classification")
+```
+
+---
+
+# `tree_depth`
+
+Cap the maximum tree depth.
+
+A method to stop the tree early. Used to prevent overfitting.
+
+```{r}
+#| eval: false
+tree_mod %>% set_args(tree_depth = 30)
+```
+
+---
+
+```{r}
+#| include: false
+big_tree_mod <- decision_tree(engine = "rpart", min_n = 1, cost_complexity = 0) %>% #<<
+  set_mode("classification")
+
+big_tree <- big_tree_mod %>%
+  last_fit(test ~ .,
+    split = bechdel_split
+  )
+
+get_tree_fit <- function(results = big_tree) {
+  results %>%
+    pluck(".workflow", 1) %>%
+    extract_fit_parsnip()
+}
+
+big_tree_cp <- get_tree_fit(big_tree)$fit$cptable %>%
+  as_tibble() %>%
+  janitor::clean_names() %>%
+  pivot_longer(contains("error"), names_to = "error_type", values_to = "error_val") %>%
+  mutate(
+    cp_round = round(cp, 4),
+    cp_fct = as_factor(cp_round)
+  )
+```
+
+```{r}
+#| echo: false
+big_tree_cp %>%
+  filter(error_type == "rel_error") %>%
+  ggplot(aes(x = as.factor(nsplit), y = error_val, group = error_type, color = error_type)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(x = "number of splits", y = "error", color = NULL) +
+  scale_color_manual(
+    values = splits_pal[3],
+    labels = "Training"
+  ) +
+  theme(text = element_text(family = "Lato")) +
+  coord_cartesian(ylim = c(0, 1.08), expand = TRUE)
+```
+
+---
+
+```{r}
+#| echo: false
+ggplot(big_tree_cp, aes(
+  x = as.factor(nsplit), y = error_val,
+  group = error_type, color = fct_rev(error_type)
+)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(x = "number of splits", y = "error", color = NULL) +
+  scale_color_manual(
+    values = splits_pal[c(1, 3)],
+    labels = c("Testing", "Training")
+  ) +
+  theme(text = element_text(family = "Lato")) +
+  scale_x_discrete() +
+  coord_cartesian(ylim = c(0, 1.08), expand = TRUE)
+```
+
+---
+
+# `min_n`
+
+Set minimum `n` to split at any node.
+
+Another early stopping method. Used to prevent overfitting.
+
+```{r}
+#| eval: false
+tree_mod %>% set_args(min_n = 20)
+```
+
+---
+
+# Quiz
+
+What value of `min_n` would lead to the *most overfit* tree?
+
+--
+
+`min_n` = 1
+
+---
+class: middle, center, frame
+
+# Recap: early stopping
+
+| `parsnip` arg | `rpart` arg | default | overfit? |
+|---------------|-------------|:-------:|:--------:|
+| `tree_depth`  | `maxdepth`  |    30   |`r emo::ji("up_arrow")`|
+| `min_n`       | `minsplit`  |    20   |`r emo::ji("down_arrow")`|
+
+
+---
+
+# `cost_complexity`
+
+Adds a cost or penalty to error rates of more complex trees.
+
+A way to prune a tree. Used to prevent overfitting.
+
+```{r}
+#| eval: false
+tree_mod %>% set_args(cost_complexity = .01)
+```
+
+--
+
+Closer to zero `r emo::ji("right_arrow")` larger trees. 
+
+Higher penalty `r emo::ji("right_arrow")` smaller trees. 
+
+---
+
+```{r}
+#| echo: false
+#| fig.width: 10
+ggplot(big_tree_cp, aes(x = rev(as.factor(cp)), y = error_val, group = error_type, color = fct_rev(error_type))) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(x = "cost complexity", y = "error", color = NULL) +
+  scale_color_manual(
+    values = splits_pal[c(1, 3)],
+    labels = c("Testing", "Training")
+  ) +
+  theme(text = element_text(family = "Lato")) +
+  scale_x_discrete(breaks = pretty_breaks())
+```
+
+---
+
+```{r}
+#| echo: false
+big_tree_cp %>%
+  filter(error_type == "rel_error") %>%
+  ggplot(aes(
+    x = fct_rev(cp_fct), y = error_val,
+    group = error_type, color = fct_rev(error_type)
+  )) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(x = "cost complexity", y = "error", color = NULL) +
+  scale_color_manual(
+    values = splits_pal[3],
+    labels = "Training"
+  ) +
+  theme(text = element_text(family = "Lato")) +
+  scale_x_discrete() +
+  coord_cartesian(ylim = c(0, 1.05), expand = TRUE)
+```
+
+---
+
+```{r}
+#| echo: false
+ggplot(big_tree_cp, aes(
+  x = fct_rev(cp_fct), y = error_val,
+  group = error_type, color = fct_rev(error_type)
+)) +
+  geom_point(size = 3) +
+  geom_line() +
+  labs(x = "cost complexity", y = "error", color = NULL) +
+  scale_color_manual(
+    values = splits_pal[c(1, 3)],
+    labels = c("Testing", "Training")
+  ) +
+  theme(text = element_text(family = "Lato")) +
+  scale_x_discrete() +
+  coord_cartesian(ylim = c(0, 1.08), expand = TRUE)
+```
+
+---
+name: bonsai
+background-image: url(images/kari-shea-AVqh83jStMA-unsplash.jpg)
+background-position: left
+background-size: contain
+class: middle
+
+---
+template: bonsai
+
+.pull-right[
+
+# Consider the bonsai
+
+1. Small pot
+
+1. Strong shears
+
+]
+
+---
+template: bonsai
+
+.pull-right[
+
+# Consider the bonsai
+
+1. ~~Small pot~~ .display[Early stopping]
+
+1. ~~Strong shears~~ .display[Pruning]
+
+]
+
+---
+class: middle, center, frame
+
+# Recap: early stopping & pruning
+
+| `parsnip` arg | `rpart` arg | default | overfit? |
+|---------------|-------------|:-------:|:--------:|
+| `tree_depth`  | `maxdepth`  |    30   |`r emo::ji("up_arrow")`|
+| `min_n`       | `minsplit`  |    20   |`r emo::ji("down_arrow")`|
+| `cost_complexity`  | `cp`  |    .01  |`r emo::ji("down_arrow")`|
+
+---
+class: middle, center
+
+```{r}
+#| echo: false
+parsnip::get_model_env() %>%
+  pluck("decision_tree_args") %>%
+  filter(engine == "rpart") %>%
+  select(engine, parsnip, original) %>%
+  knitr::kable("html")
+```
+
+
+<https://rdrr.io/cran/rpart/man/rpart.control.html>
+
+
+---
+
+```{r}
+#| echo: false
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_01 <- tree_mod %>%
+  set_args(min_n = 1, cost_complexity = 0, tree_depth = 2) %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_01, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  ggtitle("tree_depth = 2")
+```
+
+---
+
+```{r}
+#| echo: false
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_02 <- tree_mod %>%
+  set_args(min_n = 1, cost_complexity = 0, tree_depth = 3) %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_02, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  ggtitle("tree_depth = 3")
+```
+
+---
+
+```{r}
+#| echo: false
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_03 <- tree_mod %>%
+  set_args(min_n = 1, cost_complexity = 0, tree_depth = 4) %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_03, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  ggtitle("tree_depth = 4")
+```
+
+---
+
+```{r}
+#| echo: false
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_04 <- tree_mod %>%
+  set_args(min_n = 1, cost_complexity = 0, tree_depth = 5) %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_04, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  ggtitle("tree_depth = 5")
+```
+
+---
+
+```{r}
+#| echo: false
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_10 <- tree_mod %>%
+  set_args(min_n = 1, cost_complexity = 0, tree_depth = 10) %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_10, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  ggtitle("tree_depth = 10")
+```
+
+---
+
+```{r}
+#| echo: false
+## Build our tree using parsnip (but with rpart as the model engine)
+bechdel_tree_15 <- tree_mod %>%
+  set_args(min_n = 1, cost_complexity = 0, tree_depth = 15) %>%
+  fit(test ~ metascore + imdb_rating, data = bechdel_train)
+
+## Plot the data and model partitions
+bechdel_train %>%
+  ggplot(aes(x = imdb_rating, y = metascore)) +
+  geom_parttree(data = bechdel_tree_15, aes(fill = test), alpha = 0.5) +
+  geom_jitter(aes(col = test), alpha = 0.7) +
+  scale_color_manual("true", values = c("#1a162d", "#CA225E")) +
+  scale_fill_manual("predicted", values = c("#fdf7f9", "#84cae1")) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  ggtitle("tree_depth = 15")
+```
+
+---
+
+```{r}
+#| echo: false
+library(rattle)
+fancyRpartPlot(bechdel_tree_15$fit,
+  sub = NULL,
+  palettes = "RdPu"
+)
+```
+
+---
+class: middle, frame
+
+# Axiom
+
+There is an inverse relationship between  
+model .display[accuracy] and model .display[interpretability].
+
+---
+
+class: inverse, middle
+
+# Random forests
+
+---
+
+# `rand_forest()`
+
+Specifies a random forest model
+
+
+```{r}
+#| results: "hide"
+rand_forest(mtry = 4, trees = 500, min_n = 1)
+```
+
+--
+
+*either* mode works!
+
+---
+
+# `rand_forest()`
+
+Specifies a random forest model
+
+```{r}
+#| results: "hide"
+rand_forest(
+  engine = "ranger", # default computational engine
+  mtry = 4, # predictors seen at each node
+  trees = 500, # trees per forest
+  min_n = 1 # smallest node allowed
+)
+```
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
+
+Create a new parsnip model called `rf_mod`, which will learn an ensemble of classification trees from our training data using the **ranger** engine. Update your `tree_wf` with this new model.
+
+Fit your workflow with 10-fold cross-validation and compare the ROC AUC of the random forest to your single decision tree model --- which predicts the test set better?
+
+*Hint: you'll need https://www.tidymodels.org/find/parsnip/*
+
+```{r}
+#| echo: false
+countdown(minutes = 4)
+```
+
+---
+
+```{r}
+rf_mod <- rand_forest(engine = "ranger") %>%
+  set_mode("classification")
+
+rf_wf <- tree_wf %>%
+  update_model(rf_mod)
+
+set.seed(100)
+rf_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+---
+
+# `mtry` 
+
+The number of predictors that will be randomly sampled at each split when creating the tree models.
+
+```{r}
+#| results: "hide"
+rand_forest(mtry = 11)
+```
+
+**ranger** default = `floor(sqrt(num_predictors))`
+
+---
+
+.pull-left[
+
+### Single decision tree
+```{r}
+tree_mod <- decision_tree(engine = "rpart") %>%
+  set_mode("classification")
+
+tree_wf <- workflow() %>%
+  add_formula(test ~ .) %>%
+  add_model(tree_mod)
+
+set.seed(100)
+tree_res <- tree_wf %>%
+  fit_resamples(
+    resamples = bechdel_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+tree_res %>%
+  collect_metrics()
+```
+]
+
+--
+
+.pull-right[
+
+
+### A random forest of trees
+```{r}
+rf_mod <- rand_forest(engine = "ranger") %>%
+  set_mode("classification")
+
+rf_wf <- tree_wf %>%
+  update_model(rf_mod)
+
+set.seed(100)
+rf_res <- rf_wf %>%
+  fit_resamples(
+    resamples = bechdel_folds,
+    control = control_resamples(save_pred = TRUE)
+  )
+
+rf_res %>%
+  collect_metrics()
+```
+]
+
+---
+
+
+.pull-left[
+
+### Single decision tree
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+tree_res %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
+  ggplot(aes(1 - specificity, sensitivity, color = id)) +
+  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  coord_equal()
+```
+]
+
+--
+
+.pull-right[
+
+
+### A random forest of trees
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+rf_res %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
+  ggplot(aes(1 - specificity, sensitivity, color = id)) +
+  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  coord_equal()
+```
+]
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your turn `r (yt_counter <- yt_counter + 1)`
+
+Challenge: Fit 3 more random forest models, each using 3, 5, and 8 variables at each split. Update your `rf_wf` with each new model. Which value maximizes the area under the ROC curve?
+
+```{r}
+#| echo: false
+countdown(minutes = 3)
+```
+
+---
+
+```{r}
+rf3_mod <- rf_mod %>%
+  set_args(mtry = 3) #<<
+
+rf5_mod <- rf_mod %>%
+  set_args(mtry = 5) #<<
+
+rf8_mod <- rf_mod %>%
+  set_args(mtry = 8) #<<
+```
+
+---
+
+```{r}
+rf3_wf <- rf_wf %>%
+  update_model(rf3_mod)
+
+set.seed(100)
+rf3_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+---
+```{r}
+rf5_wf <- rf_wf %>%
+  update_model(rf5_mod)
+
+set.seed(100)
+rf5_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+---
+```{r}
+rf8_wf <- rf_wf %>%
+  update_model(rf8_mod)
+
+set.seed(100)
+rf8_wf %>%
+  fit_resamples(resamples = bechdel_folds) %>%
+  collect_metrics()
+```
+
+
+---
+
+class: inverse, middle
+
+# `r emo::ji("music")` Fitting and tuning models with `tune`
+
+---
+
+class: middle, center, frame
+
+# `tune` 
+
+Functions for fitting and tuning models
+
+<https://tune.tidymodels.org>
+
+```{r}
+#| echo: false
+#| out.width: "100%"
+knitr::include_url("https://tune.tidymodels.org")
+```
+
+---
+
+# `tune()`
+
+A placeholder for hyper-parameters to be "tuned"
+
+```{r}
+#| results: "hide"
+nearest_neighbor(neighbors = tune())
+```
+
+
+---
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+.pull-left[
+
+```{r}
+#| label: "tune-grid"
+#| eval: false
+tune_grid(
+  object,
+  resamples,
+  ...,
+  grid = 10,
+  metrics = NULL,
+  control = control_grid()
+)
+```
+
+]
+
+---
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+.pull-left[
+
+```{r}
+#| eval: false
+tune_grid(
+  object, #<<
+  resamples,
+  ...,
+  grid = 10,
+  metrics = NULL,
+  control = control_grid()
+)
+```
+
+]
+
+--
+
+.pull-right[
+One of:
+
++ A parsnip `model` object
+
++ A `workflow`
+
+]
+
+---
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+.pull-left[
+
+```{r}
+#| eval: false
+tune_grid(
+  object, #<<
+  preprocessor, #<<
+  resamples,
+  ...,
+  grid = 10,
+  metrics = NULL,
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+A `model` + `recipe`
+]
+
+---
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+.pull-left[
+
+```{r}
+#| eval: false
+tune_grid(
+  object,
+  resamples,
+  ...,
+  grid = 10, #<<
+  metrics = NULL,
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+One of:
+
++ A positive integer. 
+
++ A data frame of tuning combinations.
+
+]
+
+---
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+.pull-left[
+
+```{r}
+#| eval: false
+tune_grid(
+  object,
+  resamples,
+  ...,
+  grid = 10, #<<
+  metrics = NULL,
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+Number of candidate parameter sets to be created automatically; `10` is the default.
+]
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Here's our random forest model plus workflow to work with.
+
+```{r}
+rf_mod <- rand_forest(engine = "ranger") %>%
+  set_mode("classification")
+
+rf_wf <- workflow() %>%
+  add_formula(test ~ .) %>%
+  add_model(rf_mod)
+```
+
+---
+class: inverse
+
+# `r emo::ji("stopwatch")` Your Turn `r yt_counter`
+
+Here is the output from `fit_resamples()`...
+
+```{r}
+set.seed(100) # Important!
+rf_results <- rf_wf %>%
+  fit_resamples(resamples = bechdel_folds)
+
+rf_results %>%
+  collect_metrics()
+```
+
+
+---
+class: inverse
+
+# `r emo::ji("stopwatch")` Your Turn `r yt_counter`
+
+Edit the random forest model to tune the `mtry` and `min_n` hyperparameters. 
+
+Update your workflow to use the tuned model.
+
+Then use `tune_grid()` to find the best combination of hyper-parameters to maximize `roc_auc`; let tune set up the grid for you.
+
+How does it compare to the average ROC AUC across folds from `fit_resamples()`?
+
+```{r}
+#| echo: false
+countdown(minutes = 5)
+```
+
+---
+
+```{r}
+#| results: "hide"
+#| message: false
+#| warning: false
+rf_tuner <- rand_forest(
+    engine = "ranger",
+    mtry = tune(),
+    min_n = tune()
+  ) %>%
+  set_mode("classification")
+
+rf_wf <- rf_wf %>%
+  update_model(rf_tuner)
+
+set.seed(100) # Important!
+rf_results <- rf_wf %>%
+  tune_grid(resamples = bechdel_folds)
+```
+
+---
+
+```{r}
+rf_results %>%
+  collect_metrics()
+```
+
+---
+```{r}
+rf_results %>%
+  collect_metrics(summarize = FALSE)
+```
+
+
+---
+
+# `tune_grid()`
+
+A version of `fit_resamples()` that performs a grid search for the best combination of tuned hyper-parameters.
+
+.pull-left[
+
+```{r}
+#| eval: false
+tune_grid(
+  object,
+  resamples,
+  ...,
+  grid = df, #<<
+  metrics = NULL,
+  control = control_grid()
+)
+```
+
+]
+
+.pull-right[
+A data frame of tuning combinations.
+]
+
+---
+
+# `expand_grid()`
+
+Takes one or more vectors, and returns a data frame holding all combinations of their values.
+
+```{r}
+expand_grid(mtry = c(1, 5), min_n = 1:3)
+```
+
+--
+
+.footnote[tidyr package; see also base `expand.grid()`]
+
+
+---
+
+# `show_best()`
+
+Shows the .display[n] most optimum combinations of hyper-parameters
+
+```{r}
+#| label: "show-best"
+#| results: "hide"
+rf_results %>%
+  show_best(metric = "roc_auc", n = 5)
+```
+
+---
+
+```{r}
+#| ref.label: "show-best"
+#| echo: false
+```
+
+---
+
+# `autoplot()`
+
+Quickly visualize tuning results
+
+```{r}
+#| label: "rf-plot"
+#| fig.keep: "none"
+rf_results %>% autoplot()
+```
+
+---
+
+```{r}
+#| ref.label: "rf-plot"
+#| echo: false
+```
+
+---
+
+# `select_best()`
+
+Shows the .display[top] combination of hyper-parameters.
+
+```{r}
+#| label: "select-best"
+#| results: "hide"
+bechdel_best <- rf_results %>%
+  select_best(metric = "roc_auc")
+
+bechdel_best
+```
+
+---
+
+```{r}
+#| ref.label: "select-best"
+#| echo: false
+```
+
+---
+
+# `finalize_workflow()`
+
+Replaces `tune()` placeholders in a model/recipe/workflow with a set of hyper-parameter values.
+
+```{r}
+last_rf_workflow <- rf_wf %>%
+  finalize_workflow(bechdel_best)
+```
+
+---
+background-image: url(images/diamonds.jpg)
+background-size: contain
+background-position: left
+class: middle, center
+background-color: #f5f5f5
+
+.pull-right[
+## We are ready to touch the jewels...
+
+## The .display[testing set]!
+
+]
+
+
+---
+
+# `last_fit()`
+
+
+```{r}
+last_rf_fit <- last_rf_workflow %>%
+  last_fit(split = bechdel_split)
+```
+
+---
+
+```{r}
+last_rf_fit
+```
+
+---
+
+class: inverse
+
+# `r emo::ji("stopwatch")` Your Turn `r (yt_counter <- yt_counter + 1)`
+
+Use `select_best()`, `finalize_workflow()`, and `last_fit()` to take the best combination of hyper-parameters from `rf_results` and use them to predict the test set.
+
+How does our actual test ROC AUC compare to our cross-validated estimate?
+
+```{r}
+#| echo: false
+countdown(minutes = 5)
+```
+
+---
+
+```{r}
+#| results: "hide"
+bechdel_best <- rf_results %>%
+  select_best(metric = "roc_auc")
+
+last_rf_workflow <- rf_wf %>%
+  finalize_workflow(bechdel_best)
+
+last_rf_fit <- last_rf_workflow %>%
+  last_fit(split = bechdel_split)
+
+last_rf_fit %>%
+  collect_metrics()
+```
+
+---
+
+# Final metrics
+
+```{r}
+last_rf_fit %>%
+  collect_metrics()
+```
+
+---
+
+# Final test predictions
+
+```{r}
+last_rf_fit %>%
+  collect_predictions()
+```
+
+---
+
+```{r}
+#| out.width: "70%"
+roc_values <- last_rf_fit %>%
+  collect_predictions() %>%
+  roc_curve(truth = test, estimate = .pred_Pass)
+autoplot(roc_values)
+```
+
+---
+
+# The set-up
+
+```{r}
+#| eval: false
+set.seed(100) # Important!
+
+# holdout method
+bechdel_split <- initial_split(bechdel, strata = test, prop = .9)
+bechdel_train <- training(bechdel_split)
+bechdel_test <- testing(bechdel_split)
+
+# add cross-validation
+set.seed(100)
+bechdel_folds <- vfold_cv(bechdel_train, v = 10, strata = test)
+```
+
+---
+
+# The tune-up
+
+```{r}
+# here comes the actual ML bits…
+
+# pick model to tune
+rf_tuner <- rand_forest(
+  engine = "ranger",
+  mtry = tune(),
+  min_n = tune()
+) %>%
+  set_mode("classification")
+
+rf_wf <- workflow() %>%
+  add_formula(test ~ .) %>%
+  add_model(rf_tuner)
+
+rf_results <- rf_wf %>%
+  tune_grid(
+    resamples = bechdel_folds,
+    control = control_grid(save_pred = TRUE)
+  )
+```
+
+---
+
+# Quick check-in...
+
+```{r}
+rf_results %>%
+  collect_predictions() %>%
+  group_by(.config, mtry, min_n) %>%
+  summarize(folds = n_distinct(id))
+```
+
+---
+
+# The match up!
+
+.pull-left[
+```{r}
+show_best(rf_results, metric = "roc_auc", n = 5)
+
+# pick final model workflow
+bechdel_best <- rf_results %>%
+  select_best(metric = "roc_auc")
+
+bechdel_best
+```
+]
+
+.pull-right[
+```{r}
+#| echo: false
+#| fig.width: 6
+#| fig.asp: fig.asp.col
+rf_results %>%
+  collect_predictions() %>%
+  group_by(id) %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
+  ggplot(aes(1 - specificity, sensitivity, color = id)) +
+  geom_abline(lty = 2, color = "gray80", size = 1.5) +
+  geom_path(show.legend = FALSE, alpha = 0.6, size = 1.2) +
+  coord_equal()
+```
+
+]
+
+---
+
+# The wrap-up
+
+.pull-left[
+```{r}
+last_rf_workflow <- rf_wf %>%
+  finalize_workflow(bechdel_best)
+
+last_rf_workflow
+```
+]
+
+--
+
+.pull-right[
+```{r}
+#| fig.show: "hide"
+# train + test final model
+last_rf_fit <- last_rf_workflow %>%
+  last_fit(split = bechdel_split)
+
+# explore final model
+last_rf_fit %>%
+  collect_metrics()
+
+last_rf_fit %>%
+  collect_predictions() %>%
+  roc_curve(truth = test, estimate = .pred_Pass) %>%
+  autoplot()
+```
+]
