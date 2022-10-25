@@ -65,10 +65,12 @@ Over the past twenty years, American attitudes towards marijuana have softened e
 
 {{% callout note %}}
 
-Make sure you have the most recent version of `rcis`. If the version (`packageVersion("rcis")`) is less than 0.2.6, reinstall `rcis` using the most recent version.
+Make sure you have the most recent version of `rcis`. If the version is less than 0.2.6, reinstall `rcis` using the most recent version.
 
 ```r
-remotes::install_github("cis-ds/rcis")
+if (packageVersion("rcis") < 0.2.6) {
+  remotes::install_github("cis-ds/rcis")
+}
 ```
 
 {{% /callout %}}
