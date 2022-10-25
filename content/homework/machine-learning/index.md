@@ -35,17 +35,17 @@ For all models, exclude `unitid` and `name` as predictors. These serve as id var
 {{% /callout %}}
 
 1. Split `scorecard` into training and test sets with 75% allocated to training and 25% allocated to testing.
-1. Estimate a basic linear regression model to predict `debt` as a function of all the other variables in the dataset except for `state`. Report the RMSE for the model.[^rmse]
-1. Estimate the same linear regression model, but this time implement 10-fold cross-validation. Report the RMSE for the model.
+1. Split the training set into 10 distinct folds for cross-validation.
+1. Estimate a linear regression model to predict `debt` as a function of all the other variables in the dataset except for `state`, using 10-fold cross-validation. Report the RMSE for the model.[^rmse]
 1. Estimate a decision tree model to predict `debt` using 10-fold cross-validation. Use the `rpart` engine. Report the RMSE for the model.
 
 ## For those looking to stretch themselves
 
 Estimate one or more models which utilize some aspect of feature engineering or [model tuning](/notes/tune-models/). Discuss the process you used to estimate the model and report on its performance.
 
-# Part 2: Predicting attitudes towards racist college professors
+# Part 2: Predicting attitudes towards marijuana legalization
 
-The [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.[^norc]
+The [General Social Survey](http://gss.norc.org/) is a biannual survey of the American public.
 
 {{% callout note %}}
 
@@ -53,16 +53,22 @@ The [General Social Survey](http://gss.norc.org/) is a biannual survey of the Am
 
 {{% /callout %}}
 
-`rcis::gss` contains a selection of variables from the 2012 GSS. You are going to predict attitudes towards racist college professors. Specifically, each respondent was asked "Should a person who believes that Blacks are genetically inferior be allowed to teach in a college or university?" Given the kerfuffle over Richard J. Herrnstein and Charles Murray's [*The Bell Curve*](https://en.wikipedia.org/wiki/The_Bell_Curve) and the ostracization of Nobel Prize laureate [James Watson](https://en.wikipedia.org/wiki/James_Watson) over his controversial views on race and intelligence, this analysis will provide further insight into the public debate over this issue.
+Over the past twenty years, American attitudes towards marijuana have softened extensively. In the early 2010s, the number of Americans who believed marijuana should be legal began to outnumber those who thought it should not be legal.
 
-The outcome of interest `colrac` is a factor variable coded as either `"ALLOWED"` (respondent believes the person should be allowed to teach) or `"NOT ALLOWED"` (respondent believes the person should not allowed to teach).
+
+
+
+
+<img src="{{< blogdown/postref >}}index_files/figure-html/gss-plot-1.png" width="672" />
+
+`rcis::gss` contains a selection of variables from the 2018 GSS. The outcome of interest `grass` is a factor variable coded as either `"legal"` (respondent believes marijuana should be legal) or `"not legal"` (respondent believes marijuana should not be legal).
 
 {{% callout note %}}
 
-Use the `gss` data frame, **not `gss_colrac`**. To ensure you have the correct data frame loaded, you can run:
+Make sure you have the most recent version of `rcis`. If the version (`packageVersion("rcis")`) is less than 0.2.6, reinstall `rcis` using the most recent version.
 
 ```r
-data("gss", package = "rcis")
+remotes::install_github("cis-ds/rcis")
 ```
 
 {{% /callout %}}
@@ -74,20 +80,17 @@ For all models, exclude `id` and `wtss` as predictors. These serve as id variabl
 {{% /callout %}}
 
 1. Split `gss` into training and test sets with 75% allocated to training and 25% allocated to testing.
-1. Estimate a logistic regression model to predict `colrac` as a function of `age`, `black`, `degree`, `partyid_3`, `sex,` and `south`. Implement 10-fold cross-validation. Report the accuracy of the model.
-1. Estimate a random forest model to predict `colrac` as a function of all the other variables in the dataset (except `id` and `wtss`). In order to do this, you need to **impute** missing values for all the predictor columns. This means replacing missing values (`NA`) with plausible values given what we know about the other observations.
+1. Estimate a logistic regression model to predict `grass` as a function of `age`, `degree`, `happy`, `partyid`, and `sex,`. Implement 10-fold cross-validation. Report the accuracy of the model.
+1. Estimate a random forest model to predict `grass` as a function of all the other variables in the dataset (except `id` and `wtss`). In order to do this, you need to **impute** missing values for all the predictor columns. This means replacing missing values (`NA`) with plausible values given what we know about the other observations.
     - Remove rows with an `NA` for `colrac` - we want to omit observations with missing values for outcomes, not impute them
     - Use median imputation for numeric predictors
     - Use modal imputation for nominal predictors
     
     Implement 10-fold cross-validation. Report the accuracy of the model.
-1. Estimate a $5$-nearest neighbors model to predict `colrac`. Use `recipes` to prepare the data set for training this model (e.g. scaling and normalizing variables, ensuring all predictors are numeric). Be sure to also perform the same preprocessing as for the random forest model. **Make sure your step order is correct for the recipe.** Implement 10-fold cross-validation. Report the accuracy of the model.
+1. Estimate a $5$-nearest neighbors model to predict `grass`. Use `recipes` to prepare the data set for training this model (e.g. scaling and normalizing variables, ensuring all predictors are numeric). Be sure to also perform the same preprocessing as for the random forest model. **Make sure your step order is correct for the recipe.** Implement 10-fold cross-validation. Report the accuracy of the model.
 1. Estimate a ridge logistic regression model to predict `colrac`.[^ridge] Use the same recipe as for the $5$-nearest neighbors model. Implement 10-fold cross-validation, and utilize the same recipe as for the $k$-nearest neighbors model. Report the accuracy of the model.
-1. Select the best performing model. Train that recipe/model using the full training set and report the accuracy using the held-out test set of data.
-
-## For those looking to stretch themselves
-
-Estimate some set of additional models which utilize some aspect of feature engineering or [model tuning](/notes/tune-models/). Discuss the process you used to estimate the model and report on its performance.
+1. Revisit the random forest model used previously. This time, implement hyperparameter tuning over the `mtry` and `min_n` to find the optimal settings. Use at least ten combinations of hyperparameter values. Report the best five combinations of values.
+1. Select the best performing model. Train that recipe/model using the full training set and report the accuracy/ROC AUC using the held-out test set of data. Visualize the ROC curve.
 
 {{% callout note %}}
 
@@ -108,5 +111,4 @@ Satisfactory: Solid effort. Hits all the elements. No clear mistakes. Easy to fo
 Excellent: Interpretation is clear and in-depth. Accurately interprets the results, with appropriate caveats for what the technique can and cannot do. Code is reproducible. Writes a user-friendly `README` file. Implements appropriate visualization techniques for the statistical model. Results are presented in a clear and intuitive manner.
 
 [^rmse]: View the [documentation for `yardstick`](https://yardstick.tidymodels.org/reference/index.html#section-regression-metrics) to find the appropriate function for RMSE.
-[^norc]: Conducted by NORC at the University of Chicago.
 [^ridge]: `logistic_reg(penalty = .01, mixture = 0)`
