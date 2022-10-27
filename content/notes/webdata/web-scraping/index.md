@@ -339,7 +339,7 @@ html_elements(x = dwight, css = "a")
 ```
 
 ```
-## {xml_nodeset (72)}
+## {xml_nodeset (73)}
 ##  [1] <a href="#main-content" class="element-invisible element-focusable">Skip ...
 ##  [2] <a href="https://www.presidency.ucsb.edu/">The American Presidency Proje ...
 ##  [3] <a class="btn btn-default" href="https://www.presidency.ucsb.edu/about"> ...
@@ -583,33 +583,33 @@ scrape_doc("https://www.presidency.ucsb.edu/documents/letter-t-keith-glennan-adm
 
 ## Scrape cost of living data
 
-Look up the cost of living for your hometown on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_elements()` and `html_text()`.
+Look up the cost of living for Ithaca, NY on [Sperling's Best Places](http://www.bestplaces.net/). Then extract it with `html_elements()` and `html_text()`.
 
 {{< spoiler text="Click for the solution" >}}
 
-For me, this means I need to obtain information on [Sterling, Virginia](http://www.bestplaces.net/cost_of_living/city/virginia/sterling).
+We need to obtain information from [Ithaca, NY](https://www.bestplaces.net/cost_of_living/city/new_york/ithaca).
 
 
 ```r
-sterling <- read_html("http://www.bestplaces.net/cost_of_living/city/virginia/sterling")
+ithaca <- read_html("https://www.bestplaces.net/cost_of_living/city/new_york/ithaca")
 
-col <- html_elements(sterling, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
+col <- html_elements(ithaca, css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)")
 html_text2(col)
 ```
 
 ```
-## [1] "134.4"
+## [1] "98.4"
 ```
 
 ```r
 # or use a piped operation
-sterling %>%
+ithaca %>%
   html_elements(css = "#mainContent_dgCostOfLiving tr:nth-child(2) td:nth-child(2)") %>%
   html_text2()
 ```
 
 ```
-## [1] "134.4"
+## [1] "98.4"
 ```
 
 {{< /spoiler >}}
@@ -620,7 +620,7 @@ Use `html_table()` to scrape whole tables of data as a data frame.
 
 
 ```r
-tables <- html_elements(sterling, css = "table")
+tables <- html_elements(ithaca, css = "table")
 
 tables %>%
   # get the first table
@@ -631,16 +631,16 @@ tables %>%
 
 ```
 ## # A tibble: 8 × 4
-##   `COST OF LIVING` Sterling Virginia USA     
-##   <chr>            <chr>    <chr>    <chr>   
-## 1 Overall          134.4    103.7    100     
-## 2 Grocery          110.3    99.6     100     
-## 3 Health           99.3     102.4    100     
-## 4 Housing          185.3    111.8    100     
-## 5 Median Home Cost $519,800 $329,200 $291,700
-## 6 Utilities        98.6     99.3     100     
-## 7 Transportation   118.6    99.4     100     
-## 8 Miscellaneous    118.2    100.5    100
+##   `COST OF LIVING` Ithaca   `New York` USA     
+##   <chr>            <chr>    <chr>      <chr>   
+## 1 Overall          98.4     121.5      100     
+## 2 Grocery          104.6    103.8      100     
+## 3 Health           116.3    120.7      100     
+## 4 Housing          100.8    127.9      100     
+## 5 Median Home Cost $294,100 $373,000   $291,700
+## 6 Utilities        100      115.9      100     
+## 7 Transportation   80.8     140.7      100     
+## 8 Miscellaneous    151.5    121.8      100
 ```
 
 ## Extract climate statistics
@@ -649,33 +649,33 @@ Visit the climate tab for your home town. Extract the climate statistics of your
 
 {{< spoiler text="Click for the solution" >}}
 
-For me, this means I need to obtain information on [Sterling, Virginia](http://www.bestplaces.net/cost_of_living/city/virginia/sterling).
+We can find the climate information for Ithaca, NY [here](http://www.bestplaces.net/climate/city/new_york/ithaca).
 
 
 ```r
-sterling_climate <- read_html("http://www.bestplaces.net/climate/city/virginia/sterling")
+ithaca_climate <- read_html("http://www.bestplaces.net/climate/city/new_york/ithaca")
 
-climate <- html_elements(sterling_climate, css = "table")
+climate <- html_elements(ithaca_climate, css = "table")
 html_table(climate, header = TRUE, fill = TRUE)[[1]]
 ```
 
 ```
 ## # A tibble: 9 × 3
-##   ``                            `Sterling, Virginia` `United States`
-##   <chr>                         <chr>                <chr>          
-## 1 Rainfall                      42.0 in.             38.1 in.       
-## 2 Snowfall                      21.5 in.             27.8 in.       
-## 3 Precipitation                 116.2 days           106.2 days     
-## 4 Sunny                         197 days             205 days       
-## 5 Avg. July High                85.8°                85.8°          
-## 6 Avg. Jan. Low                 23.5°                21.7°          
-## 7 Comfort Index (higher=better) 7.3                  7              
-## 8 UV Index                      4                    4.3            
-## 9 Elevation                     292 ft.              2443 ft.
+##   ``                            `Ithaca, New York` `United States`
+##   <chr>                         <chr>              <chr>          
+## 1 Rainfall                      37.4 in.           38.1 in.       
+## 2 Snowfall                      63.3 in.           27.8 in.       
+## 3 Precipitation                 159.3 days         106.2 days     
+## 4 Sunny                         155 days           205 days       
+## 5 Avg. July High                80.9°              85.8°          
+## 6 Avg. Jan. Low                 14.7°              21.7°          
+## 7 Comfort Index (higher=better) 6.4                7              
+## 8 UV Index                      3.2                4.3            
+## 9 Elevation                     410 ft.            2443 ft.
 ```
 
 ```r
-sterling_climate %>%
+ithaca_climate %>%
   html_elements(css = "table") %>%
   nth(1) %>%
   html_table(header = TRUE)
@@ -683,17 +683,17 @@ sterling_climate %>%
 
 ```
 ## # A tibble: 9 × 3
-##   ``                            `Sterling, Virginia` `United States`
-##   <chr>                         <chr>                <chr>          
-## 1 Rainfall                      42.0 in.             38.1 in.       
-## 2 Snowfall                      21.5 in.             27.8 in.       
-## 3 Precipitation                 116.2 days           106.2 days     
-## 4 Sunny                         197 days             205 days       
-## 5 Avg. July High                85.8°                85.8°          
-## 6 Avg. Jan. Low                 23.5°                21.7°          
-## 7 Comfort Index (higher=better) 7.3                  7              
-## 8 UV Index                      4                    4.3            
-## 9 Elevation                     292 ft.              2443 ft.
+##   ``                            `Ithaca, New York` `United States`
+##   <chr>                         <chr>              <chr>          
+## 1 Rainfall                      37.4 in.           38.1 in.       
+## 2 Snowfall                      63.3 in.           27.8 in.       
+## 3 Precipitation                 159.3 days         106.2 days     
+## 4 Sunny                         155 days           205 days       
+## 5 Avg. July High                80.9°              85.8°          
+## 6 Avg. Jan. Low                 14.7°              21.7°          
+## 7 Comfort Index (higher=better) 6.4                7              
+## 8 UV Index                      3.2                4.3            
+## 9 Elevation                     410 ft.            2443 ft.
 ```
 
 {{< /spoiler >}}
@@ -723,7 +723,7 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-08-22
+##  date     2022-10-27
 ##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
@@ -736,18 +736,20 @@ sessioninfo::session_info()
 ##  bslib           0.4.0      2022-07-16 [2] CRAN (R 4.2.0)
 ##  cachem          1.0.6      2021-08-19 [2] CRAN (R 4.2.0)
 ##  cellranger      1.1.0      2016-07-27 [2] CRAN (R 4.2.0)
-##  cli             3.3.0      2022-04-25 [2] CRAN (R 4.2.0)
+##  cli             3.4.1      2022-09-23 [1] CRAN (R 4.2.0)
+##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
-##  crayon          1.5.1      2022-03-26 [2] CRAN (R 4.2.0)
+##  crayon          1.5.2      2022-09-29 [1] CRAN (R 4.2.0)
+##  curl            4.3.3      2022-10-06 [1] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
-##  dplyr         * 1.0.9      2022-04-28 [2] CRAN (R 4.2.0)
+##  dplyr         * 1.0.10     2022-09-01 [1] CRAN (R 4.2.0)
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
 ##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
-##  forcats       * 0.5.1      2021-01-27 [2] CRAN (R 4.2.0)
+##  forcats       * 0.5.2      2022-08-19 [1] CRAN (R 4.2.0)
 ##  fs              1.5.2      2021-12-08 [2] CRAN (R 4.2.0)
 ##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
 ##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
@@ -755,44 +757,45 @@ sessioninfo::session_info()
 ##  glue            1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
 ##  googledrive     2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
 ##  googlesheets4   1.0.0      2021-07-21 [2] CRAN (R 4.2.0)
-##  gtable          0.3.0      2019-03-25 [2] CRAN (R 4.2.0)
-##  haven           2.5.0      2022-04-15 [2] CRAN (R 4.2.0)
+##  gtable          0.3.1      2022-09-01 [1] CRAN (R 4.2.0)
+##  haven           2.5.1      2022-08-22 [1] CRAN (R 4.2.0)
 ##  here            1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
-##  hms             1.1.1      2021-09-26 [2] CRAN (R 4.2.0)
+##  hms             1.1.2      2022-08-19 [1] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
-##  knitr           1.39       2022-04-26 [2] CRAN (R 4.2.0)
-##  lifecycle       1.0.1      2021-09-24 [2] CRAN (R 4.2.0)
+##  knitr           1.40       2022-08-24 [1] CRAN (R 4.2.0)
+##  lifecycle       1.0.3      2022-10-07 [1] CRAN (R 4.2.0)
 ##  lubridate     * 1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
-##  pillar          1.8.0      2022-07-18 [2] CRAN (R 4.2.0)
+##  pillar          1.8.1      2022-08-19 [1] CRAN (R 4.2.0)
 ##  pkgconfig       2.0.3      2019-09-22 [2] CRAN (R 4.2.0)
-##  purrr         * 0.3.4      2020-04-17 [2] CRAN (R 4.2.0)
+##  purrr         * 0.3.5      2022-10-06 [1] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
-##  readr         * 2.1.2      2022-01-30 [2] CRAN (R 4.2.0)
+##  readr         * 2.1.3      2022-10-01 [1] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
-##  rlang           1.0.4      2022-07-12 [2] CRAN (R 4.2.0)
+##  rlang           1.0.6      2022-09-24 [1] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  rprojroot       2.0.3      2022-04-02 [2] CRAN (R 4.2.0)
 ##  rstudioapi      0.13       2020-11-12 [2] CRAN (R 4.2.0)
 ##  rvest         * 1.0.2      2021-10-16 [2] CRAN (R 4.2.0)
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
-##  scales          1.2.0      2022-04-13 [2] CRAN (R 4.2.0)
+##  scales          1.2.1      2022-08-20 [1] CRAN (R 4.2.0)
+##  selectr         0.4-2      2019-11-20 [2] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
 ##  tibble        * 3.1.8      2022-07-22 [2] CRAN (R 4.2.0)
 ##  tidyr         * 1.2.0      2022-02-01 [2] CRAN (R 4.2.0)
-##  tidyselect      1.1.2      2022-02-21 [2] CRAN (R 4.2.0)
+##  tidyselect      1.2.0      2022-10-10 [1] CRAN (R 4.2.0)
 ##  tidyverse     * 1.3.2      2022-07-18 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
-##  vctrs           0.4.1      2022-04-13 [2] CRAN (R 4.2.0)
+##  vctrs           0.4.2      2022-09-29 [1] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
 ##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
