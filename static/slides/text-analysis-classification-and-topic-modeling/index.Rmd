@@ -127,12 +127,19 @@ library(here)
 library(patchwork)
 library(tictoc)
 library(countdown)
+library(colorspace)
 
 set.seed(1234)
 theme_set(theme_minimal(base_size = 16))
 ```
 
-# Supervised learning
+class: inverse, middle
+
+# Supervised text classification
+
+---
+
+## Supervised learning
 
 1. Hand-code a small set of documents $N = `r scales::comma(1e03)`$
 1. Train a statistical learning model on the hand-coded data
@@ -141,7 +148,7 @@ theme_set(theme_minimal(base_size = 16))
 
 ---
 
-# `USCongress`
+## `USCongress`
 
 ```{r}
 #| label = "get-docs",
@@ -180,7 +187,7 @@ head(congress$text)
 
 ---
 
-# Split the data set
+## Split the data set
 
 ```{r}
 #| label = "split",
@@ -204,7 +211,7 @@ congress_folds <- vfold_cv(data = congress_train, strata = major)
 
 ---
 
-# Class imbalance
+## Class imbalance
 
 ```{r}
 #| label = "major-topic-dist",
@@ -223,7 +230,7 @@ ggplot(data = congress, mapping = aes(x = fct_infreq(major) %>% fct_rev())) +
 
 ---
 
-# Preprocessing the data frame
+## Preprocessing the data frame
 
 ```{r}
 #| label = "recipe",
@@ -246,7 +253,7 @@ congress_rec <- congress_rec %>%
 
 ---
 
-# Define the model
+## Define the model
 
 ```{r}
 #| label = "tree-spec"
@@ -259,7 +266,7 @@ tree_spec
 
 ---
 
-# Train the model
+## Train the model
 
 ```{r}
 #| label = "tree-wf",
@@ -291,7 +298,7 @@ tree_cv_metrics
 
 ---
 
-# Confusion matrix
+## Confusion matrix
 
 ```{r}
 #| label = "tree-confusion",
@@ -309,13 +316,19 @@ conf_mat_resampled(x = tree_cv, tidy = FALSE) %>%
 
 .pull-left[
 
-<div style="width:100%;height:0;padding-bottom:54%;position:relative;"><iframe src="https://giphy.com/embed/10JbbHzFsBpg40" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+```{r}
+#| echo: false
+include_graphics(path = "https://media.giphy.com/media/10JbbHzFsBpg40/giphy.gif")
+```
 
 ]
 
 .pull-right[
 
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/7SKWbnycqb2Pze62Zk" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+```{r}
+#| echo: false
+include_graphics(path = "https://media.giphy.com/media/7SKWbnycqb2Pze62Zk/giphy.gif")
+```
 
 ]
 
@@ -328,7 +341,13 @@ countdown(minutes = 15)
 
 ---
 
+class: inverse, middle
+
 # Topic modeling
+
+---
+
+## Topic modeling
 
 * Themes
 * Probabilistic topic models
@@ -336,7 +355,7 @@ countdown(minutes = 15)
 
 ---
 
-# Topic and topic
+## Topic and topic
 
 1. I ate a banana and spinach smoothie for breakfast.
 1. I like to eat broccoli and bananas.
@@ -346,7 +365,7 @@ countdown(minutes = 15)
 
 ---
 
-# LDA document structure
+## LDA document structure
 
 * Decide on the number of words N the document will have
     * [Dirichlet probability distribution](https://en.wikipedia.org/wiki/Dirichlet_distribution)
@@ -358,7 +377,7 @@ countdown(minutes = 15)
 
 ---
 
-# `appa`
+## `appa`
 
 ```{r}
 #| echo = FALSE,
@@ -368,7 +387,7 @@ knitr::include_graphics(path = "/img/appa-avatar.gif", error = FALSE)
 
 ---
 
-# `appa`
+## `appa`
 
 ```r
 remotes::install_github("averyrobbins1/appa")
@@ -384,7 +403,7 @@ glimpse(appa)
 
 ---
 
-# Create the recipe
+## Create the recipe
 
 ```{r}
 #| label = "appa-recipe",
@@ -399,7 +418,7 @@ appa_rec <- recipe(~ id + character_words, data = appa) %>%
 
 ---
 
-# Bake the recipe
+## Bake the recipe
 
 ```{r}
 #| label = "appa-bake",
@@ -413,18 +432,20 @@ appa_df %>%
 
 ---
 
-# Convert to document-term matrix
+## Convert to document-term matrix
 
 .tiny[
 ```{r}
 #| label = "appa-dtm",
 #| dependson = "appa-bake"
 appa_dtm_prep <- appa_df %>%
+  # convert to long format
   pivot_longer(
     cols = -id,
     names_to = "token",
     values_to = "n"
   ) %>%
+  # remove tokens with 0
   filter(n != 0) %>%
   # clean the token column so it just includes the token
   mutate(
@@ -436,6 +457,7 @@ appa_new_id <- appa_dtm_prep %>%
   distinct(id) %>%
   mutate(new_id = row_number())
 
+# create document-term matrix
 appa_dtm <- left_join(x = appa_dtm_prep, y = appa_new_id) %>%
   cast_dtm(document = new_id, term = token, value = n)
 appa_dtm
@@ -444,11 +466,11 @@ appa_dtm
 
 ---
 
-# $k=4$
+## $k=4$
 
 ```{r}
 #| label = "appa-topic-4",
-#| dependson = "appa-prep"
+#| dependson = "appa-dtm"
 appa_lda4 <- LDA(appa_dtm, k = 4, control = list(seed = 123))
 ```
 
@@ -473,12 +495,13 @@ top_terms %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
+  scale_fill_discrete_qualitative() +
   facet_wrap(facets = vars(topic), scales = "free", ncol = 2) +
   coord_flip()
 ```
 ---
 
-# $k=12$
+## $k=12$
 
 ```{r}
 #| label = "appa-topic-12",
@@ -507,6 +530,7 @@ top_terms %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
+  scale_fill_discrete_qualitative() +
   facet_wrap(facets = vars(topic), scales = "free", ncol = 3) +
   coord_flip() +
   theme_minimal(base_size = 10)
@@ -514,7 +538,7 @@ top_terms %>%
 
 ---
 
-# Perplexity
+## Perplexity
 
 * A statistical measure of how well a probability model predicts a sample
 * Given the theoretical word distributions represented by the topics, compare that to the actual topic mixtures, or distribution of words in your documents
@@ -523,7 +547,7 @@ top_terms %>%
 
 ---
 
-# Perplexity
+## Perplexity
 
 ```{r}
 #| label = "appa-lda-compare",
@@ -567,7 +591,7 @@ tibble(
 
 ---
 
-# $k=100$
+## $k=100$
 
 ```{r}
 #| label = "appa-100-topn",
@@ -590,6 +614,7 @@ top_terms %>%
   ggplot(aes(term, beta, fill = topic)) +
   geom_bar(alpha = 0.8, stat = "identity", show.legend = FALSE) +
   scale_x_reordered() +
+  scale_fill_discrete_qualitative() +
   facet_wrap(facets = vars(topic), scales = "free", ncol = 3) +
   coord_flip() +
   theme_minimal(base_size = 10)
@@ -597,7 +622,7 @@ top_terms %>%
 
 ---
 
-# LDAvis
+## LDAvis
 
 * Interactive visualization of LDA model results
 1. What is the meaning of each topic?

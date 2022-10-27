@@ -24,6 +24,7 @@ knitr::opts_chunk$set(cache = TRUE)
 #| warning = FALSE
 library(tidyverse)
 library(tidymodels)
+library(here)
 library(stringr)
 library(textrecipes)
 library(themis)
@@ -52,10 +53,45 @@ Beyoncé and Taylor Swift are two iconic singer/songwriters from the past twenty
 Our data comes from [#TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2020/2020-09-29) which compiled individual song lyrics from each singer's discography as of September 29, 2020. Here we import the data files and do some light cleaning to standardize each file.[^beyonce]
 
 ```{r}
+#| include: false
+#| eval: false
+
+# get studio albums released since 2020 (no rerecordings)
+library(geniusr)
+
+# get missing album tracklists
+evermore <- get_album_tracklist_id(album_id = 710140)
+midnights <- get_album_tracklist_id(album_id = 962334)
+renaissance <- get_album_tracklist_id(album_id = 917339)
+
+# get song lyrics
+get_lyrics_url_safe <- safely(.f = get_lyrics_url)
+extra_lyrics <- bind_rows(evermore, midnights, renaissance) %>%
+  mutate(lyrics = map(.x = song_lyrics_url, get_lyrics_url_safe))
+
+# keep only songs we could retrieve lyrics
+extra_lyrics %>%
+  mutate(results = transpose(.l = lyrics)$result) %>%
+  filter(!map_lgl(.x = results, .f = is.null)) %>%
+  # unnest and extract lyrics
+  unnest(cols = results, names_repair = "universal") %>%
+  select(`artist_name...7`, album_name, song_title, line) %>%
+  group_by(album_name, song_title) %>%
+  # add line number
+  mutate(line_num = row_number()) %>%
+  # reorder columns and convert columns to title case
+  select(Artist = `artist_name...7`, Album = album_name,
+         Title = song_title, Lyrics = line) %>%
+  mutate(across(.cols = -Lyrics, .fns = str_to_title)) %>%
+  write_csv(file = here("static", "data", "updated-album-lyrics.csv"))
+```
+
+```{r}
 #| label = "get-data"
 # get beyonce and taylor swift lyrics
 beyonce_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/beyonce_lyrics.csv")
 taylor_swift_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-29/taylor_swift_lyrics.csv")
+extra_lyrics <- read_csv(here("static", "data", "updated-album-lyrics.csv"))
 
 # clean lyrics for binding
 beyonce_clean <- beyonce_lyrics %>%
@@ -65,7 +101,10 @@ beyonce_clean <- beyonce_lyrics %>%
   ungroup() %>%
   # clean column names
   select(artist = artist_name, song_title = song_name, lyrics = Lyrics)
-taylor_swift_clean <- taylor_swift_lyrics %>%
+taylor_swift_clean <- bind_rows(
+  taylor_swift_lyrics,
+  extra_lyrics
+) %>%
   # clean column names
   select(artist = Artist, song_title = Title, lyrics = Lyrics)
 
@@ -209,7 +248,7 @@ conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
   autoplot(type = "heatmap")
 ```
 
-Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of `r pull(ranger_cv_metrics, mean)[[2]]` is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (`r nrow(beyonce_clean)` songs compared to only `r nrow(taylor_swift_clean)` for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
+Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of `r pull(ranger_cv_metrics, mean)[[2]] %>% scales::number(accuracy = 0.01)` is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (`r nrow(beyonce_clean)` songs compared to only `r nrow(taylor_swift_clean)` for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
 
 {{< /spoiler >}}
 
@@ -318,9 +357,7 @@ glmnet_final <- glmnet_workflow %>%
 collect_metrics(glmnet_final)
 ```
 
-Not surprisingly the test set performance is slightly lower than the cross-validated metrics, however it still offers decent performance.
-
-`r pull(collect_metrics(glmnet_final), .estimate)[[2]]`
+Not surprisingly the test set performance is slightly lower than the cross-validated metrics (ROC AUC of `r pull(collect_metrics(glmnet_final), .estimate)[[2]] %>% scales::number(accuracy = 0.01)`), however it still offers decent performance.
 
 {{< /spoiler >}}
 
