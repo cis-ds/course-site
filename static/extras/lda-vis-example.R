@@ -41,9 +41,9 @@ topicmodels_json_ldavis <- function(fitted, doc_term){
   return(json_lda)
 }
 
-load(file = here("static", "extras", "jokes_lda_compare.Rdata"))
-jokes_100_json <- topicmodels_json_ldavis(fitted = jokes_lda_compare[[6]],
-                                         doc_term = jokes_dtm)
+load(file = here("static", "extras", "appa-lda-compare.Rdata"))
+jokes_100_json <- topicmodels_json_ldavis(fitted = appa_lda_compare[[4]],
+                                         doc_term = appa_dtm)
 serVis(jokes_100_json)
 
 # 6 - guy walks into a bar
