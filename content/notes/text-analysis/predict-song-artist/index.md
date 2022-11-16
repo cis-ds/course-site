@@ -94,7 +94,10 @@ extra_lyrics <- read_csv(here("static", "data", "updated-album-lyrics.csv"))
 
 ```r
 # clean lyrics for binding
-beyonce_clean <- beyonce_lyrics %>%
+beyonce_clean <- bind_rows(
+  beyonce_lyrics,
+  extra_lyrics
+  ) %>%
   # convert to one row per song
   group_by(song_id, song_name, artist_name) %>%
   summarize(Lyrics = str_flatten(line, collapse = " ")) %>%
@@ -109,21 +112,19 @@ beyonce_clean <- beyonce_lyrics %>%
 ```
 
 ```r
-taylor_swift_clean <- bind_rows(
-  taylor_swift_lyrics,
-  extra_lyrics
-) %>%
+taylor_swift_clean <- taylor_swift_lyrics %>%
   # clean column names
   select(artist = Artist, song_title = Title, lyrics = Lyrics)
 
 # combine into single data file
 lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
-  mutate(artist = factor(artist))
+  mutate(artist = factor(artist)) %>%
+  drop_na()
 lyrics
 ```
 
 ```
-## # A tibble: 3,086 × 3
+## # A tibble: 523 × 3
 ##    artist  song_title                                                     lyrics
 ##    <fct>   <chr>                                                          <chr> 
 ##  1 Beyoncé Ego (Remix) (Ft. Kanye West)                                   "I go…
@@ -136,7 +137,7 @@ lyrics
 ##  8 Beyoncé Crazy in Love (Ft. JAY-Z)                                      "Yes!…
 ##  9 Beyoncé Déjà Vu (Ft. JAY-Z)                                            "Bass…
 ## 10 Beyoncé Me, Myself & I (Remix) (Ft. Ghostface Killah)                  "Ahh,…
-## # … with 3,076 more rows
+## # … with 513 more rows
 ```
 
 ## Preprocess the dataset for modeling
@@ -282,8 +283,8 @@ ranger_cv_metrics
 ## # A tibble: 2 × 6
 ##   .metric  .estimator  mean     n std_err .config             
 ##   <chr>    <chr>      <dbl> <int>   <dbl> <chr>               
-## 1 accuracy binary     0.777    10 0.0112  Preprocessor1_Model1
-## 2 roc_auc  binary     0.852    10 0.00884 Preprocessor1_Model1
+## 1 accuracy binary     0.826    10 0.0232  Preprocessor1_Model1
+## 2 roc_auc  binary     0.935    10 0.00986 Preprocessor1_Model1
 ```
 
 ```r
@@ -304,7 +305,7 @@ conf_mat_resampled(x = ranger_cv, tidy = FALSE) %>%
 
 <img src="{{< blogdown/postref >}}index_files/figure-html/ranger-metrics-2.png" width="672" />
 
-Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of 0.85 is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (391 songs compared to only 2695 for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
+Overall the random forest model is reasonable at distinguishing Beyoncé from Taylor Swift based purely on the lyrics. A ROC AUC value of 0.93 is pretty good for a binary classification task. We can also see the model more accurately predicts Beyoncé's songs compared to Taylor Swift. Part of this is because Beyoncé's catalog is much larger (392 songs compared to only 132 for Taylor Swift), but this should have been accounted for through the downsampling. Even after this procedure, the model still has better sensitivity to Beyoncé.
 
 {{< /spoiler >}}
 
@@ -406,16 +407,16 @@ collect_metrics(x = glmnet_tune)
 ## # A tibble: 240 × 8
 ##       penalty mixture .metric  .estimator  mean     n std_err .config           
 ##         <dbl>   <dbl> <chr>    <chr>      <dbl> <int>   <dbl> <chr>             
-##  1 0.000001         0 accuracy binary     0.767    10  0.0109 Preprocessor1_Mod…
-##  2 0.000001         0 roc_auc  binary     0.827    10  0.0123 Preprocessor1_Mod…
-##  3 0.00000183       0 accuracy binary     0.767    10  0.0109 Preprocessor1_Mod…
-##  4 0.00000183       0 roc_auc  binary     0.827    10  0.0123 Preprocessor1_Mod…
-##  5 0.00000336       0 accuracy binary     0.767    10  0.0109 Preprocessor1_Mod…
-##  6 0.00000336       0 roc_auc  binary     0.827    10  0.0123 Preprocessor1_Mod…
-##  7 0.00000616       0 accuracy binary     0.767    10  0.0109 Preprocessor1_Mod…
-##  8 0.00000616       0 roc_auc  binary     0.827    10  0.0123 Preprocessor1_Mod…
-##  9 0.0000113        0 accuracy binary     0.767    10  0.0109 Preprocessor1_Mod…
-## 10 0.0000113        0 roc_auc  binary     0.827    10  0.0123 Preprocessor1_Mod…
+##  1 0.000001         0 accuracy binary     0.738    10  0.0273 Preprocessor1_Mod…
+##  2 0.000001         0 roc_auc  binary     0.880    10  0.0180 Preprocessor1_Mod…
+##  3 0.00000183       0 accuracy binary     0.738    10  0.0273 Preprocessor1_Mod…
+##  4 0.00000183       0 roc_auc  binary     0.880    10  0.0180 Preprocessor1_Mod…
+##  5 0.00000336       0 accuracy binary     0.738    10  0.0273 Preprocessor1_Mod…
+##  6 0.00000336       0 roc_auc  binary     0.880    10  0.0180 Preprocessor1_Mod…
+##  7 0.00000616       0 accuracy binary     0.738    10  0.0273 Preprocessor1_Mod…
+##  8 0.00000616       0 roc_auc  binary     0.880    10  0.0180 Preprocessor1_Mod…
+##  9 0.0000113        0 accuracy binary     0.738    10  0.0273 Preprocessor1_Mod…
+## 10 0.0000113        0 roc_auc  binary     0.880    10  0.0180 Preprocessor1_Mod…
 ## # … with 230 more rows
 ```
 
@@ -432,13 +433,13 @@ show_best(x = glmnet_tune, metric = "roc_auc")
 
 ```
 ## # A tibble: 5 × 8
-##   penalty mixture .metric .estimator  mean     n std_err .config               
-##     <dbl>   <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>                 
-## 1 0.00886     0.6 roc_auc binary     0.846    10  0.0122 Preprocessor1_Model076
-## 2 0.0298      0.2 roc_auc binary     0.846    10  0.0120 Preprocessor1_Model038
-## 3 0.00886     0.8 roc_auc binary     0.845    10  0.0130 Preprocessor1_Model096
-## 4 0.0162      0.4 roc_auc binary     0.845    10  0.0123 Preprocessor1_Model057
-## 5 0.00483     1   roc_auc binary     0.845    10  0.0123 Preprocessor1_Model115
+##      penalty mixture .metric .estimator  mean     n std_err .config             
+##        <dbl>   <dbl> <chr>   <chr>      <dbl> <int>   <dbl> <chr>               
+## 1 0.000001         0 roc_auc binary     0.880    10  0.0180 Preprocessor1_Model…
+## 2 0.00000183       0 roc_auc binary     0.880    10  0.0180 Preprocessor1_Model…
+## 3 0.00000336       0 roc_auc binary     0.880    10  0.0180 Preprocessor1_Model…
+## 4 0.00000616       0 roc_auc binary     0.880    10  0.0180 Preprocessor1_Model…
+## 5 0.0000113        0 roc_auc binary     0.880    10  0.0180 Preprocessor1_Model…
 ```
 
 Based on the ROC AUC, any penalty parameter with a mixture of `0` provides the optimal model performance. Though compared to the random forest model, the penalized regression approach consistently generates lower ROC AUC scores. This is likely because penalized regression models are a form of generalized linear models which assume linear, additive relationships between the predictors (i.e. n-grams) and the outcome of interest. Random forests are built from decision trees which are highly interactive and non-linear, so they allow for more flexible relationships between the predictors and outcome.
@@ -468,11 +469,11 @@ collect_metrics(glmnet_final)
 ## # A tibble: 2 × 4
 ##   .metric  .estimator .estimate .config             
 ##   <chr>    <chr>          <dbl> <chr>               
-## 1 accuracy binary         0.820 Preprocessor1_Model1
-## 2 roc_auc  binary         0.869 Preprocessor1_Model1
+## 1 accuracy binary         0.756 Preprocessor1_Model1
+## 2 roc_auc  binary         0.846 Preprocessor1_Model1
 ```
 
-Not surprisingly the test set performance is slightly lower than the cross-validated metrics (ROC AUC of 0.87), however it still offers decent performance.
+Not surprisingly the test set performance is slightly lower than the cross-validated metrics (ROC AUC of 0.85), however it still offers decent performance.
 
 {{< /spoiler >}}
 
@@ -544,13 +545,15 @@ sessioninfo::session_info()
 ##  collate  en_US.UTF-8
 ##  ctype    en_US.UTF-8
 ##  tz       America/New_York
-##  date     2022-10-27
-##  pandoc   2.18 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
+##  date     2022-11-16
+##  pandoc   2.19.2 @ /Applications/RStudio.app/Contents/MacOS/quarto/bin/tools/ (via rmarkdown)
 ## 
 ## ─ Packages ───────────────────────────────────────────────────────────────────
 ##  package       * version    date (UTC) lib source
 ##  assertthat      0.2.1      2019-03-21 [2] CRAN (R 4.2.0)
 ##  backports       1.4.1      2021-12-13 [2] CRAN (R 4.2.0)
+##  bit             4.0.4      2020-08-04 [2] CRAN (R 4.2.0)
+##  bit64           4.0.5      2020-08-30 [2] CRAN (R 4.2.0)
 ##  blogdown        1.10       2022-05-10 [2] CRAN (R 4.2.0)
 ##  bookdown        0.27       2022-06-14 [2] CRAN (R 4.2.0)
 ##  broom         * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
@@ -562,6 +565,7 @@ sessioninfo::session_info()
 ##  codetools       0.2-18     2020-11-04 [2] CRAN (R 4.2.1)
 ##  colorspace      2.0-3      2022-02-21 [2] CRAN (R 4.2.0)
 ##  crayon          1.5.2      2022-09-29 [1] CRAN (R 4.2.0)
+##  curl            4.3.3      2022-10-06 [1] CRAN (R 4.2.0)
 ##  DBI             1.1.3      2022-06-18 [2] CRAN (R 4.2.0)
 ##  dbplyr          2.2.1      2022-06-27 [2] CRAN (R 4.2.0)
 ##  dials         * 1.0.0      2022-06-14 [2] CRAN (R 4.2.0)
@@ -569,8 +573,9 @@ sessioninfo::session_info()
 ##  digest          0.6.29     2021-12-01 [2] CRAN (R 4.2.0)
 ##  dplyr         * 1.0.10     2022-09-01 [1] CRAN (R 4.2.0)
 ##  ellipsis        0.3.2      2021-04-29 [2] CRAN (R 4.2.0)
-##  evaluate        0.16       2022-08-09 [1] CRAN (R 4.2.1)
+##  evaluate        0.18       2022-11-07 [1] CRAN (R 4.2.0)
 ##  fansi           1.0.3      2022-03-24 [2] CRAN (R 4.2.0)
+##  farver          2.1.1      2022-07-06 [2] CRAN (R 4.2.0)
 ##  fastmap         1.1.0      2021-01-25 [2] CRAN (R 4.2.0)
 ##  forcats       * 0.5.2      2022-08-19 [1] CRAN (R 4.2.0)
 ##  foreach         1.5.2      2022-02-02 [2] CRAN (R 4.2.0)
@@ -581,6 +586,7 @@ sessioninfo::session_info()
 ##  gargle          1.2.0      2021-07-02 [2] CRAN (R 4.2.0)
 ##  generics        0.1.3      2022-07-05 [2] CRAN (R 4.2.0)
 ##  ggplot2       * 3.3.6      2022-05-03 [2] CRAN (R 4.2.0)
+##  glmnet        * 4.1-4      2022-04-15 [2] CRAN (R 4.2.0)
 ##  globals         0.16.0     2022-08-05 [2] CRAN (R 4.2.0)
 ##  glue            1.6.2      2022-02-24 [2] CRAN (R 4.2.0)
 ##  googledrive     2.0.0      2021-07-08 [2] CRAN (R 4.2.0)
@@ -592,6 +598,7 @@ sessioninfo::session_info()
 ##  hardhat         1.2.0      2022-06-30 [2] CRAN (R 4.2.0)
 ##  haven           2.5.1      2022-08-22 [1] CRAN (R 4.2.0)
 ##  here          * 1.0.1      2020-12-13 [2] CRAN (R 4.2.0)
+##  highr           0.9        2021-04-16 [2] CRAN (R 4.2.0)
 ##  hms             1.1.2      2022-08-19 [1] CRAN (R 4.2.0)
 ##  htmltools       0.5.3      2022-07-18 [2] CRAN (R 4.2.0)
 ##  httr            1.4.3      2022-05-04 [2] CRAN (R 4.2.0)
@@ -601,6 +608,7 @@ sessioninfo::session_info()
 ##  jquerylib       0.1.4      2021-04-26 [2] CRAN (R 4.2.0)
 ##  jsonlite        1.8.0      2022-02-22 [2] CRAN (R 4.2.0)
 ##  knitr           1.40       2022-08-24 [1] CRAN (R 4.2.0)
+##  labeling        0.4.2      2020-10-20 [2] CRAN (R 4.2.0)
 ##  lattice         0.20-45    2021-09-22 [2] CRAN (R 4.2.1)
 ##  lava            1.6.10     2021-09-02 [2] CRAN (R 4.2.0)
 ##  lhs             1.1.5      2022-03-22 [2] CRAN (R 4.2.0)
@@ -609,7 +617,7 @@ sessioninfo::session_info()
 ##  lubridate       1.8.0      2021-10-07 [2] CRAN (R 4.2.0)
 ##  magrittr        2.0.3      2022-03-30 [2] CRAN (R 4.2.0)
 ##  MASS            7.3-58.1   2022-08-03 [2] CRAN (R 4.2.0)
-##  Matrix          1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
+##  Matrix        * 1.4-1      2022-03-23 [2] CRAN (R 4.2.1)
 ##  modeldata     * 1.0.0      2022-07-01 [2] CRAN (R 4.2.0)
 ##  modelr          0.1.8      2020-05-19 [2] CRAN (R 4.2.0)
 ##  munsell         0.5.0      2018-06-12 [2] CRAN (R 4.2.0)
@@ -621,12 +629,14 @@ sessioninfo::session_info()
 ##  prodlim         2019.11.13 2019-11-17 [2] CRAN (R 4.2.0)
 ##  purrr         * 0.3.5      2022-10-06 [1] CRAN (R 4.2.0)
 ##  R6              2.5.1      2021-08-19 [2] CRAN (R 4.2.0)
+##  ranger        * 0.14.1     2022-06-18 [2] CRAN (R 4.2.0)
+##  RColorBrewer    1.1-3      2022-04-03 [2] CRAN (R 4.2.0)
 ##  Rcpp            1.0.9      2022-07-08 [2] CRAN (R 4.2.0)
 ##  readr         * 2.1.3      2022-10-01 [1] CRAN (R 4.2.0)
 ##  readxl          1.4.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  recipes       * 1.0.1      2022-07-07 [2] CRAN (R 4.2.0)
-##  reprex          2.0.1.9000 2022-08-10 [1] Github (tidyverse/reprex@6d3ad07)
-##  rlang           1.0.6      2022-09-24 [1] CRAN (R 4.2.0)
+##  reprex          2.0.2      2022-08-17 [1] CRAN (R 4.2.0)
+##  rlang         * 1.0.6      2022-09-24 [1] CRAN (R 4.2.0)
 ##  rmarkdown       2.14       2022-04-25 [2] CRAN (R 4.2.0)
 ##  ROSE            0.0-4      2021-06-14 [2] CRAN (R 4.2.0)
 ##  rpart           4.1.16     2022-01-24 [2] CRAN (R 4.2.1)
@@ -637,7 +647,9 @@ sessioninfo::session_info()
 ##  sass            0.4.2      2022-07-16 [2] CRAN (R 4.2.0)
 ##  scales        * 1.2.1      2022-08-20 [1] CRAN (R 4.2.0)
 ##  sessioninfo     1.2.2      2021-12-06 [2] CRAN (R 4.2.0)
+##  shape           1.4.6      2021-05-19 [2] CRAN (R 4.2.0)
 ##  SnowballC       0.7.0      2020-04-01 [2] CRAN (R 4.2.0)
+##  stopwords     * 2.3        2021-10-28 [2] CRAN (R 4.2.0)
 ##  stringi         1.7.8      2022-07-11 [2] CRAN (R 4.2.0)
 ##  stringr       * 1.4.0      2019-02-10 [2] CRAN (R 4.2.0)
 ##  survival        3.3-1      2022-03-03 [2] CRAN (R 4.2.1)
@@ -653,12 +665,13 @@ sessioninfo::session_info()
 ##  tune          * 1.0.0      2022-07-07 [2] CRAN (R 4.2.0)
 ##  tzdb            0.3.0      2022-03-28 [2] CRAN (R 4.2.0)
 ##  utf8            1.2.2      2021-07-24 [2] CRAN (R 4.2.0)
-##  vctrs           0.4.2      2022-09-29 [1] CRAN (R 4.2.0)
+##  vctrs         * 0.5.0      2022-10-22 [1] CRAN (R 4.2.0)
 ##  vip           * 0.3.2      2020-12-17 [2] CRAN (R 4.2.0)
+##  vroom           1.6.0      2022-09-30 [1] CRAN (R 4.2.0)
 ##  withr           2.5.0      2022-03-03 [2] CRAN (R 4.2.0)
 ##  workflows     * 1.0.0      2022-07-05 [2] CRAN (R 4.2.0)
 ##  workflowsets  * 1.0.0      2022-07-12 [2] CRAN (R 4.2.0)
-##  xfun            0.31       2022-05-10 [1] CRAN (R 4.2.0)
+##  xfun            0.34       2022-10-18 [1] CRAN (R 4.2.0)
 ##  xml2            1.3.3      2021-11-30 [2] CRAN (R 4.2.0)
 ##  yaml            2.3.5      2022-02-21 [2] CRAN (R 4.2.0)
 ##  yardstick     * 1.0.0      2022-06-06 [2] CRAN (R 4.2.0)

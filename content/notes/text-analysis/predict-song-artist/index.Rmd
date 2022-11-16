@@ -94,23 +94,24 @@ taylor_swift_lyrics <- read_csv("https://raw.githubusercontent.com/rfordatascien
 extra_lyrics <- read_csv(here("static", "data", "updated-album-lyrics.csv"))
 
 # clean lyrics for binding
-beyonce_clean <- beyonce_lyrics %>%
+beyonce_clean <- bind_rows(
+  beyonce_lyrics,
+  extra_lyrics
+  ) %>%
   # convert to one row per song
   group_by(song_id, song_name, artist_name) %>%
   summarize(Lyrics = str_flatten(line, collapse = " ")) %>%
   ungroup() %>%
   # clean column names
   select(artist = artist_name, song_title = song_name, lyrics = Lyrics)
-taylor_swift_clean <- bind_rows(
-  taylor_swift_lyrics,
-  extra_lyrics
-) %>%
+taylor_swift_clean <- taylor_swift_lyrics %>%
   # clean column names
   select(artist = Artist, song_title = Title, lyrics = Lyrics)
 
 # combine into single data file
 lyrics <- bind_rows(beyonce_clean, taylor_swift_clean) %>%
-  mutate(artist = factor(artist))
+  mutate(artist = factor(artist)) %>%
+  drop_na()
 lyrics
 ```
 
