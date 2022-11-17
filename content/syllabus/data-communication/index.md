@@ -30,7 +30,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/shiny/"
+url_slides: "/slides/improving-data-communication/"
 url_video: ""
 url_code: ""
 
