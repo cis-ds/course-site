@@ -1,0 +1,840 @@
+---
+title: "Accessibility"
+author: "MACS 40700 <br /> University of Chicago"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer.css
+    nature:
+      highlightStyle: magula
+      highlightLines: true
+      highlightLanguage: r
+      ratio: 16:9
+      countIncrementalSlides: false
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+# generate CSS file
+library(xaringanthemer)
+style_duo_accent(
+  primary_color = "#800000",
+  secondary_color = "#EAAA00",
+  inverse_header_color = "#464A53",
+  black_color = "#464A53",
+  header_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  text_font_google = xaringanthemer::google_font("Atkinson Hyperlegible"),
+  code_font_google = xaringanthemer::google_font("Source Code Pro"),
+  base_font_size = "24px",
+  code_font_size = "20px",
+  # title_slide_background_image = "https://github.com/uc-dataviz/course-notes/raw/main/images/hexsticker.svg",
+  # title_slide_background_size = "contain",
+  # title_slide_background_position = "top",
+  header_h1_font_size = "2rem",
+  header_h2_font_size = "1.75rem",
+  header_h3_font_size = "1.5rem",
+  extra_css = list(
+    "h1" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h2" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    "h3" = list(
+      "margin-block-start" = "0.4rem",
+      "margin-block-end" = "0.4rem"
+    ),
+    ".tiny" = list("font-size" = "70%"),
+    ".small" = list("font-size" = "90%"),
+    ".midi" = list("font-size" = "150%"),
+    ".tiny .remark-code" = list("font-size" = "70%"),
+    ".small .remark-code" = list("font-size" = "90%"),
+    ".midi .remark-code" = list("font-size" = "150%"),
+    ".large" = list("font-size" = "200%"),
+    ".xlarge" = list("font-size" = "600%"),
+    ".huge" = list(
+      "font-size" = "400%",
+      "font-family" = "'Montserrat', sans-serif",
+      "font-weight" = "bold"
+    ),
+    ".hand" = list(
+      "font-family" = "'Gochi Hand', cursive",
+      "font-size" = "125%"
+    ),
+    ".task" = list(
+      "padding-right" = "10px",
+      "padding-left" = "10px",
+      "padding-top" = "3px",
+      "padding-bottom" = "3px",
+      "margin-bottom" = "6px",
+      "margin-top" = "6px",
+      "border-left" = "solid 5px #F1DE67",
+      "background-color" = "#F3D03E"
+    ),
+    ".pull-left" = list(
+      "width" = "49%",
+      "float" = "left"
+    ),
+    ".pull-right" = list(
+      "width" = "49%",
+      "float" = "right"
+    ),
+    ".pull-left-wide" = list(
+      "width" = "70%",
+      "float" = "left"
+    ),
+    ".pull-right-narrow" = list(
+      "width" = "27%",
+      "float" = "right"
+    ),
+    ".pull-left-narrow" = list(
+      "width" = "27%",
+      "float" = "left"
+    ),
+    ".pull-right-wide" = list(
+      "width" = "70%",
+      "float" = "right"
+    ),
+    ".blue" = list(color = "#2A9BB7"),
+    ".purple" = list(color = "#a493ba"),
+    ".yellow" = list(color = "#f1de67"),
+    ".gray" = list(color = "#464a53")
+  )
+)
+
+# source in the default knitr options
+source(here::here("R", "slide-opts.R"))
+
+# enable panelsets and default theme
+xaringanExtra::use_panelset()
+# ggplot2::theme_set(ggplot2::theme_minimal(base_size = 16))
+
+# load basic packages
+library(knitr)
+library(here)
+library(countdown)
+library(patchwork)
+library(flipbookr)
+library(scales)
+```
+
+class: middle, inverse
+
+# Setup
+
+---
+
+## Setup
+
+```{r message = FALSE, warning = FALSE, cache = FALSE}
+# load packages
+library(tidyverse)
+library(scales)
+library(colorblindr)
+library(coloratio)
+library(gt)
+
+# set default theme for ggplot2
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 16))
+
+# set default figure parameters for knitr
+knitr::opts_chunk$set(
+  fig.width = 8, fig.asp = 0.618, fig.retina = 2, dpi = 150, out.width = "60%"
+)
+
+# dplyr print min and max
+options(dplyr.print_max = 6, dplyr.print_min = 6)
+```
+
+---
+
+class: middle, large
+
+.hand[do you remember?]
+
+---
+
+## Flatten the curve
+
+```{r echo = FALSE}
+high_mean <- 12
+high_sd <- 4
+flat_mean <- 35
+flat_sd <- 12
+
+ggplot(tibble(x = c(0, 70)), aes(x = x)) +
+  stat_function(geom = "area", fun = dnorm, n = 1000, 
+                args = list(mean = high_mean, sd = high_sd),
+                fill = "#FF4136", alpha = 0.8) +
+  stat_function(geom = "area", fun = dnorm, n = 1000, 
+                args = list(mean = flat_mean, sd = flat_sd),
+                fill = "#0074D9", alpha = 0.8) +
+  geom_hline(yintercept = dnorm(flat_mean, flat_mean, flat_sd), 
+             linetype = "61", color = "grey75") +
+  annotate(geom = "text", x = qnorm(0.5, high_mean, high_sd), 
+           y = dnorm(qnorm(0.5, high_mean, high_sd), high_mean, high_sd) / 2, 
+           label = "Without\nprotective\nmeasures", color = "white", size = 3,
+           family = "Fira Sans Condensed", fontface = "bold") +
+  annotate(geom = "text", x = qnorm(0.5, flat_mean, sd = flat_sd), 
+           y = dnorm(qnorm(0.5, flat_mean, sd = flat_sd), flat_mean, sd = flat_sd) / 2, 
+           label = "With protective\nmeasures", color = "white", size = 3,
+           family = "Fira Sans Condensed", fontface = "bold") +
+  annotate(geom = "text", x = 45, y = dnorm(flat_mean, flat_mean, sd = flat_sd), 
+           label = "Healthcare system capacity", vjust = -0.5, hjust = 0, size = 3,
+           family = "Fira Sans Condensed", fontface = "bold") +
+  labs(x = "Time since first case", 
+       y = "# of\ncases",
+       title = "Flatten the curve!", 
+       subtitle = "Slow down community spread by social distancing",
+       caption = "Adapted from the CDC and The Economist\nVisit flattenthecurve.com") +
+  scale_x_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0)) +
+  theme_minimal(base_family = "Fira Sans Condensed Light") +
+  theme(panel.grid = element_blank(),
+        axis.line = element_line(color = "black"),
+        axis.text = element_blank(),
+        axis.title = element_text(family = "Fira Sans Condensed", face = "bold"),
+        axis.title.y = element_text(angle = 0, vjust = 0.5),
+        plot.title = element_text(family = "Fira Sans Condensed", face = "bold", size = rel(1.7)),
+        plot.subtitle = element_text(size = rel(1.2), color = "grey50"),
+        plot.caption = element_text(color = "grey50"))
+```
+
+---
+
+## Exponential spread
+
+<iframe width="1000" height="650" src="https://www.washingtonpost.com/graphics/2020/world/corona-simulator/" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
+
+.small[
+Source: The Washington Post. [Why outbreaks like coronavirus
+spread exponentially, and how to "flatten the curve"](https://www.washingtonpost.com/graphics/2020/world/corona-simulator/)
+]
+
+---
+
+## JHU COVID-19 Dashboard
+
+- [Dashboard](https://coronavirus.jhu.edu/map.html)
+
+.footnote[
+Source: [COVID-19 Dashboard
+by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU)](https://coronavirus.jhu.edu/map.html)
+]
+
+---
+
+class: middle, large
+
+.hand[What do they all have in common?]
+
+--
+
+.hand[They're all graphics!]
+
+---
+
+## Accessible COVID-19 statistics tracker
+
+<iframe width="1000" height="650" src="https://cvstats.net/" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen data-external="1"></iframe>
+
+---
+
+class: middle, inverse
+
+# Accessibility and screen readers
+
+---
+
+## Alternative text
+
+> It is read by screen readers in place of images allowing the content and function of the image to be accessible to those with visual or certain cognitive disabilities.
+>
+> It is displayed in place of the image in browsers if the image file is not loaded or when the user has chosen not to view images.
+>
+>It provides a semantic meaning and description to images which can be read by search engines or be used to later determine the content of the image from page context alone.
+
+.footnote[
+Source: [WebAIM](https://webaim.org/techniques/alttext/)
+]
+
+---
+
+## Alt and surrounding text
+
+```
+"CHART TYPE of TYPE OF DATA where REASON FOR INCLUDING CHART`
+
++ Link to data source somewhere in the text
+```
+
+--
+- `CHART TYPE`: It's helpful for people with partial sight to know what chart type it is and gives context for understanding the rest of the visual.
+
+--
+- `TYPE OF DATA`: What data is included in the chart? The x and y axis labels may help you figure this out.
+
+--
+- `REASON FOR INCLUDING CHART`: Think about why you're including this visual. What does it show that’s meaningful. There should be a point to every visual and you should tell people what to look for.
+
+--
+- `Link to data source`: Don't include this in your alt text, but it should be included somewhere in the surrounding text.
+
+.footnote[
+Source: [Writing Alt Text for Data Visualization](https://medium.com/nightingale/writing-alt-text-for-data-visualization-2a218ef43f81)
+]
+
+---
+
+## Data
+
+- Registered nurses by state and year
+- Number of nurses, salaries, employment
+- Source: [TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2021/2021-10-05)
+
+.small[
+```{r message = FALSE}
+nurses <- read_csv("data/nurses.csv") %>% janitor::clean_names()
+glimpse(nurses)
+```
+]
+
+---
+
+## Bar chart
+
+```{r echo = FALSE}
+nurses_subset <- nurses %>%
+  filter(state %in% c("California", "New York", "North Carolina"))
+```
+
+.pull-left[
+```{r nurses-bar, echo = FALSE, out.width = "100%"}
+#| fig.alt = 'The figure is a bar chart titled "Total employed Registered Nurses" that
+#|    displays the numbers of registered nurses in three states (California, New York, and
+#|    North Carolina) over a 20 year period, with data recorded in three time points (2000,
+#|    2010, and 2020). In each state, the numbers of registered nurses increase over time.
+#|    The following numbers are all approximate. California started off with 200K registered
+#|    nurses in 2000, 240K in 2010, and 300K in 2020. New York had 150K in 2000, 160K in 2010,
+#|    and 170K in 2020. Finally North Carolina had 60K in 2000, 90K in 2010, and 100K in 2020.'
+
+nurses_subset %>%
+  filter(year %in% c(2000, 2010, 2020)) %>%
+  ggplot(aes(x = state, y = total_employed_rn, fill = factor(year))) +
+  geom_col(position = "dodge") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = label_number(scale = 1/1000, suffix = "K")) +
+  labs(
+    x = "State", y = "Number of Registered Nurses", fill = "Year",
+    title = "Total employed Registered Nurses"
+  ) +
+  theme(
+    legend.background = element_rect(fill = "white", color = "white"),
+    legend.position = c(0.85, 0.75)
+    )
+```
+]
+.pull-right[
+- Provide the title and axis labels
+- Briefly describe the chart and give a summary of any trends it displays
+- Convert bar charts to accessible tables or lists
+- Avoid describing visual attributes of the bars (e.g., dark blue, gray, yellow) unless there's an explicit need to do so 
+]
+
+---
+
+## Developing the alt text
+
+- Total employed registered nurses in three states over time.
+
+--
+- Total employed registered nurses in California, New York, and North Carolina, in 2000, 2010, and 2020.
+
+--
+- A bar chart of total employed registered nurses in California, New York, and North Carolina, in 2000, 2010, and 2020, showing increasing numbers of nurses over time.
+
+--
+- The figure is a bar chart titled "Total employed Registered Nurses" that displays the numbers of registered nurses in three states (California, New York, and North Carolina) over a 20 year period, with data recorded in three time points (2000, 2010, and 2020). In each state, the numbers of registered nurses increase over time. The following numbers are all approximate. California started off with 200K registered nurses in 2000, 240K in 2010, and 300K in 2020.  New York had 150K in 2000, 160K in 2010, and 170K in 2020. Finally North Carolina had 60K in 2000, 90K in 2010, and 100K in 2020.
+
+---
+
+## Incorporating alt text in R Markdown
+
+- Use the [`fig.alt` `knitr` chunk option](https://www.rstudio.com/blog/knitr-fig-alt/)
+
+--
+
+````{verbatim}
+```{r fig.alt = 'The figure is a bar chart titled "Total employed Registered Nurses" that displays the numbers of registered nurses in three states (California, New York, and North Carolina) over a 20 year period, with data recorded in three time points (2000, 2010, and 2020). In each state, the numbers of registered nurses increase over time. The following numbers are all approximate. California started off with 200K registered nurses in 2000, 240K in 2010, and 300K in 2020. New York had 150K in 2000, 160K in 2010, and 170K in 2020. Finally North Carolina had 60K in 2000, 90K in 2010, and 100K in 2020.'}
+
+nurses_subset %>%
+  filter(year %in% c(2000, 2010, 2020)) %>%
+  ggplot(aes(x = state, y = total_employed_rn, fill = factor(year))) +
+  geom_col(position = "dodge") +
+  scale_fill_viridis_d(option = "E") +
+  scale_y_continuous(labels = label_number(scale = 1/1000, suffix = "K")) +
+  labs(
+    x = "State", y = "Number of Registered Nurses", fill = "Year",
+    title = "Total employed Registered Nurses"
+  ) +
+  theme(
+    legend.background = element_rect(fill = "white", color = "white"),
+    legend.position = c(0.85, 0.75)
+    )
+```
+````
+
+---
+
+## Alternate style for `knitr` chunk options
+
+````{verbatim}
+```{r}
+#| fig.alt = 'The figure is a bar chart titled "Total employed Registered Nurses" that
+#|    displays the numbers of registered nurses in three states (California, New York,
+#|    and North Carolina) over a 20 year period, with data recorded in three time points
+#|    (2000, 2010, and 2020). In each state, the numbers of registered nurses increase
+#|    over time. The following numbers are all approximate. California started off with
+#|    200K registered nurses in 2000, 240K in 2010, and 300K in 2020. New York had 150K
+#|    in 2000, 160K in 2010, and 170K in 2020. Finally North Carolina had 60K in 2000,
+#|    90K in 2010, and 100K in 2020.'
+```
+````
+
+.footnote[Requires `knitr` version 1.35+]
+
+---
+
+## Developing the alt table
+
+.pull-left[
+```{r nurses-table, eval = FALSE}
+nurses_subset %>%
+  filter(year %in% c(2000, 2010, 2020)) %>%
+  arrange(year) %>%
+  select(state, year, total_employed_rn) %>%
+  pivot_wider(names_from = year, values_from = total_employed_rn) %>%
+  gt() %>%
+  fmt_number(
+    columns = -state,
+    decimals = 0
+  ) %>%
+  cols_label(state = "State") %>%
+  tab_spanner(
+    label = "Total employed registered nurses",
+    columns = everything()
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_column_spanners()
+  )
+```
+]
+
+.pull-right[
+```{r ref.label = "nurses-table", eval = TRUE, echo = FALSE}
+
+```
+]
+
+---
+
+## Line graph
+
+.pull-left[
+```{r echo = FALSE, out.width = "100%"}
+#| fig.alt = 'The figure is titled "Annual median salary of Registered Nurses". There are three lines on the plot: the top labelled California, the middle New York, the bottom North Carolina. The vertical axis is labelled "Annual median salary", beginning with $40K, up to $120K. The horizontal axis is labelled "Year", beginning with couple years before 2000 up to 2020. The following numbers are all approximate. In the graph, the California line begins around $50K in 1998 and goes up to  $120K in 2020. The increase is steady, except for stalling for about couple years between 2015 to 2017. The New York line also starts around $50K, just below where the California line starts, and steadily goes up to $90K. And the North Carolina line starts around $40K and steadily goes up to $70K.'
+
+nurses_subset %>%
+  ggplot(aes(x = year, y = annual_salary_median, color = state)) +
+  geom_line(show.legend = FALSE) +
+  geom_text(
+    data = nurses_subset %>% filter(year == max(year)),
+    aes(label = state), hjust = 0, nudge_x = 1,
+    show.legend = FALSE
+  ) +
+  scale_color_viridis_d(option = "C", end = 0.5) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K")) +
+  labs(
+    x = "Year", y = "Annual median salary", color = "State",
+    title = "Annual median salary of Registered Nurses"
+  ) +
+  coord_cartesian(clip = "off") +
+  theme(
+    plot.margin = margin(0.1, 0.9, 0.1, 0.1, "in")
+    )
+```
+]
+.pull-right[
+- Provide the title and axis labels
+- Briefly describe the graph and give a summary of any trends it displays
+- Convert data represented in lines to accessible tables or lists where feasible
+- Avoid describing visual attributes of the bars (e.g., purple, pink) unless there's an explicit need to do so 
+]
+
+--
+
+.task[
+Write alt text for the line graph above.
+]
+
+<!--
+The figure is titled "Annual median salary of Registered Nurses". There are three lines on the plot: the top labelled California, the middle New York, the bottom North Carolina. The vertical axis is labelled "Annual median salary", beginning with $40K, up to $120K. The horizontal axis is labelled "Year", beginning with couple years before 2000 up to 2020. The following numbers are all approximate. In the graph, the California line begins around $50K in 1998 and goes up to  $120K in 2020. The increase is steady, except for stalling for about couple years between 2015 to 2017. The New York line also starts around $50K, just below where the California line starts, and steadily goes up to $90K. And the North Carolina line starts around $40K and steadily goes up to $70K.
+-->
+
+---
+
+## Scatterplot
+
+```{r get-unemp, include = FALSE}
+library(readxl)
+
+unemp_state <- read_excel(
+  path = here("18-accessibility", "data", "emp-unemployment.xls"),
+  sheet = "States",
+  skip = 5
+) %>%
+  pivot_longer(
+    cols = -c(Fips, Area),
+    names_to = "Year",
+    values_to = "unemp"
+  ) %>%
+  rename(state = Area, year = Year) %>%
+  mutate(year = parse_number(year)) %>%
+  filter(state != "United States") %>%
+  # calculate mean unemp rate per state and year
+  group_by(state, year) %>%
+  summarize(unemp_rate = mean(unemp, na.rm = TRUE))
+```
+
+.pull-left[
+```{r echo = FALSE, out.width = "100%"}
+#| fig.alt = 'The figure is titled "Median hourly wage of Registered Nurses". It is a scatter plot with points for each of the 50 U.S. states from 1998 to 2008. The horizontal axis is labeled "Unemployment rate", beginning around 2% up to 14%. The horizontal axis is labelled "Median hourly wage", beginning with amounts under $20 up to approximately $50. The pattern is hard to discern but appears to show a positive correlation between the variables. As unemployment rate increases the median hourly wage also slightly increases. There is more variability in median hourly wage for unemployment rates below 7%.'
+
+nurses %>%
+  left_join(unemp_state) %>%
+  drop_na(unemp_rate) %>%
+  ggplot(aes(x = unemp_rate, y = hourly_wage_median)) +
+  geom_point(size = 2, alpha = .5) +
+  scale_x_continuous(labels = label_percent(scale = 1)) +
+  scale_y_continuous(labels = label_dollar()) +
+  labs(
+    x = "Unemployment rate", y = "Median hourly wage",
+    title = "Median hourly wage of Registered Nurses (1998-2018)",
+    subtitle = "By state"
+  )
+```
+]
+.pull-right[
+Scatter plots are among the more difficult graphs to describe, especially if there is a need to make specific data point accessible.
+
+- Identify the image as a scatterplot
+- Provide the title and axis labels
+- Focus on the overall trend
+- If it's necessary to be more specific, convert the data into an accessible table
+]
+
+--
+
+.task[
+Write alt text for the scatterplot above.
+]
+
+<!--
+The figure is titled "Median hourly wage of Registered Nurses". It is a scatter plot with points for each of the 50 U.S. states from 1998 to 2008. The horizontal axis is labeled "Unemployment rate", beginning around 2% up to 14%. The horizontal axis is labelled "Median hourly wage", beginning with amounts under $20 up to approximately $50. The pattern is hard to discern but appears to show a positive correlation between the variables. As unemployment rate increases the median hourly wage also slightly increases. There is more variability in median hourly wage for unemployment rates below 7%.
+-->
+
+---
+
+## Recommended reading
+
+[Accessible Visualization via Natural Language Descriptions: A Four-Level Model of Semantic Content](http://vis.csail.mit.edu/pubs/vis-text-model/)
+
+Alan Lundgard, MIT CSAIL  
+Arvind Satyanarayan, MIT CSAIL
+
+IEEE Transactions on Visualization & Computer Graphics (Proceedings of IEEE VIS), 2021
+
+>To demonstrate how our model can be applied to evaluate the effectiveness of visualization descriptions, we conduct a mixed-methods evaluation with 30 blind and 90 sighted readers, and find that these reader groups differ significantly on which semantic content they rank as most useful. Together, our model and findings suggest that access to meaningful information is strongly reader-specific, and that research in automatic visualization captioning should orient toward descriptions that more richly communicate overall trends and statistics, sensitive to reader preferences.
+
+---
+
+class: middle, inverse
+
+# Accessibility and colors
+
+---
+
+## Color scales
+
+Use colorblind friendly color scales (e.g., Okabe Ito, viridis)
+
+.panelset.sideways[
+```{r panelset = c(source = "Code", output = "Plot"), out.width = "100%"}
+nurses_subset %>%
+  ggplot(aes(x = year, y = hourly_wage_median, color = state)) +
+  geom_line(size = 2) +
+  colorblindr::scale_color_OkabeIto() + #<<
+  scale_y_continuous(labels = label_dollar()) +
+  labs(
+    x = "Year", y = "Median hourly wage", color = "State",
+    title = "Median hourly wage of Registered Nurses"
+  ) +
+  theme(
+    legend.position = c(0.15, 0.75),
+    legend.background = element_rect(fill = "white", color = "white")
+    )
+```
+]
+
+---
+
+## The default ggplot2 color scale
+
+.panelset.sideways[
+.panel[.panel-name[Original]
+```{r default-ggplot2, echo = FALSE, out.width = "100%"}
+fig1 <- nurses_subset %>%
+  ggplot(aes(x = year, y = hourly_wage_median, color = state)) +
+  geom_line(size = 2) +
+  scale_y_continuous(labels = label_dollar()) +
+  labs(
+    x = "Year", y = "Median hourly wage", color = "State",
+    title = "Median hourly wage of Registered Nurses"
+  ) +
+  theme(
+    legend.position = c(0.15, 0.75),
+    legend.background = element_rect(fill = "white", color = "white")
+  )
+fig1
+```
+]
+
+.panel[.panel-name[Vision-impaired]
+```{r echo = FALSE, out.width = "100%"}
+{
+  fig1 +
+    theme_minimal(base_size = 6)
+} %>%
+  cvd_grid()
+```
+]
+]
+
+---
+
+## Testing for colorblind friendliness
+
+- Best way to test is with users (or collaborators) who have these color deficiencies
+
+- `colorblindr::cvd_grid()`
+
+- Simulation software also helps, e.g. Sim Daltonism for [Mac](https://michelf.ca/projects/sim-daltonism/) and [PC](https://pcmacstore.com/en/app/693112260/sim-daltonism)
+
+---
+
+## Color contrast
+
+- Background and foreground text should have sufficient contrast to be distinguishable by users with different vision
+
+- Web app for checking color contrast checking: [Color Contrast Analyser](https://www.tpgi.com/color-contrast-checker/)
+
+- An WIP R package for checking for color contrast: [**coloratio**](https://matt-dray.github.io/coloratio)
+
+.small[
+```{r}
+cr_get_ratio("black", "white")
+cr_get_ratio("#FFFFFF", "#000000")
+cr_get_ratio("black", "gray10")
+```
+]
+
+---
+
+## Double encoding
+
+Use shape *and* color where possible
+
+--
+
+```{r echo = FALSE, out.width = "80%"}
+fig2 <- nurses_subset %>%
+  ggplot(aes(x = year, y = hourly_wage_median, color = state, linetype = state)) +
+  geom_line(size = 2) +
+  scale_y_continuous(labels = label_dollar()) +
+  colorblindr::scale_color_OkabeIto() +
+  labs(
+    x = "Year", y = "Median hourly wage", color = "State", linetype = "State",
+    title = "Median hourly wage of Registered Nurses"
+  ) +
+  theme_minimal(base_size = 6) +
+  theme(
+    legend.position = c(0.15, 0.75),
+    legend.background = element_rect(fill = "white", color = "white")
+    )
+
+cvd_grid(fig2)
+```
+
+---
+
+## Use direct labeling
+
+- Prefer direct labeling where color is used to display information over a legend
+
+- Quicker to read
+
+- Ensures graph can be understood without reliance on color
+
+---
+
+## Without direct labeling
+
+```{r echo = FALSE, out.width = "80%"}
+fig3 <- nurses_subset %>%
+  ggplot(aes(x = year, y = annual_salary_median, color = state, linetype = state)) +
+  geom_line(size = 2) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K")) +
+  colorblindr::scale_color_OkabeIto() +
+  labs(
+    x = "Year", y = "Annual median salary", color = "State", linetype = "State",
+    title = "Annual median salary of Registered Nurses"
+  ) +
+  theme_minimal(base_size = 6) +
+  theme(
+    legend.background = element_rect(fill = "white", color = "white"),
+    legend.position = c(0.2, 0.75)
+    )
+
+cvd_grid(fig3)
+```
+
+---
+
+## With direct labeling
+
+```{r echo = FALSE, out.width = "80%"}
+fig4 <- nurses_subset %>%
+  ggplot(aes(x = year, y = annual_salary_median, color = state, linetype = state)) +
+  geom_line(show.legend = FALSE, size = 2) +
+  geom_text(
+    data = nurses_subset %>% filter(year == max(year)),
+    aes(label = state), hjust = 0, nudge_x = 1,
+    show.legend = FALSE, size = 3
+  ) +
+  scale_y_continuous(labels = label_dollar(scale = 1/1000, suffix = "K")) +
+  colorblindr::scale_color_OkabeIto() +
+  labs(
+    x = "Year", y = "Annual median salary", color = "State", linetype = "State",
+    title = "Annual median salary of Registered Nurses"
+  ) +
+  coord_cartesian(clip = "off") +
+  theme_minimal(base_size = 6) +
+  theme(
+    plot.margin = margin(0.1, 0.9, 0.1, 0.1, "in")
+    )
+
+cvd_grid(fig4)
+```
+
+---
+
+## Use whitespace or pattern to separate elements
+
+- Separate elements with whitespace or pattern
+
+- Allows for distinguishing between data without entirely relying on contrast between colors
+
+---
+
+## Without whitespace
+
+```{r echo = FALSE, out.width = "80%"}
+fig5 <- nurses_subset %>%
+  filter(year %in% c(2000, 2010, 2020)) %>%
+  ggplot(aes(x = factor(year), y = total_employed_rn, fill = state)) +
+  geom_col(position = "fill") +
+  colorblindr::scale_color_OkabeIto() +
+  labs(
+    x = "Year", y = "Proportion of Registered Nurses", fill = "State",
+    title = "Total employed Registered Nurses"
+  ) +
+  theme_minimal(base_size = 6)
+
+cvd_grid(fig5)
+```
+
+---
+
+## With whitespace
+
+```{r echo = FALSE, out.width = "80%"}
+fig6 <- nurses_subset %>%
+  filter(year %in% c(2000, 2010, 2020)) %>%
+  ggplot(aes(x = factor(year), y = total_employed_rn, fill = state)) +
+  geom_col(position = "fill", color = "white", size = 1) +
+  colorblindr::scale_color_OkabeIto() +
+  labs(
+    x = "Year", y = "Proportion of Registered Nurses", 
+    fill = "State",
+    title = "Total employed Registered Nurses"
+  ) +
+  theme_minimal(base_size = 6)
+
+cvd_grid(fig6)
+```
+
+---
+
+class: middle, inverse
+
+# Accessibility and fonts
+
+---
+
+## Accessibility and fonts
+
+- Use a font that has been tested for accessibility (e.g., [Atkinson Hyperlegible](https://brailleinstitute.org/freefont))
+
+--
+- Keep plot labels and annotations similarly sized as the rest of your text (e.g., `ggplot2::theme_set(ggplot2::theme_minimal(base_size = 16))`)
+
+---
+
+class: middle
+
+.large[
+.hand[
+When you design for accessibility, you benefit everyone
+]
+]
+
+.footnote[
+Source: [A Comprehensive Guide to Accessible Data Visualization](https://www.betterment.com/resources/accessible-data-visualization/)
+]
+
+---
+
+## Acknowledgements
+
+- COVID visualization examples:
+  - The New York Times. [Flattening the Coronavirus Curve](https://www.nytimes.com/article/flatten-curve-coronavirus.html)
+  - The Washington Post. [Why outbreaks like coronavirus
+spread exponentially, and how to "flatten the curve"](https://www.washingtonpost.com/graphics/2020/world/corona-simulator/)
+  - [COVID-19 Dashboard
+by the Center for Systems Science and Engineering (CSSE) at Johns Hopkins University (JHU)](https://coronavirus.jhu.edu/map.html)
+  - T. Littlefield (2020) [COVID-19 Statistics Tracker](https://cvstats.net)
+
+- Lundgard, Alan, and Arvind Satyanarayan. ["Accessible Visualization via Natural Language Descriptions: A Four-Level Model of Semantic Content."](https://ieeexplore.ieee.org/abstract/document/9555469) IEEE transactions on visualization and computer graphics (2021).
+
+- [A Comprehensive Guide to Accessible Data Visualization](https://www.betterment.com/resources/accessible-data-visualization/)
+
+- Silvia Canelón and Liz Hare. [Revealing Room for Improvement in Accessibility within a Social Media Data Visualization Learning Community](https://spcanelon.github.io/csvConf2021/slides/#1)
+
+---
+
+class: middle
+
+.task[
+Revisit your Project 2 materials with accessibility guidelines in place and use the remaining time for checking for and implementing as many of the accessibility guidelines as relevant to your project.
+]
