@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Interactive reporting</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="INFO 5940   Cornell University" />
+    <script src="index_files/header-attrs/header-attrs.js"></script>
+    <link href="index_files/panelset/panelset.css" rel="stylesheet" />
+    <script src="index_files/panelset/panelset.js"></script>
+    <link rel="stylesheet" href="xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+.title[
+# Interactive reporting
+]
+.author[
+### INFO 5940 <br /> Cornell University
+]
+
+---
+
+
+
+
+
+
+class: middle, inverse
+
+# Setup
+
+---
+
+## Setup
+
+
+```r
+# load packages
+library(tidyverse)
+library(shiny)
+
+# set default theme for ggplot2
+ggplot2::theme_set(ggplot2::theme_minimal(base_size = 16))
+
+# set default figure parameters for knitr
+knitr::opts_chunk$set(
+  fig.width = 8, fig.asp = 0.618, fig.retina = 2, dpi = 150, out.width = "60%"
+)
+
+# dplyr print min and max
+options(dplyr.print_max = 10, dplyr.print_min = 10)
+```
+
+---
+
+class: middle, inverse
+
+# Shiny: High level view
+
+---
+
+class: middle, center
+
+.center[
+Every Shiny app has a webpage that the user visits, &lt;br&gt; and behind this webpage there is a computer that serves this webpage by running R.
+]
+
+&lt;img src="images/high-level-1.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle, center
+
+.center[
+When running your app locally, the computer serving your app is your computer.
+]
+
+&lt;img src="images/high-level-2.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle, center
+
+.center[
+When your app is deployed, the computer serving your app is a web server.
+]
+
+&lt;img src="images/high-level-3.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: middle, center
+
+&lt;img src="images/high-level-4.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+---
+
+class: inverse, middle
+
+# Dating rules
+
+---
+
+## Age gaps
+
+
+
+.pull-left[
+
+&lt;img src="index_files/figure-html/women-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+--
+
+.pull-right[
+
+&lt;img src="index_files/figure-html/men-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+]
+
+---
+
+## Dating rules
+
+- [A Shiny app for determining if this relationship is skeezy](https://bensoltoff.shinyapps.io/age-rule/)
+
+---
+
+.pull-left[
+
+```r
+usethis::use_course("cis-ds/shiny")
+```
+
+.task[
+
+- Navigate to the `age-rule` folder, and launch the app by opening the `app.R` file and clicking on *Run App*.
+- Close the app by clicking the stop icon
+- Select view mode in the drop down menu next to Run App
+
+]
+]
+
+.pull-right[
+&lt;iframe src="https://bensoltoff.shinyapps.io/age-rule/?showcase=0" width="100%" height="650px" data-external="1"&gt;&lt;/iframe&gt;
+]
+
+---
+
+class: middle, inverse
+
+# Anatomy of a Shiny app
+
+---
+
+## What's in an app?
+
+.pull-left[
+
+```r
+library(shiny)
+
+ui &lt;- fluidPage()
+
+server &lt;- function(input, output, session) {}
+
+shinyApp(ui = ui, server = server)
+```
+]
+.pull-right[
+- **User interface** controls the layout and appearance of app
+
+- **Server function** contains instructions needed to build app
+]
+
+---
+
+## Add elements to app inside `fluidPage()`
+
+```r
+library(shiny)
+
+ui &lt;- fluidPage("Hello Everyone!")
+
+server &lt;- function(input, output) {}
+
+shinyApp(ui = ui, server = server)
+```
+
+---
+
+## Add elements to app inside `fluidPage()`
+
+```r
+fluidPage(
+  h1("My Shiny app"),
+  "Hello Everyone!"
+)
+```
+
+---
+
+## Add HTML to `fluidPage()`
+
+* The UI simply creates HTML
+* [Can use any HTML tags](http://shiny.rstudio.com/articles/tag-glossary.html)
+    * `h1()` = header1
+    * `br()` = line break
+    * `strong()` = bold text
+* Any HTML tag can be accessed using `tags` object
+    * `h1` = `tags$h1()`, `br` = `tags$br()`
+* Common tags can be accessed without `tags`
+
+---
+
+## Add HTML to `fluidPage()`
+
+```r
+fluidPage(
+  h1("My Shiny app"),
+  h3("Subtitle"),
+  "Hello",
+  "Everyone!",
+  br(),
+  strong("bold text")
+)
+```
+
+---
+
+## Use a layout
+
+* By default, all elements stack up one after the other
+* [Can use different layouts](http://shiny.rstudio.com/articles/layout-guide.html)
+* We’ll use `sidebarLayout()`
+
+---
+
+## `sidebarLayout()`
+
+.panelset[
+.panel[.panel-name[Code]
+```r
+fluidPage(
+  titlePanel("My Shiny app"),
+  sidebarLayout(
+    sidebarPanel(
+      "This is a side panel"
+    ),
+    mainPanel(
+      "And this is the main stuff"
+    )
+  )
+)
+```
+]
+
+.panel[.panel-name[Output]
+&lt;img src="images/shiny-sidebarlayout.png" width="80%" style="display: block; margin: auto;" /&gt;
+]
+]
+
+---
+
+## Inputs and outputs
+
+* For interactivity, app needs inputs and outputs
+* **Inputs** - things user can toggle/adjust
+* **Output** - R objects user can see, often depend on inputs
+
+---
+
+## Inputs
+
+```r
+library(shiny)
+
+ui &lt;- fluidPage(
+  sliderInput(
+    inputId = "num",
+    label = "Choose a number",
+    min = 0, max = 100,
+    value = 20)
+)
+
+server &lt;- function(input, output) {}
+
+shinyApp(ui = ui, server = server)
+```
+
+---
+
+## Inputs
+
+```r
+sliderInput(inputId = "num", label = "Choose a number",
+            min = 0, max = 100, value = 20)
+```
+
+
+```
+## &lt;div class="form-group shiny-input-container"&gt;
+##   &lt;label class="control-label" id="num-label" for="num"&gt;Choose a number&lt;/label&gt;
+##   &lt;input class="js-range-slider" id="num" data-skin="shiny" data-min="0" data-max="100" data-from="20" data-step="1" data-grid="true" data-grid-num="10" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/&gt;
+## &lt;/div&gt;
+```
+
+---
+
+## Inputs
+
+&lt;img src="images/shiny-inputs.png" width="80%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Inputs
+
+.pull-left[
+
+```r
+sliderInput(
+  inputId = "num", 
+  label = "Choose a number",
+  min = 0,
+  max = 100, 
+  value = 20
+)
+```
+
+]
+
+.pull-right[
+
+* Input name
+* Label to display
+* Input-specific arguments
+
+]
+
+---
+
+## Outputs
+
+Function | Outputs
+---------|---------
+`plotOutput()` | plot
+`tableOutput()` | table
+`uiOutput()` | Shiny UI element
+`textOutput()` | text
+
+* Plots, tables, text - anything that R creates and users see
+* Initialize as empty placeholder space until object is created
+
+---
+
+# Outputs
+
+```r
+library(shiny)
+
+ui &lt;- fluidPage(
+  sliderInput(
+    inputId = "num",
+    label = "Choose a number",
+    min = 0, max = 100,
+    value = 20),
+    plotOutput("myplot")
+)
+
+server &lt;- function(input, output) {}
+
+shinyApp(ui = ui, server = server)
+```
+
+---
+
+class: inverse, middle
+
+&lt;img src="https://media.giphy.com/media/SRkvcNk9BIeAX2gCFX/giphy.gif" width="70%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Data: Ask a manager
+
+Source: Ask a Manager Survey via [TidyTuesday](https://github.com/rfordatascience/tidytuesday/tree/master/data/2021/2021-05-18)
+
+&gt; This data does not reflect the general population; it reflects Ask a Manager readers who self-selected to respond, which is a very different group (as you can see just from the demographic breakdown below, which is very white and very female).
+
+Some findings [here](https://www.askamanager.org/2021/05/some-findings-from-24000-peoples-salaries.html).
+
+---
+
+## Data: Ask a manager
+
+
+```r
+manager &lt;- read_csv("data/survey.csv")
+manager
+```
+
+```
+## # A tibble: 26,232 × 18
+##    timestamp     how_o…¹ indus…² job_t…³ addit…⁴ annua…⁵ other…⁶ curre…⁷ curre…⁸
+##    &lt;chr&gt;         &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;     &lt;dbl&gt;   &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
+##  1 4/27/2021 11… 25-34   Educat… Resear… &lt;NA&gt;      55000       0 USD     &lt;NA&gt;   
+##  2 4/27/2021 11… 25-34   Comput… Change… &lt;NA&gt;      54600    4000 GBP     &lt;NA&gt;   
+##  3 4/27/2021 11… 25-34   Accoun… Market… &lt;NA&gt;      34000      NA USD     &lt;NA&gt;   
+##  4 4/27/2021 11… 25-34   Nonpro… Progra… &lt;NA&gt;      62000    3000 USD     &lt;NA&gt;   
+##  5 4/27/2021 11… 25-34   Accoun… Accoun… &lt;NA&gt;      60000    7000 USD     &lt;NA&gt;   
+##  6 4/27/2021 11… 25-34   Educat… Schola… &lt;NA&gt;      62000      NA USD     &lt;NA&gt;   
+##  7 4/27/2021 11… 25-34   Publis… Publis… &lt;NA&gt;      33000    2000 USD     &lt;NA&gt;   
+##  8 4/27/2021 11… 25-34   Educat… Librar… High s…   50000      NA USD     &lt;NA&gt;   
+##  9 4/27/2021 11… 45-54   Comput… System… Data d…  112000   10000 USD     &lt;NA&gt;   
+## 10 4/27/2021 11… 35-44   Accoun… Senior… &lt;NA&gt;      45000       0 USD     &lt;NA&gt;   
+## # … with 26,222 more rows, 9 more variables:
+## #   additional_context_on_income &lt;chr&gt;, country &lt;chr&gt;, state &lt;chr&gt;, city &lt;chr&gt;,
+## #   overall_years_of_professional_experience &lt;chr&gt;,
+## #   years_of_experience_in_field &lt;chr&gt;,
+## #   highest_level_of_education_completed &lt;chr&gt;, gender &lt;chr&gt;, race &lt;chr&gt;, and
+## #   abbreviated variable names ¹​how_old_are_you, ²​industry, ³​job_title,
+## #   ⁴​additional_context_on_job_title, ⁵​annual_salary, ⁶​other_monetary_comp, …
+```
+
+---
+
+class: middle
+
+.large[.hand[livecoding]]
+
+.task[
+Go to the `shiny` project and code along in `manager-survey/app.R`.
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "magula",
+"highlightLines": true,
+"highlightLanguage": "r",
+"ratio": "16:9",
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

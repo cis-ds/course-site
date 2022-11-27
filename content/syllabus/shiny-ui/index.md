@@ -4,7 +4,7 @@ date: 2022-11-28T12:25:00-05:00
 publishDate: 2019-05-20T12:25:00-05:00
 draft: false
 
-aliases: ["/cm019.html"]
+aliases: ["/cm019.html", "syllabus/shiny-ui/"]
 
 # Talk start and end times.
 #   End time can optionally be hidden by prefixing the line with `#`.
@@ -30,7 +30,7 @@ tags: []
 
 # Links (optional).
 url_pdf: ""
-url_slides: "/slides/shiny/"
+url_slides: "/slides/interactive-reporting/"
 url_video: ""
 url_code: ""
 
@@ -52,9 +52,9 @@ math: false
 ## Class materials
 
 * [Tutorial from class](/notes/shiny/)
-* [`shiny-demo`](https://github.com/cis-ds/shiny-demo) - fork and clone this repo to follow along with the in-class exercise
 
 * [Git repo for dating age rule app](https://github.com/bensoltoff/age-rule)
 * [Chicago wage employees sample app](https://bensoltoff.shinyapps.io/chicago-employees/)
+* [Manager Survey app](https://bensoltoff.shinyapps.io/manager-survey/)
 
 ## What you need to do after class
