@@ -138,8 +138,8 @@ server <- function(input, output, session) {
   # update the slider input on the second panel based on the new filtered data
   observeEvent(
     eventExpr = input$industry,
-    {
-      handlerExpr <- updateSliderInput(
+    handlerExpr = {
+      updateSliderInput(
         inputId = "ylim",
         min = min(manager_survey_filtered()$annual_salary),
         max = max(manager_survey_filtered()$annual_salary),
@@ -153,7 +153,6 @@ server <- function(input, output, session) {
 
   # create a stripchart of raw salaries from filtered data
   output$indiv_salary_plot <- renderPlot({
-
     # verify only 8 or fewer industries selected for optimal interpretation
     validate(
       need(
@@ -194,7 +193,6 @@ server <- function(input, output, session) {
 
   # plot average salary per education and industry
   output$avg_salary_plot <- renderPlot({
-
     # verify only 8 or fewer industries selected for optimal interpretation
     validate(
       need(
